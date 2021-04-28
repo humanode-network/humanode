@@ -1,16 +1,19 @@
-#![deny(warnings)]
+//! Main entrypoint for the Humanode's Bioauth Robonode server.
+
+#![deny(missing_docs, clippy::missing_docs_in_private_items)]
 
 use std::convert::Infallible;
 
 use hyper::service::{make_service_fn, service_fn};
 use hyper::{Body, Request, Response, Server};
 
+/// A dummy hello world handler.
 async fn hello(_: Request<Body>) -> Result<Response<Body>, Infallible> {
     Ok(Response::new(Body::from("Hello World!")))
 }
 
 #[tokio::main]
-pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // For every connection, we must make a `Service` to handle all
     // incoming HTTP requests on said connection.
     let make_svc = make_service_fn(|_conn| {
@@ -36,6 +39,8 @@ pub async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
+/// A future that resolves when the interrup signal is received, and panics
+/// if the interrupt handler failed to set up.
 async fn shutdown_signal() {
     // Wait for the CTRL+C signal
     tokio::signal::ctrl_c()
