@@ -6,3 +6,5 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
+hyper = { version = "0.14", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
