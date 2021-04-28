@@ -1,2 +1,2 @@
 [workspace]
-members = ["humanode-peer", "robonode-server"]
+members = ["humanode-peer", "robonode-server", "robonode-client"]
