@@ -3,6 +3,12 @@
 version = 3
 
 [[package]]
+name = "anyhow"
+version = "1.0.40"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "28b2cd92db5cbd74e8e5028f7e27dd7aa3090e89e4f2a197cc7c8dfb69c7063b"
+
+[[package]]
 name = "autocfg"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -142,6 +148,10 @@ checksum = "05842d0d43232b23ccb7060ecb0f0626922c21f30012e97b767b30afd4a5d4b9"
 [[package]]
 name = "humanode-peer"
 version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "tokio",
+]
 
 [[package]]
 name = "hyper"
