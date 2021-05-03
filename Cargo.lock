@@ -116,6 +116,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "facetec-api-client"
+version = "0.1.0"
+dependencies = [
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
