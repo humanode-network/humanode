@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{Error, OpaqueBase64DataRef};
+use crate::{CommonResponse, Error, FaceScanResponse, OpaqueBase64DataRef};
 
 use super::Client;
 
@@ -25,24 +25,29 @@ impl Client {
 
 /// Input data for the `/enrollment-3d` request.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Enrollment3DRequest<'a> {
     /// The ID that the FaceTec Server will associate the data with.
     #[serde(rename = "externalDatabaseRefID")]
     external_database_ref_id: &'a str,
     /// The FaceTec 3D FaceScan to enroll into the server.
-    #[serde(rename = "faceScan")]
     face_scan: OpaqueBase64DataRef<'a>,
     /// The audit trail for liveness check.
-    #[serde(rename = "auditTrailImage")]
     audit_trail_image: OpaqueBase64DataRef<'a>,
     /// The low quality audit trail for liveness check.
-    #[serde(rename = "lowQualityAuditTrailImage")]
     low_quality_audit_trail_image: OpaqueBase64DataRef<'a>,
 }
 
 /// The response from `/enrollment-3d`.
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Enrollment3DResponse {
+    /// Common response portion.
+    #[serde(flatten)]
+    common: CommonResponse,
+    /// FaceScan response portion.
+    #[serde(flatten)]
+    face_scan: FaceScanResponse,
     /// The external database ID that was associated with this item.
     #[serde(rename = "externalDatabaseRefID")]
     external_database_ref_id: String,
@@ -50,17 +55,6 @@ pub struct Enrollment3DResponse {
     error: bool,
     /// Whether the request was successful.
     success: bool,
-    /// Something to do with the retry screen.
-    /// TODO: find more info on this parameter.
-    #[serde(rename = "faceTecRetryScreen")]
-    face_tec_retry_screen: i64,
-    /// Something to do with the retry screen.
-    /// TODO: find more info on this parameter.
-    #[serde(rename = "retryScreenEnumInt")]
-    retry_screen_enum_int: i64,
-    /// The age group enum id that the input face scan was classified to.
-    #[serde(rename = "ageEstimateGroupEnumInt")]
-    age_estimate_group_enum_int: i64,
 }
 
 /// The `/enrollment-3d`-specific error kind.
@@ -76,6 +70,8 @@ pub enum Enrollment3DError {
 
 #[cfg(test)]
 mod tests {
+    use crate::{AdditionalSessionData, CallData};
+
     use super::*;
 
     #[test]
@@ -145,7 +141,20 @@ mod tests {
                 external_database_ref_id,
                 error: false,
                 success: false,
-                age_estimate_group_enum_int: -1,
+                face_scan: FaceScanResponse {
+                    age_estimate_group_enum_int: -1,
+                    ..
+                },
+                common: CommonResponse {
+                    additional_session_data: AdditionalSessionData {
+                        is_additional_data_partially_incomplete: false,
+                        ..
+                    },
+                    call_data: CallData {
+                        ..
+                    },
+                    ..
+                },
                 ..
             } if external_database_ref_id == "test_external_dbref_id"
         ))

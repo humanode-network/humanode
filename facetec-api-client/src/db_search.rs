@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{Error, MatchLevel};
+use crate::{CommonResponse, Error, FaceScanResponse, MatchLevel};
 
 use super::Client;
 
@@ -22,21 +22,24 @@ impl Client {
 
 /// Input data for the `/3d-db/search` request.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DBSearchRequest<'a> {
     /// The ID of the pre-enrolled FaceMap to search with.
     #[serde(rename = "externalDatabaseRefID")]
     external_database_ref_id: &'a str,
     /// The name of the group to search at.
-    #[serde(rename = "groupName")]
     group_name: &'a str,
     /// The minimal matching level to accept into the search result.
-    #[serde(rename = "minMatchLevel")]
     min_match_level: MatchLevel,
 }
 
 /// The response from `/3d-db/search`.
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DBSearchResponse {
+    /// Common response portion.
+    #[serde(flatten)]
+    common: CommonResponse,
     /// The ID of the pre-enrolled FaceMap that was used for searching
     /// as an input.
     #[serde(rename = "externalDatabaseRefID")]
@@ -51,11 +54,11 @@ pub struct DBSearchResponse {
 
 /// A single entry that matched the search request.
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DBSearchResponseResult {
     /// The external database ID associated with this entry.
     identifier: String,
     /// The level of matching this entry funfills to the input FaceMap.
-    #[serde(rename = "matchLevel")]
     match_level: MatchLevel,
 }
 

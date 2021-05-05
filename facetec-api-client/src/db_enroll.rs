@@ -22,17 +22,18 @@ impl Client {
 
 /// Input data for the `/3d-db/enroll` request.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DBEnrollRequest<'a> {
     /// The ID of the pre-enrolled FaceMap to use.
     #[serde(rename = "externalDatabaseRefID")]
     external_database_ref_id: &'a str,
     /// The name of the group to enroll the specified FaceMap at.
-    #[serde(rename = "groupName")]
     group_name: &'a str,
 }
 
 /// The response from `/3d-db/enroll`.
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DBEnrollResponse {
     /// The external database ID that was used.
     #[serde(rename = "externalDatabaseRefID")]
