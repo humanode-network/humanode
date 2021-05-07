@@ -15,7 +15,7 @@ pub type MatchLevel = i64;
 
 /// The additional data about the session that FaceTec communicates back to us
 /// with each response.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct AdditionalSessionData {
     /// TODO: document.
@@ -31,7 +31,7 @@ pub struct AdditionalSessionData {
 }
 
 /// The report on the security checks.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct FaceScanSecurityChecks {
     /// TODO: document
@@ -44,8 +44,18 @@ pub struct FaceScanSecurityChecks {
     session_token_check_succeeded: bool,
 }
 
+impl FaceScanSecurityChecks {
+    /// Returns `true` only if all of the underlying checks are `true`.
+    pub fn all_checks_succeeded(&self) -> bool {
+        self.audit_trail_verification_check_succeeded
+            && self.face_scan_liveness_check_succeeded
+            && self.replay_check_succeeded
+            && self.session_token_check_succeeded
+    }
+}
+
 /// The call data that FaceTec includes with each response.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct CallData {
     /// Some opaque transaction identifier.
@@ -61,7 +71,7 @@ pub struct CallData {
 }
 
 /// The server info that FaceTec sends us with each response.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
 pub struct ServerInfo {
     /// Version of the server.
     pub version: String,
@@ -72,34 +82,29 @@ pub struct ServerInfo {
 }
 
 /// A common FaceTec API response portion.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct CommonResponse {
     /// The additional session information included in this response.
-    #[serde(rename = "additionalSessionData")]
     pub additional_session_data: AdditionalSessionData,
     /// The information about the API call the request was to.
-    #[serde(rename = "callData")]
     pub call_data: CallData,
     /// The information about the server.
-    #[serde(rename = "serverInfo")]
     pub server_info: ServerInfo,
 }
 
 /// A FaceScan-related FaceTec API response portion.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
 pub struct FaceScanResponse {
     /// The the information about the security checks over the FaceScan data.
-    #[serde(rename = "faceScanSecurityChecks")]
     pub face_scan_security_checks: FaceScanSecurityChecks,
     /// Something to do with the retry screen of the FaceTec Device SDK.
     /// TODO: find more info on this parameter.
-    #[serde(rename = "faceTecRetryScreen")]
     pub face_tec_retry_screen: i64,
     /// Something to do with the retry screen of the FaceTec Device SDK.
     /// TODO: find more info on this parameter.
-    #[serde(rename = "retryScreenEnumInt")]
     pub retry_screen_enum_int: i64,
     /// The age group enum id that the input FaceScan was classified to.
-    #[serde(rename = "ageEstimateGroupEnumInt")]
     pub age_estimate_group_enum_int: i64,
 }

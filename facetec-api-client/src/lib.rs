@@ -2,6 +2,10 @@
 
 #![warn(missing_docs, clippy::missing_docs_in_private_items)]
 
+#[cfg(test)]
+#[macro_use]
+extern crate assert_matches;
+
 use thiserror::Error;
 
 mod db_enroll;
