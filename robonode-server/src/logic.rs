@@ -1,5 +1,9 @@
 //! Core logic of the system.
 
+use facetec_api_client::{
+    Client as FaceTecClient, DBEnrollError, DBEnrollRequest, DBSearchError, DBSearchRequest,
+    Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FaceTecError,
+};
 use tokio::sync::Mutex;
 
 use crate::sequence::Sequence;
@@ -10,8 +14,8 @@ use serde::{Deserialize, Serialize};
 pub struct Locked {
     /// The sequence number.
     pub sequence: Sequence,
-    /// The client for the FaceTec Server.
-    pub facetec: (),
+    /// The client for the FaceTec Server API.
+    pub facetec: FaceTecClient,
     /// The utility for signing the responses.
     pub signer: (),
 }
@@ -35,21 +39,108 @@ pub struct EnrollRequest {
 
 /// The errors on the enroll operation.
 pub enum EnrollError {
-    /// This public key is already used.
-    AlreadyEnrolled,
+    /// This FaceScan was rejected.
+    FaceScanRejected,
+    /// This Public Key was already used.
+    PublicKeyAlreadyUsed,
+    /// This person has already enrolled into the system.
+    /// It can also happen if matching returns false-positive.
+    PersonAlreadyEnrolled,
+    /// Internal error at server-level enrollment due to the underlying request
+    /// error at the API level.
+    InternalErrorEnrollment(FaceTecError<Enrollment3DError>),
+    /// Internal error at server-level enrollment due to unsuccessful response,
+    /// but for some other reason but the FaceScan being rejected.
+    /// Rejected FaceScan is explicitly encoded via a different error condition.
+    InternalErrorEnrollmentUnsuccessful,
+    /// Internal error at 3D-DB search due to the underlying request
+    /// error at the API level.
+    InternalErrorDbSearch(FaceTecError<DBSearchError>),
+    /// Internal error at 3D-DB search due to unsuccessful response.
+    InternalErrorDbSearchUnsuccessful,
+    /// Internal error at 3D-DB enrollment due to the underlying request
+    /// error at the API level.
+    InternalErrorDbEnroll(FaceTecError<DBEnrollError>),
+    /// Internal error at 3D-DB enrollment due to unsuccessful response.
+    InternalErrorDbEnrollUnsuccessful,
 }
+
+/// This is the error message that FaceTec server returns when it
+/// encounters an `externalDatabaseRefID` that is already in use.
+/// For the lack of a better option, we have to compare the error messages,
+/// which is not a good idea, and there should've been a better way.
+const EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE: &str =
+    "An enrollment already exists for this externalDatabaseRefID.";
+
+/// The group name at 3D DB.
+const DB_GROUP_NAME: &str = "";
 
 impl Logic {
     /// An enroll invocation handler.
     pub async fn enroll(&self, req: EnrollRequest) -> Result<(), EnrollError> {
-        let mut _unlocked = self.locked.lock().await;
-        // unlocked.facetec.enrollment_3d(&req.public_key, &req.face_scan).await?;
-        // match unlocked.facetec.3d_db_search(&req.public_key).await {
-        //     Err(NotFound) => {},
-        //     Ok(_) => return Ok(Response::builder().status(409).body(Body::empty())?),
-        //     Err(error) => return Ok(Response::builder().status(500).body(Body::new(error))?),
-        // }
-        // unlocked.facetec.3d_db_enroll(&public_key).await?;
+        let unlocked = self.locked.lock().await;
+        let enroll_res = unlocked
+            .facetec
+            .enrollment_3d(Enrollment3DRequest {
+                external_database_ref_id: &req.public_key,
+                face_scan: &req.face_scan,
+                audit_trail_image: "TODO",
+                low_quality_audit_trail_image: "TODO",
+            })
+            .await
+            .map_err(|err| match err {
+                FaceTecError::Call(Enrollment3DError::BadRequest(
+                    Enrollment3DErrorBadRequest { error_message, .. },
+                )) if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE => {
+                    EnrollError::PublicKeyAlreadyUsed
+                }
+                err => EnrollError::InternalErrorEnrollment(err),
+            })?;
+
+        if !enroll_res.success {
+            if !enroll_res
+                .face_scan
+                .face_scan_security_checks
+                .all_checks_succeeded()
+            {
+                return Err(EnrollError::FaceScanRejected);
+            }
+            return Err(EnrollError::InternalErrorEnrollmentUnsuccessful);
+        }
+
+        let search_res = unlocked
+            .facetec
+            .db_search(DBSearchRequest {
+                external_database_ref_id: &req.public_key,
+                group_name: DB_GROUP_NAME,
+                min_match_level: 10,
+            })
+            .await
+            .map_err(EnrollError::InternalErrorDbSearch)?;
+
+        if !enroll_res.success {
+            return Err(EnrollError::InternalErrorDbSearchUnsuccessful);
+        }
+
+        // If the results set is non-empty - this means that this person has
+        // already enrolled with the system. It might also be a false-positive.
+        if !search_res.results.is_empty() {
+            return Err(EnrollError::PersonAlreadyEnrolled);
+        }
+
+        let enroll_res = unlocked
+            .facetec
+            .db_enroll(DBEnrollRequest {
+                external_database_ref_id: &req.public_key,
+                group_name: "",
+            })
+            .await
+            .map_err(EnrollError::InternalErrorDbEnroll)?;
+
+        if !enroll_res.success {
+            return Err(EnrollError::InternalErrorDbEnrollUnsuccessful);
+        }
+
         Ok(())
     }
 }
@@ -78,8 +169,24 @@ pub struct AuthenticateResponse {
 
 /// Errors for the authenticate operation.
 pub enum AuthenticateError {
-    /// The FaceScan did not match.
-    NotFound,
+    /// This FaceScan was rejected.
+    FaceScanRejected,
+    /// This person was not found.
+    /// Unually this means they need to enroll, but it can also happen if
+    /// matching returns false-negative.
+    PersonNotFound,
+    /// Internal error at server-level enrollment due to the underlying request
+    /// error at the API level.
+    InternalErrorEnrollment(FaceTecError<Enrollment3DError>),
+    /// Internal error at server-level enrollment due to unsuccessful response,
+    /// but for some other reason but the FaceScan being rejected.
+    /// Rejected FaceScan is explicitly encoded via a different error condition.
+    InternalErrorEnrollmentUnsuccessful,
+    /// Internal error at 3D-DB search due to the underlying request
+    /// error at the API level.
+    InternalErrorDbSearch(FaceTecError<DBSearchError>),
+    /// Internal error at 3D-DB search due to unsuccessful response.
+    InternalErrorDbSearchUnsuccessful,
 }
 
 impl Logic {
@@ -89,9 +196,56 @@ impl Logic {
         req: AuthenticateRequest,
     ) -> Result<AuthenticateResponse, AuthenticateError> {
         let mut unlocked = self.locked.lock().await;
+
+        // Bump the sequence counter.
         unlocked.sequence.inc();
-        // unlocked.facetec.enroll(unlocked.sequence.get(), face_scan).await;
-        // let public_key = unlocked.facetec.3d_db_search(unlocked.sequence.get()).await?;
+
+        // Prepare the ID to be used for this temporary FaceScan.
+        let tmp_external_database_ref_id = format!("tmp-{}", unlocked.sequence.get());
+
+        let enroll_res = unlocked
+            .facetec
+            .enrollment_3d(Enrollment3DRequest {
+                external_database_ref_id: &tmp_external_database_ref_id,
+                face_scan: &req.face_scan,
+                audit_trail_image: "TODO",
+                low_quality_audit_trail_image: "TODO",
+            })
+            .await
+            .map_err(AuthenticateError::InternalErrorEnrollment)?;
+
+        if !enroll_res.success {
+            if !enroll_res
+                .face_scan
+                .face_scan_security_checks
+                .all_checks_succeeded()
+            {
+                return Err(AuthenticateError::FaceScanRejected);
+            }
+            return Err(AuthenticateError::InternalErrorEnrollmentUnsuccessful);
+        }
+
+        let search_res = unlocked
+            .facetec
+            .db_search(DBSearchRequest {
+                external_database_ref_id: &tmp_external_database_ref_id,
+                group_name: DB_GROUP_NAME,
+                min_match_level: 10,
+            })
+            .await
+            .map_err(AuthenticateError::InternalErrorDbSearch)?;
+
+        if !enroll_res.success {
+            return Err(AuthenticateError::InternalErrorDbSearchUnsuccessful);
+        }
+
+        // If the results set is empty - this means that this person was not
+        // found in the system.
+        if search_res.results.is_empty() {
+            return Err(AuthenticateError::PersonNotFound);
+        }
+
+        // TODO:
         // public_key.validate(face_scan_signature)?;
         // let signed_public_key = unlocked.signer.sign(public_key);
         // return both public_key and signed_public_key

@@ -1139,6 +1139,8 @@ dependencies = [
 name = "robonode-server"
 version = "0.1.0"
 dependencies = [
+ "facetec-api-client",
+ "reqwest",
  "serde",
  "tokio",
  "warp",

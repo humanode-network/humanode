@@ -18,7 +18,10 @@ pub fn init() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection
     let logic = logic::Logic {
         locked: Mutex::new(logic::Locked {
             sequence: sequence::Sequence::new(0),
-            facetec: (),
+            facetec: facetec_api_client::Client {
+                base_url: "localhost:5113".to_owned(),
+                reqwest: reqwest::Client::new(),
+            },
             signer: (),
         }),
     };
