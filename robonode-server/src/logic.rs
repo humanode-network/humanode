@@ -1,5 +1,7 @@
 //! Core logic of the system.
 
+use std::{convert::TryFrom, marker::PhantomData};
+
 use facetec_api_client::{
     Client as FaceTecClient, DBEnrollError, DBEnrollRequest, DBSearchError, DBSearchRequest,
     Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FaceTecError,
@@ -9,23 +11,47 @@ use tokio::sync::Mutex;
 use crate::sequence::Sequence;
 use serde::{Deserialize, Serialize};
 
+/// Signer provides signatures for the data.
+pub trait Signer {
+    /// Sign the provided data and return the signature.
+    fn sign<D: AsRef<[u8]>>(&self, data: &D) -> Vec<u8>;
+}
+
+/// Verifier provides the verification of the data accompanied with the
+/// signature or proof data.
+pub trait Verifier {
+    /// Verify that provided data is indeed correctly signed with the provided
+    /// signature.
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool;
+}
+
 /// The inner state, to be hidden behind the mutex to ensure we don't have
 /// access to it unless we lock the mutex.
-pub struct Locked {
+pub struct Locked<S, PK>
+where
+    S: Signer + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
+{
     /// The sequence number.
     pub sequence: Sequence,
     /// The client for the FaceTec Server API.
     pub facetec: FaceTecClient,
     /// The utility for signing the responses.
-    pub signer: (),
+    pub signer: S,
+    /// Public key type to use under the hood.
+    pub public_key_type: PhantomData<PK>,
 }
 
 /// The overall generic logic.
-pub struct Logic {
+pub struct Logic<S, PK>
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
+{
     /// The mutex over the locked portions of the logic.
     /// This way we're ensureing the operations can only be conducted under
     /// the lock.
-    pub locked: Mutex<Locked>,
+    pub locked: Mutex<Locked<S, PK>>,
 }
 
 /// The request for the enroll operation.
@@ -39,6 +65,8 @@ pub struct EnrollRequest {
 
 /// The errors on the enroll operation.
 pub enum EnrollError {
+    /// The provided public key failed to load because it was invalid.
+    InvalidPublicKey,
     /// This FaceScan was rejected.
     FaceScanRejected,
     /// This Public Key was already used.
@@ -74,10 +102,20 @@ const EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE: &str =
 
 /// The group name at 3D DB.
 const DB_GROUP_NAME: &str = "";
+/// The match level to use throughout the code.
+const MATCH_LEVEL: i64 = 10;
 
-impl Logic {
+impl<S, PK> Logic<S, PK>
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
+{
     /// An enroll invocation handler.
     pub async fn enroll(&self, req: EnrollRequest) -> Result<(), EnrollError> {
+        if PK::try_from(&req.public_key).is_err() {
+            return Err(EnrollError::InvalidPublicKey);
+        }
+
         let unlocked = self.locked.lock().await;
         let enroll_res = unlocked
             .facetec
@@ -113,7 +151,7 @@ impl Logic {
             .db_search(DBSearchRequest {
                 external_database_ref_id: &req.public_key,
                 group_name: DB_GROUP_NAME,
-                min_match_level: 10,
+                min_match_level: MATCH_LEVEL,
             })
             .await
             .map_err(EnrollError::InternalErrorDbSearch)?;
@@ -152,7 +190,7 @@ pub struct AuthenticateRequest {
     face_scan: String,
     /// The signature of the FaceScan with the private key of the node.
     /// Proves the posession of the private key by the FaceScan bearer.
-    face_scan_signature: String,
+    face_scan_signature: Vec<u8>,
 }
 
 /// The response of the authenticate operation.
@@ -164,7 +202,7 @@ pub struct AuthenticateResponse {
     /// Can be used together with the public key above to prove that this
     /// public key was vetted by the robonode and verified to be associated
     /// with a FaceScan.
-    authentication_signature: String,
+    authentication_signature: Vec<u8>,
 }
 
 /// Errors for the authenticate operation.
@@ -175,6 +213,10 @@ pub enum AuthenticateError {
     /// Unually this means they need to enroll, but it can also happen if
     /// matching returns false-negative.
     PersonNotFound,
+    /// The FaceScan signature validation failed.
+    /// This means that the user might've provided a signature using different
+    /// keypair from what was used for the original enrollment.
+    SignatureValidationFailed,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
     InternalErrorEnrollment(FaceTecError<Enrollment3DError>),
@@ -187,9 +229,18 @@ pub enum AuthenticateError {
     InternalErrorDbSearch(FaceTecError<DBSearchError>),
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
+    /// Internal error at 3D-DB search due to match-level mismatch in
+    /// the search results.
+    InternalErrorDbSearchMatchLevelMismatch,
+    /// Internal error at public key loading due to invalid public key.
+    InternalErrorInvalidPublicKey,
 }
 
-impl Logic {
+impl<S, PK> Logic<S, PK>
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str> + Verifier + AsRef<[u8]> + Into<String>,
+{
     /// An authenticate invocation handler.
     pub async fn authenticate(
         &self,
@@ -230,7 +281,7 @@ impl Logic {
             .db_search(DBSearchRequest {
                 external_database_ref_id: &tmp_external_database_ref_id,
                 group_name: DB_GROUP_NAME,
-                min_match_level: 10,
+                min_match_level: MATCH_LEVEL,
             })
             .await
             .map_err(AuthenticateError::InternalErrorDbSearch)?;
@@ -241,17 +292,25 @@ impl Logic {
 
         // If the results set is empty - this means that this person was not
         // found in the system.
-        if search_res.results.is_empty() {
-            return Err(AuthenticateError::PersonNotFound);
+        let found = search_res
+            .results
+            .first()
+            .ok_or_else(|| AuthenticateError::PersonNotFound)?;
+        if found.match_level != MATCH_LEVEL {
+            return Err(AuthenticateError::InternalErrorDbSearchMatchLevelMismatch);
         }
 
-        // TODO:
-        // public_key.validate(face_scan_signature)?;
-        // let signed_public_key = unlocked.signer.sign(public_key);
-        // return both public_key and signed_public_key
+        let public_key = PK::try_from(&found.identifier)
+            .map_err(|_| AuthenticateError::InternalErrorInvalidPublicKey)?;
+
+        if !public_key.verify(&req.face_scan, &req.face_scan_signature) {
+            return Err(AuthenticateError::SignatureValidationFailed);
+        }
+
+        let signed_public_key = unlocked.signer.sign(&public_key);
         Ok(AuthenticateResponse {
-            public_key: String::new(),
-            authentication_signature: String::new(),
+            public_key: public_key.into(),
+            authentication_signature: signed_public_key,
         })
     }
 }

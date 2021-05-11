@@ -1,12 +1,12 @@
 //! Filters, essentially how [`warp`] implements routes and middlewares.
 
-use std::sync::Arc;
+use std::{convert::TryFrom, sync::Arc};
 
 use warp::Filter;
 
 use crate::{
     http::handlers,
-    logic::{AuthenticateRequest, EnrollRequest, Logic},
+    logic::{AuthenticateRequest, EnrollRequest, Logic, Signer, Verifier},
 };
 
 /// Pass the [`Arc`] to the handler.
@@ -30,16 +30,24 @@ where
 }
 
 /// The root mount point with all the routes.
-pub fn root(
-    logic: Arc<Logic>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+pub fn root<S, PK>(
+    logic: Arc<Logic<S, PK>>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str> + Verifier + AsRef<[u8]> + Into<String>,
+{
     enroll(logic.clone()).or(authenticate(logic))
 }
 
 /// POST /enroll with JSON body.
-fn enroll(
-    logic: Arc<Logic>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+fn enroll<S, PK>(
+    logic: Arc<Logic<S, PK>>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
+{
     warp::path!("enroll")
         .and(warp::post())
         .and(with_arc(logic))
@@ -48,9 +56,13 @@ fn enroll(
 }
 
 /// POST /authenticate with JSON body.
-fn authenticate(
-    logic: Arc<Logic>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+fn authenticate<S, PK>(
+    logic: Arc<Logic<S, PK>>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str> + Verifier + AsRef<[u8]> + Into<String>,
+{
     warp::path!("authenticate")
         .and(warp::post())
         .and(with_arc(logic))

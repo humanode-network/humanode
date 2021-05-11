@@ -2,7 +2,7 @@
 
 #![deny(missing_docs, clippy::missing_docs_in_private_items)]
 
-use std::sync::Arc;
+use std::{marker::PhantomData, sync::Arc};
 
 use http::root;
 use tokio::sync::Mutex;
@@ -23,7 +23,22 @@ pub fn init() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection
                 reqwest: reqwest::Client::new(),
             },
             signer: (),
+            public_key_type: PhantomData::<String>,
         }),
     };
     root(Arc::new(logic))
+}
+
+// TODO!
+impl logic::Signer for () {
+    fn sign<D: AsRef<[u8]>>(&self, _data: &D) -> Vec<u8> {
+        todo!()
+    }
+}
+
+// TODO!
+impl logic::Verifier for String {
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
+        todo!()
+    }
 }
