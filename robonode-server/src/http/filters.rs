@@ -37,7 +37,7 @@ where
     S: Signer + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a str> + Verifier + AsRef<[u8]> + Into<String>,
 {
-    enroll(logic.clone()).or(authenticate(logic))
+    enroll(Arc::clone(&logic)).or(authenticate(logic))
 }
 
 /// POST /enroll with JSON body.
