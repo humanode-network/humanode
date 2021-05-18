@@ -12,7 +12,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     Ok(())
 }
 
-/// A future that resolves when the interrup signal is received, and panics
+/// A future that resolves when the interrupt signal is received, and panics
 /// if the interrupt handler failed to set up.
 async fn shutdown_signal() {
     // Wait for the CTRL+C signal
