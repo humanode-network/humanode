@@ -14,8 +14,7 @@ impl Client {
         req: DBEnrollRequest<'_>,
     ) -> Result<DBEnrollResponse, Error<DBEnrollError>> {
         let url = format!("{}/3d-db/enroll", self.base_url);
-        let client = reqwest::Client::new();
-        let res = client.post(url).json(&req).send().await?;
+        let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
             StatusCode::OK => Ok(res.json().await?),
             StatusCode::BAD_REQUEST => {
