@@ -295,7 +295,7 @@ where
         let found = search_res
             .results
             .first()
-            .ok_or_else(|| AuthenticateError::PersonNotFound)?;
+            .ok_or(AuthenticateError::PersonNotFound)?;
         if found.match_level != MATCH_LEVEL {
             return Err(AuthenticateError::InternalErrorDbSearchMatchLevelMismatch);
         }
