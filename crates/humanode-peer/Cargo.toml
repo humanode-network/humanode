@@ -6,3 +6,6 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
+sc-service = "0.9"
+sp-consensus = "0.9"
+sp-runtime = "3.0"
