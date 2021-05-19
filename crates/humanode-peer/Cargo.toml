@@ -8,4 +8,6 @@ publish = false
 [dependencies]
 sc-service = "0.9"
 sp-consensus = "0.9"
-sp-runtime = "3.0"
+sp-runtime = "3"
+sp-inherents = "3"
+sc-transaction-pool = "3"

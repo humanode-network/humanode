@@ -1878,7 +1878,9 @@ name = "humanode-peer"
 version = "0.1.0"
 dependencies = [
  "sc-service",
+ "sc-transaction-pool",
  "sp-consensus",
+ "sp-inherents",
  "sp-runtime",
 ]
 
