@@ -1,12 +1,17 @@
 use std::sync::Arc;
 
+use runtime::{self, opaque::Block, RuntimeApi};
+use sc_executor::native_executor_instance;
+pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
-use sp_runtime::traits::Block as BlockT;
 
-/// From runtime.
-type Block = ();
-type RuntimeApi = ();
-type Executor = ();
+// Native executor for the runtime based on the runtime API that is available
+// at the current compile time.
+native_executor_instance!(
+    pub Executor,
+    runtime::api::dispatch,
+    runtime::native_version,
+);
 
 type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
@@ -42,11 +47,7 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
     let name = config.network.node_name.clone();
-    let enable_grandpa = !config.disable_grandpa;
     let prometheus_registry = config.prometheus_registry().cloned();
-
-    let rpc_extensions_builder = Box::new(sc_service::NoopRpcExtensionBuilder(()))
-        as Box<dyn sc_service::RpcExtensionBuilder<Output = ()>>;
 
     let (_rpc_handlers, telemetry_connection_notifier) =
         sc_service::spawn_tasks(sc_service::SpawnTasksParams {
@@ -55,7 +56,7 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
             keystore: keystore_container.sync_keystore(),
             task_manager: &mut task_manager,
             transaction_pool: transaction_pool.clone(),
-            rpc_extensions_builder,
+            rpc_extensions_builder: Box::new(|_, _| jsonrpc_core::IoHandler::default()),
             on_demand: None,
             remote_blockchain: None,
             backend,

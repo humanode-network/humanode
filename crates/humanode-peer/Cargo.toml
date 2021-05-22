@@ -6,8 +6,14 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
+runtime = { version = "0.1", path = "../runtime" }
+
+futures = "0.3"
+jsonrpc-core = "15" # TODO: update when `sc-service` bumps it's version
+sc-executor = "0.9"
 sc-service = "0.9"
-sp-consensus = "0.9"
-sp-runtime = "3"
-sp-inherents = "3"
 sc-transaction-pool = "3"
+sp-consensus = "0.9"
+sp-inherents = "3"
+sp-runtime = "3"
+tokio = { version = "1", features = ["full"] }

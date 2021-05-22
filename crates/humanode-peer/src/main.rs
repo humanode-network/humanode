@@ -6,9 +6,10 @@
     clippy::clone_on_ref_ptr
 )]
 
+mod config;
 mod dummy;
 mod service;
 
 fn main() {
-    service::new_full(todo!()).unwrap();
+    service::new_full(config::make()).unwrap();
 }
