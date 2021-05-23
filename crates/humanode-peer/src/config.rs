@@ -1,13 +1,17 @@
 use futures::FutureExt;
-use sc_service::{Configuration, DatabaseConfig, KeepBlocks, PruningMode, Role, TransactionPoolOptions, TransactionStorageMode, config::{
-        KeystoreConfig, Multiaddr, NetworkConfiguration, NodeKeyConfig, SetConfig, TransportConfig,
-    }};
+use sc_executor::WasmExecutionMethod;
+use sc_service::{
+    config::*, Configuration, DatabaseConfig, KeepBlocks, PruningMode, Role, RpcMethods,
+    TracingReceiver, TransactionPoolOptions, TransactionStorageMode,
+};
 use sc_transaction_pool::txpool::base_pool::Limit;
 
 pub fn make() -> Configuration {
     // Set the settings.
     let name = "humanode".to_owned();
     let version = "0".to_owned();
+
+    let chain_spec = crate::chain_spec::local_testnet_config().unwrap();
 
     // Use current tokio runtime.
     let tokio_runtime_handle = tokio::runtime::Handle::current();
@@ -75,32 +79,44 @@ pub fn make() -> Configuration {
         state_pruning: PruningMode::ArchiveAll,
         keep_blocks: KeepBlocks::All,
         transaction_storage: TransactionStorageMode::BlockBody,
-        chain_spec: (),
-        wasm_method: (),
-        wasm_runtime_overrides: (),
-        execution_strategies: (),
-        rpc_http: (),
-        rpc_ws: (),
-        rpc_ipc: (),
-        rpc_ws_max_connections: (),
-        rpc_cors: (),
-        rpc_methods: (),
-        prometheus_config: (),
-        telemetry_endpoints: (),
-        telemetry_external_transport: (),
-        telemetry_handle: (),
-        telemetry_span: (),
-        default_heap_pages: (),
-        offchain_worker: (),
-        force_authoring: (),
-        disable_grandpa: (),
-        dev_key_seed: (),
-        tracing_targets: (),
-        disable_log_reloading: (),
-        tracing_receiver: (),
-        max_runtime_instances: (),
-        announce_block: (),
-        base_path: (),
-        informant_output_format: (),
+        chain_spec: Box::new(chain_spec),
+        wasm_method: WasmExecutionMethod::Interpreted,
+        wasm_runtime_overrides: None,
+        execution_strategies: ExecutionStrategies {
+            syncing: ExecutionStrategy::NativeWhenPossible,
+            importing: ExecutionStrategy::NativeWhenPossible,
+            block_construction: ExecutionStrategy::NativeWhenPossible,
+            offchain_worker: ExecutionStrategy::NativeWhenPossible,
+            other: ExecutionStrategy::NativeWhenPossible,
+        },
+        rpc_http: None,
+        rpc_ws: None,
+        rpc_ipc: None,
+        rpc_ws_max_connections: None,
+        rpc_cors: None,
+        rpc_methods: RpcMethods::Safe,
+        prometheus_config: Some(PrometheusConfig {
+            port: "127.0.0.1:5959".parse().unwrap(),
+            registry: Default::default(),
+        }),
+        telemetry_endpoints: None,
+        telemetry_external_transport: None,
+        telemetry_handle: None,
+        telemetry_span: None,
+        default_heap_pages: None,
+        offchain_worker: OffchainWorkerConfig {
+            enabled: false,
+            indexing_enabled: false,
+        },
+        force_authoring: false,
+        disable_grandpa: true,
+        dev_key_seed: Some("humanode".to_owned()),
+        tracing_targets: None,
+        disable_log_reloading: true,
+        tracing_receiver: TracingReceiver::Log,
+        max_runtime_instances: 8,
+        announce_block: true,
+        base_path: None,
+        informant_output_format: Default::default(),
     }
 }

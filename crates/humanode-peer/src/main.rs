@@ -6,6 +6,7 @@
     clippy::clone_on_ref_ptr
 )]
 
+mod chain_spec;
 mod config;
 mod dummy;
 mod service;
