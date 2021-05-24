@@ -14,7 +14,16 @@ sc-executor = { git = "https://github.com/humanode-network/substrate", branch = 
 sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+substrate-prometheus-endpoint = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }
+codec = { package = "parity-scale-codec", version = "2.0.0" }
+async-trait = "0.1"

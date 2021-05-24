@@ -2130,16 +2130,25 @@ checksum = "05842d0d43232b23ccb7060ecb0f0626922c21f30012e97b767b30afd4a5d4b9"
 name = "humanode-peer"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "futures 0.3.14",
  "jsonrpc-core",
+ "parity-scale-codec",
  "runtime",
+ "sc-client-api",
  "sc-executor",
  "sc-network",
  "sc-service",
  "sc-transaction-pool",
+ "sp-api",
+ "sp-block-builder",
+ "sp-blockchain",
  "sp-consensus",
+ "sp-core",
  "sp-inherents",
  "sp-runtime",
+ "sp-timestamp",
+ "substrate-prometheus-endpoint",
  "tokio 1.5.0",
 ]
 
