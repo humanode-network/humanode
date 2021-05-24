@@ -1,5 +1,6 @@
 use futures::FutureExt;
 use sc_executor::WasmExecutionMethod;
+use sc_network::config::*;
 use sc_service::{
     config::*, Configuration, DatabaseConfig, KeepBlocks, PruningMode, Role, RpcMethods,
     TracingReceiver, TransactionPoolOptions, TransactionStorageMode,
@@ -53,11 +54,20 @@ pub fn make() -> Configuration {
             // TODO: take a deeper look into this and discuss.
             node_key: NodeKeyConfig::default(),
             request_response_protocols: vec![],
-            default_peers_set: SetConfig {},
+            default_peers_set: SetConfig {
+                in_peers: 10_000,
+                out_peers: 10_000,
+                reserved_nodes: vec![],
+                non_reserved_mode: NonReservedPeerMode::Deny,
+            },
             extra_sets: vec![],
             client_version: version.clone(),
             node_name: name.clone(),
-            transport: TransportConfig {},
+            transport: TransportConfig::Normal {
+                allow_private_ipv4: false,
+                enable_mdns: false,
+                wasm_external_transport: None,
+            },
             max_parallel_downloads: 64,
             enable_dht_random_walk: true,
             allow_non_globals_in_dht: false,
@@ -82,13 +92,7 @@ pub fn make() -> Configuration {
         chain_spec: Box::new(chain_spec),
         wasm_method: WasmExecutionMethod::Interpreted,
         wasm_runtime_overrides: None,
-        execution_strategies: ExecutionStrategies {
-            syncing: ExecutionStrategy::NativeWhenPossible,
-            importing: ExecutionStrategy::NativeWhenPossible,
-            block_construction: ExecutionStrategy::NativeWhenPossible,
-            offchain_worker: ExecutionStrategy::NativeWhenPossible,
-            other: ExecutionStrategy::NativeWhenPossible,
-        },
+        execution_strategies: Default::default(),
         rpc_http: None,
         rpc_ws: None,
         rpc_ipc: None,

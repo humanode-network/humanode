@@ -2110,6 +2110,7 @@ dependencies = [
  "jsonrpc-core",
  "runtime",
  "sc-executor",
+ "sc-network",
  "sc-service",
  "sc-transaction-pool",
  "sp-consensus",
