@@ -6,35 +6,35 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [build-dependencies]
-substrate-wasm-builder = "4"
+substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [dependencies]
 hex-literal = { version = "0.3", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 
 # Substrate dependencies
-frame-benchmarking = { default-features = false, optional = true, version = "3.0.0" }
-frame-executive = { default-features = false, version = "3.0.0" }
-frame-support = { default-features = false, version = "3.0.0" }
-frame-system = { default-features = false, version = "3.0.0" }
-frame-system-benchmarking = { default-features = false, optional = true, version = "3.0.0" }
-frame-system-rpc-runtime-api = { default-features = false, version = "3.0.0" }
-pallet-balances = { default-features = false, version = "3.0.0" }
-pallet-randomness-collective-flip = { default-features = false, version = "3.0.0" }
-pallet-sudo = { default-features = false, version = "3.0.0" }
-pallet-transaction-payment = { default-features = false, version = "3.0.0" }
-pallet-transaction-payment-rpc-runtime-api = { default-features = false, version = "3.0.0" }
-sp-api = { default-features = false, version = "3.0.0" }
-sp-block-builder = { default-features = false, version = "3.0.0" }
-sp-core = { default-features = false, version = "3.0.0" }
-sp-inherents = { default-features = false, version = "3.0.0" }
-sp-offchain = { default-features = false, version = "3.0.0" }
-sp-runtime = { default-features = false, version = "3.0.0" }
-sp-session = { default-features = false, version = "3.0.0" }
-sp-std = { default-features = false, version = "3.0.0" }
-sp-transaction-pool = { default-features = false, version = "3.0.0" }
-sp-version = { default-features = false, version = "3.0.0" }
-codec = { package = "parity-scale-codec", default-features = false, version = "2.0.0", features = ["derive"] }
+frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 
 [features]
 default = ["std"]

@@ -38,19 +38,19 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         ChainType::Local,
         move || {
             GenesisConfig {
-                frame_system: Some(SystemConfig {
+                frame_system: SystemConfig {
                     // Add Wasm runtime to storage.
                     code: wasm_binary.to_vec(),
                     changes_trie_config: Default::default(),
-                }),
-                pallet_balances: Some(BalancesConfig {
+                },
+                pallet_balances: BalancesConfig {
                     // Configure endowed accounts with initial balance of 1 << 60.
                     balances: vec![],
-                }),
-                pallet_sudo: Some(SudoConfig {
+                },
+                pallet_sudo: SudoConfig {
                     // Assign network admin rights.
                     key: get_account_id_from_seed::<sr25519::Public>("Alice"),
-                }),
+                },
             }
         },
         // Bootnodes
