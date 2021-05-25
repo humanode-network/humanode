@@ -1,3 +1,5 @@
+//! Provides the [`Configuration`].
+
 use futures::FutureExt;
 use sc_executor::WasmExecutionMethod;
 use sc_network::config::*;
@@ -7,6 +9,9 @@ use sc_service::{
 };
 use sc_transaction_pool::txpool::base_pool::Limit;
 
+/// Create and return a standalone configuration.
+/// This is mostly hardcoded for now, for simplicity.
+/// We later on plan to switch to a cli interface to enable more flexible configuration.
 pub fn make() -> Configuration {
     // Set the settings.
     let name = "humanode".to_owned();
@@ -61,8 +66,8 @@ pub fn make() -> Configuration {
                 non_reserved_mode: NonReservedPeerMode::Deny,
             },
             extra_sets: vec![],
-            client_version: version.clone(),
-            node_name: name.clone(),
+            client_version: version,
+            node_name: name,
             transport: TransportConfig::Normal {
                 allow_private_ipv4: false,
                 enable_mdns: false,

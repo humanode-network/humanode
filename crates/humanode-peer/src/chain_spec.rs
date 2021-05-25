@@ -1,3 +1,5 @@
+//! Provides the [`ChainSpec`] portion of the config.
+
 use runtime::{
     AccountId, BalancesConfig, GenesisConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
@@ -7,6 +9,7 @@ use sp_runtime::{
     traits::{IdentifyAccount, Verify},
 };
 
+/// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<runtime::GenesisConfig>;
 
 /// Generate a crypto pair from seed.
@@ -16,6 +19,7 @@ pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Pu
         .public()
 }
 
+/// The public key for the accounts.
 type AccountPublic = <Signature as Verify>::Signer;
 
 /// Generate an account ID from seed.
@@ -26,6 +30,7 @@ where
     AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
+/// A configuration for local testnet.
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
         WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;

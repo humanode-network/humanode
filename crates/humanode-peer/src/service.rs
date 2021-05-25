@@ -1,12 +1,14 @@
+//! Initializing, bootstrapping and launching the node from a provided configuration.
+
 use std::sync::Arc;
 
 use runtime::{self, opaque::Block, RuntimeApi};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
+use sp_consensus::import_queue::BasicQueue;
 
-use crate::dummy;
-use crate::dummy::DummyPair;
+use crate::dummy::DummyVerifier;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -16,11 +18,9 @@ native_executor_instance!(
     runtime::native_version,
 );
 
-type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
-type FullBackend = sc_service::TFullBackend<Block>;
-// type FullSelectChain = DummyConsensus<Block>;
-
-pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> {
+/// Create a "full" node (full is in terms of substrate).
+/// We don't support other node types yet either way, so this is the only way to create a node.
+pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
     let (client, backend, keystore_container, mut task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config, None)?;
     let client = Arc::new(client);
@@ -33,25 +33,13 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
         Arc::clone(&client),
     );
 
-    // let dummy_block_import = sc_consensus_aura::AuraBlockImport::<_, _, _, AuraPair>::new(
-    //     grandpa_block_import.clone(), client.clone(),
-    // );
-
-    let dummy_block_import =
-        dummy::DummyBlockImport::<_, _, _, DummyPair>::new(client.clone(), client.clone());
-
-    let import_queue = dummy::import_queue::<DummyPair, _, _, _, _, _>(dummy::ImportQueueParams {
-        block_import: dummy_block_import.clone(),
-        justification_import: None,
-        client: client.clone(),
-        create_inherent_data_providers: move |_, ()| async move {
-            let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-
-            Ok(timestamp)
-        },
-        spawner: &task_manager.spawn_essential_handle(),
-        registry: config.prometheus_registry(),
-    })?;
+    let import_queue = BasicQueue::new(
+        DummyVerifier,
+        Box::new(client.clone()),
+        None,
+        &task_manager.spawn_essential_handle(),
+        config.prometheus_registry(),
+    );
 
     let (network, network_status_sinks, system_rpc_tx, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
@@ -64,18 +52,12 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
             block_announce_validator_builder: None,
         })?;
 
-    let role = config.role.clone();
-    let force_authoring = config.force_authoring;
-    let backoff_authoring_blocks: Option<()> = None;
-    let name = config.network.node_name.clone();
-    let prometheus_registry = config.prometheus_registry().cloned();
-
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
-        network: network.clone(),
-        client: client.clone(),
+        network,
+        client,
         keystore: keystore_container.sync_keystore(),
         task_manager: &mut task_manager,
-        transaction_pool: transaction_pool.clone(),
+        transaction_pool,
         rpc_extensions_builder: Box::new(|_, _| jsonrpc_core::IoHandler::default()),
         on_demand: None,
         remote_blockchain: None,
