@@ -1,0 +1,83 @@
+name: code
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 20 * * 0'
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+
+  test:
+    name: ${{ matrix.platform.name }} / ${{ matrix.mode.name }}
+    runs-on: ${{ matrix.platform.os }}
+    strategy:
+      matrix:
+
+        platform:
+          - name: Ubuntu
+            os: ubuntu-latest
+            build-env-script: .github/scripts/build_env/ubuntu.sh
+            env: {}
+            experimental: false
+          - name: Windows
+            os: windows-latest
+            build-env-script: .github/scripts/build_env/windows.sh
+            env:
+              CARGO_INCREMENTAL: "0"
+            experimental: false
+          - name: macOS
+            os: macos-latest
+            build-env-script: .github/scripts/build_env/macos.sh
+            env: {}
+            experimental: true
+
+        mode:
+          - name: clippy
+            cargo-command: clippy
+            cargo-args: --all-targets -- -D warnings
+          - name: test
+            cargo-command: test
+          - name: build
+            cargo-command: build
+
+      fail-fast: false
+    continue-on-error: ${{ matrix.platform.experimental }}
+    env: ${{ matrix.platform.env }}
+    steps:
+
+      - name: Job config
+        run: printf "%s\n" "$MATRIX_CONTEXT"
+        env:
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+
+      - name: Prepare the build environment
+        run: ${{ matrix.platform.build-env-script }}
+
+      - name: Set up Vistual Studio Command Prompt (Windows only)
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Print build environment info
+        run: |
+          set -x
+          cargo --version
+          cargo clippy --version
+          env
+
+      - name: Run cargo ${{ matrix.mode.cargo-command }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: ${{ matrix.mode.cargo-command }}
+          args: ${{ matrix.mode.cargo-args }}
