@@ -37,25 +37,22 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
     //     grandpa_block_import.clone(), client.clone(),
     // );
 
-    let dummy_block_import = dummy::DummyBlockImport::<_, _, _, DummyPair>::new(
-        client.clone(),
-        client.clone()
-    );
+    let dummy_block_import =
+        dummy::DummyBlockImport::<_, _, _, DummyPair>::new(client.clone(), client.clone());
 
     let import_queue = dummy::import_queue::<DummyPair, _, _, _, _, _>(dummy::ImportQueueParams {
-            block_import: dummy_block_import.clone(),
-            justification_import: None,
-            client: client.clone(),
-            create_inherent_data_providers: move |_, ()| async move {
-				let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+        block_import: dummy_block_import.clone(),
+        justification_import: None,
+        client: client.clone(),
+        create_inherent_data_providers: move |_, ()| async move {
+            let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
-				Ok(timestamp)
-			},
-            spawner: &task_manager.spawn_essential_handle(),
-            registry: config.prometheus_registry(),
-        })?;
-    
-    
+            Ok(timestamp)
+        },
+        spawner: &task_manager.spawn_essential_handle(),
+        registry: config.prometheus_registry(),
+    })?;
+
     let (network, network_status_sinks, system_rpc_tx, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
             config: &config,
