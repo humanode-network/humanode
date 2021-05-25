@@ -11,6 +11,7 @@ mod config;
 mod dummy;
 mod service;
 
-fn main() {
+#[tokio::main]
+async fn main() {
     service::new_full(config::make()).unwrap();
 }

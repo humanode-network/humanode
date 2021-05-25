@@ -23,6 +23,7 @@ sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch 
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 substrate-prometheus-endpoint = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }
 codec = { package = "parity-scale-codec", version = "2.0.0" }

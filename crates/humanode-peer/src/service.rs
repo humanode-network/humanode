@@ -6,6 +6,7 @@ pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
 
 use crate::dummy;
+use crate::dummy::DummyPair;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -20,7 +21,7 @@ type FullBackend = sc_service::TFullBackend<Block>;
 // type FullSelectChain = DummyConsensus<Block>;
 
 pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> {
-    let (client, backend, keystore_container, task_manager) =
+    let (client, backend, keystore_container, mut task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config, None)?;
     let client = Arc::new(client);
 
@@ -36,12 +37,12 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
     //     grandpa_block_import.clone(), client.clone(),
     // );
 
-    let dummy_block_import = dummy::DummyBlockImport::<_, _, _, _>::new(
+    let dummy_block_import = dummy::DummyBlockImport::<_, _, _, DummyPair>::new(
         client.clone(),
         client.clone()
     );
 
-    let import_queue = dummy::import_queue::<_, _, _, _, _, _>(dummy::ImportQueueParams {
+    let import_queue = dummy::import_queue::<DummyPair, _, _, _, _, _>(dummy::ImportQueueParams {
             block_import: dummy_block_import.clone(),
             justification_import: None,
             client: client.clone(),
@@ -52,7 +53,7 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
 			},
             spawner: &task_manager.spawn_essential_handle(),
             registry: config.prometheus_registry(),
-        });
+        })?;
     
     
     let (network, network_status_sinks, system_rpc_tx, network_starter) =
@@ -71,9 +72,6 @@ pub fn new_full(mut config: Configuration) -> Result<TaskManager, ServiceError> 
     let backoff_authoring_blocks: Option<()> = None;
     let name = config.network.node_name.clone();
     let prometheus_registry = config.prometheus_registry().cloned();
-
-    let rpc_extensions_builder =
-        sc_service::NoopRpcExtensionBuilder(jsonrpc_core::IoHandler::default());
 
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network: network.clone(),

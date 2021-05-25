@@ -41,6 +41,14 @@ use sp_inherents::{CreateInherentDataProviders, InherentDataProvider as _};
 use sp_api::ApiExt;
 
 
+mod app_sr25519 {
+	use sp_application_crypto::{app_crypto, key_types::DUMMY, sr25519};
+	app_crypto!(sr25519, DUMMY);
+}
+
+pub type DummyPair = app_sr25519::Pair;
+
+
 /// A verifier for Dummy blocks.
 pub struct DummyVerifier<C, P, CIDP> {
 	client: Arc<C>,
