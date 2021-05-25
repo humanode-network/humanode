@@ -2138,6 +2138,7 @@ dependencies = [
  "sc-executor",
  "sc-network",
  "sc-service",
+ "sc-tracing",
  "sc-transaction-pool",
  "sp-consensus",
  "sp-runtime",
