@@ -13,5 +13,6 @@ mod service;
 
 #[tokio::main]
 async fn main() {
-    service::new_full(config::make()).unwrap();
+    let mut task_manager = service::new_full(config::make()).unwrap();
+    task_manager.future().await.unwrap();
 }
