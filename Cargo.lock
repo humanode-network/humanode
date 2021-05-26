@@ -2143,6 +2143,7 @@ dependencies = [
  "sp-consensus",
  "sp-runtime",
  "tokio 1.5.0",
+ "tracing",
 ]
 
 [[package]]

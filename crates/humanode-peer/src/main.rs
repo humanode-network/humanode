@@ -19,6 +19,13 @@ async fn main() {
     logger.init().unwrap();
 
     let mut task_manager = service::new_full(config::make()).unwrap();
-    task_manager.future().await.unwrap();
+
+    tokio::select! {
+        res = task_manager.future() => res.unwrap(),
+        res = tokio::signal::ctrl_c() => {
+            res.unwrap();
+            tracing::info!("Got Ctrl+C");
+        }
+    }
     task_manager.clean_shutdown().await;
 }
