@@ -82,11 +82,11 @@ pub fn make() -> Configuration {
         },
         keystore: KeystoreConfig::Path {
             password: None,
-            path: "/tmp/numanode/keystore".into(),
+            path: "/tmp/humanode/keystore".into(),
         },
         keystore_remote: None,
         database: DatabaseConfig::RocksDb {
-            path: "/tmp/numanode/database".into(),
+            path: "/tmp/humanode/database".into(),
             cache_size: 100,
         },
         state_cache_size: 1000,
