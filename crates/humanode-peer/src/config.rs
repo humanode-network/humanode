@@ -51,8 +51,8 @@ pub fn make() -> Configuration {
         // TODO: tweak these parameters.
         network: NetworkConfiguration {
             net_config_path: None,
-            listen_addresses: vec![Multiaddr::empty()],
-            public_addresses: vec![Multiaddr::empty()],
+            listen_addresses: vec!["/ip4/127.0.0.1/tcp/30333".parse().unwrap()],
+            public_addresses: vec![],
             // TODO: `boot_nodes` should probably be configurable by the user, rather than be hardcoded
             // or empty.
             boot_nodes: vec![],
