@@ -71,6 +71,7 @@ jobs:
 
       - name: Set up Vistual Studio Command Prompt (Windows only)
         uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
 
       - name: Print build environment info
         run: |
