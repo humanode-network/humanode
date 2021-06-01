@@ -1,6 +1,10 @@
 //! Client API for the Humanode's Bioauth Robonode.
 
-#![warn(missing_docs, clippy::missing_docs_in_private_items)]
+#![warn(
+    missing_docs,
+    clippy::missing_docs_in_private_items,
+    clippy::clone_on_ref_ptr
+)]
 
 use thiserror::Error;
 

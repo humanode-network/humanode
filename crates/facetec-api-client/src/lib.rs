@@ -1,6 +1,10 @@
 //! Client API for the FaceTec Server SDK.
 
-#![warn(missing_docs, clippy::missing_docs_in_private_items)]
+#![warn(
+    missing_docs,
+    clippy::missing_docs_in_private_items,
+    clippy::clone_on_ref_ptr
+)]
 
 #[cfg(test)]
 #[macro_use]
