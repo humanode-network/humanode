@@ -24,17 +24,20 @@ jobs:
             build-env-script: .github/scripts/build_env/ubuntu.sh
             env: {}
             experimental: false
+            extra: false
           - name: Windows
             os: windows-latest
             build-env-script: .github/scripts/build_env/windows.sh
             env:
               CARGO_INCREMENTAL: "0"
             experimental: false
+            extra: true
           - name: macOS
             os: macos-latest
             build-env-script: .github/scripts/build_env/macos.sh
             env: {}
             experimental: true
+            extra: false
 
         mode:
           - name: clippy
@@ -62,6 +65,7 @@ jobs:
 
       fail-fast: false
     continue-on-error: ${{ matrix.platform.experimental }}
+    if: ${{ !matrix.platform.extra }}
     env: ${{ matrix.platform.env }}
     steps:
 
