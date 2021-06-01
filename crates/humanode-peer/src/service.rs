@@ -59,7 +59,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         .spawn_essential_handle()
         .spawn_blocking("instant-seal", authorship_future);
 
-    let (network, network_status_sinks, system_rpc_tx, network_starter) =
+    let (network, system_rpc_tx, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
             config: &config,
             client: client.clone(),
@@ -80,7 +80,6 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         on_demand: None,
         remote_blockchain: None,
         backend,
-        network_status_sinks,
         system_rpc_tx,
         config,
         telemetry: None,
