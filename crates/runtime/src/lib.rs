@@ -215,7 +215,6 @@ impl pallet_sudo::Config for Runtime {
 
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
-// https://github.com/paritytech/substrate/pull/8900 - a PR for clippy fix in the macro
 construct_runtime!(
     pub enum Runtime where
         Block = Block,
