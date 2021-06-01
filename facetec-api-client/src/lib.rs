@@ -1,14 +1,22 @@
-//! Client API for the Humanode's Bioauth Robonode.
+//! Client API for the FaceTec Server SDK.
 
-#![deny(missing_docs, clippy::missing_docs_in_private_items)]
+#![warn(missing_docs, clippy::missing_docs_in_private_items)]
+
+#[cfg(test)]
+#[macro_use]
+extern crate assert_matches;
 
 use thiserror::Error;
 
-mod authenticate;
-mod enroll;
+mod db_enroll;
+mod db_search;
+mod enrollment3d;
+mod types;
 
-pub use authenticate::*;
-pub use enroll::*;
+pub use db_enroll::*;
+pub use db_search::*;
+pub use enrollment3d::*;
+pub use types::*;
 
 /// The generic error type for the client calls.
 #[derive(Error, Debug)]
