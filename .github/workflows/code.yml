@@ -11,60 +11,34 @@ defaults:
 
 jobs:
 
+  plan:
+    name: Plan the execution
+    runs-on: ubuntu-20.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Compute matrix
+        uses: actions/github-script@v4
+        id: set-matrix
+        with:
+          script: |
+            const matrix = require('./.github/scripts/plan.js')
+            core.setOutput('matrix', matrix)
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJson(steps.set-matrix.outputs.matrix) }}
+        run: echo "$MATRIX_CONTEXT"
+
   test:
+    needs:
+      - plan
+    strategy:
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+      fail-fast: false
     name: ${{ matrix.platform.name }} / ${{ matrix.mode.name }}
     runs-on: ${{ matrix.platform.os }}
-    strategy:
-      matrix:
-
-        platform:
-          - name: Ubuntu
-            os: ubuntu-latest
-            build-env-script: .github/scripts/build_env/ubuntu.sh
-            env: {}
-            experimental: false
-            extra: false
-          - name: Windows
-            os: windows-latest
-            build-env-script: .github/scripts/build_env/windows.sh
-            env:
-              CARGO_INCREMENTAL: "0"
-            experimental: false
-            extra: true
-          - name: macOS
-            os: macos-latest
-            build-env-script: .github/scripts/build_env/macos.sh
-            env: {}
-            experimental: true
-            extra: false
-
-        mode:
-          - name: clippy
-            cargo-command: clippy
-            cargo-args: --all-targets -- -D warnings
-          - name: test
-            cargo-command: test
-          - name: build
-            cargo-command: build
-
-        include:
-          # Platform independent checks that are supposed to work the same way
-          # on all platforms, so we can only run them once.
-          # Run them on Ubuntu.
-          - platform:
-              name: Ubuntu (indep)
-              os: ubuntu-latest
-              build-env-script: .github/scripts/build_env/ubuntu.sh
-              env: {}
-              experimental: false
-            mode:
-              name: fmt
-              cargo-command: fmt
-              cargo-args: -- --check
-
-      fail-fast: false
-    continue-on-error: ${{ matrix.platform.experimental }}
-    if: ${{ !matrix.platform.extra }}
     env: ${{ matrix.platform.env }}
     steps:
 
@@ -82,7 +56,7 @@ jobs:
           toolchain: nightly
 
       - name: Prepare the build environment
-        run: ${{ matrix.platform.build-env-script }}
+        run: ${{ matrix.platform.buildEnvScript }}
 
       - name: Set up Vistual Studio Command Prompt (Windows only)
         uses: ilammy/msvc-dev-cmd@v1
@@ -94,8 +68,8 @@ jobs:
           cargo clippy --version
           env
 
-      - name: Run cargo ${{ matrix.mode.cargo-command }}
+      - name: Run cargo ${{ matrix.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
         with:
-          command: ${{ matrix.mode.cargo-command }}
-          args: ${{ matrix.mode.cargo-args }}
+          command: ${{ matrix.mode.cargoCommand }}
+          args: ${{ matrix.mode.cargoArgs }}
