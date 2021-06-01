@@ -45,6 +45,21 @@ jobs:
           - name: build
             cargo-command: build
 
+        include:
+          # Platform independent checks that are supposed to work the same way
+          # on all platforms, so we can only run them once.
+          # Run them on Ubuntu.
+          - platform:
+              name: Ubuntu (indep)
+              os: ubuntu-latest
+              build-env-script: .github/scripts/build_env/ubuntu.sh
+              env: {}
+              experimental: false
+            mode:
+              name: fmt
+              cargo-command: fmt
+              cargo-args: -- --check
+
       fail-fast: false
     continue-on-error: ${{ matrix.platform.experimental }}
     env: ${{ matrix.platform.env }}
