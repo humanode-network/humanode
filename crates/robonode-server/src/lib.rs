@@ -1,6 +1,6 @@
 //! Humanode's Bioauth Robonode server internal API.
 
-#![deny(missing_docs, clippy::missing_docs_in_private_items)]
+#![warn(missing_docs, clippy::missing_docs_in_private_items)]
 
 use std::{marker::PhantomData, sync::Arc};
 
