@@ -6,5 +6,18 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
-anyhow = "1"
+runtime = { version = "0.1", path = "../runtime" }
+
+async-trait = "0.1"
+codec = { package = "parity-scale-codec", version = "2.0.0" }
+futures = "0.3"
+jsonrpc-core = "15" # TODO: update when `sc-service` bumps it's version
+sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }
+tracing = "0.1"

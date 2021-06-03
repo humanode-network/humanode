@@ -1,6 +1,8 @@
 {
   "rust-analyzer.checkOnSave.command": "clippy",
   "[rust]": {
-    "editor.formatOnSave": true
-  }
+    "editor.formatOnSave": true,
+    "editor.rulers": [100]
+  },
+  "rust-analyzer.cargo.runBuildScripts": true
 }
