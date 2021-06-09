@@ -8,7 +8,7 @@ pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
 use sp_consensus::import_queue::BasicQueue;
 
-use crate::dummy::DummyVerifier;
+use crate::{dummy::DummyVerifier, rpc};
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -52,13 +52,25 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
             block_announce_validator_builder: None,
         })?;
 
+    let rpc_extensions_builder = {
+        let client = Arc::clone(&client);
+        let pool = Arc::clone(&transaction_pool);
+        Box::new(move |deny_unsafe, _| {
+            rpc::create(rpc::Deps {
+                client: Arc::clone(&client),
+                pool: Arc::clone(&pool),
+                deny_unsafe,
+            })
+        })
+    };
+
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network,
         client,
         keystore: keystore_container.sync_keystore(),
         task_manager: &mut task_manager,
         transaction_pool,
-        rpc_extensions_builder: Box::new(|_, _| jsonrpc_core::IoHandler::default()),
+        rpc_extensions_builder,
         on_demand: None,
         remote_blockchain: None,
         backend,

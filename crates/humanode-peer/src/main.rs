@@ -11,6 +11,7 @@ use sc_tracing::logging::LoggerBuilder;
 mod chain_spec;
 mod config;
 mod dummy;
+mod rpc;
 mod service;
 
 #[tokio::main]
