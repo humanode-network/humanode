@@ -6,7 +6,7 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
-runtime = { version = "0.1", path = "../runtime" }
+humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 
 async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "2.0.0" }

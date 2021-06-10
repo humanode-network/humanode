@@ -1,6 +1,6 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
-use runtime::{
+use humanode_runtime::{
     AccountId, BalancesConfig, GenesisConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
@@ -10,7 +10,7 @@ use sp_runtime::{
 };
 
 /// The concrete chain spec type we're using for the humanode network.
-pub type ChainSpec = sc_service::GenericChainSpec<runtime::GenesisConfig>;
+pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig>;
 
 /// Generate a crypto pair from seed.
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
