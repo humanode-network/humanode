@@ -32,25 +32,25 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
     );
 
     let import_queue = sc_consensus_manual_seal::import_queue(
-        Box::new(client.clone()),
+        Box::new(Arc::clone(&client)),
         &task_manager.spawn_essential_handle(),
         config.prometheus_registry(),
     );
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
-        client.clone(),
-        transaction_pool.clone(),
+        Arc::clone(&client),
+        Arc::clone(&transaction_pool),
         config.prometheus_registry(),
         None,
     );
 
     let authorship_future = sc_consensus_manual_seal::run_instant_seal(InstantSealParams {
-        block_import: client.clone(),
+        block_import: Arc::clone(&client),
         env: proposer_factory,
-        client: client.clone(),
-        pool: transaction_pool.pool().clone(),
-        select_chain: sc_consensus::LongestChain::new(backend.clone()),
+        client: Arc::clone(&client),
+        pool: Arc::clone(transaction_pool.pool()),
+        select_chain: sc_consensus::LongestChain::new(Arc::clone(&backend)),
         consensus_data_provider: None,
         create_inherent_data_providers: move |_, ()| async move { Ok(()) },
     });
