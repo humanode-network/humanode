@@ -1,7 +1,5 @@
 //! Client API for the Humanode's Bioauth Robonode.
 
-use std::convert::TryFrom;
-
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -36,33 +34,10 @@ pub struct AuthenticateRequest<'a> {
 /// Input data for the authenticate request.
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct AuthenticateResponse {
-    /// The auth ticket generated for this authentication attempt.
-    pub ticket: OpaqueAuthTicket,
-    /// The robonode signature for this public key and nonce.
-    pub ticket_signature: Box<[u8]>,
-}
-
-/// The one-time ticket to authenticate in the network.
-#[derive(Debug, Deserialize, PartialEq)]
-#[serde(transparent)]
-pub struct OpaqueAuthTicket(Box<[u8]>);
-
-/// The one-time ticket to authenticate in the network.
-#[derive(Debug, Deserialize, PartialEq)]
-pub struct AuthTicket {
-    /// The public key that matched with the provided FaceTec 3D FaceScan.
-    pub public_key: Box<[u8]>,
-    /// Opaque one-time use value.
-    /// Robonode will issues unique nonces for each authentication attempt.
-    pub authentication_nonce: Box<[u8]>,
-}
-
-impl TryFrom<&OpaqueAuthTicket> for AuthTicket {
-    type Error = serde_json::Error;
-
-    fn try_from(value: &OpaqueAuthTicket) -> Result<Self, Self::Error> {
-        serde_json::from_slice(&value.0)
-    }
+    /// An opaque auth ticket generated for this authentication attempt.
+    pub auth_ticket: Box<[u8]>,
+    /// The robonode signature for this opaque auth ticket.
+    pub auth_ticket_signature: Box<[u8]>,
 }
 
 /// The authenticate-specific error condition.
@@ -103,16 +78,16 @@ mod tests {
     #[test]
     fn response_deserialization() {
         let sample_response = serde_json::json!({
-            "public_key": [1, 2, 3],
-            "public_key_signature": [4, 5, 6],
+            "auth_ticket": [1, 2, 3],
+            "auth_ticket_signature": [4, 5, 6],
         });
 
         let response: AuthenticateResponse = serde_json::from_value(sample_response).unwrap();
         assert_eq!(
             response,
             AuthenticateResponse {
-                public_key: vec![1, 2, 3].into(),
-                public_key_signature: vec![4, 5, 6].into(),
+                auth_ticket: vec![1, 2, 3].into(),
+                auth_ticket_signature: vec![4, 5, 6].into(),
             }
         )
     }
@@ -126,8 +101,8 @@ mod tests {
             face_scan_signature: b"123",
         };
         let sample_response = serde_json::json!({
-            "public_key": b"456",
-            "public_key_signature": b"789",
+            "auth_ticket": b"456",
+            "auth_ticket_signature": b"789",
         });
 
         let expected_response: AuthenticateResponse =
