@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use runtime::{self, opaque::Block, RuntimeApi};
+use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
@@ -14,8 +14,8 @@ use crate::dummy::DummyVerifier;
 // at the current compile time.
 native_executor_instance!(
     pub Executor,
-    runtime::api::dispatch,
-    runtime::native_version,
+    humanode_runtime::api::dispatch,
+    humanode_runtime::native_version,
 );
 
 /// Create a "full" node (full is in terms of substrate).
