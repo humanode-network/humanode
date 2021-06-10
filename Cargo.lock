@@ -4832,6 +4832,7 @@ name = "robonode-server"
 version = "0.1.0"
 dependencies = [
  "facetec-api-client",
+ "primitives-bioauth",
  "reqwest",
  "serde",
  "tokio 1.6.1",

@@ -6,6 +6,7 @@ use facetec_api_client::{
     Client as FaceTecClient, DBEnrollError, DBEnrollRequest, DBSearchError, DBSearchRequest,
     Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FaceTecError,
 };
+use primitives_bioauth::{AuthTicket, OpaqueAuthTicket};
 use tokio::sync::Mutex;
 
 use crate::sequence::Sequence;
@@ -196,13 +197,15 @@ pub struct AuthenticateRequest {
 /// The response of the authenticate operation.
 #[derive(Debug, Serialize)]
 pub struct AuthenticateResponse {
-    /// The public key that matched with the provided FaceScan.
-    public_key: String,
-    /// The signature of the public key, signed with the robonode's private key.
-    /// Can be used together with the public key above to prove that this
-    /// public key was vetted by the robonode and verified to be associated
+    /// An opaque auth ticket generated for this authentication attempt.
+    /// Contains a public key that matched with the provided FaceScan and a nonce to prevent replay
+    /// attacks.
+    auth_ticket: OpaqueAuthTicket,
+    /// The signature of the auth ticket, signed with the robonode's private key.
+    /// Can be used together with the auth ticket above to prove that this
+    /// auth ticket was vetted by the robonode and verified to be associated
     /// with a FaceScan.
-    authentication_signature: Vec<u8>,
+    auth_ticket_signature: Vec<u8>,
 }
 
 /// Errors for the authenticate operation.
@@ -239,7 +242,7 @@ pub enum AuthenticateError {
 impl<S, PK> Logic<S, PK>
 where
     S: Signer + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str> + Verifier + AsRef<[u8]> + Into<String>,
+    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
 {
     /// An authenticate invocation handler.
     pub async fn authenticate(
@@ -250,9 +253,10 @@ where
 
         // Bump the sequence counter.
         unlocked.sequence.inc();
+        let sequence_value = unlocked.sequence.get();
 
         // Prepare the ID to be used for this temporary FaceScan.
-        let tmp_external_database_ref_id = format!("tmp-{}", unlocked.sequence.get());
+        let tmp_external_database_ref_id = format!("tmp-{}", sequence_value);
 
         let enroll_res = unlocked
             .facetec
@@ -307,10 +311,27 @@ where
             return Err(AuthenticateError::SignatureValidationFailed);
         }
 
-        let signed_public_key = unlocked.signer.sign(&public_key);
-        Ok(AuthenticateResponse {
+        // Prepare an authentication nonce from the sequence number.
+        // TODO: we don't want to expose our internal sequence number, so this value should
+        // be hashed, or obfuscated by other means.
+        let authentication_nonce = Vec::from(&sequence_value.to_ne_bytes()[..]);
+
+        // Prepare the raw auth ticket.
+        let auth_ticket = AuthTicket {
             public_key: public_key.into(),
-            authentication_signature: signed_public_key,
+            authentication_nonce,
+        };
+
+        // Prepare an opaque auth ticket, get ready for signing.
+        let opaque_auth_ticket = (&auth_ticket).into();
+
+        // Sign the auth ticket with our private key, so that later on it's possible to validate
+        // this ticket was issues by us.
+        let auth_ticket_signature = unlocked.signer.sign(&opaque_auth_ticket);
+
+        Ok(AuthenticateResponse {
+            auth_ticket: opaque_auth_ticket,
+            auth_ticket_signature,
         })
     }
 }

@@ -35,7 +35,7 @@ pub fn root<S, PK>(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
     S: Signer + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str> + Verifier + AsRef<[u8]> + Into<String>,
+    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
 {
     enroll(Arc::clone(&logic)).or(authenticate(logic))
 }
@@ -61,7 +61,7 @@ fn authenticate<S, PK>(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
     S: Signer + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str> + Verifier + AsRef<[u8]> + Into<String>,
+    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
 {
     warp::path!("authenticate")
         .and(warp::post())
