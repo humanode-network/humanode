@@ -1,5 +1,7 @@
 //! Client API for the Humanode's Bioauth Robonode.
 
+use std::convert::TryFrom;
+
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
@@ -34,11 +36,33 @@ pub struct AuthenticateRequest<'a> {
 /// Input data for the authenticate request.
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct AuthenticateResponse {
+    /// The auth ticket generated for this authentication attempt.
+    pub ticket: OpaqueAuthTicket,
+    /// The robonode signature for this public key and nonce.
+    pub ticket_signature: Box<[u8]>,
+}
+
+/// The one-time ticket to authenticate in the network.
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(transparent)]
+pub struct OpaqueAuthTicket(Box<[u8]>);
+
+/// The one-time ticket to authenticate in the network.
+#[derive(Debug, Deserialize, PartialEq)]
+pub struct AuthTicket {
     /// The public key that matched with the provided FaceTec 3D FaceScan.
-    public_key: Box<[u8]>,
-    /// The robonode signatire for this public key.
-    // TODO: we need a nonce to prevent replay attack, don't we?
-    public_key_signature: Box<[u8]>,
+    pub public_key: Box<[u8]>,
+    /// Opaque one-time use value.
+    /// Robonode will issues unique nonces for each authentication attempt.
+    pub authentication_nonce: Box<[u8]>,
+}
+
+impl TryFrom<&OpaqueAuthTicket> for AuthTicket {
+    type Error = serde_json::Error;
+
+    fn try_from(value: &OpaqueAuthTicket) -> Result<Self, Self::Error> {
+        serde_json::from_slice(&value.0)
+    }
 }
 
 /// The authenticate-specific error condition.
