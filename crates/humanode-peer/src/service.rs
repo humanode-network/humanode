@@ -52,13 +52,25 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
             block_announce_validator_builder: None,
         })?;
 
+    let rpc_extensions_builder = {
+        let client = Arc::clone(&client);
+        let pool = Arc::clone(&transaction_pool);
+        Box::new(move |deny_unsafe, _| {
+            humanode_rpc::create(humanode_rpc::Deps {
+                client: Arc::clone(&client),
+                pool: Arc::clone(&pool),
+                deny_unsafe,
+            })
+        })
+    };
+
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network,
         client,
         keystore: keystore_container.sync_keystore(),
         task_manager: &mut task_manager,
         transaction_pool,
-        rpc_extensions_builder: Box::new(|_, _| jsonrpc_core::IoHandler::default()),
+        rpc_extensions_builder,
         on_demand: None,
         remote_blockchain: None,
         backend,

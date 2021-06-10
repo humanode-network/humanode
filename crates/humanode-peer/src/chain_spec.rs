@@ -50,7 +50,16 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 },
                 pallet_balances: BalancesConfig {
                     // Configure endowed accounts with initial balance of 1 << 60.
-                    balances: vec![],
+                    balances: vec![
+                        (
+                            get_account_id_from_seed::<sr25519::Public>("Alice"),
+                            1 << 60,
+                        ),
+                        (
+                            get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+                            1 << 60,
+                        ),
+                    ],
                 },
                 pallet_sudo: SudoConfig {
                     // Assign network admin rights.
