@@ -3903,6 +3903,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-bioauth"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "primitives-bioauth",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-randomness-collective-flip"
 version = "3.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
