@@ -8,7 +8,7 @@ pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
 use sp_consensus::import_queue::BasicQueue;
 
-use crate::{dummy::DummyVerifier, rpc};
+use crate::dummy::DummyVerifier;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -56,7 +56,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         Box::new(move |deny_unsafe, _| {
-            rpc::create(rpc::Deps {
+            humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
                 deny_unsafe,

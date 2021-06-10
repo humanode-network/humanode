@@ -2135,26 +2135,34 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "futures 0.3.15",
+ "humanode-rpc",
  "humanode-runtime",
- "jsonrpc-core",
- "pallet-transaction-payment-rpc",
  "parity-scale-codec",
  "sc-executor",
  "sc-network",
- "sc-rpc",
- "sc-rpc-api",
  "sc-service",
  "sc-tracing",
  "sc-transaction-pool",
+ "sp-consensus",
+ "sp-runtime",
+ "tokio 1.6.1",
+ "tracing",
+]
+
+[[package]]
+name = "humanode-rpc"
+version = "0.1.0"
+dependencies = [
+ "humanode-runtime",
+ "jsonrpc-core",
+ "pallet-transaction-payment-rpc",
+ "sc-rpc",
+ "sc-rpc-api",
  "sp-api",
  "sp-block-builder",
  "sp-blockchain",
- "sp-consensus",
- "sp-runtime",
  "sp-transaction-pool",
  "substrate-frame-rpc-system",
- "tokio 1.6.1",
- "tracing",
 ]
 
 [[package]]
