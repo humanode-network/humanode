@@ -3,12 +3,10 @@
 use std::sync::Arc;
 
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
+use sc_consensus_manual_seal::InstantSealParams;
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
-use sp_consensus::import_queue::BasicQueue;
-
-use crate::dummy::DummyVerifier;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -33,13 +31,33 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         Arc::clone(&client),
     );
 
-    let import_queue = BasicQueue::new(
-        DummyVerifier,
+    let import_queue = sc_consensus_manual_seal::import_queue(
         Box::new(Arc::clone(&client)),
-        None,
         &task_manager.spawn_essential_handle(),
         config.prometheus_registry(),
     );
+
+    let proposer_factory = sc_basic_authorship::ProposerFactory::new(
+        task_manager.spawn_handle(),
+        Arc::clone(&client),
+        Arc::clone(&transaction_pool),
+        config.prometheus_registry(),
+        None,
+    );
+
+    let authorship_future = sc_consensus_manual_seal::run_instant_seal(InstantSealParams {
+        block_import: Arc::clone(&client),
+        env: proposer_factory,
+        client: Arc::clone(&client),
+        pool: Arc::clone(transaction_pool.pool()),
+        select_chain: sc_consensus::LongestChain::new(Arc::clone(&backend)),
+        consensus_data_provider: None,
+        create_inherent_data_providers: move |_, ()| async move { Ok(()) },
+    });
+
+    task_manager
+        .spawn_essential_handle()
+        .spawn_blocking("instant-seal", authorship_future);
 
     let (network, system_rpc_tx, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
