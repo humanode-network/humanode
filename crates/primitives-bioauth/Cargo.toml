@@ -1,0 +1,14 @@
+[package]
+name = "primitives-bioauth"
+version = "0.1.0"
+edition = "2018"
+authors = ["Humanode Team <core@humanode.io>"]
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"], optional = true }
+codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
+
+[features]
+default = ["std"]
+std = ["serde", "codec/std"]

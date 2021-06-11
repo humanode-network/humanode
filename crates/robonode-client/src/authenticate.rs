@@ -34,11 +34,10 @@ pub struct AuthenticateRequest<'a> {
 /// Input data for the authenticate request.
 #[derive(Debug, Deserialize, PartialEq)]
 pub struct AuthenticateResponse {
-    /// The public key that matched with the provided FaceTec 3D FaceScan.
-    public_key: Box<[u8]>,
-    /// The robonode signatire for this public key.
-    // TODO: we need a nonce to prevent replay attack, don't we?
-    public_key_signature: Box<[u8]>,
+    /// An opaque auth ticket generated for this authentication attempt.
+    pub auth_ticket: Box<[u8]>,
+    /// The robonode signature for this opaque auth ticket.
+    pub auth_ticket_signature: Box<[u8]>,
 }
 
 /// The authenticate-specific error condition.
@@ -79,16 +78,16 @@ mod tests {
     #[test]
     fn response_deserialization() {
         let sample_response = serde_json::json!({
-            "public_key": [1, 2, 3],
-            "public_key_signature": [4, 5, 6],
+            "auth_ticket": [1, 2, 3],
+            "auth_ticket_signature": [4, 5, 6],
         });
 
         let response: AuthenticateResponse = serde_json::from_value(sample_response).unwrap();
         assert_eq!(
             response,
             AuthenticateResponse {
-                public_key: vec![1, 2, 3].into(),
-                public_key_signature: vec![4, 5, 6].into(),
+                auth_ticket: vec![1, 2, 3].into(),
+                auth_ticket_signature: vec![4, 5, 6].into(),
             }
         )
     }
@@ -102,8 +101,8 @@ mod tests {
             face_scan_signature: b"123",
         };
         let sample_response = serde_json::json!({
-            "public_key": b"456",
-            "public_key_signature": b"789",
+            "auth_ticket": b"456",
+            "auth_ticket_signature": b"789",
         });
 
         let expected_response: AuthenticateResponse =

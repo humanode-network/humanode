@@ -32,7 +32,7 @@ pub async fn authenticate<S, PK>(
 ) -> Result<impl warp::Reply, Infallible>
 where
     S: Signer + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str> + Verifier + AsRef<[u8]> + Into<String>,
+    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
 {
     match logic.authenticate(input).await {
         Ok(res) => {
