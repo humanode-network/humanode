@@ -4,8 +4,19 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode};
+use frame_support::traits::IsSubType;
+use frame_support::weights::DispatchInfo;
 pub use pallet::*;
 use serde::{Deserialize, Serialize};
+use sp_runtime::{
+    traits::{DispatchInfoOf, Dispatchable, SignedExtension},
+    transaction_validity::{
+        InvalidTransaction, TransactionLongevity, TransactionPriority, TransactionValidity,
+        TransactionValidityError, ValidTransaction,
+    },
+};
+use sp_std::fmt::Debug;
+use sp_std::marker::PhantomData;
 
 #[cfg(test)]
 mod mock;
@@ -175,6 +186,70 @@ pub mod pallet {
             Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket, who));
 
             Ok(())
+        }
+    }
+}
+
+/// The following section implements the `SignedExtension` trait
+/// for the `CheckBioauthTx` type.
+
+/// The `CheckBioauthTx` struct.
+#[derive(Encode, Decode, Clone, Eq, PartialEq, Default)]
+pub struct CheckBioauthTx<T: Config + Send + Sync>(PhantomData<T>);
+
+impl<T: Config + Send + Sync> CheckBioauthTx<T> {
+    /// utility constructor. Used only in client/factory code.
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
+/// Debug impl for the `CheckBioauthTx` struct.
+impl<T: Config + Send + Sync> Debug for CheckBioauthTx<T> {
+    #[cfg(feature = "std")]
+    fn fmt(&self, f: &mut sp_std::fmt::Formatter) -> sp_std::fmt::Result {
+        write!(f, "CheckBioauthTx")
+    }
+
+    #[cfg(not(feature = "std"))]
+    fn fmt(&self, _: &mut sp_std::fmt::Formatter) -> sp_std::fmt::Result {
+        Ok(())
+    }
+}
+
+/// Implementation of the `SignedExtension` trait for the `CheckBioauthTx` struct.
+impl<T: Config + Send + Sync> SignedExtension for CheckBioauthTx<T>
+where
+    T::Call: Dispatchable<Info = DispatchInfo>,
+    <T as frame_system::Config>::Call: IsSubType<Call<T>>,
+{
+    type AccountId = T::AccountId;
+    type Call = T::Call;
+    type AdditionalSigned = ();
+    type Pre = ();
+    const IDENTIFIER: &'static str = "CheckBioauthTx";
+
+    fn additional_signed(&self) -> sp_std::result::Result<(), TransactionValidityError> {
+        Ok(())
+    }
+
+    fn validate(
+        &self,
+        who: &Self::AccountId,
+        call: &Self::Call,
+        _info: &DispatchInfoOf<Self::Call>,
+        _len: usize,
+    ) -> TransactionValidity {
+        let _account_id = who;
+
+        // check for `authenticate`
+        match call.is_sub_type() {
+            Some(Call::authenticate(..)) => {
+                sp_runtime::print("authenticate was received.");
+
+                Ok(ValidTransaction::default())
+            }
+            _ => Ok(Default::default()),
         }
     }
 }
