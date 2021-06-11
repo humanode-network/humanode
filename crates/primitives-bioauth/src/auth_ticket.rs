@@ -50,3 +50,9 @@ impl From<Vec<u8>> for OpaqueAuthTicket {
         Self(val)
     }
 }
+
+impl From<OpaqueAuthTicket> for Vec<u8> {
+    fn from(val: OpaqueAuthTicket) -> Self {
+        val.0
+    }
+}
