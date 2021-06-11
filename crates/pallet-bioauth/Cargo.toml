@@ -7,6 +7,8 @@ publish = false
 
 [dependencies]
 primitives-bioauth = { version = "0.1", path = "../primitives-bioauth", default-features = false }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 serde = "1"
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
@@ -17,7 +19,6 @@ frame-system = { default-features = false, git = "https://github.com/humanode-ne
 [dev-dependencies]
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [features]
 default = ["std"]
