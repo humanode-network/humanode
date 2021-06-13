@@ -33,20 +33,24 @@ const allModes = {
     name: "clippy",
     cargoCommand: "clippy",
     cargoArgs: "--all-targets -- -D warnings",
+    cargoCacheKey: "clippy",
   },
   test: {
     name: "test",
     cargoCommand: "test",
+    cargoCacheKey: "test",
   },
   build: {
     name: "build",
     cargoCommand: "build",
+    cargoCacheKey: "build",
   },
   fmt: {
     name: "fmt",
     cargoCommand: "fmt",
     cargoArgs: "-- --check",
-    platformIndependent: true
+    platformIndependent: true,
+    cargoCacheKey: "code",
   }
 };
 

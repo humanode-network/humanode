@@ -61,6 +61,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Cache rustup
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/share/rust/.rustup
+          key: ${{ runner.os }}-rustup-${{ hashFiles('rust-toolchain.toml') }}
+
       - name: Install rust toolchain
         run: rustup show
 
@@ -77,6 +84,17 @@ jobs:
           cargo --version
           cargo clippy --version
           env
+
+      - name: Cache cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ matrix.mode.cargoCacheKey }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - name: Run cargo ${{ matrix.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
