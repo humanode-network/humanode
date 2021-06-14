@@ -11,8 +11,7 @@ use serde::{Deserialize, Serialize};
 use sp_runtime::{
     traits::{DispatchInfoOf, Dispatchable, SignedExtension},
     transaction_validity::{
-        InvalidTransaction, TransactionLongevity, TransactionPriority, TransactionValidity,
-        TransactionValidityError, ValidTransaction,
+        InvalidTransaction, TransactionValidity, TransactionValidityError, ValidTransaction,
     },
 };
 use sp_std::fmt::Debug;
@@ -124,7 +123,7 @@ pub mod pallet {
         PublicKeyAlreadyUsed,
     }
 
-    enum AuthenticationAttemptValidationError<'a> {
+    pub enum AuthenticationAttemptValidationError<'a> {
         NonceConflict,
         ConflitingPublicKeys(Vec<&'a StoredAuthTicket>),
     }
@@ -161,45 +160,8 @@ pub mod pallet {
         pub fn authenticate(origin: OriginFor<T>, req: Authenticate) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let opaque_auth_ticket = OpaqueAuthTicket::from(req.ticket);
-
-            let auth_ticket: AuthTicket = (&opaque_auth_ticket)
-                .try_into()
-                .map_err(|_| Error::<T>::UnableToParseAuthTicket)?;
-
-            let stored_auth_ticket: StoredAuthTicket = auth_ticket.into();
+            let stored_auth_ticket = Self::extract_auth_ticket_checked(req)?;
             let event_stored_auth_ticket = stored_auth_ticket.clone();
-
-            match Self::validate_bioauth(&req) {
-                Ok(_) => {
-                    todo!();
-                }
-                Err(_) => {
-                    todo!()
-                }
-            }
-
-            // Emit an event.
-            Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket, who));
-
-            Ok(())
-        }
-    }
-
-    // #[pallet::]
-    impl<T: Config> Pallet<T> {
-        pub fn validate_bioauth(req: &Authenticate) -> DispatchResult {
-            if !T::PKI::verify(&req.ticket, &req.ticket_signature) {
-                return Err(Error::<T>::AuthTicketSignatureInvalid.into());
-            }
-
-            let opaque_auth_ticket = OpaqueAuthTicket::from(req.ticket);
-
-            let auth_ticket: AuthTicket = (&opaque_auth_ticket)
-                .try_into()
-                .map_err(|_| Error::<T>::UnableToParseAuthTicket)?;
-
-            let stored_auth_ticket: StoredAuthTicket = auth_ticket.into();
 
             // Update storage.
             <StoredAuthTickets<T>>::try_mutate(move |maybe_list| {
@@ -212,11 +174,36 @@ pub mod pallet {
                     Err(AuthenticationAttemptValidationError::ConflitingPublicKeys(_)) => {
                         Err(Error::<T>::PublicKeyAlreadyUsed)
                     }
-                    Ok(()) => Ok(()),
+                    Ok(()) => {
+                        // Authentication was successfull, add the incoming auth ticket to the list.
+                        list.push(stored_auth_ticket);
+                        Ok(())
+                    }
                 }
             })?;
 
+            // Emit an event.
+            Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket, who));
+
             Ok(())
+        }
+    }
+
+    impl<T: Config> Pallet<T> {
+        pub fn extract_auth_ticket_checked(
+            req: Authenticate,
+        ) -> Result<StoredAuthTicket, Error<T>> {
+            if !T::PKI::verify(&req.ticket, &req.ticket_signature) {
+                return Err(Error::<T>::AuthTicketSignatureInvalid);
+            }
+
+            let opaque_auth_ticket = OpaqueAuthTicket::from(req.ticket);
+
+            let auth_ticket: AuthTicket = (&opaque_auth_ticket)
+                .try_into()
+                .map_err(|_| Error::<T>::UnableToParseAuthTicket)?;
+
+            Ok(auth_ticket.into())
         }
     }
 }
@@ -277,9 +264,20 @@ where
         match call.is_sub_type() {
             Some(Call::authenticate(ref transaction)) => {
                 // We need to call our validate_bioauth from pallet
-                validate_bioauth(&transaction);
+                let stored_auth_ticket = Pallet::<T>::extract_auth_ticket_checked(
+                    transaction.clone(),
+                )
+                .map_err(|_e| TransactionValidityError::Invalid(InvalidTransaction::Call))?;
 
-                Ok(ValidTransaction::default())
+                let list = match StoredAuthTickets::<T>::get() {
+                    Some(v) => v,
+                    None => return Ok(ValidTransaction::default()),
+                };
+
+                validate_authentication_attempt(&list, &stored_auth_ticket)
+                    .map_err(|_e| TransactionValidityError::Invalid(InvalidTransaction::Call))?;
+
+                Ok(Default::default())
             }
             _ => Ok(Default::default()),
         }
