@@ -1,10 +1,11 @@
 //! Plain and opaque Auth Tickets.
 
-use std::convert::TryFrom;
+use core::convert::TryFrom;
 
 use codec::{Decode, Encode};
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
+use sp_std::prelude::*;
 
 /// The one-time ticket to authenticate in the network.
 #[derive(Debug, PartialEq, Encode, Decode)]
