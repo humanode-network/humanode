@@ -4388,6 +4388,7 @@ version = "0.1.0"
 dependencies = [
  "parity-scale-codec",
  "serde",
+ "sp-std",
 ]
 
 [[package]]
