@@ -59,6 +59,14 @@ impl From<primitives_bioauth::AuthTicket> for StoredAuthTicket {
     }
 }
 
+/// Verifier provides the verification of the data accompanied with the
+/// signature or proof data.
+pub trait Verifier {
+    /// Verify that provided data is indeed correctly signed with the provided
+    /// signature.
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(data: &D, signature: &S) -> bool;
+}
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(
@@ -70,7 +78,7 @@ impl From<primitives_bioauth::AuthTicket> for StoredAuthTicket {
 pub mod pallet {
     use std::convert::TryInto;
 
-    use super::{Authenticate, StoredAuthTicket};
+    use super::{Authenticate, StoredAuthTicket, Verifier};
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
     use frame_system::pallet_prelude::*;
     use primitives_bioauth::{AuthTicket, OpaqueAuthTicket};
@@ -80,6 +88,8 @@ pub mod pallet {
     pub trait Config: frame_system::Config {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+        type PKI: Verifier;
     }
 
     #[pallet::pallet]
@@ -119,7 +129,7 @@ pub mod pallet {
         ConflitingPublicKeys(Vec<&'a StoredAuthTicket>),
     }
 
-    fn validate_authentication_attempt<'a>(
+    pub fn validate_authentication_attempt<'a>(
         existing: &'a [StoredAuthTicket],
         new: &StoredAuthTicket,
     ) -> Result<(), AuthenticationAttemptValidationError<'a>> {
@@ -153,15 +163,43 @@ pub mod pallet {
 
             let opaque_auth_ticket = OpaqueAuthTicket::from(req.ticket);
 
-            // TODO: validate signature
-            // req.ticket_signature.validate(opaque_auth_ticket)?;
-
             let auth_ticket: AuthTicket = (&opaque_auth_ticket)
                 .try_into()
                 .map_err(|_| Error::<T>::UnableToParseAuthTicket)?;
 
             let stored_auth_ticket: StoredAuthTicket = auth_ticket.into();
             let event_stored_auth_ticket = stored_auth_ticket.clone();
+
+            match Self::validate_bioauth(&req) {
+                Ok(_) => {
+                    todo!();
+                }
+                Err(_) => {
+                    todo!()
+                }
+            }
+
+            // Emit an event.
+            Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket, who));
+
+            Ok(())
+        }
+    }
+
+    // #[pallet::]
+    impl<T: Config> Pallet<T> {
+        pub fn validate_bioauth(req: &Authenticate) -> DispatchResult {
+            if !T::PKI::verify(&req.ticket, &req.ticket_signature) {
+                return Err(Error::<T>::AuthTicketSignatureInvalid.into());
+            }
+
+            let opaque_auth_ticket = OpaqueAuthTicket::from(req.ticket);
+
+            let auth_ticket: AuthTicket = (&opaque_auth_ticket)
+                .try_into()
+                .map_err(|_| Error::<T>::UnableToParseAuthTicket)?;
+
+            let stored_auth_ticket: StoredAuthTicket = auth_ticket.into();
 
             // Update storage.
             <StoredAuthTickets<T>>::try_mutate(move |maybe_list| {
@@ -174,16 +212,9 @@ pub mod pallet {
                     Err(AuthenticationAttemptValidationError::ConflitingPublicKeys(_)) => {
                         Err(Error::<T>::PublicKeyAlreadyUsed)
                     }
-                    Ok(()) => {
-                        // Authentication was successfull, add the incoming auth ticket to the list.
-                        list.push(stored_auth_ticket);
-                        Ok(())
-                    }
+                    Ok(()) => Ok(()),
                 }
             })?;
-
-            // Emit an event.
-            Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket, who));
 
             Ok(())
         }
@@ -244,8 +275,9 @@ where
 
         // check for `authenticate`
         match call.is_sub_type() {
-            Some(Call::authenticate(..)) => {
-                sp_runtime::print("authenticate was received.");
+            Some(Call::authenticate(ref transaction)) => {
+                // We need to call our validate_bioauth from pallet
+                validate_bioauth(&transaction);
 
                 Ok(ValidTransaction::default())
             }
