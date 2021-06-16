@@ -238,7 +238,7 @@ pub mod pallet {
             req: Authenticate,
         ) -> Result<StoredAuthTicket, Error<T>> {
             let robonode_public_key = T::RPK::get();
-            if robonode_public_key.verify(&req.ticket, &req.ticket_signature) {
+            if !robonode_public_key.verify(&req.ticket, &req.ticket_signature) {
                 return Err(Error::<T>::AuthTicketSignatureInvalid);
             }
 
