@@ -7,6 +7,7 @@ use codec::{Decode, Encode};
 use frame_support::traits::IsSubType;
 use frame_support::weights::DispatchInfo;
 pub use pallet::*;
+#[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
     traits::{DispatchInfoOf, Dispatchable, SignedExtension},
@@ -16,6 +17,7 @@ use sp_runtime::{
 };
 use sp_std::fmt::Debug;
 use sp_std::marker::PhantomData;
+use sp_std::prelude::*;
 
 #[cfg(test)]
 mod mock;
@@ -63,7 +65,24 @@ impl From<primitives_bioauth::AuthTicket> for StoredAuthTicket {
 pub trait Verifier {
     /// Verify that provided data is indeed correctly signed with the provided
     /// signature.
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(data: &D, signature: &S) -> bool;
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool;
+}
+
+/// Robonode Public Key to be used for verification ticket data
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
+pub struct RobonodePublicKey;
+
+impl From<&'static str> for RobonodePublicKey {
+    fn from(value: &'static str) -> Self {
+        Self::from(value)
+    }
+}
+
+impl Verifier for RobonodePublicKey {
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool {
+        Self::verify(&self, data, signature)
+    }
 }
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
@@ -75,12 +94,13 @@ pub trait Verifier {
 )]
 #[frame_support::pallet]
 pub mod pallet {
-    use std::convert::TryInto;
+    use core::convert::TryInto;
 
-    use super::{Authenticate, StoredAuthTicket, Verifier};
+    use super::{Authenticate, RobonodePublicKey, StoredAuthTicket, Verifier};
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
     use frame_system::pallet_prelude::*;
     use primitives_bioauth::{AuthTicket, OpaqueAuthTicket};
+    use sp_std::prelude::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
@@ -88,7 +108,8 @@ pub mod pallet {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-        type PKI: Verifier;
+        #[pallet::constant]
+        type RPK: Get<RobonodePublicKey>;
     }
 
     #[pallet::pallet]
@@ -99,6 +120,29 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn stored_auth_tickets)]
     pub type StoredAuthTickets<T> = StorageValue<_, Vec<StoredAuthTicket>>;
+
+    #[pallet::genesis_config]
+    pub struct GenesisConfig {
+        pub stored_auth_tickets: Vec<StoredAuthTicket>,
+    }
+
+    // The default value for the genesis config type.
+    #[cfg(feature = "std")]
+    impl Default for GenesisConfig {
+        fn default() -> Self {
+            Self {
+                stored_auth_tickets: Default::default(),
+            }
+        }
+    }
+
+    // The build of genesis for the pallet.
+    #[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig {
+        fn build(&self) {
+            <StoredAuthTickets<T>>::put(&self.stored_auth_tickets);
+        }
+    }
 
     // Pallets use events to inform users when important changes are made.
     #[pallet::event]
@@ -193,7 +237,8 @@ pub mod pallet {
         pub fn extract_auth_ticket_checked(
             req: Authenticate,
         ) -> Result<StoredAuthTicket, Error<T>> {
-            if !T::PKI::verify(&req.ticket, &req.ticket_signature) {
+            let robonode_public_key = T::RPK::get();
+            if robonode_public_key.verify(&req.ticket, &req.ticket_signature) {
                 return Err(Error::<T>::AuthTicketSignatureInvalid);
             }
 

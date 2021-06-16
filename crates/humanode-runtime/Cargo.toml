@@ -9,6 +9,8 @@ publish = false
 substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [dependencies]
+pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
+
 hex-literal = { version = "0.3", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 
@@ -54,6 +56,7 @@ std = [
   "frame-support/std",
   "frame-system/std",
   "frame-system-rpc-runtime-api/std",
+  "pallet-bioauth/std",
   "pallet-balances/std",
   "pallet-randomness-collective-flip/std",
   "pallet-sudo/std",

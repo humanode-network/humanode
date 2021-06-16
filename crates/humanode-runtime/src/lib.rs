@@ -183,6 +183,7 @@ impl frame_system::Config for Runtime {
 parameter_types! {
     pub const ExistentialDeposit: u128 = 500;
     pub const MaxLocks: u32 = 50;
+    pub const RobonodePublicKey: &'static str = "Robonode Public Key";
 }
 
 impl pallet_balances::Config for Runtime {
@@ -213,6 +214,11 @@ impl pallet_sudo::Config for Runtime {
     type Call = Call;
 }
 
+impl pallet_bioauth::Config for Runtime {
+    type Event = Event;
+    type RPK = RobonodePublicKey;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -226,6 +232,7 @@ construct_runtime!(
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
+        PalletBioauth: pallet_bioauth::{Pallet, Config, Call, Storage, Event<T>},
     }
 );
 
@@ -247,6 +254,7 @@ pub type SignedExtra = (
     frame_system::CheckEra<Runtime>,
     frame_system::CheckNonce<Runtime>,
     frame_system::CheckWeight<Runtime>,
+    pallet_bioauth::CheckBioauthTx<Runtime>,
     pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
