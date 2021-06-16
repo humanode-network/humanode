@@ -23,20 +23,20 @@ frame_support::construct_runtime!(
     }
 );
 
-/// Robonode Public Key to be used for verification ticket data
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
-pub struct MockRobonodePublicKey;
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Hash, Debug)]
+pub struct MockVerifier;
 
-impl super::Verifier for MockRobonodePublicKey {
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
-        true
+impl super::Verifier for MockVerifier {
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool {
+        data.as_ref().starts_with(b"should_be_valid")
+            && signature.as_ref().starts_with(b"should_be_valid")
     }
 }
 
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
-    pub const MockRobonodePublicKeyInstance: MockRobonodePublicKey = MockRobonodePublicKey;
+    pub const RobonodeSignatureVerifierInstance: MockVerifier = MockVerifier;
 }
 
 impl system::Config for Test {
@@ -67,8 +67,8 @@ impl system::Config for Test {
 
 impl pallet_bioauth::Config for Test {
     type Event = Event;
-    type RobonodeSignatureVerifier = MockRobonodePublicKey;
-    type RobonodeSignatureVerifierInstance = MockRobonodePublicKeyInstance;
+    type RobonodeSignatureVerifier = MockVerifier;
+    type RobonodeSignatureVerifierInstance = RobonodeSignatureVerifierInstance;
 }
 
 // Build genesis storage according to the mock runtime.
