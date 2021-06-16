@@ -74,14 +74,14 @@ pub trait Verifier {
 pub struct RobonodePublicKey;
 
 impl From<&'static str> for RobonodePublicKey {
-    fn from(value: &'static str) -> Self {
-        Self::from(value)
+    fn from(_value: &'static str) -> Self {
+        todo!();
     }
 }
 
 impl Verifier for RobonodePublicKey {
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool {
-        Self::verify(&self, data, signature)
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
+        todo!();
     }
 }
 
@@ -259,13 +259,6 @@ pub mod pallet {
 /// The `CheckBioauthTx` struct.
 #[derive(Encode, Decode, Clone, Eq, PartialEq, Default)]
 pub struct CheckBioauthTx<T: Config + Send + Sync>(PhantomData<T>);
-
-impl<T: Config + Send + Sync> CheckBioauthTx<T> {
-    /// utility constructor. Used only in client/factory code.
-    pub fn new() -> Self {
-        Self(PhantomData)
-    }
-}
 
 /// Debug impl for the `CheckBioauthTx` struct.
 impl<T: Config + Send + Sync> Debug for CheckBioauthTx<T> {
