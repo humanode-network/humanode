@@ -68,23 +68,6 @@ pub trait Verifier {
     fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool;
 }
 
-/// Robonode Public Key to be used for verification ticket data
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
-pub struct RobonodePublicKey;
-
-impl From<&'static str> for RobonodePublicKey {
-    fn from(_value: &'static str) -> Self {
-        todo!();
-    }
-}
-
-impl Verifier for RobonodePublicKey {
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
-        todo!();
-    }
-}
-
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(
@@ -96,7 +79,7 @@ impl Verifier for RobonodePublicKey {
 pub mod pallet {
     use core::convert::TryInto;
 
-    use super::{Authenticate, RobonodePublicKey, StoredAuthTicket, Verifier};
+    use super::{Authenticate, StoredAuthTicket, Verifier};
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
     use frame_system::pallet_prelude::*;
     use primitives_bioauth::{AuthTicket, OpaqueAuthTicket};
@@ -108,8 +91,10 @@ pub mod pallet {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
+        type RobonodeSignatureVerifier: Verifier + Encode;
+
         #[pallet::constant]
-        type RPK: Get<RobonodePublicKey>;
+        type RobonodeSignatureVerifierInstance: Get<Self::RobonodeSignatureVerifier>;
     }
 
     #[pallet::pallet]
@@ -237,7 +222,7 @@ pub mod pallet {
         pub fn extract_auth_ticket_checked(
             req: Authenticate,
         ) -> Result<StoredAuthTicket, Error<T>> {
-            let robonode_public_key = T::RPK::get();
+            let robonode_public_key = T::RobonodeSignatureVerifierInstance::get();
             if !robonode_public_key.verify(&req.ticket, &req.ticket_signature) {
                 return Err(Error::<T>::AuthTicketSignatureInvalid);
             }

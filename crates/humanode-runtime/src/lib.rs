@@ -216,7 +216,8 @@ impl pallet_sudo::Config for Runtime {
 
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
-    type RPK = RobonodePublicKey;
+    type RobonodeSignatureVerifier = &'static str;
+    type RobonodeSignatureVerifierInstance = RobonodePublicKey;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously

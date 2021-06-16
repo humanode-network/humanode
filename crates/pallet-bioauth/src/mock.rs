@@ -1,4 +1,5 @@
 use crate as pallet_bioauth;
+use codec::{Decode, Encode};
 use frame_support::parameter_types;
 use frame_system as system;
 use sp_core::H256;
@@ -22,9 +23,20 @@ frame_support::construct_runtime!(
     }
 );
 
+/// Robonode Public Key to be used for verification ticket data
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
+pub struct MockRobonodePublicKey;
+
+impl super::Verifier for MockRobonodePublicKey {
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
+        true
+    }
+}
+
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
+    pub const MockRobonodePublicKeyInstance: MockRobonodePublicKey = MockRobonodePublicKey;
 }
 
 impl system::Config for Test {
@@ -55,6 +67,8 @@ impl system::Config for Test {
 
 impl pallet_bioauth::Config for Test {
     type Event = Event;
+    type RobonodeSignatureVerifier = MockRobonodePublicKey;
+    type RobonodeSignatureVerifierInstance = MockRobonodePublicKeyInstance;
 }
 
 // Build genesis storage according to the mock runtime.
