@@ -28,8 +28,7 @@ pub struct MockVerifier;
 
 impl super::Verifier for MockVerifier {
     fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool {
-        data.as_ref().starts_with(b"should_be_valid")
-            && signature.as_ref().starts_with(b"should_be_valid")
+        signature.as_ref().starts_with(b"should_be_valid")
     }
 }
 
