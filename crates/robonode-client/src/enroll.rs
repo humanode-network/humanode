@@ -22,9 +22,9 @@ impl Client {
 #[derive(Debug, Serialize)]
 pub struct EnrollRequest<'a> {
     /// The public key to be used as an identity.
-    public_key: &'a [u8],
+    pub public_key: &'a [u8],
     /// The FaceTec 3D FaceScan to associate with the identity.
-    face_scan: &'a [u8],
+    pub face_scan: &'a [u8],
 }
 
 /// The enroll-specific error condition.
