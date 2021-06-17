@@ -27,7 +27,7 @@ frame_support::construct_runtime!(
 pub struct MockVerifier;
 
 impl super::Verifier for MockVerifier {
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool {
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, signature: &S) -> bool {
         signature.as_ref().starts_with(b"should_be_valid")
     }
 }

@@ -113,7 +113,7 @@ fn signed_ext_check_bioauth_tx_permit_empty_state() {
 }
 
 #[test]
-fn signed_ext_check_bioauth_tx_permit_conlicting_nonce() {
+fn signed_ext_check_bioauth_tx_deny_conlicting_nonce() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
         let precondition_input = make_input(b"pk1", b"conflict!", b"should_be_valid");
@@ -133,7 +133,7 @@ fn signed_ext_check_bioauth_tx_permit_conlicting_nonce() {
 }
 
 #[test]
-fn signed_ext_check_bioauth_tx_permit_public_keys() {
+fn signed_ext_check_bioauth_tx_deny_public_keys() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
         let precondition_input = make_input(b"conflict!", b"nonce1", b"should_be_valid");
