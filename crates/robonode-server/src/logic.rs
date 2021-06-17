@@ -5,6 +5,7 @@ use std::{convert::TryFrom, marker::PhantomData};
 use facetec_api_client::{
     Client as FaceTecClient, DBEnrollError, DBEnrollRequest, DBSearchError, DBSearchRequest,
     Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FaceTecError,
+    SessionTokenError,
 };
 use primitives_bioauth::{AuthTicket, OpaqueAuthTicket};
 use tokio::sync::Mutex;
@@ -332,6 +333,49 @@ where
         Ok(AuthenticateResponse {
             auth_ticket: opaque_auth_ticket,
             auth_ticket_signature,
+        })
+    }
+}
+
+/// The response for the get facetec session token operation.
+#[derive(Debug, Serialize)]
+pub struct GetFaceTecSessionTokenResponse {
+    /// The session token returned by the FaceTec Server.
+    session_token: String,
+}
+
+/// Errors for the get facetec session token operation.
+pub enum GetFaceTecSessionTokenError {
+    /// Internal error at session token retrieval due to the underlying request
+    /// error at the API level.
+    InternalErrorSessionToken(FaceTecError<SessionTokenError>),
+    /// Internal error at session token retrieval due to unsuccessful response.
+    InternalErrorSessionTokenUnsuccessful,
+}
+
+impl<S, PK> Logic<S, PK>
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
+{
+    /// Get a FaceTec Session Token.
+    pub async fn get_facetec_session_token(
+        &self,
+    ) -> Result<GetFaceTecSessionTokenResponse, GetFaceTecSessionTokenError> {
+        let unlocked = self.locked.lock().await;
+
+        let res = unlocked
+            .facetec
+            .session_token()
+            .await
+            .map_err(GetFaceTecSessionTokenError::InternalErrorSessionToken)?;
+
+        if !res.success {
+            return Err(GetFaceTecSessionTokenError::InternalErrorSessionTokenUnsuccessful);
+        }
+
+        Ok(GetFaceTecSessionTokenResponse {
+            session_token: res.session_token,
         })
     }
 }
