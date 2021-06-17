@@ -25,10 +25,10 @@ impl Client {
 #[derive(Debug, Serialize)]
 pub struct AuthenticateRequest<'a> {
     /// The FaceTec 3D FaceScan to associate with the identity.
-    face_scan: &'a [u8],
+    pub face_scan: &'a [u8],
     /// The signature of the FaceTec 3D FaceScan, proving the posession of the
     /// private key by the issuer of this request.
-    face_scan_signature: &'a [u8],
+    pub face_scan_signature: &'a [u8],
 }
 
 /// Input data for the authenticate request.
