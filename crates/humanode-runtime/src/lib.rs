@@ -25,6 +25,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
+use codec::Encode;
 pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{KeyOwnerProofSystem, Randomness},
@@ -180,10 +181,19 @@ impl frame_system::Config for Runtime {
     type OnSetCode = ();
 }
 
+#[derive(Encode)]
+pub struct RobonodeVerifier;
+
+impl pallet_bioauth::Verifier for RobonodeVerifier {
+    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
+        todo!();
+    }
+}
+
 parameter_types! {
     pub const ExistentialDeposit: u128 = 500;
     pub const MaxLocks: u32 = 50;
-    pub const RobonodePublicKey: &'static str = "Robonode Public Key";
+    pub const RobonodeSignatureVerifierInstance: RobonodeVerifier = RobonodeVerifier;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -216,8 +226,8 @@ impl pallet_sudo::Config for Runtime {
 
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
-    type RobonodeSignatureVerifier = &'static str;
-    type RobonodeSignatureVerifierInstance = RobonodePublicKey;
+    type RobonodeSignatureVerifier = RobonodeVerifier;
+    type RobonodeSignatureVerifierInstance = RobonodeSignatureVerifierInstance;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
