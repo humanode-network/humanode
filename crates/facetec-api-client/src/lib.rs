@@ -15,11 +15,13 @@ use thiserror::Error;
 mod db_enroll;
 mod db_search;
 mod enrollment3d;
+mod session_token;
 mod types;
 
 pub use db_enroll::*;
 pub use db_search::*;
 pub use enrollment3d::*;
+pub use session_token::*;
 pub use types::*;
 
 /// The generic error type for the client calls.
