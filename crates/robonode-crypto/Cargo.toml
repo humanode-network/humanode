@@ -6,14 +6,13 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-hex-literal = "0.3.1"
-
 sp-application-crypto = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[dev-dependencies]
+hex-literal = "0.3.1"
 
 [features]
 default = ["std"]
 std = [
 	"sp-application-crypto/std",
-    "codec/std",
 ]

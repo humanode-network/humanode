@@ -4833,7 +4833,6 @@ name = "robonode-crypto"
 version = "0.1.0"
 dependencies = [
  "hex-literal",
- "parity-scale-codec",
  "sp-application-crypto",
 ]
 
