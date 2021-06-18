@@ -4829,6 +4829,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "robonode-crypto"
+version = "0.1.0"
+dependencies = [
+ "hex-literal",
+ "sp-application-crypto",
+]
+
+[[package]]
 name = "robonode-server"
 version = "0.1.0"
 dependencies = [
