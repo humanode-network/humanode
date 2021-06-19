@@ -456,6 +456,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "futures 0.3.15",
  "jsonrpc-core",
  "jsonrpc-core-client",
  "jsonrpc-derive",
