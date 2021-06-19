@@ -451,6 +451,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "bioauth-flow"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "primitives-bioauth",
+ "robonode-client",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
