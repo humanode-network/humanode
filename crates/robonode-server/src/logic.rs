@@ -7,7 +7,7 @@ use facetec_api_client::{
     Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FaceTecError,
     SessionTokenError,
 };
-use primitives_bioauth::{AuthTicket, OpaqueAuthTicket};
+use primitives_bioauth::{AuthTicket, LivenessData, OpaqueAuthTicket, OpaqueLivenessData};
 use tokio::sync::Mutex;
 
 use crate::sequence::Sequence;
@@ -61,14 +61,16 @@ where
 pub struct EnrollRequest {
     /// The public key of the validator.
     public_key: String,
-    /// The face scan that validator owner provided.
-    face_scan: String,
+    /// The liveness data that the validator owner provided.
+    liveness_data: OpaqueLivenessData,
 }
 
 /// The errors on the enroll operation.
 pub enum EnrollError {
     /// The provided public key failed to load because it was invalid.
     InvalidPublicKey,
+    /// The provided opaque liveness data could not be decoded.
+    InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
     /// This FaceScan was rejected.
     FaceScanRejected,
     /// This Public Key was already used.
@@ -118,14 +120,17 @@ where
             return Err(EnrollError::InvalidPublicKey);
         }
 
+        let liveness_data =
+            LivenessData::try_from(&req.liveness_data).map_err(EnrollError::InvalidLivenessData)?;
+
         let unlocked = self.locked.lock().await;
         let enroll_res = unlocked
             .facetec
             .enrollment_3d(Enrollment3DRequest {
                 external_database_ref_id: &req.public_key,
-                face_scan: &req.face_scan,
-                audit_trail_image: "TODO",
-                low_quality_audit_trail_image: "TODO",
+                face_scan: &liveness_data.face_scan,
+                audit_trail_image: &liveness_data.audit_trail_image,
+                low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
             })
             .await
             .map_err(|err| match err {
@@ -188,11 +193,11 @@ where
 /// The request of the authenticate operation.
 #[derive(Debug, Deserialize)]
 pub struct AuthenticateRequest {
-    /// The FaceScan that node owner provided.
-    face_scan: String,
-    /// The signature of the FaceScan with the private key of the node.
-    /// Proves the posession of the private key by the FaceScan bearer.
-    face_scan_signature: Vec<u8>,
+    /// The liveness data that the validator owner provided.
+    liveness_data: OpaqueLivenessData,
+    /// The signature of the liveness data with the private key of the node.
+    /// Proves the posession of the private key by the liveness data bearer.
+    liveness_data_signature: Vec<u8>,
 }
 
 /// The response of the authenticate operation.
@@ -211,13 +216,15 @@ pub struct AuthenticateResponse {
 
 /// Errors for the authenticate operation.
 pub enum AuthenticateError {
+    /// The provided opaque liveness data could not be decoded.
+    InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
     /// This FaceScan was rejected.
     FaceScanRejected,
     /// This person was not found.
     /// Unually this means they need to enroll, but it can also happen if
     /// matching returns false-negative.
     PersonNotFound,
-    /// The FaceScan signature validation failed.
+    /// The liveness data signature validation failed.
     /// This means that the user might've provided a signature using different
     /// keypair from what was used for the original enrollment.
     SignatureValidationFailed,
@@ -250,6 +257,9 @@ where
         &self,
         req: AuthenticateRequest,
     ) -> Result<AuthenticateResponse, AuthenticateError> {
+        let liveness_data = LivenessData::try_from(&req.liveness_data)
+            .map_err(AuthenticateError::InvalidLivenessData)?;
+
         let mut unlocked = self.locked.lock().await;
 
         // Bump the sequence counter.
@@ -263,9 +273,9 @@ where
             .facetec
             .enrollment_3d(Enrollment3DRequest {
                 external_database_ref_id: &tmp_external_database_ref_id,
-                face_scan: &req.face_scan,
-                audit_trail_image: "TODO",
-                low_quality_audit_trail_image: "TODO",
+                face_scan: &liveness_data.face_scan,
+                audit_trail_image: &liveness_data.audit_trail_image,
+                low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
             })
             .await
             .map_err(AuthenticateError::InternalErrorEnrollment)?;
@@ -308,7 +318,7 @@ where
         let public_key = PK::try_from(&found.identifier)
             .map_err(|_| AuthenticateError::InternalErrorInvalidPublicKey)?;
 
-        if !public_key.verify(&req.face_scan, &req.face_scan_signature) {
+        if !public_key.verify(&req.liveness_data, &req.liveness_data_signature) {
             return Err(AuthenticateError::SignatureValidationFailed);
         }
 
