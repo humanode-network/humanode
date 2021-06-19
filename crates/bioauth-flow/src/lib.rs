@@ -9,3 +9,4 @@
 )]
 
 pub mod flow;
+pub mod rpc;
