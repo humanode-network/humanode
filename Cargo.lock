@@ -2150,10 +2150,13 @@ name = "humanode-peer"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bioauth-flow",
  "futures 0.3.15",
  "humanode-rpc",
  "humanode-runtime",
  "parity-scale-codec",
+ "reqwest",
+ "robonode-client",
  "sc-basic-authorship",
  "sc-consensus",
  "sc-consensus-manual-seal",
@@ -2172,9 +2175,11 @@ dependencies = [
 name = "humanode-rpc"
 version = "0.1.0"
 dependencies = [
+ "bioauth-flow",
  "humanode-runtime",
  "jsonrpc-core",
  "pallet-transaction-payment-rpc",
+ "robonode-client",
  "sc-rpc",
  "sc-rpc-api",
  "sp-api",
