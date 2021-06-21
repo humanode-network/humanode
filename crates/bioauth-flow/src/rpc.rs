@@ -77,7 +77,7 @@ where
     /// Create a new [`Bioauth`] API implementation.
     pub fn new(
         robonode_client: C,
-        liveness_data_tx_slot: LivenessDataTxSlot,
+        liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
         facetec_device_sdk_params: FacetecDeviceSdkParams,
     ) -> Self {
         // Prepare a runtime for compat.
@@ -142,7 +142,9 @@ where
     /// The robonode client, used for fetching the FaceTec Session Token.
     client: C,
     /// The liveness data provider sink.
-    liveness_data_tx_slot: LivenessDataTxSlot,
+    /// We need an [`Arc`] here to allow sharing the data from across multiple invocations of the
+    /// RPC extension builder that will be using this RPC.
+    liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
     /// The Facetec Device SDK params to return to the device.
     facetec_device_sdk_params: FacetecDeviceSdkParams,
 }
