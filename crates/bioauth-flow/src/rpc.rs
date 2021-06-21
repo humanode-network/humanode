@@ -31,6 +31,16 @@ pub trait BioauthApi {
     fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()>;
 }
 
+/// The shared [`LivenessData`] sender slot, that we can swap with our ephemernal
+/// channel upon a liveness data request.
+pub type LivenessDataTxSlot = BiLock<Option<oneshot::Sender<LivenessData>>>;
+
+/// Create an linked pair of an empty [`LivenessDataTxSlot`]s.
+/// To be used in the initialization process.
+pub fn new_liveness_data_tx_slot() -> (LivenessDataTxSlot, LivenessDataTxSlot) {
+    BiLock::new(None)
+}
+
 /// The RPC implementation.
 pub struct Bioauth<C>
 where
@@ -47,10 +57,7 @@ where
     C: AsRef<robonode_client::Client>,
 {
     /// Create a new [`Bioauth`] API implementation.
-    pub fn new(
-        robonode_client: C,
-        liveness_data_tx_slot: BiLock<Option<oneshot::Sender<LivenessData>>>,
-    ) -> Self {
+    pub fn new(robonode_client: C, liveness_data_tx_slot: LivenessDataTxSlot) -> Self {
         let inner = Inner {
             client: robonode_client,
             liveness_data_tx_slot,
@@ -89,7 +96,7 @@ where
     /// The robonode client, used for fetching the FaceTec Session Token.
     client: C,
     /// The liveness data provider sink.
-    liveness_data_tx_slot: BiLock<Option<oneshot::Sender<LivenessData>>>,
+    liveness_data_tx_slot: LivenessDataTxSlot,
 }
 
 impl<C> Inner<C>
@@ -135,12 +142,12 @@ where
 pub struct Provider {
     /// The shared liveness data sender slot, that we can swap with our ephemernal
     /// channel upon a liveness data reuqest.
-    liveness_data_tx_slot: BiLock<Option<oneshot::Sender<LivenessData>>>,
+    liveness_data_tx_slot: LivenessDataTxSlot,
 }
 
 impl Provider {
     /// Construct a new [`Provider`].
-    pub fn new(liveness_data_tx_slot: BiLock<Option<oneshot::Sender<LivenessData>>>) -> Self {
+    pub fn new(liveness_data_tx_slot: LivenessDataTxSlot) -> Self {
         Self {
             liveness_data_tx_slot,
         }
