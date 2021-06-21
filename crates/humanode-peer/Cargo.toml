@@ -6,12 +6,15 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
+bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
+robonode-client = { version = "0.1", path = "../robonode-client" }
 
 async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 futures = "0.3"
+reqwest = "0.11"
 sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus-manual-seal = { git = "https://github.com/humanode-network/substrate", branch = "master" }
