@@ -5,6 +5,7 @@ use std::sync::Arc;
 use futures::channel::oneshot;
 use futures::compat::Compat;
 use futures::lock::BiLock;
+use futures::TryFutureExt;
 use jsonrpc_core::futures::Future;
 use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode;
@@ -64,6 +65,9 @@ where
     /// We have to wrap it with `Arc` because we have to provide compatibility with `futures` `0.1`,
     /// up until `substrate` switches to 0.16+ version of the `jsonrpc-core`.
     inner: Arc<Inner<C>>,
+
+    /// Compat tokio runtime.
+    rt: tokio::runtime::Runtime,
 }
 
 impl<C> Bioauth<C>
@@ -76,6 +80,8 @@ where
         liveness_data_tx_slot: LivenessDataTxSlot,
         facetec_device_sdk_params: FacetecDeviceSdkParams,
     ) -> Self {
+        // Prepare a runtime for compat.
+        let rt = tokio::runtime::Runtime::new().expect("compat runtime construction failed");
         let inner = Inner {
             client: robonode_client,
             liveness_data_tx_slot,
@@ -83,7 +89,27 @@ where
         };
         Self {
             inner: Arc::new(inner),
+            rt,
         }
+    }
+}
+
+impl<C> Bioauth<C>
+where
+    C: AsRef<robonode_client::Client> + Send + Sync + 'static,
+{
+    /// Run the code in the `tokio` `0.1` & `futurtes` `0.1` compat mode.
+    fn run_in_compat<F, Fut, R>(&self, f: F) -> FutureResult<R>
+    where
+        F: FnOnce(Arc<Inner<C>>) -> Fut,
+        Fut: std::future::Future<Output = Result<R>> + Send + 'static,
+        R: Send + 'static,
+    {
+        let inner = Arc::clone(&self.inner);
+        let call = f(inner);
+        let call = self.rt.spawn(call);
+        let call = call.unwrap_or_else(|err| panic!("{}", err));
+        Box::new(Compat::new(Box::pin(call)))
     }
 }
 
@@ -93,23 +119,17 @@ where
 {
     /// Wrap `get_facetec_device_sdk_params` with `futures` `0.1` compat layer.
     fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams> {
-        let inner = Arc::clone(&self.inner);
-        let call = inner.get_facetec_device_sdk_params();
-        Box::new(Compat::new(Box::pin(call)))
+        self.run_in_compat(move |inner| inner.get_facetec_device_sdk_params())
     }
 
     /// Wrap `get_facetec_session_token` with `futures` `0.1` compat layer.
     fn get_facetec_session_token(&self) -> FutureResult<String> {
-        let inner = Arc::clone(&self.inner);
-        let call = inner.get_facetec_session_token();
-        Box::new(Compat::new(Box::pin(call)))
+        self.run_in_compat(move |inner| inner.get_facetec_session_token())
     }
 
     /// Wrap `provide_liveness_data` with `futures` `0.1` compat layer.
     fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        let inner = Arc::clone(&self.inner);
-        let call = inner.provide_liveness_data(liveness_data);
-        Box::new(Compat::new(Box::pin(call)))
+        self.run_in_compat(move |inner| inner.provide_liveness_data(liveness_data))
     }
 }
 
