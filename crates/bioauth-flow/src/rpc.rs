@@ -10,6 +10,7 @@ use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode;
 use jsonrpc_derive::rpc;
 use primitives_bioauth::LivenessData;
+use serde::{Deserialize, Serialize};
 
 use crate::flow::LivenessDataProvider;
 
@@ -19,9 +20,22 @@ pub type Result<T> = std::result::Result<T, RpcError>;
 /// A futures that resolves to the specified `T`, or an [`RpcError`].
 pub type FutureResult<T> = Box<dyn Future<Item = T, Error = RpcError> + Send>;
 
+/// The parameters necessary to initialize the FaceTec Device SDK.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct FacetecDeviceSdkParams {
+    /// The public FaceMap encription key.
+    pub public_face_map_encryption_key: String,
+    /// The device key identifier.
+    pub device_key_identifier: String,
+}
+
 /// The API exposed via JSON-RPC.
 #[rpc]
 pub trait BioauthApi {
+    /// Get the configuration required for the Device SDK.
+    #[rpc(name = "bioauth_getFacetecDeviceSdkParams")]
+    fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams>;
+
     /// Get a FaceTec Session Token.
     #[rpc(name = "bioauth_getFacetecSessionToken")]
     fn get_facetec_session_token(&self) -> FutureResult<String>;
@@ -57,10 +71,15 @@ where
     C: AsRef<robonode_client::Client>,
 {
     /// Create a new [`Bioauth`] API implementation.
-    pub fn new(robonode_client: C, liveness_data_tx_slot: LivenessDataTxSlot) -> Self {
+    pub fn new(
+        robonode_client: C,
+        liveness_data_tx_slot: LivenessDataTxSlot,
+        facetec_device_sdk_params: FacetecDeviceSdkParams,
+    ) -> Self {
         let inner = Inner {
             client: robonode_client,
             liveness_data_tx_slot,
+            facetec_device_sdk_params,
         };
         Self {
             inner: Arc::new(inner),
@@ -72,6 +91,13 @@ impl<C> BioauthApi for Bioauth<C>
 where
     C: AsRef<robonode_client::Client> + Send + Sync + 'static,
 {
+    /// Wrap `get_facetec_device_sdk_params` with `futures` `0.1` compat layer.
+    fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams> {
+        let inner = Arc::clone(&self.inner);
+        let call = inner.get_facetec_device_sdk_params();
+        Box::new(Compat::new(Box::pin(call)))
+    }
+
     /// Wrap `get_facetec_session_token` with `futures` `0.1` compat layer.
     fn get_facetec_session_token(&self) -> FutureResult<String> {
         let inner = Arc::clone(&self.inner);
@@ -97,12 +123,19 @@ where
     client: C,
     /// The liveness data provider sink.
     liveness_data_tx_slot: LivenessDataTxSlot,
+    /// The Facetec Device SDK params to return to the device.
+    facetec_device_sdk_params: FacetecDeviceSdkParams,
 }
 
 impl<C> Inner<C>
 where
     C: AsRef<robonode_client::Client>,
 {
+    /// Get the FaceTec Device SDK parameters to use at the device.
+    async fn get_facetec_device_sdk_params(self: Arc<Self>) -> Result<FacetecDeviceSdkParams> {
+        Ok(self.facetec_device_sdk_params.clone())
+    }
+
     /// Get the FaceTec Session Token.
     async fn get_facetec_session_token(self: Arc<Self>) -> Result<String> {
         let res = self
