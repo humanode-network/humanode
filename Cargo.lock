@@ -462,6 +462,7 @@ dependencies = [
  "jsonrpc-derive",
  "primitives-bioauth",
  "robonode-client",
+ "serde",
 ]
 
 [[package]]
