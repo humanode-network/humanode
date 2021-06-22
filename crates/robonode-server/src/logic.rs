@@ -66,6 +66,7 @@ pub struct EnrollRequest {
 }
 
 /// The errors on the enroll operation.
+#[derive(Debug)]
 pub enum EnrollError {
     /// The provided public key failed to load because it was invalid.
     InvalidPublicKey,
@@ -215,6 +216,7 @@ pub struct AuthenticateResponse {
 }
 
 /// Errors for the authenticate operation.
+#[derive(Debug)]
 pub enum AuthenticateError {
     /// The provided opaque liveness data could not be decoded.
     InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
@@ -355,6 +357,7 @@ pub struct GetFaceTecSessionTokenResponse {
 }
 
 /// Errors for the get facetec session token operation.
+#[derive(Debug)]
 pub enum GetFaceTecSessionTokenError {
     /// Internal error at session token retrieval due to the underlying request
     /// error at the API level.
