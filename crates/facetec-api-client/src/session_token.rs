@@ -135,6 +135,7 @@ mod tests {
         let client = Client {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
+            device_key_identifier: "my device key identifier".into(),
         };
 
         let actual_response = client.session_token().await.unwrap();
@@ -157,6 +158,7 @@ mod tests {
         let client = Client {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
+            device_key_identifier: "my device key identifier".into(),
         };
 
         let actual_error = client.session_token().await.unwrap_err();

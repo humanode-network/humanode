@@ -235,6 +235,7 @@ mod tests {
         let client = Client {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
+            device_key_identifier: "my device key identifier".into(),
         };
 
         let actual_response = client.db_search(sample_request).await.unwrap();
@@ -262,6 +263,7 @@ mod tests {
         let client = Client {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
+            device_key_identifier: "my device key identifier".into(),
         };
 
         let actual_error = client.db_search(sample_request).await.unwrap_err();
@@ -299,6 +301,7 @@ mod tests {
         let client = Client {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
+            device_key_identifier: "my device key identifier".into(),
         };
 
         let actual_error = client.db_search(sample_request).await.unwrap_err();
