@@ -30,7 +30,8 @@ pub fn init() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection
             public_key_type: PhantomData::<String>,
         }),
     };
-    root(Arc::new(logic))
+    let log = warp::log("robonode::api");
+    root(Arc::new(logic)).with(log)
 }
 
 // TODO!
