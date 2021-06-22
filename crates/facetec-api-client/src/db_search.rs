@@ -13,8 +13,7 @@ impl Client {
         &self,
         req: DBSearchRequest<'_>,
     ) -> Result<DBSearchResponse, Error<DBSearchError>> {
-        let url = format!("{}/3d-db/search", self.base_url);
-        let res = self.reqwest.post(url).json(&req).send().await?;
+        let res = self.build_post("/3d-db/search", &req).send().await?;
         match res.status() {
             StatusCode::OK => Ok(res.json().await?),
             StatusCode::BAD_REQUEST => {

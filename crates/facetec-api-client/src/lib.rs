@@ -10,6 +10,7 @@
 #[macro_use]
 extern crate assert_matches;
 
+use reqwest::RequestBuilder;
 use thiserror::Error;
 
 mod db_enroll;
@@ -42,4 +43,28 @@ pub struct Client {
     pub reqwest: reqwest::Client,
     /// The base URL to use for the routes.
     pub base_url: String,
+}
+
+impl Client {
+    /// Prepare the URL.
+    fn build_url(&self, path: &str) -> String {
+        format!("{}{}", self.base_url, path)
+    }
+
+    /// An internal utility to prepare a GET HTTP request.
+    /// Applies some common logic.
+    fn build_get(&self, path: &str) -> RequestBuilder {
+        let url = self.build_url(path);
+        self.reqwest.get(url)
+    }
+
+    /// An internal utility to prepare a POST HTTP request.
+    /// Applies some common logic.
+    fn build_post<T>(&self, path: &str, body: &T) -> RequestBuilder
+    where
+        T: serde::Serialize + ?Sized,
+    {
+        let url = self.build_url(path);
+        self.reqwest.post(url).json(body)
+    }
 }
