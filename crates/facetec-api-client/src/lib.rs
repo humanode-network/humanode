@@ -43,6 +43,8 @@ pub struct Client {
     pub reqwest: reqwest::Client,
     /// The base URL to use for the routes.
     pub base_url: String,
+    /// The Device Key Identifier to pass in the header.
+    pub device_key_identifier: String,
 }
 
 impl Client {
@@ -51,11 +53,16 @@ impl Client {
         format!("{}{}", self.base_url, path)
     }
 
+    /// Apply some common headers.
+    fn apply_headers(&self, req: RequestBuilder) -> RequestBuilder {
+        req.header("X-Device-Key", self.device_key_identifier.clone())
+    }
+
     /// An internal utility to prepare a GET HTTP request.
     /// Applies some common logic.
     fn build_get(&self, path: &str) -> RequestBuilder {
         let url = self.build_url(path);
-        self.reqwest.get(url)
+        self.apply_headers(self.reqwest.get(url))
     }
 
     /// An internal utility to prepare a POST HTTP request.
@@ -65,6 +72,6 @@ impl Client {
         T: serde::Serialize + ?Sized,
     {
         let url = self.build_url(path);
-        self.reqwest.post(url).json(body)
+        self.apply_headers(self.reqwest.post(url)).json(body)
     }
 }

@@ -10,9 +10,11 @@
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let addr: std::net::SocketAddr = parse_env_var("ADDR")?;
     let facetec_server_url = parse_env_var("FACETEC_SERVER_URL")?;
+    let facetec_device_key_identifier = parse_env_var("FACETEC_DEVICE_KEY_IDENTIFIER")?;
     let facetec_api_client = facetec_api_client::Client {
         base_url: facetec_server_url,
         reqwest: reqwest::Client::new(),
+        device_key_identifier: facetec_device_key_identifier,
     };
     let root_filter = robonode_server::init(facetec_api_client);
     let (addr, server) =
