@@ -10,8 +10,7 @@ use super::Client;
 impl Client {
     /// Perform the `/session-token` call to the server.
     pub async fn session_token(&self) -> Result<SessionTokenResponse, Error<SessionTokenError>> {
-        let url = format!("{}/session-token", self.base_url);
-        let res = self.reqwest.get(url).send().await?;
+        let res = self.build_get("/session-token").send().await?;
         match res.status() {
             StatusCode::OK => Ok(res.json().await?),
             _ => Err(Error::Call(SessionTokenError::Unknown(res.text().await?))),
