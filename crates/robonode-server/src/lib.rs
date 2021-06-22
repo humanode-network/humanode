@@ -18,14 +18,13 @@ mod sequence;
 
 /// Initialize the [`warp::Filter`] implementing the HTTP transport for
 /// the robonode.
-pub fn init() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+pub fn init(
+    facetec_api_client: facetec_api_client::Client,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     let logic = logic::Logic {
         locked: Mutex::new(logic::Locked {
             sequence: sequence::Sequence::new(0),
-            facetec: facetec_api_client::Client {
-                base_url: "localhost:5113".to_owned(),
-                reqwest: reqwest::Client::new(),
-            },
+            facetec: facetec_api_client,
             signer: (),
             public_key_type: PhantomData::<String>,
         }),

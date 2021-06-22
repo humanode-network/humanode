@@ -9,7 +9,12 @@
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let addr: std::net::SocketAddr = parse_env_var("ADDR")?;
-    let root_filter = robonode_server::init();
+    let facetec_server_url = parse_env_var("FACETEC_SERVER_URL")?;
+    let facetec_api_client = facetec_api_client::Client {
+        base_url: facetec_server_url,
+        reqwest: reqwest::Client::new(),
+    };
+    let root_filter = robonode_server::init(facetec_api_client);
     let (addr, server) =
         warp::serve(root_filter).bind_with_graceful_shutdown(addr, shutdown_signal());
     println!("Listening on http://{}", addr);
