@@ -10,10 +10,12 @@ use thiserror::Error;
 
 mod authenticate;
 mod enroll;
+mod get_facetec_device_sdk_params;
 mod get_facetec_session_token;
 
 pub use authenticate::*;
 pub use enroll::*;
+pub use get_facetec_device_sdk_params::*;
 pub use get_facetec_session_token::*;
 
 /// The generic error type for the client calls.
