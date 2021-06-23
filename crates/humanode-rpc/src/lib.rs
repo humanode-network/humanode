@@ -8,7 +8,7 @@
 
 use std::sync::Arc;
 
-use bioauth_flow::rpc::{Bioauth, BioauthApi, FacetecDeviceSdkParams, LivenessDataTxSlot};
+use bioauth_flow::rpc::{Bioauth, BioauthApi, LivenessDataTxSlot};
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index};
 pub use sc_rpc_api::DenyUnsafe;
 use sp_api::ProvideRuntimeApi;
@@ -28,8 +28,6 @@ pub struct Deps<C, P> {
     pub robonode_client: Arc<robonode_client::Client>,
     /// The liveness data tx slot to use in the bioauth flow RPC.
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
-    /// The FaceTec Device SDK params to return to the device from the RPC.
-    pub facetec_device_sdk_params: FacetecDeviceSdkParams,
 }
 
 /// Instantiate all RPC extensions.
@@ -53,7 +51,6 @@ where
         deny_unsafe,
         robonode_client,
         bioauth_flow_slot,
-        facetec_device_sdk_params,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -69,7 +66,6 @@ where
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,
         bioauth_flow_slot,
-        facetec_device_sdk_params,
     )));
 
     io

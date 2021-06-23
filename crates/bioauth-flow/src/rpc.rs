@@ -75,17 +75,12 @@ where
     C: AsRef<robonode_client::Client>,
 {
     /// Create a new [`Bioauth`] API implementation.
-    pub fn new(
-        robonode_client: C,
-        liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-        facetec_device_sdk_params: FacetecDeviceSdkParams,
-    ) -> Self {
+    pub fn new(robonode_client: C, liveness_data_tx_slot: Arc<LivenessDataTxSlot>) -> Self {
         // Prepare a runtime for compat.
         let rt = tokio::runtime::Runtime::new().expect("compat runtime construction failed");
         let inner = Inner {
             client: robonode_client,
             liveness_data_tx_slot,
-            facetec_device_sdk_params,
         };
         Self {
             inner: Arc::new(inner),
@@ -145,8 +140,6 @@ where
     /// We need an [`Arc`] here to allow sharing the data from across multiple invocations of the
     /// RPC extension builder that will be using this RPC.
     liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-    /// The Facetec Device SDK params to return to the device.
-    facetec_device_sdk_params: FacetecDeviceSdkParams,
 }
 
 impl<C> Inner<C>
@@ -155,7 +148,20 @@ where
 {
     /// Get the FaceTec Device SDK parameters to use at the device.
     async fn get_facetec_device_sdk_params(self: Arc<Self>) -> Result<FacetecDeviceSdkParams> {
-        Ok(self.facetec_device_sdk_params.clone())
+        let res = self
+            .client
+            .as_ref()
+            .get_facetec_device_sdk_params()
+            .await
+            .map_err(|err| RpcError {
+                code: ErrorCode::ServerError(1),
+                message: format!("request to the robonode failed: {}", err),
+                data: None,
+            })?;
+        Ok(FacetecDeviceSdkParams {
+            device_key_identifier: res.device_key_identifier,
+            public_face_map_encryption_key: res.public_face_map_encryption_key,
+        })
     }
 
     /// Get the FaceTec Session Token.
