@@ -80,16 +80,6 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
     let (bioauth_flow_rpc_slot, _bioauth_flow_provider_slot) =
         bioauth_flow::rpc::new_liveness_data_tx_slot();
 
-    let device_key_identifier =
-        std::env::var("FACETEC_DEVICE_KEY_IDENTIFIER").unwrap_or_else(|_| "UNSET".into());
-    let public_face_map_encryption_key = std::env::var("FACETEC_PUBLIC_FACE_MAP_ENCRYPTION_KEY")
-        .unwrap_or_else(|_| "UNSET".into())
-        .replace("\\n", "\n");
-    let facetec_device_sdk_params = bioauth_flow::rpc::FacetecDeviceSdkParams {
-        device_key_identifier,
-        public_face_map_encryption_key,
-    };
-
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
@@ -102,7 +92,6 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
                 deny_unsafe,
                 robonode_client: Arc::clone(&robonode_client),
                 bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
-                facetec_device_sdk_params: facetec_device_sdk_params.clone(),
             })
         })
     };
