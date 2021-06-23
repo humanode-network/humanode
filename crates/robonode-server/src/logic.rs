@@ -27,6 +27,15 @@ pub trait Verifier {
     fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool;
 }
 
+/// The FaceTec Device SDK params.
+#[derive(Debug)]
+pub struct FaceTecDeviceSdkParams {
+    /// The public FaceMap encription key.
+    pub public_face_map_encryption_key: String,
+    /// The device key identifier.
+    pub device_key_identifier: String,
+}
+
 /// The inner state, to be hidden behind the mutex to ensure we don't have
 /// access to it unless we lock the mutex.
 pub struct Locked<S, PK>
@@ -54,6 +63,8 @@ where
     /// This way we're ensureing the operations can only be conducted under
     /// the lock.
     pub locked: Mutex<Locked<S, PK>>,
+    /// The FaceTec Device SDK params to expose.
+    pub facetec_device_sdk_params: FaceTecDeviceSdkParams,
 }
 
 /// The request for the enroll operation.
@@ -389,6 +400,38 @@ where
 
         Ok(GetFaceTecSessionTokenResponse {
             session_token: res.session_token,
+        })
+    }
+}
+
+/// The response for the get facetec device sdk params operation.
+#[derive(Debug, Serialize)]
+pub struct GetFacetecDeviceSdkParamsResponse {
+    /// The public FaceMap encription key.
+    pub public_face_map_encryption_key: String,
+    /// The device key identifier.
+    pub device_key_identifier: String,
+}
+
+/// Errors for the get facetec device sdk params operation.
+#[derive(Debug)]
+pub enum GetFacetecDeviceSdkParamsError {}
+
+impl<S, PK> Logic<S, PK>
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
+{
+    /// Get the FaceTec Device SDK params .
+    pub async fn get_facetec_device_sdk_params(
+        &self,
+    ) -> Result<GetFacetecDeviceSdkParamsResponse, GetFacetecDeviceSdkParamsError> {
+        Ok(GetFacetecDeviceSdkParamsResponse {
+            device_key_identifier: self.facetec_device_sdk_params.device_key_identifier.clone(),
+            public_face_map_encryption_key: self
+                .facetec_device_sdk_params
+                .public_face_map_encryption_key
+                .clone(),
         })
     }
 }
