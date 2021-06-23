@@ -39,7 +39,8 @@ where
 {
     enroll(Arc::clone(&logic))
         .or(authenticate(Arc::clone(&logic)))
-        .or(get_facetec_session_token(logic))
+        .or(get_facetec_session_token(Arc::clone(&logic)))
+        .or(get_facetec_device_sdk_params(logic))
 }
 
 /// POST /enroll with JSON body.
@@ -84,4 +85,18 @@ where
         .and(warp::get())
         .and(with_arc(logic))
         .and_then(handlers::get_facetec_session_token)
+}
+
+/// GET /facetec-device-sdk-params.
+fn get_facetec_device_sdk_params<S, PK>(
+    logic: Arc<Logic<S, PK>>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
+{
+    warp::path!("facetec-device-sdk-params")
+        .and(warp::get())
+        .and(with_arc(logic))
+        .and_then(handlers::get_facetec_device_sdk_params)
 }

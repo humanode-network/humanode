@@ -16,10 +16,13 @@ mod http;
 mod logic;
 mod sequence;
 
+pub use logic::FaceTecDeviceSdkParams;
+
 /// Initialize the [`warp::Filter`] implementing the HTTP transport for
 /// the robonode.
 pub fn init(
     facetec_api_client: facetec_api_client::Client,
+    facetec_device_sdk_params: FaceTecDeviceSdkParams,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     let logic = logic::Logic {
         locked: Mutex::new(logic::Locked {
@@ -28,6 +31,7 @@ pub fn init(
             signer: (),
             public_key_type: PhantomData::<String>,
         }),
+        facetec_device_sdk_params,
     };
     let log = warp::log("robonode::api");
     root(Arc::new(logic)).with(log)

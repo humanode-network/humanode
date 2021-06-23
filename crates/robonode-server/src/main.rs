@@ -10,13 +10,21 @@
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let addr: std::net::SocketAddr = parse_env_var("ADDR")?;
     let facetec_server_url = parse_env_var("FACETEC_SERVER_URL")?;
-    let facetec_device_key_identifier = parse_env_var("FACETEC_DEVICE_KEY_IDENTIFIER")?;
+    let facetec_device_key_identifier: String = parse_env_var("FACETEC_DEVICE_KEY_IDENTIFIER")?;
+    let facetec_public_face_map_encryption_key =
+        parse_env_var("FACETEC_PUBLIC_FACE_MAP_ENCRYPTION_KEY")?;
+
     let facetec_api_client = facetec_api_client::Client {
         base_url: facetec_server_url,
         reqwest: reqwest::Client::new(),
-        device_key_identifier: facetec_device_key_identifier,
+        device_key_identifier: facetec_device_key_identifier.clone(),
     };
-    let root_filter = robonode_server::init(facetec_api_client);
+    let face_tec_device_sdk_params = robonode_server::FaceTecDeviceSdkParams {
+        device_key_identifier: facetec_device_key_identifier,
+        public_face_map_encryption_key: facetec_public_face_map_encryption_key,
+    };
+
+    let root_filter = robonode_server::init(facetec_api_client, face_tec_device_sdk_params);
     let (addr, server) =
         warp::serve(root_filter).bind_with_graceful_shutdown(addr, shutdown_signal());
     println!("Listening on http://{}", addr);
