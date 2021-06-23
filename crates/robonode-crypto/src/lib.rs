@@ -1,3 +1,5 @@
+//! Cryptographic primitives used by the robonode.
+
 #![warn(
     missing_docs,
     clippy::missing_docs_in_private_items,
@@ -5,6 +7,7 @@
 )]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+/// Edwards 25519 curve cryptography.
 pub mod ed25519 {
 
     /// An Robonode keypair using Ed25519 as its crypto.
