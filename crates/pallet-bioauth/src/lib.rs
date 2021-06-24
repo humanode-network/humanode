@@ -40,7 +40,7 @@ pub struct Authenticate {
 
 /// The state that we keep in the blockchain for the authorized authentication tickets.
 ///
-/// It is decoupled from the [`primitives_bioauth::AuthTicket`], such that it's possible to version
+/// It is decoupled from the [`primitives_auth_ticket::AuthTicket`], such that it's possible to version
 /// and update those independently.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
@@ -51,8 +51,8 @@ pub struct StoredAuthTicket {
     pub nonce: Vec<u8>,
 }
 
-impl From<primitives_bioauth::AuthTicket> for StoredAuthTicket {
-    fn from(val: primitives_bioauth::AuthTicket) -> Self {
+impl From<primitives_auth_ticket::AuthTicket> for StoredAuthTicket {
+    fn from(val: primitives_auth_ticket::AuthTicket) -> Self {
         Self {
             public_key: val.public_key,
             nonce: val.authentication_nonce,
@@ -82,7 +82,7 @@ pub mod pallet {
     use super::{Authenticate, StoredAuthTicket, Verifier};
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
     use frame_system::pallet_prelude::*;
-    use primitives_bioauth::{AuthTicket, OpaqueAuthTicket};
+    use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
     use sp_std::prelude::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.

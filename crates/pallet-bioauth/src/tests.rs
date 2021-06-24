@@ -4,10 +4,11 @@ use crate::{mock::*, Error};
 use frame_support::{assert_noop, assert_ok, weights::DispatchInfo};
 
 pub fn make_input(public_key: &[u8], nonce: &[u8], signature: &[u8]) -> crate::Authenticate {
-    let ticket = primitives_bioauth::OpaqueAuthTicket::from(&primitives_bioauth::AuthTicket {
-        public_key: Vec::from(public_key),
-        authentication_nonce: Vec::from(nonce),
-    });
+    let ticket =
+        primitives_auth_ticket::OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
+            public_key: Vec::from(public_key),
+            authentication_nonce: Vec::from(nonce),
+        });
     crate::Authenticate {
         ticket: ticket.into(),
         ticket_signature: Vec::from(signature),

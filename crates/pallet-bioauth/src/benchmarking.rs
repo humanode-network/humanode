@@ -10,10 +10,11 @@ use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_call
 use frame_system::RawOrigin;
 
 fn make_bench_input(s: u32) -> Authenticate {
-    let ticket = primitives_bioauth::OpaqueAuthTicket::from(&primitives_bioauth::AuthTicket {
-        public_key: Vec::from(format!("pk{}", s)),
-        authentication_nonce: Vec::from(format!("nonce{}", s)),
-    });
+    let ticket =
+        primitives_auth_ticket::OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
+            public_key: Vec::from(format!("pk{}", s)),
+            authentication_nonce: Vec::from(format!("nonce{}", s)),
+        });
     crate::Authenticate {
         ticket: ticket.into(),
         ticket_signature: Vec::from(&b"TODO"[..]),
