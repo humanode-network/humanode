@@ -118,9 +118,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.40"
+version = "1.0.41"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28b2cd92db5cbd74e8e5028f7e27dd7aa3090e89e4f2a197cc7c8dfb69c7063b"
+checksum = "15af2628f6890fe2609a3b91bef4c83450512802e59489f9c1cb1fa5df064a61"
 
 [[package]]
 name = "approx"
@@ -463,7 +463,7 @@ dependencies = [
  "primitives-liveness-data",
  "robonode-client",
  "serde",
- "tokio 1.6.1",
+ "tokio 1.6.2",
 ]
 
 [[package]]
@@ -1102,7 +1102,7 @@ dependencies = [
  "crossbeam-queue 0.3.2",
  "num_cpus",
  "serde",
- "tokio 1.6.1",
+ "tokio 1.6.2",
 ]
 
 [[package]]
@@ -1287,7 +1287,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "wiremock",
 ]
 
@@ -1843,9 +1843,9 @@ checksum = "9b919933a397b79c37e33b77bb2aa3dc8eb6e165ad809e58ff75bc7db2e34574"
 
 [[package]]
 name = "globset"
-version = "0.4.6"
+version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c152169ef1e421390738366d2f796655fec62621dabbd0fd476f905934061e4a"
+checksum = "f0fc1b9fa0e64ffb1aa5b95daa0f0f167734fd528b7c02eabc581d9d843649b1"
 dependencies = [
  "aho-corasick",
  "bstr",
@@ -1919,7 +1919,7 @@ dependencies = [
  "http 0.2.4",
  "indexmap",
  "slab",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "tokio-util 0.6.7",
  "tracing",
 ]
@@ -2167,7 +2167,7 @@ dependencies = [
  "sc-transaction-pool",
  "sp-consensus",
  "sp-runtime",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "tracing",
 ]
 
@@ -2201,6 +2201,7 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "hex-literal",
  "pallet-balances",
+ "pallet-bioauth",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-transaction-payment",
@@ -2292,7 +2293,7 @@ dependencies = [
  "itoa",
  "pin-project-lite 0.2.6",
  "socket2 0.4.0",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "tower-service",
  "tracing",
  "want 0.3.0",
@@ -2325,7 +2326,7 @@ dependencies = [
  "bytes 1.0.1",
  "hyper 0.14.9",
  "native-tls",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "tokio-native-tls",
 ]
 
@@ -2499,9 +2500,9 @@ dependencies = [
 
 [[package]]
 name = "ipnet"
-version = "2.3.0"
+version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47be2f14c678be2fdcab04ab1171db51b2762ce6f0a8ee87c8dd4a04ed216135"
+checksum = "68f2d64f2edebec4ce84ad108148e67e1064789bee435edc5b60ad398714a3a9"
 
 [[package]]
 name = "itertools"
@@ -2749,9 +2750,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.96"
+version = "0.2.97"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5600b4e6efc5421841a2138a6b082e07fe12f9aaa12783d50e5d13325b26b4fc"
+checksum = "12b8adadd720df158f4d70dfe7ccc6adb0472d7c55ca83445f6a5ab3e36f8fb6"
 
 [[package]]
 name = "libloading"
@@ -3510,9 +3511,9 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "0.7.11"
+version = "0.7.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf80d3e903b34e0bd7282b218398aec54e082c840d9baf8339e0080a0c542956"
+checksum = "8c2bdb6314ec10835cd3293dd268473a835c02b7b352e788be788b3c6ca6bb16"
 dependencies = [
  "libc",
  "log",
@@ -3838,18 +3839,18 @@ dependencies = [
 
 [[package]]
 name = "object"
-version = "0.25.2"
+version = "0.25.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8bc1d42047cf336f0f939c99e97183cf31551bf0f2865a2ec9c8d91fd4ffb5e"
+checksum = "a38f2be3697a57b4060074ff41b44c16870d916ad7877c17696e063257482bc7"
 dependencies = [
  "memchr",
 ]
 
 [[package]]
 name = "once_cell"
-version = "1.7.2"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af8b08b04175473088b46763e51ee54da5f9a164bc162f615b91bc179dbf15a3"
+checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
 dependencies = [
  "parking_lot 0.11.1",
 ]
@@ -3919,6 +3920,22 @@ dependencies = [
  "log",
  "max-encoded-len",
  "parity-scale-codec",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-bioauth"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "primitives-auth-ticket",
+ "serde",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
@@ -4353,14 +4370,14 @@ checksum = "3831453b3449ceb48b6d9c7ad7c96d5ea673e9b470a1dc578c2ce6521230884c"
 
 [[package]]
 name = "polling"
-version = "2.0.3"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4fc12d774e799ee9ebae13f4076ca003b40d18a11ac0f3641e6f899618580b7b"
+checksum = "92341d779fa34ea8437ef4d82d440d5e1ce3f3ff7f824aa64424cd481f9a1f25"
 dependencies = [
  "cfg-if 1.0.0",
  "libc",
  "log",
- "wepoll-sys",
+ "wepoll-ffi",
  "winapi 0.3.9",
 ]
 
@@ -4551,9 +4568,9 @@ dependencies = [
 
 [[package]]
 name = "pwasm-utils"
-version = "0.18.0"
+version = "0.18.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0e517f47d9964362883182404b68d0b6949382c0baa40aa5ffca94f5f1e3481"
+checksum = "f0c1a2f10b47d446372a4f397c58b329aaea72b2daf9395a623a411cb8ccb54f"
 dependencies = [
  "byteorder",
  "log",
@@ -4613,7 +4630,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ef9e7e66b4468674bfcb0c81af8b7fa0bb154fa9f28eb840da5c447baeb8d7e"
 dependencies = [
  "libc",
- "rand_chacha 0.3.0",
+ "rand_chacha 0.3.1",
  "rand_core 0.6.2",
  "rand_hc 0.3.0",
 ]
@@ -4630,9 +4647,9 @@ dependencies = [
 
 [[package]]
 name = "rand_chacha"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e12735cf05c9e10bf21534da50a147b924d555dc7a547c42e6bb2d5b6017ae0d"
+checksum = "e6c10a63a0fa32252be49d21e7709d4d4baf8d231c2dbce1eaa8141b9b127d88"
 dependencies = [
  "ppv-lite86",
  "rand_core 0.6.2",
@@ -4804,7 +4821,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "tokio-native-tls",
  "url 2.2.2",
  "wasm-bindgen",
@@ -4853,7 +4870,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "wiremock",
 ]
 
@@ -4874,7 +4891,7 @@ dependencies = [
  "primitives-liveness-data",
  "reqwest",
  "serde",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "warp",
 ]
 
@@ -7032,9 +7049,9 @@ checksum = "1e81da0851ada1f3e9d4312c704aa4f8806f0f9d69faaf8df2f3464b4a9437c2"
 
 [[package]]
 name = "syn"
-version = "1.0.72"
+version = "1.0.73"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1e8cdbefb79a9a5a65e0db8b47b723ee907b7c7f8496c76a1770b5c310bab82"
+checksum = "f71489ff30030d2ae598524f61326b902466f72a0fb1a8564c001cc63425bcc7"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -7213,15 +7230,15 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.6.1"
+version = "1.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a38d31d7831c6ed7aad00aa4c12d9375fd225a6dd77da1d25b707346319a975"
+checksum = "aea337f72e96efe29acc234d803a5981cd9a2b6ed21655cd7fc21cfe021e8ec7"
 dependencies = [
  "autocfg",
  "bytes 1.0.1",
  "libc",
  "memchr",
- "mio 0.7.11",
+ "mio 0.7.13",
  "num_cpus",
  "once_cell",
  "parking_lot 0.11.1",
@@ -7326,7 +7343,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f7d995660bd2b7f8c1568414c1126076c13fbb725c40112dc0120b78eb9b717b"
 dependencies = [
  "native-tls",
- "tokio 1.6.1",
+ "tokio 1.6.2",
 ]
 
 [[package]]
@@ -7377,7 +7394,7 @@ checksum = "f8864d706fdb3cc0843a49647ac892720dac98a6eeb818b77190592cf4994066"
 dependencies = [
  "futures-core",
  "pin-project-lite 0.2.6",
- "tokio 1.6.1",
+ "tokio 1.6.2",
 ]
 
 [[package]]
@@ -7442,7 +7459,7 @@ dependencies = [
  "futures-util",
  "log",
  "pin-project 1.0.7",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "tungstenite",
 ]
 
@@ -7504,7 +7521,7 @@ dependencies = [
  "futures-sink",
  "log",
  "pin-project-lite 0.2.6",
- "tokio 1.6.1",
+ "tokio 1.6.2",
 ]
 
 [[package]]
@@ -7944,7 +7961,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_urlencoded",
- "tokio 1.6.1",
+ "tokio 1.6.2",
  "tokio-stream",
  "tokio-tungstenite",
  "tokio-util 0.6.7",
@@ -8112,10 +8129,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "wepoll-sys"
-version = "3.0.1"
+name = "wepoll-ffi"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fcb14dea929042224824779fbc82d9fab8d2e6d3cbc0ac404de8edf489e77ff"
+checksum = "d743fdedc5c64377b5fc2bc036b01c7fd642205a0d96356034ae3404d49eb7fb"
 dependencies = [
  "cc",
 ]
@@ -8214,7 +8231,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "tokio 1.6.1",
+ "tokio 1.6.2",
 ]
 
 [[package]]

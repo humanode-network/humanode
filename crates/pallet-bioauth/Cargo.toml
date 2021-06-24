@@ -1,0 +1,35 @@
+[package]
+name = "pallet-bioauth"
+version = "0.1.0"
+edition = "2018"
+authors = ["Humanode Team <core@humanode.io>"]
+publish = false
+
+[dependencies]
+primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
+
+codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
+frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+serde = { version = "1", features = ["derive"], optional = true }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[dev-dependencies]
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[features]
+default = ["std"]
+std = [
+  "serde",
+  "primitives-auth-ticket/std",
+  "codec/std",
+  "frame-support/std",
+  "frame-system/std",
+  "frame-benchmarking/std",
+  "sp-std/std",
+]
+runtime-benchmarks = ["frame-benchmarking"]
+try-runtime = ["frame-support/try-runtime"]

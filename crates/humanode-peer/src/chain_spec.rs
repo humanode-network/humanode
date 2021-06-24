@@ -1,7 +1,8 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
 use humanode_runtime::{
-    AccountId, BalancesConfig, GenesisConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    AccountId, BalancesConfig, GenesisConfig, PalletBioauthConfig, Signature, SudoConfig,
+    SystemConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_runtime::{
@@ -64,6 +65,9 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 pallet_sudo: SudoConfig {
                     // Assign network admin rights.
                     key: get_account_id_from_seed::<sr25519::Public>("Alice"),
+                },
+                pallet_bioauth: PalletBioauthConfig {
+                    stored_auth_tickets: Vec::new(),
                 },
             }
         },
