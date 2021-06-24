@@ -3,8 +3,8 @@
 use std::{convert::TryFrom, marker::PhantomData};
 
 use facetec_api_client::{
-    Client as FaceTecClient, DBEnrollError, DBEnrollRequest, DBSearchError, DBSearchRequest,
-    Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FaceTecError,
+    Client as FacetecClient, DBEnrollError, DBEnrollRequest, DBSearchError, DBSearchRequest,
+    Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FacetecError,
     SessionTokenError,
 };
 use primitives_bioauth::{AuthTicket, LivenessData, OpaqueAuthTicket, OpaqueLivenessData};
@@ -29,7 +29,7 @@ pub trait Verifier {
 
 /// The FaceTec Device SDK params.
 #[derive(Debug)]
-pub struct FaceTecDeviceSdkParams {
+pub struct FacetecDeviceSdkParams {
     /// The public FaceMap encription key.
     pub public_face_map_encryption_key: String,
     /// The device key identifier.
@@ -46,7 +46,7 @@ where
     /// The sequence number.
     pub sequence: Sequence,
     /// The client for the FaceTec Server API.
-    pub facetec: FaceTecClient,
+    pub facetec: FacetecClient,
     /// The utility for signing the responses.
     pub signer: S,
     /// Public key type to use under the hood.
@@ -64,7 +64,7 @@ where
     /// the lock.
     pub locked: Mutex<Locked<S, PK>>,
     /// The FaceTec Device SDK params to expose.
-    pub facetec_device_sdk_params: FaceTecDeviceSdkParams,
+    pub facetec_device_sdk_params: FacetecDeviceSdkParams,
 }
 
 /// The request for the enroll operation.
@@ -92,19 +92,19 @@ pub enum EnrollError {
     PersonAlreadyEnrolled,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(FaceTecError<Enrollment3DError>),
+    InternalErrorEnrollment(FacetecError<Enrollment3DError>),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(FaceTecError<DBSearchError>),
+    InternalErrorDbSearch(FacetecError<DBSearchError>),
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorDbEnroll(FaceTecError<DBEnrollError>),
+    InternalErrorDbEnroll(FacetecError<DBEnrollError>),
     /// Internal error at 3D-DB enrollment due to unsuccessful response.
     InternalErrorDbEnrollUnsuccessful,
 }
@@ -146,7 +146,7 @@ where
             })
             .await
             .map_err(|err| match err {
-                FaceTecError::Call(Enrollment3DError::BadRequest(
+                FacetecError::Call(Enrollment3DError::BadRequest(
                     Enrollment3DErrorBadRequest { error_message, .. },
                 )) if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE => {
                     EnrollError::PublicKeyAlreadyUsed
@@ -243,14 +243,14 @@ pub enum AuthenticateError {
     SignatureValidationFailed,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(FaceTecError<Enrollment3DError>),
+    InternalErrorEnrollment(FacetecError<Enrollment3DError>),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(FaceTecError<DBSearchError>),
+    InternalErrorDbSearch(FacetecError<DBSearchError>),
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB search due to match-level mismatch in
@@ -362,17 +362,17 @@ where
 
 /// The response for the get facetec session token operation.
 #[derive(Debug, Serialize)]
-pub struct GetFaceTecSessionTokenResponse {
+pub struct GetFacetecSessionTokenResponse {
     /// The session token returned by the FaceTec Server.
     session_token: String,
 }
 
 /// Errors for the get facetec session token operation.
 #[derive(Debug)]
-pub enum GetFaceTecSessionTokenError {
+pub enum GetFacetecSessionTokenError {
     /// Internal error at session token retrieval due to the underlying request
     /// error at the API level.
-    InternalErrorSessionToken(FaceTecError<SessionTokenError>),
+    InternalErrorSessionToken(FacetecError<SessionTokenError>),
     /// Internal error at session token retrieval due to unsuccessful response.
     InternalErrorSessionTokenUnsuccessful,
 }
@@ -385,20 +385,20 @@ where
     /// Get a FaceTec Session Token.
     pub async fn get_facetec_session_token(
         &self,
-    ) -> Result<GetFaceTecSessionTokenResponse, GetFaceTecSessionTokenError> {
+    ) -> Result<GetFacetecSessionTokenResponse, GetFacetecSessionTokenError> {
         let unlocked = self.locked.lock().await;
 
         let res = unlocked
             .facetec
             .session_token()
             .await
-            .map_err(GetFaceTecSessionTokenError::InternalErrorSessionToken)?;
+            .map_err(GetFacetecSessionTokenError::InternalErrorSessionToken)?;
 
         if !res.success {
-            return Err(GetFaceTecSessionTokenError::InternalErrorSessionTokenUnsuccessful);
+            return Err(GetFacetecSessionTokenError::InternalErrorSessionTokenUnsuccessful);
         }
 
-        Ok(GetFaceTecSessionTokenResponse {
+        Ok(GetFacetecSessionTokenResponse {
             session_token: res.session_token,
         })
     }
