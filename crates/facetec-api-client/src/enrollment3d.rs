@@ -13,8 +13,7 @@ impl Client {
         &self,
         req: Enrollment3DRequest<'_>,
     ) -> Result<Enrollment3DResponse, Error<Enrollment3DError>> {
-        let url = format!("{}/enrollment-3d", self.base_url);
-        let res = self.reqwest.post(url).json(&req).send().await?;
+        let res = self.build_post("/enrollment-3d", &req).send().await?;
         match res.status() {
             StatusCode::OK => Ok(res.json().await?),
             StatusCode::BAD_REQUEST => Err(Error::Call(Enrollment3DError::BadRequest(
@@ -275,6 +274,7 @@ mod tests {
         let client = Client {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
+            device_key_identifier: "my device key identifier".into(),
         };
 
         let actual_response = client.enrollment_3d(sample_request).await.unwrap();
@@ -303,6 +303,7 @@ mod tests {
         let client = Client {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
+            device_key_identifier: "my device key identifier".into(),
         };
 
         let actual_error = client.enrollment_3d(sample_request).await.unwrap_err();
@@ -346,6 +347,7 @@ mod tests {
         let client = Client {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
+            device_key_identifier: "my device key identifier".into(),
         };
 
         let actual_error = client.enrollment_3d(sample_request).await.unwrap_err();

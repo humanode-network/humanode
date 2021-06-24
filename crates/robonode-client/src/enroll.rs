@@ -22,9 +22,10 @@ impl Client {
 #[derive(Debug, Serialize)]
 pub struct EnrollRequest<'a> {
     /// The public key to be used as an identity.
-    public_key: &'a [u8],
-    /// The FaceTec 3D FaceScan to associate with the identity.
-    face_scan: &'a [u8],
+    pub public_key: &'a [u8],
+    /// An opaque liveness data, containing the FaceScan to associate with the identity and
+    /// the rest of the parameters necessary to conduct a liveness check.
+    pub liveness_data: &'a [u8],
 }
 
 /// The enroll-specific error condition.
@@ -48,12 +49,12 @@ mod tests {
     #[test]
     fn request_serialization() {
         let expected_request = serde_json::json!({
-            "face_scan": [1, 2, 3],
+            "liveness_data": [1, 2, 3],
             "public_key": [4, 5, 6],
         });
 
         let actual_request = serde_json::to_value(&EnrollRequest {
-            face_scan: &[1, 2, 3],
+            liveness_data: &[1, 2, 3],
             public_key: &[4, 5, 6],
         })
         .unwrap();
@@ -66,7 +67,7 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         let sample_request = EnrollRequest {
-            face_scan: b"dummy face scan",
+            liveness_data: b"dummy liveness data",
             public_key: b"123",
         };
 
@@ -90,7 +91,7 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         let sample_request = EnrollRequest {
-            face_scan: b"dummy face scan",
+            liveness_data: b"dummy liveness data",
             public_key: b"123",
         };
 
@@ -115,7 +116,7 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         let sample_request = EnrollRequest {
-            face_scan: b"dummy face scan",
+            liveness_data: b"dummy liveness data",
             public_key: b"123",
         };
         let sample_response = "Some error text";

@@ -24,11 +24,12 @@ impl Client {
 /// Input data for the authenticate request.
 #[derive(Debug, Serialize)]
 pub struct AuthenticateRequest<'a> {
-    /// The FaceTec 3D FaceScan to associate with the identity.
-    face_scan: &'a [u8],
-    /// The signature of the FaceTec 3D FaceScan, proving the posession of the
+    /// An opaque liveness data, containing the FaceScan to match the identity with and
+    /// the rest of the parameters necessary to conduct a liveness check.
+    pub liveness_data: &'a [u8],
+    /// The signature of the liveness data, proving the possession of the
     /// private key by the issuer of this request.
-    face_scan_signature: &'a [u8],
+    pub liveness_data_signature: &'a [u8],
 }
 
 /// Input data for the authenticate request.
@@ -62,13 +63,13 @@ mod tests {
     #[test]
     fn request_serialization() {
         let expected_request = serde_json::json!({
-            "face_scan": [1, 2, 3],
-            "face_scan_signature": [4, 5, 6],
+            "liveness_data": [1, 2, 3],
+            "liveness_data_signature": [4, 5, 6],
         });
 
         let actual_request = serde_json::to_value(&AuthenticateRequest {
-            face_scan: &[1, 2, 3],
-            face_scan_signature: &[4, 5, 6],
+            liveness_data: &[1, 2, 3],
+            liveness_data_signature: &[4, 5, 6],
         })
         .unwrap();
 
@@ -97,8 +98,8 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         let sample_request = AuthenticateRequest {
-            face_scan: b"dummy face scan",
-            face_scan_signature: b"123",
+            liveness_data: b"dummy liveness data",
+            liveness_data_signature: b"123",
         };
         let sample_response = serde_json::json!({
             "auth_ticket": b"456",
@@ -129,8 +130,8 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         let sample_request = AuthenticateRequest {
-            face_scan: b"dummy face scan",
-            face_scan_signature: b"123",
+            liveness_data: b"dummy liveness data",
+            liveness_data_signature: b"123",
         };
 
         Mock::given(matchers::method("POST"))
@@ -154,8 +155,8 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         let sample_request = AuthenticateRequest {
-            face_scan: b"dummy face scan",
-            face_scan_signature: b"123",
+            liveness_data: b"dummy liveness data",
+            liveness_data_signature: b"123",
         };
         let sample_response = "Some error text";
 

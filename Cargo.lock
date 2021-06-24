@@ -451,6 +451,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "bioauth-flow"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "futures 0.3.15",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "primitives-bioauth",
+ "robonode-client",
+ "serde",
+ "tokio 1.6.1",
+]
+
+[[package]]
 name = "bitflags"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2134,10 +2150,13 @@ name = "humanode-peer"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bioauth-flow",
  "futures 0.3.15",
  "humanode-rpc",
  "humanode-runtime",
  "parity-scale-codec",
+ "reqwest",
+ "robonode-client",
  "sc-basic-authorship",
  "sc-consensus",
  "sc-consensus-manual-seal",
@@ -2156,9 +2175,11 @@ dependencies = [
 name = "humanode-rpc"
 version = "0.1.0"
 dependencies = [
+ "bioauth-flow",
  "humanode-runtime",
  "jsonrpc-core",
  "pallet-transaction-payment-rpc",
+ "robonode-client",
  "sc-rpc",
  "sc-rpc-api",
  "sp-api",
@@ -4843,6 +4864,14 @@ dependencies = [
  "thiserror",
  "tokio 1.6.2",
  "wiremock",
+]
+
+[[package]]
+name = "robonode-crypto"
+version = "0.1.0"
+dependencies = [
+ "hex-literal",
+ "sp-application-crypto",
 ]
 
 [[package]]

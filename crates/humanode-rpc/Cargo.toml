@@ -6,7 +6,9 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
+bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
+robonode-client = { version = "0.1", path = "../robonode-client" }
 
 jsonrpc-core = "15" # TODO: update when `sc-service` bumps it's version
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }

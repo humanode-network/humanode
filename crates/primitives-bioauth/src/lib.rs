@@ -9,5 +9,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod auth_ticket;
+mod liveness_data;
 
 pub use auth_ticket::*;
+pub use liveness_data::*;

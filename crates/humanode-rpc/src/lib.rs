@@ -8,6 +8,7 @@
 
 use std::sync::Arc;
 
+use bioauth_flow::rpc::{Bioauth, BioauthApi, LivenessDataTxSlot};
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index};
 pub use sc_rpc_api::DenyUnsafe;
 use sp_api::ProvideRuntimeApi;
@@ -21,8 +22,12 @@ pub struct Deps<C, P> {
     pub client: Arc<C>,
     /// Transaction pool instance.
     pub pool: Arc<P>,
-    /// Whether to deny unsafe calls
+    /// Whether to deny unsafe calls.
     pub deny_unsafe: DenyUnsafe,
+    /// An ready robonode API client to tunnel the calls to.
+    pub robonode_client: Arc<robonode_client::Client>,
+    /// The liveness data tx slot to use in the bioauth flow RPC.
+    pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
 }
 
 /// Instantiate all RPC extensions.
@@ -44,6 +49,8 @@ where
         client,
         pool,
         deny_unsafe,
+        robonode_client,
+        bioauth_flow_slot,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -54,6 +61,11 @@ where
 
     io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
         Arc::clone(&client),
+    )));
+
+    io.extend_with(BioauthApi::to_delegate(Bioauth::new(
+        robonode_client,
+        bioauth_flow_slot,
     )));
 
     io

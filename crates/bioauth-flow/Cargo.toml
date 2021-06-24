@@ -1,0 +1,19 @@
+[package]
+name = "bioauth-flow"
+version = "0.1.0"
+edition = "2018"
+authors = ["Humanode Team <core@humanode.io>"]
+publish = false
+
+[dependencies]
+primitives-bioauth = { version = "0.1", path = "../primitives-bioauth" }
+robonode-client = { version = "0.1", path = "../robonode-client" }
+
+anyhow = "1"
+async-trait = "0.1"
+futures = "0.3"
+jsonrpc-core = "15" # TODO: update when `sc-service` bumps it's version
+jsonrpc-core-client = "15" # TODO: update when `sc-service` bumps it's version
+jsonrpc-derive = "15" # TODO: update when `sc-service` bumps it's version
+serde = "1"
+tokio = "1"

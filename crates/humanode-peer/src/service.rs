@@ -70,14 +70,28 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
             block_announce_validator_builder: None,
         })?;
 
+    let robonode_url =
+        std::env::var("ROBONODE_URL").unwrap_or_else(|_| "http://127.0.0.1:3033".into());
+    let robonode_client = Arc::new(robonode_client::Client {
+        base_url: robonode_url,
+        reqwest: reqwest::Client::new(),
+    });
+
+    let (bioauth_flow_rpc_slot, _bioauth_flow_provider_slot) =
+        bioauth_flow::rpc::new_liveness_data_tx_slot();
+
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
+        let robonode_client = Arc::clone(&robonode_client);
+        let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
         Box::new(move |deny_unsafe, _| {
             humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
                 deny_unsafe,
+                robonode_client: Arc::clone(&robonode_client),
+                bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
             })
         })
     };

@@ -3,10 +3,11 @@
 use std::{convert::TryFrom, marker::PhantomData};
 
 use facetec_api_client::{
-    Client as FaceTecClient, DBEnrollError, DBEnrollRequest, DBSearchError, DBSearchRequest,
-    Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FaceTecError,
+    Client as FacetecClient, DBEnrollError, DBEnrollRequest, DBSearchError, DBSearchRequest,
+    Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FacetecError,
+    SessionTokenError,
 };
-use primitives_bioauth::{AuthTicket, OpaqueAuthTicket};
+use primitives_bioauth::{AuthTicket, LivenessData, OpaqueAuthTicket, OpaqueLivenessData};
 use tokio::sync::Mutex;
 
 use crate::sequence::Sequence;
@@ -26,6 +27,15 @@ pub trait Verifier {
     fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool;
 }
 
+/// The FaceTec Device SDK params.
+#[derive(Debug)]
+pub struct FacetecDeviceSdkParams {
+    /// The public FaceMap encription key.
+    pub public_face_map_encryption_key: String,
+    /// The device key identifier.
+    pub device_key_identifier: String,
+}
+
 /// The inner state, to be hidden behind the mutex to ensure we don't have
 /// access to it unless we lock the mutex.
 pub struct Locked<S, PK>
@@ -36,7 +46,7 @@ where
     /// The sequence number.
     pub sequence: Sequence,
     /// The client for the FaceTec Server API.
-    pub facetec: FaceTecClient,
+    pub facetec: FacetecClient,
     /// The utility for signing the responses.
     pub signer: S,
     /// Public key type to use under the hood.
@@ -53,6 +63,8 @@ where
     /// This way we're ensureing the operations can only be conducted under
     /// the lock.
     pub locked: Mutex<Locked<S, PK>>,
+    /// The FaceTec Device SDK params to expose.
+    pub facetec_device_sdk_params: FacetecDeviceSdkParams,
 }
 
 /// The request for the enroll operation.
@@ -60,14 +72,17 @@ where
 pub struct EnrollRequest {
     /// The public key of the validator.
     public_key: String,
-    /// The face scan that validator owner provided.
-    face_scan: String,
+    /// The liveness data that the validator owner provided.
+    liveness_data: OpaqueLivenessData,
 }
 
 /// The errors on the enroll operation.
+#[derive(Debug)]
 pub enum EnrollError {
     /// The provided public key failed to load because it was invalid.
     InvalidPublicKey,
+    /// The provided opaque liveness data could not be decoded.
+    InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
     /// This FaceScan was rejected.
     FaceScanRejected,
     /// This Public Key was already used.
@@ -77,19 +92,19 @@ pub enum EnrollError {
     PersonAlreadyEnrolled,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(FaceTecError<Enrollment3DError>),
+    InternalErrorEnrollment(FacetecError<Enrollment3DError>),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(FaceTecError<DBSearchError>),
+    InternalErrorDbSearch(FacetecError<DBSearchError>),
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorDbEnroll(FaceTecError<DBEnrollError>),
+    InternalErrorDbEnroll(FacetecError<DBEnrollError>),
     /// Internal error at 3D-DB enrollment due to unsuccessful response.
     InternalErrorDbEnrollUnsuccessful,
 }
@@ -117,18 +132,21 @@ where
             return Err(EnrollError::InvalidPublicKey);
         }
 
+        let liveness_data =
+            LivenessData::try_from(&req.liveness_data).map_err(EnrollError::InvalidLivenessData)?;
+
         let unlocked = self.locked.lock().await;
         let enroll_res = unlocked
             .facetec
             .enrollment_3d(Enrollment3DRequest {
                 external_database_ref_id: &req.public_key,
-                face_scan: &req.face_scan,
-                audit_trail_image: "TODO",
-                low_quality_audit_trail_image: "TODO",
+                face_scan: &liveness_data.face_scan,
+                audit_trail_image: &liveness_data.audit_trail_image,
+                low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
             })
             .await
             .map_err(|err| match err {
-                FaceTecError::Call(Enrollment3DError::BadRequest(
+                FacetecError::Call(Enrollment3DError::BadRequest(
                     Enrollment3DErrorBadRequest { error_message, .. },
                 )) if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE => {
                     EnrollError::PublicKeyAlreadyUsed
@@ -187,11 +205,11 @@ where
 /// The request of the authenticate operation.
 #[derive(Debug, Deserialize)]
 pub struct AuthenticateRequest {
-    /// The FaceScan that node owner provided.
-    face_scan: String,
-    /// The signature of the FaceScan with the private key of the node.
-    /// Proves the posession of the private key by the FaceScan bearer.
-    face_scan_signature: Vec<u8>,
+    /// The liveness data that the validator owner provided.
+    liveness_data: OpaqueLivenessData,
+    /// The signature of the liveness data with the private key of the node.
+    /// Proves the posession of the private key by the liveness data bearer.
+    liveness_data_signature: Vec<u8>,
 }
 
 /// The response of the authenticate operation.
@@ -209,27 +227,30 @@ pub struct AuthenticateResponse {
 }
 
 /// Errors for the authenticate operation.
+#[derive(Debug)]
 pub enum AuthenticateError {
+    /// The provided opaque liveness data could not be decoded.
+    InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
     /// This FaceScan was rejected.
     FaceScanRejected,
     /// This person was not found.
     /// Unually this means they need to enroll, but it can also happen if
     /// matching returns false-negative.
     PersonNotFound,
-    /// The FaceScan signature validation failed.
+    /// The liveness data signature validation failed.
     /// This means that the user might've provided a signature using different
     /// keypair from what was used for the original enrollment.
     SignatureValidationFailed,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(FaceTecError<Enrollment3DError>),
+    InternalErrorEnrollment(FacetecError<Enrollment3DError>),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(FaceTecError<DBSearchError>),
+    InternalErrorDbSearch(FacetecError<DBSearchError>),
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB search due to match-level mismatch in
@@ -249,6 +270,9 @@ where
         &self,
         req: AuthenticateRequest,
     ) -> Result<AuthenticateResponse, AuthenticateError> {
+        let liveness_data = LivenessData::try_from(&req.liveness_data)
+            .map_err(AuthenticateError::InvalidLivenessData)?;
+
         let mut unlocked = self.locked.lock().await;
 
         // Bump the sequence counter.
@@ -262,9 +286,9 @@ where
             .facetec
             .enrollment_3d(Enrollment3DRequest {
                 external_database_ref_id: &tmp_external_database_ref_id,
-                face_scan: &req.face_scan,
-                audit_trail_image: "TODO",
-                low_quality_audit_trail_image: "TODO",
+                face_scan: &liveness_data.face_scan,
+                audit_trail_image: &liveness_data.audit_trail_image,
+                low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
             })
             .await
             .map_err(AuthenticateError::InternalErrorEnrollment)?;
@@ -307,7 +331,7 @@ where
         let public_key = PK::try_from(&found.identifier)
             .map_err(|_| AuthenticateError::InternalErrorInvalidPublicKey)?;
 
-        if !public_key.verify(&req.face_scan, &req.face_scan_signature) {
+        if !public_key.verify(&req.liveness_data, &req.liveness_data_signature) {
             return Err(AuthenticateError::SignatureValidationFailed);
         }
 
@@ -332,6 +356,82 @@ where
         Ok(AuthenticateResponse {
             auth_ticket: opaque_auth_ticket,
             auth_ticket_signature,
+        })
+    }
+}
+
+/// The response for the get facetec session token operation.
+#[derive(Debug, Serialize)]
+pub struct GetFacetecSessionTokenResponse {
+    /// The session token returned by the FaceTec Server.
+    session_token: String,
+}
+
+/// Errors for the get facetec session token operation.
+#[derive(Debug)]
+pub enum GetFacetecSessionTokenError {
+    /// Internal error at session token retrieval due to the underlying request
+    /// error at the API level.
+    InternalErrorSessionToken(FacetecError<SessionTokenError>),
+    /// Internal error at session token retrieval due to unsuccessful response.
+    InternalErrorSessionTokenUnsuccessful,
+}
+
+impl<S, PK> Logic<S, PK>
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
+{
+    /// Get a FaceTec Session Token.
+    pub async fn get_facetec_session_token(
+        &self,
+    ) -> Result<GetFacetecSessionTokenResponse, GetFacetecSessionTokenError> {
+        let unlocked = self.locked.lock().await;
+
+        let res = unlocked
+            .facetec
+            .session_token()
+            .await
+            .map_err(GetFacetecSessionTokenError::InternalErrorSessionToken)?;
+
+        if !res.success {
+            return Err(GetFacetecSessionTokenError::InternalErrorSessionTokenUnsuccessful);
+        }
+
+        Ok(GetFacetecSessionTokenResponse {
+            session_token: res.session_token,
+        })
+    }
+}
+
+/// The response for the get facetec device sdk params operation.
+#[derive(Debug, Serialize)]
+pub struct GetFacetecDeviceSdkParamsResponse {
+    /// The public FaceMap encription key.
+    pub public_face_map_encryption_key: String,
+    /// The device key identifier.
+    pub device_key_identifier: String,
+}
+
+/// Errors for the get facetec device sdk params operation.
+#[derive(Debug)]
+pub enum GetFacetecDeviceSdkParamsError {}
+
+impl<S, PK> Logic<S, PK>
+where
+    S: Signer + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
+{
+    /// Get the FaceTec Device SDK params .
+    pub async fn get_facetec_device_sdk_params(
+        &self,
+    ) -> Result<GetFacetecDeviceSdkParamsResponse, GetFacetecDeviceSdkParamsError> {
+        Ok(GetFacetecDeviceSdkParamsResponse {
+            device_key_identifier: self.facetec_device_sdk_params.device_key_identifier.clone(),
+            public_face_map_encryption_key: self
+                .facetec_device_sdk_params
+                .public_face_map_encryption_key
+                .clone(),
         })
     }
 }
