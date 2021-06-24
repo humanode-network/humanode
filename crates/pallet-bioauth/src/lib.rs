@@ -238,8 +238,8 @@ pub mod pallet {
     }
 }
 
-/// The following section implements the `SignedExtension` trait
-/// for the `CheckBioauthTx` type.
+// The following section implements the `SignedExtension` trait
+// for the `CheckBioauthTx` type.
 
 /// The `CheckBioauthTx` struct.
 #[derive(Encode, Decode, Clone, Eq, PartialEq, Default)]

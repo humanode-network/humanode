@@ -7,14 +7,15 @@ publish = false
 
 [dependencies]
 primitives-bioauth = { version = "0.1", path = "../primitives-bioauth", default-features = false }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
-serde = { version = "1", features = ["derive"], optional = true }
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+serde = { version = "1", features = ["derive"], optional = true }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+substrate-test-runner = { git = "https://github.com/paritytech/substrate-test-runner", branch = "seun-fork-existing-chain" }
 
 [dev-dependencies]
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
