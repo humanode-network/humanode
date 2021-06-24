@@ -6,8 +6,9 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
-primitives-bioauth = { version = "0.1", path = "../primitives-bioauth" }
 facetec-api-client = { version = "0.1", path = "../facetec-api-client" }
+primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket" }
+primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-data" }
 
 reqwest = "0.11"
 serde = { version = "1", features = ["derive"] }

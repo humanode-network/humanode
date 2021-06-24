@@ -10,7 +10,7 @@ use jsonrpc_core::futures::Future;
 use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode;
 use jsonrpc_derive::rpc;
-use primitives_bioauth::LivenessData;
+use primitives_liveness_data::LivenessData;
 use serde::{Deserialize, Serialize};
 
 use crate::flow::LivenessDataProvider;

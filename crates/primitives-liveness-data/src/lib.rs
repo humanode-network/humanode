@@ -1,15 +1,18 @@
 //! Plain and opaque Liveness Data.
 
+#![warn(
+    missing_docs,
+    clippy::missing_docs_in_private_items,
+    clippy::clone_on_ref_ptr
+)]
+
 use core::convert::TryFrom;
 
 use codec::{Decode, Encode};
-#[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
-use sp_std::prelude::*;
 
 /// The data packet required to conduct liveness checks via the FaceTec Server.
-#[derive(Debug, PartialEq, Encode, Decode)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(Debug, PartialEq, Encode, Decode, Serialize, Deserialize)]
 pub struct LivenessData {
     /// The face scan.
     pub face_scan: String,
@@ -37,9 +40,8 @@ impl From<&LivenessData> for Vec<u8> {
 /// Used for signing.
 /// Does not guarantee that the underlying bytes indeed represent a valid [`LivenessData`] packet,
 /// but allows one to attempt to decode one via [`TryFrom`].
-#[derive(Debug, PartialEq, Encode, Decode)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "std", serde(transparent))]
+#[derive(Debug, PartialEq, Encode, Decode, Serialize, Deserialize)]
+#[serde(transparent)]
 pub struct OpaqueLivenessData(pub Vec<u8>);
 
 impl From<Vec<u8>> for OpaqueLivenessData {
@@ -72,9 +74,8 @@ impl From<&LivenessData> for OpaqueLivenessData {
 /// Does not guarantee that the underlying bytes indeed represent a valid [`LivenessData`] packet,
 /// but allows one to attempt to decode one via [`TryFrom`].
 /// For use at encoding and serialization to avoid data copies.
-#[derive(Debug, PartialEq, Encode)]
-#[cfg_attr(feature = "std", derive(Serialize))]
-#[cfg_attr(feature = "std", serde(transparent))]
+#[derive(Debug, PartialEq, Encode, Serialize)]
+#[serde(transparent)]
 pub struct OpaqueLivenessDataRef<'a>(pub &'a [u8]);
 
 impl<'a> From<&'a [u8]> for OpaqueLivenessDataRef<'a> {
