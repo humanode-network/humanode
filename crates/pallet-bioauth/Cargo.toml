@@ -15,7 +15,6 @@ frame-system = { default-features = false, git = "https://github.com/humanode-ne
 serde = { version = "1", features = ["derive"], optional = true }
 sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-substrate-test-runner = { git = "https://github.com/paritytech/substrate-test-runner", branch = "seun-fork-existing-chain" }
 
 [dev-dependencies]
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
