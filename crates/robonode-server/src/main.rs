@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         reqwest: reqwest::Client::new(),
         device_key_identifier: facetec_device_key_identifier.clone(),
     };
-    let face_tec_device_sdk_params = robonode_server::FaceTecDeviceSdkParams {
+    let face_tec_device_sdk_params = robonode_server::FacetecDeviceSdkParams {
         device_key_identifier: facetec_device_key_identifier,
         public_face_map_encryption_key: facetec_public_face_map_encryption_key,
     };

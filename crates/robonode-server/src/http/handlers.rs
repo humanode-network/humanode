@@ -73,5 +73,5 @@ where
 
 impl warp::reject::Reject for logic::EnrollError {}
 impl warp::reject::Reject for logic::AuthenticateError {}
-impl warp::reject::Reject for logic::GetFaceTecSessionTokenError {}
+impl warp::reject::Reject for logic::GetFacetecSessionTokenError {}
 impl warp::reject::Reject for logic::GetFacetecDeviceSdkParamsError {}
