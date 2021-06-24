@@ -7,7 +7,8 @@ use facetec_api_client::{
     Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FacetecError,
     SessionTokenError,
 };
-use primitives_bioauth::{AuthTicket, LivenessData, OpaqueAuthTicket, OpaqueLivenessData};
+use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
+use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use tokio::sync::Mutex;
 
 use crate::sequence::Sequence;

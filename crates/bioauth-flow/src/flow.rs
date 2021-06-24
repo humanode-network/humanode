@@ -2,7 +2,7 @@
 
 use std::marker::PhantomData;
 
-use primitives_bioauth::{LivenessData, OpaqueLivenessData};
+use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
 
 /// Something that can provide us with the [`LivenessData`].

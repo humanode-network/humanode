@@ -6,7 +6,7 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
-primitives-bioauth = { version = "0.1", path = "../primitives-bioauth" }
+primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-data" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
 anyhow = "1"
