@@ -460,7 +460,7 @@ dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
  "jsonrpc-derive",
- "primitives-bioauth",
+ "primitives-liveness-data",
  "robonode-client",
  "serde",
  "tokio 1.6.1",
@@ -4404,12 +4404,20 @@ dependencies = [
 ]
 
 [[package]]
-name = "primitives-bioauth"
+name = "primitives-auth-ticket"
 version = "0.1.0"
 dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-std",
+]
+
+[[package]]
+name = "primitives-liveness-data"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "serde",
 ]
 
 [[package]]
@@ -4862,7 +4870,8 @@ name = "robonode-server"
 version = "0.1.0"
 dependencies = [
  "facetec-api-client",
- "primitives-bioauth",
+ "primitives-auth-ticket",
+ "primitives-liveness-data",
  "reqwest",
  "serde",
  "tokio 1.6.1",

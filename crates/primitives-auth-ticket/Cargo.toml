@@ -1,5 +1,5 @@
 [package]
-name = "primitives-bioauth"
+name = "primitives-auth-ticket"
 version = "0.1.0"
 edition = "2018"
 authors = ["Humanode Team <core@humanode.io>"]
