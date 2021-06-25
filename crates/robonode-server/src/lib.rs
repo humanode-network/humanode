@@ -6,7 +6,7 @@
     clippy::clone_on_ref_ptr
 )]
 
-use std::{marker::PhantomData, sync::Arc};
+use std::{convert::Infallible, marker::PhantomData, sync::Arc};
 
 use http::root;
 use tokio::sync::Mutex;
@@ -29,7 +29,7 @@ pub fn init(
             sequence: sequence::Sequence::new(0),
             facetec: facetec_api_client,
             signer: (),
-            public_key_type: PhantomData::<String>,
+            public_key_type: PhantomData::<ValidatorPublicKeyToDo>,
         }),
         facetec_device_sdk_params,
     };
@@ -44,9 +44,32 @@ impl logic::Signer for () {
     }
 }
 
-// TODO!
-impl logic::Verifier for String {
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
-        todo!()
+/// A temporary validator key mock, that accepts any byte sequences as keys, and consideres any
+/// signatures valid.
+struct ValidatorPublicKeyToDo(Vec<u8>);
+
+#[async_trait::async_trait]
+impl logic::Verifier<Vec<u8>> for ValidatorPublicKeyToDo {
+    type Error = Infallible;
+
+    async fn verify<'a, D>(&self, _data: D, _signature: Vec<u8>) -> Result<bool, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
+        Ok(true)
+    }
+}
+
+impl std::convert::TryFrom<&str> for ValidatorPublicKeyToDo {
+    type Error = ();
+
+    fn try_from(val: &str) -> Result<Self, Self::Error> {
+        Ok(Self(val.into()))
+    }
+}
+
+impl From<ValidatorPublicKeyToDo> for Vec<u8> {
+    fn from(val: ValidatorPublicKeyToDo) -> Self {
+        val.0
     }
 }
