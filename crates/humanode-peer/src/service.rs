@@ -3,10 +3,13 @@
 use std::sync::Arc;
 
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
-use sc_consensus_manual_seal::InstantSealParams;
+use sc_client_api::ExecutorProvider;
+use sc_consensus_aura::{ImportQueueParams, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
+use sp_consensus::SlotData;
+use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -31,11 +34,45 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         Arc::clone(&client),
     );
 
-    let import_queue = sc_consensus_manual_seal::import_queue(
-        Box::new(Arc::clone(&client)),
-        &task_manager.spawn_essential_handle(),
-        config.prometheus_registry(),
-    );
+    let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
+
+    let (grandpa_block_import, _grandpa_link) = sc_finality_grandpa::block_import(
+        Arc::clone(&client),
+        &(Arc::clone(&client) as Arc<_>),
+        select_chain.clone(),
+        None,
+    )?;
+
+    let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
+    let raw_slot_duration = slot_duration.slot_duration();
+    let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
+    let force_authoring = config.force_authoring;
+    let backoff_authoring_blocks: Option<()> = None;
+
+    let import_queue =
+        sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _, _>(ImportQueueParams {
+            block_import: grandpa_block_import.clone(),
+            justification_import: Some(Box::new(grandpa_block_import.clone())),
+            client: Arc::clone(&client),
+            create_inherent_data_providers: move |_, ()| async move {
+                let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+
+                let slot =
+                    sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_duration(
+                        *timestamp,
+                        raw_slot_duration,
+                    );
+
+                Ok((timestamp, slot))
+            },
+            spawner: &task_manager.spawn_essential_handle(),
+            can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(
+                client.executor().clone(),
+            ),
+            registry: config.prometheus_registry(),
+            check_for_equivocation: Default::default(),
+            telemetry: None,
+        })?;
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -44,20 +81,6 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         config.prometheus_registry(),
         None,
     );
-
-    let authorship_future = sc_consensus_manual_seal::run_instant_seal(InstantSealParams {
-        block_import: Arc::clone(&client),
-        env: proposer_factory,
-        client: Arc::clone(&client),
-        pool: Arc::clone(transaction_pool.pool()),
-        select_chain: sc_consensus::LongestChain::new(Arc::clone(&backend)),
-        consensus_data_provider: None,
-        create_inherent_data_providers: move |_, ()| async move { Ok(()) },
-    });
-
-    task_manager
-        .spawn_essential_handle()
-        .spawn_blocking("instant-seal", authorship_future);
 
     let (network, system_rpc_tx, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
@@ -98,8 +121,8 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
     };
 
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
-        network,
-        client,
+        network: Arc::clone(&network),
+        client: Arc::clone(&client),
         keystore: keystore_container.sync_keystore(),
         task_manager: &mut task_manager,
         transaction_pool,
@@ -112,6 +135,40 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         telemetry: None,
     })?;
 
+    let aura =
+        sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _, _>(StartAuraParams {
+            slot_duration,
+            client: Arc::clone(&client),
+            select_chain,
+            block_import: grandpa_block_import,
+            proposer_factory,
+            create_inherent_data_providers: move |_, ()| async move {
+                let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+
+                let slot =
+                    sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_duration(
+                        *timestamp,
+                        raw_slot_duration,
+                    );
+
+                Ok((timestamp, slot))
+            },
+            force_authoring,
+            backoff_authoring_blocks,
+            keystore: keystore_container.sync_keystore(),
+            can_author_with,
+            sync_oracle: network,
+            block_proposal_slot_portion: SlotProportion::new(2f32 / 3f32),
+            telemetry: None,
+        })?;
+
+    // the AURA authoring task is considered essential, i.e. if it
+    // fails we take down the service with it.
+    task_manager
+        .spawn_essential_handle()
+        .spawn_blocking("aura", aura);
+
     network_starter.start_network();
+
     Ok(task_manager)
 }
