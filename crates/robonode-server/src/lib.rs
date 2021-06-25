@@ -23,12 +23,13 @@ pub use logic::FacetecDeviceSdkParams;
 pub fn init(
     facetec_api_client: facetec_api_client::Client,
     facetec_device_sdk_params: FacetecDeviceSdkParams,
+    robonode_keypair: robonode_crypto::Keypair,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     let logic = logic::Logic {
         locked: Mutex::new(logic::Locked {
             sequence: sequence::Sequence::new(0),
             facetec: facetec_api_client,
-            signer: (),
+            signer: robonode_keypair,
             public_key_type: PhantomData::<ValidatorPublicKeyToDo>,
         }),
         facetec_device_sdk_params,
@@ -37,10 +38,17 @@ pub fn init(
     root(Arc::new(logic)).with(log)
 }
 
-// TODO!
-impl logic::Signer for () {
-    fn sign<D: AsRef<[u8]>>(&self, _data: &D) -> Vec<u8> {
-        todo!()
+#[async_trait::async_trait]
+impl logic::Signer<Vec<u8>> for robonode_crypto::Keypair {
+    type Error = Infallible;
+
+    async fn sign<'a, D>(&self, data: D) -> Result<Vec<u8>, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
+        use robonode_crypto::ed25519_dalek::Signer;
+        let sig = Signer::sign(self, data.as_ref());
+        Ok(sig.as_ref().to_owned())
     }
 }
 

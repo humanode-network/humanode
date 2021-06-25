@@ -4889,9 +4889,11 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "facetec-api-client",
+ "hex",
  "primitives-auth-ticket",
  "primitives-liveness-data",
  "reqwest",
+ "robonode-crypto",
  "serde",
  "tokio 1.6.2",
  "warp",
