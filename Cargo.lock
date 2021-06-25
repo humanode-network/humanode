@@ -4892,6 +4892,7 @@ dependencies = [
  "hex",
  "primitives-auth-ticket",
  "primitives-liveness-data",
+ "rand 0.7.3",
  "reqwest",
  "robonode-crypto",
  "serde",
