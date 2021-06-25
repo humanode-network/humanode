@@ -2,10 +2,11 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, BalancesConfig, GenesisConfig, PalletBioauthConfig, RobonodePublicKeyWrapper,
-    Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    AccountId, AuraConfig, BalancesConfig, GenesisConfig, PalletBioauthConfig,
+    RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
+use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_runtime::{
     app_crypto::{sr25519, Pair, Public},
     traits::{IdentifyAccount, Verify},
@@ -30,6 +31,11 @@ where
     AccountPublic: From<<TPublic::Pair as Pair>::Public>,
 {
     AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
+}
+
+/// Generate an Aura authority key.
+pub fn authority_keys_from_seed(s: &str) -> AuraId {
+    get_from_seed::<AuraId>(s)
 }
 
 /// A configuration for local testnet.
@@ -67,6 +73,9 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                             1 << 60,
                         ),
                     ],
+                },
+                pallet_aura: AuraConfig {
+                    authorities: vec![authority_keys_from_seed("Alice")],
                 },
                 pallet_sudo: SudoConfig {
                     // Assign network admin rights.
