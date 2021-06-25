@@ -34,8 +34,8 @@ pub fn root<S, PK>(
     logic: Arc<Logic<S, PK>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
+    S: Signer<Vec<u8>> + Send + Sync + 'static,
+    PK: Send + Sync + for<'a> TryFrom<&'a str> + Verifier<Vec<u8>> + Into<Vec<u8>>,
 {
     enroll(Arc::clone(&logic))
         .or(authenticate(Arc::clone(&logic)))
@@ -48,7 +48,7 @@ fn enroll<S, PK>(
     logic: Arc<Logic<S, PK>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer + Send + 'static,
+    S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a str>,
 {
     warp::path!("enroll")
@@ -63,8 +63,8 @@ fn authenticate<S, PK>(
     logic: Arc<Logic<S, PK>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
+    S: Signer<Vec<u8>> + Send + Sync + 'static,
+    PK: Send + Sync + for<'a> TryFrom<&'a str> + Verifier<Vec<u8>> + Into<Vec<u8>>,
 {
     warp::path!("authenticate")
         .and(warp::post())
@@ -78,8 +78,8 @@ fn get_facetec_session_token<S, PK>(
     logic: Arc<Logic<S, PK>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
+    S: Signer<Vec<u8>> + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
 {
     warp::path!("facetec-session-token")
         .and(warp::get())
@@ -92,8 +92,8 @@ fn get_facetec_device_sdk_params<S, PK>(
     logic: Arc<Logic<S, PK>>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
+    S: Signer<Vec<u8>> + Send + 'static,
+    PK: Send + for<'a> TryFrom<&'a str>,
 {
     warp::path!("facetec-device-sdk-params")
         .and(warp::get())

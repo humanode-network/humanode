@@ -4887,6 +4887,7 @@ dependencies = [
 name = "robonode-server"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "facetec-api-client",
  "primitives-auth-ticket",
  "primitives-liveness-data",
