@@ -4878,8 +4878,9 @@ dependencies = [
 name = "robonode-crypto"
 version = "0.1.0"
 dependencies = [
+ "ed25519-dalek",
  "hex-literal",
- "sp-application-crypto",
+ "rand 0.7.3",
 ]
 
 [[package]]
