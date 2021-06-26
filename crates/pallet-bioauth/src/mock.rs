@@ -1,7 +1,9 @@
 use crate as pallet_bioauth;
-use codec::Encode;
-use frame_support::parameter_types;
+use codec::{Decode, Encode};
+use frame_support::{parameter_types, traits::GenesisBuild};
 use frame_system as system;
+#[cfg(feature = "std")]
+use serde::{Deserialize, Serialize};
 use sp_core::{crypto::Infallible, H256};
 use sp_runtime::{
     testing::Header,
@@ -23,7 +25,8 @@ frame_support::construct_runtime!(
     }
 );
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Hash, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct MockVerifier;
 
 impl super::Verifier<Vec<u8>> for MockVerifier {
@@ -40,7 +43,6 @@ impl super::Verifier<Vec<u8>> for MockVerifier {
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
-    pub const RobonodeSignatureVerifierInstance: MockVerifier = MockVerifier;
 }
 
 impl system::Config for Test {
@@ -71,14 +73,17 @@ impl system::Config for Test {
 
 impl pallet_bioauth::Config for Test {
     type Event = Event;
-    type RobonodeSignatureVerifier = MockVerifier;
-    type RobonodeSignatureVerifierInstance = RobonodeSignatureVerifierInstance;
+    type RobonodePublicKey = MockVerifier;
 }
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-    system::GenesisConfig::default()
+    let mut storage = system::GenesisConfig::default()
         .build_storage::<Test>()
-        .unwrap()
-        .into()
+        .unwrap();
+
+    let config = pallet_bioauth::GenesisConfig::<Test>::default();
+    config.assimilate_storage(&mut storage).unwrap();
+
+    storage.into()
 }

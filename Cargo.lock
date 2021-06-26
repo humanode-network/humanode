@@ -3934,6 +3934,7 @@ dependencies = [
  "parity-scale-codec",
  "primitives-auth-ticket",
  "serde",
+ "serde-nostd",
  "sp-core",
  "sp-io",
  "sp-runtime",

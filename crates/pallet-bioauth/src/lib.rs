@@ -96,10 +96,8 @@ pub mod pallet {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-        type RobonodeSignatureVerifier: Verifier<Vec<u8>> + Encode;
-
-        #[pallet::constant]
-        type RobonodeSignatureVerifierInstance: Get<Self::RobonodeSignatureVerifier>;
+        /// The public key of the robonode.
+        type RobonodePublicKey: Verifier<Vec<u8>> + codec::FullCodec + Default + serde_nostd::SerDe;
     }
 
     #[pallet::pallet]
@@ -111,26 +109,34 @@ pub mod pallet {
     #[pallet::getter(fn stored_auth_tickets)]
     pub type StoredAuthTickets<T> = StorageValue<_, Vec<StoredAuthTicket>, ValueQuery>;
 
+    /// The public key of the robonode.
+    #[pallet::storage]
+    #[pallet::getter(fn robonode_public_key)]
+    pub type RobonodePublicKey<T> = StorageValue<_, <T as Config>::RobonodePublicKey>;
+
     #[pallet::genesis_config]
-    pub struct GenesisConfig {
+    pub struct GenesisConfig<T: Config> {
         pub stored_auth_tickets: Vec<StoredAuthTicket>,
+        pub robonode_public_key: <T as Config>::RobonodePublicKey,
     }
 
     // The default value for the genesis config type.
     #[cfg(feature = "std")]
-    impl Default for GenesisConfig {
+    impl<T: Config> Default for GenesisConfig<T> {
         fn default() -> Self {
             Self {
                 stored_auth_tickets: Default::default(),
+                robonode_public_key: Default::default(),
             }
         }
     }
 
     // The build of genesis for the pallet.
     #[pallet::genesis_build]
-    impl<T: Config> GenesisBuild<T> for GenesisConfig {
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
             <StoredAuthTickets<T>>::put(&self.stored_auth_tickets);
+            <RobonodePublicKey<T>>::put(&self.robonode_public_key);
         }
     }
 
@@ -147,6 +153,8 @@ pub mod pallet {
     /// Possible error conditions during `authenticate` call processing.
     #[pallet::error]
     pub enum Error<T> {
+        /// The robonode public key is not at the chain state.
+        RobonodePublicKeyIsAbsent,
         /// We were unable to validate the signature, i.e. it is uknclear whether it is valid or
         /// not.
         UnableToValidateAuthTicketSignature,
@@ -228,7 +236,8 @@ pub mod pallet {
         pub fn extract_auth_ticket_checked(
             req: Authenticate,
         ) -> Result<StoredAuthTicket, Error<T>> {
-            let robonode_public_key = T::RobonodeSignatureVerifierInstance::get();
+            let robonode_public_key =
+                RobonodePublicKey::<T>::get().ok_or(Error::<T>::RobonodePublicKeyIsAbsent)?;
             let signature_valid = robonode_public_key
                 .verify(&req.ticket, req.ticket_signature.clone())
                 .map_err(|_| Error::<T>::UnableToValidateAuthTicketSignature)?;
