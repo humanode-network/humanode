@@ -11,9 +11,7 @@ pub use pallet::*;
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
     traits::{DispatchInfoOf, Dispatchable, SignedExtension},
-    transaction_validity::{
-        InvalidTransaction, TransactionValidity, TransactionValidityError, ValidTransaction,
-    },
+    transaction_validity::{InvalidTransaction, TransactionValidity, TransactionValidityError},
 };
 use sp_std::fmt::Debug;
 use sp_std::marker::PhantomData;
@@ -80,7 +78,7 @@ pub mod pallet {
     use core::convert::TryInto;
 
     use super::{Authenticate, StoredAuthTicket, Verifier};
-    use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
+    use frame_support::{dispatch::DispatchResult, pallet_prelude::*, storage::types::ValueQuery};
     use frame_system::pallet_prelude::*;
     use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
     use sp_std::prelude::*;
@@ -104,7 +102,7 @@ pub mod pallet {
     /// A list of the authorized auth tickets.
     #[pallet::storage]
     #[pallet::getter(fn stored_auth_tickets)]
-    pub type StoredAuthTickets<T> = StorageValue<_, Vec<StoredAuthTicket>>;
+    pub type StoredAuthTickets<T> = StorageValue<_, Vec<StoredAuthTicket>, ValueQuery>;
 
     #[pallet::genesis_config]
     pub struct GenesisConfig {
@@ -193,9 +191,7 @@ pub mod pallet {
             let event_stored_auth_ticket = stored_auth_ticket.clone();
 
             // Update storage.
-            <StoredAuthTickets<T>>::try_mutate(move |maybe_list| {
-                let list = maybe_list.get_or_insert_with(Default::default);
-
+            <StoredAuthTickets<T>>::try_mutate(move |list| {
                 match validate_authentication_attempt(list, &stored_auth_ticket) {
                     Err(AuthenticationAttemptValidationError::NonceConflict) => {
                         Err(Error::<T>::NonceAlreadyUsed)
@@ -292,10 +288,7 @@ where
                 )
                 .map_err(|_e| TransactionValidityError::Invalid(InvalidTransaction::Call))?;
 
-                let list = match StoredAuthTickets::<T>::get() {
-                    Some(v) => v,
-                    None => return Ok(ValidTransaction::default()),
-                };
+                let list = StoredAuthTickets::<T>::get();
 
                 validate_authentication_attempt(&list, &stored_auth_ticket)
                     .map_err(|_e| TransactionValidityError::Invalid(InvalidTransaction::Call))?;
