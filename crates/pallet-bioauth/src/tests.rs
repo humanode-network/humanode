@@ -1,6 +1,7 @@
 use crate as pallet_bioauth;
 use crate::*;
 use crate::{mock::*, Error};
+use frame_support::pallet_prelude::ValidTransaction;
 use frame_support::{assert_noop, assert_ok, weights::DispatchInfo};
 
 pub fn make_input(public_key: &[u8], nonce: &[u8], signature: &[u8]) -> crate::Authenticate {
@@ -24,10 +25,10 @@ fn it_permits_authnetication_with_an_empty_state() {
         assert_ok!(Bioauth::authenticate(Origin::signed(1), input));
         assert_eq!(
             Bioauth::stored_auth_tickets(),
-            Some(vec![crate::StoredAuthTicket {
+            vec![crate::StoredAuthTicket {
                 public_key: Vec::from(&b"qwe"[..]),
                 nonce: Vec::from(&b"rty"[..]),
-            }])
+            }]
         );
     });
 }
