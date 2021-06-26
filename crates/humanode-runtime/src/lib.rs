@@ -12,6 +12,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use sp_api::impl_runtime_apis;
+use sp_core::crypto::Infallible;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify};
 use sp_runtime::{
@@ -184,8 +185,13 @@ impl frame_system::Config for Runtime {
 #[derive(Encode)]
 pub struct RobonodeVerifier;
 
-impl pallet_bioauth::Verifier for RobonodeVerifier {
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
+impl pallet_bioauth::Verifier<Vec<u8>> for RobonodeVerifier {
+    type Error = Infallible;
+
+    fn verify<'a, D>(&self, _data: D, _signature: Vec<u8>) -> Result<bool, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
         todo!();
     }
 }

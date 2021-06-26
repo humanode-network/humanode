@@ -2,7 +2,7 @@ use crate as pallet_bioauth;
 use codec::Encode;
 use frame_support::parameter_types;
 use frame_system as system;
-use sp_core::H256;
+use sp_core::{crypto::Infallible, H256};
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
@@ -26,9 +26,14 @@ frame_support::construct_runtime!(
 #[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Hash, Debug)]
 pub struct MockVerifier;
 
-impl super::Verifier for MockVerifier {
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, signature: &S) -> bool {
-        signature.as_ref().starts_with(b"should_be_valid")
+impl super::Verifier<Vec<u8>> for MockVerifier {
+    type Error = Infallible;
+
+    fn verify<'a, D>(&self, _data: D, signature: Vec<u8>) -> Result<bool, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
+        Ok(signature.starts_with(b"should_be_valid"))
     }
 }
 

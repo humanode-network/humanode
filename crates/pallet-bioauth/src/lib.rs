@@ -60,10 +60,17 @@ impl From<primitives_auth_ticket::AuthTicket> for StoredAuthTicket {
 
 /// Verifier provides the verification of the data accompanied with the
 /// signature or proof data.
-pub trait Verifier {
+/// A non-async (blocking) variant, for use at runtime.
+pub trait Verifier<S: ?Sized> {
+    /// Verification error.
+    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
+    type Error;
+
     /// Verify that provided data is indeed correctly signed with the provided
     /// signature.
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool;
+    fn verify<'a, D>(&self, data: D, signature: S) -> Result<bool, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a;
 }
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
@@ -89,7 +96,7 @@ pub mod pallet {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-        type RobonodeSignatureVerifier: Verifier + Encode;
+        type RobonodeSignatureVerifier: Verifier<Vec<u8>> + Encode;
 
         #[pallet::constant]
         type RobonodeSignatureVerifierInstance: Get<Self::RobonodeSignatureVerifier>;
@@ -140,7 +147,10 @@ pub mod pallet {
     /// Possible error conditions during `authenticate` call processing.
     #[pallet::error]
     pub enum Error<T> {
-        /// The signature for the auth ticket did not validate.
+        /// We were unable to validate the signature, i.e. it is uknclear whether it is valid or
+        /// not.
+        UnableToValidateAuthTicketSignature,
+        /// The signature for the auth ticket is invalid.
         AuthTicketSignatureInvalid,
         /// Unable to parse the auth ticket.
         UnableToParseAuthTicket,
@@ -219,7 +229,10 @@ pub mod pallet {
             req: Authenticate,
         ) -> Result<StoredAuthTicket, Error<T>> {
             let robonode_public_key = T::RobonodeSignatureVerifierInstance::get();
-            if !robonode_public_key.verify(&req.ticket, &req.ticket_signature) {
+            let signature_valid = robonode_public_key
+                .verify(&req.ticket, req.ticket_signature.clone())
+                .map_err(|_| Error::<T>::UnableToValidateAuthTicketSignature)?;
+            if !signature_valid {
                 return Err(Error::<T>::AuthTicketSignatureInvalid);
             }
 
