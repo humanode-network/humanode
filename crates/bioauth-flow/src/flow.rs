@@ -21,9 +21,16 @@ pub trait LivenessDataProvider {
 }
 
 /// Signer provides signatures for the data.
-pub trait Signer {
-    /// Sign the provided data and return the signature.
-    fn sign<D: AsRef<[u8]>>(&self, data: &D) -> Vec<u8>;
+#[async_trait::async_trait]
+pub trait Signer<S> {
+    /// Signature error.
+    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
+    type Error;
+
+    /// Sign the provided data and return the signature, or an error if the siging fails.
+    async fn sign<'a, D>(&self, data: D) -> Result<S, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a;
 }
 
 /// The necessary components for the bioauth flow.
@@ -76,7 +83,8 @@ where
 
 impl<PK, LDP> Flow<PK, LDP>
 where
-    PK: Signer,
+    PK: Signer<Vec<u8>>,
+    <PK as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
     LDP: LivenessDataProvider,
     <LDP as LivenessDataProvider>::Error: Send + Sync + std::error::Error + 'static,
 {
@@ -89,7 +97,7 @@ where
     ) -> Result<robonode_client::AuthenticateResponse, anyhow::Error> {
         let opaque_liveness_data = self.obtain_opaque_liveness_data().await?;
 
-        let signature = public_key.sign(&opaque_liveness_data);
+        let signature = public_key.sign(&opaque_liveness_data).await?;
 
         let response = self
             .robonode_client
