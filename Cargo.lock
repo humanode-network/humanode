@@ -6025,6 +6025,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "serde-nostd"
+version = "0.1.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
 name = "serde_derive"
 version = "1.0.126"
 source = "registry+https://github.com/rust-lang/crates.io-index"
