@@ -1,8 +1,9 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
+use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, BalancesConfig, GenesisConfig, PalletBioauthConfig, Signature, SudoConfig,
-    SystemConfig, WASM_BINARY,
+    AccountId, BalancesConfig, GenesisConfig, PalletBioauthConfig, RobonodePublicKeyWrapper,
+    Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_runtime::{
@@ -36,6 +37,11 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
         WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
 
+    let robonode_public_key = RobonodePublicKeyWrapper::from_bytes(
+        &hex!("d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a")[..],
+    )
+    .map_err(|err| format!("{:?}", err))?;
+
     Ok(ChainSpec::from_genesis(
         // Name
         "Local Testnet",
@@ -68,6 +74,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 },
                 pallet_bioauth: PalletBioauthConfig {
                     stored_auth_tickets: Vec::new(),
+                    robonode_public_key,
                 },
             }
         },
