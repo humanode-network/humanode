@@ -11,8 +11,8 @@ const plan = async () => {
   // in `no_std` env.
   const packagesWithStdFeature = packagesWithFeature(metadata, "std");
 
-  // Prepare a command line for `no_std` package testing.
-  const noStdCargoArgs = `--no-default-features ${packagesWithStdFeature
+  // Prepare a command line for `no_std` package testing under WASM.
+  const noStdCargoArgs = `--no-default-features --target wasm32-unknown-unknown ${packagesWithStdFeature
     .map((name) => `-p ${name}`)
     .join(" ")}`;
 
