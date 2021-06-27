@@ -38,8 +38,8 @@ jobs:
         id: set-matrix
         with:
           script: |
-            const matrix = require('./.github/scripts/plan.js')
-            core.setOutput('matrix', matrix)
+            const plan = require('./.github/scripts/plan.js')
+            plan().then(matrix => core.setOutput('matrix', matrix))
       - name: Dump matrix context
         env:
           MATRIX_CONTEXT: ${{ toJson(steps.set-matrix.outputs.matrix) }}
