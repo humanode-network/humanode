@@ -8,7 +8,7 @@ const allPlatforms = {
     os: "ubuntu-20.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     essential: true,
-    env: {}
+    env: {},
   },
   windows: {
     name: "Windows",
@@ -16,7 +16,7 @@ const allPlatforms = {
     buildEnvScript: buildEnvScriptPath("windows.sh"),
     essential: false,
     env: {
-      CARGO_INCREMENTAL: "0"
+      CARGO_INCREMENTAL: "0",
     },
   },
   macos: {
@@ -51,28 +51,34 @@ const allModes = {
     cargoArgs: "-- --check",
     platformIndependent: true,
     cargoCacheKey: "code",
-  }
+  },
 };
 
 // Figure out whether we want to run non-essential checks.
 const essentialOnly = true; // hardcoding for now
 
 // Compute the effective list of platforms to use.
-const effectivePlatforms = Object.values(allPlatforms).filter(platform => !essentialOnly || platform.essential);
+const effectivePlatforms = Object.values(allPlatforms).filter(
+  (platform) => !essentialOnly || platform.essential
+);
 
 // Compute the effective list of modes that should run for each of the platforms.
-const effectiveModes = Object.values(allModes).filter(mode => !mode.platformIndependent);
+const effectiveModes = Object.values(allModes).filter(
+  (mode) => !mode.platformIndependent
+);
 
 // Compute the effective list of modes that are platform indepedent and only
 // have to be run once.
-const effectiveIndepModes = Object.values(allModes).filter(mode => mode.platformIndependent);
+const effectiveIndepModes = Object.values(allModes).filter(
+  (mode) => mode.platformIndependent
+);
 
 // Compute the individual mixins for indep modes.
-const effectiveIncludes = effectiveIndepModes.map(mode => ({
+const effectiveIncludes = effectiveIndepModes.map((mode) => ({
   // Run the platform independent tests on Ubuntu.
   platform: allPlatforms.ubuntu,
   mode,
-}))
+}));
 
 // Prepare the effective matrix.
 const matrix = {
@@ -82,7 +88,7 @@ const matrix = {
 };
 
 // Print the matrix, useful for local debugging.
-console.log(JSON.stringify(matrix, null, '  '));
+console.log(JSON.stringify(matrix, null, "  "));
 
 // Export the matrix so it's available to the Github Actions script.
 module.exports = matrix;
