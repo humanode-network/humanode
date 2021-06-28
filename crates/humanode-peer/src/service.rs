@@ -36,6 +36,9 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
 
+    // Grandpa is introduced here not as an additional Grandpa consensus part but as a part of Aura
+    // in terms of defining  block_import object for sc_consensus_aura::import_queue.
+    // It was done according the commit of Aura improvements (#8881).
     let (grandpa_block_import, _grandpa_link) = sc_finality_grandpa::block_import(
         Arc::clone(&client),
         &(Arc::clone(&client) as Arc<_>),
