@@ -275,6 +275,8 @@ pub enum AuthenticateError {
     InternalErrorInvalidPublicKey,
     /// Internal error at signature verification.
     InternalErrorSignatureVerificationFailed,
+    /// Internal error when signing auth ticket.
+    InternalErrorAuthTicketSigningFailed,
 }
 
 impl<S, PK> Logic<S, PK>
@@ -377,7 +379,7 @@ where
             .signer
             .sign(&opaque_auth_ticket)
             .await
-            .map_err(|_| unreachable!("error is infallible"))?;
+            .map_err(|_| AuthenticateError::InternalErrorAuthTicketSigningFailed)?;
 
         Ok(AuthenticateResponse {
             auth_ticket: opaque_auth_ticket,
