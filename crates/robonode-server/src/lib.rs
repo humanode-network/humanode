@@ -6,7 +6,7 @@
     clippy::clone_on_ref_ptr
 )]
 
-use std::{marker::PhantomData, sync::Arc};
+use std::{convert::Infallible, marker::PhantomData, sync::Arc};
 
 use http::root;
 use tokio::sync::Mutex;
@@ -23,13 +23,14 @@ pub use logic::FacetecDeviceSdkParams;
 pub fn init(
     facetec_api_client: facetec_api_client::Client,
     facetec_device_sdk_params: FacetecDeviceSdkParams,
+    robonode_keypair: robonode_crypto::Keypair,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     let logic = logic::Logic {
         locked: Mutex::new(logic::Locked {
             sequence: sequence::Sequence::new(0),
             facetec: facetec_api_client,
-            signer: (),
-            public_key_type: PhantomData::<String>,
+            signer: robonode_keypair,
+            public_key_type: PhantomData::<ValidatorPublicKeyToDo>,
         }),
         facetec_device_sdk_params,
     };
@@ -37,16 +38,46 @@ pub fn init(
     root(Arc::new(logic)).with(log)
 }
 
-// TODO!
-impl logic::Signer for () {
-    fn sign<D: AsRef<[u8]>>(&self, _data: &D) -> Vec<u8> {
-        todo!()
+#[async_trait::async_trait]
+impl logic::Signer<Vec<u8>> for robonode_crypto::Keypair {
+    type Error = Infallible;
+
+    async fn sign<'a, D>(&self, data: D) -> Result<Vec<u8>, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
+        use robonode_crypto::ed25519_dalek::Signer;
+        let sig = Signer::sign(self, data.as_ref());
+        Ok(sig.as_ref().to_owned())
     }
 }
 
-// TODO!
-impl logic::Verifier for String {
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
-        todo!()
+/// A temporary validator key mock, that accepts any byte sequences as keys, and consideres any
+/// signatures valid.
+struct ValidatorPublicKeyToDo(Vec<u8>);
+
+#[async_trait::async_trait]
+impl logic::Verifier<Vec<u8>> for ValidatorPublicKeyToDo {
+    type Error = Infallible;
+
+    async fn verify<'a, D>(&self, _data: D, _signature: Vec<u8>) -> Result<bool, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
+        Ok(true)
+    }
+}
+
+impl std::convert::TryFrom<&str> for ValidatorPublicKeyToDo {
+    type Error = ();
+
+    fn try_from(val: &str) -> Result<Self, Self::Error> {
+        Ok(Self(val.into()))
+    }
+}
+
+impl From<ValidatorPublicKeyToDo> for Vec<u8> {
+    fn from(val: ValidatorPublicKeyToDo) -> Self {
+        val.0
     }
 }

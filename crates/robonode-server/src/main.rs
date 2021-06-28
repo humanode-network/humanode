@@ -13,6 +13,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let facetec_device_key_identifier: String = parse_env_var("FACETEC_DEVICE_KEY_IDENTIFIER")?;
     let facetec_public_face_map_encryption_key =
         parse_env_var("FACETEC_PUBLIC_FACE_MAP_ENCRYPTION_KEY")?;
+    let robonode_keypair_string: String = parse_env_var("ROBONODE_KEYPAIR")?;
+    let robonode_keypair_bytes = hex::decode(robonode_keypair_string)?;
+    let robonode_keypair = robonode_crypto::Keypair::from_bytes(robonode_keypair_bytes.as_slice())?;
 
     let facetec_api_client = facetec_api_client::Client {
         base_url: facetec_server_url,
@@ -24,7 +27,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         public_face_map_encryption_key: facetec_public_face_map_encryption_key,
     };
 
-    let root_filter = robonode_server::init(facetec_api_client, face_tec_device_sdk_params);
+    let root_filter = robonode_server::init(
+        facetec_api_client,
+        face_tec_device_sdk_params,
+        robonode_keypair,
+    );
     let (addr, server) =
         warp::serve(root_filter).bind_with_graceful_shutdown(addr, shutdown_signal());
     println!("Listening on http://{}", addr);

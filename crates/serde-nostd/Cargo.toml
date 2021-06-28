@@ -1,0 +1,13 @@
+[package]
+name = "serde-nostd"
+version = "0.1.0"
+edition = "2018"
+authors = ["Humanode Team <core@humanode.io>"]
+publish = false
+
+[dependencies]
+serde = { version = "1", features = ["derive"], optional = true }
+
+[features]
+default = ["std"]
+std = ["serde"]

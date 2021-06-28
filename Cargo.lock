@@ -2152,6 +2152,7 @@ dependencies = [
  "async-trait",
  "bioauth-flow",
  "futures 0.3.15",
+ "hex-literal",
  "humanode-rpc",
  "humanode-runtime",
  "parity-scale-codec",
@@ -2207,6 +2208,7 @@ dependencies = [
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
+ "robonode-crypto",
  "serde",
  "sp-api",
  "sp-block-builder",
@@ -3934,6 +3936,7 @@ dependencies = [
  "parity-scale-codec",
  "primitives-auth-ticket",
  "serde",
+ "serde-nostd",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -4878,18 +4881,23 @@ dependencies = [
 name = "robonode-crypto"
 version = "0.1.0"
 dependencies = [
+ "ed25519-dalek",
  "hex-literal",
- "sp-application-crypto",
+ "rand 0.7.3",
 ]
 
 [[package]]
 name = "robonode-server"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "facetec-api-client",
+ "hex",
  "primitives-auth-ticket",
  "primitives-liveness-data",
+ "rand 0.7.3",
  "reqwest",
+ "robonode-crypto",
  "serde",
  "tokio 1.6.2",
  "warp",
@@ -6017,6 +6025,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec7505abeacaec74ae4778d9d9328fe5a5d04253220a85c4ee022239fc996d03"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde-nostd"
+version = "0.1.0"
+dependencies = [
+ "serde",
 ]
 
 [[package]]

@@ -11,6 +11,8 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+#[cfg(feature = "std")]
+use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, Verify};
@@ -25,7 +27,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
-use codec::Encode;
+use codec::{Decode, Encode};
 pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{KeyOwnerProofSystem, Randomness},
@@ -181,19 +183,56 @@ impl frame_system::Config for Runtime {
     type OnSetCode = ();
 }
 
-#[derive(Encode)]
-pub struct RobonodeVerifier;
+/// The wrapper for the robonode public key, that enables ssotring it in the state.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Encode, Decode)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct RobonodePublicKeyWrapper([u8; 32]);
 
-impl pallet_bioauth::Verifier for RobonodeVerifier {
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, _data: &D, _signature: &S) -> bool {
-        todo!();
+impl RobonodePublicKeyWrapper {
+    pub fn from_bytes(
+        bytes: &[u8],
+    ) -> Result<Self, robonode_crypto::ed25519_dalek::ed25519::Error> {
+        let actual_key = robonode_crypto::PublicKey::from_bytes(bytes)?;
+        Ok(Self(actual_key.to_bytes()))
+    }
+}
+
+/// The error that can occur during robonode signature validation.
+pub enum RobonodePublicKeyWrapperError {
+    UnableToParseKey,
+    UnableToParseSignature,
+    UnableToValidateSignature(robonode_crypto::ed25519_dalek::ed25519::Error),
+}
+
+impl pallet_bioauth::Verifier<Vec<u8>> for RobonodePublicKeyWrapper {
+    type Error = RobonodePublicKeyWrapperError;
+
+    fn verify<'a, D>(&self, data: D, signature: Vec<u8>) -> Result<bool, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
+        use core::convert::TryInto;
+        use robonode_crypto::Verifier;
+
+        let actual_key = robonode_crypto::PublicKey::from_bytes(&self.0)
+            .map_err(|_| RobonodePublicKeyWrapperError::UnableToParseKey)?;
+
+        let signature: robonode_crypto::Signature = signature
+            .as_slice()
+            .try_into()
+            .map_err(|_| RobonodePublicKeyWrapperError::UnableToParseSignature)?;
+
+        actual_key
+            .verify(data.as_ref(), &signature)
+            .map_err(RobonodePublicKeyWrapperError::UnableToValidateSignature)?;
+
+        Ok(true)
     }
 }
 
 parameter_types! {
     pub const ExistentialDeposit: u128 = 500;
     pub const MaxLocks: u32 = 50;
-    pub const RobonodeSignatureVerifierInstance: RobonodeVerifier = RobonodeVerifier;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -226,8 +265,7 @@ impl pallet_sudo::Config for Runtime {
 
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
-    type RobonodeSignatureVerifier = RobonodeVerifier;
-    type RobonodeSignatureVerifierInstance = RobonodeSignatureVerifierInstance;
+    type RobonodePublicKey = RobonodePublicKeyWrapper;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
@@ -243,7 +281,7 @@ construct_runtime!(
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
-        PalletBioauth: pallet_bioauth::{Pallet, Config, Call, Storage, Event<T>},
+        PalletBioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>},
     }
 );
 

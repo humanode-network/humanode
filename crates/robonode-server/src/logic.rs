@@ -15,17 +15,31 @@ use crate::sequence::Sequence;
 use serde::{Deserialize, Serialize};
 
 /// Signer provides signatures for the data.
-pub trait Signer {
-    /// Sign the provided data and return the signature.
-    fn sign<D: AsRef<[u8]>>(&self, data: &D) -> Vec<u8>;
+#[async_trait::async_trait]
+pub trait Signer<S> {
+    /// Signature error.
+    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
+    type Error;
+
+    /// Sign the provided data and return the signature, or an error if the siging fails.
+    async fn sign<'a, D>(&self, data: D) -> Result<S, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a;
 }
 
 /// Verifier provides the verification of the data accompanied with the
 /// signature or proof data.
-pub trait Verifier {
+#[async_trait::async_trait]
+pub trait Verifier<S: ?Sized> {
+    /// Verification error.
+    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
+    type Error;
+
     /// Verify that provided data is indeed correctly signed with the provided
     /// signature.
-    fn verify<D: AsRef<[u8]>, S: AsRef<[u8]>>(&self, data: &D, signature: &S) -> bool;
+    async fn verify<'a, D>(&self, data: D, signature: S) -> Result<bool, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a;
 }
 
 /// The FaceTec Device SDK params.
@@ -41,7 +55,7 @@ pub struct FacetecDeviceSdkParams {
 /// access to it unless we lock the mutex.
 pub struct Locked<S, PK>
 where
-    S: Signer + 'static,
+    S: Signer<Vec<u8>> + 'static,
     PK: Send + for<'a> TryFrom<&'a str>,
 {
     /// The sequence number.
@@ -57,7 +71,7 @@ where
 /// The overall generic logic.
 pub struct Logic<S, PK>
 where
-    S: Signer + Send + 'static,
+    S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a str>,
 {
     /// The mutex over the locked portions of the logic.
@@ -124,7 +138,7 @@ const MATCH_LEVEL: i64 = 10;
 
 impl<S, PK> Logic<S, PK>
 where
-    S: Signer + Send + 'static,
+    S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a str>,
 {
     /// An enroll invocation handler.
@@ -241,7 +255,7 @@ pub enum AuthenticateError {
     /// The liveness data signature validation failed.
     /// This means that the user might've provided a signature using different
     /// keypair from what was used for the original enrollment.
-    SignatureValidationFailed,
+    SignatureInvalid,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
     InternalErrorEnrollment(FacetecError<Enrollment3DError>),
@@ -259,12 +273,16 @@ pub enum AuthenticateError {
     InternalErrorDbSearchMatchLevelMismatch,
     /// Internal error at public key loading due to invalid public key.
     InternalErrorInvalidPublicKey,
+    /// Internal error at signature verification.
+    InternalErrorSignatureVerificationFailed,
+    /// Internal error when signing auth ticket.
+    InternalErrorAuthTicketSigningFailed,
 }
 
 impl<S, PK> Logic<S, PK>
 where
-    S: Signer + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str> + Verifier + Into<Vec<u8>>,
+    S: Signer<Vec<u8>> + Send + 'static,
+    PK: Send + Sync + for<'a> TryFrom<&'a str> + Verifier<Vec<u8>> + Into<Vec<u8>>,
 {
     /// An authenticate invocation handler.
     pub async fn authenticate(
@@ -332,8 +350,13 @@ where
         let public_key = PK::try_from(&found.identifier)
             .map_err(|_| AuthenticateError::InternalErrorInvalidPublicKey)?;
 
-        if !public_key.verify(&req.liveness_data, &req.liveness_data_signature) {
-            return Err(AuthenticateError::SignatureValidationFailed);
+        let signature_valid = public_key
+            .verify(&req.liveness_data, req.liveness_data_signature)
+            .await
+            .map_err(|_| AuthenticateError::InternalErrorSignatureVerificationFailed)?;
+
+        if !signature_valid {
+            return Err(AuthenticateError::SignatureInvalid);
         }
 
         // Prepare an authentication nonce from the sequence number.
@@ -352,7 +375,11 @@ where
 
         // Sign the auth ticket with our private key, so that later on it's possible to validate
         // this ticket was issues by us.
-        let auth_ticket_signature = unlocked.signer.sign(&opaque_auth_ticket);
+        let auth_ticket_signature = unlocked
+            .signer
+            .sign(&opaque_auth_ticket)
+            .await
+            .map_err(|_| AuthenticateError::InternalErrorAuthTicketSigningFailed)?;
 
         Ok(AuthenticateResponse {
             auth_ticket: opaque_auth_ticket,
@@ -380,7 +407,7 @@ pub enum GetFacetecSessionTokenError {
 
 impl<S, PK> Logic<S, PK>
 where
-    S: Signer + Send + 'static,
+    S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a str>,
 {
     /// Get a FaceTec Session Token.
@@ -420,7 +447,7 @@ pub enum GetFacetecDeviceSdkParamsError {}
 
 impl<S, PK> Logic<S, PK>
 where
-    S: Signer + Send + 'static,
+    S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a str>,
 {
     /// Get the FaceTec Device SDK params .
