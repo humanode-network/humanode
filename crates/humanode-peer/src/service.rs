@@ -162,7 +162,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
             telemetry: None,
         })?;
 
-    // the AURA authoring task is considered essential, i.e. if it
+    // The AURA authoring task is considered essential, i.e. if it
     // fails we take down the service with it.
     task_manager
         .spawn_essential_handle()
