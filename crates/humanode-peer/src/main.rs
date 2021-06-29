@@ -18,7 +18,7 @@ async fn main() {
     let logger = LoggerBuilder::new("");
     logger.init().unwrap();
 
-    let mut task_manager = service::new_full(config::make()).unwrap();
+    let mut task_manager = service::new_full(config::make()).await.unwrap();
 
     tokio::select! {
         res = task_manager.future() => res.unwrap(),

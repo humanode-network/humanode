@@ -22,7 +22,7 @@ native_executor_instance!(
 
 /// Create a "full" node (full is in terms of substrate).
 /// We don't support other node types yet either way, so this is the only way to create a node.
-pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
+pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
     let (client, backend, keystore_container, mut task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config, None)?;
     let client = Arc::new(client);
