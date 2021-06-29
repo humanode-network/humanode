@@ -11,6 +11,7 @@ use sc_tracing::logging::LoggerBuilder;
 mod chain_spec;
 mod config;
 mod service;
+mod validator_key;
 
 #[tokio::main]
 async fn main() {
