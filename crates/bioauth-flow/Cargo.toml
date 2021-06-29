@@ -11,9 +11,9 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 
 anyhow = "1"
 async-trait = "0.1"
-futures = "0.3"
+futures = { version = "0.3", features = ["compat", "bilock", "unstable"] }
 jsonrpc-core = "15" # TODO: update when `sc-service` bumps it's version
 jsonrpc-core-client = "15" # TODO: update when `sc-service` bumps it's version
 jsonrpc-derive = "15" # TODO: update when `sc-service` bumps it's version
 serde = "1"
-tokio = "1"
+tokio = { version = "1", features = ["rt-multi-thread"] }
