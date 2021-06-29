@@ -10,6 +10,7 @@ use sc_tracing::logging::LoggerBuilder;
 
 mod chain_spec;
 mod config;
+mod qrcode;
 mod service;
 mod validator_key;
 

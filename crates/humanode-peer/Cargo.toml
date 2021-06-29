@@ -15,6 +15,7 @@ async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 futures = "0.3"
 hex-literal = "0.3"
+qr2term = "0.2"
 reqwest = "0.11"
 sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -31,3 +32,4 @@ sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
+url = "2"

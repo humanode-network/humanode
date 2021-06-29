@@ -114,6 +114,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         })
     };
 
+    let rpc_port = config.rpc_http.expect("HTTP RPC must be on").port();
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network: Arc::clone(&network),
         client: Arc::clone(&client),
@@ -170,18 +171,32 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         validator_public_key_type: PhantomData::<crate::validator_key::FakeTodo>,
     };
 
+    let webapp_url = std::env::var("WEBAPP_URL")
+        .unwrap_or_else(|_| "https://webapp-test-1.dev.humanode.io".into());
+    // TODO: more advanced host address detection is needed to things work within the same LAN.
+    let rpc_url =
+        std::env::var("RPC_URL").unwrap_or_else(|_| format!("http://localhost:{}", rpc_port));
+    let webapp_qrcode =
+        crate::qrcode::WebApp::new(&webapp_url, &rpc_url).map_err(ServiceError::Other)?;
+
     let bioauth_flow_future = Box::pin(async move {
         info!("bioauth flow starting up");
         let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
         if should_enroll {
             info!("bioauth flow - enrolling in progress");
+
+            webapp_qrcode.print();
+
             flow.enroll(crate::validator_key::FakeTodo("TODO"))
                 .await
                 .expect("enroll failed");
+
             info!("bioauth flow - enrolling complete");
         }
 
         info!("bioauth flow - authentication in progress");
+
+        webapp_qrcode.print();
 
         let result = flow
             .authenticate(crate::validator_key::FakeTodo("TODO"))
