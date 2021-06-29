@@ -20,7 +20,6 @@ sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", b
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -28,7 +27,6 @@ sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }

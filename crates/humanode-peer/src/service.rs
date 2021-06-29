@@ -36,17 +36,6 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
 
-    // Grandpa is introduced here not as an additional Grandpa consensus part but as a part of Aura
-    // in terms of defining  block_import object for sc_consensus_aura::import_queue.
-    // It was done according the commit of Aura improvements (#8881).
-    // URL: https://github.com/paritytech/substrate/commit/72e2c34695e839c2550b1b2736b9569ba8085bc1#diff-e4828de483d0a4dc84075504cd27c85f0368ef13ee4468efeb3edb387e503586
-    let (grandpa_block_import, _grandpa_link) = sc_finality_grandpa::block_import(
-        Arc::clone(&client),
-        &(Arc::clone(&client) as Arc<_>),
-        select_chain.clone(),
-        None,
-    )?;
-
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
@@ -55,8 +44,8 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
 
     let import_queue =
         sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _, _>(ImportQueueParams {
-            block_import: grandpa_block_import.clone(),
-            justification_import: Some(Box::new(grandpa_block_import.clone())),
+            block_import: Arc::clone(&client),
+            justification_import: None,
             client: Arc::clone(&client),
             create_inherent_data_providers: move |_, ()| async move {
                 let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
@@ -144,7 +133,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
             slot_duration,
             client: Arc::clone(&client),
             select_chain,
-            block_import: grandpa_block_import,
+            block_import: client,
             proposer_factory,
             create_inherent_data_providers: move |_, ()| async move {
                 let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
