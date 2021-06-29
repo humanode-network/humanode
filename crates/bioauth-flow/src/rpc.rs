@@ -21,6 +21,9 @@ pub type Result<T> = std::result::Result<T, RpcError>;
 /// A futures that resolves to the specified `T`, or an [`RpcError`].
 pub type FutureResult<T> = Box<dyn Future<Item = T, Error = RpcError> + Send>;
 
+/// A re-exported tokio runtime handle.
+pub type TokioRuntimeHandle = tokio::runtime::Handle;
+
 /// The parameters necessary to initialize the FaceTec Device SDK.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FacetecDeviceSdkParams {
@@ -67,7 +70,7 @@ where
     inner: Arc<Inner<C>>,
 
     /// Compat tokio runtime.
-    rt: tokio::runtime::Runtime,
+    rt: TokioRuntimeHandle,
 }
 
 impl<C> Bioauth<C>
@@ -75,9 +78,11 @@ where
     C: AsRef<robonode_client::Client>,
 {
     /// Create a new [`Bioauth`] API implementation.
-    pub fn new(robonode_client: C, liveness_data_tx_slot: Arc<LivenessDataTxSlot>) -> Self {
-        // Prepare a runtime for compat.
-        let rt = tokio::runtime::Runtime::new().expect("compat runtime construction failed");
+    pub fn new(
+        robonode_client: C,
+        liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
+        rt: TokioRuntimeHandle,
+    ) -> Self {
         let inner = Inner {
             client: robonode_client,
             liveness_data_tx_slot,

@@ -28,6 +28,8 @@ pub struct Deps<C, P> {
     pub robonode_client: Arc<robonode_client::Client>,
     /// The liveness data tx slot to use in the bioauth flow RPC.
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
+    /// The runtime to run the compat futures at.
+    pub bioauth_runtime_handle: bioauth_flow::rpc::TokioRuntimeHandle,
 }
 
 /// Instantiate all RPC extensions.
@@ -51,6 +53,7 @@ where
         deny_unsafe,
         robonode_client,
         bioauth_flow_slot,
+        bioauth_runtime_handle,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -66,6 +69,7 @@ where
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,
         bioauth_flow_slot,
+        bioauth_runtime_handle,
     )));
 
     io
