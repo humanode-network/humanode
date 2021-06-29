@@ -10,6 +10,7 @@ pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
+use tracing::*;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -170,12 +171,17 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
     };
 
     let bioauth_flow_future = Box::pin(async move {
+        info!("bioauth flow starting up");
         let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
         if should_enroll {
+            info!("bioauth flow - enrolling in progress");
             flow.enroll(crate::validator_key::FakeTodo("TODO"))
                 .await
                 .expect("enroll failed");
+            info!("bioauth flow - enrolling complete");
         }
+
+        info!("bioauth flow - authentication in progress");
 
         let result = flow
             .authenticate(crate::validator_key::FakeTodo("TODO"))
@@ -184,10 +190,10 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
             Ok(v) => v,
             Err(err) => panic!("bioauth failure: {}", err),
         };
-        println!(
-            "We've obtained an auth ticket: {:?}",
-            authenticate_response.auth_ticket
-        );
+
+        info!("bioauth flow - authentication complete");
+
+        info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
     });
 
     task_manager
