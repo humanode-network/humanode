@@ -43,7 +43,7 @@ pub struct Flow<PK, LDP, RC> {
     /// The Robonode API client.
     pub robonode_client: RC,
     /// The type used to encode the public key.
-    pub public_key_type: PhantomData<PK>,
+    pub validator_public_key_type: PhantomData<PK>,
 }
 
 impl<PK, LDP, RC> Flow<PK, LDP, RC>

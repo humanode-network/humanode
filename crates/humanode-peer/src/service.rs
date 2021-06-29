@@ -1,6 +1,6 @@
 //! Initializing, bootstrapping and launching the node from a provided configuration.
 
-use std::sync::Arc;
+use std::{marker::PhantomData, sync::Arc};
 
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::ExecutorProvider;
@@ -93,7 +93,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         reqwest: reqwest::Client::new(),
     });
 
-    let (bioauth_flow_rpc_slot, _bioauth_flow_provider_slot) =
+    let (bioauth_flow_rpc_slot, bioauth_flow_provider_slot) =
         bioauth_flow::rpc::new_liveness_data_tx_slot();
 
     let rpc_extensions_builder = {
@@ -162,6 +162,37 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         .spawn_blocking("aura", aura);
 
     network_starter.start_network();
+
+    let mut flow = bioauth_flow::flow::Flow {
+        liveness_data_provider: bioauth_flow::rpc::Provider::new(bioauth_flow_provider_slot),
+        robonode_client,
+        validator_public_key_type: PhantomData::<crate::validator_key::FakeTodo>,
+    };
+
+    let bioauth_flow_future = Box::pin(async move {
+        let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
+        if should_enroll {
+            flow.enroll(crate::validator_key::FakeTodo("TODO"))
+                .await
+                .expect("enroll failed");
+        }
+
+        let result = flow
+            .authenticate(crate::validator_key::FakeTodo("TODO"))
+            .await;
+        let authenticate_response = match result {
+            Ok(v) => v,
+            Err(err) => panic!("bioauth failure: {}", err),
+        };
+        println!(
+            "We've obtained an auth ticket: {:?}",
+            authenticate_response.auth_ticket
+        );
+    });
+
+    task_manager
+        .spawn_handle()
+        .spawn_blocking("bioauth-flow", bioauth_flow_future);
 
     Ok(task_manager)
 }
