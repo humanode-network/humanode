@@ -2159,15 +2159,18 @@ dependencies = [
  "reqwest",
  "robonode-client",
  "sc-basic-authorship",
+ "sc-client-api",
  "sc-consensus",
- "sc-consensus-manual-seal",
+ "sc-consensus-aura",
  "sc-executor",
  "sc-network",
  "sc-service",
  "sc-tracing",
  "sc-transaction-pool",
  "sp-consensus",
+ "sp-consensus-aura",
  "sp-runtime",
+ "sp-timestamp",
  "tokio 1.6.2",
  "tracing",
 ]
@@ -2201,10 +2204,12 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "hex-literal",
+ "pallet-aura",
  "pallet-balances",
  "pallet-bioauth",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
+ "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
@@ -2212,6 +2217,7 @@ dependencies = [
  "serde",
  "sp-api",
  "sp-block-builder",
+ "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
  "sp-offchain",
@@ -3912,6 +3918,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-aura"
+version = "3.0.0"
+source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "sp-application-crypto",
+ "sp-consensus-aura",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-balances"
 version = "3.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
@@ -3957,6 +3979,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-session"
+version = "3.0.0"
+source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-session",
+ "sp-staking",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-sudo"
 version = "3.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
@@ -3967,6 +4007,23 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-timestamp"
+version = "3.0.0"
+source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "log",
+ "parity-scale-codec",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
+ "sp-timestamp",
 ]
 
 [[package]]
@@ -5186,6 +5243,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-consensus-aura"
+version = "0.9.0"
+source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
+dependencies = [
+ "async-trait",
+ "derive_more",
+ "futures 0.3.15",
+ "futures-timer 3.0.2",
+ "log",
+ "parity-scale-codec",
+ "sc-block-builder",
+ "sc-client-api",
+ "sc-consensus-slots",
+ "sc-telemetry",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-block-builder",
+ "sp-blockchain",
+ "sp-consensus",
+ "sp-consensus-aura",
+ "sp-consensus-slots",
+ "sp-core",
+ "sp-inherents",
+ "sp-io",
+ "sp-keystore",
+ "sp-runtime",
+ "sp-version",
+ "substrate-prometheus-endpoint",
+]
+
+[[package]]
 name = "sc-consensus-babe"
 version = "0.9.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
@@ -5242,41 +5330,6 @@ dependencies = [
  "sc-consensus",
  "sp-blockchain",
  "sp-runtime",
-]
-
-[[package]]
-name = "sc-consensus-manual-seal"
-version = "0.9.0"
-source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
-dependencies = [
- "assert_matches",
- "async-trait",
- "derive_more",
- "futures 0.3.15",
- "jsonrpc-core",
- "jsonrpc-core-client",
- "jsonrpc-derive",
- "log",
- "parity-scale-codec",
- "parking_lot 0.11.1",
- "sc-client-api",
- "sc-consensus-babe",
- "sc-consensus-epochs",
- "sc-transaction-pool",
- "serde",
- "sp-api",
- "sp-blockchain",
- "sp-consensus",
- "sp-consensus-babe",
- "sp-consensus-slots",
- "sp-core",
- "sp-inherents",
- "sp-keyring",
- "sp-keystore",
- "sp-runtime",
- "sp-timestamp",
- "sp-transaction-pool",
- "substrate-prometheus-endpoint",
 ]
 
 [[package]]
@@ -6426,6 +6479,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-consensus-aura"
+version = "0.9.0"
+source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
+dependencies = [
+ "async-trait",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-consensus",
+ "sp-consensus-slots",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std",
+ "sp-timestamp",
+]
+
+[[package]]
 name = "sp-consensus-babe"
 version = "0.9.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
@@ -6598,17 +6668,6 @@ dependencies = [
  "sp-wasm-interface",
  "tracing",
  "tracing-core",
-]
-
-[[package]]
-name = "sp-keyring"
-version = "3.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
-dependencies = [
- "lazy_static",
- "sp-core",
- "sp-runtime",
- "strum",
 ]
 
 [[package]]
@@ -6961,27 +7020,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d24114bfcceb867ca7f71a0d3fe45d45619ec47a6fbfa98cb14e14250bfa5d6d"
 dependencies = [
  "bytes 0.4.12",
-]
-
-[[package]]
-name = "strum"
-version = "0.20.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7318c509b5ba57f18533982607f24070a55d353e90d4cae30c467cdb2ad5ac5c"
-dependencies = [
- "strum_macros",
-]
-
-[[package]]
-name = "strum_macros"
-version = "0.20.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee8bc6b87a5112aeeab1f4a9f7ab634fe6cbefc4850006df31267f4cfb9e3149"
-dependencies = [
- "heck",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
