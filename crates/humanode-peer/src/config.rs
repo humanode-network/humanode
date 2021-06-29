@@ -117,7 +117,7 @@ pub fn make() -> Configuration {
         },
         force_authoring: false,
         disable_grandpa: true,
-        dev_key_seed: Some("humanode".to_owned()),
+        dev_key_seed: Some("//Alice".to_owned()),
         tracing_targets: None,
         disable_log_reloading: true,
         tracing_receiver: TracingReceiver::Log,
