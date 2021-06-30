@@ -2,10 +2,10 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-URL="${1:-"http://localhost:9933"}"
+TEST_FILE_NAME="$1"
+URL="${2:-"http://localhost:9933"}"
 
 TEST_DATA_PATH="facetec-test-data"
-TEST_FILE_NAME="liveness_check_subject1_browser_scan3.base64.txt"
 
 FACE_SCAN_FILE="$TEST_DATA_PATH/FaceTec_Test_Data/3D_FaceScans/$TEST_FILE_NAME"
 AUDIT_TRAIL_IMAGE_FILE="$TEST_DATA_PATH/FaceTec_Test_Data/Audit_Trail_Images/$TEST_FILE_NAME"
