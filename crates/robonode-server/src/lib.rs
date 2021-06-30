@@ -68,10 +68,10 @@ impl logic::Verifier<Vec<u8>> for ValidatorPublicKeyToDo {
     }
 }
 
-impl std::convert::TryFrom<&str> for ValidatorPublicKeyToDo {
+impl std::convert::TryFrom<&[u8]> for ValidatorPublicKeyToDo {
     type Error = ();
 
-    fn try_from(val: &str) -> Result<Self, Self::Error> {
+    fn try_from(val: &[u8]) -> Result<Self, Self::Error> {
         Ok(Self(val.into()))
     }
 }
@@ -79,5 +79,11 @@ impl std::convert::TryFrom<&str> for ValidatorPublicKeyToDo {
 impl From<ValidatorPublicKeyToDo> for Vec<u8> {
     fn from(val: ValidatorPublicKeyToDo) -> Self {
         val.0
+    }
+}
+
+impl AsRef<[u8]> for ValidatorPublicKeyToDo {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
     }
 }

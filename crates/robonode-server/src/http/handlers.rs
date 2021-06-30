@@ -14,7 +14,7 @@ pub async fn enroll<S, PK>(
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str>,
+    PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,
 {
     match logic.enroll(input).await {
         Ok(()) => Ok(StatusCode::CREATED),
@@ -29,7 +29,7 @@ pub async fn authenticate<S, PK>(
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + Sync + for<'a> TryFrom<&'a str> + Verifier<Vec<u8>> + Into<Vec<u8>>,
+    PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,
 {
     match logic.authenticate(input).await {
         Ok(res) => {
@@ -45,7 +45,7 @@ pub async fn get_facetec_session_token<S, PK>(
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str>,
+    PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
     match logic.get_facetec_session_token().await {
         Ok(res) => {
@@ -61,7 +61,7 @@ pub async fn get_facetec_device_sdk_params<S, PK>(
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str>,
+    PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
     match logic.get_facetec_device_sdk_params().await {
         Ok(res) => {
