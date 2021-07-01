@@ -169,9 +169,28 @@ checksum = "be4dc07131ffa69b8072d35f5007352af944213cde02545e2103680baed38fcd"
 
 [[package]]
 name = "asn1_der"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6fce6b6a0ffdafebd82c87e79e3f40e8d2c523e5fea5566ff6b90509bf98d638"
+dependencies = [
+ "asn1_der_derive",
+]
+
+[[package]]
+name = "asn1_der"
 version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d6e24d2cce90c53b948c46271bfb053e4bdc2db9b5d3f65e20f8cf28a1b7fc3"
+
+[[package]]
+name = "asn1_der_derive"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d0864d84b8e07b145449be9a8537db86bf9de5ce03b913214694643b4743502"
+dependencies = [
+ "quote",
+ "syn",
+]
 
 [[package]]
 name = "assert_matches"
@@ -1428,7 +1447,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-runtime-interface",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-storage",
 ]
 
@@ -1443,8 +1462,8 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
- "sp-tracing",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -1455,7 +1474,7 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-core",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -1481,8 +1500,8 @@ dependencies = [
  "sp-runtime",
  "sp-staking",
  "sp-state-machine",
- "sp-std",
- "sp-tracing",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -1532,7 +1551,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-version",
 ]
 
@@ -1547,7 +1566,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -2165,7 +2184,7 @@ dependencies = [
  "sc-executor",
  "sc-network",
  "sc-service",
- "sc-tracing",
+ "sc-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sc-transaction-pool",
  "sp-consensus",
  "sp-consensus-aura",
@@ -2223,7 +2242,7 @@ dependencies = [
  "sp-offchain",
  "sp-runtime",
  "sp-session",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-transaction-pool",
  "sp-version",
  "substrate-wasm-builder",
@@ -2379,6 +2398,22 @@ checksum = "de74b9dd780476e837e5eb5ab7c88b49ed304126e412030a0adba99c8efe79ea"
 dependencies = [
  "cc",
  "libc",
+]
+
+[[package]]
+name = "if-watch"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97b8538953a3f0d0d3868f0a706eb4273535e10d72acb5c82c1c23ae48835c85"
+dependencies = [
+ "async-io",
+ "futures 0.3.15",
+ "futures-lite",
+ "if-addrs",
+ "ipnet",
+ "libc",
+ "log",
+ "winapi 0.3.9",
 ]
 
 [[package]]
@@ -2790,6 +2825,30 @@ checksum = "c7d73b3f436185384286bd8098d17ec07c9a7d2388a6599f824d8502b529702a"
 
 [[package]]
 name = "libp2p"
+version = "0.34.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d5133112ce42be9482f6a87be92a605dd6bbc9e93c297aee77d172ff06908f3a"
+dependencies = [
+ "atomic",
+ "bytes 1.0.1",
+ "futures 0.3.15",
+ "lazy_static",
+ "libp2p-core 0.27.1",
+ "libp2p-core-derive",
+ "libp2p-dns 0.27.0",
+ "libp2p-swarm 0.27.2",
+ "libp2p-tcp 0.27.1",
+ "libp2p-wasm-ext 0.27.0",
+ "libp2p-websocket 0.28.0",
+ "parity-multiaddr",
+ "parking_lot 0.11.1",
+ "pin-project 1.0.7",
+ "smallvec 1.6.1",
+ "wasm-timer",
+]
+
+[[package]]
+name = "libp2p"
 version = "0.37.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "08053fbef67cd777049ef7a95ebaca2ece370b4ed7712c3fa404d69a88cb741b"
@@ -2798,9 +2857,9 @@ dependencies = [
  "bytes 1.0.1",
  "futures 0.3.15",
  "lazy_static",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "libp2p-deflate",
- "libp2p-dns",
+ "libp2p-dns 0.28.1",
  "libp2p-floodsub",
  "libp2p-gossipsub",
  "libp2p-identify",
@@ -2813,12 +2872,12 @@ dependencies = [
  "libp2p-pnet",
  "libp2p-relay",
  "libp2p-request-response",
- "libp2p-swarm",
+ "libp2p-swarm 0.29.0",
  "libp2p-swarm-derive",
- "libp2p-tcp",
+ "libp2p-tcp 0.28.0",
  "libp2p-uds",
- "libp2p-wasm-ext",
- "libp2p-websocket",
+ "libp2p-wasm-ext 0.28.2",
+ "libp2p-websocket 0.29.0",
  "libp2p-yamux",
  "parity-multiaddr",
  "parking_lot 0.11.1",
@@ -2829,11 +2888,11 @@ dependencies = [
 
 [[package]]
 name = "libp2p-core"
-version = "0.28.3"
+version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "554d3e7e9e65f939d66b75fd6a4c67f258fe250da61b91f46c545fc4a89b51d9"
+checksum = "8a2d56aadc2c2bf22cd7797f86e56a65b5b3994a0136b65be3106938acae7a26"
 dependencies = [
- "asn1_der",
+ "asn1_der 0.6.3",
  "bs58",
  "ed25519-dalek",
  "either",
@@ -2862,6 +2921,50 @@ dependencies = [
 ]
 
 [[package]]
+name = "libp2p-core"
+version = "0.28.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "554d3e7e9e65f939d66b75fd6a4c67f258fe250da61b91f46c545fc4a89b51d9"
+dependencies = [
+ "asn1_der 0.7.4",
+ "bs58",
+ "ed25519-dalek",
+ "either",
+ "fnv",
+ "futures 0.3.15",
+ "futures-timer 3.0.2",
+ "lazy_static",
+ "libsecp256k1",
+ "log",
+ "multihash",
+ "multistream-select",
+ "parity-multiaddr",
+ "parking_lot 0.11.1",
+ "pin-project 1.0.7",
+ "prost",
+ "prost-build",
+ "rand 0.7.3",
+ "ring",
+ "rw-stream-sink",
+ "sha2 0.9.5",
+ "smallvec 1.6.1",
+ "thiserror",
+ "unsigned-varint 0.7.0",
+ "void",
+ "zeroize",
+]
+
+[[package]]
+name = "libp2p-core-derive"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f4bc40943156e42138d22ed3c57ff0e1a147237742715937622a99b10fbe0156"
+dependencies = [
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "libp2p-deflate"
 version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2869,7 +2972,18 @@ checksum = "a2181a641cd15f9b6ba71b1335800f309012a0a97a29ffaabbbf40e9d3d58f08"
 dependencies = [
  "flate2",
  "futures 0.3.15",
- "libp2p-core",
+ "libp2p-core 0.28.3",
+]
+
+[[package]]
+name = "libp2p-dns"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5153b6db68fd4baa3b304e377db744dd8fea8ff4e4504509ee636abcde88d3e3"
+dependencies = [
+ "futures 0.3.15",
+ "libp2p-core 0.27.1",
+ "log",
 ]
 
 [[package]]
@@ -2880,7 +2994,7 @@ checksum = "62e63dab8b5ff35e0c101a3e51e843ba782c07bbb1682f5fd827622e0d02b98b"
 dependencies = [
  "async-std-resolver",
  "futures 0.3.15",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "log",
  "smallvec 1.6.1",
  "trust-dns-resolver",
@@ -2895,8 +3009,8 @@ dependencies = [
  "cuckoofilter",
  "fnv",
  "futures 0.3.15",
- "libp2p-core",
- "libp2p-swarm",
+ "libp2p-core 0.28.3",
+ "libp2p-swarm 0.29.0",
  "log",
  "prost",
  "prost-build",
@@ -2917,8 +3031,8 @@ dependencies = [
  "fnv",
  "futures 0.3.15",
  "hex_fmt",
- "libp2p-core",
- "libp2p-swarm",
+ "libp2p-core 0.28.3",
+ "libp2p-swarm 0.29.0",
  "log",
  "prost",
  "prost-build",
@@ -2937,8 +3051,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5f668f00efd9883e8b7bcc582eaf0164615792608f886f6577da18bcbeea0a46"
 dependencies = [
  "futures 0.3.15",
- "libp2p-core",
- "libp2p-swarm",
+ "libp2p-core 0.28.3",
+ "libp2p-swarm 0.29.0",
  "log",
  "prost",
  "prost-build",
@@ -2958,8 +3072,8 @@ dependencies = [
  "either",
  "fnv",
  "futures 0.3.15",
- "libp2p-core",
- "libp2p-swarm",
+ "libp2p-core 0.28.3",
+ "libp2p-swarm 0.29.0",
  "log",
  "prost",
  "prost-build",
@@ -2982,10 +3096,10 @@ dependencies = [
  "data-encoding",
  "dns-parser",
  "futures 0.3.15",
- "if-watch",
+ "if-watch 0.2.2",
  "lazy_static",
- "libp2p-core",
- "libp2p-swarm",
+ "libp2p-core 0.28.3",
+ "libp2p-swarm 0.29.0",
  "log",
  "rand 0.8.3",
  "smallvec 1.6.1",
@@ -3002,7 +3116,7 @@ dependencies = [
  "asynchronous-codec 0.6.0",
  "bytes 1.0.1",
  "futures 0.3.15",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "log",
  "nohash-hasher",
  "parking_lot 0.11.1",
@@ -3021,7 +3135,7 @@ dependencies = [
  "curve25519-dalek 3.1.0",
  "futures 0.3.15",
  "lazy_static",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "log",
  "prost",
  "prost-build",
@@ -3040,8 +3154,8 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf4bfaffac63bf3c7ec11ed9d8879d455966ddea7e78ee14737f0b6dce0d1cd1"
 dependencies = [
  "futures 0.3.15",
- "libp2p-core",
- "libp2p-swarm",
+ "libp2p-core 0.28.3",
+ "libp2p-swarm 0.29.0",
  "log",
  "rand 0.7.3",
  "void",
@@ -3057,7 +3171,7 @@ dependencies = [
  "asynchronous-codec 0.6.0",
  "bytes 1.0.1",
  "futures 0.3.15",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "log",
  "prost",
  "prost-build",
@@ -3089,8 +3203,8 @@ dependencies = [
  "bytes 1.0.1",
  "futures 0.3.15",
  "futures-timer 3.0.2",
- "libp2p-core",
- "libp2p-swarm",
+ "libp2p-core 0.28.3",
+ "libp2p-swarm 0.29.0",
  "log",
  "pin-project 1.0.7",
  "prost",
@@ -3111,8 +3225,8 @@ dependencies = [
  "async-trait",
  "bytes 1.0.1",
  "futures 0.3.15",
- "libp2p-core",
- "libp2p-swarm",
+ "libp2p-core 0.28.3",
+ "libp2p-swarm 0.29.0",
  "log",
  "lru",
  "minicbor",
@@ -3124,13 +3238,29 @@ dependencies = [
 
 [[package]]
 name = "libp2p-swarm"
+version = "0.27.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7955b973e1fd2bd61ffd43ce261c1223f61f4aacd5bae362a924993f9a25fd98"
+dependencies = [
+ "either",
+ "futures 0.3.15",
+ "libp2p-core 0.27.1",
+ "log",
+ "rand 0.7.3",
+ "smallvec 1.6.1",
+ "void",
+ "wasm-timer",
+]
+
+[[package]]
+name = "libp2p-swarm"
 version = "0.29.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e04d8e1eef675029ec728ba14e8d0da7975d84b6679b699b4ae91a1de9c3a92"
 dependencies = [
  "either",
  "futures 0.3.15",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "log",
  "rand 0.7.3",
  "smallvec 1.6.1",
@@ -3150,6 +3280,23 @@ dependencies = [
 
 [[package]]
 name = "libp2p-tcp"
+version = "0.27.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88a5aef80e519a6cb8e2663605142f97baaaea1a252eecbf8756184765f7471b"
+dependencies = [
+ "async-io",
+ "futures 0.3.15",
+ "futures-timer 3.0.2",
+ "if-watch 0.1.8",
+ "ipnet",
+ "libc",
+ "libp2p-core 0.27.1",
+ "log",
+ "socket2 0.3.19",
+]
+
+[[package]]
+name = "libp2p-tcp"
 version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2b1a27d21c477951799e99d5c105d78868258502ce092988040a808d5a19bbd9"
@@ -3157,10 +3304,10 @@ dependencies = [
  "async-io",
  "futures 0.3.15",
  "futures-timer 3.0.2",
- "if-watch",
+ "if-watch 0.2.2",
  "ipnet",
  "libc",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "log",
  "socket2 0.4.0",
 ]
@@ -3173,8 +3320,22 @@ checksum = "ffd6564bb3b7ff203661ccbb69003c2b551e34cef974f2d6c6a28306a12170b5"
 dependencies = [
  "async-std",
  "futures 0.3.15",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "log",
+]
+
+[[package]]
+name = "libp2p-wasm-ext"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6149c46cb76935c80bc8be6ec6e3ebd5f5e1679765a255fb34331d54610f15dd"
+dependencies = [
+ "futures 0.3.15",
+ "js-sys",
+ "libp2p-core 0.27.1",
+ "parity-send-wrapper",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
 ]
 
 [[package]]
@@ -3185,10 +3346,28 @@ checksum = "e2d413e4cf9b8e5dfbcd2a60d3dc5a3391308bdb463684093d4f67137b7113de"
 dependencies = [
  "futures 0.3.15",
  "js-sys",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "parity-send-wrapper",
  "wasm-bindgen",
  "wasm-bindgen-futures",
+]
+
+[[package]]
+name = "libp2p-websocket"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3b1c6a3431045da8b925ed83384e4c5163e14b990572307fca9c507435d4d22"
+dependencies = [
+ "either",
+ "futures 0.3.15",
+ "futures-rustls",
+ "libp2p-core 0.27.1",
+ "log",
+ "quicksink",
+ "rw-stream-sink",
+ "soketto",
+ "url 2.2.2",
+ "webpki-roots",
 ]
 
 [[package]]
@@ -3200,7 +3379,7 @@ dependencies = [
  "either",
  "futures 0.3.15",
  "futures-rustls",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "log",
  "quicksink",
  "rw-stream-sink",
@@ -3216,7 +3395,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f35da42cfc6d5cb0dcf3ad6881bc68d146cdf38f98655e09e33fbba4d13eabc4"
 dependencies = [
  "futures 0.3.15",
- "libp2p-core",
+ "libp2p-core 0.28.3",
  "parking_lot 0.11.1",
  "thiserror",
  "yamux",
@@ -3930,7 +4109,7 @@ dependencies = [
  "sp-application-crypto",
  "sp-consensus-aura",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -3945,7 +4124,7 @@ dependencies = [
  "max-encoded-len",
  "parity-scale-codec",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -3962,7 +4141,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -3975,7 +4154,7 @@ dependencies = [
  "parity-scale-codec",
  "safe-mix",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -3993,7 +4172,7 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -4006,7 +4185,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -4022,7 +4201,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-inherents",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-timestamp",
 ]
 
@@ -4039,7 +4218,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -4486,7 +4665,7 @@ version = "0.1.0"
 dependencies = [
  "parity-scale-codec",
  "serde",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -4955,8 +5134,10 @@ dependencies = [
  "rand 0.7.3",
  "reqwest",
  "robonode-crypto",
+ "sc-tracing 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
  "tokio 1.6.2",
+ "tracing",
  "warp",
 ]
 
@@ -5107,7 +5288,7 @@ dependencies = [
  "sc-block-builder",
  "sc-client-api",
  "sc-proposer-metrics",
- "sc-telemetry",
+ "sc-telemetry 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-api",
  "sp-blockchain",
  "sp-consensus",
@@ -5146,7 +5327,7 @@ dependencies = [
  "sc-consensus-epochs",
  "sc-finality-grandpa",
  "sc-network",
- "sc-telemetry",
+ "sc-telemetry 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "serde",
  "serde_json",
  "sp-chain-spec",
@@ -5191,11 +5372,11 @@ dependencies = [
  "sp-keystore",
  "sp-runtime",
  "sp-state-machine",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-storage",
  "sp-transaction-pool",
  "sp-trie",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-version",
  "substrate-prometheus-endpoint",
 ]
@@ -5256,7 +5437,7 @@ dependencies = [
  "sc-block-builder",
  "sc-client-api",
  "sc-consensus-slots",
- "sc-telemetry",
+ "sc-telemetry 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-api",
  "sp-application-crypto",
  "sp-block-builder",
@@ -5298,7 +5479,7 @@ dependencies = [
  "sc-consensus-slots",
  "sc-consensus-uncles",
  "sc-keystore",
- "sc-telemetry",
+ "sc-telemetry 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "schnorrkel",
  "serde",
  "sp-api",
@@ -5314,7 +5495,7 @@ dependencies = [
  "sp-io",
  "sp-keystore",
  "sp-runtime",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-version",
  "substrate-prometheus-endpoint",
 ]
@@ -5344,7 +5525,7 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "sc-client-api",
- "sc-telemetry",
+ "sc-telemetry 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-api",
  "sp-application-crypto",
  "sp-arithmetic",
@@ -5455,7 +5636,7 @@ dependencies = [
  "sc-keystore",
  "sc-network",
  "sc-network-gossip",
- "sc-telemetry",
+ "sc-telemetry 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "serde_json",
  "sp-api",
  "sp-application-crypto",
@@ -5467,7 +5648,7 @@ dependencies = [
  "sp-inherents",
  "sp-keystore",
  "sp-runtime",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "substrate-prometheus-endpoint",
  "wasm-timer",
 ]
@@ -5550,7 +5731,7 @@ dependencies = [
  "futures-timer 3.0.2",
  "hex",
  "ip_network",
- "libp2p",
+ "libp2p 0.37.1",
  "linked-hash-map",
  "linked_hash_set",
  "log",
@@ -5573,7 +5754,7 @@ dependencies = [
  "sp-consensus",
  "sp-core",
  "sp-runtime",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "substrate-prometheus-endpoint",
  "thiserror",
  "unsigned-varint 0.6.0",
@@ -5589,7 +5770,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a
 dependencies = [
  "futures 0.3.15",
  "futures-timer 3.0.2",
- "libp2p",
+ "libp2p 0.37.1",
  "log",
  "lru",
  "sc-network",
@@ -5623,7 +5804,7 @@ dependencies = [
  "sp-core",
  "sp-offchain",
  "sp-runtime",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "threadpool",
 ]
 
@@ -5633,10 +5814,10 @@ version = "3.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
 dependencies = [
  "futures 0.3.15",
- "libp2p",
+ "libp2p 0.37.1",
  "log",
  "serde_json",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "wasm-timer",
 ]
 
@@ -5666,7 +5847,7 @@ dependencies = [
  "sc-executor",
  "sc-keystore",
  "sc-rpc-api",
- "sc-tracing",
+ "sc-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "serde_json",
  "sp-api",
  "sp-blockchain",
@@ -5678,9 +5859,9 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-state-machine",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-transaction-pool",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-version",
 ]
 
@@ -5704,7 +5885,7 @@ dependencies = [
  "sp-core",
  "sp-rpc",
  "sp-runtime",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-transaction-pool",
  "sp-version",
 ]
@@ -5760,8 +5941,8 @@ dependencies = [
  "sc-offchain",
  "sc-rpc",
  "sc-rpc-server",
- "sc-telemetry",
- "sc-tracing",
+ "sc-telemetry 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sc-transaction-pool",
  "serde",
  "serde_json",
@@ -5778,10 +5959,10 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-state-machine",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-transaction-pool",
  "sp-trie",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-version",
  "substrate-prometheus-endpoint",
  "tempfile",
@@ -5809,11 +5990,34 @@ dependencies = [
 [[package]]
 name = "sc-telemetry"
 version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d05040c594b331d90d7341e82c6dc6a3eb7bb2afb4e5dc9c36a79a6754166057"
+dependencies = [
+ "chrono",
+ "futures 0.3.15",
+ "libp2p 0.34.0",
+ "log",
+ "parking_lot 0.11.1",
+ "pin-project 1.0.7",
+ "rand 0.7.3",
+ "serde",
+ "serde_json",
+ "sp-utils 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "take_mut",
+ "tracing",
+ "tracing-subscriber",
+ "void",
+ "wasm-timer",
+]
+
+[[package]]
+name = "sc-telemetry"
+version = "3.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a936eb5c692ad8efea22a9bb9ecf3bd93d3"
 dependencies = [
  "chrono",
  "futures 0.3.15",
- "libp2p",
+ "libp2p 0.37.1",
  "log",
  "parking_lot 0.11.1",
  "pin-project 1.0.7",
@@ -5824,6 +6028,35 @@ dependencies = [
  "thiserror",
  "void",
  "wasm-timer",
+]
+
+[[package]]
+name = "sc-tracing"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ef0a4aa327b8bc89d9c5ae57a2f493d8f54ccd706f6763614ab522559fe481d8"
+dependencies = [
+ "ansi_term",
+ "atty",
+ "erased-serde",
+ "lazy_static",
+ "log",
+ "once_cell",
+ "parking_lot 0.11.1",
+ "regex",
+ "rustc-hash",
+ "sc-telemetry 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sc-tracing-proc-macro 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "serde",
+ "serde_json",
+ "sp-tracing 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "thiserror",
+ "tracing",
+ "tracing-core",
+ "tracing-log",
+ "tracing-subscriber",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
@@ -5842,8 +6075,8 @@ dependencies = [
  "rustc-hash",
  "sc-client-api",
  "sc-rpc-server",
- "sc-telemetry",
- "sc-tracing-proc-macro",
+ "sc-telemetry 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-tracing-proc-macro 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "serde",
  "serde_json",
  "sp-api",
@@ -5853,7 +6086,7 @@ dependencies = [
  "sp-rpc",
  "sp-runtime",
  "sp-storage",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "thiserror",
  "tracing",
  "tracing-log",
@@ -5861,6 +6094,18 @@ dependencies = [
  "wasm-bindgen",
  "wasm-timer",
  "web-sys",
+]
+
+[[package]]
+name = "sc-tracing-proc-macro"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec18b0506911e6d624d9ea8f8cc5f503e7944a0fe7d37de95ee84033cf160ebc"
+dependencies = [
+ "proc-macro-crate 0.1.5",
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]
@@ -5891,7 +6136,7 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-transaction-pool",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "thiserror",
  "wasm-timer",
 ]
@@ -5914,9 +6159,9 @@ dependencies = [
  "sp-blockchain",
  "sp-core",
  "sp-runtime",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-transaction-pool",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "substrate-prometheus-endpoint",
  "thiserror",
  "wasm-timer",
@@ -6339,7 +6584,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a
 dependencies = [
  "log",
  "sp-core",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-wasm-interface",
  "thiserror",
 ]
@@ -6356,7 +6601,7 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-state-machine",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-version",
  "thiserror",
 ]
@@ -6383,7 +6628,7 @@ dependencies = [
  "serde",
  "sp-core",
  "sp-io",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6396,7 +6641,7 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-debug-derive",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "static_assertions",
 ]
 
@@ -6409,7 +6654,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-inherents",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6421,7 +6666,7 @@ dependencies = [
  "sp-api",
  "sp-inherents",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6459,7 +6704,7 @@ dependencies = [
  "async-trait",
  "futures 0.3.15",
  "futures-timer 3.0.2",
- "libp2p",
+ "libp2p 0.37.1",
  "log",
  "parity-scale-codec",
  "parking_lot 0.11.1",
@@ -6469,9 +6714,9 @@ dependencies = [
  "sp-inherents",
  "sp-runtime",
  "sp-state-machine",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-trie",
- "sp-utils",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-version",
  "substrate-prometheus-endpoint",
  "thiserror",
@@ -6491,7 +6736,7 @@ dependencies = [
  "sp-consensus-slots",
  "sp-inherents",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-timestamp",
 ]
 
@@ -6513,7 +6758,7 @@ dependencies = [
  "sp-inherents",
  "sp-keystore",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-timestamp",
 ]
 
@@ -6536,7 +6781,7 @@ dependencies = [
  "schnorrkel",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6573,7 +6818,7 @@ dependencies = [
  "sp-debug-derive",
  "sp-externalities",
  "sp-runtime-interface",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-storage",
  "substrate-bip39",
  "thiserror",
@@ -6610,7 +6855,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a
 dependencies = [
  "environmental",
  "parity-scale-codec",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-storage",
 ]
 
@@ -6628,7 +6873,7 @@ dependencies = [
  "sp-core",
  "sp-keystore",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6641,7 +6886,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "thiserror",
 ]
 
@@ -6662,8 +6907,8 @@ dependencies = [
  "sp-maybe-compressed-blob",
  "sp-runtime-interface",
  "sp-state-machine",
- "sp-std",
- "sp-tracing",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-trie",
  "sp-wasm-interface",
  "tracing",
@@ -6744,7 +6989,7 @@ dependencies = [
  "sp-arithmetic",
  "sp-core",
  "sp-io",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6757,9 +7002,9 @@ dependencies = [
  "primitive-types",
  "sp-externalities",
  "sp-runtime-interface-proc-macro",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-storage",
- "sp-tracing",
+ "sp-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-wasm-interface",
  "static_assertions",
 ]
@@ -6795,7 +7040,7 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-staking",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6805,7 +7050,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a
 dependencies = [
  "parity-scale-codec",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6823,13 +7068,19 @@ dependencies = [
  "sp-core",
  "sp-externalities",
  "sp-panic-handler",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-trie",
  "thiserror",
  "tracing",
  "trie-db",
  "trie-root",
 ]
+
+[[package]]
+name = "sp-std"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35391ea974fa5ee869cb094d5b437688fbf3d8127d64d1b9fed5822a1ed39b12"
 
 [[package]]
 name = "sp-std"
@@ -6846,7 +7097,7 @@ dependencies = [
  "ref-cast",
  "serde",
  "sp-debug-derive",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6859,7 +7110,7 @@ dependencies = [
  "sp-externalities",
  "sp-io",
  "sp-runtime-interface",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
 [[package]]
@@ -6874,9 +7125,23 @@ dependencies = [
  "sp-api",
  "sp-inherents",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "thiserror",
  "wasm-timer",
+]
+
+[[package]]
+name = "sp-tracing"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "567382d8d4e14fb572752863b5cd57a78f9e9a6583332b590b726f061f3ea957"
+dependencies = [
+ "log",
+ "parity-scale-codec",
+ "sp-std 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "tracing",
+ "tracing-core",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -6891,7 +7156,7 @@ dependencies = [
  "serde",
  "serde_json",
  "slog",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "tracing",
  "tracing-core",
  "tracing-subscriber",
@@ -6922,9 +7187,22 @@ dependencies = [
  "memory-db",
  "parity-scale-codec",
  "sp-core",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "trie-db",
  "trie-root",
+]
+
+[[package]]
+name = "sp-utils"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b4ec2a5f924f7affd1e959f8f3c02bd87cdfa0e11c71a4cbc075f955ead8c1a1"
+dependencies = [
+ "futures 0.3.15",
+ "futures-core",
+ "futures-timer 3.0.2",
+ "lazy_static",
+ "prometheus",
 ]
 
 [[package]]
@@ -6948,7 +7226,7 @@ dependencies = [
  "parity-scale-codec",
  "serde",
  "sp-runtime",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-version-proc-macro",
 ]
 
@@ -6971,7 +7249,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=master#9f621a
 dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
- "sp-std",
+ "sp-std 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "wasmi",
 ]
 
