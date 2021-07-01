@@ -6,8 +6,14 @@
     clippy::clone_on_ref_ptr
 )]
 
+use tracing::info;
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let mut logger = sc_tracing::logging::LoggerBuilder::new("debug");
+    logger.with_colors(true);
+    let _ = logger.init()?;
+
     let addr: std::net::SocketAddr = parse_env_var("ADDR")?;
     let facetec_server_url = parse_env_var("FACETEC_SERVER_URL")?;
     let facetec_device_key_identifier: String = parse_env_var("FACETEC_DEVICE_KEY_IDENTIFIER")?;
@@ -34,7 +40,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     );
     let (addr, server) =
         warp::serve(root_filter).bind_with_graceful_shutdown(addr, shutdown_signal());
-    println!("Listening on http://{}", addr);
+
+    info!("Listening on http://{}", addr);
+
     server.await;
     Ok(())
 }

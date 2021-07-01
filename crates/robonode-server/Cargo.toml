@@ -15,6 +15,8 @@ async-trait = "0.1"
 hex = "0.4"
 rand = "0.7"
 reqwest = "0.11"
+sc-tracing = "3"
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
+tracing = "0.1"
 warp = "0.3"
