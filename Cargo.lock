@@ -1168,6 +1168,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "devutil-auth-ticket"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "hex",
+ "primitives-auth-ticket",
+ "robonode-crypto",
+]
+
+[[package]]
 name = "digest"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
