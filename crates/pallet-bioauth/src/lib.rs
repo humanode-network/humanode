@@ -11,7 +11,7 @@ pub use pallet::*;
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
     traits::{DispatchInfoOf, Dispatchable, SignedExtension},
-    transaction_validity::{InvalidTransaction, TransactionValidity, TransactionValidityError},
+    transaction_validity::{TransactionValidity, TransactionValidityError},
 };
 use sp_std::fmt::Debug;
 use sp_std::marker::PhantomData;
@@ -146,8 +146,8 @@ pub mod pallet {
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// Event documentation should end with an array that provides descriptive names for event
-        /// parameters. [something, who]
-        AuthTicketStored(StoredAuthTicket, T::AccountId),
+        /// parameters. [stored_auth_ticket]
+        AuthTicketStored(StoredAuthTicket),
     }
 
     /// Possible error conditions during `authenticate` call processing.
@@ -203,7 +203,7 @@ pub mod pallet {
     impl<T: Config> Pallet<T> {
         #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
         pub fn authenticate(origin: OriginFor<T>, req: Authenticate) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+            ensure_none(origin)?;
 
             let stored_auth_ticket = Self::extract_auth_ticket_checked(req)?;
             let event_stored_auth_ticket = stored_auth_ticket.clone();
@@ -226,7 +226,7 @@ pub mod pallet {
             })?;
 
             // Emit an event.
-            Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket, who));
+            Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket));
 
             Ok(())
         }
@@ -252,6 +252,33 @@ pub mod pallet {
                 .map_err(|_| Error::<T>::UnableToParseAuthTicket)?;
 
             Ok(auth_ticket.into())
+        }
+
+        pub fn check_tx(call: &Call<T>) -> TransactionValidity {
+            let transaction = match call {
+                Call::authenticate(ref transaction) => transaction,
+                // Deny all unknown transactions.
+                _ => {
+                    // The only supported transaction by this pallet is `authenticate`, so anything
+                    // else is illegal.
+                    return Err(TransactionValidityError::Invalid(InvalidTransaction::Call));
+                }
+            };
+
+            let stored_auth_ticket = Self::extract_auth_ticket_checked(transaction.clone())
+                .map_err(|_e| {
+                    // Use custom code 's' for "signature" error.
+                    TransactionValidityError::Invalid(InvalidTransaction::Custom(b's'))
+                })?;
+
+            let list = StoredAuthTickets::<T>::get();
+
+            validate_authentication_attempt(&list, &stored_auth_ticket).map_err(|_e| {
+                // Use custom code 'c' for "conflict" error.
+                TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
+            })?;
+
+            Ok(Default::default())
         }
     }
 }
@@ -300,23 +327,19 @@ where
         _len: usize,
     ) -> TransactionValidity {
         let _account_id = who;
-
-        // check for `authenticate`
         match call.is_sub_type() {
-            Some(Call::authenticate(ref transaction)) => {
-                // We need to call our validate_bioauth from pallet
-                let stored_auth_ticket = Pallet::<T>::extract_auth_ticket_checked(
-                    transaction.clone(),
-                )
-                .map_err(|_e| TransactionValidityError::Invalid(InvalidTransaction::Call))?;
+            Some(call) => Pallet::<T>::check_tx(call),
+            _ => Ok(Default::default()),
+        }
+    }
 
-                let list = StoredAuthTickets::<T>::get();
-
-                validate_authentication_attempt(&list, &stored_auth_ticket)
-                    .map_err(|_e| TransactionValidityError::Invalid(InvalidTransaction::Call))?;
-
-                Ok(Default::default())
-            }
+    fn validate_unsigned(
+        call: &Self::Call,
+        _info: &DispatchInfoOf<Self::Call>,
+        _len: usize,
+    ) -> TransactionValidity {
+        match call.is_sub_type() {
+            Some(call) => Pallet::<T>::check_tx(call),
             _ => Ok(Default::default()),
         }
     }
