@@ -266,7 +266,11 @@ pub mod pallet {
             };
 
             let stored_auth_ticket = Self::extract_auth_ticket_checked(transaction.clone())
-                .map_err(|_e| {
+                .map_err(|error| {
+                    frame_support::sp_tracing::error!(
+                        message = "Auth Ticket could not be extracted",
+                        ?error
+                    );
                     // Use custom code 's' for "signature" error.
                     TransactionValidityError::Invalid(InvalidTransaction::Custom(b's'))
                 })?;
