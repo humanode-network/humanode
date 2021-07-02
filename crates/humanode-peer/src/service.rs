@@ -184,8 +184,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
             let authenticate = pallet_bioauth::Authenticate {
-                ticket: "todo".into(),
-                ticket_signature: "todo".into(),
+                ticket: vec![12, 0, 255, 0, 8, 255, 255],
+                ticket_signature: vec![
+                    62, 31, 179, 117, 32, 155, 212, 172, 1, 37, 235, 137, 53, 165, 135, 141, 48,
+                    106, 53, 68, 205, 61, 61, 154, 128, 120, 198, 224, 101, 148, 146, 117, 33, 245,
+                    132, 4, 103, 96, 228, 75, 61, 248, 19, 254, 244, 114, 190, 250, 86, 249, 186,
+                    31, 142, 149, 120, 112, 202, 140, 202, 187, 55, 182, 145, 6,
+                ],
             };
             let call = pallet_bioauth::Call::authenticate(authenticate);
             let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
