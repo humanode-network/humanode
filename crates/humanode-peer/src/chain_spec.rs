@@ -44,7 +44,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
 
     let robonode_public_key = RobonodePublicKeyWrapper::from_bytes(
-        &hex!("d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a")[..],
+        &hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab")[..],
     )
     .map_err(|err| format!("{:?}", err))?;
 
