@@ -155,7 +155,7 @@ pub mod pallet {
     pub enum Error<T> {
         /// The robonode public key is not at the chain state.
         RobonodePublicKeyIsAbsent,
-        /// We were unable to validate the signature, i.e. it is uknclear whether it is valid or
+        /// We were unable to validate the signature, i.e. it is unclear whether it is valid or
         /// not.
         UnableToValidateAuthTicketSignature,
         /// The signature for the auth ticket is invalid.
