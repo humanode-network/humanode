@@ -282,7 +282,12 @@ pub mod pallet {
                 TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
             })?;
 
-            Ok(Default::default())
+            // We must use non-default [`TransactionValidity`] here.
+            ValidTransaction::with_tag_prefix("bioauth")
+                .priority(50)
+                .longevity(1)
+                .propagate(true)
+                .build()
         }
     }
 }
