@@ -75,7 +75,9 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{tests::test_client, AdditionalSessionData, CallData, ServerInfo};
+    use crate::{
+        tests::test_client, AdditionalSessionData, CallData, FaceScanSecurityChecks, ServerInfo,
+    };
 
     use super::*;
 
@@ -194,6 +196,61 @@ mod tests {
                 face_scan: None,
                 common: None,
             } if error_message == "An enrollment already exists for this externalDatabaseRefID."
+        )
+    }
+
+    #[test]
+    fn real_world_1_response_deserialization() {
+        let sample_response = serde_json::json!({
+            "faceScanSecurityChecks": {
+                "replayCheckSucceeded": false,
+                "sessionTokenCheckSucceeded": true,
+                "auditTrailVerificationCheckSucceeded": true,
+                "faceScanLivenessCheckSucceeded": true
+            },
+            "ageEstimateGroupEnumInt": 2,
+            "externalDatabaseRefID": "qwe",
+            "retryScreenEnumInt": 0,
+            "scanResultBlob": "AQEAAABCAAAAAAAAABod8Ab2TBI4O9XmVyim3AxlDaV4QoP2eFBAmQTkB2dOiL4becto+NXWqUxdo6JBjSUoreo9Lm7MToQFpqj/HB+Hzw\\u003d\\u003d",
+            "success": false,
+            "wasProcessed": true,
+            "callData": {
+                "tid": "bd987975-4fbb-441e-b59a-b26b5fd5987b",
+                "path": "/enrollment-3d",
+                "date": "Jul 3, 2021 5:21:16 PM",
+                "epochSecond": 1625332876,
+                "requestMethod": "POST"
+            },
+            "additionalSessionData": { "isAdditionalDataPartiallyIncomplete": true },
+            "error": false,
+            "serverInfo": {
+                "version": "9.3.0",
+                "type": "Standard",
+                "mode": "Development Only",
+                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
+            }
+        });
+
+        let response: Response = serde_json::from_value(sample_response).unwrap();
+        assert_matches!(
+            response,
+            Response {
+                external_database_ref_id: Some(external_database_ref_id),
+                error_message: None,
+                error: false,
+                success: false,
+                face_scan: Some(FaceScanResponse {
+                    face_scan_security_checks: FaceScanSecurityChecks {
+                        audit_trail_verification_check_succeeded: true,
+                        face_scan_liveness_check_succeeded: true,
+                        replay_check_succeeded: false,
+                        session_token_check_succeeded: true,
+                    },
+                    retry_screen_enum_int: 0,
+                    age_estimate_group_enum_int: 2,
+                }),
+                common: Some(_),
+            } if external_database_ref_id == "qwe"
         )
     }
 
