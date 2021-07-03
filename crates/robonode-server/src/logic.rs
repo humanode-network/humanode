@@ -6,6 +6,7 @@ use facetec_api_client as ft;
 use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use tokio::sync::Mutex;
+use tracing::error;
 
 use crate::sequence::Sequence;
 use serde::{Deserialize, Serialize};
@@ -155,6 +156,10 @@ where
             .map_err(EnrollError::InternalErrorEnrollment)?;
 
         if !enroll_res.success {
+            error!(
+                message = "Unsuccessful enroll response from FaceTec server during robonode enroll",
+                ?enroll_res
+            );
             if let Some(error_message) = enroll_res.error_message {
                 if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE {
                     return Err(EnrollError::PublicKeyAlreadyUsed);
@@ -303,6 +308,11 @@ where
             .map_err(AuthenticateError::InternalErrorEnrollment)?;
 
         if !enroll_res.success {
+            error!(
+                message =
+                    "Unsuccessful enroll response from FaceTec server during robonode authenticate",
+                ?enroll_res
+            );
             if let Some(face_scan) = enroll_res.face_scan {
                 if !face_scan.face_scan_security_checks.all_checks_succeeded() {
                     return Err(AuthenticateError::FaceScanRejected);
