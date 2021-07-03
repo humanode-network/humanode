@@ -17,6 +17,7 @@ use thiserror::Error;
 mod db_enroll;
 mod db_search;
 mod enrollment3d;
+pub mod response_body_error;
 mod session_token;
 mod types;
 
@@ -25,6 +26,8 @@ pub use db_search::*;
 pub use enrollment3d::*;
 pub use session_token::*;
 pub use types::*;
+
+pub use response_body_error::ResponseBodyError;
 
 /// The generic error type for the client calls.
 #[derive(Error, Debug)]
@@ -40,37 +43,20 @@ pub enum Error<T: std::error::Error + 'static> {
     Reqwest(#[from] reqwest::Error),
 }
 
-/// An error while loading or parsing the response body.
-#[derive(Error, Debug)]
-pub enum ResponseBodyError {
-    /// Unable to read the response body, probably due to a socket failure of some kind.
-    #[error("response body reading error: {0}")]
-    BodyRead(#[source] reqwest::Error),
-    /// Unable to parse the JSON response. Might be because the response is not in JSON when we
-    /// expected it to be in JSON, or if the JSON the we got does not match the definition that
-    /// serde expects on our end.
-    #[error("JSON response parsing error: {source}")]
-    Json {
-        /// The underlying [`serde_json::Error`] error.
-        #[source]
-        source: serde_json::Error,
-        /// The full response body that caused this error, useful for inspection.
-        body: bytes::Bytes,
-    },
-}
-
 /// The robonode client.
 #[derive(Debug)]
-pub struct Client {
+pub struct Client<RBEI> {
     /// Underyling HTTP client used to execute network calls.
     pub reqwest: reqwest::Client,
     /// The base URL to use for the routes.
     pub base_url: String,
     /// The Device Key Identifier to pass in the header.
     pub device_key_identifier: String,
+    /// The inspector for the response body.
+    pub response_body_error_inspector: RBEI,
 }
 
-impl Client {
+impl<RBEI> Client<RBEI> {
     /// Prepare the URL.
     fn build_url(&self, path: &str) -> String {
         format!("{}{}", self.base_url, path)
@@ -97,7 +83,12 @@ impl Client {
         let url = self.build_url(path);
         self.apply_headers(self.reqwest.post(url)).json(body)
     }
+}
 
+impl<RBEI> Client<RBEI>
+where
+    RBEI: response_body_error::Inspector,
+{
     /// A custom JSON parsing logic for more control over how we handle JSON parsing errors.
     async fn parse_json<T>(&self, res: Response) -> Result<T, ResponseBodyError>
     where
@@ -105,9 +96,16 @@ impl Client {
     {
         let full = res.bytes().await.map_err(ResponseBodyError::BodyRead)?;
 
-        serde_json::from_slice(&full).map_err(|err| ResponseBodyError::Json {
-            source: err,
-            body: full,
-        })
+        match serde_json::from_slice(&full) {
+            Ok(val) => Ok(val),
+            Err(err) => {
+                let err = ResponseBodyError::Json {
+                    source: err,
+                    body: full,
+                };
+                self.response_body_error_inspector.inspect(&err).await;
+                Err(err)
+            }
+        }
     }
 }

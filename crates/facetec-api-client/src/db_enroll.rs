@@ -7,7 +7,10 @@ use crate::{CommonResponse, Error};
 
 use super::Client;
 
-impl Client {
+impl<RBEI> Client<RBEI>
+where
+    RBEI: crate::response_body_error::Inspector,
+{
     /// Perform the `/3d-db/enroll` call to the server.
     pub async fn db_enroll(
         &self,
@@ -198,6 +201,7 @@ mod tests {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
             device_key_identifier: "my device key identifier".into(),
+            response_body_error_inspector: crate::response_body_error::NoopInspector,
         };
 
         let actual_response = client.db_enroll(sample_request).await.unwrap();
@@ -225,6 +229,7 @@ mod tests {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
             device_key_identifier: "my device key identifier".into(),
+            response_body_error_inspector: crate::response_body_error::NoopInspector,
         };
 
         let actual_error = client.db_enroll(sample_request).await.unwrap_err();
@@ -262,6 +267,7 @@ mod tests {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
             device_key_identifier: "my device key identifier".into(),
+            response_body_error_inspector: crate::response_body_error::NoopInspector,
         };
 
         let actual_error = client.db_enroll(sample_request).await.unwrap_err();
