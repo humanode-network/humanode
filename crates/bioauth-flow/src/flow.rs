@@ -1,6 +1,6 @@
 //! The flow implementation.
 
-use std::marker::PhantomData;
+use std::{marker::PhantomData, ops::Deref};
 
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
@@ -37,16 +37,16 @@ pub trait Signer<S> {
 ///
 /// The goal of this component is to encapsulate interoperation with the handheld device
 /// and the robonode.
-pub struct Flow<PK, LDP> {
+pub struct Flow<PK, LDP, RC> {
     /// The provider of the liveness data.
     pub liveness_data_provider: LDP,
     /// The Robonode API client.
-    pub robonode_client: robonode_client::Client,
+    pub robonode_client: RC,
     /// The type used to encode the public key.
-    pub public_key_type: PhantomData<PK>,
+    pub validator_public_key_type: PhantomData<PK>,
 }
 
-impl<PK, LDP> Flow<PK, LDP>
+impl<PK, LDP, RC> Flow<PK, LDP, RC>
 where
     LDP: LivenessDataProvider,
 {
@@ -60,11 +60,12 @@ where
     }
 }
 
-impl<PK, LDP> Flow<PK, LDP>
+impl<PK, LDP, RC> Flow<PK, LDP, RC>
 where
     PK: AsRef<[u8]>,
     LDP: LivenessDataProvider,
     <LDP as LivenessDataProvider>::Error: Send + Sync + std::error::Error + 'static,
+    RC: Deref<Target = robonode_client::Client>,
 {
     /// The enroll flow.
     pub async fn enroll(&mut self, public_key: PK) -> Result<(), anyhow::Error> {
@@ -81,12 +82,13 @@ where
     }
 }
 
-impl<PK, LDP> Flow<PK, LDP>
+impl<PK, LDP, RC> Flow<PK, LDP, RC>
 where
     PK: Signer<Vec<u8>>,
     <PK as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
     LDP: LivenessDataProvider,
     <LDP as LivenessDataProvider>::Error: Send + Sync + std::error::Error + 'static,
+    RC: Deref<Target = robonode_client::Client>,
 {
     /// The authentication flow.
     ///

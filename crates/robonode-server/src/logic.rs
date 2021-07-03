@@ -53,11 +53,7 @@ pub struct FacetecDeviceSdkParams {
 
 /// The inner state, to be hidden behind the mutex to ensure we don't have
 /// access to it unless we lock the mutex.
-pub struct Locked<S, PK>
-where
-    S: Signer<Vec<u8>> + 'static,
-    PK: Send + for<'a> TryFrom<&'a str>,
-{
+pub struct Locked<S, PK> {
     /// The sequence number.
     pub sequence: Sequence,
     /// The client for the FaceTec Server API.
@@ -69,11 +65,7 @@ where
 }
 
 /// The overall generic logic.
-pub struct Logic<S, PK>
-where
-    S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str>,
-{
+pub struct Logic<S, PK> {
     /// The mutex over the locked portions of the logic.
     /// This way we're ensureing the operations can only be conducted under
     /// the lock.
@@ -86,7 +78,7 @@ where
 #[derive(Debug, Deserialize)]
 pub struct EnrollRequest {
     /// The public key of the validator.
-    public_key: String,
+    public_key: Vec<u8>,
     /// The liveness data that the validator owner provided.
     liveness_data: OpaqueLivenessData,
 }
@@ -139,22 +131,23 @@ const MATCH_LEVEL: i64 = 10;
 impl<S, PK> Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str>,
+    PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,
 {
     /// An enroll invocation handler.
     pub async fn enroll(&self, req: EnrollRequest) -> Result<(), EnrollError> {
-        if PK::try_from(&req.public_key).is_err() {
-            return Err(EnrollError::InvalidPublicKey);
-        }
+        let public_key =
+            PK::try_from(&req.public_key).map_err(|_| EnrollError::InvalidPublicKey)?;
 
         let liveness_data =
             LivenessData::try_from(&req.liveness_data).map_err(EnrollError::InvalidLivenessData)?;
+
+        let public_key_hex = hex::encode(public_key);
 
         let unlocked = self.locked.lock().await;
         let enroll_res = unlocked
             .facetec
             .enrollment_3d(Enrollment3DRequest {
-                external_database_ref_id: &req.public_key,
+                external_database_ref_id: &public_key_hex,
                 face_scan: &liveness_data.face_scan,
                 audit_trail_image: &liveness_data.audit_trail_image,
                 low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
@@ -183,7 +176,7 @@ where
         let search_res = unlocked
             .facetec
             .db_search(DBSearchRequest {
-                external_database_ref_id: &req.public_key,
+                external_database_ref_id: &public_key_hex,
                 group_name: DB_GROUP_NAME,
                 min_match_level: MATCH_LEVEL,
             })
@@ -203,7 +196,7 @@ where
         let enroll_res = unlocked
             .facetec
             .db_enroll(DBEnrollRequest {
-                external_database_ref_id: &req.public_key,
+                external_database_ref_id: &public_key_hex,
                 group_name: "",
             })
             .await
@@ -271,6 +264,8 @@ pub enum AuthenticateError {
     /// Internal error at 3D-DB search due to match-level mismatch in
     /// the search results.
     InternalErrorDbSearchMatchLevelMismatch,
+    /// Internal error at converting public key hex representation to bytes.
+    InternalErrorInvalidPublicKeyHex,
     /// Internal error at public key loading due to invalid public key.
     InternalErrorInvalidPublicKey,
     /// Internal error at signature verification.
@@ -282,7 +277,7 @@ pub enum AuthenticateError {
 impl<S, PK> Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + Sync + for<'a> TryFrom<&'a str> + Verifier<Vec<u8>> + Into<Vec<u8>>,
+    PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,
 {
     /// An authenticate invocation handler.
     pub async fn authenticate(
@@ -347,7 +342,9 @@ where
             return Err(AuthenticateError::InternalErrorDbSearchMatchLevelMismatch);
         }
 
-        let public_key = PK::try_from(&found.identifier)
+        let public_key_bytes = hex::decode(&found.identifier)
+            .map_err(|_| AuthenticateError::InternalErrorInvalidPublicKeyHex)?;
+        let public_key = PK::try_from(&public_key_bytes)
             .map_err(|_| AuthenticateError::InternalErrorInvalidPublicKey)?;
 
         let signature_valid = public_key
@@ -408,7 +405,7 @@ pub enum GetFacetecSessionTokenError {
 impl<S, PK> Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str>,
+    PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
     /// Get a FaceTec Session Token.
     pub async fn get_facetec_session_token(
@@ -448,7 +445,7 @@ pub enum GetFacetecDeviceSdkParamsError {}
 impl<S, PK> Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a str>,
+    PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
     /// Get the FaceTec Device SDK params .
     pub async fn get_facetec_device_sdk_params(

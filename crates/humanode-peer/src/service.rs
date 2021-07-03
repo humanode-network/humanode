@@ -1,6 +1,6 @@
 //! Initializing, bootstrapping and launching the node from a provided configuration.
 
-use std::sync::Arc;
+use std::{marker::PhantomData, sync::Arc};
 
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::ExecutorProvider;
@@ -10,6 +10,7 @@ pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, TaskManager};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
+use tracing::*;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -21,7 +22,7 @@ native_executor_instance!(
 
 /// Create a "full" node (full is in terms of substrate).
 /// We don't support other node types yet either way, so this is the only way to create a node.
-pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
+pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
     let (client, backend, keystore_container, mut task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config, None)?;
     let client = Arc::new(client);
@@ -93,7 +94,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         reqwest: reqwest::Client::new(),
     });
 
-    let (bioauth_flow_rpc_slot, _bioauth_flow_provider_slot) =
+    let (bioauth_flow_rpc_slot, bioauth_flow_provider_slot) =
         bioauth_flow::rpc::new_liveness_data_tx_slot();
 
     let rpc_extensions_builder = {
@@ -113,6 +114,7 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         })
     };
 
+    let rpc_port = config.rpc_http.expect("HTTP RPC must be on").port();
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network: Arc::clone(&network),
         client: Arc::clone(&client),
@@ -162,6 +164,60 @@ pub fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
         .spawn_blocking("aura", aura);
 
     network_starter.start_network();
+
+    let mut flow = bioauth_flow::flow::Flow {
+        liveness_data_provider: bioauth_flow::rpc::Provider::new(bioauth_flow_provider_slot),
+        robonode_client,
+        validator_public_key_type: PhantomData::<crate::validator_key::FakeTodo>,
+    };
+
+    let webapp_url = std::env::var("WEBAPP_URL")
+        .unwrap_or_else(|_| "https://webapp-test-1.dev.humanode.io".into());
+    // TODO: more advanced host address detection is needed to things work within the same LAN.
+    let rpc_url =
+        std::env::var("RPC_URL").unwrap_or_else(|_| format!("http://localhost:{}", rpc_port));
+    let webapp_qrcode =
+        crate::qrcode::WebApp::new(&webapp_url, &rpc_url).map_err(ServiceError::Other)?;
+
+    let bioauth_flow_future = Box::pin(async move {
+        info!("bioauth flow starting up");
+        let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
+        if should_enroll {
+            info!("bioauth flow - enrolling in progress");
+
+            webapp_qrcode.print();
+
+            flow.enroll(crate::validator_key::FakeTodo("TODO"))
+                .await
+                .expect("enroll failed");
+
+            info!("bioauth flow - enrolling complete");
+        }
+
+        info!("bioauth flow - authentication in progress");
+
+        webapp_qrcode.print();
+
+        let authenticate_response = loop {
+            let result = flow
+                .authenticate(crate::validator_key::FakeTodo("TODO"))
+                .await;
+            match result {
+                Ok(v) => break v,
+                Err(error) => {
+                    error!(message = "bioauth flow - authentication failure", ?error);
+                }
+            };
+        };
+
+        info!("bioauth flow - authentication complete");
+
+        info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
+    });
+
+    task_manager
+        .spawn_handle()
+        .spawn_blocking("bioauth-flow", bioauth_flow_future);
 
     Ok(task_manager)
 }

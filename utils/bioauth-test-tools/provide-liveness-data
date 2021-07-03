@@ -1,0 +1,33 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")"
+
+TEST_FILE_NAME="$1"
+URL="${2:-"http://localhost:9933"}"
+
+TEST_DATA_PATH="facetec-test-data"
+
+FACE_SCAN_FILE="$TEST_DATA_PATH/FaceTec_Test_Data/3D_FaceScans/$TEST_FILE_NAME"
+AUDIT_TRAIL_IMAGE_FILE="$TEST_DATA_PATH/FaceTec_Test_Data/Audit_Trail_Images/$TEST_FILE_NAME"
+LOW_QUALITY_AUDIT_TRAIL_IMAGE_FILE="$TEST_DATA_PATH/FaceTec_Test_Data/Low_Quality_Audit_Trail_Images/$TEST_FILE_NAME"
+
+gen_request() {
+  cat <<-EOF
+    {
+      "jsonrpc":"2.0",
+      "id":1,
+      "method":"bioauth_provideLivenessData",
+      "params": [
+        {
+          "face_scan":"$(cat "$FACE_SCAN_FILE")",
+          "audit_trail_image":"$(cat "$AUDIT_TRAIL_IMAGE_FILE")",
+          "low_quality_audit_trail_image":"$(cat "$LOW_QUALITY_AUDIT_TRAIL_IMAGE_FILE")"
+        }
+      ]
+    }
+EOF
+}
+
+gen_request | curl -v "$URL" \
+  -H "Content-Type:application/json;charset=utf-8" \
+  --data-binary @-
