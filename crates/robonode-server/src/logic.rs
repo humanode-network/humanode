@@ -149,14 +149,20 @@ where
                 low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
             })
             .await
-            .map_err(|err| match err {
-                ft::Error::Call(ft::enrollment3d::Error::BadRequest(
-                    ft::enrollment3d::ErrorBadRequest { error_message, .. },
-                )) if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE => {
-                    EnrollError::PublicKeyAlreadyUsed
-                }
-                err => EnrollError::InternalErrorEnrollment(err),
-            })?;
+            .map_err(EnrollError::InternalErrorEnrollment)?;
+
+        let enroll_res = match enroll_res {
+            ft::enrollment3d::Response::Success(val) => val,
+            ft::enrollment3d::Response::Error(ft::enrollment3d::ErrorResponse {
+                error_message,
+                ..
+            }) if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE => {
+                return Err(EnrollError::PublicKeyAlreadyUsed)
+            }
+            ft::enrollment3d::Response::Error(_) => {
+                return Err(EnrollError::InternalErrorEnrollmentUnsuccessful)
+            }
+        };
 
         if !enroll_res.success {
             if !enroll_res
@@ -189,7 +195,7 @@ where
             return Err(EnrollError::PersonAlreadyEnrolled);
         }
 
-        let enroll_res = unlocked
+        let db_enroll_res = unlocked
             .facetec
             .db_enroll(ft::db_enroll::Request {
                 external_database_ref_id: &public_key_hex,
@@ -198,7 +204,7 @@ where
             .await
             .map_err(EnrollError::InternalErrorDbEnroll)?;
 
-        if !enroll_res.success {
+        if !db_enroll_res.success {
             return Err(EnrollError::InternalErrorDbEnrollUnsuccessful);
         }
 
@@ -302,6 +308,13 @@ where
             })
             .await
             .map_err(AuthenticateError::InternalErrorEnrollment)?;
+
+        let enroll_res = match enroll_res {
+            ft::enrollment3d::Response::Success(val) => val,
+            ft::enrollment3d::Response::Error(_) => {
+                return Err(AuthenticateError::InternalErrorEnrollmentUnsuccessful)
+            }
+        };
 
         if !enroll_res.success {
             if !enroll_res
