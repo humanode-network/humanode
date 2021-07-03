@@ -198,12 +198,16 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
         webapp_qrcode.print();
 
-        let result = flow
-            .authenticate(crate::validator_key::FakeTodo("TODO"))
-            .await;
-        let authenticate_response = match result {
-            Ok(v) => v,
-            Err(err) => panic!("bioauth failure: {}", err),
+        let authenticate_response = loop {
+            let result = flow
+                .authenticate(crate::validator_key::FakeTodo("TODO"))
+                .await;
+            match result {
+                Ok(v) => break v,
+                Err(error) => {
+                    error!(message = "bioauth flow - authentication failure", ?error);
+                }
+            };
         };
 
         info!("bioauth flow - authentication complete");
