@@ -15,10 +15,10 @@ impl Client {
     ) -> Result<DBEnrollResponse, Error<DBEnrollError>> {
         let res = self.build_post("/3d-db/enroll", &req).send().await?;
         match res.status() {
-            StatusCode::OK => Ok(res.json().await?),
-            StatusCode::BAD_REQUEST => {
-                Err(Error::Call(DBEnrollError::BadRequest(res.json().await?)))
-            }
+            StatusCode::OK => Ok(self.parse_json(res).await?),
+            StatusCode::BAD_REQUEST => Err(Error::Call(DBEnrollError::BadRequest(
+                self.parse_json(res).await?,
+            ))),
             _ => Err(Error::Call(DBEnrollError::Unknown(res.text().await?))),
         }
     }

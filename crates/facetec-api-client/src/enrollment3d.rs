@@ -15,9 +15,9 @@ impl Client {
     ) -> Result<Enrollment3DResponse, Error<Enrollment3DError>> {
         let res = self.build_post("/enrollment-3d", &req).send().await?;
         match res.status() {
-            StatusCode::OK => Ok(res.json().await?),
+            StatusCode::OK => Ok(self.parse_json(res).await?),
             StatusCode::BAD_REQUEST => Err(Error::Call(Enrollment3DError::BadRequest(
-                res.json().await?,
+                self.parse_json(res).await?,
             ))),
             _ => Err(Error::Call(Enrollment3DError::Unknown(res.text().await?))),
         }
