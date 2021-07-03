@@ -99,6 +99,8 @@ pub struct DBSearchErrorBadRequest {
 mod tests {
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
 
+    use crate::tests::test_client;
+
     use super::*;
 
     #[test]
@@ -235,12 +237,7 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let client = Client {
-            base_url: mock_server.uri(),
-            reqwest: reqwest::Client::new(),
-            device_key_identifier: "my device key identifier".into(),
-            response_body_error_inspector: crate::response_body_error::NoopInspector,
-        };
+        let client = test_client(mock_server.uri());
 
         let actual_response = client.db_search(sample_request).await.unwrap();
         assert_eq!(actual_response, expected_response);
@@ -264,12 +261,7 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let client = Client {
-            base_url: mock_server.uri(),
-            reqwest: reqwest::Client::new(),
-            device_key_identifier: "my device key identifier".into(),
-            response_body_error_inspector: crate::response_body_error::NoopInspector,
-        };
+        let client = test_client(mock_server.uri());
 
         let actual_error = client.db_search(sample_request).await.unwrap_err();
         assert_matches!(
@@ -303,12 +295,7 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let client = Client {
-            base_url: mock_server.uri(),
-            reqwest: reqwest::Client::new(),
-            device_key_identifier: "my device key identifier".into(),
-            response_body_error_inspector: crate::response_body_error::NoopInspector,
-        };
+        let client = test_client(mock_server.uri());
 
         let actual_error = client.db_search(sample_request).await.unwrap_err();
         assert_matches!(

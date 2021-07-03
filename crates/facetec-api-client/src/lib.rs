@@ -21,6 +21,9 @@ pub mod response_body_error;
 mod session_token;
 mod types;
 
+#[cfg(test)]
+mod tests;
+
 pub use db_enroll::*;
 pub use db_search::*;
 pub use enrollment3d::*;

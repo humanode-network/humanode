@@ -96,7 +96,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{AdditionalSessionData, CallData, ServerInfo};
+    use crate::{tests::test_client, AdditionalSessionData, CallData, ServerInfo};
 
     use super::*;
 
@@ -274,12 +274,7 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let client = Client {
-            base_url: mock_server.uri(),
-            reqwest: reqwest::Client::new(),
-            device_key_identifier: "my device key identifier".into(),
-            response_body_error_inspector: crate::response_body_error::NoopInspector,
-        };
+        let client = test_client(mock_server.uri());
 
         let actual_response = client.enrollment_3d(sample_request).await.unwrap();
         assert_eq!(actual_response, expected_response);
@@ -304,12 +299,7 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let client = Client {
-            base_url: mock_server.uri(),
-            reqwest: reqwest::Client::new(),
-            device_key_identifier: "my device key identifier".into(),
-            response_body_error_inspector: crate::response_body_error::NoopInspector,
-        };
+        let client = test_client(mock_server.uri());
 
         let actual_error = client.enrollment_3d(sample_request).await.unwrap_err();
         assert_matches!(
@@ -349,12 +339,7 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let client = Client {
-            base_url: mock_server.uri(),
-            reqwest: reqwest::Client::new(),
-            device_key_identifier: "my device key identifier".into(),
-            response_body_error_inspector: crate::response_body_error::NoopInspector,
-        };
+        let client = test_client(mock_server.uri());
 
         let actual_error = client.enrollment_3d(sample_request).await.unwrap_err();
         assert_matches!(
