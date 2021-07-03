@@ -124,7 +124,7 @@ const EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE: &str =
     "An enrollment already exists for this externalDatabaseRefID.";
 
 /// The group name at 3D DB.
-const DB_GROUP_NAME: &str = "";
+const DB_GROUP_NAME: &str = "humanode";
 /// The match level to use throughout the code.
 const MATCH_LEVEL: i64 = 10;
 
