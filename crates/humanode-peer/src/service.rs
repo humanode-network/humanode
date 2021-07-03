@@ -183,6 +183,24 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let client = Arc::clone(&client);
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
+            let authenticate = pallet_bioauth::Authenticate {
+                ticket: "todo".into(),
+                ticket_signature: "todo".into(),
+            };
+            let call = pallet_bioauth::Call::authenticate(authenticate);
+            let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
+
+            let at = client.chain_info().best_hash;
+            transaction_pool
+                .pool()
+                .submit_and_watch(
+                    &sp_runtime::generic::BlockId::Hash(at),
+                    sp_runtime::transaction_validity::TransactionSource::Local,
+                    ext.into(),
+                )
+                .await
+                .unwrap();
+
             info!("bioauth flow starting up");
             let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
             if should_enroll {
