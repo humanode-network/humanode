@@ -57,7 +57,7 @@ pub struct Locked<S, PK> {
     /// The sequence number.
     pub sequence: Sequence,
     /// The client for the FaceTec Server API.
-    pub facetec: FacetecClient<facetec_api_client::response_body_error::NoopInspector>,
+    pub facetec: FacetecClient<crate::LoggingInspector>,
     /// The utility for signing the responses.
     pub signer: S,
     /// Public key type to use under the hood.
