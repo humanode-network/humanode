@@ -10,7 +10,8 @@
 #[macro_use]
 extern crate assert_matches;
 
-use reqwest::RequestBuilder;
+use reqwest::{RequestBuilder, Response};
+use serde::de::DeserializeOwned;
 use thiserror::Error;
 
 mod db_enroll;
@@ -31,9 +32,31 @@ pub enum Error<T: std::error::Error + 'static> {
     /// A call-specific error.
     #[error("server error: {0}")]
     Call(T),
+    /// An error due to failure to load or parse the response body.
+    #[error(transparent)]
+    ResponseBody(#[from] ResponseBodyError),
     /// An error coming from the underlying reqwest layer.
     #[error("reqwest error: {0}")]
     Reqwest(#[from] reqwest::Error),
+}
+
+/// An error while loading or parsing the response body.
+#[derive(Error, Debug)]
+pub enum ResponseBodyError {
+    /// Unable to read the response body, probably due to a socket failure of some kind.
+    #[error("response body reading error: {0}")]
+    BodyRead(#[source] reqwest::Error),
+    /// Unable to parse the JSON response. Might be because the response is not in JSON when we
+    /// expected it to be in JSON, or if the JSON the we got does not match the definition that
+    /// serde expects on our end.
+    #[error("JSON response parsing error: {source}")]
+    Json {
+        /// The underlying [`serde_json::Error`] error.
+        #[source]
+        source: serde_json::Error,
+        /// The full response body that caused this error, useful for inspection.
+        body: bytes::Bytes,
+    },
 }
 
 /// The robonode client.
@@ -73,5 +96,18 @@ impl Client {
     {
         let url = self.build_url(path);
         self.apply_headers(self.reqwest.post(url)).json(body)
+    }
+
+    /// A custom JSON parsing logic for more control over how we handle JSON parsing errors.
+    async fn parse_json<T>(&self, res: Response) -> Result<T, ResponseBodyError>
+    where
+        T: DeserializeOwned,
+    {
+        let full = res.bytes().await.map_err(ResponseBodyError::BodyRead)?;
+
+        serde_json::from_slice(&full).map_err(|err| ResponseBodyError::Json {
+            source: err,
+            body: full,
+        })
     }
 }

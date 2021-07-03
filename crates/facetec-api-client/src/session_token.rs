@@ -12,7 +12,7 @@ impl Client {
     pub async fn session_token(&self) -> Result<SessionTokenResponse, Error<SessionTokenError>> {
         let res = self.build_get("/session-token").send().await?;
         match res.status() {
-            StatusCode::OK => Ok(res.json().await?),
+            StatusCode::OK => Ok(self.parse_json(res).await?),
             _ => Err(Error::Call(SessionTokenError::Unknown(res.text().await?))),
         }
     }

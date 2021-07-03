@@ -1333,6 +1333,7 @@ name = "facetec-api-client"
 version = "0.1.0"
 dependencies = [
  "assert_matches",
+ "bytes 1.0.1",
  "reqwest",
  "serde",
  "serde_json",

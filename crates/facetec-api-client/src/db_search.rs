@@ -15,10 +15,10 @@ impl Client {
     ) -> Result<DBSearchResponse, Error<DBSearchError>> {
         let res = self.build_post("/3d-db/search", &req).send().await?;
         match res.status() {
-            StatusCode::OK => Ok(res.json().await?),
-            StatusCode::BAD_REQUEST => {
-                Err(Error::Call(DBSearchError::BadRequest(res.json().await?)))
-            }
+            StatusCode::OK => Ok(self.parse_json(res).await?),
+            StatusCode::BAD_REQUEST => Err(Error::Call(DBSearchError::BadRequest(
+                self.parse_json(res).await?,
+            ))),
             _ => Err(Error::Call(DBSearchError::Unknown(res.text().await?))),
         }
     }
