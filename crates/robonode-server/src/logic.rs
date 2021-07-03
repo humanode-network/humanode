@@ -179,7 +179,7 @@ where
             .await
             .map_err(EnrollError::InternalErrorDbSearch)?;
 
-        if !enroll_res.success {
+        if !search_res.success {
             return Err(EnrollError::InternalErrorDbSearchUnsuccessful);
         }
 
@@ -324,7 +324,7 @@ where
             .await
             .map_err(AuthenticateError::InternalErrorDbSearch)?;
 
-        if !enroll_res.success {
+        if !search_res.success {
             return Err(AuthenticateError::InternalErrorDbSearchUnsuccessful);
         }
 
