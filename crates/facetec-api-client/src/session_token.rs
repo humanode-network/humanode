@@ -51,7 +51,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{AdditionalSessionData, CallData};
+    use crate::{tests::test_client, AdditionalSessionData, CallData};
 
     use super::*;
 
@@ -135,12 +135,7 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let client = Client {
-            base_url: mock_server.uri(),
-            reqwest: reqwest::Client::new(),
-            device_key_identifier: "my device key identifier".into(),
-            response_body_error_inspector: crate::response_body_error::NoopInspector,
-        };
+        let client = test_client(mock_server.uri());
 
         let actual_response = client.session_token().await.unwrap();
         assert_eq!(actual_response, expected_response);
@@ -159,12 +154,7 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let client = Client {
-            base_url: mock_server.uri(),
-            reqwest: reqwest::Client::new(),
-            device_key_identifier: "my device key identifier".into(),
-            response_body_error_inspector: crate::response_body_error::NoopInspector,
-        };
+        let client = test_client(mock_server.uri());
 
         let actual_error = client.session_token().await.unwrap_err();
         assert_matches!(
