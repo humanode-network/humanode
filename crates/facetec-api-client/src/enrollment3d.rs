@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{CommonResponse, FaceScanResponse, OpaqueBase64DataRef, ServerInfo};
+use crate::{CommonResponse, FaceScanResponse, OpaqueBase64DataRef};
 
 use super::Client;
 
@@ -37,48 +37,27 @@ pub struct Request<'a> {
 }
 
 /// The response from `/enrollment-3d`.
-#[derive(Debug, Deserialize, PartialEq)]
-#[serde(untagged)]
-pub enum Response {
-    /// Successful response.
-    Success(SuccessResponse),
-    /// Erroneous response.
-    Error(ErrorResponse),
-}
-
-/// The success response from `/enrollment-3d`.
+/// The schema for this particular call if fucked beyound belief; without a proper API docs from
+/// the FaceTec side, implemeting this properly will be a waste of time, and error prone.
+/// Plus, even the spec won't help - they need to fix thier approach to the API design.
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct SuccessResponse {
+pub struct Response {
     /// Common response portion.
     #[serde(flatten)]
-    pub common: CommonResponse,
+    pub common: Option<CommonResponse>,
     /// FaceScan response portion.
     #[serde(flatten)]
-    pub face_scan: FaceScanResponse,
+    pub face_scan: Option<FaceScanResponse>,
     /// The external database ID that was associated with this item.
     #[serde(rename = "externalDatabaseRefID")]
-    pub external_database_ref_id: String,
+    pub external_database_ref_id: Option<String>,
     /// Whether the request had any errors during the execution.
     pub error: bool,
     /// Whether the request was successful.
     pub success: bool,
-}
-
-/// The error response from `/enrollment-3d`.
-#[derive(Debug, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct ErrorResponse {
-    /// The information about the server.
-    pub server_info: ServerInfo,
-    /// Whether the request had any errors during the execution.
-    /// `success` and `error` can both be `false` at the same time.
-    pub error: bool,
-    /// Whether the request was successful.
-    /// `success` and `error` can both be `false` at the same time.
-    pub success: bool,
-    /// The error message.
-    pub error_message: String,
+    /// Potential error message.
+    pub error_message: Option<String>,
 }
 
 /// The `/enrollment-3d`-specific error kind.
@@ -146,7 +125,7 @@ mod tests {
             "externalDatabaseRefID": "test_external_dbref_id",
             "faceScanSecurityChecks": {
                 "auditTrailVerificationCheckSucceeded": true,
-                "faceScanLivenessCheckSucceeded": false,
+                "faceScanLivenessCheckSucceeded": true,
                 "replayCheckSucceeded": true,
                 "sessionTokenCheckSucceeded": true
             },
@@ -157,21 +136,22 @@ mod tests {
                 "mode": "Development Only",
                 "notice": "Notice"
             },
-            "success": false
+            "success": true
         });
 
         let response: Response = serde_json::from_value(sample_response).unwrap();
         assert_matches!(
             response,
-            Response::Success(SuccessResponse {
-                external_database_ref_id,
+            Response {
+                external_database_ref_id: Some(external_database_ref_id),
+                success: true,
                 error: false,
-                success: false,
-                face_scan: FaceScanResponse {
+                error_message: None,
+                face_scan: Some(FaceScanResponse {
                     age_estimate_group_enum_int: -1,
                     ..
-                },
-                common: CommonResponse {
+                }),
+                common: Some(CommonResponse {
                     additional_session_data: AdditionalSessionData {
                         is_additional_data_partially_incomplete: false,
                         ..
@@ -179,15 +159,19 @@ mod tests {
                     call_data: CallData {
                         ..
                     },
+                    server_info: ServerInfo {
+                        version: _,
+                        mode:_,
+                        notice:_,
+                    },
                     ..
-                },
-                ..
-            }) if external_database_ref_id == "test_external_dbref_id"
+                }),
+            } if external_database_ref_id == "test_external_dbref_id"
         )
     }
 
     #[test]
-    fn bad_request_error_response_deserialization() {
+    fn already_enrolled_response_deserialization() {
         let sample_response = serde_json::json!({
             "error": true,
             "errorMessage": "An enrollment already exists for this externalDatabaseRefID.",
@@ -200,18 +184,16 @@ mod tests {
         });
 
         let response: Response = serde_json::from_value(sample_response).unwrap();
-        assert_eq!(
+        assert_matches!(
             response,
-            Response::Error(ErrorResponse {
+            Response {
+                external_database_ref_id: None,
+                error_message: Some(error_message),
                 error: true,
                 success: false,
-                server_info: ServerInfo {
-                    version: "9.0.0-SNAPSHOT".to_owned(),
-                    mode: "Development Only".to_owned(),
-                    notice: "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet.".to_owned(),
-                },
-                error_message: "An enrollment already exists for this externalDatabaseRefID.".to_owned(),
-            })
+                face_scan: None,
+                common: None,
+            } if error_message == "An enrollment already exists for this externalDatabaseRefID."
         )
     }
 

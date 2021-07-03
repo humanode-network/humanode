@@ -154,26 +154,15 @@ where
             .await
             .map_err(EnrollError::InternalErrorEnrollment)?;
 
-        let enroll_res = match enroll_res {
-            ft::enrollment3d::Response::Success(val) => val,
-            ft::enrollment3d::Response::Error(ft::enrollment3d::ErrorResponse {
-                error_message,
-                ..
-            }) if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE => {
-                return Err(EnrollError::PublicKeyAlreadyUsed)
-            }
-            ft::enrollment3d::Response::Error(_) => {
-                return Err(EnrollError::InternalErrorEnrollmentUnsuccessful)
-            }
-        };
-
         if !enroll_res.success {
-            if !enroll_res
-                .face_scan
-                .face_scan_security_checks
-                .all_checks_succeeded()
-            {
-                return Err(EnrollError::FaceScanRejected);
+            if let Some(error_message) = enroll_res.error_message {
+                if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE {
+                    return Err(EnrollError::PublicKeyAlreadyUsed);
+                }
+            } else if let Some(face_scan) = enroll_res.face_scan {
+                if !face_scan.face_scan_security_checks.all_checks_succeeded() {
+                    return Err(EnrollError::FaceScanRejected);
+                }
             }
             return Err(EnrollError::InternalErrorEnrollmentUnsuccessful);
         }
@@ -313,20 +302,11 @@ where
             .await
             .map_err(AuthenticateError::InternalErrorEnrollment)?;
 
-        let enroll_res = match enroll_res {
-            ft::enrollment3d::Response::Success(val) => val,
-            ft::enrollment3d::Response::Error(_) => {
-                return Err(AuthenticateError::InternalErrorEnrollmentUnsuccessful)
-            }
-        };
-
         if !enroll_res.success {
-            if !enroll_res
-                .face_scan
-                .face_scan_security_checks
-                .all_checks_succeeded()
-            {
-                return Err(AuthenticateError::FaceScanRejected);
+            if let Some(face_scan) = enroll_res.face_scan {
+                if !face_scan.face_scan_security_checks.all_checks_succeeded() {
+                    return Err(AuthenticateError::FaceScanRejected);
+                }
             }
             return Err(AuthenticateError::InternalErrorEnrollmentUnsuccessful);
         }
