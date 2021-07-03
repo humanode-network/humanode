@@ -306,10 +306,7 @@ pub mod pallet {
     }
 }
 
-// The following section implements the `SignedExtension` trait
-// for the `CheckBioauthTx` type.
-
-/// The `CheckBioauthTx` struct.
+/// Checks the validity of the unsigned [`Call::authenticate`] tx.
 #[derive(Encode, Decode, Clone, Eq, PartialEq, Default)]
 pub struct CheckBioauthTx<T: Config + Send + Sync>(PhantomData<T>);
 
@@ -326,7 +323,6 @@ impl<T: Config + Send + Sync> Debug for CheckBioauthTx<T> {
     }
 }
 
-/// Implementation of the `SignedExtension` trait for the `CheckBioauthTx` struct.
 impl<T: Config + Send + Sync> SignedExtension for CheckBioauthTx<T>
 where
     T::Call: Dispatchable<Info = DispatchInfo>,
