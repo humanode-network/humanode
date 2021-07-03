@@ -7,7 +7,10 @@ use crate::{CommonResponse, Error};
 
 use super::Client;
 
-impl Client {
+impl<RBEI> Client<RBEI>
+where
+    RBEI: crate::response_body_error::Inspector,
+{
     /// Perform the `/session-token` call to the server.
     pub async fn session_token(&self) -> Result<SessionTokenResponse, Error<SessionTokenError>> {
         let res = self.build_get("/session-token").send().await?;
@@ -136,6 +139,7 @@ mod tests {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
             device_key_identifier: "my device key identifier".into(),
+            response_body_error_inspector: crate::response_body_error::NoopInspector,
         };
 
         let actual_response = client.session_token().await.unwrap();
@@ -159,6 +163,7 @@ mod tests {
             base_url: mock_server.uri(),
             reqwest: reqwest::Client::new(),
             device_key_identifier: "my device key identifier".into(),
+            response_body_error_inspector: crate::response_body_error::NoopInspector,
         };
 
         let actual_error = client.session_token().await.unwrap_err();
