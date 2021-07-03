@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::Deserialize;
 
-use crate::{CommonResponse, Error};
+use crate::CommonResponse;
 
 use super::Client;
 
@@ -12,11 +12,11 @@ where
     RBEI: crate::response_body_error::Inspector,
 {
     /// Perform the `/session-token` call to the server.
-    pub async fn session_token(&self) -> Result<SessionTokenResponse, Error<SessionTokenError>> {
+    pub async fn session_token(&self) -> Result<Response, crate::Error<Error>> {
         let res = self.build_get("/session-token").send().await?;
         match res.status() {
             StatusCode::OK => Ok(self.parse_json(res).await?),
-            _ => Err(Error::Call(SessionTokenError::Unknown(res.text().await?))),
+            _ => Err(crate::Error::Call(Error::Unknown(res.text().await?))),
         }
     }
 }
@@ -24,7 +24,7 @@ where
 /// The response from `/session-token`.
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionTokenResponse {
+pub struct Response {
     /// Common response portion.
     #[serde(flatten)]
     pub common: CommonResponse,
@@ -37,8 +37,8 @@ pub struct SessionTokenResponse {
 }
 
 /// The `/session-token`-specific error kind.
-#[derive(Error, Debug, PartialEq)]
-pub enum SessionTokenError {
+#[derive(thiserror::Error, Debug, PartialEq)]
+pub enum Error {
     /// Some error occured. We don't really expect any though.
     #[error("unknown error: {0}")]
     Unknown(String),
@@ -78,10 +78,10 @@ mod tests {
             "success": true
         });
 
-        let response: SessionTokenResponse = serde_json::from_value(sample_response).unwrap();
+        let response: Response = serde_json::from_value(sample_response).unwrap();
         assert_matches!(
             response,
-            SessionTokenResponse {
+            Response {
                 session_token,
                 error: false,
                 success: true,
@@ -125,8 +125,7 @@ mod tests {
             "success": true
         });
 
-        let expected_response: SessionTokenResponse =
-            serde_json::from_value(sample_response.clone()).unwrap();
+        let expected_response: Response = serde_json::from_value(sample_response.clone()).unwrap();
 
         Mock::given(matchers::method("GET"))
             .and(matchers::path("/session-token"))
@@ -159,7 +158,7 @@ mod tests {
         let actual_error = client.session_token().await.unwrap_err();
         assert_matches!(
             actual_error,
-            Error::Call(SessionTokenError::Unknown(error_text)) if error_text == sample_response
+            crate::Error::Call(Error::Unknown(error_text)) if error_text == sample_response
         );
     }
 }

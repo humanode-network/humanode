@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{CommonResponse, Error, FaceScanResponse, OpaqueBase64DataRef, ServerInfo};
+use crate::{CommonResponse, FaceScanResponse, OpaqueBase64DataRef, ServerInfo};
 
 use super::Client;
 
@@ -12,17 +12,14 @@ where
     RBEI: crate::response_body_error::Inspector,
 {
     /// Perform the `/enrollment-3d` call to the server.
-    pub async fn enrollment_3d(
-        &self,
-        req: Enrollment3DRequest<'_>,
-    ) -> Result<Enrollment3DResponse, Error<Enrollment3DError>> {
+    pub async fn enrollment_3d(&self, req: Request<'_>) -> Result<Response, crate::Error<Error>> {
         let res = self.build_post("/enrollment-3d", &req).send().await?;
         match res.status() {
             StatusCode::OK => Ok(self.parse_json(res).await?),
-            StatusCode::BAD_REQUEST => Err(Error::Call(Enrollment3DError::BadRequest(
+            StatusCode::BAD_REQUEST => Err(crate::Error::Call(Error::BadRequest(
                 self.parse_json(res).await?,
             ))),
-            _ => Err(Error::Call(Enrollment3DError::Unknown(res.text().await?))),
+            _ => Err(crate::Error::Call(Error::Unknown(res.text().await?))),
         }
     }
 }
@@ -30,7 +27,7 @@ where
 /// Input data for the `/enrollment-3d` request.
 #[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct Enrollment3DRequest<'a> {
+pub struct Request<'a> {
     /// The ID that the FaceTec Server will associate the data with.
     #[serde(rename = "externalDatabaseRefID")]
     pub external_database_ref_id: &'a str,
@@ -45,7 +42,7 @@ pub struct Enrollment3DRequest<'a> {
 /// The response from `/enrollment-3d`.
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct Enrollment3DResponse {
+pub struct Response {
     /// Common response portion.
     #[serde(flatten)]
     pub common: CommonResponse,
@@ -62,21 +59,21 @@ pub struct Enrollment3DResponse {
 }
 
 /// The `/enrollment-3d`-specific error kind.
-#[derive(Error, Debug, PartialEq)]
-pub enum Enrollment3DError {
+#[derive(thiserror::Error, Debug, PartialEq)]
+pub enum Error {
     /// Bad request error occured.
     #[error("bad request: {0}")]
-    BadRequest(Enrollment3DErrorBadRequest),
+    BadRequest(ErrorBadRequest),
     /// Some other error occured.
     #[error("unknown error: {0}")]
     Unknown(String),
 }
 
 /// The error kind for the `/enrollment-3d`-specific 400 response.
-#[derive(Error, Debug, Deserialize, PartialEq)]
+#[derive(thiserror::Error, Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[error("bad request: {error_message}")]
-pub struct Enrollment3DErrorBadRequest {
+pub struct ErrorBadRequest {
     /// The information about the server.
     pub server_info: ServerInfo,
     /// Whether the request had any errors during the execution.
@@ -109,7 +106,7 @@ mod tests {
             "lowQualityAuditTrailImage": "789"
         });
 
-        let actual_request = serde_json::to_value(&Enrollment3DRequest {
+        let actual_request = serde_json::to_value(&Request {
             external_database_ref_id: "my_test_id",
             face_scan: "123",
             audit_trail_image: "456",
@@ -160,10 +157,10 @@ mod tests {
             "success": false
         });
 
-        let response: Enrollment3DResponse = serde_json::from_value(sample_response).unwrap();
+        let response: Response = serde_json::from_value(sample_response).unwrap();
         assert_matches!(
             response,
-            Enrollment3DResponse {
+            Response {
                 external_database_ref_id,
                 error: false,
                 success: false,
@@ -199,11 +196,10 @@ mod tests {
             }
         });
 
-        let response: Enrollment3DErrorBadRequest =
-            serde_json::from_value(sample_response).unwrap();
+        let response: ErrorBadRequest = serde_json::from_value(sample_response).unwrap();
         assert_eq!(
             response,
-            Enrollment3DErrorBadRequest {
+            ErrorBadRequest {
                 error: true,
                 success: false,
                 server_info: ServerInfo {
@@ -220,7 +216,7 @@ mod tests {
     async fn mock_success() {
         let mock_server = MockServer::start().await;
 
-        let sample_request = Enrollment3DRequest {
+        let sample_request = Request {
             external_database_ref_id: "my_test_id",
             face_scan: "123",
             audit_trail_image: "456",
@@ -264,8 +260,7 @@ mod tests {
             "success": false
         });
 
-        let expected_response: Enrollment3DResponse =
-            serde_json::from_value(sample_response.clone()).unwrap();
+        let expected_response: Response = serde_json::from_value(sample_response.clone()).unwrap();
 
         Mock::given(matchers::method("POST"))
             .and(matchers::path("/enrollment-3d"))
@@ -284,7 +279,7 @@ mod tests {
     async fn mock_error_unknown() {
         let mock_server = MockServer::start().await;
 
-        let sample_request = Enrollment3DRequest {
+        let sample_request = Request {
             external_database_ref_id: "my_test_id",
             face_scan: "123",
             audit_trail_image: "456",
@@ -304,7 +299,7 @@ mod tests {
         let actual_error = client.enrollment_3d(sample_request).await.unwrap_err();
         assert_matches!(
             actual_error,
-            Error::Call(Enrollment3DError::Unknown(error_text)) if error_text == sample_response
+            crate::Error::Call(Error::Unknown(error_text)) if error_text == sample_response
         );
     }
 
@@ -312,7 +307,7 @@ mod tests {
     async fn mock_error_bad_request() {
         let mock_server = MockServer::start().await;
 
-        let sample_request = Enrollment3DRequest {
+        let sample_request = Request {
             external_database_ref_id: "my_test_id",
             face_scan: "123",
             audit_trail_image: "456",
@@ -329,7 +324,7 @@ mod tests {
             }
         });
 
-        let expected_error: Enrollment3DErrorBadRequest =
+        let expected_error: ErrorBadRequest =
             serde_json::from_value(sample_response.clone()).unwrap();
 
         Mock::given(matchers::method("POST"))
@@ -344,7 +339,7 @@ mod tests {
         let actual_error = client.enrollment_3d(sample_request).await.unwrap_err();
         assert_matches!(
             actual_error,
-            Error::Call(Enrollment3DError::BadRequest(err)) if err == expected_error
+            crate::Error::Call(Error::BadRequest(err)) if err == expected_error
         );
     }
 }

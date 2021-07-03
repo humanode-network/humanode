@@ -2,11 +2,7 @@
 
 use std::{convert::TryFrom, marker::PhantomData};
 
-use facetec_api_client::{
-    Client as FacetecClient, DBEnrollError, DBEnrollRequest, DBSearchError, DBSearchRequest,
-    Enrollment3DError, Enrollment3DErrorBadRequest, Enrollment3DRequest, Error as FacetecError,
-    SessionTokenError,
-};
+use facetec_api_client as ft;
 use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use tokio::sync::Mutex;
@@ -57,7 +53,7 @@ pub struct Locked<S, PK> {
     /// The sequence number.
     pub sequence: Sequence,
     /// The client for the FaceTec Server API.
-    pub facetec: FacetecClient<crate::LoggingInspector>,
+    pub facetec: ft::Client<crate::LoggingInspector>,
     /// The utility for signing the responses.
     pub signer: S,
     /// Public key type to use under the hood.
@@ -99,19 +95,19 @@ pub enum EnrollError {
     PersonAlreadyEnrolled,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(FacetecError<Enrollment3DError>),
+    InternalErrorEnrollment(ft::Error<ft::enrollment3d::Error>),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(FacetecError<DBSearchError>),
+    InternalErrorDbSearch(ft::Error<ft::db_search::Error>),
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorDbEnroll(FacetecError<DBEnrollError>),
+    InternalErrorDbEnroll(ft::Error<ft::db_enroll::Error>),
     /// Internal error at 3D-DB enrollment due to unsuccessful response.
     InternalErrorDbEnrollUnsuccessful,
 }
@@ -146,7 +142,7 @@ where
         let unlocked = self.locked.lock().await;
         let enroll_res = unlocked
             .facetec
-            .enrollment_3d(Enrollment3DRequest {
+            .enrollment_3d(ft::enrollment3d::Request {
                 external_database_ref_id: &public_key_hex,
                 face_scan: &liveness_data.face_scan,
                 audit_trail_image: &liveness_data.audit_trail_image,
@@ -154,8 +150,8 @@ where
             })
             .await
             .map_err(|err| match err {
-                FacetecError::Call(Enrollment3DError::BadRequest(
-                    Enrollment3DErrorBadRequest { error_message, .. },
+                ft::Error::Call(ft::enrollment3d::Error::BadRequest(
+                    ft::enrollment3d::ErrorBadRequest { error_message, .. },
                 )) if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE => {
                     EnrollError::PublicKeyAlreadyUsed
                 }
@@ -175,7 +171,7 @@ where
 
         let search_res = unlocked
             .facetec
-            .db_search(DBSearchRequest {
+            .db_search(ft::db_search::Request {
                 external_database_ref_id: &public_key_hex,
                 group_name: DB_GROUP_NAME,
                 min_match_level: MATCH_LEVEL,
@@ -195,7 +191,7 @@ where
 
         let enroll_res = unlocked
             .facetec
-            .db_enroll(DBEnrollRequest {
+            .db_enroll(ft::db_enroll::Request {
                 external_database_ref_id: &public_key_hex,
                 group_name: "",
             })
@@ -251,14 +247,14 @@ pub enum AuthenticateError {
     SignatureInvalid,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(FacetecError<Enrollment3DError>),
+    InternalErrorEnrollment(ft::Error<ft::enrollment3d::Error>),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(FacetecError<DBSearchError>),
+    InternalErrorDbSearch(ft::Error<ft::db_search::Error>),
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB search due to match-level mismatch in
@@ -298,7 +294,7 @@ where
 
         let enroll_res = unlocked
             .facetec
-            .enrollment_3d(Enrollment3DRequest {
+            .enrollment_3d(ft::enrollment3d::Request {
                 external_database_ref_id: &tmp_external_database_ref_id,
                 face_scan: &liveness_data.face_scan,
                 audit_trail_image: &liveness_data.audit_trail_image,
@@ -320,7 +316,7 @@ where
 
         let search_res = unlocked
             .facetec
-            .db_search(DBSearchRequest {
+            .db_search(ft::db_search::Request {
                 external_database_ref_id: &tmp_external_database_ref_id,
                 group_name: DB_GROUP_NAME,
                 min_match_level: MATCH_LEVEL,
@@ -397,7 +393,7 @@ pub struct GetFacetecSessionTokenResponse {
 pub enum GetFacetecSessionTokenError {
     /// Internal error at session token retrieval due to the underlying request
     /// error at the API level.
-    InternalErrorSessionToken(FacetecError<SessionTokenError>),
+    InternalErrorSessionToken(ft::Error<ft::session_token::Error>),
     /// Internal error at session token retrieval due to unsuccessful response.
     InternalErrorSessionTokenUnsuccessful,
 }

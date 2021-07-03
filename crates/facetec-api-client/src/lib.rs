@@ -14,23 +14,19 @@ use reqwest::{RequestBuilder, Response};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 
-mod db_enroll;
-mod db_search;
-mod enrollment3d;
+pub mod db_enroll;
+pub mod db_search;
+pub mod enrollment3d;
 pub mod response_body_error;
-mod session_token;
+pub mod session_token;
+
 mod types;
 
 #[cfg(test)]
 mod tests;
 
-pub use db_enroll::*;
-pub use db_search::*;
-pub use enrollment3d::*;
-pub use session_token::*;
-pub use types::*;
-
 pub use response_body_error::ResponseBodyError;
+pub use types::*;
 
 /// The generic error type for the client calls.
 #[derive(Error, Debug)]
