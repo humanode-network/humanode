@@ -1,8 +1,11 @@
+use std::convert::TryInto;
+
 use crate as pallet_bioauth;
 use crate::*;
 use crate::{mock::*, Error};
 use frame_support::pallet_prelude::*;
 use frame_support::{assert_noop, assert_ok};
+use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 
 pub fn make_input(public_key: &[u8], nonce: &[u8], signature: &[u8]) -> crate::Authenticate {
     let ticket =
@@ -104,16 +107,21 @@ fn signed_ext_check_bioauth_tx_permit_empty_state() {
         // Prepare test input.
         let input = make_input(b"qwe", b"rty", b"should_be_valid");
 
-        let call = <pallet_bioauth::Call<Test>>::authenticate(input).into();
+        let opaque_auth_ticket: OpaqueAuthTicket = input.ticket.clone().into();
+        let auth_ticket: AuthTicket = (&opaque_auth_ticket).try_into().unwrap();
+        let expected_tag: StoredAuthTicket = auth_ticket.into();
+
+        let call = <pallet_bioauth::Call<Test>>::authenticate(input.clone()).into();
         let info = DispatchInfo::default();
 
         assert_eq!(
             CheckBioauthTx::<Test>(PhantomData).validate(&1, &call, &info, 1),
-            Ok(ValidTransaction {
-                priority: 50,
-                longevity: 1,
-                ..Default::default()
-            })
+            ValidTransaction::with_tag_prefix("bioauth")
+                .and_provides(expected_tag)
+                .priority(50)
+                .longevity(1)
+                .propagate(true)
+                .build()
         );
     })
 }
