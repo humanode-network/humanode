@@ -23,6 +23,7 @@ pub use logic::FacetecDeviceSdkParams;
 /// Initialize the [`warp::Filter`] implementing the HTTP transport for
 /// the robonode.
 pub fn init(
+    execution_id: String,
     facetec_api_client: facetec_api_client::Client<LoggingInspector>,
     facetec_device_sdk_params: FacetecDeviceSdkParams,
     robonode_keypair: robonode_crypto::Keypair,
@@ -30,6 +31,7 @@ pub fn init(
     let logic = logic::Logic {
         locked: Mutex::new(logic::Locked {
             sequence: sequence::Sequence::new(0),
+            execution_id,
             facetec: facetec_api_client,
             signer: robonode_keypair,
             public_key_type: PhantomData::<ValidatorPublicKeyToDo>,

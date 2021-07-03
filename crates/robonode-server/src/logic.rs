@@ -52,6 +52,9 @@ pub struct FacetecDeviceSdkParams {
 pub struct Locked<S, PK> {
     /// The sequence number.
     pub sequence: Sequence,
+    /// An execution ID, to be used together with sequence to guarantee unqiueness of the temporary
+    /// enrollment external database IDs.
+    pub execution_id: String,
     /// The client for the FaceTec Server API.
     pub facetec: ft::Client<crate::LoggingInspector>,
     /// The utility for signing the responses.
@@ -296,7 +299,8 @@ where
         let sequence_value = unlocked.sequence.get();
 
         // Prepare the ID to be used for this temporary FaceScan.
-        let tmp_external_database_ref_id = format!("tmp-{}", sequence_value);
+        let tmp_external_database_ref_id =
+            format!("tmp-{}-{}", &unlocked.execution_id, sequence_value);
 
         let enroll_res = unlocked
             .facetec
