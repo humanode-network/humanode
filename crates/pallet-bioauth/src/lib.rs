@@ -290,6 +290,20 @@ pub mod pallet {
                 .build()
         }
     }
+
+    impl<T: Config> ValidateUnsigned for Pallet<T> {
+        type Call = Call<T>;
+
+        fn validate_unsigned(
+            _source: TransactionSource,
+            _call: &Self::Call,
+        ) -> TransactionValidity {
+            // Allow all transactions from this pallet, and delegate the actual logic to the
+            // SignedExtension implementation logic.
+            // See https://github.com/paritytech/substrate/issues/3419
+            Ok(Default::default())
+        }
+    }
 }
 
 // The following section implements the `SignedExtension` trait
