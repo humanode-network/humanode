@@ -16,9 +16,6 @@ where
         let res = self.build_post("/enrollment-3d", &req).send().await?;
         match res.status() {
             StatusCode::OK => Ok(self.parse_json(res).await?),
-            StatusCode::BAD_REQUEST => Err(crate::Error::Call(Error::BadRequest(
-                self.parse_json(res).await?,
-            ))),
             _ => Err(crate::Error::Call(Error::Unknown(res.text().await?))),
         }
     }
@@ -41,8 +38,18 @@ pub struct Request<'a> {
 
 /// The response from `/enrollment-3d`.
 #[derive(Debug, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum Response {
+    /// Successful response.
+    Success(SuccessResponse),
+    /// Erroneous response.
+    Error(ErrorResponse),
+}
+
+/// The success response from `/enrollment-3d`.
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct Response {
+pub struct SuccessResponse {
     /// Common response portion.
     #[serde(flatten)]
     pub common: CommonResponse,
@@ -58,32 +65,28 @@ pub struct Response {
     pub success: bool,
 }
 
-/// The `/enrollment-3d`-specific error kind.
-#[derive(thiserror::Error, Debug, PartialEq)]
-pub enum Error {
-    /// Bad request error occured.
-    #[error("bad request: {0}")]
-    BadRequest(ErrorBadRequest),
-    /// Some other error occured.
-    #[error("unknown error: {0}")]
-    Unknown(String),
-}
-
-/// The error kind for the `/enrollment-3d`-specific 400 response.
-#[derive(thiserror::Error, Debug, Deserialize, PartialEq)]
+/// The error response from `/enrollment-3d`.
+#[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
-#[error("bad request: {error_message}")]
-pub struct ErrorBadRequest {
+pub struct ErrorResponse {
     /// The information about the server.
     pub server_info: ServerInfo,
     /// Whether the request had any errors during the execution.
-    /// Expected to always be `true` in this context.
+    /// `success` and `error` can both be `false` at the same time.
     pub error: bool,
     /// Whether the request was successful.
-    /// Expected to always be `false` in this context.
+    /// `success` and `error` can both be `false` at the same time.
     pub success: bool,
     /// The error message.
     pub error_message: String,
+}
+
+/// The `/enrollment-3d`-specific error kind.
+#[derive(thiserror::Error, Debug, PartialEq)]
+pub enum Error {
+    /// Some other error occured.
+    #[error("unknown error: {0}")]
+    Unknown(String),
 }
 
 #[cfg(test)]
@@ -118,7 +121,7 @@ mod tests {
     }
 
     #[test]
-    fn response_deserialization() {
+    fn success_response_deserialization() {
         let sample_response = serde_json::json!({
             "additionalSessionData": {
                 "isAdditionalDataPartiallyIncomplete": false,
@@ -160,7 +163,7 @@ mod tests {
         let response: Response = serde_json::from_value(sample_response).unwrap();
         assert_matches!(
             response,
-            Response {
+            Response::Success(SuccessResponse {
                 external_database_ref_id,
                 error: false,
                 success: false,
@@ -179,7 +182,7 @@ mod tests {
                     ..
                 },
                 ..
-            } if external_database_ref_id == "test_external_dbref_id"
+            }) if external_database_ref_id == "test_external_dbref_id"
         )
     }
 
@@ -196,10 +199,10 @@ mod tests {
             }
         });
 
-        let response: ErrorBadRequest = serde_json::from_value(sample_response).unwrap();
+        let response: Response = serde_json::from_value(sample_response).unwrap();
         assert_eq!(
             response,
-            ErrorBadRequest {
+            Response::Error(ErrorResponse {
                 error: true,
                 success: false,
                 server_info: ServerInfo {
@@ -208,7 +211,7 @@ mod tests {
                     notice: "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet.".to_owned(),
                 },
                 error_message: "An enrollment already exists for this externalDatabaseRefID.".to_owned(),
-            }
+            })
         )
     }
 
@@ -276,6 +279,42 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn mock_already_enrolled_error() {
+        let mock_server = MockServer::start().await;
+
+        let sample_request = Request {
+            external_database_ref_id: "my_test_id",
+            face_scan: "123",
+            audit_trail_image: "456",
+            low_quality_audit_trail_image: "789",
+        };
+        let sample_response = serde_json::json!({
+            "error": true,
+            "errorMessage": "An enrollment already exists for this externalDatabaseRefID.",
+            "success": false,
+            "serverInfo": {
+                "version": "9.0.0-SNAPSHOT",
+                "mode": "Development Only",
+                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
+            }
+        });
+
+        let expected_response: Response = serde_json::from_value(sample_response.clone()).unwrap();
+
+        Mock::given(matchers::method("POST"))
+            .and(matchers::path("/enrollment-3d"))
+            .and(matchers::body_json(&sample_request))
+            .respond_with(ResponseTemplate::new(200).set_body_json(&sample_response))
+            .mount(&mock_server)
+            .await;
+
+        let client = test_client(mock_server.uri());
+
+        let actual_response = client.enrollment_3d(sample_request).await.unwrap();
+        assert_eq!(actual_response, expected_response);
+    }
+
+    #[tokio::test]
     async fn mock_error_unknown() {
         let mock_server = MockServer::start().await;
 
@@ -300,46 +339,6 @@ mod tests {
         assert_matches!(
             actual_error,
             crate::Error::Call(Error::Unknown(error_text)) if error_text == sample_response
-        );
-    }
-
-    #[tokio::test]
-    async fn mock_error_bad_request() {
-        let mock_server = MockServer::start().await;
-
-        let sample_request = Request {
-            external_database_ref_id: "my_test_id",
-            face_scan: "123",
-            audit_trail_image: "456",
-            low_quality_audit_trail_image: "789",
-        };
-        let sample_response = serde_json::json!({
-            "error": true,
-            "errorMessage": "An enrollment already exists for this externalDatabaseRefID.",
-            "success": false,
-            "serverInfo": {
-                "version": "9.0.0-SNAPSHOT",
-                "mode": "Development Only",
-                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
-            }
-        });
-
-        let expected_error: ErrorBadRequest =
-            serde_json::from_value(sample_response.clone()).unwrap();
-
-        Mock::given(matchers::method("POST"))
-            .and(matchers::path("/enrollment-3d"))
-            .and(matchers::body_json(&sample_request))
-            .respond_with(ResponseTemplate::new(400).set_body_json(&sample_response))
-            .mount(&mock_server)
-            .await;
-
-        let client = test_client(mock_server.uri());
-
-        let actual_error = client.enrollment_3d(sample_request).await.unwrap_err();
-        assert_matches!(
-            actual_error,
-            crate::Error::Call(Error::BadRequest(err)) if err == expected_error
         );
     }
 }
