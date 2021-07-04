@@ -138,6 +138,7 @@ mod tests {
             } if external_database_ref_id == "test_external_dbref_id"
         )
     }
+
     #[test]
     fn bad_request_error_response_deserialization() {
         let sample_response = serde_json::json!({
@@ -153,6 +154,34 @@ mod tests {
                 error: true,
                 success: false,
                 error_message: "No entry found in the database.".to_owned(),
+            }
+        )
+    }
+
+    #[test]
+    fn unexpected_error_in_success_response_deserialization() {
+        let sample_response = serde_json::json!({
+            "errorMessage": "Tried to search a groupName when that groupName does not exist. groupName: humanode. Try adding a 3D FaceMap by calling /3d-db/enroll first.",
+            "errorToString": "java.lang.Exception: Tried to search a groupName when that groupName does not exist. groupName: humanode. Try adding a 3D FaceMap by calling /3d-db/enroll first.",
+            "stackTrace": "java.lang.Exception: Tried to search a groupName when that groupName does not exist. groupName: humanode. Try adding a 3D FaceMap by calling /3d-db/enroll first.\\n\\tat com.facetec.standardserver.search.SearchManager.search(SearchManager.java:64)\\n\\tat com.facetec.standardserver.processors.SearchProcessor.processRequest(SearchProcessor.java:35)\\n\\tat com.facetec.standardserver.processors.CommonProcessor.handle(CommonProcessor.java:58)\\n\\tat com.sun.net.httpserver.Filter$Chain.doFilter(Filter.java:79)\\n\\tat sun.net.httpserver.AuthFilter.doFilter(AuthFilter.java:83)\\n\\tat com.sun.net.httpserver.Filter$Chain.doFilter(Filter.java:82)\\n\\tat sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(ServerImpl.java:675)\\n\\tat com.sun.net.httpserver.Filter$Chain.doFilter(Filter.java:79)\\n\\tat sun.net.httpserver.ServerImpl$Exchange.run(ServerImpl.java:647)\\n\\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\\n\\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\\n\\tat java.lang.Thread.run(Thread.java:748)\\n",
+            "success": false,
+            "wasProcessed": true,
+            "error": true,
+            "serverInfo": {
+                "version": "9.3.0",
+                "type": "Standard",
+                "mode": "Development Only",
+                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
+            }
+        });
+
+        let response: ErrorBadRequest = serde_json::from_value(sample_response).unwrap();
+        assert_eq!(
+            response,
+            ErrorBadRequest {
+                error: true,
+                success: false,
+                error_message: "Tried to search a groupName when that groupName does not exist. groupName: humanode. Try adding a 3D FaceMap by calling /3d-db/enroll first.".to_owned(),
             }
         )
     }
