@@ -6,7 +6,7 @@ use warp::Filter;
 
 use crate::{
     http::handlers,
-    logic::{AuthenticateRequest, EnrollRequest, Logic, Signer, Verifier},
+    logic::{op_authenticate, op_enroll, Logic, Signer, Verifier},
 };
 
 /// Pass the [`Arc`] to the handler.
@@ -54,7 +54,7 @@ where
     warp::path!("enroll")
         .and(warp::post())
         .and(with_arc(logic))
-        .and(json_body::<EnrollRequest>())
+        .and(json_body::<op_enroll::Request>())
         .and_then(handlers::enroll)
 }
 
@@ -69,7 +69,7 @@ where
     warp::path!("authenticate")
         .and(warp::post())
         .and(with_arc(logic))
-        .and(json_body::<AuthenticateRequest>())
+        .and(json_body::<op_authenticate::Request>())
         .and_then(handlers::authenticate)
 }
 

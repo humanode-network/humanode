@@ -1,16 +1,18 @@
 //! Handlers, the HTTP transport coupling for the internal logic.
 
 use std::{convert::TryFrom, sync::Arc};
+use warp::hyper::StatusCode;
 use warp::Reply;
 
-use warp::hyper::StatusCode;
-
-use crate::logic::{self, AuthenticateRequest, EnrollRequest, Logic, Signer, Verifier};
+use crate::logic::{
+    op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
+    Logic, Signer, Verifier,
+};
 
 /// Enroll operation HTTP transport coupling.
 pub async fn enroll<S, PK>(
     logic: Arc<Logic<S, PK>>,
-    input: EnrollRequest,
+    input: op_enroll::Request,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     S: Signer<Vec<u8>> + Send + 'static,
@@ -25,7 +27,7 @@ where
 /// Authenticate operation HTTP transport coupling.
 pub async fn authenticate<S, PK>(
     logic: Arc<Logic<S, PK>>,
-    input: AuthenticateRequest,
+    input: op_authenticate::Request,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     S: Signer<Vec<u8>> + Send + 'static,
@@ -71,7 +73,7 @@ where
     }
 }
 
-impl warp::reject::Reject for logic::EnrollError {}
-impl warp::reject::Reject for logic::AuthenticateError {}
-impl warp::reject::Reject for logic::GetFacetecSessionTokenError {}
-impl warp::reject::Reject for logic::GetFacetecDeviceSdkParamsError {}
+impl warp::reject::Reject for op_enroll::Error {}
+impl warp::reject::Reject for op_authenticate::Error {}
+impl warp::reject::Reject for op_get_facetec_device_sdk_params::Error {}
+impl warp::reject::Reject for op_get_facetec_session_token::Error {}
