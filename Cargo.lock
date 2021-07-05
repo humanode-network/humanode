@@ -470,6 +470,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "bioauth-consensus"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "sp-consensus",
+ "sp-runtime",
+]
+
+[[package]]
 name = "bioauth-flow"
 version = "0.1.0"
 dependencies = [
