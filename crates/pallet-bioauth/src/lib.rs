@@ -11,7 +11,7 @@ pub use pallet::*;
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
     traits::{DispatchInfoOf, Dispatchable, SignedExtension},
-    transaction_validity::{InvalidTransaction, TransactionValidity, TransactionValidityError},
+    transaction_validity::{TransactionValidity, TransactionValidityError},
 };
 use sp_std::fmt::Debug;
 use sp_std::marker::PhantomData;
@@ -146,8 +146,8 @@ pub mod pallet {
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// Event documentation should end with an array that provides descriptive names for event
-        /// parameters. [something, who]
-        AuthTicketStored(StoredAuthTicket, T::AccountId),
+        /// parameters. [stored_auth_ticket]
+        AuthTicketStored(StoredAuthTicket),
     }
 
     /// Possible error conditions during `authenticate` call processing.
@@ -155,7 +155,7 @@ pub mod pallet {
     pub enum Error<T> {
         /// The robonode public key is not at the chain state.
         RobonodePublicKeyIsAbsent,
-        /// We were unable to validate the signature, i.e. it is uknclear whether it is valid or
+        /// We were unable to validate the signature, i.e. it is unclear whether it is valid or
         /// not.
         UnableToValidateAuthTicketSignature,
         /// The signature for the auth ticket is invalid.
@@ -203,7 +203,7 @@ pub mod pallet {
     impl<T: Config> Pallet<T> {
         #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
         pub fn authenticate(origin: OriginFor<T>, req: Authenticate) -> DispatchResult {
-            let who = ensure_signed(origin)?;
+            ensure_none(origin)?;
 
             let stored_auth_ticket = Self::extract_auth_ticket_checked(req)?;
             let event_stored_auth_ticket = stored_auth_ticket.clone();
@@ -226,7 +226,7 @@ pub mod pallet {
             })?;
 
             // Emit an event.
-            Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket, who));
+            Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket));
 
             Ok(())
         }
@@ -253,13 +253,65 @@ pub mod pallet {
 
             Ok(auth_ticket.into())
         }
+
+        pub fn check_tx(call: &Call<T>) -> TransactionValidity {
+            let transaction = match call {
+                Call::authenticate(ref transaction) => transaction,
+                // Deny all unknown transactions.
+                _ => {
+                    // The only supported transaction by this pallet is `authenticate`, so anything
+                    // else is illegal.
+                    return Err(TransactionValidityError::Invalid(InvalidTransaction::Call));
+                }
+            };
+
+            let stored_auth_ticket = Self::extract_auth_ticket_checked(transaction.clone())
+                .map_err(|error| {
+                    frame_support::sp_tracing::error!(
+                        message = "Auth Ticket could not be extracted",
+                        ?error
+                    );
+                    // Use custom code 's' for "signature" error.
+                    TransactionValidityError::Invalid(InvalidTransaction::Custom(b's'))
+                })?;
+
+            let list = StoredAuthTickets::<T>::get();
+
+            validate_authentication_attempt(&list, &stored_auth_ticket).map_err(|_e| {
+                // Use custom code 'c' for "conflict" error.
+                TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
+            })?;
+
+            // We must use non-default [`TransactionValidity`] here.
+            ValidTransaction::with_tag_prefix("bioauth")
+                // Apparently tags are required for the tx pool to build a chain of transactions;
+                // in our case, we the structure of the [`StoredAuthTickets`] is supposed to be
+                // unordered, and act like a CRDT.
+                // TODO: ensure we have the unordered (CRDT) semantics for the [`authenticate`] txs.
+                .and_provides(stored_auth_ticket)
+                .priority(50)
+                .longevity(1)
+                .propagate(true)
+                .build()
+        }
+    }
+
+    impl<T: Config> ValidateUnsigned for Pallet<T> {
+        type Call = Call<T>;
+
+        fn validate_unsigned(
+            _source: TransactionSource,
+            _call: &Self::Call,
+        ) -> TransactionValidity {
+            // Allow all transactions from this pallet, and delegate the actual logic to the
+            // SignedExtension implementation logic.
+            // See https://github.com/paritytech/substrate/issues/3419
+            Ok(Default::default())
+        }
     }
 }
 
-// The following section implements the `SignedExtension` trait
-// for the `CheckBioauthTx` type.
-
-/// The `CheckBioauthTx` struct.
+/// Checks the validity of the unsigned [`Call::authenticate`] tx.
 #[derive(Encode, Decode, Clone, Eq, PartialEq, Default)]
 pub struct CheckBioauthTx<T: Config + Send + Sync>(PhantomData<T>);
 
@@ -276,7 +328,6 @@ impl<T: Config + Send + Sync> Debug for CheckBioauthTx<T> {
     }
 }
 
-/// Implementation of the `SignedExtension` trait for the `CheckBioauthTx` struct.
 impl<T: Config + Send + Sync> SignedExtension for CheckBioauthTx<T>
 where
     T::Call: Dispatchable<Info = DispatchInfo>,
@@ -300,23 +351,19 @@ where
         _len: usize,
     ) -> TransactionValidity {
         let _account_id = who;
-
-        // check for `authenticate`
         match call.is_sub_type() {
-            Some(Call::authenticate(ref transaction)) => {
-                // We need to call our validate_bioauth from pallet
-                let stored_auth_ticket = Pallet::<T>::extract_auth_ticket_checked(
-                    transaction.clone(),
-                )
-                .map_err(|_e| TransactionValidityError::Invalid(InvalidTransaction::Call))?;
+            Some(call) => Pallet::<T>::check_tx(call),
+            _ => Ok(Default::default()),
+        }
+    }
 
-                let list = StoredAuthTickets::<T>::get();
-
-                validate_authentication_attempt(&list, &stored_auth_ticket)
-                    .map_err(|_e| TransactionValidityError::Invalid(InvalidTransaction::Call))?;
-
-                Ok(Default::default())
-            }
+    fn validate_unsigned(
+        call: &Self::Call,
+        _info: &DispatchInfoOf<Self::Call>,
+        _len: usize,
+    ) -> TransactionValidity {
+        match call.is_sub_type() {
+            Some(call) => Pallet::<T>::check_tx(call),
             _ => Ok(Default::default()),
         }
     }

@@ -120,7 +120,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         client: Arc::clone(&client),
         keystore: keystore_container.sync_keystore(),
         task_manager: &mut task_manager,
-        transaction_pool,
+        transaction_pool: Arc::clone(&transaction_pool),
         rpc_extensions_builder,
         on_demand: None,
         remote_blockchain: None,
@@ -135,7 +135,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             slot_duration,
             client: Arc::clone(&client),
             select_chain,
-            block_import: client,
+            block_import: Arc::clone(&client),
             proposer_factory,
             create_inherent_data_providers: move |_, ()| async move {
                 let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
@@ -179,41 +179,64 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let webapp_qrcode =
         crate::qrcode::WebApp::new(&webapp_url, &rpc_url).map_err(ServiceError::Other)?;
 
-    let bioauth_flow_future = Box::pin(async move {
-        info!("bioauth flow starting up");
-        let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
-        if should_enroll {
-            info!("bioauth flow - enrolling in progress");
+    let bioauth_flow_future = {
+        let client = Arc::clone(&client);
+        let transaction_pool = Arc::clone(&transaction_pool);
+        Box::pin(async move {
+            info!("bioauth flow starting up");
+            let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
+            if should_enroll {
+                info!("bioauth flow - enrolling in progress");
+
+                webapp_qrcode.print();
+
+                flow.enroll(crate::validator_key::FakeTodo("TODO"))
+                    .await
+                    .expect("enroll failed");
+
+                info!("bioauth flow - enrolling complete");
+            }
+
+            info!("bioauth flow - authentication in progress");
 
             webapp_qrcode.print();
 
-            flow.enroll(crate::validator_key::FakeTodo("TODO"))
-                .await
-                .expect("enroll failed");
-
-            info!("bioauth flow - enrolling complete");
-        }
-
-        info!("bioauth flow - authentication in progress");
-
-        webapp_qrcode.print();
-
-        let authenticate_response = loop {
-            let result = flow
-                .authenticate(crate::validator_key::FakeTodo("TODO"))
-                .await;
-            match result {
-                Ok(v) => break v,
-                Err(error) => {
-                    error!(message = "bioauth flow - authentication failure", ?error);
-                }
+            let authenticate_response = loop {
+                let result = flow
+                    .authenticate(crate::validator_key::FakeTodo("TODO"))
+                    .await;
+                match result {
+                    Ok(v) => break v,
+                    Err(error) => {
+                        error!(message = "bioauth flow - authentication failure", ?error);
+                    }
+                };
             };
-        };
 
-        info!("bioauth flow - authentication complete");
+            info!("bioauth flow - authentication complete");
 
-        info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
-    });
+            info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
+
+            let authenticate = pallet_bioauth::Authenticate {
+                ticket: authenticate_response.auth_ticket.into(),
+                ticket_signature: authenticate_response.auth_ticket_signature.into(),
+            };
+            let call = pallet_bioauth::Call::authenticate(authenticate);
+
+            let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
+
+            let at = client.chain_info().best_hash;
+            transaction_pool
+                .pool()
+                .submit_and_watch(
+                    &sp_runtime::generic::BlockId::Hash(at),
+                    sp_runtime::transaction_validity::TransactionSource::Local,
+                    ext.into(),
+                )
+                .await
+                .unwrap();
+        })
+    };
 
     task_manager
         .spawn_handle()
