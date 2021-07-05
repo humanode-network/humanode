@@ -111,7 +111,7 @@ fn signed_ext_check_bioauth_tx_permit_empty_state() {
         let auth_ticket: AuthTicket = (&opaque_auth_ticket).try_into().unwrap();
         let expected_tag: StoredAuthTicket = auth_ticket.into();
 
-        let call = <pallet_bioauth::Call<Test>>::authenticate(input.clone()).into();
+        let call = <pallet_bioauth::Call<Test>>::authenticate(input).into();
         let info = DispatchInfo::default();
 
         assert_eq!(
