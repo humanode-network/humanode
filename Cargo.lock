@@ -474,7 +474,13 @@ name = "bioauth-consensus"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "humanode-runtime",
+ "pallet-bioauth",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-blockchain",
  "sp-consensus",
+ "sp-consensus-aura",
  "sp-runtime",
 ]
 
@@ -2219,6 +2225,7 @@ name = "humanode-peer"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bioauth-consensus",
  "bioauth-flow",
  "futures 0.3.15",
  "hex-literal",
