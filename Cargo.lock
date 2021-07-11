@@ -475,13 +475,17 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "humanode-runtime",
+ "pallet-aura",
  "pallet-bioauth",
+ "sc-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-api",
  "sp-application-crypto",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-aura",
+ "sp-consensus-slots",
  "sp-runtime",
+ "thiserror",
 ]
 
 [[package]]
@@ -4198,6 +4202,7 @@ dependencies = [
  "primitives-auth-ticket",
  "serde",
  "serde-nostd",
+ "sp-api",
  "sp-core",
  "sp-io",
  "sp-runtime",

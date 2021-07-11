@@ -9,12 +9,16 @@ publish = false
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 
+async-trait = "0.1.42"
+pallet-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-slots = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-async-trait = "0.1.42"
+thiserror = "1"
 
 [features]

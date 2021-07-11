@@ -1,4 +1,4 @@
-//! Provides the [`ChainSpec`] portion of the config.
+//! Provides the [`ChainSpec`] portion of the config. public_key: (), nonce: ()  public_key: (), nonce: ()  public_key: (), nonce: ()
 
 use hex_literal::hex;
 use humanode_runtime::{
@@ -82,7 +82,13 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     key: get_account_id_from_seed::<sr25519::Public>("Alice"),
                 },
                 pallet_bioauth: PalletBioauthConfig {
-                    stored_auth_tickets: Vec::new(),
+                    // Add Alice AuraId to StoredAuthTickets for producing blocks
+                    stored_auth_tickets: vec![pallet_bioauth::StoredAuthTicket {
+                        public_key: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
+                            .as_bytes()
+                            .to_vec(),
+                        nonce: "1".as_bytes().to_vec(),
+                    }],
                     robonode_public_key,
                 },
             }

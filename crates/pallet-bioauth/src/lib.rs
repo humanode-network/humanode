@@ -2,6 +2,8 @@
 
 #![warn(missing_docs, clippy::clone_on_ref_ptr)]
 #![cfg_attr(not(feature = "std"), no_std)]
+// Fix clippy for sp_api::decl_runtime_apis!
+#![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]
 
 use codec::{Decode, Encode};
 use frame_support::traits::IsSubType;
@@ -71,6 +73,17 @@ pub trait Verifier<S: ?Sized> {
     fn verify<'a, D>(&self, data: D, signature: S) -> Result<bool, Self::Error>
     where
         D: AsRef<[u8]> + Send + 'a;
+}
+
+sp_api::decl_runtime_apis! {
+
+    /// We need to provide a trait using decl_runtime_apis! macro to be able to call required methods
+    /// from external sources using client and runtime_api().
+    pub trait BioauthAPI {
+
+        /// Get existing stored tickets for current block.
+        fn get_stored_tickets() -> Vec<StoredAuthTicket>;
+    }
 }
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
