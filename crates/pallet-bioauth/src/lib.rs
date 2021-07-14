@@ -79,10 +79,10 @@ sp_api::decl_runtime_apis! {
 
     /// We need to provide a trait using decl_runtime_apis! macro to be able to call required methods
     /// from external sources using client and runtime_api().
-    pub trait BioauthAPI {
+    pub trait BioauthApi {
 
         /// Get existing stored tickets for current block.
-        fn get_stored_tickets() -> Vec<StoredAuthTicket>;
+        fn stored_auth_tickets() -> Vec<StoredAuthTicket>;
     }
 }
 

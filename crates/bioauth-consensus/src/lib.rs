@@ -6,7 +6,7 @@
     clippy::clone_on_ref_ptr
 )]
 
-use pallet_bioauth::BioauthAPI;
+use pallet_bioauth::BioauthApi;
 use sc_client_api::{backend::Backend, Finalizer, LockImportRun};
 use sp_api::{Decode, ProvideRuntimeApi, TransactionFor};
 use sp_blockchain::{HeaderBackend, HeaderMetadata};
@@ -33,7 +33,7 @@ pub struct BioauthBlockImport<Backend, Block: BlockT, Client> {
 #[derive(Error, Debug)]
 pub enum BioauthBlockImportError {
     /// Block Author isn't Bioauth authorised.
-    #[error("Block Author isn't Bioauth authorised")]
+    #[error("Block Author isn't bioauth-authorised")]
     NotBioauthAuthorised,
     /// Invalid  slot number.
     #[error("Invalid slot number")]
@@ -44,6 +44,9 @@ pub enum BioauthBlockImportError {
     /// Error with extracting current stored auth tickets.
     #[error("Can't get current stored auth tickets")]
     ErrorExtractStoredAuthTickets,
+    /// Error with extracting current authorities list.
+    #[error("Can't get current authorities list")]
+    ErrorExtractAuthorities,
 }
 
 impl<Backend, Block: BlockT, Client> Clone for BioauthBlockImport<Backend, Block, Client> {
@@ -86,7 +89,7 @@ where
         BlockImport<Block, Error = ConsensusError, Transaction = TransactionFor<Client, Block>>,
     TransactionFor<Client, Block>: 'static,
     Client::Api: AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
-    Client::Api: BioauthAPI<Block>,
+    Client::Api: BioauthApi<Block>,
     BE: Backend<Block>,
 {
     type Error = ConsensusError;
@@ -112,7 +115,14 @@ where
         let at = &sp_api::BlockId::Hash(self.inner.info().best_hash);
 
         // Extract current valid Aura authorities list.
-        let authorities = self.inner.runtime_api().authorities(at).ok().unwrap();
+        let authorities = match self.inner.runtime_api().authorities(at).ok() {
+            Some(v) => v,
+            None => {
+                return Err(sp_consensus::Error::Other(Box::new(
+                    BioauthBlockImportError::ErrorExtractAuthorities,
+                )))
+            }
+        };
 
         // Extract current slot of a new produced block.
         let mut slot = match block
@@ -152,7 +162,7 @@ where
         };
 
         // Get current stored tickets.
-        let stored_tickets = match self.inner.runtime_api().get_stored_tickets(at) {
+        let stored_tickets = match self.inner.runtime_api().stored_auth_tickets(at) {
             Ok(v) => v,
             Err(_e) => {
                 return Err(sp_consensus::Error::Other(Box::new(
@@ -161,24 +171,19 @@ where
             }
         };
 
-        let mut is_authorized = false;
+        let is_authorized = !stored_tickets.iter().all(|x| x.public_key != author);
 
-        for existing in stored_tickets.iter() {
-            if existing.public_key == author {
-                is_authorized = true;
-            }
-        }
-
-        if is_authorized {
-            // Finalizy previous imported block.
-            match self.inner.finalize_block(*at, None, false) {
-                Ok(_) => self.inner.import_block(block, cache).await,
-                Err(_) => return Err(sp_consensus::Error::CannotPropose),
-            }
-        } else {
+        if !is_authorized {
             return Err(sp_consensus::Error::Other(Box::new(
                 BioauthBlockImportError::NotBioauthAuthorised,
             )));
+        }
+
+        // Finalizy previous imported block.
+        match self.inner.finalize_block(*at, None, false) {
+            // Import a new block.
+            Ok(_) => self.inner.import_block(block, cache).await,
+            Err(_) => return Err(sp_consensus::Error::CannotPropose),
         }
     }
 }

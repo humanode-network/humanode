@@ -425,8 +425,8 @@ impl_runtime_apis! {
         }
     }
 
-    impl pallet_bioauth::BioauthAPI<Block> for Runtime {
-        fn get_stored_tickets() -> sp_std::prelude::Vec<pallet_bioauth::StoredAuthTicket> {
+    impl pallet_bioauth::BioauthApi<Block> for Runtime {
+        fn stored_auth_tickets() -> sp_std::prelude::Vec<pallet_bioauth::StoredAuthTicket> {
             PalletBioauth::stored_auth_tickets()
         }
     }

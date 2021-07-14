@@ -1,4 +1,4 @@
-//! Provides the [`ChainSpec`] portion of the config. public_key: (), nonce: ()  public_key: (), nonce: ()  public_key: (), nonce: ()
+//! Provides the [`ChainSpec`] portion of the config.
 
 use hex_literal::hex;
 use humanode_runtime::{
