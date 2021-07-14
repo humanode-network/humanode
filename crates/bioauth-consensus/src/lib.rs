@@ -7,31 +7,32 @@
 )]
 
 use pallet_bioauth::BioauthAPI;
+use sc_client_api::{backend::Backend, Finalizer, LockImportRun};
 use sp_api::{Decode, ProvideRuntimeApi, TransactionFor};
 use sp_blockchain::{HeaderBackend, HeaderMetadata};
 use sp_consensus::{
     BlockCheckParams, BlockImport, BlockImportParams, Error as ConsensusError, ImportResult,
-    JustificationImport,
 };
 use sp_consensus_aura::{AuraApi, Slot};
 use sp_runtime::generic::OpaqueDigestItemId;
-use sp_runtime::traits::{Block as BlockT, Header, NumberFor};
-use sp_runtime::Justification;
+use sp_runtime::traits::{Block as BlockT, Header};
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
 
 /// A block-import handler for Bioauth.
-pub struct BioauthBlockImport<Block: BlockT, Client> {
+pub struct BioauthBlockImport<Backend, Block: BlockT, Client> {
     /// The client to interact with the chain.
     inner: Arc<Client>,
-    /// A standart field that is defined at BlockImport logic.
-    _phantom: PhantomData<Block>,
+    /// A phantom data for Backend.
+    _phantom_back_end: PhantomData<Backend>,
+    /// A phantom data for Block.
+    _phantom_block: PhantomData<Block>,
 }
 
 /// BioauthBlockImport Error Type.
 #[derive(Error, Debug)]
 pub enum BioauthBlockImportError {
-    /// Block Author isn't Bioauth authorised
+    /// Block Author isn't Bioauth authorised.
     #[error("Block Author isn't Bioauth authorised")]
     NotBioauthAuthorised,
     /// Invalid  slot number.
@@ -40,47 +41,37 @@ pub enum BioauthBlockImportError {
     /// Invalid block author.
     #[error("Invalid block author")]
     InvalidBlockAuthor,
-    /// Error with extracting current stored auth tickets
+    /// Error with extracting current stored auth tickets.
     #[error("Can't get current stored auth tickets")]
     ErrorExtractStoredAuthTickets,
 }
 
-impl<Block: BlockT, Client> Clone for BioauthBlockImport<Block, Client> {
+impl<Backend, Block: BlockT, Client> Clone for BioauthBlockImport<Backend, Block, Client> {
     fn clone(&self) -> Self {
         BioauthBlockImport {
             inner: Arc::<Client>::clone(&self.inner),
-            _phantom: PhantomData,
+            _phantom_back_end: PhantomData,
+            _phantom_block: PhantomData,
         }
     }
 }
 
-impl<Block: BlockT, Client> BioauthBlockImport<Block, Client> {
-    /// Simple constructor
-    pub fn new(inner: Arc<Client>) -> Self {
+impl<BE, Block: BlockT, Client> BioauthBlockImport<BE, Block, Client> {
+    /// Simple constructor.
+    pub fn new(inner: Arc<Client>) -> Self
+    where
+        BE: Backend<Block> + 'static,
+    {
         BioauthBlockImport {
             inner,
-            _phantom: PhantomData,
+            _phantom_back_end: PhantomData,
+            _phantom_block: PhantomData,
         }
     }
 }
 
 #[async_trait::async_trait]
-impl<Block: BlockT, Client> JustificationImport<Block> for BioauthBlockImport<Block, Client> {
-    type Error = ConsensusError;
-
-    /// Import a Block justification and finalize the given block.
-    fn import_justification(
-        &mut self,
-        _hash: Block::Hash,
-        _number: NumberFor<Block>,
-        _justification: Justification,
-    ) -> Result<(), Self::Error> {
-        todo!()
-    }
-}
-
-#[async_trait::async_trait]
-impl<Block: BlockT, Client> BlockImport<Block> for BioauthBlockImport<Block, Client>
+impl<BE, Block: BlockT, Client> BlockImport<Block> for BioauthBlockImport<BE, Block, Client>
 where
     Client: HeaderBackend<Block>
         + HeaderMetadata<Block, Error = sp_blockchain::Error>
@@ -88,12 +79,15 @@ where
         + ProvideRuntimeApi<Block>
         + BlockImport<Block, Transaction = TransactionFor<Client, Block>, Error = sp_consensus::Error>
         + Send
-        + Sync,
+        + Sync
+        + LockImportRun<Block, BE>
+        + Finalizer<Block, BE>,
     for<'a> &'a Client:
         BlockImport<Block, Error = ConsensusError, Transaction = TransactionFor<Client, Block>>,
     TransactionFor<Client, Block>: 'static,
     Client::Api: AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
     Client::Api: BioauthAPI<Block>,
+    BE: Backend<Block>,
 {
     type Error = ConsensusError;
 
@@ -114,13 +108,13 @@ where
         block: BlockImportParams<Block, Self::Transaction>,
         cache: HashMap<sp_consensus::import_queue::CacheKeyId, Vec<u8>>,
     ) -> Result<ImportResult, Self::Error> {
-        // Extract a number of the last imported block
+        // Extract a number of the last imported block.
         let at = &sp_api::BlockId::Hash(self.inner.info().best_hash);
 
-        // Extract current valid Aura authorities list
+        // Extract current valid Aura authorities list.
         let authorities = self.inner.runtime_api().authorities(at).ok().unwrap();
 
-        // Extract current slot of a new produced block
+        // Extract current slot of a new produced block.
         let mut slot = match block
             .header
             .digest()
@@ -134,7 +128,7 @@ where
             }
         };
 
-        // Decode slot number
+        // Decode slot number.
         let slot_decoded = match Slot::decode(&mut slot) {
             Ok(v) => v,
             Err(_e) => {
@@ -144,10 +138,10 @@ where
             }
         };
 
-        // Get Author index of a new proposed block
+        // Get Author index of a new proposed block.
         let author_index = *slot_decoded % authorities.len() as u64;
 
-        // Determine an Author of a new proposed block
+        // Determine an Author of a new proposed block.
         let author = match authorities.get(author_index as usize).cloned() {
             Some(v) => v.to_string().as_bytes().to_vec(),
             None => {
@@ -157,7 +151,7 @@ where
             }
         };
 
-        // Get current stored tickets
+        // Get current stored tickets.
         let stored_tickets = match self.inner.runtime_api().get_stored_tickets(at) {
             Ok(v) => v,
             Err(_e) => {
@@ -176,7 +170,11 @@ where
         }
 
         if is_authorized {
-            self.inner.import_block(block, cache).await
+            // Finalizy previous imported block.
+            match self.inner.finalize_block(*at, None, false) {
+                Ok(_) => self.inner.import_block(block, cache).await,
+                Err(_) => return Err(sp_consensus::Error::CannotPropose),
+            }
         } else {
             return Err(sp_consensus::Error::Other(Box::new(
                 BioauthBlockImportError::NotBioauthAuthorised,

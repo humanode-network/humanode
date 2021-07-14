@@ -477,6 +477,7 @@ dependencies = [
  "humanode-runtime",
  "pallet-aura",
  "pallet-bioauth",
+ "sc-client-api",
  "sc-tracing 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-api",
  "sp-application-crypto",

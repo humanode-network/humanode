@@ -36,8 +36,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     );
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
-    let bioauth_consensus_block_import =
-        bioauth_consensus::BioauthBlockImport::new(Arc::clone(&client));
+    let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<
+        sc_service::TFullBackend<Block>,
+        _,
+        _,
+    > = bioauth_consensus::BioauthBlockImport::new(Arc::clone(&client));
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
