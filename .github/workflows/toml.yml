@@ -18,8 +18,8 @@ jobs:
           access_token: ${{ github.token }}
           all_but_latest: true # can cancel workflows scheduled later
 
-  lint:
-    name: Check TOML files
+  taplo:
+    name: taplo
     runs-on: ubuntu-20.04
     steps:
 
@@ -30,3 +30,19 @@ jobs:
         run: npx @taplo/cli@0.3.2 lint
         env:
           npm_config_yes: "true"
+
+  cargo-sort:
+    name: cargo-sort
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install cargo-sort
+        run: >
+          curl -sSL "https://github.com/DevinR528/cargo-sort/releases/download/v1.0.5/cargo-sort-x86_64-unknown-linux-gnu.tar.gz" |
+            sudo tar -xzvf - -C /usr/local/bin
+
+      - name: Lint TOML files
+        run: cargo-sort -cwg
