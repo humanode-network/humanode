@@ -1,0 +1,32 @@
+name: toml
+
+on:
+  push:
+  schedule:
+    - cron: '0 20 * * 0'
+
+jobs:
+
+  cancel-previous:
+    name: Cancel redundant jobs
+    runs-on: ubuntu-20.04
+    timeout-minutes: 3
+    if: github.ref != 'refs/heads/master'
+    steps:
+      - uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
+          all_but_latest: true # can cancel workflows scheduled later
+
+  lint:
+    name: Check TOML files
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Lint TOML files
+        run: npx @taplo/cli@0.3.2 lint
+        env:
+          npm_config_yes: "true"
