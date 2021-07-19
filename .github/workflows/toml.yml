@@ -1,0 +1,48 @@
+name: toml
+
+on:
+  push:
+  schedule:
+    - cron: '0 20 * * 0'
+
+jobs:
+
+  cancel-previous:
+    name: Cancel redundant jobs
+    runs-on: ubuntu-20.04
+    timeout-minutes: 3
+    if: github.ref != 'refs/heads/master'
+    steps:
+      - uses: styfle/cancel-workflow-action@0.9.0
+        with:
+          access_token: ${{ github.token }}
+          all_but_latest: true # can cancel workflows scheduled later
+
+  taplo:
+    name: taplo
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Lint TOML files
+        run: npx @taplo/cli@0.3.2 lint
+        env:
+          npm_config_yes: "true"
+
+  cargo-sort:
+    name: cargo-sort
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Install cargo-sort
+        run: >
+          curl -sSL "https://github.com/DevinR528/cargo-sort/releases/download/v1.0.5/cargo-sort-x86_64-unknown-linux-gnu.tar.gz" |
+            sudo tar -xzvf - -C /usr/local/bin
+
+      - name: Lint TOML files
+        run: cargo-sort -cwg

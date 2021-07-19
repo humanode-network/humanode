@@ -4,5 +4,8 @@
     "editor.formatOnSave": true,
     "editor.rulers": [100]
   },
-  "rust-analyzer.cargo.runBuildScripts": true
+  "rust-analyzer.cargo.runBuildScripts": true,
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  }
 }

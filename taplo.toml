@@ -1,0 +1,15 @@
+exclude = ["target/**"]
+include = ["**/*.toml"]
+
+[schema]
+path = "taplo://taplo.toml"
+
+[formatting]
+reorder_keys = false
+
+[[rule]]
+include = ["**/Cargo.toml"]
+keys = ["dependencies"]
+
+[rule.formatting]
+reorder_keys = true
