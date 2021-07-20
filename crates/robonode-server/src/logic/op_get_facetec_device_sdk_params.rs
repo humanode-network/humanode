@@ -24,7 +24,7 @@ where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
-    /// Get the FaceTec Device SDK params .
+    /// Get the FaceTec Device SDK params.
     pub async fn get_facetec_device_sdk_params(&self) -> Result<Response, Error> {
         Ok(Response {
             device_key_identifier: self.facetec_device_sdk_params.device_key_identifier.clone(),
