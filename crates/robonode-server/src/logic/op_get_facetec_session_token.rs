@@ -11,7 +11,7 @@ use super::{Logic, Signer};
 #[derive(Debug, Serialize)]
 pub struct Response {
     /// The session token returned by the FaceTec Server.
-    session_token: String,
+    pub session_token: String,
 }
 
 /// Errors for the get facetec session token operation.

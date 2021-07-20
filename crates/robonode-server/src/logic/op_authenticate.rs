@@ -15,10 +15,10 @@ use super::{common::*, Logic, Signer, Verifier};
 #[derive(Debug, Deserialize)]
 pub struct Request {
     /// The liveness data that the validator owner provided.
-    liveness_data: OpaqueLivenessData,
+    pub liveness_data: OpaqueLivenessData,
     /// The signature of the liveness data with the private key of the node.
     /// Proves the posession of the private key by the liveness data bearer.
-    liveness_data_signature: Vec<u8>,
+    pub liveness_data_signature: Vec<u8>,
 }
 
 /// The response of the authenticate operation.
@@ -27,12 +27,12 @@ pub struct Response {
     /// An opaque auth ticket generated for this authentication attempt.
     /// Contains a public key that matched with the provided FaceScan and a nonce to prevent replay
     /// attacks.
-    auth_ticket: OpaqueAuthTicket,
+    pub auth_ticket: OpaqueAuthTicket,
     /// The signature of the auth ticket, signed with the robonode's private key.
     /// Can be used together with the auth ticket above to prove that this
     /// auth ticket was vetted by the robonode and verified to be associated
     /// with a FaceScan.
-    auth_ticket_signature: Vec<u8>,
+    pub auth_ticket_signature: Vec<u8>,
 }
 
 /// Errors for the authenticate operation.

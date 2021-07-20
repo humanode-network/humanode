@@ -13,9 +13,9 @@ use super::{common::*, Logic, Signer};
 #[derive(Debug, Deserialize)]
 pub struct Request {
     /// The public key of the validator.
-    public_key: Vec<u8>,
+    pub public_key: Vec<u8>,
     /// The liveness data that the validator owner provided.
-    liveness_data: OpaqueLivenessData,
+    pub liveness_data: OpaqueLivenessData,
 }
 
 /// The errors on the enroll operation.
