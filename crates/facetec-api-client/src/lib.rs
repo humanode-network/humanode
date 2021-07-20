@@ -66,11 +66,20 @@ impl<RBEI> Client<RBEI> {
         req.header("X-Device-Key", self.device_key_identifier.clone())
     }
 
+    /// An internal utility to prepare an HTTP request.
+    /// Applies some common logic.
+    fn build<F>(&self, path: &str, f: F) -> RequestBuilder
+    where
+        F: FnOnce(String) -> RequestBuilder,
+    {
+        let url = self.build_url(path);
+        self.apply_headers(f(url))
+    }
+
     /// An internal utility to prepare a GET HTTP request.
     /// Applies some common logic.
     fn build_get(&self, path: &str) -> RequestBuilder {
-        let url = self.build_url(path);
-        self.apply_headers(self.reqwest.get(url))
+        self.build(path, |url| self.reqwest.get(url))
     }
 
     /// An internal utility to prepare a POST HTTP request.
@@ -79,8 +88,7 @@ impl<RBEI> Client<RBEI> {
     where
         T: serde::Serialize + ?Sized,
     {
-        let url = self.build_url(path);
-        self.apply_headers(self.reqwest.post(url)).json(body)
+        self.build(path, |url| self.reqwest.post(url)).json(body)
     }
 }
 
