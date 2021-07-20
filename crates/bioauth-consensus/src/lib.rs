@@ -19,6 +19,9 @@ use sp_runtime::traits::{Block as BlockT, Header};
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
 
+#[cfg(test)]
+mod tests;
+
 /// A block-import handler for Bioauth.
 pub struct BioauthBlockImport<Backend, Block: BlockT, Client> {
     /// The client to interact with the chain.
@@ -38,9 +41,6 @@ pub enum BioauthBlockImportError {
     /// Invalid  slot number.
     #[error("Invalid slot number")]
     InvalidSlotNumber,
-    /// Invalid block author.
-    #[error("Invalid block author")]
-    InvalidBlockAuthor,
     /// Error with extracting current stored auth tickets.
     #[error("Can't get current stored auth tickets")]
     ErrorExtractStoredAuthTickets,
@@ -156,7 +156,7 @@ where
             Some(v) => v.to_string().as_bytes().to_vec(),
             None => {
                 return Err(sp_consensus::Error::Other(Box::new(
-                    BioauthBlockImportError::InvalidBlockAuthor,
+                    BioauthBlockImportError::InvalidSlotNumber,
                 )))
             }
         };
