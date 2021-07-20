@@ -17,6 +17,7 @@ use thiserror::Error;
 pub mod db_enroll;
 pub mod db_search;
 pub mod enrollment3d;
+pub mod reset;
 pub mod response_body_error;
 pub mod session_token;
 
