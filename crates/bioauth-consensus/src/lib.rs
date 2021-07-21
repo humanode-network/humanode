@@ -7,9 +7,9 @@
 )]
 
 use pallet_bioauth::BioauthApi;
-use sc_client_api::{backend::Backend, Finalizer, LockImportRun};
+use sc_client_api::{backend::Backend, Finalizer};
 use sp_api::{Decode, ProvideRuntimeApi, TransactionFor};
-use sp_blockchain::{HeaderBackend, HeaderMetadata};
+use sp_blockchain::HeaderBackend;
 use sp_consensus::{
     BlockCheckParams, BlockImport, BlockImportParams, Error as ConsensusError, ImportResult,
 };
@@ -76,15 +76,7 @@ impl<BE, Block: BlockT, Client> BioauthBlockImport<BE, Block, Client> {
 #[async_trait::async_trait]
 impl<BE, Block: BlockT, Client> BlockImport<Block> for BioauthBlockImport<BE, Block, Client>
 where
-    Client: HeaderBackend<Block>
-        + HeaderMetadata<Block, Error = sp_blockchain::Error>
-        + HeaderBackend<Block>
-        + ProvideRuntimeApi<Block>
-        + BlockImport<Block, Transaction = TransactionFor<Client, Block>, Error = sp_consensus::Error>
-        + Send
-        + Sync
-        + LockImportRun<Block, BE>
-        + Finalizer<Block, BE>,
+    Client: HeaderBackend<Block> + ProvideRuntimeApi<Block> + Send + Sync + Finalizer<Block, BE>,
     for<'a> &'a Client:
         BlockImport<Block, Error = ConsensusError, Transaction = TransactionFor<Client, Block>>,
     TransactionFor<Client, Block>: 'static,

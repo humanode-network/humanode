@@ -51,29 +51,6 @@ impl ProvideRuntimeApi<Block> for TestApi {
     }
 }
 
-impl HeaderMetadata<Block> for TestApi {
-    type Error = sp_blockchain::Error;
-
-    fn header_metadata(
-        &self,
-        _hash: Hash,
-    ) -> Result<sp_blockchain::CachedHeaderMetadata<Block>, Self::Error> {
-        unimplemented!("Not Required in tests")
-    }
-
-    fn insert_header_metadata(
-        &self,
-        _hash: Hash,
-        _header_metadata: sp_blockchain::CachedHeaderMetadata<Block>,
-    ) {
-        unimplemented!("Not Required in tests")
-    }
-
-    fn remove_header_metadata(&self, _hash: Hash) {
-        unimplemented!("Not Required in tests")
-    }
-}
-
 impl HeaderBackend<Block> for TestApi {
     fn header(&self, _id: sp_api::BlockId<Block>) -> sp_blockchain::Result<Option<Header>> {
         unimplemented!("Not Required in tests")
@@ -118,18 +95,6 @@ impl HeaderBackend<Block> for TestApi {
     }
 }
 
-impl LockImportRun<Block, sc_service::TFullBackend<Block>> for TestApi {
-    fn lock_import_and_run<R, Err, F>(&self, _f: F) -> Result<R, Err>
-    where
-        F: FnOnce(
-            &mut sc_client_api::ClientImportOperation<Block, sc_service::TFullBackend<Block>>,
-        ) -> Result<R, Err>,
-        Err: From<sp_blockchain::Error>,
-    {
-        unimplemented!("Not Required in tests")
-    }
-}
-
 impl Finalizer<Block, sc_service::TFullBackend<Block>> for TestApi {
     fn apply_finality(
         &self,
@@ -151,28 +116,6 @@ impl Finalizer<Block, sc_service::TFullBackend<Block>> for TestApi {
         _notify: bool,
     ) -> sp_blockchain::Result<()> {
         Ok(())
-    }
-}
-
-#[async_trait::async_trait]
-impl BlockImport<Block> for TestApi {
-    type Error = ConsensusError;
-
-    type Transaction = TransactionFor<TestApi, Block>;
-
-    async fn check_block(
-        &mut self,
-        _block: BlockCheckParams<Block>,
-    ) -> Result<ImportResult, Self::Error> {
-        unimplemented!("Not Required in tests")
-    }
-
-    async fn import_block(
-        &mut self,
-        _block: BlockImportParams<Block, Self::Transaction>,
-        _cache: HashMap<sp_consensus::import_queue::CacheKeyId, Vec<u8>>,
-    ) -> Result<ImportResult, Self::Error> {
-        Ok(ImportResult::imported(Default::default()))
     }
 }
 
