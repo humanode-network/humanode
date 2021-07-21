@@ -27,6 +27,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         base_url: facetec_server_url,
         reqwest: reqwest::Client::new(),
         device_key_identifier: facetec_device_key_identifier.clone(),
+        injected_ip_address: None,
         response_body_error_inspector: robonode_server::LoggingInspector,
     };
     let face_tec_device_sdk_params = robonode_server::FacetecDeviceSdkParams {

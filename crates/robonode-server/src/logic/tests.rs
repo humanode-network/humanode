@@ -27,6 +27,7 @@ impl super::Signer<Vec<u8>> for TestSigner {
 struct TestParams {
     facetec_test_server_url: String,
     facetec_device_key_identifier: String,
+    facetec_injected_ip_address: String,
 
     enroll_liveness_data: OpaqueLivenessData,
     authenticate_liveness_data: OpaqueLivenessData,
@@ -36,6 +37,7 @@ impl TestParams {
     pub fn from_env() -> Self {
         let facetec_test_server_url = std::env::var("FACETEC_TEST_SERVER_URL").unwrap();
         let facetec_device_key_identifier = std::env::var("FACETEC_DEVICE_KEY_IDENTIFIER").unwrap();
+        let facetec_injected_ip_address = std::env::var("FACETEC_INJECTED_IP_ADDRESS").unwrap();
 
         let read_liveness_data = |prefix: &str| {
             let read_env_file = |var: &str| {
@@ -63,6 +65,7 @@ impl TestParams {
         Self {
             facetec_test_server_url,
             facetec_device_key_identifier,
+            facetec_injected_ip_address,
             enroll_liveness_data,
             authenticate_liveness_data,
         }
@@ -84,6 +87,7 @@ async fn setup() -> (
         reqwest: reqwest::Client::new(),
         base_url: test_params.facetec_test_server_url.clone(),
         device_key_identifier: test_params.facetec_device_key_identifier.clone(),
+        injected_ip_address: Some(test_params.facetec_injected_ip_address.clone()),
         response_body_error_inspector: crate::LoggingInspector,
     };
 

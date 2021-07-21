@@ -52,6 +52,8 @@ pub struct Client<RBEI> {
     pub base_url: String,
     /// The Device Key Identifier to pass in the header.
     pub device_key_identifier: String,
+    /// The fake IP address to inject via `X-FT-IPAddress` header.
+    pub injected_ip_address: Option<String>,
     /// The inspector for the response body.
     pub response_body_error_inspector: RBEI,
 }
@@ -64,7 +66,13 @@ impl<RBEI> Client<RBEI> {
 
     /// Apply some common headers.
     fn apply_headers(&self, req: RequestBuilder) -> RequestBuilder {
-        req.header("X-Device-Key", self.device_key_identifier.clone())
+        let req = req.header("X-Device-Key", self.device_key_identifier.clone());
+
+        if let Some(ref injected_ip_address) = self.injected_ip_address {
+            req.header("X-FT-IPAddress", injected_ip_address.clone())
+        } else {
+            req
+        }
     }
 
     /// An internal utility to prepare an HTTP request.
