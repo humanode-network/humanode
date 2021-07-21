@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{CommonResponse, MatchLevel};
+use crate::{serde_util::Either, CommonResponse, MatchLevel};
 
 use super::Client;
 
@@ -15,7 +15,13 @@ where
     pub async fn db_search(&self, req: Request<'_>) -> Result<Response, crate::Error<Error>> {
         let res = self.build_post("/3d-db/search", &req).send().await?;
         match res.status() {
-            StatusCode::OK => Ok(self.parse_json(res).await?),
+            StatusCode::OK => {
+                let body: Either<Response, ErrorBadRequest> = self.parse_json(res).await?;
+                match body {
+                    Either::Left(val) => Ok(val),
+                    Either::Right(err) => Err(crate::Error::Call(Error::BadRequest(err))),
+                }
+            }
             StatusCode::BAD_REQUEST => Err(crate::Error::Call(Error::BadRequest(
                 self.parse_json(res).await?,
             ))),
@@ -316,6 +322,49 @@ mod tests {
             .and(matchers::path("/3d-db/search"))
             .and(matchers::body_json(&sample_request))
             .respond_with(ResponseTemplate::new(400).set_body_json(&sample_response))
+            .mount(&mock_server)
+            .await;
+
+        let client = test_client(mock_server.uri());
+
+        let actual_error = client.db_search(sample_request).await.unwrap_err();
+        assert_matches!(
+            actual_error,
+            crate::Error::Call(Error::BadRequest(err)) if err == expected_error
+        );
+    }
+
+    #[tokio::test]
+    async fn mock_error_bad_reques_in_success() {
+        let mock_server = MockServer::start().await;
+
+        let sample_request = Request {
+            external_database_ref_id: "my_test_id",
+            group_name: "humanode",
+            min_match_level: 10,
+        };
+        let sample_response = serde_json::json!({
+            "errorMessage": "Tried to search a groupName when that groupName does not exist. groupName: humanode. Try adding a 3D FaceMap by calling /3d-db/enroll first.",
+            "errorToString": "java.lang.Exception: Tried to search a groupName when that groupName does not exist. groupName: humanode. Try adding a 3D FaceMap by calling /3d-db/enroll first.",
+            "stackTrace": "java.lang.Exception: Tried to search a groupName when that groupName does not exist. groupName: humanode. Try adding a 3D FaceMap by calling /3d-db/enroll first.\\n\\tat com.facetec.standardserver.search.SearchManager.search(SearchManager.java:64)\\n\\tat com.facetec.standardserver.processors.SearchProcessor.processRequest(SearchProcessor.java:35)\\n\\tat com.facetec.standardserver.processors.CommonProcessor.handle(CommonProcessor.java:58)\\n\\tat com.sun.net.httpserver.Filter$Chain.doFilter(Filter.java:79)\\n\\tat sun.net.httpserver.AuthFilter.doFilter(AuthFilter.java:83)\\n\\tat com.sun.net.httpserver.Filter$Chain.doFilter(Filter.java:82)\\n\\tat sun.net.httpserver.ServerImpl$Exchange$LinkHandler.handle(ServerImpl.java:675)\\n\\tat com.sun.net.httpserver.Filter$Chain.doFilter(Filter.java:79)\\n\\tat sun.net.httpserver.ServerImpl$Exchange.run(ServerImpl.java:647)\\n\\tat java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1149)\\n\\tat java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)\\n\\tat java.lang.Thread.run(Thread.java:748)\\n",
+            "success": false,
+            "wasProcessed": true,
+            "error": true,
+            "serverInfo": {
+                "version": "9.3.0",
+                "type": "Standard",
+                "mode": "Development Only",
+                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
+            }
+        });
+
+        let expected_error: ErrorBadRequest =
+            serde_json::from_value(sample_response.clone()).unwrap();
+
+        Mock::given(matchers::method("POST"))
+            .and(matchers::path("/3d-db/search"))
+            .and(matchers::body_json(&sample_request))
+            .respond_with(ResponseTemplate::new(200).set_body_json(&sample_response))
             .mount(&mock_server)
             .await;
 
