@@ -5,7 +5,7 @@ use std::convert::TryFrom;
 use facetec_api_client as ft;
 use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
-use tracing::error;
+use tracing::{error, trace};
 
 use serde::{Deserialize, Serialize};
 
@@ -106,6 +106,8 @@ where
             .await
             .map_err(Error::InternalErrorEnrollment)?;
 
+        trace!(message = "Got FaceTec enroll results", ?enroll_res);
+
         if !enroll_res.success {
             error!(
                 message =
@@ -129,6 +131,8 @@ where
             })
             .await
             .map_err(Error::InternalErrorDbSearch)?;
+
+        trace!(message = "Got FaceTec 3D-DB search results", ?search_res);
 
         if !search_res.success {
             return Err(Error::InternalErrorDbSearchUnsuccessful);
