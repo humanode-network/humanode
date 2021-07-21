@@ -15,6 +15,7 @@ where
             .build("/delete-database-if-less-than-10-records", |url| {
                 self.reqwest.delete(url)
             })
+            .body(&b"1"[..])
             .send()
             .await?;
         match res.status() {
@@ -109,7 +110,7 @@ mod tests {
 
         Mock::given(matchers::method("DELETE"))
             .and(matchers::path("/delete-database-if-less-than-10-records"))
-            .and(matchers::body_bytes(vec![]))
+            .and(matchers::body_bytes(vec![b'1']))
             .respond_with(ResponseTemplate::new(200).set_body_json(&sample_response))
             .mount(&mock_server)
             .await;
@@ -128,7 +129,7 @@ mod tests {
 
         Mock::given(matchers::method("DELETE"))
             .and(matchers::path("/delete-database-if-less-than-10-records"))
-            .and(matchers::body_bytes(vec![]))
+            .and(matchers::body_bytes(vec![b'1']))
             .respond_with(ResponseTemplate::new(500).set_body_string(sample_response))
             .mount(&mock_server)
             .await;
