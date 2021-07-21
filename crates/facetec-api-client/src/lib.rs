@@ -19,6 +19,7 @@ pub mod db_search;
 pub mod enrollment3d;
 pub mod reset;
 pub mod response_body_error;
+pub mod serde_util;
 pub mod session_token;
 
 mod types;
