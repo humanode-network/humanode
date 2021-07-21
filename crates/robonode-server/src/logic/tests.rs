@@ -133,13 +133,15 @@ async fn standalone_enroll() {
 async fn first_authenticate() {
     let (_guard, test_params, logic) = setup().await;
 
-    logic
+    let err = logic
         .authenticate(super::op_authenticate::Request {
             liveness_data: test_params.authenticate_liveness_data,
             liveness_data_signature: b"qwe".to_vec(),
         })
         .await
-        .unwrap();
+        .unwrap_err();
+
+    assert!(matches!(err, super::op_authenticate::Error::PersonNotFound));
 }
 
 #[tokio::test]
