@@ -39,6 +39,7 @@ pub(crate) struct RuntimeApi {
     inner: TestApi,
 }
 
+#[allow(clippy::needless_lifetimes)]
 impl ProvideRuntimeApi<Block> for TestApi {
     type Api = RuntimeApi;
 
