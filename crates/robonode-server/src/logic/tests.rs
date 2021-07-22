@@ -5,6 +5,7 @@ use std::marker::PhantomData;
 use facetec_api_client as ft;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use tokio::sync::{Mutex, MutexGuard};
+use tracing::trace;
 
 use crate::{sequence::Sequence, ValidatorPublicKeyToDo};
 
@@ -91,10 +92,12 @@ async fn setup() -> (
         response_body_error_inspector: crate::LoggingInspector,
     };
 
-    facetec
+    let res = facetec
         .reset()
         .await
         .expect("unable to reset facetec test server");
+
+    trace!(message = "facetec server reset", ?res);
 
     let locked = Locked {
         sequence: Sequence::new(0),
