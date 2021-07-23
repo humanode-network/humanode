@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{serde_util::Either, CommonResponse, MatchLevel};
+use crate::{serde_util::Either, MatchLevel};
 
 use super::Client;
 
@@ -47,15 +47,6 @@ pub struct Request<'a> {
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    /// Common response portion.
-    #[serde(flatten)]
-    pub common: CommonResponse,
-    /// The ID of the pre-enrolled FaceMap that was used for searching
-    /// as an input.
-    #[serde(rename = "externalDatabaseRefID")]
-    pub external_database_ref_id: String,
-    /// Whether the request had any errors during the execution.
-    pub error: bool,
     /// Whether the request was successful.
     pub success: bool,
     /// The set of all the matched entries enrolled on the group.
@@ -157,13 +148,10 @@ mod tests {
         assert_matches!(
             response,
             Response {
-                ref external_database_ref_id,
-                error: false,
                 success: true,
                 results,
                 ..
-            } if external_database_ref_id == "test_external_dbref_id" &&
-                results.len() == 1 &&
+            } if results.len() == 1 &&
                 matches!(
                     &results[0],
                     &ResponseResult{
