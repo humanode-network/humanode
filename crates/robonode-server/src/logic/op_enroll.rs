@@ -122,7 +122,7 @@ where
             .facetec
             .db_enroll(ft::db_enroll::Request {
                 external_database_ref_id: &public_key_hex,
-                group_name: "",
+                group_name: DB_GROUP_NAME,
             })
             .await
             .map_err(Error::InternalErrorDbEnroll)?;
