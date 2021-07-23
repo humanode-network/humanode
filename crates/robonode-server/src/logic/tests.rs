@@ -63,6 +63,8 @@ impl TestParams {
         let enroll_liveness_data = read_liveness_data("ENROLL_");
         let authenticate_liveness_data = read_liveness_data("AUTHENTICATE_");
 
+        assert_ne!(enroll_liveness_data, authenticate_liveness_data);
+
         Self {
             facetec_test_server_url,
             facetec_device_key_identifier,
