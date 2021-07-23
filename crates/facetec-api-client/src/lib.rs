@@ -113,6 +113,8 @@ where
     {
         let full = res.bytes().await.map_err(ResponseBodyError::BodyRead)?;
 
+        self.response_body_error_inspector.inspect_raw(&full).await;
+
         match serde_json::from_slice(&full) {
             Ok(val) => Ok(val),
             Err(err) => {
@@ -120,7 +122,7 @@ where
                     source: err,
                     body: full,
                 };
-                self.response_body_error_inspector.inspect(&err).await;
+                self.response_body_error_inspector.inspect_error(&err).await;
                 Err(err)
             }
         }

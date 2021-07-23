@@ -24,8 +24,11 @@ pub enum ResponseBodyError {
 /// An interface to allow inspection of the response body errors.
 #[async_trait::async_trait]
 pub trait Inspector {
+    /// Invoked when we're reading the raw bytes, before parsing.
+    async fn inspect_raw(&self, bytes: &[u8]);
+
     /// Invoked when the response body error occurs.
-    async fn inspect(&self, error: &ResponseBodyError);
+    async fn inspect_error(&self, error: &ResponseBodyError);
 }
 
 /// An inspector that does nothing.
@@ -34,7 +37,11 @@ pub struct NoopInspector;
 
 #[async_trait::async_trait]
 impl Inspector for NoopInspector {
-    async fn inspect(&self, _error: &ResponseBodyError) {
+    async fn inspect_raw(&self, _bytes: &[u8]) {
+        // do nothing
+    }
+
+    async fn inspect_error(&self, _error: &ResponseBodyError) {
         // do nothing
     }
 }
