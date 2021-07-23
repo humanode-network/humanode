@@ -33,7 +33,7 @@ pub struct BioauthBlockImport<Backend, Block: BlockT, Client> {
 }
 
 /// BioauthBlockImport Error Type.
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Eq, PartialEq)]
 pub enum BioauthBlockImportError {
     /// Block Author isn't Bioauth authorised.
     #[error("Block Author isn't bioauth-authorised")]
@@ -52,7 +52,7 @@ pub enum BioauthBlockImportError {
 impl<Backend, Block: BlockT, Client> Clone for BioauthBlockImport<Backend, Block, Client> {
     fn clone(&self) -> Self {
         BioauthBlockImport {
-            inner: Arc::<Client>::clone(&self.inner),
+            inner: Arc::clone(&self.inner),
             _phantom_back_end: PhantomData,
             _phantom_block: PhantomData,
         }
@@ -107,38 +107,23 @@ where
         let at = &sp_api::BlockId::Hash(self.inner.info().best_hash);
 
         // Extract current valid Aura authorities list.
-        let authorities = match self.inner.runtime_api().authorities(at).ok() {
-            Some(v) => v,
-            None => {
-                return Err(sp_consensus::Error::Other(Box::new(
-                    BioauthBlockImportError::ErrorExtractAuthorities,
-                )))
-            }
-        };
+        let authorities = self.inner.runtime_api().authorities(at).map_err(|_| {
+            sp_consensus::Error::Other(Box::new(BioauthBlockImportError::ErrorExtractAuthorities))
+        })?;
 
         // Extract current slot of a new produced block.
-        let mut slot = match block
+        let mut slot = block
             .header
             .digest()
             .log(|l| l.try_as_raw(OpaqueDigestItemId::PreRuntime(b"aura")))
-        {
-            Some(v) => v,
-            None => {
-                return Err(sp_consensus::Error::Other(Box::new(
-                    BioauthBlockImportError::InvalidSlotNumber,
-                )))
-            }
-        };
+            .ok_or_else(|| {
+                sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
+            })?;
 
         // Decode slot number.
-        let slot_decoded = match Slot::decode(&mut slot) {
-            Ok(v) => v,
-            Err(_e) => {
-                return Err(sp_consensus::Error::Other(Box::new(
-                    BioauthBlockImportError::InvalidSlotNumber,
-                )))
-            }
-        };
+        let slot_decoded = Slot::decode(&mut slot).map_err(|_| {
+            sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
+        })?;
 
         // Get Author index of a new proposed block.
         let author_index = *slot_decoded % authorities.len() as u64;
@@ -154,16 +139,17 @@ where
         };
 
         // Get current stored tickets.
-        let stored_tickets = match self.inner.runtime_api().stored_auth_tickets(at) {
-            Ok(v) => v,
-            Err(_e) => {
-                return Err(sp_consensus::Error::Other(Box::new(
+        let stored_tickets = self
+            .inner
+            .runtime_api()
+            .stored_auth_tickets(at)
+            .map_err(|_| {
+                sp_consensus::Error::Other(Box::new(
                     BioauthBlockImportError::ErrorExtractStoredAuthTickets,
-                )))
-            }
-        };
+                ))
+            })?;
 
-        let is_authorized = !stored_tickets.iter().all(|x| x.public_key != author);
+        let is_authorized = stored_tickets.iter().any(|x| x.public_key == author);
 
         if !is_authorized {
             return Err(sp_consensus::Error::Other(Box::new(
@@ -171,11 +157,12 @@ where
             )));
         }
 
-        // Finalizy previous imported block.
-        match self.inner.finalize_block(*at, None, false) {
-            // Import a new block.
-            Ok(_) => self.inner.import_block(block, cache).await,
-            Err(_) => return Err(sp_consensus::Error::CannotPropose),
-        }
+        // Finalize previous imported block.
+        self.inner
+            .finalize_block(*at, None, false)
+            .map_err(|_| sp_consensus::Error::CannotPropose)?;
+
+        // Import a new block.
+        self.inner.import_block(block, cache).await
     }
 }
