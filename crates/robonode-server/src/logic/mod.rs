@@ -8,6 +8,7 @@ use tokio::sync::Mutex;
 use crate::sequence::Sequence;
 
 mod common;
+mod facetec_utils;
 pub mod op_authenticate;
 pub mod op_enroll;
 pub mod op_get_facetec_device_sdk_params;

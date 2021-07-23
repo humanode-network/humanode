@@ -7,6 +7,8 @@ use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use serde::Deserialize;
 use tracing::{error, trace};
 
+use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
+
 use super::{common::*, Logic, Signer};
 
 /// The request for the enroll operation.
@@ -98,29 +100,35 @@ where
 
         drop(enroll_res);
 
-        let search_res = unlocked
+        let search_result = unlocked
             .facetec
             .db_search(ft::db_search::Request {
                 external_database_ref_id: &public_key_hex,
                 group_name: DB_GROUP_NAME,
                 min_match_level: MATCH_LEVEL,
             })
-            .await
-            .map_err(Error::InternalErrorDbSearch)?;
+            .await;
 
-        trace!(message = "Got FaceTec 3D-DB search results", ?search_res);
-
-        if !search_res.success {
-            return Err(Error::InternalErrorDbSearchUnsuccessful);
-        }
+        let results = match db_search_result_adapter(search_result) {
+            DbSearchResult::OtherError(err) => return Err(Error::InternalErrorDbSearch(err)),
+            DbSearchResult::NoGroupError => {
+                trace!(message = "Got no-group error instead of FaceTec 3D-DB search results, assuming no results");
+                vec![]
+            }
+            DbSearchResult::Response(search_res) => {
+                trace!(message = "Got FaceTec 3D-DB search results", ?search_res);
+                if !search_res.success {
+                    return Err(Error::InternalErrorDbSearchUnsuccessful);
+                }
+                search_res.results
+            }
+        };
 
         // If the results set is non-empty - this means that this person has
         // already enrolled with the system. It might also be a false-positive.
-        if !search_res.results.is_empty() {
+        if !results.is_empty() {
             return Err(Error::PersonAlreadyEnrolled);
         }
-
-        drop(search_res);
 
         let db_enroll_res = unlocked
             .facetec
