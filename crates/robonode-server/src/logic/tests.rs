@@ -168,3 +168,30 @@ async fn enroll_authenticate() {
         .await
         .unwrap();
 }
+
+#[tokio::test]
+#[tracing_test::traced_test]
+async fn double_enroll() {
+    let (_guard, test_params, logic) = setup().await;
+
+    logic
+        .enroll(super::op_enroll::Request {
+            liveness_data: test_params.enroll_liveness_data,
+            public_key: b"a".to_vec(),
+        })
+        .await
+        .unwrap();
+
+    let err = logic
+        .enroll(super::op_enroll::Request {
+            liveness_data: test_params.authenticate_liveness_data,
+            public_key: b"b".to_vec(),
+        })
+        .await
+        .unwrap_err();
+
+    assert!(matches!(
+        err,
+        super::op_enroll::Error::PersonAlreadyEnrolled
+    ));
+}
