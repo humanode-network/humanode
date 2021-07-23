@@ -9,6 +9,8 @@ use tracing::{error, trace};
 
 use serde::{Deserialize, Serialize};
 
+use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
+
 use super::{common::*, Logic, Signer, Verifier};
 
 /// The request of the authenticate operation.
@@ -124,25 +126,33 @@ where
 
         drop(enroll_res);
 
-        let search_res = unlocked
+        let search_result = unlocked
             .facetec
             .db_search(ft::db_search::Request {
                 external_database_ref_id: &tmp_external_database_ref_id,
                 group_name: DB_GROUP_NAME,
                 min_match_level: MATCH_LEVEL,
             })
-            .await
-            .map_err(Error::InternalErrorDbSearch)?;
+            .await;
 
-        trace!(message = "Got FaceTec 3D-DB search results", ?search_res);
-
-        if !search_res.success {
-            return Err(Error::InternalErrorDbSearchUnsuccessful);
-        }
+        let results = match db_search_result_adapter(search_result) {
+            DbSearchResult::OtherError(err) => return Err(Error::InternalErrorDbSearch(err)),
+            DbSearchResult::NoGroupError => {
+                trace!(message = "Got no-group error instead of FaceTec 3D-DB search results, assuming no results");
+                vec![]
+            }
+            DbSearchResult::Response(search_res) => {
+                trace!(message = "Got FaceTec 3D-DB search results", ?search_res);
+                if !search_res.success {
+                    return Err(Error::InternalErrorDbSearchUnsuccessful);
+                }
+                search_res.results
+            }
+        };
 
         // If the results set is empty - this means that this person was not
         // found in the system.
-        let found = search_res.results.first().ok_or(Error::PersonNotFound)?;
+        let found = results.first().ok_or(Error::PersonNotFound)?;
         if found.match_level != MATCH_LEVEL {
             return Err(Error::InternalErrorDbSearchMatchLevelMismatch);
         }
@@ -151,8 +161,6 @@ where
             hex::decode(&found.identifier).map_err(|_| Error::InternalErrorInvalidPublicKeyHex)?;
         let public_key =
             PK::try_from(&public_key_bytes).map_err(|_| Error::InternalErrorInvalidPublicKey)?;
-
-        drop(search_res);
 
         let signature_valid = public_key
             .verify(&req.liveness_data, req.liveness_data_signature)
