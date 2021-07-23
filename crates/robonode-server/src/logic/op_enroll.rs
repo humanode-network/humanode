@@ -96,6 +96,8 @@ where
             return Err(Error::InternalErrorEnrollmentUnsuccessful);
         }
 
+        drop(enroll_res);
+
         let search_res = unlocked
             .facetec
             .db_search(ft::db_search::Request {
@@ -118,6 +120,8 @@ where
             return Err(Error::PersonAlreadyEnrolled);
         }
 
+        drop(search_res);
+
         let db_enroll_res = unlocked
             .facetec
             .db_enroll(ft::db_enroll::Request {
@@ -132,6 +136,8 @@ where
         if !db_enroll_res.success {
             return Err(Error::InternalErrorDbEnrollUnsuccessful);
         }
+
+        drop(db_enroll_res);
 
         Ok(())
     }

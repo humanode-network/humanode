@@ -122,6 +122,8 @@ where
             return Err(Error::InternalErrorEnrollmentUnsuccessful);
         }
 
+        drop(enroll_res);
+
         let search_res = unlocked
             .facetec
             .db_search(ft::db_search::Request {
@@ -149,6 +151,8 @@ where
             hex::decode(&found.identifier).map_err(|_| Error::InternalErrorInvalidPublicKeyHex)?;
         let public_key =
             PK::try_from(&public_key_bytes).map_err(|_| Error::InternalErrorInvalidPublicKey)?;
+
+        drop(search_res);
 
         let signature_valid = public_key
             .verify(&req.liveness_data, req.liveness_data_signature)
