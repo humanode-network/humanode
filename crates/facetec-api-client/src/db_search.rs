@@ -323,7 +323,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn mock_error_bad_reques_in_success() {
+    async fn mock_error_bad_request_in_success() {
         let mock_server = MockServer::start().await;
 
         let sample_request = Request {
