@@ -11,7 +11,6 @@ use sp_consensus_aura::Slot;
 use sp_core::crypto::Pair;
 use sp_runtime::traits::DigestItemFor;
 use sp_runtime::Digest;
-use std::any::Any;
 use std::str::FromStr;
 
 mock! {
