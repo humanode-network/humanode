@@ -1,3 +1,3 @@
 {
-  "recommendations": ["matklad.rust-analyzer"]
+  "recommendations": ["matklad.rust-analyzer", "tamasfe.even-better-toml"]
 }
