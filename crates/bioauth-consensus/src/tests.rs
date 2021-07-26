@@ -177,9 +177,11 @@ fn prepare_block_import_with_aura_pre_digest(
 fn assert_sp_consensus_error(err: sp_consensus::Error, bioauth_err: BioauthBlockImportError) {
     if let sp_consensus::Error::Other(e) = err {
         if let Some(v) = e.downcast_ref::<BioauthBlockImportError>() {
-            assert_eq!(*v, bioauth_err)
+            assert_eq!(*v, bioauth_err);
+            return;
         }
     }
+    panic!("Unexpected error");
 }
 
 #[tokio::test]

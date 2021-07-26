@@ -33,7 +33,7 @@ pub struct BioauthBlockImport<Backend, Block: BlockT, Client> {
 }
 
 /// BioauthBlockImport Error Type.
-#[derive(Error, Debug, Eq, PartialEq, Copy, Clone)]
+#[derive(Error, Debug, Eq, PartialEq)]
 pub enum BioauthBlockImportError {
     /// Block Author isn't Bioauth authorized.
     #[error("Block Author isn't bioauth-authorized")]
