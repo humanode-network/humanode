@@ -207,9 +207,9 @@ async fn it_denies_block_import_with_error_extract_authorities() {
         .await;
 
     assert_eq!(
-        res.unwrap_err().type_id(),
+        res.unwrap_err().to_string(),
         sp_consensus::Error::Other(Box::new(BioauthBlockImportError::ErrorExtractAuthorities))
-            .type_id()
+            .to_string()
     );
 }
 
@@ -249,8 +249,9 @@ async fn it_denies_block_import_with_invalid_slot_number() {
         .await;
 
     assert_eq!(
-        res.unwrap_err().type_id(),
-        sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber)).type_id()
+        res.unwrap_err().to_string(),
+        sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
+            .to_string()
     );
 }
 
@@ -296,11 +297,11 @@ async fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
         .await;
 
     assert_eq!(
-        res.unwrap_err().type_id(),
+        res.unwrap_err().to_string(),
         sp_consensus::Error::Other(Box::new(
             BioauthBlockImportError::ErrorExtractStoredAuthTickets
         ))
-        .type_id()
+        .to_string()
     );
 }
 
@@ -351,9 +352,9 @@ async fn it_denies_block_import_with_not_bioauth_authorized() {
         .await;
 
     assert_eq!(
-        res.unwrap_err().type_id(),
+        res.unwrap_err().to_string(),
         sp_consensus::Error::Other(Box::new(BioauthBlockImportError::NotBioauthAuthorized))
-            .type_id()
+            .to_string()
     );
 }
 
