@@ -9,7 +9,7 @@ pub enum ResponseBodyError {
     #[error("response body reading error: {0}")]
     BodyRead(#[source] reqwest::Error),
     /// Unable to parse the JSON response. Might be because the response is not in JSON when we
-    /// expected it to be in JSON, or if the JSON the we got does not match the definition that
+    /// expected it to be in JSON, or if the JSON that we got does not match the definition that
     /// serde expects on our end.
     #[error("JSON response parsing error: {source}")]
     Json {
