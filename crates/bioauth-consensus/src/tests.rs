@@ -174,6 +174,14 @@ fn prepare_block_import_with_aura_pre_digest(
     )
 }
 
+fn assert_sp_consensus_error(err: sp_consensus::Error, bioauth_err: BioauthBlockImportError) {
+    if let sp_consensus::Error::Other(e) = err {
+        if let Some(v) = e.downcast_ref::<BioauthBlockImportError>() {
+            assert_eq!(*v, bioauth_err)
+        }
+    }
+}
+
 #[tokio::test]
 async fn it_denies_block_import_with_error_extract_authorities() {
     let mut mock_client = MockClient::new();
@@ -205,10 +213,9 @@ async fn it_denies_block_import_with_error_extract_authorities() {
         )
         .await;
 
-    assert_eq!(
-        res.unwrap_err().to_string(),
-        sp_consensus::Error::Other(Box::new(BioauthBlockImportError::ErrorExtractAuthorities))
-            .to_string()
+    assert_sp_consensus_error(
+        res.unwrap_err(),
+        BioauthBlockImportError::ErrorExtractAuthorities,
     );
 }
 
@@ -247,11 +254,7 @@ async fn it_denies_block_import_with_invalid_slot_number() {
         )
         .await;
 
-    assert_eq!(
-        res.unwrap_err().to_string(),
-        sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
-            .to_string()
-    );
+    assert_sp_consensus_error(res.unwrap_err(), BioauthBlockImportError::InvalidSlotNumber);
 }
 
 #[tokio::test]
@@ -295,12 +298,9 @@ async fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
         )
         .await;
 
-    assert_eq!(
-        res.unwrap_err().to_string(),
-        sp_consensus::Error::Other(Box::new(
-            BioauthBlockImportError::ErrorExtractStoredAuthTickets
-        ))
-        .to_string()
+    assert_sp_consensus_error(
+        res.unwrap_err(),
+        BioauthBlockImportError::ErrorExtractStoredAuthTickets,
     );
 }
 
@@ -350,10 +350,9 @@ async fn it_denies_block_import_with_not_bioauth_authorized() {
         )
         .await;
 
-    assert_eq!(
-        res.unwrap_err().to_string(),
-        sp_consensus::Error::Other(Box::new(BioauthBlockImportError::NotBioauthAuthorized))
-            .to_string()
+    assert_sp_consensus_error(
+        res.unwrap_err(),
+        BioauthBlockImportError::NotBioauthAuthorized,
     );
 }
 
