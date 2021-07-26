@@ -42,9 +42,6 @@ pub struct Response {
     /// Common response portion.
     #[serde(flatten)]
     pub common: CommonResponse,
-    /// The external database ID that was used.
-    #[serde(rename = "externalDatabaseRefID")]
-    pub external_database_ref_id: String,
     /// Whether the request had any errors during the execution.
     pub error: bool,
     /// Whether the request was successful.
@@ -107,35 +104,33 @@ mod tests {
     #[test]
     fn response_deserialization() {
         let sample_response = serde_json::json!({
-            "additionalSessionData": {
-                "isAdditionalDataPartiallyIncomplete": true
-            },
+            "success": true,
+            "wasProcessed": true,
             "callData": {
-                "tid": "4uJgQnnkRAW-d737c7a4-ff7e-11ea-8db5-0232fd4aba88",
+                "tid": "f1f5da70-b23b-44e8-a24e-c0e8c77b5c56",
                 "path": "/3d-db/enroll",
-                "date": "Sep 25, 2020 22:31:22 PM",
-                "epochSecond": 1601073082,
+                "date": "Jul 26, 2021 3:49:24 PM",
+                "epochSecond": 1627314564,
                 "requestMethod": "POST"
             },
+            "additionalSessionData": { "isAdditionalDataPartiallyIncomplete": true },
             "error": false,
-            "externalDatabaseRefID": "test_external_dbref_id",
             "serverInfo": {
-                "version": "9.0.0",
+                "version": "9.3.0",
+                "type": "Standard",
                 "mode": "Development Only",
                 "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
-            },
-            "success": true
+            }
         });
 
         let response: Response = serde_json::from_value(sample_response).unwrap();
         assert_matches!(
             response,
             Response {
-                external_database_ref_id,
                 error: false,
                 success: true,
                 ..
-            } if external_database_ref_id == "test_external_dbref_id"
+            }
         )
     }
     #[test]
@@ -166,24 +161,23 @@ mod tests {
             group_name: "",
         };
         let sample_response = serde_json::json!({
-            "additionalSessionData": {
-                "isAdditionalDataPartiallyIncomplete": true
-            },
+            "success": true,
+            "wasProcessed": true,
             "callData": {
-                "tid": "4uJgQnnkRAW-d737c7a4-ff7e-11ea-8db5-0232fd4aba88",
+                "tid": "f1f5da70-b23b-44e8-a24e-c0e8c77b5c56",
                 "path": "/3d-db/enroll",
-                "date": "Sep 25, 2020 22:31:22 PM",
-                "epochSecond": 1601073082,
+                "date": "Jul 26, 2021 3:49:24 PM",
+                "epochSecond": 1627314564,
                 "requestMethod": "POST"
             },
+            "additionalSessionData": { "isAdditionalDataPartiallyIncomplete": true },
             "error": false,
-            "externalDatabaseRefID": "test_external_dbref_id",
             "serverInfo": {
-                "version": "9.0.0",
+                "version": "9.3.0",
+                "type": "Standard",
                 "mode": "Development Only",
                 "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
-            },
-            "success": true
+            }
         });
 
         let expected_response: Response = serde_json::from_value(sample_response.clone()).unwrap();
