@@ -7,7 +7,7 @@ use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use tokio::sync::{Mutex, MutexGuard};
 use tracing::{info, trace};
 
-use crate::{sequence::Sequence, ValidatorPublicKeyToDo};
+use crate::{logic::common::DB_GROUP_NAME, sequence::Sequence, ValidatorPublicKeyToDo};
 
 use super::{Locked, Logic};
 
@@ -77,6 +77,8 @@ impl TestParams {
 
 static LOCK: Mutex<()> = Mutex::const_new(());
 
+const TEST_PUBLIC_KEY: &[u8; 19] = b"dummy validator key";
+
 async fn setup() -> (
     MutexGuard<'static, ()>,
     TestParams,
@@ -100,6 +102,17 @@ async fn setup() -> (
         .expect("unable to reset facetec test server");
 
     trace!(message = "facetec server reset", ?res);
+
+    let public_key_hex = hex::encode(TEST_PUBLIC_KEY);
+    let res = facetec
+        .db_delete(ft::db_delete::Request {
+            group_name: DB_GROUP_NAME,
+            identifier: &public_key_hex,
+        })
+        .await
+        .expect("unable to clear 3D DB at the facetec test server");
+
+    trace!(message = "3D DB cleanup at the facetec server", ?res);
 
     let locked = Locked {
         sequence: Sequence::new(0),
@@ -127,7 +140,7 @@ async fn standalone_enroll() {
     logic
         .enroll(super::op_enroll::Request {
             liveness_data: test_params.enroll_liveness_data,
-            public_key: b"dummy validator key".to_vec(),
+            public_key: TEST_PUBLIC_KEY.to_vec(),
         })
         .await
         .unwrap();
@@ -157,7 +170,7 @@ async fn enroll_authenticate() {
     logic
         .enroll(super::op_enroll::Request {
             liveness_data: test_params.enroll_liveness_data,
-            public_key: b"dummy validator key".to_vec(),
+            public_key: TEST_PUBLIC_KEY.to_vec(),
         })
         .await
         .unwrap();
