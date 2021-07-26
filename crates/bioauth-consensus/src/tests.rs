@@ -131,28 +131,54 @@ sp_api::mock_impl_runtime_apis! {
     }
 }
 
-#[test]
-fn it_denies_block_import_with_error_extract_authorities() {
+fn prepare_get_info() -> sp_blockchain::Info<Block> {
+    sp_blockchain::Info::<Block> {
+        best_hash: sp_runtime::testing::H256::from_str(
+            "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
+        )
+        .unwrap(),
+        best_number: 0,
+        genesis_hash: sp_runtime::testing::H256::from_str(
+            "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
+        )
+        .unwrap(),
+        finalized_hash: sp_runtime::testing::H256::from_str(
+            "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
+        )
+        .unwrap(),
+        finalized_number: 0,
+        number_leaves: 0,
+    }
+}
+
+fn prepare_block_import_with_aura_pre_digest(
+    empty_digest: bool,
+) -> BlockImportParams<Block, TransactionFor<MockClient, Block>> {
+    let mut digest_items = vec![];
+    if !empty_digest {
+        let slot = Slot::from(1);
+        let item = <DigestItemFor<Block> as CompatibleDigestItem<
+            sp_consensus_aura::sr25519::AuthoritySignature,
+        >>::aura_pre_digest(slot);
+        digest_items.push(item);
+    }
+
+    BlockImportParams::new(
+        BlockOrigin::Own,
+        Header {
+            parent_hash: Default::default(),
+            number: 1,
+            state_root: Default::default(),
+            extrinsics_root: Default::default(),
+            digest: Digest { logs: digest_items },
+        },
+    )
+}
+
+#[tokio::test]
+async fn it_denies_block_import_with_error_extract_authorities() {
     let mut mock_client = MockClient::new();
-    mock_client
-        .expect_info()
-        .returning(|| sp_blockchain::Info::<Block> {
-            best_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            best_number: 0,
-            genesis_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_number: 0,
-            number_leaves: 0,
-        });
+    mock_client.expect_info().returning(prepare_get_info);
 
     let mut mock_runtime_api = MockRuntimeApi::new();
     mock_runtime_api.expect_authorities().returning(|_| {
@@ -173,50 +199,24 @@ fn it_denies_block_import_with_error_extract_authorities() {
         MockClient,
     > = BioauthBlockImport::new(Arc::clone(&client));
 
-    let res = bioauth_block_import.import_block(
-        BlockImportParams::new(
-            BlockOrigin::Own,
-            Header {
-                parent_hash: Default::default(),
-                number: 1,
-                state_root: Default::default(),
-                extrinsics_root: Default::default(),
-                digest: Digest { logs: vec![] },
-            },
-        ),
-        Default::default(),
-    );
+    let res = bioauth_block_import
+        .import_block(
+            prepare_block_import_with_aura_pre_digest(true),
+            Default::default(),
+        )
+        .await;
 
-    let runtime = tokio::runtime::Runtime::new().expect("Unable to create a runtime");
     assert_eq!(
-        runtime.block_on(res).unwrap_err().type_id(),
+        res.unwrap_err().type_id(),
         sp_consensus::Error::Other(Box::new(BioauthBlockImportError::ErrorExtractAuthorities))
             .type_id()
     );
 }
 
-#[test]
-fn it_denies_block_import_with_invalid_slot_number() {
+#[tokio::test]
+async fn it_denies_block_import_with_invalid_slot_number() {
     let mut mock_client = MockClient::new();
-    mock_client
-        .expect_info()
-        .returning(|| sp_blockchain::Info::<Block> {
-            best_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            best_number: 0,
-            genesis_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_number: 0,
-            number_leaves: 0,
-        });
+    mock_client.expect_info().returning(prepare_get_info);
 
     let mut mock_runtime_api = MockRuntimeApi::new();
     mock_runtime_api.expect_authorities().returning(|_| {
@@ -241,49 +241,23 @@ fn it_denies_block_import_with_invalid_slot_number() {
         MockClient,
     > = BioauthBlockImport::new(Arc::clone(&client));
 
-    let res = bioauth_block_import.import_block(
-        BlockImportParams::new(
-            BlockOrigin::Own,
-            Header {
-                parent_hash: Default::default(),
-                number: 1,
-                state_root: Default::default(),
-                extrinsics_root: Default::default(),
-                digest: Digest { logs: vec![] },
-            },
-        ),
-        Default::default(),
-    );
+    let res = bioauth_block_import
+        .import_block(
+            prepare_block_import_with_aura_pre_digest(true),
+            Default::default(),
+        )
+        .await;
 
-    let runtime = tokio::runtime::Runtime::new().expect("Unable to create a runtime");
     assert_eq!(
-        runtime.block_on(res).unwrap_err().type_id(),
+        res.unwrap_err().type_id(),
         sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber)).type_id()
     );
 }
 
-#[test]
-fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
+#[tokio::test]
+async fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
     let mut mock_client = MockClient::new();
-    mock_client
-        .expect_info()
-        .returning(|| sp_blockchain::Info::<Block> {
-            best_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            best_number: 0,
-            genesis_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_number: 0,
-            number_leaves: 0,
-        });
+    mock_client.expect_info().returning(prepare_get_info);
 
     let mut mock_runtime_api = MockRuntimeApi::new();
     mock_runtime_api.expect_authorities().returning(|_| {
@@ -314,30 +288,15 @@ fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
         MockClient,
     > = BioauthBlockImport::new(Arc::clone(&client));
 
-    let slot = Slot::from(1);
-    let digest_item = <DigestItemFor<Block> as CompatibleDigestItem<
-        sp_consensus_aura::sr25519::AuthoritySignature,
-    >>::aura_pre_digest(slot);
+    let res = bioauth_block_import
+        .import_block(
+            prepare_block_import_with_aura_pre_digest(false),
+            Default::default(),
+        )
+        .await;
 
-    let res = bioauth_block_import.import_block(
-        BlockImportParams::new(
-            BlockOrigin::Own,
-            Header {
-                parent_hash: Default::default(),
-                number: 1,
-                state_root: Default::default(),
-                extrinsics_root: Default::default(),
-                digest: Digest {
-                    logs: vec![digest_item],
-                },
-            },
-        ),
-        Default::default(),
-    );
-
-    let runtime = tokio::runtime::Runtime::new().expect("Unable to create a runtime");
     assert_eq!(
-        runtime.block_on(res).unwrap_err().type_id(),
+        res.unwrap_err().type_id(),
         sp_consensus::Error::Other(Box::new(
             BioauthBlockImportError::ErrorExtractStoredAuthTickets
         ))
@@ -345,28 +304,10 @@ fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
     );
 }
 
-#[test]
-fn it_denies_block_import_with_not_bioauth_authorised() {
+#[tokio::test]
+async fn it_denies_block_import_with_not_bioauth_authorized() {
     let mut mock_client = MockClient::new();
-    mock_client
-        .expect_info()
-        .returning(|| sp_blockchain::Info::<Block> {
-            best_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            best_number: 0,
-            genesis_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_number: 0,
-            number_leaves: 0,
-        });
+    mock_client.expect_info().returning(prepare_get_info);
 
     let mut mock_runtime_api = MockRuntimeApi::new();
     mock_runtime_api.expect_authorities().returning(|_| {
@@ -402,57 +343,24 @@ fn it_denies_block_import_with_not_bioauth_authorised() {
         MockClient,
     > = BioauthBlockImport::new(Arc::clone(&client));
 
-    let slot = Slot::from(1);
-    let digest_item = <DigestItemFor<Block> as CompatibleDigestItem<
-        sp_consensus_aura::sr25519::AuthoritySignature,
-    >>::aura_pre_digest(slot);
+    let res = bioauth_block_import
+        .import_block(
+            prepare_block_import_with_aura_pre_digest(false),
+            Default::default(),
+        )
+        .await;
 
-    let res = bioauth_block_import.import_block(
-        BlockImportParams::new(
-            BlockOrigin::Own,
-            Header {
-                parent_hash: Default::default(),
-                number: 1,
-                state_root: Default::default(),
-                extrinsics_root: Default::default(),
-                digest: Digest {
-                    logs: vec![digest_item],
-                },
-            },
-        ),
-        Default::default(),
-    );
-
-    let runtime = tokio::runtime::Runtime::new().expect("Unable to create a runtime");
     assert_eq!(
-        runtime.block_on(res).unwrap_err().type_id(),
-        sp_consensus::Error::Other(Box::new(BioauthBlockImportError::NotBioauthAuthorised))
+        res.unwrap_err().type_id(),
+        sp_consensus::Error::Other(Box::new(BioauthBlockImportError::NotBioauthAuthorized))
             .type_id()
     );
 }
 
-#[test]
-fn it_permits_block_import_with_valid_data() {
+#[tokio::test]
+async fn it_permits_block_import_with_valid_data() {
     let mut mock_client = MockClient::new();
-    mock_client
-        .expect_info()
-        .returning(|| sp_blockchain::Info::<Block> {
-            best_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            best_number: 0,
-            genesis_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_hash: sp_runtime::testing::H256::from_str(
-                "0xf5ef18473d0ee46490ea289ee25ba078febb8bcd9cec752a18d4741a0f24f7ef",
-            )
-            .unwrap(),
-            finalized_number: 0,
-            number_leaves: 0,
-        });
+    mock_client.expect_info().returning(prepare_get_info);
 
     let mut mock_runtime_api = MockRuntimeApi::new();
     mock_runtime_api.expect_authorities().returning(|_| {
@@ -498,30 +406,12 @@ fn it_permits_block_import_with_valid_data() {
         MockClient,
     > = BioauthBlockImport::new(Arc::clone(&client));
 
-    let slot = Slot::from(1);
-    let digest_item = <DigestItemFor<Block> as CompatibleDigestItem<
-        sp_consensus_aura::sr25519::AuthoritySignature,
-    >>::aura_pre_digest(slot);
+    let res = bioauth_block_import
+        .import_block(
+            prepare_block_import_with_aura_pre_digest(false),
+            Default::default(),
+        )
+        .await;
 
-    let res = bioauth_block_import.import_block(
-        BlockImportParams::new(
-            BlockOrigin::Own,
-            Header {
-                parent_hash: Default::default(),
-                number: 1,
-                state_root: Default::default(),
-                extrinsics_root: Default::default(),
-                digest: Digest {
-                    logs: vec![digest_item],
-                },
-            },
-        ),
-        Default::default(),
-    );
-
-    let runtime = tokio::runtime::Runtime::new().expect("Unable to create a runtime");
-    assert_eq!(
-        runtime.block_on(res).unwrap(),
-        ImportResult::imported(Default::default())
-    );
+    assert_eq!(res.unwrap(), ImportResult::imported(Default::default()));
 }

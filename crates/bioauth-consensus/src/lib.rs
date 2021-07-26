@@ -35,9 +35,9 @@ pub struct BioauthBlockImport<Backend, Block: BlockT, Client> {
 /// BioauthBlockImport Error Type.
 #[derive(Error, Debug, Eq, PartialEq)]
 pub enum BioauthBlockImportError {
-    /// Block Author isn't Bioauth authorised.
-    #[error("Block Author isn't bioauth-authorised")]
-    NotBioauthAuthorised,
+    /// Block Author isn't Bioauth authorized.
+    #[error("Block Author isn't bioauth-authorized")]
+    NotBioauthAuthorized,
     /// Invalid  slot number.
     #[error("Invalid slot number")]
     InvalidSlotNumber,
@@ -153,7 +153,7 @@ where
 
         if !is_authorized {
             return Err(sp_consensus::Error::Other(Box::new(
-                BioauthBlockImportError::NotBioauthAuthorised,
+                BioauthBlockImportError::NotBioauthAuthorized,
             )));
         }
 
