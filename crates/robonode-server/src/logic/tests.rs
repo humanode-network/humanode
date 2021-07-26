@@ -5,7 +5,7 @@ use std::marker::PhantomData;
 use facetec_api_client as ft;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use tokio::sync::{Mutex, MutexGuard};
-use tracing::trace;
+use tracing::{info, trace};
 
 use crate::{sequence::Sequence, ValidatorPublicKeyToDo};
 
@@ -161,6 +161,8 @@ async fn enroll_authenticate() {
         })
         .await
         .unwrap();
+
+    info!("enroll complete, authenticating now");
 
     logic
         .authenticate(super::op_authenticate::Request {
