@@ -14,6 +14,7 @@ use reqwest::{RequestBuilder, Response};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
 
+pub mod db_delete;
 pub mod db_enroll;
 pub mod db_search;
 pub mod enrollment3d;
