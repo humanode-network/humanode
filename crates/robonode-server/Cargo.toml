@@ -22,5 +22,8 @@ tracing = "0.1"
 uuid = { version = "0.8", features = ["v4"] }
 warp = "0.3"
 
+[dev-dependencies]
+tracing-test = "0.1"
+
 [features]
 logic-integration-tests = []

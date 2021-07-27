@@ -111,6 +111,7 @@ async fn setup() -> (
 }
 
 #[tokio::test]
+#[tracing_test::traced_test]
 async fn standalone_enroll() {
     let (_guard, test_params, logic) = setup().await;
 
@@ -124,6 +125,7 @@ async fn standalone_enroll() {
 }
 
 #[tokio::test]
+#[tracing_test::traced_test]
 async fn first_authenticate() {
     let (_guard, test_params, logic) = setup().await;
 
@@ -137,6 +139,7 @@ async fn first_authenticate() {
 }
 
 #[tokio::test]
+#[tracing_test::traced_test]
 async fn enroll_authenticate() {
     let (_guard, test_params, logic) = setup().await;
 
