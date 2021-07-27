@@ -168,7 +168,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let mut flow = bioauth_flow::flow::Flow {
         liveness_data_provider: bioauth_flow::rpc::Provider::new(bioauth_flow_provider_slot),
         robonode_client,
-        validator_public_key_type: PhantomData::<crate::validator_key::FakeTodo>,
+        validator_public_key_infrastructure_type: PhantomData::<crate::validator_key::FakeTodo>,
     };
 
     let webapp_url = std::env::var("WEBAPP_URL")
