@@ -77,7 +77,12 @@ impl TestParams {
 
 static LOCK: Mutex<()> = Mutex::const_new(());
 
-const TEST_PUBLIC_KEY: &[u8; 19] = b"dummy validator key";
+const TEST_PUBLIC_KEY: &[u8] = b"dummy validator key";
+
+/// Returns a list of all public keys to cleanup from the FaceTec Server 3D DB.
+fn public_keys_to_cleanup() -> Vec<&'static [u8]> {
+    vec![TEST_PUBLIC_KEY, b"a", b"b"]
+}
 
 async fn setup() -> (
     MutexGuard<'static, ()>,
@@ -103,16 +108,18 @@ async fn setup() -> (
 
     trace!(message = "facetec server reset", ?res);
 
-    let public_key_hex = hex::encode(TEST_PUBLIC_KEY);
-    let res = facetec
-        .db_delete(ft::db_delete::Request {
-            group_name: DB_GROUP_NAME,
-            identifier: &public_key_hex,
-        })
-        .await
-        .expect("unable to clear 3D DB at the facetec test server");
+    for public_key_to_clenaup in public_keys_to_cleanup() {
+        let public_key_hex = hex::encode(public_key_to_clenaup);
+        let res = facetec
+            .db_delete(ft::db_delete::Request {
+                group_name: DB_GROUP_NAME,
+                identifier: &public_key_hex,
+            })
+            .await
+            .expect("unable to clear 3D DB at the facetec test server");
 
-    trace!(message = "3D DB cleanup at the facetec server", ?res);
+        trace!(message = "3D DB cleanup at the facetec server", ?res);
+    }
 
     let locked = Locked {
         sequence: Sequence::new(0),
