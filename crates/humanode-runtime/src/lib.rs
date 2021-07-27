@@ -425,6 +425,12 @@ impl_runtime_apis! {
         }
     }
 
+    impl pallet_bioauth::BioauthApi<Block> for Runtime {
+        fn stored_auth_tickets() -> sp_std::prelude::Vec<pallet_bioauth::StoredAuthTicket> {
+            PalletBioauth::stored_auth_tickets()
+        }
+    }
+
     impl sp_session::SessionKeys<Block> for Runtime {
         fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
             opaque::SessionKeys::generate(seed)
