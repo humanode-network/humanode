@@ -173,7 +173,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let mut flow = bioauth_flow::flow::Flow {
         liveness_data_provider: bioauth_flow::rpc::Provider::new(bioauth_flow_provider_slot),
         robonode_client,
-        validator_public_key_type: PhantomData::<crate::validator_key::FakeTodo>,
+        validator_public_key_type: PhantomData,
+        validator_signer_type: PhantomData,
     };
 
     let webapp_url = std::env::var("WEBAPP_URL")
@@ -186,18 +187,23 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let bioauth_flow_future = {
         let client = Arc::clone(&client);
+        let keystore = keystore_container.keystore();
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
             info!("bioauth flow starting up");
+
+            let aura_public_key =
+                crate::validator_key::AuraPublic::from_keystore(keystore.as_ref())
+                    .await
+                    .expect("vector has to be of length 1 at this point");
+
             let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
             if should_enroll {
                 info!("bioauth flow - enrolling in progress");
 
                 webapp_qrcode.print();
 
-                flow.enroll(crate::validator_key::FakeTodo("TODO"))
-                    .await
-                    .expect("enroll failed");
+                flow.enroll(&aura_public_key).await.expect("enroll failed");
 
                 info!("bioauth flow - enrolling complete");
             }
@@ -206,10 +212,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             webapp_qrcode.print();
 
+            let aura_signer = crate::validator_key::AuraSigner {
+                keystore: Arc::clone(&keystore),
+                public_key: aura_public_key,
+            };
+
             let authenticate_response = loop {
-                let result = flow
-                    .authenticate(crate::validator_key::FakeTodo("TODO"))
-                    .await;
+                let result = flow.authenticate(&aura_signer).await;
                 match result {
                     Ok(v) => break v,
                     Err(error) => {

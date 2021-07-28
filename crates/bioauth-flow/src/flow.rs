@@ -37,16 +37,18 @@ pub trait Signer<S> {
 ///
 /// The goal of this component is to encapsulate interoperation with the handheld device
 /// and the robonode.
-pub struct Flow<PK, LDP, RC> {
+pub struct Flow<LDP, RC, VPK, VS> {
     /// The provider of the liveness data.
     pub liveness_data_provider: LDP,
     /// The Robonode API client.
     pub robonode_client: RC,
     /// The type used to encode the public key.
-    pub validator_public_key_type: PhantomData<PK>,
+    pub validator_public_key_type: PhantomData<VPK>,
+    /// The type that provides signing with the validator private key.
+    pub validator_signer_type: PhantomData<VS>,
 }
 
-impl<PK, LDP, RC> Flow<PK, LDP, RC>
+impl<LDP, RC, VPK, VS> Flow<LDP, RC, VPK, VS>
 where
     LDP: LivenessDataProvider,
 {
@@ -60,15 +62,15 @@ where
     }
 }
 
-impl<PK, LDP, RC> Flow<PK, LDP, RC>
+impl<LDP, RC, VPK, VS> Flow<LDP, RC, VPK, VS>
 where
-    PK: AsRef<[u8]>,
     LDP: LivenessDataProvider,
     <LDP as LivenessDataProvider>::Error: Send + Sync + std::error::Error + 'static,
     RC: Deref<Target = robonode_client::Client>,
+    VPK: AsRef<[u8]>,
 {
     /// The enroll flow.
-    pub async fn enroll(&mut self, public_key: PK) -> Result<(), anyhow::Error> {
+    pub async fn enroll(&mut self, public_key: &VPK) -> Result<(), anyhow::Error> {
         let opaque_liveness_data = self.obtain_opaque_liveness_data().await?;
 
         self.robonode_client
@@ -82,10 +84,10 @@ where
     }
 }
 
-impl<PK, LDP, RC> Flow<PK, LDP, RC>
+impl<LDP, RC, VPK, VS> Flow<LDP, RC, VPK, VS>
 where
-    PK: Signer<Vec<u8>>,
-    <PK as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
+    VS: Signer<Vec<u8>>,
+    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
     LDP: LivenessDataProvider,
     <LDP as LivenessDataProvider>::Error: Send + Sync + std::error::Error + 'static,
     RC: Deref<Target = robonode_client::Client>,
@@ -95,11 +97,11 @@ where
     /// Returns the authentication response, providing the auth ticket and its signature.
     pub async fn authenticate(
         &mut self,
-        public_key: PK,
+        signer: &VS,
     ) -> Result<robonode_client::AuthenticateResponse, anyhow::Error> {
         let opaque_liveness_data = self.obtain_opaque_liveness_data().await?;
 
-        let signature = public_key.sign(&opaque_liveness_data).await?;
+        let signature = signer.sign(&opaque_liveness_data).await?;
 
         let response = self
             .robonode_client

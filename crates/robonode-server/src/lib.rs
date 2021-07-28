@@ -16,6 +16,7 @@ mod http;
 mod logging_inspector;
 mod logic;
 mod sequence;
+mod validator_key;
 
 pub use logging_inspector::LoggingInspector;
 pub use logic::FacetecDeviceSdkParams;
@@ -34,7 +35,7 @@ pub fn init(
             execution_id,
             facetec: facetec_api_client,
             signer: robonode_keypair,
-            public_key_type: PhantomData::<ValidatorPublicKeyToDo>,
+            public_key_type: PhantomData::<validator_key::AuraPublic>,
         }),
         facetec_device_sdk_params,
     };
@@ -53,41 +54,5 @@ impl logic::Signer<Vec<u8>> for robonode_crypto::Keypair {
         use robonode_crypto::ed25519_dalek::Signer;
         let sig = Signer::sign(self, data.as_ref());
         Ok(sig.as_ref().to_owned())
-    }
-}
-
-/// A temporary validator key mock, that accepts any byte sequences as keys, and consideres any
-/// signatures valid.
-struct ValidatorPublicKeyToDo(Vec<u8>);
-
-#[async_trait::async_trait]
-impl logic::Verifier<Vec<u8>> for ValidatorPublicKeyToDo {
-    type Error = Infallible;
-
-    async fn verify<'a, D>(&self, _data: D, _signature: Vec<u8>) -> Result<bool, Self::Error>
-    where
-        D: AsRef<[u8]> + Send + 'a,
-    {
-        Ok(true)
-    }
-}
-
-impl std::convert::TryFrom<&[u8]> for ValidatorPublicKeyToDo {
-    type Error = ();
-
-    fn try_from(val: &[u8]) -> Result<Self, Self::Error> {
-        Ok(Self(val.into()))
-    }
-}
-
-impl From<ValidatorPublicKeyToDo> for Vec<u8> {
-    fn from(val: ValidatorPublicKeyToDo) -> Self {
-        val.0
-    }
-}
-
-impl AsRef<[u8]> for ValidatorPublicKeyToDo {
-    fn as_ref(&self) -> &[u8] {
-        &self.0
     }
 }

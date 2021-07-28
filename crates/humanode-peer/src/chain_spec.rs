@@ -84,9 +84,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 pallet_bioauth: PalletBioauthConfig {
                     // Add Alice AuraId to StoredAuthTickets for producing blocks
                     stored_auth_tickets: vec![pallet_bioauth::StoredAuthTicket {
-                        public_key: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                            .as_bytes()
-                            .to_vec(),
+                        public_key: authority_keys_from_seed("Alice").as_slice().to_vec(),
                         nonce: "1".as_bytes().to_vec(),
                     }],
                     robonode_public_key,
