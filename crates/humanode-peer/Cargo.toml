@@ -6,6 +6,7 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
+bioauth-consensus = { version = "0.1", path = "../bioauth-consensus" }
 bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }

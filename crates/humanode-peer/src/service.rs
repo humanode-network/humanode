@@ -36,6 +36,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     );
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
+    let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<
+        sc_service::TFullBackend<Block>,
+        _,
+        _,
+    > = bioauth_consensus::BioauthBlockImport::new(Arc::clone(&client));
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
@@ -45,7 +50,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let import_queue =
         sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _, _>(ImportQueueParams {
-            block_import: Arc::clone(&client),
+            block_import: bioauth_consensus_block_import.clone(),
             justification_import: None,
             client: Arc::clone(&client),
             create_inherent_data_providers: move |_, ()| async move {
@@ -136,7 +141,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             slot_duration,
             client: Arc::clone(&client),
             select_chain,
-            block_import: Arc::clone(&client),
+            block_import: bioauth_consensus_block_import,
             proposer_factory,
             create_inherent_data_providers: move |_, ()| async move {
                 let timestamp = sp_timestamp::InherentDataProvider::from_system_time();

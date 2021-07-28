@@ -35,13 +35,13 @@ pub struct AdditionalSessionData {
 #[serde(rename_all = "camelCase")]
 pub struct FaceScanSecurityChecks {
     /// TODO: document
-    audit_trail_verification_check_succeeded: bool,
+    pub audit_trail_verification_check_succeeded: bool,
     /// TODO: document
-    face_scan_liveness_check_succeeded: bool,
+    pub face_scan_liveness_check_succeeded: bool,
     /// TODO: document
-    replay_check_succeeded: bool,
+    pub replay_check_succeeded: bool,
     /// TODO: document
-    session_token_check_succeeded: bool,
+    pub session_token_check_succeeded: bool,
 }
 
 impl FaceScanSecurityChecks {
@@ -99,9 +99,6 @@ pub struct CommonResponse {
 pub struct FaceScanResponse {
     /// The the information about the security checks over the FaceScan data.
     pub face_scan_security_checks: FaceScanSecurityChecks,
-    /// Something to do with the retry screen of the FaceTec Device SDK.
-    /// TODO: find more info on this parameter.
-    pub face_tec_retry_screen: i64,
     /// Something to do with the retry screen of the FaceTec Device SDK.
     /// TODO: find more info on this parameter.
     pub retry_screen_enum_int: i64,

@@ -1,9 +1,7 @@
-//! GET `/session-token`
+//! DELETE `/delete-database-if-less-than-10-records`
 
 use reqwest::StatusCode;
 use serde::Deserialize;
-
-use crate::CommonResponse;
 
 use super::Client;
 
@@ -11,9 +9,15 @@ impl<RBEI> Client<RBEI>
 where
     RBEI: crate::response_body_error::Inspector,
 {
-    /// Perform the `/session-token` call to the server.
-    pub async fn session_token(&self) -> Result<Response, crate::Error<Error>> {
-        let res = self.build_get("/session-token").send().await?;
+    /// Perform the `/delete-database-if-less-than-10-records` call to the server.
+    pub async fn reset(&self) -> Result<Response, crate::Error<Error>> {
+        let res = self
+            .build("/delete-database-if-less-than-10-records", |url| {
+                self.reqwest.delete(url)
+            })
+            .body(&b"1"[..])
+            .send()
+            .await?;
         match res.status() {
             StatusCode::OK => Ok(self.parse_json(res).await?),
             _ => Err(crate::Error::Call(Error::Unknown(res.text().await?))),
@@ -25,11 +29,8 @@ where
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    /// Common response portion.
-    #[serde(flatten)]
-    pub common: CommonResponse,
-    /// The Session Token.
-    pub session_token: String,
+    /// Whether the database was deleted or not.
+    pub did_delete_database: bool,
     /// Whether the request had any errors during the execution.
     pub error: bool,
     /// Whether the request was successful.
@@ -51,7 +52,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{tests::test_client, AdditionalSessionData, CallData};
+    use crate::tests::test_client;
 
     use super::*;
 
@@ -62,19 +63,14 @@ mod tests {
                 "isAdditionalDataPartiallyIncomplete": true
             },
             "callData": {
-                "tid": "6vbfRTI0IAW-2b1e1d84-cf3d-11eb-86b0-0232fd4aba88",
-                "path": "/session-token",
-                "date": "Jun 17, 2021 07:25:18 AM",
-                "epochSecond": 1623914718,
-                "requestMethod": "GET"
+                "tid": "8qV1E1vw1AW-518a5c2a-ff75-11ea-8db5-0232fd4aba88",
+                "path": "/delete-database-if-less-than-10-records",
+                "date": "Sep 25, 2020 21:23:13 PM",
+                "epochSecond": 1601068993,
+                "requestMethod": "DELETE"
             },
+            "didDeleteDatabase": true,
             "error": false,
-            "serverInfo": {
-                "version": "9.0.0-SNAPSHOT",
-                "mode": "Development Only",
-                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
-            },
-            "sessionToken": "the session token",
             "success": true
         });
 
@@ -82,21 +78,11 @@ mod tests {
         assert_matches!(
             response,
             Response {
-                session_token,
+                did_delete_database: true,
                 error: false,
                 success: true,
-                common: CommonResponse {
-                    additional_session_data: AdditionalSessionData {
-                        is_additional_data_partially_incomplete: true,
-                        ..
-                    },
-                    call_data: CallData {
-                        ..
-                    },
-                    ..
-                },
                 ..
-            } if session_token == "the session token"
+            }
         )
     }
 
@@ -109,34 +95,29 @@ mod tests {
                 "isAdditionalDataPartiallyIncomplete": true
             },
             "callData": {
-                "tid": "6vbfRTI0IAW-2b1e1d84-cf3d-11eb-86b0-0232fd4aba88",
-                "path": "/session-token",
-                "date": "Jun 17, 2021 07:25:18 AM",
-                "epochSecond": 1623914718,
-                "requestMethod": "GET"
+                "tid": "8qV1E1vw1AW-518a5c2a-ff75-11ea-8db5-0232fd4aba88",
+                "path": "/delete-database-if-less-than-10-records",
+                "date": "Sep 25, 2020 21:23:13 PM",
+                "epochSecond": 1601068993,
+                "requestMethod": "DELETE"
             },
+            "didDeleteDatabase": true,
             "error": false,
-            "serverInfo": {
-                "version": "9.0.0-SNAPSHOT",
-                "mode": "Development Only",
-                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
-            },
-            "sessionToken": "the session token",
             "success": true
         });
 
         let expected_response: Response = serde_json::from_value(sample_response.clone()).unwrap();
 
-        Mock::given(matchers::method("GET"))
-            .and(matchers::path("/session-token"))
-            .and(matchers::body_bytes(vec![]))
+        Mock::given(matchers::method("DELETE"))
+            .and(matchers::path("/delete-database-if-less-than-10-records"))
+            .and(matchers::body_bytes(vec![b'1']))
             .respond_with(ResponseTemplate::new(200).set_body_json(&sample_response))
             .mount(&mock_server)
             .await;
 
         let client = test_client(mock_server.uri());
 
-        let actual_response = client.session_token().await.unwrap();
+        let actual_response = client.reset().await.unwrap();
         assert_eq!(actual_response, expected_response);
     }
 
@@ -146,16 +127,16 @@ mod tests {
 
         let sample_response = "Some error text";
 
-        Mock::given(matchers::method("GET"))
-            .and(matchers::path("/session-token"))
-            .and(matchers::body_bytes(vec![]))
+        Mock::given(matchers::method("DELETE"))
+            .and(matchers::path("/delete-database-if-less-than-10-records"))
+            .and(matchers::body_bytes(vec![b'1']))
             .respond_with(ResponseTemplate::new(500).set_body_string(sample_response))
             .mount(&mock_server)
             .await;
 
         let client = test_client(mock_server.uri());
 
-        let actual_error = client.session_token().await.unwrap_err();
+        let actual_error = client.reset().await.unwrap_err();
         assert_matches!(
             actual_error,
             crate::Error::Call(Error::Unknown(error_text)) if error_text == sample_response

@@ -10,19 +10,25 @@
 #[macro_use]
 extern crate assert_matches;
 
-use reqwest::RequestBuilder;
+use reqwest::{RequestBuilder, Response};
+use serde::de::DeserializeOwned;
 use thiserror::Error;
 
-mod db_enroll;
-mod db_search;
-mod enrollment3d;
-mod session_token;
+pub mod db_delete;
+pub mod db_enroll;
+pub mod db_search;
+pub mod enrollment3d;
+pub mod reset;
+pub mod response_body_error;
+pub mod serde_util;
+pub mod session_token;
+
 mod types;
 
-pub use db_enroll::*;
-pub use db_search::*;
-pub use enrollment3d::*;
-pub use session_token::*;
+#[cfg(test)]
+mod tests;
+
+pub use response_body_error::ResponseBodyError;
 pub use types::*;
 
 /// The generic error type for the client calls.
@@ -31,6 +37,9 @@ pub enum Error<T: std::error::Error + 'static> {
     /// A call-specific error.
     #[error("server error: {0}")]
     Call(T),
+    /// An error due to failure to load or parse the response body.
+    #[error(transparent)]
+    ResponseBody(#[from] ResponseBodyError),
     /// An error coming from the underlying reqwest layer.
     #[error("reqwest error: {0}")]
     Reqwest(#[from] reqwest::Error),
@@ -38,16 +47,20 @@ pub enum Error<T: std::error::Error + 'static> {
 
 /// The robonode client.
 #[derive(Debug)]
-pub struct Client {
+pub struct Client<RBEI> {
     /// Underyling HTTP client used to execute network calls.
     pub reqwest: reqwest::Client,
     /// The base URL to use for the routes.
     pub base_url: String,
     /// The Device Key Identifier to pass in the header.
     pub device_key_identifier: String,
+    /// The fake IP address to inject via `X-FT-IPAddress` header.
+    pub injected_ip_address: Option<String>,
+    /// The inspector for the response body.
+    pub response_body_error_inspector: RBEI,
 }
 
-impl Client {
+impl<RBEI> Client<RBEI> {
     /// Prepare the URL.
     fn build_url(&self, path: &str) -> String {
         format!("{}{}", self.base_url, path)
@@ -55,14 +68,29 @@ impl Client {
 
     /// Apply some common headers.
     fn apply_headers(&self, req: RequestBuilder) -> RequestBuilder {
-        req.header("X-Device-Key", self.device_key_identifier.clone())
+        let req = req.header("X-Device-Key", self.device_key_identifier.clone());
+
+        if let Some(ref injected_ip_address) = self.injected_ip_address {
+            req.header("X-FT-IPAddress", injected_ip_address.clone())
+        } else {
+            req
+        }
+    }
+
+    /// An internal utility to prepare an HTTP request.
+    /// Applies some common logic.
+    fn build<F>(&self, path: &str, f: F) -> RequestBuilder
+    where
+        F: FnOnce(String) -> RequestBuilder,
+    {
+        let url = self.build_url(path);
+        self.apply_headers(f(url))
     }
 
     /// An internal utility to prepare a GET HTTP request.
     /// Applies some common logic.
     fn build_get(&self, path: &str) -> RequestBuilder {
-        let url = self.build_url(path);
-        self.apply_headers(self.reqwest.get(url))
+        self.build(path, |url| self.reqwest.get(url))
     }
 
     /// An internal utility to prepare a POST HTTP request.
@@ -71,7 +99,33 @@ impl Client {
     where
         T: serde::Serialize + ?Sized,
     {
-        let url = self.build_url(path);
-        self.apply_headers(self.reqwest.post(url)).json(body)
+        self.build(path, |url| self.reqwest.post(url)).json(body)
+    }
+}
+
+impl<RBEI> Client<RBEI>
+where
+    RBEI: response_body_error::Inspector,
+{
+    /// A custom JSON parsing logic for more control over how we handle JSON parsing errors.
+    async fn parse_json<T>(&self, res: Response) -> Result<T, ResponseBodyError>
+    where
+        T: DeserializeOwned,
+    {
+        let full = res.bytes().await.map_err(ResponseBodyError::BodyRead)?;
+
+        self.response_body_error_inspector.inspect_raw(&full).await;
+
+        match serde_json::from_slice(&full) {
+            Ok(val) => Ok(val),
+            Err(err) => {
+                let err = ResponseBodyError::Json {
+                    source: err,
+                    body: full,
+                };
+                self.response_body_error_inspector.inspect_error(&err).await;
+                Err(err)
+            }
+        }
     }
 }
