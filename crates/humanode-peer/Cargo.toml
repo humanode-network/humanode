@@ -29,6 +29,7 @@ sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }

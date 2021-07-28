@@ -2231,6 +2231,7 @@ dependencies = [
  "sc-transaction-pool",
  "sp-consensus",
  "sp-consensus-aura",
+ "sp-core",
  "sp-runtime",
  "sp-timestamp",
  "tokio 1.6.2",

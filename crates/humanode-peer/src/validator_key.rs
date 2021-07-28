@@ -3,26 +3,44 @@
 use std::convert::Infallible;
 
 use bioauth_flow::flow::Signer;
+use sp_core::sr25519;
+use sp_core::Pair;
 
-/// A temporary fake implementation of the validator key, for the purposes of using it with the
-/// bioauth enroll and authenticate during the integration while the real validator key is not
-/// ready.
-pub struct FakeTodo(pub &'static str);
+/// Validator key is for the purposes of using it with the
+/// bioauth enroll and authenticate.
+#[derive(Clone)]
+pub struct ValidatorKey {
+    /// Validator's key pair.
+    pub pair: sr25519::Pair,
+    /// Validator's public key.
+    pub public: String,
+}
 
-#[async_trait::async_trait]
-impl Signer<Vec<u8>> for FakeTodo {
-    type Error = Infallible;
-
-    async fn sign<'a, D>(&self, _data: D) -> Result<Vec<u8>, Self::Error>
-    where
-        D: AsRef<[u8]> + Send + 'a,
-    {
-        Ok(b"0123456789abcdef0123456789abcdef"[..].into())
+impl ValidatorKey {
+    /// A constructor.
+    pub fn new(key_seed: &str) -> Result<Self, String> {
+        let pair =
+            sr25519::Pair::from_string(key_seed, None).map_err(|_| "Invalid seed".to_owned())?;
+        let public = pair.public().to_string();
+        Ok(ValidatorKey { pair, public })
     }
 }
 
-impl AsRef<[u8]> for FakeTodo {
+#[async_trait::async_trait]
+impl Signer<Vec<u8>> for ValidatorKey {
+    type Error = Infallible;
+
+    async fn sign<'a, D>(&self, data: D) -> Result<Vec<u8>, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
+        let signature = self.pair.sign(data.as_ref());
+        Ok(signature.0.to_vec())
+    }
+}
+
+impl AsRef<[u8]> for ValidatorKey {
     fn as_ref(&self) -> &[u8] {
-        self.0.as_bytes()
+        self.public.as_bytes()
     }
 }

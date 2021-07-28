@@ -93,6 +93,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         base_url: robonode_url,
         reqwest: reqwest::Client::new(),
     });
+    let key_seed = config.dev_key_seed.clone();
 
     let (bioauth_flow_rpc_slot, bioauth_flow_provider_slot) =
         bioauth_flow::rpc::new_liveness_data_tx_slot();
@@ -168,7 +169,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let mut flow = bioauth_flow::flow::Flow {
         liveness_data_provider: bioauth_flow::rpc::Provider::new(bioauth_flow_provider_slot),
         robonode_client,
-        validator_public_key_infrastructure_type: PhantomData::<crate::validator_key::FakeTodo>,
+        validator_public_key_infrastructure_type: PhantomData::<crate::validator_key::ValidatorKey>,
     };
 
     let webapp_url = std::env::var("WEBAPP_URL")
@@ -179,18 +180,28 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let webapp_qrcode =
         crate::qrcode::WebApp::new(&webapp_url, &rpc_url).map_err(ServiceError::Other)?;
 
+    let validator_public_key_infrastructure =
+        crate::validator_key::ValidatorKey::new(key_seed.as_deref().unwrap_or(""))
+            .map_err(ServiceError::Other)?;
+    info!(
+        "Validator public key: {:?}",
+        validator_public_key_infrastructure.public
+    );
+
     let bioauth_flow_future = {
         let client = Arc::clone(&client);
         let transaction_pool = Arc::clone(&transaction_pool);
+
         Box::pin(async move {
             info!("bioauth flow starting up");
+
             let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
             if should_enroll {
                 info!("bioauth flow - enrolling in progress");
 
                 webapp_qrcode.print();
 
-                flow.enroll(crate::validator_key::FakeTodo("TODO"))
+                flow.enroll(validator_public_key_infrastructure.clone())
                     .await
                     .expect("enroll failed");
 
@@ -203,7 +214,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             let authenticate_response = loop {
                 let result = flow
-                    .authenticate(crate::validator_key::FakeTodo("TODO"))
+                    .authenticate(validator_public_key_infrastructure.clone())
                     .await;
                 match result {
                     Ok(v) => break v,
