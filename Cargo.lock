@@ -5300,6 +5300,7 @@ dependencies = [
  "robonode-crypto",
  "sc-tracing 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
+ "sp-application-crypto",
  "tokio 1.8.1",
  "tracing",
  "tracing-test",
