@@ -149,7 +149,9 @@ where
                 ))
             })?;
 
-        let is_authorized = stored_tickets.iter().any(|x| x.public_key == author);
+        let is_authorized = stored_tickets
+            .iter()
+            .any(|ticket| ticket.public_key == author);
 
         if !is_authorized {
             return Err(sp_consensus::Error::Other(Box::new(
