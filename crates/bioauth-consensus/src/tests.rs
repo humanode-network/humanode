@@ -377,9 +377,13 @@ async fn it_permits_block_import_with_valid_data() {
         .returning(|_| {
             Ok(NativeOrEncoded::from(vec![
                 pallet_bioauth::StoredAuthTicket {
-                    public_key: "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                        .as_bytes()
-                        .to_vec(),
+                    public_key: sp_consensus_aura::sr25519::AuthorityPair::from_string(
+                        &format!("//{}", "Alice"),
+                        None,
+                    )
+                    .expect("static values are valid; qed")
+                    .public()
+                    .to_raw_vec(),
                     nonce: "1".as_bytes().to_vec(),
                 },
             ]))

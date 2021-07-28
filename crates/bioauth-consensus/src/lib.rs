@@ -9,6 +9,7 @@
 use pallet_bioauth::BioauthApi;
 use sc_client_api::{backend::Backend, Finalizer};
 use sp_api::{Decode, ProvideRuntimeApi, TransactionFor};
+use sp_application_crypto::Public;
 use sp_blockchain::HeaderBackend;
 use sp_consensus::{
     BlockCheckParams, BlockImport, BlockImportParams, Error as ConsensusError, ImportResult,
@@ -129,14 +130,14 @@ where
         let author_index = *slot_decoded % authorities.len() as u64;
 
         // Determine an Author of a new proposed block.
-        let author = match authorities.get(author_index as usize).cloned() {
-            Some(v) => v.to_string().as_bytes().to_vec(),
-            None => {
-                return Err(sp_consensus::Error::Other(Box::new(
-                    BioauthBlockImportError::InvalidSlotNumber,
-                )))
-            }
-        };
+        let author_public_key =
+            authorities
+                .get(author_index as usize)
+                .cloned()
+                .ok_or_else(|| {
+                    sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
+                })?;
+        let author_public_key = author_public_key.as_slice();
 
         // Get current stored tickets.
         let stored_tickets = self
@@ -151,7 +152,7 @@ where
 
         let is_authorized = stored_tickets
             .iter()
-            .any(|ticket| ticket.public_key == author);
+            .any(|ticket| ticket.public_key == author_public_key);
 
         if !is_authorized {
             return Err(sp_consensus::Error::Other(Box::new(
