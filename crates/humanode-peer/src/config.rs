@@ -2,7 +2,7 @@
 
 use futures::FutureExt;
 use sc_executor::WasmExecutionMethod;
-use sc_network::config::*;
+use sc_network::{config::*, multiaddr::Protocol};
 use sc_service::{
     config::*, Configuration, DatabaseConfig, KeepBlocks, PruningMode, Role, RpcMethods,
     TracingReceiver, TransactionPoolOptions, TransactionStorageMode,
@@ -14,7 +14,7 @@ use sc_transaction_pool::txpool::base_pool::Limit;
 /// We later on plan to switch to a cli interface to enable more flexible configuration.
 pub fn make() -> Configuration {
     // Set the settings.
-    let name = "humanode".to_owned();
+    let name = std::env::var("NODE_NAME").unwrap_or_else(|_| "default".into());
     let version = "0".to_owned();
 
     let chain_spec = crate::chain_spec::local_testnet_config().unwrap();
@@ -22,7 +22,7 @@ pub fn make() -> Configuration {
     // Use current tokio runtime.
     let tokio_runtime_handle = tokio::runtime::Handle::current();
     Configuration {
-        impl_name: name.clone(),
+        impl_name: "humanode".to_owned(),
         impl_version: version.clone(),
         role: Role::Full,
         task_executor: (move |future, _task_type| {
@@ -51,11 +51,18 @@ pub fn make() -> Configuration {
         // TODO: tweak these parameters.
         network: NetworkConfiguration {
             net_config_path: None,
-            listen_addresses: vec!["/ip4/127.0.0.1/tcp/30333".parse().unwrap()],
+            listen_addresses: vec![Multiaddr::empty()
+                .with(Protocol::Ip4([0, 0, 0, 0].into()))
+                .with(Protocol::Tcp(
+                    std::env::var("LISTEN_ADDRESS_PORT")
+                        .unwrap_or_else(|_| "30333".into())
+                        .parse::<u16>()
+                        .unwrap(),
+                ))],
             public_addresses: vec![],
             // TODO: `boot_nodes` should probably be configurable by the user, rather than be hardcoded
             // or empty.
-            boot_nodes: vec![],
+            boot_nodes: load_boot_nodes(),
             // TODO: take a deeper look into this and discuss.
             node_key: NodeKeyConfig::default(),
             request_response_protocols: vec![],
@@ -63,13 +70,13 @@ pub fn make() -> Configuration {
                 in_peers: 10_000,
                 out_peers: 10_000,
                 reserved_nodes: vec![],
-                non_reserved_mode: NonReservedPeerMode::Deny,
+                non_reserved_mode: NonReservedPeerMode::Accept,
             },
             extra_sets: vec![],
             client_version: version,
             node_name: name,
             transport: TransportConfig::Normal {
-                allow_private_ipv4: false,
+                allow_private_ipv4: true,
                 enable_mdns: false,
                 wasm_external_transport: None,
             },
@@ -82,11 +89,19 @@ pub fn make() -> Configuration {
         },
         keystore: KeystoreConfig::Path {
             password: None,
-            path: "/tmp/humanode/keystore".into(),
+            path: format!(
+                "{}/humanode/keystore",
+                std::env::var("HUMANODE_PATH").unwrap_or_else(|_| "/tmp/humanode_default".into())
+            )
+            .into(),
         },
         keystore_remote: None,
         database: DatabaseConfig::RocksDb {
-            path: "/tmp/humanode/database".into(),
+            path: format!(
+                "{}/humanode/database",
+                std::env::var("HUMANODE_PATH").unwrap_or_else(|_| "/tmp/humanode_default".into())
+            )
+            .into(),
             cache_size: 100,
         },
         state_cache_size: 1000,
@@ -98,14 +113,27 @@ pub fn make() -> Configuration {
         wasm_method: WasmExecutionMethod::Interpreted,
         wasm_runtime_overrides: None,
         execution_strategies: Default::default(),
-        rpc_http: Some("127.0.0.1:9933".parse().unwrap()),
-        rpc_ws: Some("127.0.0.1:9944".parse().unwrap()),
+        rpc_http: Some(
+            std::env::var("RPC_HTTP")
+                .unwrap_or_else(|_| "127.0.0.1:9933".into())
+                .parse()
+                .unwrap(),
+        ),
+        rpc_ws: Some(
+            std::env::var("RPC_WS")
+                .unwrap_or_else(|_| "127.0.0.1:9944".into())
+                .parse()
+                .unwrap(),
+        ),
         rpc_ipc: None,
         rpc_ws_max_connections: None,
         rpc_cors: None,
         rpc_methods: RpcMethods::Safe,
         prometheus_config: Some(PrometheusConfig {
-            port: "127.0.0.1:5959".parse().unwrap(),
+            port: std::env::var("PROMETHEUS_ADDRESS")
+                .unwrap_or_else(|_| "127.0.0.1:5959".into())
+                .parse()
+                .unwrap(),
             registry: Default::default(),
         }),
         telemetry_endpoints: None,
@@ -117,7 +145,7 @@ pub fn make() -> Configuration {
         },
         force_authoring: false,
         disable_grandpa: true,
-        dev_key_seed: Some("//Alice".to_owned()),
+        dev_key_seed: Some(std::env::var("DEV_KEY_SEED").unwrap_or_else(|_| "//Default".into())),
         tracing_targets: None,
         disable_log_reloading: true,
         tracing_receiver: TracingReceiver::Log,
@@ -126,4 +154,14 @@ pub fn make() -> Configuration {
         base_path: None,
         informant_output_format: Default::default(),
     }
+}
+
+/// A helper function to extract boot nodes.
+fn load_boot_nodes() -> Vec<MultiaddrWithPeerId> {
+    std::env::var("BOOT_NODES")
+        .unwrap_or_else(|_| "".into())
+        .split_whitespace()
+        .into_iter()
+        .map(|addr| addr.parse().unwrap())
+        .collect::<Vec<MultiaddrWithPeerId>>()
 }

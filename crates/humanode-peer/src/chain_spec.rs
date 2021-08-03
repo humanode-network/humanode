@@ -72,10 +72,18 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                             get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
                             1 << 60,
                         ),
+                        (get_account_id_from_seed::<sr25519::Public>("Bob"), 1 << 60),
+                        (
+                            get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+                            1 << 60,
+                        ),
                     ],
                 },
                 pallet_aura: AuraConfig {
-                    authorities: vec![authority_keys_from_seed("Alice")],
+                    authorities: vec![
+                        authority_keys_from_seed("Alice"),
+                        authority_keys_from_seed("Bob"),
+                    ],
                 },
                 pallet_sudo: SudoConfig {
                     // Assign network admin rights.
