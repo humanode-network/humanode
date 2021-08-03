@@ -15,8 +15,8 @@ impl WebApp {
         let mut url = Url::parse(base_url).map_err(|err| err.to_string())?;
         url.path_segments_mut()
             .map_err(|_| "invalid base URL".to_owned())?
-            .push("humanode")
-            .push(rpc_url);
+            .push("open");
+        url.query_pairs_mut().append_pair("url", rpc_url);
         Ok(Self { url })
     }
 
@@ -38,7 +38,7 @@ mod tests {
 
         assert_eq!(
             webapp.url,
-            Url::parse("https://example.com/humanode/http:%2F%2Flocalhost:9933").unwrap()
+            Url::parse("https://example.com/open?url=http%3A%2F%2Flocalhost%3A9933").unwrap()
         );
     }
 }
