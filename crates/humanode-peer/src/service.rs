@@ -1,11 +1,11 @@
 //! Initializing, bootstrapping and launching the node from a provided configuration.
 
 #![allow(clippy::type_complexity)]
-use std::{marker::PhantomData, sync::Arc};
+use std::{marker::PhantomData, sync::Arc, time::Duration};
 
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::ExecutorProvider;
-use sc_consensus_aura::{ImportQueueParams, SlotProportion, StartAuraParams};
+use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
 use sc_service::{Configuration, Error as ServiceError, PartialComponents, TaskManager};
@@ -38,7 +38,11 @@ pub fn new_partial(
         FullSelectChain,
         sp_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
-        bioauth_consensus::BioauthBlockImport<FullBackend, Block, FullClient>,
+        (
+            bioauth_consensus::BioauthBlockImport<FullBackend, Block, FullClient>,
+            SlotDuration,
+            Duration,
+        ),
     >,
     ServiceError,
 > {
@@ -94,7 +98,11 @@ pub fn new_partial(
         keystore_container,
         select_chain,
         transaction_pool,
-        other: bioauth_consensus_block_import,
+        other: (
+            bioauth_consensus_block_import,
+            slot_duration,
+            raw_slot_duration,
+        ),
     })
 }
 
@@ -109,11 +117,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         keystore_container,
         select_chain,
         transaction_pool,
-        other: bioauth_consensus_block_import,
+        other: (bioauth_consensus_block_import, slot_duration, raw_slot_duration),
     } = new_partial(&config)?;
 
-    let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
-    let raw_slot_duration = slot_duration.slot_duration();
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
