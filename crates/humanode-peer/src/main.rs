@@ -6,27 +6,13 @@
     clippy::clone_on_ref_ptr
 )]
 
-use sc_tracing::logging::LoggerBuilder;
-
 mod chain_spec;
-mod config;
+mod cli;
+mod command;
 mod qrcode;
 mod service;
 mod validator_key;
 
-#[tokio::main]
-async fn main() {
-    let logger = LoggerBuilder::new("");
-    logger.init().unwrap();
-
-    let mut task_manager = service::new_full(config::make()).await.unwrap();
-
-    tokio::select! {
-        res = task_manager.future() => res.unwrap(),
-        res = tokio::signal::ctrl_c() => {
-            res.unwrap();
-            tracing::info!("Got Ctrl+C");
-        }
-    }
-    task_manager.clean_shutdown().await;
+fn main() -> sc_cli::Result<()> {
+    command::run()
 }
