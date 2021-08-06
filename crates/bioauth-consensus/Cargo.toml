@@ -27,6 +27,6 @@ mockall = "0.10"
 node-primitives = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-tokio = { version = "0.2", features = ["full"] }
+tokio = { version = "1", features = ["full"] }
 
 [features]
