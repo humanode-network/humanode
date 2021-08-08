@@ -319,7 +319,7 @@ construct_runtime!(
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
-        PalletBioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
+        Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
     }
 );
 
@@ -427,7 +427,7 @@ impl_runtime_apis! {
 
     impl pallet_bioauth::BioauthApi<Block> for Runtime {
         fn stored_auth_tickets() -> sp_std::prelude::Vec<pallet_bioauth::StoredAuthTicket> {
-            PalletBioauth::stored_auth_tickets()
+            Bioauth::stored_auth_tickets()
         }
     }
 
