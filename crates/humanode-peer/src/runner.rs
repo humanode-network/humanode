@@ -4,9 +4,9 @@ use chrono::prelude::*;
 use futures::{future, future::FutureExt, pin_mut, select, Future};
 use log::info;
 use sc_service::{Configuration, Error as ServiceError, TaskManager, TaskType};
-// use sp_utils::metrics::{TOKIO_THREADS_ALIVE, TOKIO_THREADS_TOTAL};
 use std::marker::PhantomData;
 
+/// Run a future until it completes or we get signal.
 #[cfg(target_family = "unix")]
 async fn main<F, E>(func: F) -> std::result::Result<(), E>
 where
@@ -54,7 +54,7 @@ where
     Ok(())
 }
 
-/// Run an humanode node until get exit signal
+/// Run a future until it complets or we get interrupt.
 async fn run_until_exit<F, E>(future: F, task_manager: TaskManager) -> std::result::Result<(), E>
 where
     F: Future<Output = std::result::Result<(), E>> + future::Future,
@@ -81,11 +81,10 @@ impl<C: SubstrateCli> Runner<C> {
     /// Create a new runtime with the command provided in argument
     pub fn new<T: CliConfiguration>(cli: &C, command: &T) -> Result<Runner<C>> {
         let runtime_handle = tokio::runtime::Handle::current();
-        let runtime_handle_clone = runtime_handle.clone();
 
         let task_executor = move |fut, task_type| match task_type {
-            TaskType::Async => runtime_handle_clone.spawn(fut).map(drop),
-            TaskType::Blocking => runtime_handle_clone
+            TaskType::Async => runtime_handle.spawn(fut).map(drop),
+            TaskType::Blocking => runtime_handle
                 .spawn_blocking(move || futures::executor::block_on(fut))
                 .map(drop),
         };
