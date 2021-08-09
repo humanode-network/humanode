@@ -69,7 +69,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::CheckBlock(cmd)) => {
             let runner = cli.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| {
+                .async_run(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -83,7 +83,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::ExportBlocks(cmd)) => {
             let runner = cli.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| {
+                .async_run(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -96,7 +96,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::ExportState(cmd)) => {
             let runner = cli.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| {
+                .async_run(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -109,7 +109,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::ImportBlocks(cmd)) => {
             let runner = cli.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| {
+                .async_run(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -127,7 +127,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::Revert(cmd)) => {
             let runner = cli.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| {
+                .async_run(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -141,20 +141,20 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::Benchmark(cmd)) => {
             if cfg!(feature = "runtime-benchmarks") {
                 let runner = cli.create_humanode_runner(cmd)?;
-
                 runner.sync_run(|config| cmd.run::<Block, service::Executor>(config))
             } else {
                 Err(
                     "Benchmarking wasn't enabled when building the node. You can enable it with \
-				     `--features runtime-benchmarks`."
+                     `--features runtime-benchmarks`."
                         .into(),
                 )
             }
         }
         None => {
             let runner = cli.create_humanode_runner(&cli.run)?;
+            crate::runner::print_node_infos::<Cli>(runner.config());
             runner
-                .run_node_until_exit(|config| async move {
+                .run_node(|config| async move {
                     service::new_full(config)
                         .await
                         .map_err(sc_cli::Error::Service)

@@ -1,84 +1,48 @@
-use sc_cli::{CliConfiguration, Error as CliError, Result, SubstrateCli};
+//! [`Runner`] utility.
 
 use chrono::prelude::*;
-use futures::{future, future::FutureExt, pin_mut, select, Future};
+use futures::{future::FutureExt, Future};
 use log::info;
+use sc_cli::{CliConfiguration, Error as CliError, Result, SubstrateCli};
 use sc_service::{Configuration, Error as ServiceError, TaskManager, TaskType};
 use std::marker::PhantomData;
 
-/// Run a future until it completes or we get signal.
-#[cfg(target_family = "unix")]
-async fn main<F, E>(func: F) -> std::result::Result<(), E>
+/// Run the given future and then clean shutdown the task manager before returning the control.
+async fn with_clean_shutdown<F, O>(fut: F, task_manager: TaskManager) -> O
 where
-    F: Future<Output = std::result::Result<(), E>> + future::FusedFuture,
-    E: std::error::Error + Send + Sync + 'static + From<ServiceError>,
+    F: Future<Output = O>,
 {
-    use tokio::signal::unix::{signal, SignalKind};
-
-    let mut stream_int = signal(SignalKind::interrupt()).map_err(ServiceError::Io)?;
-    let mut stream_term = signal(SignalKind::terminate()).map_err(ServiceError::Io)?;
-
-    let t1 = stream_int.recv().fuse();
-    let t2 = stream_term.recv().fuse();
-    let t3 = func;
-
-    pin_mut!(t1, t2, t3);
-
-    select! {
-        _ = t1 => {},
-        _ = t2 => {},
-        res = t3 => res?,
-    }
-
-    Ok(())
-}
-
-#[cfg(not(unix))]
-async fn main<F, E>(func: F) -> std::result::Result<(), E>
-where
-    F: Future<Output = std::result::Result<(), E>> + future::FusedFuture,
-    E: std::error::Error + Send + Sync + 'static + From<ServiceError>,
-{
-    use tokio::signal::ctrl_c;
-
-    let t1 = ctrl_c().fuse();
-    let t2 = func;
-
-    pin_mut!(t1, t2);
-
-    select! {
-        _ = t1 => {},
-        res = t2 => res?,
-    }
-
-    Ok(())
-}
-
-/// Run a future until it complets or we get interrupt.
-async fn run_until_exit<F, E>(future: F, task_manager: TaskManager) -> std::result::Result<(), E>
-where
-    F: Future<Output = std::result::Result<(), E>> + future::Future,
-    E: std::error::Error + Send + Sync + 'static + From<ServiceError>,
-{
-    let f = future.fuse();
-    pin_mut!(f);
-
-    main(f).await?;
+    let res = fut.await;
     task_manager.clean_shutdown().await;
+    res
+}
 
+/// Run a future until it completes or a signal is recevied.
+async fn with_signal<F, E>(future: F) -> std::result::Result<(), E>
+where
+    F: Future<Output = std::result::Result<(), E>>,
+    E: std::error::Error + Send + Sync + 'static,
+{
+    tokio::select! {
+        res = future => res?,
+        _ = tokio::signal::ctrl_c() => {
+            tracing::info!("Got Ctrl+C");
+        }
+    };
     Ok(())
 }
 
-/// A Substrate CLI runtime that can be used to run a node or a command
+/// A runner utility encapsulates the logic of handling the execution flow (i.e. signal handling and
+/// task manager clean shutdown) for the regular node runtime and the ad-hoc commands.
 pub struct Runner<C: SubstrateCli> {
-    /// Configuration data
+    /// Configuration.
     config: Configuration,
-    /// Phantom Data
-    phantom: PhantomData<C>,
+    /// The type of the cli implementation.
+    cli_type: PhantomData<C>,
 }
 
 impl<C: SubstrateCli> Runner<C> {
-    /// Create a new runtime with the command provided in argument
+    /// Create a new runner for the specified command.
     pub fn new<T: CliConfiguration>(cli: &C, command: &T) -> Result<Runner<C>> {
         let runtime_handle = tokio::runtime::Handle::current();
 
@@ -91,31 +55,12 @@ impl<C: SubstrateCli> Runner<C> {
 
         Ok(Runner {
             config: command.create_configuration(cli, task_executor.into())?,
-            phantom: PhantomData,
+            cli_type: PhantomData,
         })
     }
 
-    /// Log information about the node itself.
-    ///
-    /// # Example:
-    ///
-    /// ```text
-    /// 2020-06-03 16:14:21 Substrate Node
-    /// 2020-06-03 16:14:21 ✌️  version 2.0.0-rc3-f4940588c-x86_64-linux-gnu
-    /// 2020-06-03 16:14:21 ❤️  by Parity Technologies <admin@parity.io>, 2017-2020
-    /// 2020-06-03 16:14:21 📋 Chain specification: Flaming Fir
-    /// 2020-06-03 16:14:21 🏷 Node name: jolly-rod-7462
-    /// 2020-06-03 16:14:21 👤 Role: FULL
-    /// 2020-06-03 16:14:21 💾 Database: RocksDb at /tmp/c/chains/flamingfir7/db
-    /// 2020-06-03 16:14:21 ⛓  Native runtime: node-251 (substrate-node-1.tx1.au10)
-    /// ```
-    fn print_node_infos(&self) {
-        print_node_infos::<C>(self.config())
-    }
-
-    /// A helper function that runs a node with tokio and stops if the process receives the signal
-    /// `SIGTERM` or `SIGINT`.
-    pub async fn run_node_until_exit<F, E>(
+    /// Run the task manager to completion, or till the signal, with clean shutdown.
+    pub async fn run_node<F, E>(
         self,
         initialize: impl FnOnce(Configuration) -> F,
     ) -> std::result::Result<(), E>
@@ -123,14 +68,33 @@ impl<C: SubstrateCli> Runner<C> {
         F: Future<Output = std::result::Result<TaskManager, E>>,
         E: std::error::Error + Send + Sync + 'static + From<ServiceError>,
     {
-        self.print_node_infos();
         let mut task_manager = initialize(self.config).await?;
-        let res = main(task_manager.future().fuse()).await;
+        let future = task_manager.future();
+        let future = with_signal(future);
+        let res = future.await;
         task_manager.clean_shutdown().await;
         Ok(res?)
     }
 
-    /// A helper function that runs a command with the configuration of this node.
+    /// Execute asyncronously.
+    /// The runner is executing till completion, or until till the signal is received.
+    /// Task manager is shutdown cleanly at the end (even on error).
+    pub async fn async_run<R, F, E>(
+        self,
+        runner: impl FnOnce(Configuration) -> R,
+    ) -> std::result::Result<(), E>
+    where
+        R: Future<Output = std::result::Result<(F, TaskManager), E>>,
+        F: Future<Output = std::result::Result<(), E>>,
+        E: std::error::Error + Send + Sync + 'static + From<ServiceError> + From<CliError>,
+    {
+        let (future, task_manager) = runner(self.config).await?;
+        let future = with_signal(future);
+        let future = with_clean_shutdown(future, task_manager);
+        future.await
+    }
+
+    /// Execute syncronously.
     pub fn sync_run<E>(
         self,
         runner: impl FnOnce(Configuration) -> std::result::Result<(), E>,
@@ -139,20 +103,6 @@ impl<C: SubstrateCli> Runner<C> {
         E: std::error::Error + Send + Sync + 'static + From<ServiceError>,
     {
         runner(self.config)
-    }
-
-    /// A helper function that runs a future with tokio and stops if the process receives
-    /// the signal `SIGTERM` or `SIGINT`.
-    pub async fn async_run<F, E>(
-        self,
-        runner: impl FnOnce(Configuration) -> std::result::Result<(F, TaskManager), E>,
-    ) -> std::result::Result<(), E>
-    where
-        F: Future<Output = std::result::Result<(), E>>,
-        E: std::error::Error + Send + Sync + 'static + From<ServiceError> + From<CliError>,
-    {
-        let (future, task_manager) = runner(self.config)?;
-        run_until_exit::<_, E>(future, task_manager).await
     }
 
     /// Get an immutable reference to the node Configuration
