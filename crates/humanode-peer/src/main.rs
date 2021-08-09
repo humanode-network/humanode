@@ -10,9 +10,11 @@ mod chain_spec;
 mod cli;
 mod command;
 mod qrcode;
+mod runner;
 mod service;
 mod validator_key;
 
-fn main() -> sc_cli::Result<()> {
-    command::run()
+#[tokio::main]
+async fn main() -> sc_cli::Result<()> {
+    command::run().await
 }

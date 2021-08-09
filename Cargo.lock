@@ -490,7 +490,7 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "thiserror",
- "tokio 0.2.25",
+ "tokio 1.8.1",
 ]
 
 [[package]]
@@ -506,7 +506,7 @@ dependencies = [
  "primitives-liveness-data",
  "robonode-client",
  "serde",
- "tokio 0.2.25",
+ "tokio 1.8.1",
 ]
 
 [[package]]
@@ -1401,7 +1401,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
- "tokio 1.8.1",
+ "tokio 0.2.25",
  "wiremock",
 ]
 
@@ -2333,11 +2333,13 @@ dependencies = [
  "async-trait",
  "bioauth-consensus",
  "bioauth-flow",
+ "chrono",
  "frame-benchmarking-cli",
  "futures 0.3.15",
  "hex-literal",
  "humanode-rpc",
  "humanode-runtime",
+ "log",
  "pallet-bioauth",
  "parity-scale-codec",
  "qr2term",
@@ -2359,9 +2361,10 @@ dependencies = [
  "sp-keystore",
  "sp-runtime",
  "sp-timestamp",
+ "sp-utils 3.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
  "structopt",
  "thiserror",
- "tokio 0.2.25",
+ "tokio 1.8.1",
  "tracing",
  "url 2.2.2",
 ]
