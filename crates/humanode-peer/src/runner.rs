@@ -41,7 +41,7 @@ pub struct Runner<C: SubstrateCli> {
 
 impl<C: SubstrateCli> Runner<C> {
     /// Create a new runner for the specified command.
-    pub fn new<T: CliConfiguration>(cli: &C, command: &T) -> Result<Runner<C>> {
+    pub fn new<T: CliConfiguration>(cli: &C, command: &T) -> Result<Self> {
         let runtime_handle = tokio::runtime::Handle::current();
 
         let task_executor = move |fut, task_type| match task_type {
@@ -51,7 +51,7 @@ impl<C: SubstrateCli> Runner<C> {
                 .map(drop),
         };
 
-        Ok(Runner {
+        Ok(Self {
             config: command.create_configuration(cli, task_executor.into())?,
             cli_type: PhantomData,
         })
