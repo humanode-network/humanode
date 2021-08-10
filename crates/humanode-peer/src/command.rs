@@ -35,7 +35,14 @@ impl SubstrateCli for Cli {
         2021
     }
 
-    fn load_spec(&self, _id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+    fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
+        if id != "local" && !id.is_empty() {
+            return Err(format!(
+                "chain {:?} is not supported, only {:?} is currently available",
+                id, "local"
+            ));
+        }
+
         Ok(Box::new(chain_spec::local_testnet_config()?))
     }
 
