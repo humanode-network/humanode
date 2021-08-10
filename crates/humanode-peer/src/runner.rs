@@ -1,8 +1,6 @@
 //! [`Runner`] utility.
 
-use chrono::prelude::*;
 use futures::{future::FutureExt, Future};
-use log::info;
 use sc_cli::{CliConfiguration, Error as CliError, Result, SubstrateCli};
 use sc_service::{Configuration, Error as ServiceError, TaskManager, TaskType};
 use std::marker::PhantomData;
@@ -113,14 +111,10 @@ impl<C: SubstrateCli> Runner<C> {
 
 /// Log information about the node itself.
 pub fn print_node_infos<C: SubstrateCli>(config: &Configuration) {
+    use tracing::info;
+
     info!("{}", C::impl_name());
     info!("✌️  version {}", C::impl_version());
-    info!(
-        "❤️  by {}, {}-{}",
-        C::author(),
-        C::copyright_start_year(),
-        Local::today().year()
-    );
     info!("📋 Chain specification: {}", config.chain_spec.name());
     info!("🏷 Node name: {}", config.network.node_name);
     info!("👤 Role: {}", config.display_role());
