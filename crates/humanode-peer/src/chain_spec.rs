@@ -2,8 +2,8 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, GenesisConfig, PalletBioauthConfig,
-    RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    AccountId, AuraConfig, BalancesConfig, BioauthConfig, GenesisConfig, RobonodePublicKeyWrapper,
+    Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -89,7 +89,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     // Assign network admin rights.
                     key: get_account_id_from_seed::<sr25519::Public>("Alice"),
                 },
-                pallet_bioauth: PalletBioauthConfig {
+                pallet_bioauth: BioauthConfig {
                     // Add Alice AuraId to StoredAuthTickets for producing blocks
                     stored_auth_tickets: vec![pallet_bioauth::StoredAuthTicket {
                         public_key: authority_keys_from_seed("Alice").as_slice().to_vec(),
