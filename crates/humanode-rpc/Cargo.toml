@@ -14,8 +14,8 @@ jsonrpc-core = "15" # TODO: update when `sc-service` bumps it's version
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "master" }

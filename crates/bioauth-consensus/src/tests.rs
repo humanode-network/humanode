@@ -43,7 +43,7 @@ mock! {
         async fn import_block(
             &self,
             block: BlockImportParams<Block, TransactionFor<MockClient, Block>>,
-            cache: HashMap<sp_consensus::import_queue::CacheKeyId, Vec<u8>>,
+            cache: HashMap<well_known_cache_keys::Id, Vec<u8>>,
         ) -> Result<ImportResult, ConsensusError>;
     }
 
@@ -98,7 +98,7 @@ impl<'a> BlockImport<Block> for &'a MockClient {
     async fn import_block(
         &mut self,
         block: BlockImportParams<Block, TransactionFor<MockClient, Block>>,
-        cache: HashMap<sp_consensus::import_queue::CacheKeyId, Vec<u8>>,
+        cache: HashMap<well_known_cache_keys::Id, Vec<u8>>,
     ) -> Result<ImportResult, ConsensusError> {
         (**self).import_block(block, cache).await
     }
@@ -146,6 +146,7 @@ fn prepare_get_info() -> sp_blockchain::Info<Block> {
         )
         .unwrap(),
         finalized_number: 0,
+        finalized_state: None,
         number_leaves: 0,
     }
 }

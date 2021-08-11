@@ -36,7 +36,7 @@ pub fn new_partial(
         FullClient,
         FullBackend,
         FullSelectChain,
-        sp_consensus::DefaultImportQueue<Block, FullClient>,
+        sc_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
             bioauth_consensus::BioauthBlockImport<FullBackend, Block, FullClient>,
@@ -54,7 +54,7 @@ pub fn new_partial(
         config.transaction_pool.clone(),
         config.role.is_authority().into(),
         config.prometheus_registry(),
-        task_manager.spawn_handle(),
+        task_manager.spawn_essential_handle(),
         Arc::clone(&client),
     );
 
@@ -141,6 +141,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             import_queue,
             on_demand: None,
             block_announce_validator_builder: None,
+            warp_sync: None,
         })?;
 
     let robonode_url =
@@ -159,14 +160,14 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let robonode_client = Arc::clone(&robonode_client);
         let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
         Box::new(move |deny_unsafe, _| {
-            humanode_rpc::create(humanode_rpc::Deps {
+            Ok(humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
                 deny_unsafe,
                 robonode_client: Arc::clone(&robonode_client),
                 bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
                 bioauth_runtime_handle: tokio::runtime::Handle::current(),
-            })
+            }))
         })
     };
 
@@ -186,8 +187,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry: None,
     })?;
 
-    let aura =
-        sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _, _>(StartAuraParams {
+    let aura = sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _, _, _>(
+        StartAuraParams {
             slot_duration,
             client: Arc::clone(&client),
             select_chain,
@@ -208,10 +209,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             backoff_authoring_blocks,
             keystore: keystore_container.sync_keystore(),
             can_author_with,
-            sync_oracle: network,
+            sync_oracle: Arc::clone(&network),
+            justification_sync_link: network,
             block_proposal_slot_portion: SlotProportion::new(2f32 / 3f32),
+            max_block_proposal_slot_portion: None,
             telemetry: None,
-        })?;
+        },
+    )?;
 
     // The AURA authoring task is considered essential, i.e. if it
     // fails we take down the service with it.

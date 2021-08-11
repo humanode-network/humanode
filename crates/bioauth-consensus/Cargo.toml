@@ -12,6 +12,7 @@ pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 async-trait = "0.1.42"
 pallet-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
