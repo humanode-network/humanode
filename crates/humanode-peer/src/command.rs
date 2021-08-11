@@ -159,7 +159,7 @@ pub async fn run() -> sc_cli::Result<()> {
         }
         None => {
             let runner = cli.create_humanode_runner(&cli.run)?;
-            crate::runner::print_node_infos::<Cli>(runner.config());
+            sc_cli::print_node_infos::<Cli>(runner.config());
             runner
                 .run_node(|config| async move {
                     service::new_full(config)
