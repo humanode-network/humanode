@@ -56,12 +56,12 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         ChainType::Local,
         move || {
             GenesisConfig {
-                frame_system: SystemConfig {
+                system: SystemConfig {
                     // Add Wasm runtime to storage.
                     code: wasm_binary.to_vec(),
                     changes_trie_config: Default::default(),
                 },
-                pallet_balances: BalancesConfig {
+                balances: BalancesConfig {
                     // Configure endowed accounts with initial balance of 1 << 60.
                     balances: vec![
                         (
@@ -79,17 +79,17 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                         ),
                     ],
                 },
-                pallet_aura: AuraConfig {
+                aura: AuraConfig {
                     authorities: vec![
                         authority_keys_from_seed("Alice"),
                         authority_keys_from_seed("Bob"),
                     ],
                 },
-                pallet_sudo: SudoConfig {
+                sudo: SudoConfig {
                     // Assign network admin rights.
                     key: get_account_id_from_seed::<sr25519::Public>("Alice"),
                 },
-                pallet_bioauth: BioauthConfig {
+                bioauth: BioauthConfig {
                     // Add Alice AuraId to StoredAuthTickets for producing blocks
                     stored_auth_tickets: vec![pallet_bioauth::StoredAuthTicket {
                         public_key: authority_keys_from_seed("Alice").as_slice().to_vec(),

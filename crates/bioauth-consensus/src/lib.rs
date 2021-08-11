@@ -8,12 +8,11 @@
 
 use pallet_bioauth::BioauthApi;
 use sc_client_api::{backend::Backend, Finalizer};
+use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
 use sp_api::{Decode, ProvideRuntimeApi, TransactionFor};
 use sp_application_crypto::Public;
-use sp_blockchain::HeaderBackend;
-use sp_consensus::{
-    BlockCheckParams, BlockImport, BlockImportParams, Error as ConsensusError, ImportResult,
-};
+use sp_blockchain::{well_known_cache_keys, HeaderBackend};
+use sp_consensus::Error as ConsensusError;
 use sp_consensus_aura::{AuraApi, Slot};
 use sp_runtime::generic::OpaqueDigestItemId;
 use sp_runtime::traits::{Block as BlockT, Header};
@@ -102,7 +101,7 @@ where
     async fn import_block(
         &mut self,
         block: BlockImportParams<Block, Self::Transaction>,
-        cache: HashMap<sp_consensus::import_queue::CacheKeyId, Vec<u8>>,
+        cache: HashMap<well_known_cache_keys::Id, Vec<u8>>,
     ) -> Result<ImportResult, Self::Error> {
         // Extract a number of the last imported block.
         let at = &sp_api::BlockId::Hash(self.inner.info().best_hash);
