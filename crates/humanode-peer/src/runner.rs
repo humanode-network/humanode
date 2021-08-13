@@ -108,26 +108,3 @@ impl<C: SubstrateCli> Runner<C> {
         &self.config
     }
 }
-
-/// Log information about the node itself.
-pub fn print_node_infos<C: SubstrateCli>(config: &Configuration) {
-    use tracing::info;
-
-    info!("{}", C::impl_name());
-    info!("✌️  version {}", C::impl_version());
-    info!("📋 Chain specification: {}", config.chain_spec.name());
-    info!("🏷 Node name: {}", config.network.node_name);
-    info!("👤 Role: {}", config.display_role());
-    info!(
-        "💾 Database: {} at {}",
-        config.database,
-        config
-            .database
-            .path()
-            .map_or_else(|| "<unknown>".to_owned(), |p| p.display().to_string())
-    );
-    info!(
-        "⛓  Native runtime: {}",
-        C::native_runtime_version(&config.chain_spec)
-    );
-}
