@@ -1,21 +1,10 @@
-//! Substrate-based Cli definition.
+//! Humanode peer subcommands.
+//! The `substrate` built-in commands are embedded as-is, additional commands are introduced as
+//! nested `mod`s in this `mod`.
 
-use sc_cli::RunCmd;
 use structopt::StructOpt;
 
-/// A cli struct.
-#[derive(Debug, StructOpt)]
-pub struct Cli {
-    /// Additional subcommands.
-    #[structopt(subcommand)]
-    pub subcommand: Option<Subcommand>,
-
-    /// The `run` command used to run a node.
-    #[structopt(flatten)]
-    pub run: RunCmd,
-}
-
-/// Subcommand enum.
+/// Humanode peer subcommands.
 #[derive(Debug, StructOpt)]
 pub enum Subcommand {
     /// Key management cli utilities

@@ -103,7 +103,7 @@ impl<C: SubstrateCli> Runner<C> {
         runner(self.config)
     }
 
-    /// Get an immutable reference to the node Configuration
+    /// Get an immutable reference to the node [`Configuration`].
     pub fn config(&self) -> &Configuration {
         &self.config
     }
