@@ -67,7 +67,8 @@ impl Root {
         &self,
         command: &T,
     ) -> sc_cli::Result<Runner<Self>> {
-        command.init::<Self>()?;
+        let init_provider = command.substrate_cli_configuration();
+        sc_cli::CliConfiguration::init::<Self>(init_provider)?;
         Runner::new(self, command)
     }
 }
