@@ -8,10 +8,12 @@ use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
-use sc_service::{Configuration, Error as ServiceError, PartialComponents, TaskManager};
+use sc_service::{Error as ServiceError, PartialComponents, TaskManager};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
 use tracing::*;
+
+use crate::configuration::Configuration;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -46,6 +48,8 @@ pub fn new_partial(
     >,
     ServiceError,
 > {
+    let Configuration { substrate: config } = config;
+
     let (client, backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, Executor>(config, None)?;
     let client = Arc::new(client);
@@ -119,6 +123,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         transaction_pool,
         other: (bioauth_consensus_block_import, slot_duration, raw_slot_duration),
     } = new_partial(&config)?;
+    let Configuration { substrate: config } = config;
 
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
     let force_authoring = config.force_authoring;
