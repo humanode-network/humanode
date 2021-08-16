@@ -7,7 +7,7 @@ use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use tokio::sync::{Mutex, MutexGuard};
 use tracing::{info, trace};
 
-use crate::{logic::common::DB_GROUP_NAME, sequence::Sequence, ValidatorPublicKeyToDo};
+use crate::{logic::common::DB_GROUP_NAME, sequence::Sequence};
 
 use super::{Locked, Logic};
 
@@ -22,6 +22,40 @@ impl super::Signer<Vec<u8>> for TestSigner {
         D: AsRef<[u8]> + Send + 'a,
     {
         Ok(b"dummy signature".to_vec())
+    }
+}
+
+struct TestValidatorPublicKey(Vec<u8>);
+
+#[async_trait::async_trait]
+impl crate::logic::traits::Verifier<Vec<u8>> for TestValidatorPublicKey {
+    type Error = ();
+
+    async fn verify<'a, D>(&self, _data: D, _signature: Vec<u8>) -> Result<bool, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
+        Ok(true)
+    }
+}
+
+impl AsRef<[u8]> for TestValidatorPublicKey {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_slice()
+    }
+}
+
+impl<'a> std::convert::TryFrom<&'a [u8]> for TestValidatorPublicKey {
+    type Error = ();
+
+    fn try_from(value: &'a [u8]) -> Result<Self, Self::Error> {
+        Ok(Self(value.to_vec()))
+    }
+}
+
+impl From<TestValidatorPublicKey> for Vec<u8> {
+    fn from(value: TestValidatorPublicKey) -> Self {
+        value.0
     }
 }
 
@@ -87,7 +121,7 @@ fn public_keys_to_cleanup() -> Vec<&'static [u8]> {
 async fn setup() -> (
     MutexGuard<'static, ()>,
     TestParams,
-    Logic<TestSigner, ValidatorPublicKeyToDo>,
+    Logic<TestSigner, TestValidatorPublicKey>,
 ) {
     let guard = LOCK.lock().await;
 
@@ -126,7 +160,7 @@ async fn setup() -> (
         execution_id: "test".to_owned(),
         facetec,
         signer: TestSigner,
-        public_key_type: PhantomData::<ValidatorPublicKeyToDo>,
+        public_key_type: PhantomData::<TestValidatorPublicKey>,
     };
     let logic = Logic {
         locked: Mutex::new(locked),
