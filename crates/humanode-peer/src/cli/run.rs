@@ -1,80 +1,24 @@
-//! Command line arguments processing.
-
-use crate::{
-    chain_spec,
-    cli::{Cli, Subcommand},
-    runner, service,
-};
+//! The main entrypoint.
 
 use humanode_runtime::Block;
-use sc_cli::{ChainSpec, CliConfiguration, RuntimeVersion, SubstrateCli};
 use sc_service::PartialComponents;
 
-impl SubstrateCli for Cli {
-    fn impl_name() -> String {
-        "Humanode Node".into()
-    }
+use crate::service;
 
-    fn impl_version() -> String {
-        "0".to_owned()
-    }
+use super::{Root, Subcommand};
 
-    fn description() -> String {
-        "Biologically verified human-nodes as a basis for a fair financial system.".into()
-    }
-
-    fn author() -> String {
-        env!("CARGO_PKG_AUTHORS").into()
-    }
-
-    fn support_url() -> String {
-        "https://github.com/humanode-network/humanode/issues/new".into()
-    }
-
-    fn copyright_start_year() -> i32 {
-        2021
-    }
-
-    fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
-        if id != "local" && !id.is_empty() {
-            return Err(format!(
-                "chain {:?} is not supported, only {:?} is currently available",
-                id, "local"
-            ));
-        }
-
-        Ok(Box::new(chain_spec::local_testnet_config()?))
-    }
-
-    fn native_runtime_version(_chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-        &humanode_runtime::VERSION
-    }
-}
-
-impl Cli {
-    /// Create a runner for the command provided in argument. This will create a Configuration and
-    /// a tokio runtime
-    fn create_humanode_runner<T: CliConfiguration>(
-        &self,
-        command: &T,
-    ) -> sc_cli::Result<runner::Runner<Self>> {
-        command.init::<Self>()?;
-        runner::Runner::new(self, command)
-    }
-}
-
-/// Parse and run command line arguments
+/// Parse command line arguments and run the requested operation.
 pub async fn run() -> sc_cli::Result<()> {
-    let cli = Cli::from_args();
+    let root: Root = sc_cli::SubstrateCli::from_args();
 
-    match &cli.subcommand {
-        Some(Subcommand::Key(cmd)) => cmd.run(&cli),
+    match &root.subcommand {
+        Some(Subcommand::Key(cmd)) => cmd.run(&root),
         Some(Subcommand::BuildSpec(cmd)) => {
-            let runner = cli.create_humanode_runner(cmd)?;
+            let runner = root.create_humanode_runner(cmd)?;
             runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
         }
         Some(Subcommand::CheckBlock(cmd)) => {
-            let runner = cli.create_humanode_runner(cmd)?;
+            let runner = root.create_humanode_runner(cmd)?;
             runner
                 .async_run(|config| async move {
                     let PartialComponents {
@@ -88,7 +32,7 @@ pub async fn run() -> sc_cli::Result<()> {
                 .await
         }
         Some(Subcommand::ExportBlocks(cmd)) => {
-            let runner = cli.create_humanode_runner(cmd)?;
+            let runner = root.create_humanode_runner(cmd)?;
             runner
                 .async_run(|config| async move {
                     let PartialComponents {
@@ -101,7 +45,7 @@ pub async fn run() -> sc_cli::Result<()> {
                 .await
         }
         Some(Subcommand::ExportState(cmd)) => {
-            let runner = cli.create_humanode_runner(cmd)?;
+            let runner = root.create_humanode_runner(cmd)?;
             runner
                 .async_run(|config| async move {
                     let PartialComponents {
@@ -114,7 +58,7 @@ pub async fn run() -> sc_cli::Result<()> {
                 .await
         }
         Some(Subcommand::ImportBlocks(cmd)) => {
-            let runner = cli.create_humanode_runner(cmd)?;
+            let runner = root.create_humanode_runner(cmd)?;
             runner
                 .async_run(|config| async move {
                     let PartialComponents {
@@ -128,11 +72,11 @@ pub async fn run() -> sc_cli::Result<()> {
                 .await
         }
         Some(Subcommand::PurgeChain(cmd)) => {
-            let runner = cli.create_humanode_runner(cmd)?;
+            let runner = root.create_humanode_runner(cmd)?;
             runner.sync_run(|config| cmd.run(config.database))
         }
         Some(Subcommand::Revert(cmd)) => {
-            let runner = cli.create_humanode_runner(cmd)?;
+            let runner = root.create_humanode_runner(cmd)?;
             runner
                 .async_run(|config| async move {
                     let PartialComponents {
@@ -147,7 +91,7 @@ pub async fn run() -> sc_cli::Result<()> {
         }
         Some(Subcommand::Benchmark(cmd)) => {
             if cfg!(feature = "runtime-benchmarks") {
-                let runner = cli.create_humanode_runner(cmd)?;
+                let runner = root.create_humanode_runner(cmd)?;
                 runner.sync_run(|config| cmd.run::<Block, service::Executor>(config))
             } else {
                 Err(
@@ -158,8 +102,8 @@ pub async fn run() -> sc_cli::Result<()> {
             }
         }
         None => {
-            let runner = cli.create_humanode_runner(&cli.run)?;
-            sc_cli::print_node_infos::<Cli>(runner.config());
+            let runner = root.create_humanode_runner(&root.run)?;
+            sc_cli::print_node_infos::<Root>(runner.config());
             runner
                 .run_node(|config| async move {
                     service::new_full(config)
