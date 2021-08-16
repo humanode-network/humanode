@@ -20,12 +20,14 @@ sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch 
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-slots = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 thiserror = "1"
 
 [dev-dependencies]
 mockall = "0.10"
 node-primitives = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }

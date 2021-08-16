@@ -13,8 +13,9 @@ use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResul
 use sp_api::{Decode, ProvideRuntimeApi, TransactionFor};
 use sp_application_crypto::Public;
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
-use sp_consensus::Error as ConsensusError;
+use sp_consensus::{CanAuthorWith, Error as ConsensusError};
 use sp_consensus_aura::{AuraApi, Slot};
+use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::generic::OpaqueDigestItemId;
 use sp_runtime::traits::{Block as BlockT, Header};
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
@@ -29,6 +30,8 @@ mod tests;
 pub struct BioauthBlockImport<Backend, Block: BlockT, Client> {
     /// The client to interact with the chain.
     inner: Arc<Client>,
+    /// Keystore to extract validator public key.
+    keystore: SyncCryptoStorePtr,
     /// A phantom data for Backend.
     _phantom_back_end: PhantomData<Backend>,
     /// A phantom data for Block.
@@ -54,12 +57,13 @@ pub enum BioauthBlockImportError {
 
 impl<BE, Block: BlockT, Client> BioauthBlockImport<BE, Block, Client> {
     /// Simple constructor.
-    pub fn new(inner: Arc<Client>) -> Self
+    pub fn new(inner: Arc<Client>, keystore: SyncCryptoStorePtr) -> Self
     where
         BE: Backend<Block> + 'static,
     {
         BioauthBlockImport {
             inner,
+            keystore,
             _phantom_back_end: PhantomData,
             _phantom_block: PhantomData,
         }
@@ -70,6 +74,7 @@ impl<Backend, Block: BlockT, Client> Clone for BioauthBlockImport<Backend, Block
     fn clone(&self) -> Self {
         BioauthBlockImport {
             inner: Arc::clone(&self.inner),
+            keystore: Arc::clone(&self.keystore),
             _phantom_back_end: PhantomData,
             _phantom_block: PhantomData,
         }
@@ -209,5 +214,33 @@ where
 
         // Import a new block.
         self.inner.import_block(block, cache).await
+    }
+}
+
+impl<BE, Block: BlockT, Client> CanAuthorWith<Block> for BioauthBlockImport<BE, Block, Client>
+where
+    Client: HeaderBackend<Block> + ProvideRuntimeApi<Block>,
+    Client::Api: BioauthApi<Block>,
+{
+    fn can_author_with(&self, _at: &sp_api::BlockId<Block>) -> Result<(), String> {
+        let mut aura_public_keys = sp_keystore::SyncCryptoStore::sr25519_public_keys(
+            self.keystore.as_ref(),
+            sp_application_crypto::key_types::AURA,
+        );
+        assert_eq!(aura_public_keys.len(), 1);
+        let aura_public_key = match aura_public_keys.drain(..).next() {
+            Some(v) => v,
+            _ => return Err("You aren't Aura validator.".to_string()),
+        };
+
+        let is_authorized = self
+            .is_authorized(aura_public_key.as_slice())
+            .map_err(|e| e.to_string())?;
+
+        if !is_authorized {
+            return Err("You aren't bioauth-authorized.".to_string());
+        }
+
+        Ok(())
     }
 }

@@ -3,6 +3,8 @@ use mockall::predicate::*;
 use mockall::*;
 use node_primitives::{Block, BlockNumber, Hash, Header};
 use pallet_bioauth::StoredAuthTicket;
+use sc_service::config::KeystoreConfig;
+use sc_service::KeystoreContainer;
 use sp_api::{ApiError, ApiRef, NativeOrEncoded};
 use sp_consensus::BlockOrigin;
 use sp_consensus_aura::digests::CompatibleDigestItem;
@@ -202,12 +204,13 @@ async fn it_denies_block_import_with_error_extract_authorities() {
         .returning(move || runtime_api.clone().into());
 
     let client = Arc::new(mock_client);
+    let keystore_container = KeystoreContainer::new(&KeystoreConfig::InMemory).unwrap();
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+    > = BioauthBlockImport::new(Arc::clone(&client), keystore_container.sync_keystore());
 
     let res = bioauth_block_import
         .import_block(
@@ -243,12 +246,13 @@ async fn it_denies_block_import_with_invalid_slot_number() {
         .returning(move || runtime_api.clone().into());
 
     let client = Arc::new(mock_client);
+    let keystore_container = KeystoreContainer::new(&KeystoreConfig::InMemory).unwrap();
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+    > = BioauthBlockImport::new(Arc::clone(&client), keystore_container.sync_keystore());
 
     let res = bioauth_block_import
         .import_block(
@@ -287,12 +291,13 @@ async fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
         .returning(move || runtime_api.clone().into());
 
     let client = Arc::new(mock_client);
+    let keystore_container = KeystoreContainer::new(&KeystoreConfig::InMemory).unwrap();
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+    > = BioauthBlockImport::new(Arc::clone(&client), keystore_container.sync_keystore());
 
     let res = bioauth_block_import
         .import_block(
@@ -339,12 +344,13 @@ async fn it_denies_block_import_with_not_bioauth_authorized() {
         .returning(move || runtime_api.clone().into());
 
     let client = Arc::new(mock_client);
+    let keystore_container = KeystoreContainer::new(&KeystoreConfig::InMemory).unwrap();
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+    > = BioauthBlockImport::new(Arc::clone(&client), keystore_container.sync_keystore());
 
     let res = bioauth_block_import
         .import_block(
@@ -405,12 +411,13 @@ async fn it_permits_block_import_with_valid_data() {
         .returning(move || runtime_api.clone().into());
 
     let client = Arc::new(mock_client);
+    let keystore_container = KeystoreContainer::new(&KeystoreConfig::InMemory).unwrap();
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+    > = BioauthBlockImport::new(Arc::clone(&client), keystore_container.sync_keystore());
 
     let res = bioauth_block_import
         .import_block(

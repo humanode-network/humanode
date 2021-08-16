@@ -4,7 +4,6 @@
 use std::{marker::PhantomData, sync::Arc, time::Duration};
 
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
-use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
@@ -60,7 +59,10 @@ pub fn new_partial(
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
     let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<FullBackend, _, _> =
-        bioauth_consensus::BioauthBlockImport::new(Arc::clone(&client));
+        bioauth_consensus::BioauthBlockImport::new(
+            Arc::clone(&client),
+            keystore_container.sync_keystore(),
+        );
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
@@ -82,9 +84,7 @@ pub fn new_partial(
                 Ok((timestamp, slot))
             },
             spawner: &task_manager.spawn_essential_handle(),
-            can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(
-                client.executor().clone(),
-            ),
+            can_author_with: bioauth_consensus_block_import.clone(),
             registry: config.prometheus_registry(),
             check_for_equivocation: Default::default(),
             telemetry: None,
@@ -120,7 +120,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         other: (bioauth_consensus_block_import, slot_duration, raw_slot_duration),
     } = new_partial(&config)?;
 
-    let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
+    let can_author_with = bioauth_consensus_block_import.clone();
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
 

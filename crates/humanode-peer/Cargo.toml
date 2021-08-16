@@ -22,7 +22,6 @@ qr2term = "0.2"
 reqwest = "0.11"
 sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "master" }
