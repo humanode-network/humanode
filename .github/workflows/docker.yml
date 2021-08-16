@@ -23,9 +23,11 @@ jobs:
   docker:
     name: Docker
     runs-on: ubuntu-20.04
+    timeout-minutes: 50
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+        timeout-minutes: 5
 
       - name: Docker meta
         id: meta

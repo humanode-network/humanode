@@ -54,6 +54,7 @@ jobs:
     name: ${{ matrix.platform.name }} / ${{ matrix.mode.name }}
     runs-on: ${{ matrix.platform.os }}
     env: ${{ matrix.platform.env }}
+    timeout-minutes: 50
     steps:
 
       - name: Job config
@@ -63,6 +64,7 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v2
+        timeout-minutes: 5
 
       - name: Cache rustup
         uses: actions/cache@v2
@@ -73,6 +75,7 @@ jobs:
 
       - name: Install rust toolchain
         run: rustup show
+        timeout-minutes: 10
 
       - name: Prepare the build environment
         run: ${{ matrix.platform.buildEnvScript }}
