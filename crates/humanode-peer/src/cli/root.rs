@@ -16,7 +16,7 @@ pub struct Root {
 
     /// The `run` command used to run a node.
     #[structopt(flatten)]
-    pub run: sc_cli::RunCmd,
+    pub run: super::RunCmd,
 }
 
 impl SubstrateCli for Root {
