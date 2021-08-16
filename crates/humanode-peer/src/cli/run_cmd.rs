@@ -2,7 +2,7 @@
 
 use structopt::StructOpt;
 
-use super::{CliConfigurationExt, SubstrateCliConfigurationProvider};
+use super::{params, CliConfigurationExt, SubstrateCliConfigurationProvider};
 
 /// The `run` command used to run a node.
 /// Expands the [`sc_cli::RunCmd`] with Humanode options.
@@ -11,6 +11,10 @@ pub struct RunCmd {
     /// The base command.
     #[structopt(flatten)]
     pub base: sc_cli::RunCmd,
+
+    #[allow(missing_docs, clippy::missing_docs_in_private_items)]
+    #[structopt(flatten)]
+    pub bioauth_flow_params: params::BioauthFlowParams,
 }
 
 impl SubstrateCliConfigurationProvider for RunCmd {
@@ -21,4 +25,8 @@ impl SubstrateCliConfigurationProvider for RunCmd {
     }
 }
 
-impl CliConfigurationExt for RunCmd {}
+impl CliConfigurationExt for RunCmd {
+    fn bioauth_params(&self) -> Option<&params::BioauthFlowParams> {
+        Some(&self.bioauth_flow_params)
+    }
+}

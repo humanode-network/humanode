@@ -1,6 +1,8 @@
 //! Machinery to populate the configuration from the CLI arguments.
 
-use crate::configuration::Configuration;
+use crate::configuration::{self, Configuration};
+
+use super::params;
 
 /// An extension to the [`sc_cli::CliConfiguration`] to enable us to pass custom params.
 pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
@@ -15,7 +17,31 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             cli,
             task_executor,
         )?;
-        Ok(Configuration { substrate })
+
+        let bioauth_flow = self.bioauth_params().map(|params| {
+            let rpc_url = params.rpc_url.clone().or_else(|| {
+                substrate
+                    .rpc_http
+                    .map(|v| v.port())
+                    .map(|port| format!("http://localhost:{}", port))
+            });
+
+            configuration::BioauthFlow {
+                robonode_url: params.robonode_url.clone(),
+                webapp_url: Some(params.webapp_url.clone()),
+                rpc_url,
+            }
+        });
+
+        Ok(Configuration {
+            substrate,
+            bioauth_flow,
+        })
+    }
+
+    /// Provide the bioauth flow params, if available.
+    fn bioauth_params(&self) -> Option<&params::BioauthFlowParams> {
+        None
     }
 }
 
