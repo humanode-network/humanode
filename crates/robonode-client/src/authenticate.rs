@@ -23,6 +23,7 @@ impl Client {
 
 /// Input data for the authenticate request.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct AuthenticateRequest<'a> {
     /// An opaque liveness data, containing the FaceScan to match the identity with and
     /// the rest of the parameters necessary to conduct a liveness check.
@@ -34,6 +35,7 @@ pub struct AuthenticateRequest<'a> {
 
 /// Input data for the authenticate request.
 #[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct AuthenticateResponse {
     /// An opaque auth ticket generated for this authentication attempt.
     pub auth_ticket: Box<[u8]>,
@@ -63,8 +65,8 @@ mod tests {
     #[test]
     fn request_serialization() {
         let expected_request = serde_json::json!({
-            "liveness_data": [1, 2, 3],
-            "liveness_data_signature": [4, 5, 6],
+            "livenessData": [1, 2, 3],
+            "livenessDataSignature": [4, 5, 6],
         });
 
         let actual_request = serde_json::to_value(&AuthenticateRequest {
@@ -79,8 +81,8 @@ mod tests {
     #[test]
     fn response_deserialization() {
         let sample_response = serde_json::json!({
-            "auth_ticket": [1, 2, 3],
-            "auth_ticket_signature": [4, 5, 6],
+            "authTicket": [1, 2, 3],
+            "authTicketSignature": [4, 5, 6],
         });
 
         let response: AuthenticateResponse = serde_json::from_value(sample_response).unwrap();
@@ -102,8 +104,8 @@ mod tests {
             liveness_data_signature: b"123",
         };
         let sample_response = serde_json::json!({
-            "auth_ticket": b"456",
-            "auth_ticket_signature": b"789",
+            "authTicket": b"456",
+            "authTicketSignature": b"789",
         });
 
         let expected_response: AuthenticateResponse =

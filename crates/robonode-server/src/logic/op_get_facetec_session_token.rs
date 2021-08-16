@@ -9,6 +9,7 @@ use super::{Logic, Signer};
 
 /// The response for the get facetec session token operation.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Response {
     /// The session token returned by the FaceTec Server.
     pub session_token: String,

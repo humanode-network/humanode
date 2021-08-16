@@ -8,6 +8,7 @@ use super::{Logic, Signer};
 
 /// The response for the get facetec device sdk params operation.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Response {
     /// The public FaceMap encription key.
     pub public_face_map_encryption_key: String,

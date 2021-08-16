@@ -23,6 +23,7 @@ impl Client {
 
 /// Input data for the get facetec device sdk params request.
 #[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct GetFacetecDeviceSdkParamsResponse {
     /// The public FaceMap encription key.
     pub public_face_map_encryption_key: String,
@@ -48,8 +49,8 @@ mod tests {
     #[test]
     fn response_deserialization() {
         let sample_response = serde_json::json!({
-            "public_face_map_encryption_key": "my encryption key",
-            "device_key_identifier": "my device key identifier",
+            "publicFaceMapEncryptionKey": "my encryption key",
+            "deviceKeyIdentifier": "my device key identifier",
         });
 
         let response: GetFacetecDeviceSdkParamsResponse =
@@ -68,8 +69,8 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         let sample_response = serde_json::json!({
-            "public_face_map_encryption_key": "my encryption key",
-            "device_key_identifier": "my device key identifier",
+            "publicFaceMapEncryptionKey": "my encryption key",
+            "deviceKeyIdentifier": "my device key identifier",
         });
 
         let expected_response: GetFacetecDeviceSdkParamsResponse =

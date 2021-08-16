@@ -13,6 +13,7 @@ use super::{common::*, Logic, Signer};
 
 /// The request for the enroll operation.
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Request {
     /// The public key of the validator.
     pub public_key: Vec<u8>,
