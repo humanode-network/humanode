@@ -36,12 +36,18 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         Ok(Configuration {
             substrate,
             bioauth_flow,
+            bioauth_perform_enroll: self.bioauth_perform_enroll(),
         })
     }
 
     /// Provide the bioauth flow params, if available.
     fn bioauth_params(&self) -> Option<&params::BioauthFlowParams> {
         None
+    }
+
+    /// Whether to perform the bioauth enroll before the authentication or not.
+    fn bioauth_perform_enroll(&self) -> bool {
+        false
     }
 }
 

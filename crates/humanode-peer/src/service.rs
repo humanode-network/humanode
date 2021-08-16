@@ -128,6 +128,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let Configuration {
         substrate: config,
         bioauth_flow: bioauth_flow_config,
+        bioauth_perform_enroll,
     } = config;
 
     let bioauth_flow_config = bioauth_flow_config
@@ -261,8 +262,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     .await
                     .expect("vector has to be of length 1 at this point");
 
-            let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
-            if should_enroll {
+            if bioauth_perform_enroll {
                 info!("bioauth flow - enrolling in progress");
 
                 if let Some(qrcode) = webapp_qrcode.as_ref() {

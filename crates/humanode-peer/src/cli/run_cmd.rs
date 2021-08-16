@@ -15,6 +15,10 @@ pub struct RunCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
     #[structopt(flatten)]
     pub bioauth_flow_params: params::BioauthFlowParams,
+
+    /// Run the bioauth enroll flow before the authentication.
+    #[structopt(long = "bioauth-enroll")]
+    bioauth_perform_enroll: bool,
 }
 
 impl SubstrateCliConfigurationProvider for RunCmd {
@@ -28,5 +32,9 @@ impl SubstrateCliConfigurationProvider for RunCmd {
 impl CliConfigurationExt for RunCmd {
     fn bioauth_params(&self) -> Option<&params::BioauthFlowParams> {
         Some(&self.bioauth_flow_params)
+    }
+
+    fn bioauth_perform_enroll(&self) -> bool {
+        self.bioauth_perform_enroll
     }
 }

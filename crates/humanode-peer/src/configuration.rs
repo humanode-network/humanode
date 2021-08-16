@@ -10,6 +10,9 @@ pub struct Configuration {
     /// A lot of operations do not involve bioauth flows, so the configuration is not
     /// always required.
     pub bioauth_flow: Option<BioauthFlow>,
+
+    /// Whether to perform the bioauth enroll before the authentication or not.
+    pub bioauth_perform_enroll: bool,
 }
 
 /// Bioauth flow configuration parameters.
