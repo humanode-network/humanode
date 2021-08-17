@@ -18,10 +18,8 @@ where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,
 {
-    match logic.enroll(input).await {
-        Ok(()) => Ok(StatusCode::CREATED),
-        Err(err) => Err(warp::reject::custom(err)),
-    }
+    logic.enroll(input).await.map_err(warp::reject::custom)?;
+    Ok(StatusCode::CREATED)
 }
 
 /// Authenticate operation HTTP transport coupling.
@@ -33,12 +31,14 @@ where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,
 {
-    match logic.authenticate(input).await {
-        Ok(res) => {
-            Ok(warp::reply::with_status(warp::reply::json(&res), StatusCode::OK).into_response())
-        }
-        Err(err) => Err(warp::reject::custom(err)),
-    }
+    let res = logic
+        .authenticate(input)
+        .await
+        .map_err(warp::reject::custom)?;
+
+    let reply = warp::reply::json(&res);
+    let reply = warp::reply::with_status(reply, StatusCode::OK);
+    Ok(reply.into_response())
 }
 
 /// Get FaceTec Session Token operation HTTP transport coupling.
@@ -49,12 +49,14 @@ where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
-    match logic.get_facetec_session_token().await {
-        Ok(res) => {
-            Ok(warp::reply::with_status(warp::reply::json(&res), StatusCode::OK).into_response())
-        }
-        Err(err) => Err(warp::reject::custom(err)),
-    }
+    let res = logic
+        .get_facetec_session_token()
+        .await
+        .map_err(warp::reject::custom)?;
+
+    let reply = warp::reply::json(&res);
+    let reply = warp::reply::with_status(reply, StatusCode::OK);
+    Ok(reply.into_response())
 }
 
 /// Get FaceTec Device SDK Params operation HTTP transport coupling.
@@ -65,12 +67,14 @@ where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
-    match logic.get_facetec_device_sdk_params().await {
-        Ok(res) => {
-            Ok(warp::reply::with_status(warp::reply::json(&res), StatusCode::OK).into_response())
-        }
-        Err(err) => Err(warp::reject::custom(err)),
-    }
+    let res = logic
+        .get_facetec_device_sdk_params()
+        .await
+        .map_err(warp::reject::custom)?;
+
+    let reply = warp::reply::json(&res);
+    let reply = warp::reply::with_status(reply, StatusCode::OK);
+    Ok(reply.into_response())
 }
 
 impl warp::reject::Reject for op_enroll::Error {}
