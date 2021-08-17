@@ -20,7 +20,7 @@ pub fn make_input(public_key: &[u8], nonce: &[u8], signature: &[u8]) -> crate::A
 }
 
 #[test]
-fn it_permits_authnetication_with_an_empty_state() {
+fn it_permits_authentication_with_an_empty_state() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
         let input = make_input(b"qwe", b"rty", b"should_be_valid");
@@ -37,7 +37,7 @@ fn it_permits_authnetication_with_an_empty_state() {
 }
 
 #[test]
-fn it_denies_authnetication_with_invalid_signature() {
+fn it_denies_authentication_with_invalid_signature() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
         let input = make_input(b"qwe", b"rty", b"invalid");
@@ -50,7 +50,7 @@ fn it_denies_authnetication_with_invalid_signature() {
 }
 
 #[test]
-fn it_denies_authnetication_with_conlicting_nonce() {
+fn it_denies_authentication_with_conlicting_nonce() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
         let precondition_input = make_input(b"pk1", b"conflict!", b"should_be_valid");
@@ -68,7 +68,7 @@ fn it_denies_authnetication_with_conlicting_nonce() {
 }
 
 #[test]
-fn it_denies_authnetication_with_conlicting_public_keys() {
+fn it_denies_authentication_with_conlicting_public_keys() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
         let precondition_input = make_input(b"conflict!", b"nonce1", b"should_be_valid");
