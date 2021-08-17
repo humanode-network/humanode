@@ -45,14 +45,13 @@ impl SubstrateCli for Root {
     }
 
     fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
-        if id != "local" && !id.is_empty() {
-            return Err(format!(
-                "chain {:?} is not supported, only {:?} is currently available",
-                id, "local"
-            ));
-        }
-
-        Ok(Box::new(chain_spec::local_testnet_config()?))
+        Ok(match id {
+            "dev" => Box::new(chain_spec::development_config()?),
+            "" | "local" => Box::new(chain_spec::local_testnet_config()?),
+            path => Box::new(chain_spec::ChainSpec::from_json_file(
+                std::path::PathBuf::from(path),
+            )?),
+        })
     }
 
     fn native_runtime_version(_chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
