@@ -6,6 +6,7 @@
     clippy::clone_on_ref_ptr
 )]
 
+use author_validation::{AuthorizationVerifier, BlockAuthorExtractor};
 use pallet_bioauth::BioauthApi;
 use sc_client_api::{backend::Backend, Finalizer};
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
@@ -18,6 +19,8 @@ use sp_runtime::generic::OpaqueDigestItemId;
 use sp_runtime::traits::{Block as BlockT, Header};
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
+
+mod author_validation;
 
 #[cfg(test)]
 mod tests;
@@ -49,16 +52,6 @@ pub enum BioauthBlockImportError {
     ErrorExtractAuthorities,
 }
 
-impl<Backend, Block: BlockT, Client> Clone for BioauthBlockImport<Backend, Block, Client> {
-    fn clone(&self) -> Self {
-        BioauthBlockImport {
-            inner: Arc::clone(&self.inner),
-            _phantom_back_end: PhantomData,
-            _phantom_block: PhantomData,
-        }
-    }
-}
-
 impl<BE, Block: BlockT, Client> BioauthBlockImport<BE, Block, Client> {
     /// Simple constructor.
     pub fn new(inner: Arc<Client>) -> Self
@@ -70,6 +63,99 @@ impl<BE, Block: BlockT, Client> BioauthBlockImport<BE, Block, Client> {
             _phantom_back_end: PhantomData,
             _phantom_block: PhantomData,
         }
+    }
+}
+
+impl<Backend, Block: BlockT, Client> Clone for BioauthBlockImport<Backend, Block, Client> {
+    fn clone(&self) -> Self {
+        BioauthBlockImport {
+            inner: Arc::clone(&self.inner),
+            _phantom_back_end: PhantomData,
+            _phantom_block: PhantomData,
+        }
+    }
+}
+
+impl<Backend, Block: BlockT, Client> BlockAuthorExtractor
+    for BioauthBlockImport<Backend, Block, Client>
+where
+    Client: HeaderBackend<Block> + ProvideRuntimeApi<Block>,
+    Client::Api: AuraApi<Block, sp_consensus_aura::sr25519::AuthorityId>,
+{
+    type Error = ConsensusError;
+    type BlockHeader = Block::Header;
+    type PublicKeyType = Vec<u8>;
+
+    fn extract_block_author(
+        &self,
+        block_header: &Self::BlockHeader,
+    ) -> Result<Vec<u8>, Self::Error> {
+        // Extract a number of the last imported block.
+        let at = &sp_api::BlockId::Hash(self.inner.info().best_hash);
+
+        // Extract current valid Aura authorities list.
+        let authorities = self.inner.runtime_api().authorities(at).map_err(|_| {
+            sp_consensus::Error::Other(Box::new(BioauthBlockImportError::ErrorExtractAuthorities))
+        })?;
+
+        // Extract current slot of a new produced block.
+        let mut slot = block_header
+            .digest()
+            .log(|l| l.try_as_raw(OpaqueDigestItemId::PreRuntime(b"aura")))
+            .ok_or_else(|| {
+                sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
+            })?;
+
+        // Decode slot number.
+        let slot_decoded = Slot::decode(&mut slot).map_err(|_| {
+            sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
+        })?;
+
+        // Get Author index of a new proposed block.
+        let author_index = *slot_decoded % authorities.len() as u64;
+
+        // Determine an Author of a new proposed block.
+        let author_public_key =
+            authorities
+                .get(author_index as usize)
+                .cloned()
+                .ok_or_else(|| {
+                    sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
+                })?;
+
+        Ok(author_public_key.to_raw_vec())
+    }
+}
+
+impl<Backend, Block: BlockT, Client> AuthorizationVerifier
+    for BioauthBlockImport<Backend, Block, Client>
+where
+    Client: HeaderBackend<Block> + ProvideRuntimeApi<Block>,
+    Client::Api: BioauthApi<Block>,
+{
+    type Error = ConsensusError;
+    type PublicKeyType = [u8];
+
+    fn is_authorized(&self, author_public_key: &Self::PublicKeyType) -> Result<bool, Self::Error> {
+        // Extract a number of the last imported block.
+        let at = &sp_api::BlockId::Hash(self.inner.info().best_hash);
+
+        // Get current stored tickets.
+        let stored_tickets = self
+            .inner
+            .runtime_api()
+            .stored_auth_tickets(at)
+            .map_err(|_| {
+                sp_consensus::Error::Other(Box::new(
+                    BioauthBlockImportError::ErrorExtractStoredAuthTickets,
+                ))
+            })?;
+
+        let is_authorized = stored_tickets
+            .iter()
+            .any(|ticket| ticket.public_key == author_public_key);
+
+        Ok(is_authorized)
     }
 }
 
@@ -106,52 +192,9 @@ where
         // Extract a number of the last imported block.
         let at = &sp_api::BlockId::Hash(self.inner.info().best_hash);
 
-        // Extract current valid Aura authorities list.
-        let authorities = self.inner.runtime_api().authorities(at).map_err(|_| {
-            sp_consensus::Error::Other(Box::new(BioauthBlockImportError::ErrorExtractAuthorities))
-        })?;
+        let author_public_key = self.extract_block_author(&block.header)?;
 
-        // Extract current slot of a new produced block.
-        let mut slot = block
-            .header
-            .digest()
-            .log(|l| l.try_as_raw(OpaqueDigestItemId::PreRuntime(b"aura")))
-            .ok_or_else(|| {
-                sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
-            })?;
-
-        // Decode slot number.
-        let slot_decoded = Slot::decode(&mut slot).map_err(|_| {
-            sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
-        })?;
-
-        // Get Author index of a new proposed block.
-        let author_index = *slot_decoded % authorities.len() as u64;
-
-        // Determine an Author of a new proposed block.
-        let author_public_key =
-            authorities
-                .get(author_index as usize)
-                .cloned()
-                .ok_or_else(|| {
-                    sp_consensus::Error::Other(Box::new(BioauthBlockImportError::InvalidSlotNumber))
-                })?;
-        let author_public_key = author_public_key.as_slice();
-
-        // Get current stored tickets.
-        let stored_tickets = self
-            .inner
-            .runtime_api()
-            .stored_auth_tickets(at)
-            .map_err(|_| {
-                sp_consensus::Error::Other(Box::new(
-                    BioauthBlockImportError::ErrorExtractStoredAuthTickets,
-                ))
-            })?;
-
-        let is_authorized = stored_tickets
-            .iter()
-            .any(|ticket| ticket.public_key == author_public_key);
+        let is_authorized = self.is_authorized(author_public_key.as_slice())?;
 
         if !is_authorized {
             return Err(sp_consensus::Error::Other(Box::new(
