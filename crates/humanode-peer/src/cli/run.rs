@@ -5,7 +5,7 @@ use sc_service::PartialComponents;
 
 use crate::service;
 
-use super::{Root, Subcommand};
+use super::{subcommand::bioauth::BioauthCmd, CliConfigurationExt, Root, Subcommand};
 
 /// Parse command line arguments and run the requested operation.
 pub async fn run() -> sc_cli::Result<()> {
@@ -101,16 +101,23 @@ pub async fn run() -> sc_cli::Result<()> {
                 )
             }
         }
-        None => {
-            let runner = root.create_humanode_runner(&root.run)?;
-            sc_cli::print_node_infos::<Root>(&runner.config().substrate);
-            runner
-                .run_node(|config| async move {
-                    service::new_full(config)
-                        .await
-                        .map_err(sc_cli::Error::Service)
-                })
-                .await
-        }
+        Some(Subcommand::Bioauth(cmd)) => match cmd.as_ref() {
+            BioauthCmd::Enroll(cmd) => run_node(&root, cmd).await,
+        },
+        None => run_node(&root, &root.run).await,
     }
+}
+
+/// Shared logic to run the node, used with no-subcommand invocation and for `bioauth enroll`
+/// subcommand.
+async fn run_node<C: CliConfigurationExt>(root: &Root, cmd: &C) -> sc_cli::Result<()> {
+    let runner = root.create_humanode_runner(cmd)?;
+    sc_cli::print_node_infos::<Root>(&runner.config().substrate);
+    runner
+        .run_node(|config| async move {
+            service::new_full(config)
+                .await
+                .map_err(sc_cli::Error::Service)
+        })
+        .await
 }

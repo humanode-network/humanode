@@ -6,6 +6,8 @@ use structopt::StructOpt;
 
 use super::CliConfigurationExt;
 
+pub mod bioauth;
+
 /// Humanode peer subcommands.
 #[derive(Debug, StructOpt)]
 pub enum Subcommand {
@@ -32,6 +34,9 @@ pub enum Subcommand {
 
     /// Revert the chain to a previous state.
     Revert(sc_cli::RevertCmd),
+
+    /// Biometric authentication related subcommands.
+    Bioauth(Box<bioauth::BioauthCmd>),
 
     /// The custom benchmark subcommmand benchmarking runtime pallets.
     #[structopt(name = "benchmark", about = "Benchmark runtime pallets.")]

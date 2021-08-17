@@ -33,8 +33,4 @@ impl CliConfigurationExt for RunCmd {
     fn bioauth_params(&self) -> Option<&params::BioauthFlowParams> {
         Some(&self.bioauth_flow_params)
     }
-
-    fn bioauth_perform_enroll(&self) -> bool {
-        self.bioauth_perform_enroll
-    }
 }
