@@ -23,6 +23,7 @@ impl Client {
 
 /// Input data for the get facetec session token request.
 #[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct GetFacetecSessionTokenResponse {
     /// The FaceTec Session Token.
     pub session_token: String,
@@ -46,7 +47,7 @@ mod tests {
     #[test]
     fn response_deserialization() {
         let sample_response = serde_json::json!({
-            "session_token": "my session token",
+            "sessionToken": "my session token",
         });
 
         let response: GetFacetecSessionTokenResponse =
@@ -64,7 +65,7 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         let sample_response = serde_json::json!({
-            "session_token": "my sesion token",
+            "sessionToken": "my sesion token",
         });
 
         let expected_response: GetFacetecSessionTokenResponse =

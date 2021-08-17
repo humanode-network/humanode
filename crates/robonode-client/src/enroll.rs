@@ -20,6 +20,7 @@ impl Client {
 
 /// Input data for the enroll request.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct EnrollRequest<'a> {
     /// The public key to be used as an identity.
     pub public_key: &'a [u8],
@@ -30,6 +31,7 @@ pub struct EnrollRequest<'a> {
 
 /// The enroll-specific error condition.
 #[derive(Error, Debug, PartialEq)]
+
 pub enum EnrollError {
     /// The face scan or public key were already enrolled.
     #[error("already enrolled")]
@@ -49,8 +51,8 @@ mod tests {
     #[test]
     fn request_serialization() {
         let expected_request = serde_json::json!({
-            "liveness_data": [1, 2, 3],
-            "public_key": [4, 5, 6],
+            "livenessData": [1, 2, 3],
+            "publicKey": [4, 5, 6],
         });
 
         let actual_request = serde_json::to_value(&EnrollRequest {

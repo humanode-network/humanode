@@ -15,6 +15,7 @@ use super::{common::*, Logic, Signer, Verifier};
 
 /// The request of the authenticate operation.
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Request {
     /// The liveness data that the validator owner provided.
     pub liveness_data: OpaqueLivenessData,
@@ -25,6 +26,7 @@ pub struct Request {
 
 /// The response of the authenticate operation.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Response {
     /// An opaque auth ticket generated for this authentication attempt.
     /// Contains a public key that matched with the provided FaceScan and a nonce to prevent replay
