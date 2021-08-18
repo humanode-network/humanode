@@ -4,6 +4,8 @@
 
 use structopt::StructOpt;
 
+use super::CliConfigurationExt;
+
 /// Humanode peer subcommands.
 #[derive(Debug, StructOpt)]
 pub enum Subcommand {
@@ -35,3 +37,12 @@ pub enum Subcommand {
     #[structopt(name = "benchmark", about = "Benchmark runtime pallets.")]
     Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 }
+
+impl CliConfigurationExt for sc_cli::BuildSpecCmd {}
+impl CliConfigurationExt for sc_cli::CheckBlockCmd {}
+impl CliConfigurationExt for sc_cli::ExportBlocksCmd {}
+impl CliConfigurationExt for sc_cli::ExportStateCmd {}
+impl CliConfigurationExt for sc_cli::ImportBlocksCmd {}
+impl CliConfigurationExt for sc_cli::PurgeChainCmd {}
+impl CliConfigurationExt for sc_cli::RevertCmd {}
+impl CliConfigurationExt for frame_benchmarking_cli::BenchmarkCmd {}

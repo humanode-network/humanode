@@ -8,6 +8,7 @@
 
 mod chain_spec;
 mod cli;
+mod configuration;
 mod qrcode;
 mod service;
 mod validator_key;

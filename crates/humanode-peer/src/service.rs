@@ -8,10 +8,12 @@ use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
-use sc_service::{Configuration, Error as ServiceError, PartialComponents, TaskManager};
+use sc_service::{Error as ServiceError, PartialComponents, TaskManager};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
 use tracing::*;
+
+use crate::configuration::Configuration;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -46,6 +48,10 @@ pub fn new_partial(
     >,
     ServiceError,
 > {
+    let Configuration {
+        substrate: config, ..
+    } = config;
+
     let (client, backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, Executor>(config, None)?;
     let client = Arc::new(client);
@@ -119,6 +125,14 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         transaction_pool,
         other: (bioauth_consensus_block_import, slot_duration, raw_slot_duration),
     } = new_partial(&config)?;
+    let Configuration {
+        substrate: config,
+        bioauth_flow: bioauth_flow_config,
+        bioauth_perform_enroll,
+    } = config;
+
+    let bioauth_flow_config = bioauth_flow_config
+        .ok_or_else(|| ServiceError::Other("bioauth flow config is not set".into()))?;
 
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
     let force_authoring = config.force_authoring;
@@ -144,10 +158,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             warp_sync: None,
         })?;
 
-    let robonode_url =
-        std::env::var("ROBONODE_URL").unwrap_or_else(|_| "http://127.0.0.1:3033".into());
     let robonode_client = Arc::new(robonode_client::Client {
-        base_url: robonode_url,
+        base_url: bioauth_flow_config.robonode_url.clone(),
         reqwest: reqwest::Client::new(),
     });
 
@@ -171,7 +183,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         })
     };
 
-    let rpc_port = config.rpc_http.expect("HTTP RPC must be on").port();
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network: Arc::clone(&network),
         client: Arc::clone(&client),
@@ -232,13 +243,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         validator_signer_type: PhantomData,
     };
 
-    let webapp_url = std::env::var("WEBAPP_URL")
-        .unwrap_or_else(|_| "https://webapp-test-1.dev.humanode.io".into());
-    // TODO: more advanced host address detection is needed to things work within the same LAN.
-    let rpc_url =
-        std::env::var("RPC_URL").unwrap_or_else(|_| format!("http://localhost:{}", rpc_port));
-    let webapp_qrcode =
-        crate::qrcode::WebApp::new(&webapp_url, &rpc_url).map_err(ServiceError::Other)?;
+    let webapp_qrcode = bioauth_flow_config
+        .qrcode_params()
+        .map(|(webapp_url, rpc_url)| {
+            crate::qrcode::WebApp::new(webapp_url, rpc_url).map_err(ServiceError::Other)
+        })
+        .transpose()?;
 
     let bioauth_flow_future = {
         let client = Arc::clone(&client);
@@ -252,11 +262,14 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     .await
                     .expect("vector has to be of length 1 at this point");
 
-            let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
-            if should_enroll {
+            if bioauth_perform_enroll {
                 info!("bioauth flow - enrolling in progress");
 
-                webapp_qrcode.print();
+                if let Some(qrcode) = webapp_qrcode.as_ref() {
+                    qrcode.print()
+                } else {
+                    info!("bioauth flow - waiting for enroll");
+                }
 
                 flow.enroll(&aura_public_key).await.expect("enroll failed");
 
@@ -265,7 +278,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             info!("bioauth flow - authentication in progress");
 
-            webapp_qrcode.print();
+            if let Some(qrcode) = webapp_qrcode.as_ref() {
+                qrcode.print()
+            } else {
+                info!("bioauth flow - waiting for authentication");
+            }
 
             let aura_signer = crate::validator_key::AuraSigner {
                 keystore: Arc::clone(&keystore),

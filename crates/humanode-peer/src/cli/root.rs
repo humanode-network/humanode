@@ -1,11 +1,11 @@
 //! Commands hierarchy root.
 
-use sc_cli::{ChainSpec, CliConfiguration, RuntimeVersion, SubstrateCli};
+use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use structopt::StructOpt;
 
 use crate::chain_spec;
 
-use super::{runner::Runner, subcommand::Subcommand};
+use super::{CliConfigurationExt, Runner, Subcommand};
 
 /// The root of the CLI commands hierarchy.
 #[derive(Debug, StructOpt)]
@@ -16,7 +16,7 @@ pub struct Root {
 
     /// The `run` command used to run a node.
     #[structopt(flatten)]
-    pub run: sc_cli::RunCmd,
+    pub run: super::RunCmd,
 }
 
 impl SubstrateCli for Root {
@@ -63,11 +63,14 @@ impl Root {
     /// Create a [`Runner`] for the command provided in argument.
     /// This will create a [`Configuration`] from the command line arguments and the rest of
     /// the environemnt.
-    pub fn create_humanode_runner<T: CliConfiguration>(
+    pub fn create_humanode_runner<T: CliConfigurationExt>(
         &self,
         command: &T,
     ) -> sc_cli::Result<Runner<Self>> {
-        command.init::<Self>()?;
+        let init_provider = command.substrate_cli_configuration();
+        sc_cli::CliConfiguration::init::<Self>(init_provider)?;
         Runner::new(self, command)
     }
 }
+
+impl CliConfigurationExt for sc_cli::RunCmd {}

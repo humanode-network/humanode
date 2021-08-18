@@ -1,9 +1,14 @@
 //! [`Runner`] utility.
 
-use futures::{future::FutureExt, Future};
-use sc_cli::{CliConfiguration, Error as CliError, Result, SubstrateCli};
-use sc_service::{Configuration, Error as ServiceError, TaskManager, TaskType};
 use std::marker::PhantomData;
+
+use futures::{future::FutureExt, Future};
+use sc_cli::{Error as CliError, Result, SubstrateCli};
+use sc_service::{Error as ServiceError, TaskManager, TaskType};
+
+use crate::configuration::Configuration;
+
+use super::{CliConfigurationExt, Root};
 
 /// Run the given future and then clean shutdown the task manager before returning the control.
 async fn with_clean_shutdown<F, O>(fut: F, task_manager: TaskManager) -> O
@@ -41,7 +46,7 @@ pub struct Runner<C: SubstrateCli> {
 
 impl<C: SubstrateCli> Runner<C> {
     /// Create a new runner for the specified command.
-    pub fn new<T: CliConfiguration>(cli: &C, command: &T) -> Result<Self> {
+    pub fn new<T: CliConfigurationExt>(cli: &Root, command: &T) -> Result<Self> {
         let runtime_handle = tokio::runtime::Handle::current();
 
         let task_executor = move |fut, task_type| match task_type {
@@ -51,8 +56,10 @@ impl<C: SubstrateCli> Runner<C> {
                 .map(drop),
         };
 
+        let config = command.create_humanode_configuration(cli, task_executor.into())?;
+
         Ok(Self {
-            config: command.create_configuration(cli, task_executor.into())?,
+            config,
             cli_type: PhantomData,
         })
     }
