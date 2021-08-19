@@ -1,6 +1,6 @@
 //! The validator key integration logic.
 
-use std::sync::Arc;
+use std::{fmt::Display, sync::Arc};
 
 use bioauth_flow::flow::Signer;
 use sp_application_crypto::Public;
@@ -66,5 +66,11 @@ impl AuraPublic {
         assert_eq!(aura_public_keys.len(), 1);
         let aura_public_key = aura_public_keys.drain(..).next()?;
         Some(Self(aura_public_key))
+    }
+}
+
+impl Display for AuraPublic {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
