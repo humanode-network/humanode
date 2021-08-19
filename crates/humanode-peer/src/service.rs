@@ -255,12 +255,21 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let keystore = keystore_container.keystore();
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
-            info!("Bioauth flow starting up");
-
             let aura_public_key =
-                crate::validator_key::AuraPublic::from_keystore(keystore.as_ref())
-                    .await
-                    .expect("vector has to be of length 1 at this point");
+                crate::validator_key::AuraPublic::from_keystore(keystore.as_ref()).await;
+
+            let aura_public_key = match aura_public_key {
+                Some(key) => {
+                    info!("Running bioauth flow for {}", key);
+                    key
+                }
+                None => {
+                    warn!("No validator key found, skipping bioauth");
+                    return;
+                }
+            };
+
+            info!("Bioauth flow starting up");
 
             if bioauth_perform_enroll {
                 info!("Bioauth flow - enrolling in progress");
