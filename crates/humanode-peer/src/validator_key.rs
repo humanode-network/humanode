@@ -60,7 +60,12 @@ impl AsRef<[u8]> for AuraPublic {
 impl AuraPublic {
     /// Fetch the aura public key from the keystore.
     pub async fn from_keystore(keystore: &dyn CryptoStore) -> Option<Self> {
-        Self::list(keystore).await.next()
+        let mut list = Self::list(keystore).await;
+        assert!(
+            list.size_hint().0 <= 1,
+            "The list of aura public keys is larger than 1; please report this"
+        );
+        list.next()
     }
 
     /// List all [`AuraPublic`] keys in the keystore.
