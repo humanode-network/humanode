@@ -60,12 +60,15 @@ impl AsRef<[u8]> for AuraPublic {
 impl AuraPublic {
     /// Fetch the aura public key from the keystore.
     pub async fn from_keystore(keystore: &dyn CryptoStore) -> Option<Self> {
-        let mut aura_public_keys = keystore
+        Self::list(keystore).await.next()
+    }
+
+    /// List all [`AuraPublic`] keys in the keystore.
+    pub async fn list(keystore: &dyn CryptoStore) -> impl Iterator<Item = Self> {
+        let aura_public_keys = keystore
             .sr25519_public_keys(sp_application_crypto::key_types::AURA)
             .await;
-        assert_eq!(aura_public_keys.len(), 1);
-        let aura_public_key = aura_public_keys.drain(..).next()?;
-        Some(Self(aura_public_key))
+        aura_public_keys.into_iter().map(Self)
     }
 }
 
