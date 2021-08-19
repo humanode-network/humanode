@@ -255,7 +255,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let keystore = keystore_container.keystore();
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
-            info!("bioauth flow starting up");
+            info!("Bioauth flow starting up");
 
             let aura_public_key =
                 crate::validator_key::AuraPublic::from_keystore(keystore.as_ref())
@@ -263,25 +263,25 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     .expect("vector has to be of length 1 at this point");
 
             if bioauth_perform_enroll {
-                info!("bioauth flow - enrolling in progress");
+                info!("Bioauth flow - enrolling in progress");
 
                 if let Some(qrcode) = webapp_qrcode.as_ref() {
                     qrcode.print()
                 } else {
-                    info!("bioauth flow - waiting for enroll");
+                    info!("Bioauth flow - waiting for enroll");
                 }
 
                 flow.enroll(&aura_public_key).await.expect("enroll failed");
 
-                info!("bioauth flow - enrolling complete");
+                info!("Bioauth flow - enrolling complete");
             }
 
-            info!("bioauth flow - authentication in progress");
+            info!("Bioauth flow - authentication in progress");
 
             if let Some(qrcode) = webapp_qrcode.as_ref() {
                 qrcode.print()
             } else {
-                info!("bioauth flow - waiting for authentication");
+                info!("Bioauth flow - waiting for authentication");
             }
 
             let aura_signer = crate::validator_key::AuraSigner {
@@ -294,12 +294,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 match result {
                     Ok(v) => break v,
                     Err(error) => {
-                        error!(message = "bioauth flow - authentication failure", ?error);
+                        error!(message = "Bioauth flow - authentication failure", ?error);
                     }
                 };
             };
 
-            info!("bioauth flow - authentication complete");
+            info!("Bioauth flow - authentication complete");
 
             info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
 
