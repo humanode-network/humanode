@@ -79,13 +79,14 @@ pub enum Error {
     InternalErrorAuthTicketSigningFailed,
 }
 
-impl<S, PK> Logic<S, PK>
+#[async_trait::async_trait]
+impl<S, PK> crate::http::traits::Authenticate for Logic<S, PK>
 where
-    S: Signer<Vec<u8>> + Send + 'static,
+    S: Signer<Vec<u8>> + Send + 'static + Sync,
     PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,
 {
     /// An authenticate invocation handler.
-    pub async fn authenticate(&self, req: Request) -> Result<Response, Error> {
+    async fn authenticate(&self, req: Request) -> Result<Response, Error> {
         let liveness_data =
             LivenessData::try_from(&req.liveness_data).map_err(Error::InvalidLivenessData)?;
 

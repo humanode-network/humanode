@@ -20,13 +20,14 @@ pub struct Response {
 #[derive(Debug)]
 pub enum Error {}
 
-impl<S, PK> Logic<S, PK>
+#[async_trait::async_trait]
+impl<S, PK> crate::http::traits::GetFacetecDeviceSdkParams for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
     /// Get the FaceTec Device SDK params.
-    pub async fn get_facetec_device_sdk_params(&self) -> Result<Response, Error> {
+    async fn get_facetec_device_sdk_params(&self) -> Result<Response, Error> {
         Ok(Response {
             device_key_identifier: self.facetec_device_sdk_params.device_key_identifier.clone(),
             public_face_map_encryption_key: self

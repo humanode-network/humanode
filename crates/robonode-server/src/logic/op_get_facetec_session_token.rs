@@ -25,13 +25,14 @@ pub enum Error {
     InternalErrorSessionTokenUnsuccessful,
 }
 
-impl<S, PK> Logic<S, PK>
+#[async_trait::async_trait]
+impl<S, PK> crate::http::traits::GetFacetecSessionToken for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
     /// Get a FaceTec Session Token.
-    pub async fn get_facetec_session_token(&self) -> Result<Response, Error> {
+    async fn get_facetec_session_token(&self) -> Result<Response, Error> {
         let unlocked = self.locked.lock().await;
 
         let res = unlocked

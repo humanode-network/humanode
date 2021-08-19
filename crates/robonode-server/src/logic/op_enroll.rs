@@ -54,13 +54,14 @@ pub enum Error {
     InternalErrorDbEnrollUnsuccessful,
 }
 
-impl<S, PK> Logic<S, PK>
+#[async_trait::async_trait]
+impl<S, PK> crate::http::traits::Enroll for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,
 {
     /// An enroll invocation handler.
-    pub async fn enroll(&self, req: Request) -> Result<(), Error> {
+    async fn enroll(&self, req: Request) -> Result<(), Error> {
         let public_key = PK::try_from(&req.public_key).map_err(|_| Error::InvalidPublicKey)?;
 
         let liveness_data =

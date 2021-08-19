@@ -24,6 +24,8 @@ uuid = { version = "0.8", features = ["v4"] }
 warp = "0.3"
 
 [dev-dependencies]
+mockall = "0.10"
+serde_json = "1"
 tracing-test = "0.1"
 
 [features]
