@@ -5,7 +5,7 @@ use sc_service::PartialComponents;
 
 use crate::service;
 
-use super::{Root, Subcommand};
+use super::{bioauth, Root, Subcommand};
 
 /// Parse command line arguments and run the requested operation.
 pub async fn run() -> sc_cli::Result<()> {
@@ -86,6 +86,15 @@ pub async fn run() -> sc_cli::Result<()> {
                         ..
                     } = service::new_partial(&config)?;
                     Ok((cmd.run(client, backend), task_manager))
+                })
+                .await
+        }
+        Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::List(cmd)))) => {
+            let runner = root.create_humanode_runner(cmd)?;
+            runner
+                .async_run(|config| async move {
+                    let (keystore_container, task_manager) = service::keystore_container(&config)?;
+                    Ok((cmd.run(keystore_container), task_manager))
                 })
                 .await
         }
