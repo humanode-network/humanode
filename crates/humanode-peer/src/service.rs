@@ -8,7 +8,7 @@ use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
-use sc_service::{Error as ServiceError, PartialComponents, TaskManager};
+use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
 use tracing::*;
@@ -29,6 +29,15 @@ type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
+
+/// Construct a bare keystore from the configuration.
+pub fn keystore_container(
+    config: &Configuration,
+) -> Result<(KeystoreContainer, TaskManager), ServiceError> {
+    let (_client, _backend, keystore_container, task_manager) =
+        sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config.substrate, None)?;
+    Ok((keystore_container, task_manager))
+}
 
 /// Extract substrate partial components.
 pub fn new_partial(
