@@ -1,11 +1,11 @@
 //! Commands hierarchy root.
 
-use sc_cli::{ChainSpec, CliConfiguration, RuntimeVersion, SubstrateCli};
+use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use structopt::StructOpt;
 
 use crate::chain_spec;
 
-use super::{runner::Runner, subcommand::Subcommand};
+use super::{CliConfigurationExt, Runner, Subcommand};
 
 /// The root of the CLI commands hierarchy.
 #[derive(Debug, StructOpt)]
@@ -16,7 +16,7 @@ pub struct Root {
 
     /// The `run` command used to run a node.
     #[structopt(flatten)]
-    pub run: sc_cli::RunCmd,
+    pub run: super::RunCmd,
 }
 
 impl SubstrateCli for Root {
@@ -45,14 +45,13 @@ impl SubstrateCli for Root {
     }
 
     fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
-        if id != "local" && !id.is_empty() {
-            return Err(format!(
-                "chain {:?} is not supported, only {:?} is currently available",
-                id, "local"
-            ));
-        }
-
-        Ok(Box::new(chain_spec::local_testnet_config()?))
+        Ok(match id {
+            "dev" => Box::new(chain_spec::development_config()?),
+            "" | "local" => Box::new(chain_spec::local_testnet_config()?),
+            path => Box::new(chain_spec::ChainSpec::from_json_file(
+                std::path::PathBuf::from(path),
+            )?),
+        })
     }
 
     fn native_runtime_version(_chain_spec: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
@@ -64,11 +63,14 @@ impl Root {
     /// Create a [`Runner`] for the command provided in argument.
     /// This will create a [`Configuration`] from the command line arguments and the rest of
     /// the environemnt.
-    pub fn create_humanode_runner<T: CliConfiguration>(
+    pub fn create_humanode_runner<T: CliConfigurationExt>(
         &self,
         command: &T,
     ) -> sc_cli::Result<Runner<Self>> {
-        command.init::<Self>()?;
+        let init_provider = command.substrate_cli_configuration();
+        sc_cli::CliConfiguration::init::<Self>(init_provider)?;
         Runner::new(self, command)
     }
 }
+
+impl CliConfigurationExt for sc_cli::RunCmd {}

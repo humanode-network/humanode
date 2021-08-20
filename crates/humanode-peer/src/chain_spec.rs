@@ -5,6 +5,7 @@ use humanode_runtime::{
     AccountId, AuraConfig, BalancesConfig, BioauthConfig, GenesisConfig, RobonodePublicKeyWrapper,
     Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
+use pallet_bioauth::StoredAuthTicket;
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_runtime::{
@@ -55,49 +56,36 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         "local_testnet",
         ChainType::Local,
         move || {
-            GenesisConfig {
-                system: SystemConfig {
-                    // Add Wasm runtime to storage.
-                    code: wasm_binary.to_vec(),
-                    changes_trie_config: Default::default(),
-                },
-                balances: BalancesConfig {
-                    // Configure endowed accounts with initial balance of 1 << 60.
-                    balances: vec![
-                        (
-                            get_account_id_from_seed::<sr25519::Public>("Alice"),
-                            1 << 60,
-                        ),
-                        (
-                            get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-                            1 << 60,
-                        ),
-                        (get_account_id_from_seed::<sr25519::Public>("Bob"), 1 << 60),
-                        (
-                            get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-                            1 << 60,
-                        ),
-                    ],
-                },
-                aura: AuraConfig {
-                    authorities: vec![
-                        authority_keys_from_seed("Alice"),
-                        authority_keys_from_seed("Bob"),
-                    ],
-                },
-                sudo: SudoConfig {
-                    // Assign network admin rights.
-                    key: get_account_id_from_seed::<sr25519::Public>("Alice"),
-                },
-                bioauth: BioauthConfig {
-                    // Add Alice AuraId to StoredAuthTickets for producing blocks
-                    stored_auth_tickets: vec![pallet_bioauth::StoredAuthTicket {
-                        public_key: authority_keys_from_seed("Alice").as_slice().to_vec(),
-                        nonce: "1".as_bytes().to_vec(),
-                    }],
-                    robonode_public_key,
-                },
-            }
+            testnet_genesis(
+                wasm_binary,
+                // Initial PoA authorities
+                vec![
+                    authority_keys_from_seed("Alice"),
+                    authority_keys_from_seed("Bob"),
+                ],
+                // Sudo account
+                get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Pre-funded accounts
+                vec![
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob"),
+                    get_account_id_from_seed::<sr25519::Public>("Charlie"),
+                    get_account_id_from_seed::<sr25519::Public>("Dave"),
+                    get_account_id_from_seed::<sr25519::Public>("Eve"),
+                    get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+                    get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+                    get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
+                    get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
+                    get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
+                    get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
+                ],
+                vec![pallet_bioauth::StoredAuthTicket {
+                    public_key: authority_keys_from_seed("Alice").as_slice().to_vec(),
+                    nonce: "1".as_bytes().to_vec(),
+                }],
+                robonode_public_key,
+            )
         },
         // Bootnodes
         vec![],
@@ -110,4 +98,91 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         // Extensions
         None,
     ))
+}
+
+/// A configuration for dev.
+pub fn development_config() -> Result<ChainSpec, String> {
+    let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
+
+    let robonode_public_key = RobonodePublicKeyWrapper::from_bytes(
+        &hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab")[..],
+    )
+    .map_err(|err| format!("{:?}", err))?;
+
+    Ok(ChainSpec::from_genesis(
+        // Name
+        "Development",
+        // ID
+        "dev",
+        ChainType::Development,
+        move || {
+            testnet_genesis(
+                wasm_binary,
+                // Initial PoA authorities
+                vec![authority_keys_from_seed("Alice")],
+                // Sudo account
+                get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Pre-funded accounts
+                vec![
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob"),
+                    get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+                ],
+                vec![pallet_bioauth::StoredAuthTicket {
+                    public_key: authority_keys_from_seed("Alice").as_slice().to_vec(),
+                    nonce: "1".as_bytes().to_vec(),
+                }],
+                robonode_public_key,
+            )
+        },
+        // Bootnodes
+        vec![],
+        // Telemetry
+        None,
+        // Protocol ID
+        None,
+        // Properties
+        None,
+        // Extensions
+        None,
+    ))
+}
+
+/// Configure initial storage state for FRAME modules.
+fn testnet_genesis(
+    wasm_binary: &[u8],
+    initial_authorities: Vec<AuraId>,
+    root_key: AccountId,
+    endowed_accounts: Vec<AccountId>,
+    stored_auth_tickets: Vec<StoredAuthTicket>,
+    robonode_public_key: RobonodePublicKeyWrapper,
+) -> GenesisConfig {
+    GenesisConfig {
+        system: SystemConfig {
+            // Add Wasm runtime to storage.
+            code: wasm_binary.to_vec(),
+            changes_trie_config: Default::default(),
+        },
+        balances: BalancesConfig {
+            // Configure endowed accounts with initial balance of 1 << 60.
+            balances: endowed_accounts
+                .iter()
+                .cloned()
+                .map(|k| (k, 1 << 60))
+                .collect(),
+        },
+        aura: AuraConfig {
+            authorities: initial_authorities,
+        },
+        sudo: SudoConfig {
+            // Assign network admin rights.
+            key: root_key,
+        },
+        bioauth: BioauthConfig {
+            // Add Alice AuraId to StoredAuthTickets for producing blocks
+            stored_auth_tickets,
+            robonode_public_key,
+        },
+    }
 }

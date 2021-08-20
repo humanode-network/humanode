@@ -8,10 +8,12 @@ use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
-use sc_service::{Configuration, Error as ServiceError, PartialComponents, TaskManager};
+use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
 use tracing::*;
+
+use crate::configuration::Configuration;
 
 // Native executor for the runtime based on the runtime API that is available
 // at the current compile time.
@@ -27,6 +29,15 @@ type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
+
+/// Construct a bare keystore from the configuration.
+pub fn keystore_container(
+    config: &Configuration,
+) -> Result<(KeystoreContainer, TaskManager), ServiceError> {
+    let (_client, _backend, keystore_container, task_manager) =
+        sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config.substrate, None)?;
+    Ok((keystore_container, task_manager))
+}
 
 /// Extract substrate partial components.
 pub fn new_partial(
@@ -52,6 +63,10 @@ pub fn new_partial(
     >,
     ServiceError,
 > {
+    let Configuration {
+        substrate: config, ..
+    } = config;
+
     let (client, backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, Executor>(config, None)?;
     let client = Arc::new(client);
@@ -134,6 +149,14 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         transaction_pool,
         other: (bioauth_consensus_block_import, slot_duration, raw_slot_duration),
     } = new_partial(&config)?;
+    let Configuration {
+        substrate: config,
+        bioauth_flow: bioauth_flow_config,
+        bioauth_perform_enroll,
+    } = config;
+
+    let bioauth_flow_config = bioauth_flow_config
+        .ok_or_else(|| ServiceError::Other("bioauth flow config is not set".into()))?;
 
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
     let force_authoring = config.force_authoring;
@@ -159,10 +182,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             warp_sync: None,
         })?;
 
-    let robonode_url =
-        std::env::var("ROBONODE_URL").unwrap_or_else(|_| "http://127.0.0.1:3033".into());
     let robonode_client = Arc::new(robonode_client::Client {
-        base_url: robonode_url,
+        base_url: bioauth_flow_config.robonode_url.clone(),
         reqwest: reqwest::Client::new(),
     });
 
@@ -186,7 +207,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         })
     };
 
-    let rpc_port = config.rpc_http.expect("HTTP RPC must be on").port();
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network: Arc::clone(&network),
         client: Arc::clone(&client),
@@ -247,40 +267,55 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         validator_signer_type: PhantomData,
     };
 
-    let webapp_url = std::env::var("WEBAPP_URL")
-        .unwrap_or_else(|_| "https://webapp-test-1.dev.humanode.io".into());
-    // TODO: more advanced host address detection is needed to things work within the same LAN.
-    let rpc_url =
-        std::env::var("RPC_URL").unwrap_or_else(|_| format!("http://localhost:{}", rpc_port));
-    let webapp_qrcode =
-        crate::qrcode::WebApp::new(&webapp_url, &rpc_url).map_err(ServiceError::Other)?;
+    let webapp_qrcode = bioauth_flow_config
+        .qrcode_params()
+        .map(|(webapp_url, rpc_url)| {
+            crate::qrcode::WebApp::new(webapp_url, rpc_url).map_err(ServiceError::Other)
+        })
+        .transpose()?;
 
     let bioauth_flow_future = {
         let client = Arc::clone(&client);
         let keystore = keystore_container.keystore();
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
-            info!("bioauth flow starting up");
-
             let aura_public_key =
-                crate::validator_key::AuraPublic::from_keystore(keystore.as_ref())
-                    .await
-                    .expect("vector has to be of length 1 at this point");
+                crate::validator_key::AuraPublic::from_keystore(keystore.as_ref()).await;
 
-            let should_enroll = std::env::var("ENROLL").unwrap_or_default() == "true";
-            if should_enroll {
-                info!("bioauth flow - enrolling in progress");
+            let aura_public_key = match aura_public_key {
+                Some(key) => {
+                    info!("Running bioauth flow for {}", key);
+                    key
+                }
+                None => {
+                    warn!("No validator key found, skipping bioauth");
+                    return;
+                }
+            };
 
-                webapp_qrcode.print();
+            info!("Bioauth flow starting up");
+
+            if bioauth_perform_enroll {
+                info!("Bioauth flow - enrolling in progress");
+
+                if let Some(qrcode) = webapp_qrcode.as_ref() {
+                    qrcode.print()
+                } else {
+                    info!("Bioauth flow - waiting for enroll");
+                }
 
                 flow.enroll(&aura_public_key).await.expect("enroll failed");
 
-                info!("bioauth flow - enrolling complete");
+                info!("Bioauth flow - enrolling complete");
             }
 
-            info!("bioauth flow - authentication in progress");
+            info!("Bioauth flow - authentication in progress");
 
-            webapp_qrcode.print();
+            if let Some(qrcode) = webapp_qrcode.as_ref() {
+                qrcode.print()
+            } else {
+                info!("Bioauth flow - waiting for authentication");
+            }
 
             let aura_signer = crate::validator_key::AuraSigner {
                 keystore: Arc::clone(&keystore),
@@ -292,12 +327,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 match result {
                     Ok(v) => break v,
                     Err(error) => {
-                        error!(message = "bioauth flow - authentication failure", ?error);
+                        error!(message = "Bioauth flow - authentication failure", ?error);
                     }
                 };
             };
 
-            info!("bioauth flow - authentication complete");
+            info!("Bioauth flow - authentication complete");
 
             info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
 

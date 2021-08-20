@@ -5,7 +5,7 @@ use sc_service::PartialComponents;
 
 use crate::service;
 
-use super::{Root, Subcommand};
+use super::{bioauth, Root, Subcommand};
 
 /// Parse command line arguments and run the requested operation.
 pub async fn run() -> sc_cli::Result<()> {
@@ -15,7 +15,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::Key(cmd)) => cmd.run(&root),
         Some(Subcommand::BuildSpec(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
-            runner.sync_run(|config| cmd.run(config.chain_spec, config.network))
+            runner.sync_run(|config| cmd.run(config.substrate.chain_spec, config.substrate.network))
         }
         Some(Subcommand::CheckBlock(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
@@ -40,7 +40,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         ..
                     } = service::new_partial(&config)?;
-                    Ok((cmd.run(client, config.database), task_manager))
+                    Ok((cmd.run(client, config.substrate.database), task_manager))
                 })
                 .await
         }
@@ -53,7 +53,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         ..
                     } = service::new_partial(&config)?;
-                    Ok((cmd.run(client, config.chain_spec), task_manager))
+                    Ok((cmd.run(client, config.substrate.chain_spec), task_manager))
                 })
                 .await
         }
@@ -73,7 +73,7 @@ pub async fn run() -> sc_cli::Result<()> {
         }
         Some(Subcommand::PurgeChain(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
-            runner.sync_run(|config| cmd.run(config.database))
+            runner.sync_run(|config| cmd.run(config.substrate.database))
         }
         Some(Subcommand::Revert(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
@@ -89,10 +89,19 @@ pub async fn run() -> sc_cli::Result<()> {
                 })
                 .await
         }
+        Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::List(cmd)))) => {
+            let runner = root.create_humanode_runner(cmd)?;
+            runner
+                .async_run(|config| async move {
+                    let (keystore_container, task_manager) = service::keystore_container(&config)?;
+                    Ok((cmd.run(keystore_container), task_manager))
+                })
+                .await
+        }
         Some(Subcommand::Benchmark(cmd)) => {
             if cfg!(feature = "runtime-benchmarks") {
                 let runner = root.create_humanode_runner(cmd)?;
-                runner.sync_run(|config| cmd.run::<Block, service::Executor>(config))
+                runner.sync_run(|config| cmd.run::<Block, service::Executor>(config.substrate))
             } else {
                 Err(
                     "Benchmarking wasn't enabled when building the node. You can enable it with \
@@ -103,7 +112,7 @@ pub async fn run() -> sc_cli::Result<()> {
         }
         None => {
             let runner = root.create_humanode_runner(&root.run)?;
-            sc_cli::print_node_infos::<Root>(runner.config());
+            sc_cli::print_node_infos::<Root>(&runner.config().substrate);
             runner
                 .run_node(|config| async move {
                     service::new_full(config)
