@@ -39,7 +39,13 @@ pub fn new_partial(
         sc_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
-            bioauth_consensus::BioauthBlockImport<FullBackend, Block, FullClient>,
+            bioauth_consensus::BioauthBlockImport<
+                FullBackend,
+                Block,
+                FullClient,
+                bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient>,
+                bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient>,
+            >,
             SlotDuration,
             Duration,
         ),
@@ -59,8 +65,17 @@ pub fn new_partial(
     );
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
-    let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<FullBackend, _, _> =
-        bioauth_consensus::BioauthBlockImport::new(Arc::clone(&client));
+    let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<
+        FullBackend,
+        _,
+        _,
+        _,
+        _,
+    > = bioauth_consensus::BioauthBlockImport::new(
+        Arc::clone(&client),
+        bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
+        bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+    );
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
