@@ -14,7 +14,7 @@ use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 use super::{common::*, Logic, Signer, Verifier};
 
 /// The request of the authenticate operation.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Request {
     /// The liveness data that the validator owner provided.

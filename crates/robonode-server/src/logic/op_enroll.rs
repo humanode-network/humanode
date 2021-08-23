@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 use facetec_api_client as ft;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tracing::{error, trace};
 
 use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
@@ -12,7 +12,7 @@ use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 use super::{common::*, Logic, Signer};
 
 /// The request for the enroll operation.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Request {
     /// The public key of the validator.
