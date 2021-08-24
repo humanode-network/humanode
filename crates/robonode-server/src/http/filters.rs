@@ -49,7 +49,7 @@ fn enroll<L>(
     logic: Arc<L>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    L: Enroll + Authenticate + GetFacetecSessionToken + GetFacetecDeviceSdkParams + Send + Sync,
+    L: Enroll + Send + Sync,
 {
     warp::path!("enroll")
         .and(warp::post())
