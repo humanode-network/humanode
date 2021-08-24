@@ -1,0 +1,19 @@
+{
+  "name": "humanode-types",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "prepack": "tsc",
+    "prettier:check": "prettier --list-different .",
+    "prettier:fix": "prettier --write ."
+  },
+  "dependencies": {
+    "@polkadot/keyring": "^7.2.1",
+    "@polkadot/types": "^5.6.1",
+    "typescript": "^4.3.5"
+  },
+  "devDependencies": {
+    "prettier": "^2.3.2"
+  }
+}
