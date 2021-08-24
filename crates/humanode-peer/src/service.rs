@@ -8,7 +8,9 @@ use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
-use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
+use sc_service::{
+    Error as ServiceError, KeystoreContainer, LocalCallExecutor, PartialComponents, TaskManager,
+};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
 use tracing::*;
@@ -57,6 +59,13 @@ pub fn new_partial(
                 bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient>,
                 bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient>,
             >,
+            bioauth_consensus::BioauthCanAuthorWith<
+                Block,
+                bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient>,
+                sp_consensus::CanAuthorWithNativeVersion<
+                    LocalCallExecutor<Block, FullBackend, NativeExecutor<Executor>>,
+                >,
+            >,
             SlotDuration,
             Duration,
         ),
@@ -91,6 +100,17 @@ pub fn new_partial(
         bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
     );
+    let bioauth_can_author_with: bioauth_consensus::BioauthCanAuthorWith<
+        Block,
+        bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient>,
+        sp_consensus::CanAuthorWithNativeVersion<
+            LocalCallExecutor<Block, FullBackend, NativeExecutor<Executor>>,
+        >,
+    > = bioauth_consensus::BioauthCanAuthorWith::new(
+        sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
+        keystore_container.sync_keystore(),
+        bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+    );
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
@@ -112,9 +132,7 @@ pub fn new_partial(
                 Ok((timestamp, slot))
             },
             spawner: &task_manager.spawn_essential_handle(),
-            can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(
-                client.executor().clone(),
-            ),
+            can_author_with: bioauth_can_author_with.clone(),
             registry: config.prometheus_registry(),
             check_for_equivocation: Default::default(),
             telemetry: None,
@@ -130,6 +148,7 @@ pub fn new_partial(
         transaction_pool,
         other: (
             bioauth_consensus_block_import,
+            bioauth_can_author_with,
             slot_duration,
             raw_slot_duration,
         ),
@@ -147,7 +166,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         keystore_container,
         select_chain,
         transaction_pool,
-        other: (bioauth_consensus_block_import, slot_duration, raw_slot_duration),
+        other:
+            (bioauth_consensus_block_import, bioauth_can_author_with, slot_duration, raw_slot_duration),
     } = new_partial(&config)?;
     let Configuration {
         substrate: config,
@@ -158,7 +178,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let bioauth_flow_config = bioauth_flow_config
         .ok_or_else(|| ServiceError::Other("bioauth flow config is not set".into()))?;
 
-    let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
+    let can_author_with = bioauth_can_author_with;
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
 

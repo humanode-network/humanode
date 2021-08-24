@@ -9,8 +9,10 @@
 use sc_client_api::{backend::Backend, Finalizer};
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
 use sp_api::{ProvideRuntimeApi, TransactionFor};
+use sp_application_crypto::Public;
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
-use sp_consensus::Error as ConsensusError;
+use sp_consensus::{CanAuthorWith, Error as ConsensusError};
+use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::Block as BlockT;
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
@@ -156,5 +158,94 @@ where
 
         // Import a new block.
         self.inner.import_block(block, cache).await
+    }
+}
+
+/// A can-author-with handler for Bioauth.
+pub struct BioauthCanAuthorWith<Block: BlockT, AV, CAW> {
+    /// Native can-author-with handler.
+    base_caw: CAW,
+    /// Keystore to extract validator public key.
+    keystore: SyncCryptoStorePtr,
+    /// The bioauth auhtrization verifier.
+    authorization_verifier: AV,
+    /// A phantom data for Block.
+    _phantom_block: PhantomData<Block>,
+}
+
+/// BioauthCanAuthorWith Error Type.
+#[derive(Error, Debug, Eq, PartialEq)]
+pub enum BioauthCanAuthorWithError<AV>
+where
+    AV: std::error::Error,
+{
+    /// The block author isn't Bioauth authorized.
+    #[error("the block author isn't bioauth-authorized")]
+    NotBioauthAuthorized,
+    /// Authorization verification error.
+    #[error("unable verify the authorization: {0}")]
+    AuthorizationVerifier(AV),
+}
+
+impl<Block: BlockT, AV, CAW> BioauthCanAuthorWith<Block, AV, CAW> {
+    /// Simple constructor.
+    pub fn new(base_caw: CAW, keystore: SyncCryptoStorePtr, authorization_verifier: AV) -> Self {
+        BioauthCanAuthorWith {
+            base_caw,
+            keystore,
+            authorization_verifier,
+            _phantom_block: PhantomData,
+        }
+    }
+}
+
+impl<Block: BlockT, AV, CAW> Clone for BioauthCanAuthorWith<Block, AV, CAW>
+where
+    AV: Clone,
+    CAW: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            base_caw: self.base_caw.clone(),
+            keystore: Arc::clone(&self.keystore),
+            authorization_verifier: self.authorization_verifier.clone(),
+            _phantom_block: PhantomData,
+        }
+    }
+}
+
+impl<Block: BlockT, AV, CAW> CanAuthorWith<Block> for BioauthCanAuthorWith<Block, AV, CAW>
+where
+    AV: AuthorizationVerifier<Block = Block, PublicKeyType = [u8]> + Send,
+    <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
+    CAW: CanAuthorWith<Block> + Send + Sync + 'static,
+{
+    fn can_author_with(&self, at: &sp_api::BlockId<Block>) -> Result<(), String> {
+        self.base_caw.can_author_with(at)?;
+
+        let mkerr = |err: BioauthCanAuthorWithError<AV::Error>| -> String { err.to_string() };
+
+        let aura_public_keys = sp_keystore::SyncCryptoStore::sr25519_public_keys(
+            self.keystore.as_ref(),
+            sp_application_crypto::key_types::AURA,
+        );
+
+        assert!(
+            aura_public_keys.len() == 1,
+            "The list of aura public keys should contain only 1 key; please report this"
+        );
+
+        let aura_public_key = aura_public_keys[0];
+
+        let is_authorized = self
+            .authorization_verifier
+            .is_authorized(at, &aura_public_key.to_raw_vec())
+            .map_err(|err| mkerr(BioauthCanAuthorWithError::AuthorizationVerifier(err)))?;
+
+        if !is_authorized {
+            return Err(mkerr(BioauthCanAuthorWithError::NotBioauthAuthorized));
+        }
+
+        Ok(())
     }
 }

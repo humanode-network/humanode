@@ -478,6 +478,7 @@ dependencies = [
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-aura",
+ "sp-keystore",
  "sp-runtime",
  "thiserror",
  "tokio 1.9.0",
