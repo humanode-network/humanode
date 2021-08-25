@@ -297,16 +297,23 @@ impl pallet_sudo::Config for Runtime {
     type Call = Call;
 }
 
-impl<'a> sp_runtime::traits::Convert<&'a [u8], AuraId> for Runtime {
-    fn convert(a: &[u8]) -> AuraId {
+pub struct AuraValidatorSetUpdater;
+
+impl pallet_bioauth::ValidatorSetUpdater for AuraValidatorSetUpdater {
+    fn update_validators_set(validator_public_keys: &[&[u8]]) {
         use core::convert::TryInto;
-        a.try_into().unwrap()
+        let authorities = validator_public_keys
+            .iter()
+            .map(|&public_key| public_key.try_into().expect("key has to be aura id"))
+            .collect::<Vec<_>>();
+        pallet_aura::Authorities::<Runtime>::set(authorities);
     }
 }
 
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
+    type ValidatorSetUpdater = AuraValidatorSetUpdater;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously

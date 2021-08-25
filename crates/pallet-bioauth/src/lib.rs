@@ -75,6 +75,12 @@ pub trait Verifier<S: ?Sized> {
         D: AsRef<[u8]> + Send + 'a;
 }
 
+/// Provides the capability to update the current validators set.
+pub trait ValidatorSetUpdater {
+    /// Updated the validators set for the of consensus.
+    fn update_validators_set(validator_public_keys: &[&[u8]]);
+}
+
 sp_api::decl_runtime_apis! {
 
     /// We need to provide a trait using decl_runtime_apis! macro to be able to call required methods
@@ -97,25 +103,23 @@ sp_api::decl_runtime_apis! {
 pub mod pallet {
     use core::convert::TryInto;
 
-    use super::{Authenticate, StoredAuthTicket, Verifier};
+    use super::{Authenticate, StoredAuthTicket, ValidatorSetUpdater, Verifier};
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*, storage::types::ValueQuery};
     use frame_system::pallet_prelude::*;
     use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
-    use sp_runtime::traits::Convert;
     use sp_std::prelude::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
-    pub trait Config:
-        frame_system::Config
-        + pallet_aura::Config
-        + for<'a> Convert<&'a [u8], <Self as pallet_aura::Config>::AuthorityId>
-    {
+    pub trait Config: frame_system::Config {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
         /// The public key of the robonode.
         type RobonodePublicKey: Verifier<Vec<u8>> + codec::FullCodec + Default + serde_nostd::SerDe;
+
+        /// The validator set updater to invoke at auth the ticket acceptace.
+        type ValidatorSetUpdater: ValidatorSetUpdater;
     }
 
     #[pallet::pallet]
@@ -238,7 +242,7 @@ pub mod pallet {
                     Ok(()) => {
                         // Authentication was successfull, add the incoming auth ticket to the list.
                         list.push(stored_auth_ticket);
-                        Self::update_aura(list.as_slice());
+                        Self::issue_validators_set_update(list.as_slice());
                         Ok(())
                     }
                 }
@@ -314,15 +318,12 @@ pub mod pallet {
                 .build()
         }
 
-        fn update_aura(list: &[StoredAuthTicket])
-        where
-            T: pallet_aura::Config,
-        {
-            let authorities = list
+        fn issue_validators_set_update(stored_auth_tickets: &[StoredAuthTicket]) {
+            let validator_public_keys = stored_auth_tickets
                 .iter()
-                .map(|ticket| T::convert(ticket.public_key.as_slice()))
+                .map(|ticket| ticket.public_key.as_slice())
                 .collect::<Vec<_>>();
-            pallet_aura::Authorities::<T>::set(authorities);
+            T::ValidatorSetUpdater::update_validators_set(validator_public_keys.as_slice());
         }
     }
 
