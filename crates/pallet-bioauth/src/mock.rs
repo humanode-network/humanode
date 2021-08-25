@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use sp_core::{crypto::Infallible, H256};
 use sp_runtime::{
     testing::Header,
-    traits::{BlakeTwo256, IdentityLookup},
+    traits::{BlakeTwo256, Convert, IdentityLookup},
 };
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -21,6 +21,8 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+        Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
+        Aura: pallet_aura::{Pallet, Config<T>},
         Bioauth: pallet_bioauth::{Pallet, Call, Storage, Event<T>},
     }
 );
@@ -30,6 +32,21 @@ frame_support::construct_runtime!(
 pub struct MockVerifier;
 
 impl super::Verifier<Vec<u8>> for MockVerifier {
+    type Error = Infallible;
+
+    fn verify<'a, D>(&self, _data: D, signature: Vec<u8>) -> Result<bool, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a,
+    {
+        Ok(signature.starts_with(b"should_be_valid"))
+    }
+}
+
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct MockAuthorityId;
+
+impl super::Verifier<Vec<u8>> for MockAuthorityId {
     type Error = Infallible;
 
     fn verify<'a, D>(&self, _data: D, signature: Vec<u8>) -> Result<bool, Self::Error>
@@ -69,6 +86,37 @@ impl system::Config for Test {
     type SystemWeightInfo = ();
     type SS58Prefix = SS58Prefix;
     type OnSetCode = ();
+}
+
+parameter_types! {
+    pub const MinimumPeriod: u64 = 1;
+}
+
+impl pallet_timestamp::Config for Test {
+    type Moment = u64;
+    type OnTimestampSet = Aura;
+    type MinimumPeriod = MinimumPeriod;
+    type WeightInfo = ();
+}
+
+pub mod sr25519 {
+    mod app_sr25519 {
+        use sp_application_crypto::{app_crypto, key_types::AURA, sr25519};
+        app_crypto!(sr25519, AURA);
+    }
+    pub type AuthorityId = app_sr25519::Public;
+}
+use sr25519::AuthorityId as AuraId;
+
+impl pallet_aura::Config for Test {
+    type AuthorityId = AuraId;
+    type DisabledValidators = ();
+}
+
+impl<'a> Convert<&'a [u8], AuraId> for Test {
+    fn convert(_a: &'a [u8]) -> AuraId {
+        AuraId::default()
+    }
 }
 
 impl pallet_bioauth::Config for Test {
