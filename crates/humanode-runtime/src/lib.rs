@@ -297,9 +297,36 @@ impl pallet_sudo::Config for Runtime {
     type Call = Call;
 }
 
+pub struct AuraValidatorSetUpdater;
+
+impl pallet_bioauth::ValidatorSetUpdater for AuraValidatorSetUpdater {
+    fn update_validators_set(validator_public_keys: &[&[u8]]) {
+        let dummy = <Runtime as frame_system::Config>::AccountId::default();
+
+        // clippy is just too dumb here, but we need two iterators passed to `on_new_session` to be
+        // the same type. The easiest is to use Vec's iter for both.
+        #[allow(clippy::needless_collect)]
+        let authorities = validator_public_keys
+            .iter()
+            .map(|&public_key| {
+                use core::convert::TryInto;
+                (
+                    &dummy,
+                    public_key.try_into().expect("key has to be aura id"),
+                )
+            })
+            .collect::<Vec<_>>();
+
+        <pallet_aura::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
+            <Runtime as frame_system::Config>::AccountId,
+        >>::on_new_session(true, authorities.into_iter(), Vec::new().into_iter())
+    }
+}
+
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
+    type ValidatorSetUpdater = AuraValidatorSetUpdater;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously

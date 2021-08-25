@@ -75,6 +75,12 @@ pub trait Verifier<S: ?Sized> {
         D: AsRef<[u8]> + Send + 'a;
 }
 
+/// Provides the capability to update the current validators set.
+pub trait ValidatorSetUpdater {
+    /// Updated the validators set for the of consensus.
+    fn update_validators_set(validator_public_keys: &[&[u8]]);
+}
+
 sp_api::decl_runtime_apis! {
 
     /// We need to provide a trait using decl_runtime_apis! macro to be able to call required methods
@@ -97,7 +103,7 @@ sp_api::decl_runtime_apis! {
 pub mod pallet {
     use core::convert::TryInto;
 
-    use super::{Authenticate, StoredAuthTicket, Verifier};
+    use super::{Authenticate, StoredAuthTicket, ValidatorSetUpdater, Verifier};
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*, storage::types::ValueQuery};
     use frame_system::pallet_prelude::*;
     use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
@@ -111,6 +117,9 @@ pub mod pallet {
 
         /// The public key of the robonode.
         type RobonodePublicKey: Verifier<Vec<u8>> + codec::FullCodec + Default + serde_nostd::SerDe;
+
+        /// The validator set updater to invoke at auth the ticket acceptace.
+        type ValidatorSetUpdater: ValidatorSetUpdater;
     }
 
     #[pallet::pallet]
@@ -233,6 +242,7 @@ pub mod pallet {
                     Ok(()) => {
                         // Authentication was successfull, add the incoming auth ticket to the list.
                         list.push(stored_auth_ticket);
+                        Self::issue_validators_set_update(list.as_slice());
                         Ok(())
                     }
                 }
@@ -306,6 +316,14 @@ pub mod pallet {
                 .longevity(1)
                 .propagate(true)
                 .build()
+        }
+
+        fn issue_validators_set_update(stored_auth_tickets: &[StoredAuthTicket]) {
+            let validator_public_keys = stored_auth_tickets
+                .iter()
+                .map(|ticket| ticket.public_key.as_slice())
+                .collect::<Vec<_>>();
+            T::ValidatorSetUpdater::update_validators_set(validator_public_keys.as_slice());
         }
     }
 

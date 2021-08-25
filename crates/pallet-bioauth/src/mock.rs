@@ -40,6 +40,17 @@ impl super::Verifier<Vec<u8>> for MockVerifier {
     }
 }
 
+pub struct MockValidatorSetUpdater;
+
+impl super::ValidatorSetUpdater for MockValidatorSetUpdater {
+    fn update_validators_set(validator_public_keys: &[&[u8]]) {
+        assert!(
+            !validator_public_keys.is_empty(),
+            "We should get non-empty set every time at each of the test cases"
+        );
+    }
+}
+
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
@@ -74,6 +85,7 @@ impl system::Config for Test {
 impl pallet_bioauth::Config for Test {
     type Event = Event;
     type RobonodePublicKey = MockVerifier;
+    type ValidatorSetUpdater = MockValidatorSetUpdater;
 }
 
 // Build genesis storage according to the mock runtime.
