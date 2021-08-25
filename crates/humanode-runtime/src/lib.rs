@@ -297,6 +297,13 @@ impl pallet_sudo::Config for Runtime {
     type Call = Call;
 }
 
+impl<'a> sp_runtime::traits::Convert<&'a [u8], AuraId> for Runtime {
+    fn convert(a: &[u8]) -> AuraId {
+        use core::convert::TryInto;
+        a.try_into().unwrap()
+    }
+}
+
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;

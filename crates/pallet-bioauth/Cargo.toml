@@ -13,6 +13,7 @@ codec = { package = "parity-scale-codec", version = "2", default-features = fals
 frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack", optional = true }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+pallet-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
 serde = { version = "1", features = ["derive"], optional = true }
 sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
 sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
@@ -33,6 +34,7 @@ std = [
   "frame-system/std",
   "frame-benchmarking/std",
   "sp-std/std",
+  "pallet-aura/std",
 ]
 runtime-benchmarks = ["frame-benchmarking"]
 try-runtime = ["frame-support/try-runtime"]

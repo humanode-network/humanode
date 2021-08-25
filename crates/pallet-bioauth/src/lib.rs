@@ -101,11 +101,16 @@ pub mod pallet {
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*, storage::types::ValueQuery};
     use frame_system::pallet_prelude::*;
     use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
+    use sp_runtime::traits::Convert;
     use sp_std::prelude::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
-    pub trait Config: frame_system::Config {
+    pub trait Config:
+        frame_system::Config
+        + pallet_aura::Config
+        + for<'a> Convert<&'a [u8], <Self as pallet_aura::Config>::AuthorityId>
+    {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
@@ -233,6 +238,7 @@ pub mod pallet {
                     Ok(()) => {
                         // Authentication was successfull, add the incoming auth ticket to the list.
                         list.push(stored_auth_ticket);
+                        Self::update_aura(list.as_slice());
                         Ok(())
                     }
                 }
@@ -306,6 +312,17 @@ pub mod pallet {
                 .longevity(1)
                 .propagate(true)
                 .build()
+        }
+
+        fn update_aura(list: &[StoredAuthTicket])
+        where
+            T: pallet_aura::Config,
+        {
+            let authorities = list
+                .iter()
+                .map(|ticket| T::convert(ticket.public_key.as_slice()))
+                .collect::<Vec<_>>();
+            pallet_aura::Authorities::<T>::set(authorities);
         }
     }
 
