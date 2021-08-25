@@ -6,39 +6,39 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [build-dependencies]
-substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
 
 [dependencies]
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
 hex-literal = { version = "0.3", optional = true }
-pallet-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
 serde = { version = "1", features = ["derive"], optional = true }
-sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-consensus-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-consensus-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
 
 [features]
 default = ["std"]
