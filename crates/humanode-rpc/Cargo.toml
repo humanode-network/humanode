@@ -11,11 +11,11 @@ humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
 jsonrpc-core = "15" # TODO: update when `sc-service` bumps it's version
-pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "master" }

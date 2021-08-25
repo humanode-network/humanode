@@ -10,17 +10,17 @@ primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", 
 serde-nostd = { version = "0.1", path = "../serde-nostd", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack", optional = true }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = { version = "1", features = ["derive"], optional = true }
-sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [dev-dependencies]
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [features]
 default = ["std"]

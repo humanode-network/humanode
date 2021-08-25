@@ -15,28 +15,28 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 
 async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
-frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 futures = "0.3"
 hex-literal = "0.3"
 qr2term = "0.2"
 reqwest = "0.11"
-sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-network = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-service = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
-sp-utils = { git = "https://github.com/humanode-network/substrate", branch = "aura-hack" }
+sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-utils = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 structopt = "0.3.8"
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }
