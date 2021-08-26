@@ -4314,7 +4314,6 @@ dependencies = [
  "parity-scale-codec",
  "primitives-auth-ticket",
  "serde",
- "serde-nostd",
  "sp-api",
  "sp-core",
  "sp-io",
@@ -6617,13 +6616,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f03b9878abf6d14e6779d3f24f07b2cfa90352cfec4acc5aab8f1ac7f146fae8"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde-nostd"
-version = "0.1.0"
-dependencies = [
- "serde",
 ]
 
 [[package]]
