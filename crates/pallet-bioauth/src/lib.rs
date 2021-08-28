@@ -110,7 +110,10 @@ pub mod pallet {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
         /// The public key of the robonode.
-        type RobonodePublicKey: Verifier<Vec<u8>> + codec::FullCodec + Default + serde_nostd::SerDe;
+        type RobonodePublicKey: Verifier<Vec<u8>>
+            + codec::FullCodec
+            + Default
+            + MaybeSerializeDeserialize;
     }
 
     #[pallet::pallet]
