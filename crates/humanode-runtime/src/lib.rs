@@ -11,6 +11,8 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+use pallet_bioauth::StoredAuthTicket;
+use primitives_auth_ticket::OpaqueAuthTicket;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
@@ -297,9 +299,45 @@ impl pallet_sudo::Config for Runtime {
     type Call = Call;
 }
 
+pub struct PrimitiveAuthTicketConverter;
+
+pub enum PrimitiveAuthTicketConverterError {
+    Ticket(codec::Error),
+    PublicKey(()),
+}
+
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::StoredAuthTicket<AuraId>>
+    for PrimitiveAuthTicketConverter
+{
+    type Error = PrimitiveAuthTicketConverterError;
+
+    fn try_convert(
+        value: OpaqueAuthTicket,
+    ) -> Result<pallet_bioauth::StoredAuthTicket<AuraId>, Self::Error> {
+        use sp_std::convert::TryInto;
+        let primitives_auth_ticket::AuthTicket {
+            public_key,
+            authentication_nonce: nonce,
+        } = (&value)
+            .try_into()
+            .map_err(PrimitiveAuthTicketConverterError::Ticket)?;
+
+        let public_key = public_key
+            .as_slice()
+            .try_into()
+            .map_err(PrimitiveAuthTicketConverterError::PublicKey)?;
+
+        Ok(StoredAuthTicket { public_key, nonce })
+    }
+}
+
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
+    type RobonodeSignature = Vec<u8>;
+    type ValidatorPublicKey = AuraId;
+    type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
+    type AuthTicketCoverter = PrimitiveAuthTicketConverter;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
@@ -418,8 +456,8 @@ impl_runtime_apis! {
         }
     }
 
-    impl pallet_bioauth::BioauthApi<Block> for Runtime {
-        fn stored_auth_tickets() -> sp_std::prelude::Vec<pallet_bioauth::StoredAuthTicket> {
+    impl pallet_bioauth::BioauthApi<Block, <Runtime as pallet_bioauth::Config>::ValidatorPublicKey> for Runtime {
+        fn stored_auth_tickets() -> sp_std::prelude::Vec<pallet_bioauth::StoredAuthTicket<<Runtime as pallet_bioauth::Config>::ValidatorPublicKey>> {
             Bioauth::stored_auth_tickets()
         }
     }

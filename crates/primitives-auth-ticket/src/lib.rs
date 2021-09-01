@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use sp_std::prelude::*;
 
 /// The one-time ticket to authenticate in the network.
-#[derive(Debug, PartialEq, Encode, Decode)]
+#[derive(Debug, PartialEq, Eq, Encode, Decode, Clone)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(transparent))]
 pub struct OpaqueAuthTicket(pub Vec<u8>);
@@ -56,6 +56,12 @@ impl AsRef<[u8]> for OpaqueAuthTicket {
 impl From<Vec<u8>> for OpaqueAuthTicket {
     fn from(val: Vec<u8>) -> Self {
         Self(val)
+    }
+}
+
+impl From<Box<[u8]>> for OpaqueAuthTicket {
+    fn from(val: Box<[u8]>) -> Self {
+        Self(val.into())
     }
 }
 

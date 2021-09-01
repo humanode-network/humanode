@@ -1,4 +1,4 @@
-use crate as pallet_bioauth;
+use crate::{self as pallet_bioauth, StoredAuthTicket, TryConvert};
 use codec::{Decode, Encode};
 use frame_support::{parameter_types, traits::GenesisBuild};
 use frame_system as system;
@@ -24,6 +24,26 @@ frame_support::construct_runtime!(
         Bioauth: pallet_bioauth::{Pallet, Call, Storage, Event<T>},
     }
 );
+
+#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct MockOpaqueAuthTicket(pub StoredAuthTicket<Vec<u8>>);
+
+impl AsRef<[u8]> for MockOpaqueAuthTicket {
+    fn as_ref(&self) -> &[u8] {
+        panic!("should be ununsed in tests")
+    }
+}
+
+pub struct MockAuthTicketConverter;
+
+impl TryConvert<MockOpaqueAuthTicket, StoredAuthTicket<Vec<u8>>> for MockAuthTicketConverter {
+    type Error = Infallible;
+
+    fn try_convert(value: MockOpaqueAuthTicket) -> Result<StoredAuthTicket<Vec<u8>>, Self::Error> {
+        Ok(value.0)
+    }
+}
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -74,6 +94,10 @@ impl system::Config for Test {
 impl pallet_bioauth::Config for Test {
     type Event = Event;
     type RobonodePublicKey = MockVerifier;
+    type RobonodeSignature = Vec<u8>;
+    type ValidatorPublicKey = Vec<u8>;
+    type OpaqueAuthTicket = MockOpaqueAuthTicket;
+    type AuthTicketCoverter = MockAuthTicketConverter;
 }
 
 // Build genesis storage according to the mock runtime.

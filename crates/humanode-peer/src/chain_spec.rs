@@ -81,7 +81,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice").as_slice().to_vec(),
+                    public_key: authority_keys_from_seed("Alice"),
                     nonce: "1".as_bytes().to_vec(),
                 }],
                 robonode_public_key,
@@ -130,7 +130,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice").as_slice().to_vec(),
+                    public_key: authority_keys_from_seed("Alice"),
                     nonce: "1".as_bytes().to_vec(),
                 }],
                 robonode_public_key,
@@ -155,7 +155,7 @@ fn testnet_genesis(
     initial_authorities: Vec<AuraId>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
-    stored_auth_tickets: Vec<StoredAuthTicket>,
+    stored_auth_tickets: Vec<StoredAuthTicket<AuraId>>,
     robonode_public_key: RobonodePublicKeyWrapper,
 ) -> GenesisConfig {
     GenesisConfig {
