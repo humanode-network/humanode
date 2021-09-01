@@ -1,5 +1,2 @@
 [workspace]
 members = ["crates/*"]
-
-[patch.crates-io]
-parity-db = { git = "https://github.com/paritytech/parity-db", rev = "f349aa30e76f3219a90aaae99c0f3f07d994692e" }

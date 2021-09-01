@@ -9021,8 +9021,3 @@ dependencies = [
  "cc",
  "libc",
 ]
-
-[[patch.unused]]
-name = "parity-db"
-version = "0.2.3"
-source = "git+https://github.com/paritytech/parity-db?rev=f349aa30e76f3219a90aaae99c0f3f07d994692e#f349aa30e76f3219a90aaae99c0f3f07d994692e"
