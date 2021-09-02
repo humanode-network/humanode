@@ -467,6 +467,7 @@ name = "bioauth-consensus"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "futures 0.3.16",
  "mockall",
  "node-primitives",
  "pallet-bioauth",

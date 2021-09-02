@@ -6,12 +6,14 @@
     clippy::clone_on_ref_ptr
 )]
 
+use futures::future;
+use futures::future::FutureExt;
 use sc_client_api::{backend::Backend, Finalizer};
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
-use sp_api::{ProvideRuntimeApi, TransactionFor};
+use sp_api::{HeaderT, ProvideRuntimeApi, TransactionFor};
 use sp_application_crypto::Public;
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
-use sp_consensus::{CanAuthorWith, Error as ConsensusError};
+use sp_consensus::{Environment, Error as ConsensusError};
 use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::Block as BlockT;
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
@@ -161,10 +163,10 @@ where
     }
 }
 
-/// A can-author-with handler for Bioauth.
-pub struct BioauthCanAuthorWith<Block: BlockT, AV, CAW> {
-    /// Native can-author-with handler.
-    base_caw: CAW,
+/// A Proposer handler for Bioauth.
+pub struct BioauthProposer<Block: BlockT, AV, BAP> {
+    /// A basic authorship proposer.
+    base_proposer: BAP,
     /// Keystore to extract validator public key.
     keystore: SyncCryptoStorePtr,
     /// The bioauth auhtrization verifier.
@@ -173,9 +175,9 @@ pub struct BioauthCanAuthorWith<Block: BlockT, AV, CAW> {
     _phantom_block: PhantomData<Block>,
 }
 
-/// BioauthCanAuthorWith Error Type.
+/// BioauthProposer Error Type.
 #[derive(Error, Debug, Eq, PartialEq)]
-pub enum BioauthCanAuthorWithError<AV>
+pub enum BioauthProposerError<AV>
 where
     AV: std::error::Error,
 {
@@ -187,11 +189,15 @@ where
     AuthorizationVerifier(AV),
 }
 
-impl<Block: BlockT, AV, CAW> BioauthCanAuthorWith<Block, AV, CAW> {
+impl<Block: BlockT, AV, BAP> BioauthProposer<Block, AV, BAP> {
     /// Simple constructor.
-    pub fn new(base_caw: CAW, keystore: SyncCryptoStorePtr, authorization_verifier: AV) -> Self {
-        BioauthCanAuthorWith {
-            base_caw,
+    pub fn new(
+        base_proposer: BAP,
+        keystore: SyncCryptoStorePtr,
+        authorization_verifier: AV,
+    ) -> Self {
+        BioauthProposer {
+            base_proposer,
             keystore,
             authorization_verifier,
             _phantom_block: PhantomData,
@@ -199,31 +205,26 @@ impl<Block: BlockT, AV, CAW> BioauthCanAuthorWith<Block, AV, CAW> {
     }
 }
 
-impl<Block: BlockT, AV, CAW> Clone for BioauthCanAuthorWith<Block, AV, CAW>
-where
-    AV: Clone,
-    CAW: Clone,
-{
-    fn clone(&self) -> Self {
-        Self {
-            base_caw: self.base_caw.clone(),
-            keystore: Arc::clone(&self.keystore),
-            authorization_verifier: self.authorization_verifier.clone(),
-            _phantom_block: PhantomData,
-        }
-    }
-}
-
-impl<Block: BlockT, AV, CAW> CanAuthorWith<Block> for BioauthCanAuthorWith<Block, AV, CAW>
+impl<Block: BlockT, AV, BAP> Environment<Block> for BioauthProposer<Block, AV, BAP>
 where
     AV: AuthorizationVerifier<Block = Block, PublicKeyType = [u8]> + Send,
     <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
-    CAW: CanAuthorWith<Block> + Send + Sync + 'static,
+    BAP: Environment<Block> + Send + Sync + 'static,
+    BAP::Error: Send,
+    BAP::Proposer: Send,
 {
-    fn can_author_with(&self, at: &sp_api::BlockId<Block>) -> Result<(), String> {
-        self.base_caw.can_author_with(at)?;
+    type Proposer = BAP::Proposer;
 
-        let mkerr = |err: BioauthCanAuthorWithError<AV::Error>| -> String { err.to_string() };
+    type CreateProposer = future::BoxFuture<'static, Result<Self::Proposer, Self::Error>>;
+
+    type Error = BAP::Error;
+
+    fn init(&mut self, parent_header: &Block::Header) -> Self::CreateProposer {
+        let mkerr = |err: BioauthProposerError<AV::Error>| -> Self::CreateProposer {
+            Box::pin(future::err(Self::Error::from(sp_consensus::Error::Other(
+                Box::new(err),
+            ))))
+        };
 
         let aura_public_keys = sp_keystore::SyncCryptoStore::sr25519_public_keys(
             self.keystore.as_ref(),
@@ -232,20 +233,26 @@ where
 
         assert!(
             aura_public_keys.len() == 1,
-            "The list of aura public keys should contain only 1 key; please report this"
+            "The list of aura public keys should contain only 1 key, please report this"
         );
 
         let aura_public_key = aura_public_keys[0];
 
-        let is_authorized = self
+        let parent_hash = parent_header.hash();
+        let at = sp_api::BlockId::hash(parent_hash);
+
+        let is_authorized = match self
             .authorization_verifier
-            .is_authorized(at, &aura_public_key.to_raw_vec())
-            .map_err(|err| mkerr(BioauthCanAuthorWithError::AuthorizationVerifier(err)))?;
+            .is_authorized(&at, &aura_public_key.to_raw_vec())
+        {
+            Ok(v) => v,
+            Err(err) => return mkerr(BioauthProposerError::AuthorizationVerifier(err)),
+        };
 
         if !is_authorized {
-            return Err(mkerr(BioauthCanAuthorWithError::NotBioauthAuthorized));
+            return mkerr(BioauthProposerError::NotBioauthAuthorized);
         }
 
-        Ok(())
+        self.base_proposer.init(parent_header).boxed()
     }
 }
