@@ -101,10 +101,8 @@ where
         BlockImport<Block, Error = ConsensusError, Transaction = TransactionFor<Client, Block>>,
     TransactionFor<Client, Block>: 'static,
     BAX: BlockAuthorExtractor<Block = Block> + Send,
-    AV: AuthorizationVerifier<Block = Block> + Send,
-    <BAX as BlockAuthorExtractor>::PublicKeyType: Send,
-    <BAX as BlockAuthorExtractor>::PublicKeyType:
-        AsRef<<AV as AuthorizationVerifier>::PublicKeyType>,
+    AV: AuthorizationVerifier<Block = Block, PublicKeyType = BAX::PublicKeyType> + Send,
+    <BAX as BlockAuthorExtractor>::PublicKeyType: Send + Sync,
     <BAX as BlockAuthorExtractor>::Error: std::error::Error + Send + Sync + 'static,
     <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
     BE: Backend<Block>,
@@ -142,7 +140,7 @@ where
 
         let is_authorized = self
             .authorization_verifier
-            .is_authorized(&at, author_public_key.as_ref())
+            .is_authorized(&at, &author_public_key)
             .map_err(|err| mkerr(BioauthBlockImportError::AuthorizationVerifier(err)))?;
 
         if !is_authorized {

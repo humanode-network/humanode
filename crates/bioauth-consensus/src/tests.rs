@@ -1,11 +1,11 @@
 use mockall::predicate::*;
 use mockall::*;
 use node_primitives::{Block, BlockNumber, Hash, Header};
-use pallet_bioauth::{BioauthApi, StoredAuthTicket};
+use pallet_bioauth::{self, BioauthApi, StoredAuthTicket};
 use sc_client_api::Finalizer;
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
 use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi, TransactionFor};
-use sp_application_crypto::{Pair, Public};
+use sp_application_crypto::Pair;
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
 use sp_consensus::{BlockOrigin, Error as ConsensusError};
 use sp_consensus_aura::{
@@ -16,10 +16,14 @@ use std::{collections::HashMap, str::FromStr, sync::Arc};
 
 use crate::{BioauthBlockImport, BioauthBlockImportError};
 
+type MockValidatorPublicKey = AuraId;
+
+type MockAuthTicket = StoredAuthTicket<MockValidatorPublicKey>;
+
 mock! {
     RuntimeApi {
         fn stored_auth_tickets(&self, _at: &sp_api::BlockId<Block>) -> Result<
-            NativeOrEncoded<Vec<StoredAuthTicket>>,
+            NativeOrEncoded<Vec<MockAuthTicket>>,
             ApiError
         >;
 
@@ -108,10 +112,10 @@ impl<'a> BlockImport<Block> for &'a MockClient {
 }
 
 sp_api::mock_impl_runtime_apis! {
-    impl BioauthApi<Block> for MockWrapperRuntimeApi {
+    impl BioauthApi<Block, MockValidatorPublicKey> for MockWrapperRuntimeApi {
         #[advanced]
         fn stored_auth_tickets(&self, at: &sp_api::BlockId<Block>) -> Result<
-            NativeOrEncoded<Vec<StoredAuthTicket>>,
+            NativeOrEncoded<Vec<MockAuthTicket>>,
             ApiError
         > {
             self.0.stored_auth_tickets(at)
@@ -375,12 +379,15 @@ async fn it_denies_block_import_with_not_bioauth_authorized() {
     mock_runtime_api
         .expect_stored_auth_tickets()
         .returning(|_| {
-            Ok(NativeOrEncoded::from(vec![
-                pallet_bioauth::StoredAuthTicket {
-                    public_key: "invalid_author".as_bytes().to_vec(),
-                    nonce: "1".as_bytes().to_vec(),
-                },
-            ]))
+            Ok(NativeOrEncoded::from(vec![MockAuthTicket {
+                public_key: sp_consensus_aura::sr25519::AuthorityPair::from_string(
+                    &format!("//{}", "Bob"),
+                    None,
+                )
+                .expect("static values are valid; qed")
+                .public(),
+                nonce: b"1".to_vec(),
+            }]))
         });
 
     let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
@@ -433,18 +440,15 @@ async fn it_permits_block_import_with_valid_data() {
     mock_runtime_api
         .expect_stored_auth_tickets()
         .returning(|_| {
-            Ok(NativeOrEncoded::from(vec![
-                pallet_bioauth::StoredAuthTicket {
-                    public_key: sp_consensus_aura::sr25519::AuthorityPair::from_string(
-                        &format!("//{}", "Alice"),
-                        None,
-                    )
-                    .expect("static values are valid; qed")
-                    .public()
-                    .to_raw_vec(),
-                    nonce: "1".as_bytes().to_vec(),
-                },
-            ]))
+            Ok(NativeOrEncoded::from(vec![MockAuthTicket {
+                public_key: sp_consensus_aura::sr25519::AuthorityPair::from_string(
+                    &format!("//{}", "Alice"),
+                    None,
+                )
+                .expect("static values are valid; qed")
+                .public(),
+                nonce: b"1".to_vec(),
+            }]))
         });
 
     let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
