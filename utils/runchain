@@ -1,0 +1,46 @@
+#!/bin/bash
+set -euo pipefail
+
+NODES=()
+
+while [[ "$#" -gt 1 ]]; do
+  case "$1" in
+  --)
+    CALL_VALID=true
+    shift
+    break
+    ;;
+  *)
+    NODES+=("$1")
+    shift
+    ;;
+  esac
+done
+
+if [[ "${CALL_VALID:-}" != "true" ]]; then
+  printf "Usage: %s alice bob charlie ... -- target/debug/humanode-peer\n" "$0" >&2
+  exit 1
+fi
+
+P2P_PORT=30333
+RPC_HTTP_PORT=9933
+RPC_WS_PORT=9944
+
+trap 'pkill -P $$' EXIT
+
+for NODE in "${NODES[@]}"; do
+  FLAG="--${NODE}"
+
+  "$@" \
+    --base-path "/tmp/runchain/$NODE" \
+    --port "$P2P_PORT" \
+    --rpc-port "$RPC_HTTP_PORT" \
+    --ws-port "$RPC_WS_PORT" \
+    "$FLAG" &
+
+  ((P2P_PORT = P2P_PORT + 1))
+  ((RPC_HTTP_PORT = RPC_HTTP_PORT + 1))
+  ((RPC_WS_PORT = RPC_WS_PORT + 1))
+done
+
+wait
