@@ -62,7 +62,7 @@ BIN_TARGETS=(
 
 # Populate the context for the runtime image build.
 for TARGET in "${BIN_TARGETS[@]}"; do
-  cp -t "$TMP_ARTIFACTS_DIR" "$HOST_TARGET/release/${TARGET}" 
+  cp -t "$TMP_ARTIFACTS_DIR" "$HOST_TARGET/release/${TARGET}"
 done
 
 # Build docker image.
