@@ -6,7 +6,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"/..
 
 # Build parameters.
 PLATFORM="linux/amd64"
-BUILDER_CONTAINER_BASE="rust:latest"
+BUILDER_CONTAINER_BASE="rust:bullseye"
 RUNTIME_CONTAINER_BASE="debian:bullseye"
 BUILDER_CONTAINER_TAG="humanode-builder"
 RUNTIME_CONTAINER_TAG="humanode"
