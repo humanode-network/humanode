@@ -7,7 +7,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"/..
 # Build parameters.
 PLATFORM="linux/amd64"
 BUILDER_CONTAINER_BASE="rust:latest"
-RUNTIME_CONTAINER_BASE="debian:stretch"
+RUNTIME_CONTAINER_BASE="debian:bullseye"
 BUILDER_CONTAINER_TAG="humanode-builder"
 RUNTIME_CONTAINER_TAG="humanode"
 BUILD_VOLUMES_PATH="$(pwd)/target/docker/$PLATFORM"
