@@ -36,7 +36,11 @@ for NODE in "${NODES[@]}"; do
     --port "$P2P_PORT" \
     --rpc-port "$RPC_HTTP_PORT" \
     --ws-port "$RPC_WS_PORT" \
-    "$FLAG" &
+    "$FLAG" > "/tmp/runchain/$NODE/${NODE}.log" 2>&1 &
+
+  NODE_PID=$!
+
+  printf "${NODE}:\nOutput: tail -f ${NODE}.log\nKill: kill -9 ${NODE_PID}\n\n"
 
   ((P2P_PORT = P2P_PORT + 1))
   ((RPC_HTTP_PORT = RPC_HTTP_PORT + 1))
