@@ -14,50 +14,60 @@ use crate::{
     },
 };
 
-use super::traits::{Authenticate, Enroll, GetFacetecDeviceSdkParams, GetFacetecSessionToken};
+use super::traits::LogicOp;
 
 mock! {
     Logic {
         fn enroll(&self, req: op_enroll::Request) -> Result<(), op_enroll::Error>;
         fn authenticate(&self, req: op_authenticate::Request) -> Result<op_authenticate::Response, op_authenticate::Error>;
-        fn get_facetec_session_token(&self) -> Result<op_get_facetec_session_token::Response, op_get_facetec_session_token::Error>;
-        fn get_facetec_device_sdk_params(&self) -> Result<op_get_facetec_device_sdk_params::Response, op_get_facetec_device_sdk_params::Error>;
+        fn get_facetec_session_token(&self, req: op_get_facetec_session_token::Request) -> Result<op_get_facetec_session_token::Response, op_get_facetec_session_token::Error>;
+        fn get_facetec_device_sdk_params(&self, req: op_get_facetec_device_sdk_params::Request) -> Result<op_get_facetec_device_sdk_params::Response, op_get_facetec_device_sdk_params::Error>;
     }
 }
 
 #[async_trait::async_trait]
-impl Enroll for MockLogic {
-    async fn enroll(&self, req: op_enroll::Request) -> Result<(), op_enroll::Error> {
+impl LogicOp<op_enroll::Request> for MockLogic {
+    type Response = ();
+    type Error = op_enroll::Error;
+
+    async fn call(&self, req: op_enroll::Request) -> Result<Self::Response, Self::Error> {
         self.enroll(req)
     }
 }
 
 #[async_trait::async_trait]
-impl Authenticate for MockLogic {
-    async fn authenticate(
-        &self,
-        req: op_authenticate::Request,
-    ) -> Result<op_authenticate::Response, op_authenticate::Error> {
+impl LogicOp<op_authenticate::Request> for MockLogic {
+    type Response = op_authenticate::Response;
+    type Error = op_authenticate::Error;
+
+    async fn call(&self, req: op_authenticate::Request) -> Result<Self::Response, Self::Error> {
         self.authenticate(req)
     }
 }
 
 #[async_trait::async_trait]
-impl GetFacetecSessionToken for MockLogic {
-    async fn get_facetec_session_token(
+impl LogicOp<op_get_facetec_session_token::Request> for MockLogic {
+    type Response = op_get_facetec_session_token::Response;
+    type Error = op_get_facetec_session_token::Error;
+
+    async fn call(
         &self,
-    ) -> Result<op_get_facetec_session_token::Response, op_get_facetec_session_token::Error> {
-        self.get_facetec_session_token()
+        req: op_get_facetec_session_token::Request,
+    ) -> Result<Self::Response, Self::Error> {
+        self.get_facetec_session_token(req)
     }
 }
 
 #[async_trait::async_trait]
-impl GetFacetecDeviceSdkParams for MockLogic {
-    async fn get_facetec_device_sdk_params(
+impl LogicOp<op_get_facetec_device_sdk_params::Request> for MockLogic {
+    type Response = op_get_facetec_device_sdk_params::Response;
+    type Error = op_get_facetec_device_sdk_params::Error;
+
+    async fn call(
         &self,
-    ) -> Result<op_get_facetec_device_sdk_params::Response, op_get_facetec_device_sdk_params::Error>
-    {
-        self.get_facetec_device_sdk_params()
+        req: op_get_facetec_device_sdk_params::Request,
+    ) -> Result<Self::Response, Self::Error> {
+        self.get_facetec_device_sdk_params(req)
     }
 }
 
@@ -185,10 +195,12 @@ async fn it_denies_authenticate() {
 
 #[tokio::test]
 async fn it_works_get_facetec_session_token() {
+    let input = op_get_facetec_session_token::Request {};
+
     let mut mock_logic = MockLogic::new();
     mock_logic
         .expect_get_facetec_session_token()
-        .returning(|| Ok(provide_facetec_session_token()));
+        .returning(|_| Ok(provide_facetec_session_token()));
 
     let logic = Arc::new(mock_logic);
     let filter = root(logic);
@@ -196,6 +208,7 @@ async fn it_works_get_facetec_session_token() {
     let res = warp::test::request()
         .method("GET")
         .path("/facetec-session-token")
+        .json(&input)
         .reply(&filter)
         .await;
 
@@ -207,10 +220,14 @@ async fn it_works_get_facetec_session_token() {
 
 #[tokio::test]
 async fn it_denies_get_facetec_session_token() {
+    let input = op_get_facetec_session_token::Request {};
+
     let mut mock_logic = MockLogic::new();
-    mock_logic.expect_get_facetec_session_token().returning(|| {
-        Err(op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful)
-    });
+    mock_logic
+        .expect_get_facetec_session_token()
+        .returning(|_| {
+            Err(op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful)
+        });
 
     let logic = Arc::new(mock_logic);
     let filter = root(logic);
@@ -218,6 +235,7 @@ async fn it_denies_get_facetec_session_token() {
     let res = warp::test::request()
         .method("GET")
         .path("/facetec-session-token")
+        .json(&input)
         .reply(&filter)
         .await;
 
@@ -226,10 +244,12 @@ async fn it_denies_get_facetec_session_token() {
 
 #[tokio::test]
 async fn it_works_get_facetec_device_sdk_params() {
+    let input = op_get_facetec_device_sdk_params::Request {};
+
     let mut mock_logic = MockLogic::new();
     mock_logic
         .expect_get_facetec_device_sdk_params()
-        .returning(|| Ok(provide_facetec_device_sdk_params()));
+        .returning(|_| Ok(provide_facetec_device_sdk_params()));
 
     let logic = Arc::new(mock_logic);
     let filter = root(logic);
@@ -237,6 +257,7 @@ async fn it_works_get_facetec_device_sdk_params() {
     let res = warp::test::request()
         .method("GET")
         .path("/facetec-device-sdk-params")
+        .json(&input)
         .reply(&filter)
         .await;
 

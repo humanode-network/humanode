@@ -55,13 +55,16 @@ pub enum Error {
 }
 
 #[async_trait::async_trait]
-impl<S, PK> crate::http::traits::Enroll for Logic<S, PK>
+impl<S, PK> crate::http::traits::LogicOp<Request> for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,
 {
+    type Response = ();
+    type Error = Error;
+
     /// An enroll invocation handler.
-    async fn enroll(&self, req: Request) -> Result<(), Error> {
+    async fn call(&self, req: Request) -> Result<Self::Response, Self::Error> {
         let public_key = PK::try_from(&req.public_key).map_err(|_| Error::InvalidPublicKey)?;
 
         let liveness_data =

@@ -1,10 +1,11 @@
 //! Handlers, the HTTP transport coupling for the internal logic.
 
+use serde::Serialize;
 use std::sync::Arc;
 use warp::hyper::StatusCode;
 use warp::Reply;
 
-use super::traits::{Authenticate, Enroll, GetFacetecDeviceSdkParams, GetFacetecSessionToken};
+use super::traits::LogicOp;
 use crate::logic::{
     op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
 };
@@ -15,9 +16,10 @@ pub async fn enroll<L>(
     input: op_enroll::Request,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
-    L: Enroll,
+    L: LogicOp<op_enroll::Request>,
+    L::Error: warp::reject::Reject,
 {
-    logic.enroll(input).await.map_err(warp::reject::custom)?;
+    logic.call(input).await.map_err(warp::reject::custom)?;
     Ok(StatusCode::CREATED)
 }
 
@@ -27,12 +29,11 @@ pub async fn authenticate<L>(
     input: op_authenticate::Request,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
-    L: Authenticate,
+    L: LogicOp<op_authenticate::Request>,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
 {
-    let res = logic
-        .authenticate(input)
-        .await
-        .map_err(warp::reject::custom)?;
+    let res = logic.call(input).await.map_err(warp::reject::custom)?;
 
     let reply = warp::reply::json(&res);
     let reply = warp::reply::with_status(reply, StatusCode::OK);
@@ -44,10 +45,12 @@ pub async fn get_facetec_session_token<L>(
     logic: Arc<L>,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
-    L: GetFacetecSessionToken,
+    L: LogicOp<op_get_facetec_session_token::Request>,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
 {
     let res = logic
-        .get_facetec_session_token()
+        .call(op_get_facetec_session_token::Request {})
         .await
         .map_err(warp::reject::custom)?;
 
@@ -61,10 +64,12 @@ pub async fn get_facetec_device_sdk_params<L>(
     logic: Arc<L>,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
-    L: GetFacetecDeviceSdkParams,
+    L: LogicOp<op_get_facetec_device_sdk_params::Request>,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
 {
     let res = logic
-        .get_facetec_device_sdk_params()
+        .call(op_get_facetec_device_sdk_params::Request {})
         .await
         .map_err(warp::reject::custom)?;
 

@@ -3,9 +3,14 @@
 use std::convert::TryFrom;
 
 use facetec_api_client as ft;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::{Logic, Signer};
+
+/// The request of the get facetec session token operation.
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Request {}
 
 /// The response for the get facetec session token operation.
 #[derive(Debug, Serialize)]
@@ -26,13 +31,15 @@ pub enum Error {
 }
 
 #[async_trait::async_trait]
-impl<S, PK> crate::http::traits::GetFacetecSessionToken for Logic<S, PK>
+impl<S, PK> crate::http::traits::LogicOp<Request> for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
-    /// Get a FaceTec Session Token.
-    async fn get_facetec_session_token(&self) -> Result<Response, Error> {
+    type Response = Response;
+    type Error = Error;
+
+    async fn call(&self, _req: Request) -> Result<Self::Response, Self::Error> {
         let unlocked = self.locked.lock().await;
 
         let res = unlocked

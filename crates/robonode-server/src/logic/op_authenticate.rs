@@ -80,13 +80,15 @@ pub enum Error {
 }
 
 #[async_trait::async_trait]
-impl<S, PK> crate::http::traits::Authenticate for Logic<S, PK>
+impl<S, PK> crate::http::traits::LogicOp<Request> for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static + Sync,
     PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,
 {
-    /// An authenticate invocation handler.
-    async fn authenticate(&self, req: Request) -> Result<Response, Error> {
+    type Response = Response;
+    type Error = Error;
+
+    async fn call(&self, req: Request) -> Result<Self::Response, Self::Error> {
         let liveness_data =
             LivenessData::try_from(&req.liveness_data).map_err(Error::InvalidLivenessData)?;
 
