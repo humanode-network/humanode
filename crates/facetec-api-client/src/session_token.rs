@@ -3,8 +3,6 @@
 use reqwest::StatusCode;
 use serde::Deserialize;
 
-use crate::CommonResponse;
-
 use super::Client;
 
 impl<RBEI> Client<RBEI>
@@ -25,9 +23,6 @@ where
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    /// Common response portion.
-    #[serde(flatten)]
-    pub common: CommonResponse,
     /// The Session Token.
     pub session_token: String,
     /// Whether the request had any errors during the execution.
@@ -51,7 +46,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{tests::test_client, AdditionalSessionData, CallData};
+    use crate::tests::test_client;
 
     use super::*;
 
@@ -85,16 +80,6 @@ mod tests {
                 session_token,
                 error: false,
                 success: true,
-                common: CommonResponse {
-                    additional_session_data: AdditionalSessionData {
-                        is_additional_data_partially_incomplete: true,
-                        ..
-                    },
-                    call_data: CallData {
-                        ..
-                    },
-                    ..
-                },
                 ..
             } if session_token == "the session token"
         )

@@ -13,23 +13,6 @@ pub type OpaqueBase64DataRef<'a> = &'a str;
 /// The type to be used everywhere as the match level.
 pub type MatchLevel = i64;
 
-/// The additional data about the session that FaceTec communicates back to us
-/// with each response.
-#[derive(Debug, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct AdditionalSessionData {
-    /// TODO: document.
-    pub is_additional_data_partially_incomplete: bool,
-    // "platform": "android",
-    // "appID": "com.facetec.sampleapp",
-    // "installationID": "0000000000000000",
-    // "deviceModel": "Pixel 4",
-    // "deviceSDKVersion": "9.0.2",
-    // "sessionID": "00000000-0000-0000-0000-000000000000",
-    // "userAgent": "UserAgent",
-    // "ipAddress": "1.2.3.4"
-}
-
 /// The report on the security checks.
 #[derive(Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -52,45 +35,6 @@ impl FaceScanSecurityChecks {
             && self.replay_check_succeeded
             && self.session_token_check_succeeded
     }
-}
-
-/// The call data that FaceTec includes with each response.
-#[derive(Debug, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct CallData {
-    /// Some opaque transaction identifier.
-    tid: String,
-    /// Request URI path.
-    path: String,
-    /// Request date, as a string in the US locale, without timezone or offset.
-    date: String,
-    /// The unix-time representation of the request date.
-    epoch_second: i64,
-    /// The HTTP method the request was issued with.
-    request_method: String,
-}
-
-/// The server info that FaceTec sends us with each response.
-#[derive(Debug, Deserialize, PartialEq, Eq)]
-pub struct ServerInfo {
-    /// Version of the server.
-    pub version: String,
-    /// Mode of the operation of the server.
-    pub mode: String,
-    /// A notice that server gives with this response.
-    pub notice: String,
-}
-
-/// A common FaceTec API response portion.
-#[derive(Debug, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
-pub struct CommonResponse {
-    /// The additional session information included in this response.
-    pub additional_session_data: AdditionalSessionData,
-    /// The information about the API call the request was to.
-    pub call_data: CallData,
-    /// The information about the server.
-    pub server_info: ServerInfo,
 }
 
 /// A FaceScan-related FaceTec API response portion.

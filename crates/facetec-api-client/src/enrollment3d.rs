@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{CommonResponse, FaceScanResponse, OpaqueBase64DataRef};
+use crate::{FaceScanResponse, OpaqueBase64DataRef};
 
 use super::Client;
 
@@ -43,9 +43,6 @@ pub struct Request<'a> {
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    /// Common response portion.
-    #[serde(flatten)]
-    pub common: Option<CommonResponse>,
     /// FaceScan response portion.
     #[serde(flatten)]
     pub face_scan: Option<FaceScanResponse>,
@@ -75,9 +72,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{
-        tests::test_client, AdditionalSessionData, CallData, FaceScanSecurityChecks, ServerInfo,
-    };
+    use crate::{tests::test_client, FaceScanSecurityChecks};
 
     use super::*;
 
@@ -153,21 +148,6 @@ mod tests {
                     age_estimate_group_enum_int: -1,
                     ..
                 }),
-                common: Some(CommonResponse {
-                    additional_session_data: AdditionalSessionData {
-                        is_additional_data_partially_incomplete: false,
-                        ..
-                    },
-                    call_data: CallData {
-                        ..
-                    },
-                    server_info: ServerInfo {
-                        version: _,
-                        mode:_,
-                        notice:_,
-                    },
-                    ..
-                }),
             } if external_database_ref_id == "test_external_dbref_id"
         )
     }
@@ -194,7 +174,6 @@ mod tests {
                 error: true,
                 success: false,
                 face_scan: None,
-                common: None,
             } if error_message == "An enrollment already exists for this externalDatabaseRefID."
         )
     }
@@ -249,7 +228,6 @@ mod tests {
                     retry_screen_enum_int: 0,
                     age_estimate_group_enum_int: 2,
                 }),
-                common: Some(_),
             } if external_database_ref_id == "qwe"
         )
     }

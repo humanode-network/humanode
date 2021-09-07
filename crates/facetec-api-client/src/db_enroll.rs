@@ -3,8 +3,6 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::CommonResponse;
-
 use super::Client;
 
 impl<RBEI> Client<RBEI>
@@ -39,9 +37,6 @@ pub struct Request<'a> {
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    /// Common response portion.
-    #[serde(flatten)]
-    pub common: CommonResponse,
     /// Whether the request had any errors during the execution.
     pub error: bool,
     /// Whether the request was successful.
