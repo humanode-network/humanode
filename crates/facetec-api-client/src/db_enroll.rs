@@ -46,9 +46,6 @@ pub struct Response {
 /// The `/3d-db/enroll`-specific error kind.
 #[derive(thiserror::Error, Debug, PartialEq)]
 pub enum Error {
-    /// The face scan or public key were already enrolled.
-    #[error("already enrolled")]
-    AlreadyEnrolled,
     /// Bad request error occured.
     #[error("bad request: {0}")]
     BadRequest(ErrorBadRequest),
