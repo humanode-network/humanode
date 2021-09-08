@@ -12,7 +12,6 @@ primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-dat
 robonode-crypto = { version = "0.1", path = "../robonode-crypto" }
 
 async-trait = "0.1"
-futures = "0.3"
 hex = "0.4"
 rand = "0.7"
 reqwest = "0.11"
@@ -20,7 +19,6 @@ sc-tracing = "3"
 serde = { version = "1", features = ["derive"] }
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }
-tower = "0.4"
 tracing = "0.1"
 uuid = { version = "0.8", features = ["v4"] }
 warp = "0.3"
