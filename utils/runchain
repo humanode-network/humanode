@@ -1,6 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
+LOG_DIR="/tmp/runchain"
+NODES_DATA_DIR="/tmp/runchain"
+
 NODES=()
 
 while [[ "$#" -gt 1 ]]; do
@@ -30,17 +33,20 @@ trap 'pkill -P $$' EXIT
 
 for NODE in "${NODES[@]}"; do
   FLAG="--${NODE}"
+  LOG_FILE="$LOG_DIR/$NODE.log"
 
-  "$@" \
-    --base-path "/tmp/runchain/$NODE" \
-    --port "$P2P_PORT" \
-    --rpc-port "$RPC_HTTP_PORT" \
-    --ws-port "$RPC_WS_PORT" \
-    "$FLAG" > "/tmp/runchain/$NODE/${NODE}.log" 2>&1 &
+  {
+    "$@" \
+      --base-path "$NODES_DATA_DIR/$NODE" \
+      --port "$P2P_PORT" \
+      --rpc-port "$RPC_HTTP_PORT" \
+      --ws-port "$RPC_WS_PORT" \
+      "$FLAG" 2>&1 | tee "$LOG_FILE"
+  } &
 
-  NODE_PID=$!
+  NODE_PID="$!"
 
-  printf "${NODE}:\nOutput: tail -f ${NODE}.log\nKill: kill -9 ${NODE_PID}\n\n"
+  printf "node: %s\tlog: %s\tpid: %d\n" "$NODE" "$LOG_FILE" "$NODE_PID"
 
   ((P2P_PORT = P2P_PORT + 1))
   ((RPC_HTTP_PORT = RPC_HTTP_PORT + 1))
