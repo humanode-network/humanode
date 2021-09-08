@@ -8,6 +8,10 @@ NODES=()
 
 while [[ "$#" -gt 1 ]]; do
   case "$1" in
+  --base-only)
+    BASE_ONLY=true
+    shift
+    ;;
   --)
     CALL_VALID=true
     shift
@@ -35,13 +39,21 @@ for NODE in "${NODES[@]}"; do
   FLAG="--${NODE}"
   LOG_FILE="$LOG_DIR/$NODE.log"
 
+  ARGS=(
+    --base-path "$NODES_DATA_DIR/$NODE"
+  )
+
+  if [[ "${BASE_ONLY:-"false"}" != "true" ]]; then
+    ARGS+=(
+      --port "$P2P_PORT"
+      --rpc-port "$RPC_HTTP_PORT"
+      --ws-port "$RPC_WS_PORT"
+      "$FLAG"
+    )
+  fi
+
   {
-    "$@" \
-      --base-path "$NODES_DATA_DIR/$NODE" \
-      --port "$P2P_PORT" \
-      --rpc-port "$RPC_HTTP_PORT" \
-      --ws-port "$RPC_WS_PORT" \
-      "$FLAG" 2>&1 | tee "$LOG_FILE"
+    "$@" "${ARGS[@]}" 2>&1 | tee "$LOG_FILE"
   } &
 
   NODE_PID="$!"
