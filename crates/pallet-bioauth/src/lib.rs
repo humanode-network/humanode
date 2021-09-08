@@ -57,7 +57,9 @@ pub trait TryConvert<A, B> {
 /// Provides the capability to update the current validators set.
 pub trait ValidatorSetUpdater<T> {
     /// Updated the validators set for the of consensus.
-    fn update_validators_set(validator_public_keys: &[&T]);
+    fn update_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(validator_public_keys: I)
+    where
+        T: 'a;
 }
 
 /// Authentication extrinsic playload.
@@ -340,11 +342,8 @@ pub mod pallet {
         fn issue_validators_set_update(
             stored_auth_tickets: &[StoredAuthTicket<T::ValidatorPublicKey>],
         ) {
-            let validator_public_keys = stored_auth_tickets
-                .iter()
-                .map(|ticket| &ticket.public_key)
-                .collect::<Vec<_>>();
-            T::ValidatorSetUpdater::update_validators_set(validator_public_keys.as_slice());
+            let validator_public_keys = stored_auth_tickets.iter().map(|ticket| &ticket.public_key);
+            T::ValidatorSetUpdater::update_validators_set(validator_public_keys);
         }
     }
 

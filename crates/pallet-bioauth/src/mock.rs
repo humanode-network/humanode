@@ -62,10 +62,13 @@ impl super::Verifier<Vec<u8>> for MockVerifier {
 
 pub struct MockValidatorSetUpdater;
 
-impl super::ValidatorSetUpdater for MockValidatorSetUpdater {
-    fn update_validators_set(validator_public_keys: &[&[u8]]) {
+impl super::ValidatorSetUpdater<Vec<u8>> for MockValidatorSetUpdater {
+    fn update_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(mut validator_public_keys: I)
+    where
+        Vec<u8>: 'a,
+    {
         assert!(
-            !validator_public_keys.is_empty(),
+            validator_public_keys.next().is_some(),
             "We should get non-empty set every time at each of the test cases"
         );
     }

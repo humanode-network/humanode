@@ -334,15 +334,17 @@ impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::StoredAuthTick
 pub struct AuraValidatorSetUpdater;
 
 impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
-    fn update_validators_set(validator_public_keys: &[&AuraId]) {
+    fn update_validators_set<'a, I: Iterator<Item = &'a AuraId> + 'a>(validator_public_keys: I)
+    where
+        AuraId: 'a,
+    {
         let dummy = <Runtime as frame_system::Config>::AccountId::default();
 
         // clippy is just too dumb here, but we need two iterators passed to `on_new_session` to be
         // the same type. The easiest is to use Vec's iter for both.
         #[allow(clippy::needless_collect)]
         let authorities = validator_public_keys
-            .iter()
-            .map(|&public_key| (&dummy, public_key.clone()))
+            .map(|public_key| (&dummy, public_key.clone()))
             .collect::<Vec<_>>();
 
         <pallet_aura::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
