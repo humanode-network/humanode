@@ -1,6 +1,5 @@
 //! POST `/enrollment-3d`
 
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
 use crate::{FaceScanResponse, OpaqueBase64DataRef};
@@ -12,12 +11,9 @@ where
     RBEI: crate::response_body_error::Inspector,
 {
     /// Perform the `/enrollment-3d` call to the server.
-    pub async fn enrollment_3d(&self, req: Request<'_>) -> Result<Response, crate::Error<Error>> {
+    pub async fn enrollment_3d(&self, req: Request<'_>) -> Result<Response, crate::Error> {
         let res = self.build_post("/enrollment-3d", &req).send().await?;
-        match res.status() {
-            StatusCode::OK => Ok(self.parse_json(res).await?),
-            _ => Err(crate::Error::Call(Error::Unknown(res.text().await?))),
-        }
+        self.parse_response(res).await
     }
 }
 
@@ -45,24 +41,12 @@ pub struct Request<'a> {
 pub struct Response {
     /// FaceScan response portion.
     #[serde(flatten)]
-    pub face_scan: Option<FaceScanResponse>,
+    pub face_scan: FaceScanResponse,
     /// The external database ID that was associated with this item.
     #[serde(rename = "externalDatabaseRefID")]
-    pub external_database_ref_id: Option<String>,
-    /// Whether the request had any errors during the execution.
-    pub error: bool,
+    pub external_database_ref_id: String,
     /// Whether the request was successful.
     pub success: bool,
-    /// Potential error message.
-    pub error_message: Option<String>,
-}
-
-/// The `/enrollment-3d`-specific error kind.
-#[derive(thiserror::Error, Debug, PartialEq)]
-pub enum Error {
-    /// Some other error occured.
-    #[error("unknown error: {0}")]
-    Unknown(String),
 }
 
 #[cfg(test)]
@@ -72,7 +56,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{tests::test_client, FaceScanSecurityChecks};
+    use crate::{tests::test_client, FaceScanSecurityChecks, ResponseBodyError, ServerError};
 
     use super::*;
 
@@ -140,41 +124,13 @@ mod tests {
         assert_matches!(
             response,
             Response {
-                external_database_ref_id: Some(external_database_ref_id),
+                external_database_ref_id,
                 success: true,
-                error: false,
-                error_message: None,
-                face_scan: Some(FaceScanResponse {
+                face_scan: FaceScanResponse {
                     age_estimate_group_enum_int: -1,
                     ..
-                }),
+                },
             } if external_database_ref_id == "test_external_dbref_id"
-        )
-    }
-
-    #[test]
-    fn already_enrolled_response_deserialization() {
-        let sample_response = serde_json::json!({
-            "error": true,
-            "errorMessage": "An enrollment already exists for this externalDatabaseRefID.",
-            "success": false,
-            "serverInfo": {
-                "version": "9.0.0-SNAPSHOT",
-                "mode": "Development Only",
-                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
-            }
-        });
-
-        let response: Response = serde_json::from_value(sample_response).unwrap();
-        assert_matches!(
-            response,
-            Response {
-                external_database_ref_id: None,
-                error_message: Some(error_message),
-                error: true,
-                success: false,
-                face_scan: None,
-            } if error_message == "An enrollment already exists for this externalDatabaseRefID."
         )
     }
 
@@ -214,11 +170,9 @@ mod tests {
         assert_matches!(
             response,
             Response {
-                external_database_ref_id: Some(external_database_ref_id),
-                error_message: None,
-                error: false,
+                external_database_ref_id,
                 success: false,
-                face_scan: Some(FaceScanResponse {
+                face_scan: FaceScanResponse {
                     face_scan_security_checks: FaceScanSecurityChecks {
                         audit_trail_verification_check_succeeded: true,
                         face_scan_liveness_check_succeeded: true,
@@ -227,7 +181,7 @@ mod tests {
                     },
                     retry_screen_enum_int: 0,
                     age_estimate_group_enum_int: 2,
-                }),
+                },
             } if external_database_ref_id == "qwe"
         )
     }
@@ -316,7 +270,7 @@ mod tests {
             }
         });
 
-        let expected_response: Response = serde_json::from_value(sample_response.clone()).unwrap();
+        let expected_response = "An enrollment already exists for this externalDatabaseRefID.";
 
         Mock::given(matchers::method("POST"))
             .and(matchers::path("/enrollment-3d"))
@@ -327,8 +281,8 @@ mod tests {
 
         let client = test_client(mock_server.uri());
 
-        let actual_response = client.enrollment_3d(sample_request).await.unwrap();
-        assert_eq!(actual_response, expected_response);
+        let actual_response = client.enrollment_3d(sample_request).await.unwrap_err();
+        assert_matches!(actual_response, crate::Error::Server(ServerError{error_message}) if error_message == expected_response);
     }
 
     #[tokio::test]
@@ -355,7 +309,7 @@ mod tests {
         let actual_error = client.enrollment_3d(sample_request).await.unwrap_err();
         assert_matches!(
             actual_error,
-            crate::Error::Call(Error::Unknown(error_text)) if error_text == sample_response
+            crate::Error::ResponseBody(ResponseBodyError::Json{body, ..}) if body == sample_response
         );
     }
 }
