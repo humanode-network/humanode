@@ -42,19 +42,19 @@ pub enum Error {
     PersonAlreadyEnrolled,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(ft::Error<ft::enrollment3d::Error>),
+    InternalErrorEnrollment(ft::Error),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(ft::Error<ft::db_search::Error>),
+    InternalErrorDbSearch(ft::Error),
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorDbEnroll(ft::Error<ft::db_enroll::Error>),
+    InternalErrorDbEnroll(ft::Error),
     /// Internal error at 3D-DB enrollment due to unsuccessful response.
     InternalErrorDbEnrollUnsuccessful,
 }
@@ -78,7 +78,7 @@ where
         let public_key_hex = hex::encode(public_key);
 
         let unlocked = self.locked.lock().await;
-        let enroll_res = unlocked
+        let enroll_res_or_err = unlocked
             .facetec
             .enrollment_3d(ft::enrollment3d::Request {
                 external_database_ref_id: &public_key_hex,
@@ -87,7 +87,17 @@ where
                 low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
             })
             .await
-            .map_err(Error::InternalErrorEnrollment)?;
+            .map_err(Error::InternalErrorEnrollment);
+
+        let enroll_res = match enroll_res_or_err {
+            Err(Error::InternalErrorEnrollment(ft::Error::Server(server_error)))
+                if server_error.error_message
+                    == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE =>
+            {
+                Err(Error::PublicKeyAlreadyUsed)
+            }
+            other => other,
+        }?;
 
         trace!(message = "Got FaceTec enroll results", ?enroll_res);
 
@@ -96,14 +106,12 @@ where
                 message = "Unsuccessful enroll response from FaceTec server during robonode enroll",
                 ?enroll_res
             );
-            if let Some(error_message) = enroll_res.error_message {
-                if error_message == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE {
-                    return Err(Error::PublicKeyAlreadyUsed);
-                }
-            } else if let Some(face_scan) = enroll_res.face_scan {
-                if !face_scan.face_scan_security_checks.all_checks_succeeded() {
-                    return Err(Error::FaceScanRejected);
-                }
+            if !enroll_res
+                .face_scan
+                .face_scan_security_checks
+                .all_checks_succeeded()
+            {
+                return Err(Error::FaceScanRejected);
             }
             return Err(Error::InternalErrorEnrollmentUnsuccessful);
         }

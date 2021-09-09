@@ -10,18 +10,17 @@ pub enum DbSearchResult {
     /// We can treat it as a valid response with no results for our use case.
     NoGroupError,
     /// Some other error occured.
-    OtherError(ft::Error<ft::db_search::Error>),
+    OtherError(ft::Error),
 }
 
 /// An adapter of the db search results to better fit our logic.
 pub fn db_search_result_adapter(
-    search_res: Result<ft::db_search::Response, ft::Error<ft::db_search::Error>>,
+    search_res: Result<ft::db_search::Response, ft::Error>,
 ) -> DbSearchResult {
     match search_res {
         Ok(res) => DbSearchResult::Response(res),
-        Err(ft::Error::Call(ft::db_search::Error::BadRequest(err)))
+        Err(ft::Error::Server(ft::ServerError { error_message: err }))
             if err
-                .error_message
                 .starts_with("Tried to search a groupName when that groupName does not exist.") =>
         {
             DbSearchResult::NoGroupError

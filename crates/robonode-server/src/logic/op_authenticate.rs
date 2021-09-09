@@ -56,14 +56,14 @@ pub enum Error {
     SignatureInvalid,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(ft::Error<ft::enrollment3d::Error>),
+    InternalErrorEnrollment(ft::Error),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(ft::Error<ft::db_search::Error>),
+    InternalErrorDbSearch(ft::Error),
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB search due to match-level mismatch in
@@ -121,11 +121,14 @@ where
                     "Unsuccessful enroll response from FaceTec server during robonode authenticate",
                 ?enroll_res
             );
-            if let Some(face_scan) = enroll_res.face_scan {
-                if !face_scan.face_scan_security_checks.all_checks_succeeded() {
-                    return Err(Error::FaceScanRejected);
-                }
+            if !enroll_res
+                .face_scan
+                .face_scan_security_checks
+                .all_checks_succeeded()
+            {
+                return Err(Error::FaceScanRejected);
             }
+
             return Err(Error::InternalErrorEnrollmentUnsuccessful);
         }
 
