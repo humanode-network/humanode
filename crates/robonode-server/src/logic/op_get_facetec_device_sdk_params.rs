@@ -2,9 +2,14 @@
 
 use std::convert::TryFrom;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-use super::{Logic, Signer};
+use super::{Logic, LogicOp, Signer};
+
+/// The request of the get facetec device sdk params operation.
+#[derive(Debug, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Request;
 
 /// The response for the get facetec device sdk params operation.
 #[derive(Debug, Serialize)]
@@ -20,13 +25,16 @@ pub struct Response {
 #[derive(Debug)]
 pub enum Error {}
 
-impl<S, PK> Logic<S, PK>
+#[async_trait::async_trait]
+impl<S, PK> LogicOp<Request> for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]>,
 {
-    /// Get the FaceTec Device SDK params.
-    pub async fn get_facetec_device_sdk_params(&self) -> Result<Response, Error> {
+    type Response = Response;
+    type Error = Error;
+
+    async fn call(&self, _req: Request) -> Result<Self::Response, Self::Error> {
         Ok(Response {
             device_key_identifier: self.facetec_device_sdk_params.device_key_identifier.clone(),
             public_face_map_encryption_key: self
