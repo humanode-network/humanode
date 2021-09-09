@@ -9,10 +9,9 @@ use crate::{
     http::handlers,
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
+        traits::LogicOp,
     },
 };
-
-use super::traits::LogicOp;
 
 /// Pass the [`Arc`] to the handler.
 fn with_arc<T>(
@@ -45,20 +44,13 @@ where
         + LogicOp<op_get_facetec_session_token::Request>
         + Send
         + Sync,
-    <L as crate::http::traits::LogicOp<crate::logic::op_enroll::Request>>::Error:
-        warp::reject::Reject,
-    <L as crate::http::traits::LogicOp<crate::logic::op_authenticate::Request>>::Error:
-        warp::reject::Reject,
-    <L as crate::http::traits::LogicOp<crate::logic::op_authenticate::Request>>::Response:
-        Serialize,
-    <L as crate::http::traits::LogicOp<crate::logic::op_get_facetec_device_sdk_params::Request>>::Error:
-        warp::reject::Reject,
-    <L as crate::http::traits::LogicOp<crate::logic::op_get_facetec_device_sdk_params::Request>>::Response:
-        Serialize,
-    <L as crate::http::traits::LogicOp<crate::logic::op_get_facetec_session_token::Request>>::Error:
-        warp::reject::Reject,
-    <L as crate::http::traits::LogicOp<crate::logic::op_get_facetec_session_token::Request>>::Response:
-        Serialize,
+    <L as LogicOp<op_enroll::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_authenticate::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_authenticate::Request>>::Response: Serialize,
+    <L as LogicOp<op_get_facetec_device_sdk_params::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_get_facetec_device_sdk_params::Request>>::Response: Serialize,
+    <L as LogicOp<op_get_facetec_session_token::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_get_facetec_session_token::Request>>::Response: Serialize,
 {
     enroll(Arc::clone(&logic))
         .or(authenticate(Arc::clone(&logic)))

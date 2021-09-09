@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
-use super::{common::*, Logic, Signer, Verifier};
+use super::{common::*, Logic, LogicOp, Signer, Verifier};
 
 /// The request of the authenticate operation.
 #[derive(Debug, Deserialize, Serialize)]
@@ -80,7 +80,7 @@ pub enum Error {
 }
 
 #[async_trait::async_trait]
-impl<S, PK> crate::http::traits::LogicOp<Request> for Logic<S, PK>
+impl<S, PK> LogicOp<Request> for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static + Sync,
     PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,

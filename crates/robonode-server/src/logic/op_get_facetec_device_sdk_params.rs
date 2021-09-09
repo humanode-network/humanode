@@ -4,7 +4,7 @@ use std::convert::TryFrom;
 
 use serde::{Deserialize, Serialize};
 
-use super::{Logic, Signer};
+use super::{Logic, LogicOp, Signer};
 
 /// The request of the get facetec device sdk params operation.
 #[derive(Debug, Deserialize, Serialize)]
@@ -26,7 +26,7 @@ pub struct Response {
 pub enum Error {}
 
 #[async_trait::async_trait]
-impl<S, PK> crate::http::traits::LogicOp<Request> for Logic<S, PK>
+impl<S, PK> LogicOp<Request> for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]>,

@@ -9,7 +9,7 @@ use tracing::{error, trace};
 
 use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
-use super::{common::*, Logic, Signer};
+use super::{common::*, Logic, LogicOp, Signer};
 
 /// The request for the enroll operation.
 #[derive(Debug, Deserialize, Serialize)]
@@ -55,7 +55,7 @@ pub enum Error {
 }
 
 #[async_trait::async_trait]
-impl<S, PK> crate::http::traits::LogicOp<Request> for Logic<S, PK>
+impl<S, PK> LogicOp<Request> for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,

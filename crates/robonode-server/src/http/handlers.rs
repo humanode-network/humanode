@@ -5,9 +5,9 @@ use std::sync::Arc;
 use warp::hyper::StatusCode;
 use warp::Reply;
 
-use super::traits::LogicOp;
 use crate::logic::{
     op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
+    traits::LogicOp,
 };
 
 /// Enroll operation HTTP transport coupling.
