@@ -10,7 +10,7 @@ use super::{Logic, Signer};
 /// The request of the get facetec session token operation.
 #[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Request {}
+pub struct Request;
 
 /// The response for the get facetec session token operation.
 #[derive(Debug, Serialize)]

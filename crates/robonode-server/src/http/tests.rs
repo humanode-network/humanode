@@ -138,6 +138,7 @@ async fn it_denies_enroll_with_invalid_public_key() {
         .await;
 
     assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(res.body(), "Unhandled rejection: InvalidPublicKey");
 }
 
 #[tokio::test]
@@ -185,12 +186,16 @@ async fn it_denies_authenticate() {
 
     let res = warp::test::request()
         .method("POST")
-        .path("/enroll")
+        .path("/authenticate")
         .json(&input)
         .reply(&filter)
         .await;
 
-    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(
+        res.body(),
+        "Unhandled rejection: InternalErrorDbSearchUnsuccessful"
+    );
 }
 
 #[tokio::test]
@@ -240,6 +245,10 @@ async fn it_denies_get_facetec_session_token() {
         .await;
 
     assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(
+        res.body(),
+        "Unhandled rejection: InternalErrorSessionTokenUnsuccessful"
+    );
 }
 
 #[tokio::test]
