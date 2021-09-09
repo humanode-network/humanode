@@ -31,7 +31,7 @@ macro_rules! impl_LogicOp {
             type Response = $response;
             type Error = $error;
 
-            async fn call(&self, req: $request) -> Result<$response, $error> {
+            async fn call(&self, req: $request) -> Result<Self::Response, Self::Error> {
                 self.$call(req)
             }
         }
