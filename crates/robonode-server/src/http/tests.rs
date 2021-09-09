@@ -17,58 +17,58 @@ use crate::{
 
 mock! {
     Logic {
-        fn enroll(&self, req: op_enroll::Request) -> Result<(), op_enroll::Error>;
+        fn enroll(&self, req: op_enroll::Request) -> Result<op_enroll::Response, op_enroll::Error>;
         fn authenticate(&self, req: op_authenticate::Request) -> Result<op_authenticate::Response, op_authenticate::Error>;
         fn get_facetec_session_token(&self, req: op_get_facetec_session_token::Request) -> Result<op_get_facetec_session_token::Response, op_get_facetec_session_token::Error>;
         fn get_facetec_device_sdk_params(&self, req: op_get_facetec_device_sdk_params::Request) -> Result<op_get_facetec_device_sdk_params::Response, op_get_facetec_device_sdk_params::Error>;
     }
 }
 
-#[async_trait::async_trait]
-impl LogicOp<op_enroll::Request> for MockLogic {
-    type Response = ();
-    type Error = op_enroll::Error;
+macro_rules! impl_LogicOp {
+    ($name:ty, $request:ty, $response:ty, $error:ty, $call: ident) => {
+        #[async_trait::async_trait]
+        impl LogicOp<$request> for $name {
+            type Response = $response;
+            type Error = $error;
 
-    async fn call(&self, req: op_enroll::Request) -> Result<Self::Response, Self::Error> {
-        self.enroll(req)
-    }
+            async fn call(&self, req: $request) -> Result<$response, $error> {
+                self.$call(req)
+            }
+        }
+    };
 }
 
-#[async_trait::async_trait]
-impl LogicOp<op_authenticate::Request> for MockLogic {
-    type Response = op_authenticate::Response;
-    type Error = op_authenticate::Error;
+impl_LogicOp!(
+    MockLogic,
+    op_enroll::Request,
+    op_enroll::Response,
+    op_enroll::Error,
+    enroll
+);
 
-    async fn call(&self, req: op_authenticate::Request) -> Result<Self::Response, Self::Error> {
-        self.authenticate(req)
-    }
-}
+impl_LogicOp!(
+    MockLogic,
+    op_authenticate::Request,
+    op_authenticate::Response,
+    op_authenticate::Error,
+    authenticate
+);
 
-#[async_trait::async_trait]
-impl LogicOp<op_get_facetec_session_token::Request> for MockLogic {
-    type Response = op_get_facetec_session_token::Response;
-    type Error = op_get_facetec_session_token::Error;
+impl_LogicOp!(
+    MockLogic,
+    op_get_facetec_session_token::Request,
+    op_get_facetec_session_token::Response,
+    op_get_facetec_session_token::Error,
+    get_facetec_session_token
+);
 
-    async fn call(
-        &self,
-        req: op_get_facetec_session_token::Request,
-    ) -> Result<Self::Response, Self::Error> {
-        self.get_facetec_session_token(req)
-    }
-}
-
-#[async_trait::async_trait]
-impl LogicOp<op_get_facetec_device_sdk_params::Request> for MockLogic {
-    type Response = op_get_facetec_device_sdk_params::Response;
-    type Error = op_get_facetec_device_sdk_params::Error;
-
-    async fn call(
-        &self,
-        req: op_get_facetec_device_sdk_params::Request,
-    ) -> Result<Self::Response, Self::Error> {
-        self.get_facetec_device_sdk_params(req)
-    }
-}
+impl_LogicOp!(
+    MockLogic,
+    op_get_facetec_device_sdk_params::Request,
+    op_get_facetec_device_sdk_params::Response,
+    op_get_facetec_device_sdk_params::Error,
+    get_facetec_device_sdk_params
+);
 
 fn provide_authenticate_response() -> op_authenticate::Response {
     op_authenticate::Response {
@@ -98,7 +98,9 @@ async fn it_works_enroll() {
     };
 
     let mut mock_logic = MockLogic::new();
-    mock_logic.expect_enroll().returning(|_| Ok(()));
+    mock_logic
+        .expect_enroll()
+        .returning(|_| Ok(op_enroll::Response));
 
     let logic = Arc::new(mock_logic);
     let filter = root(logic);

@@ -21,6 +21,11 @@ pub struct Request {
     pub liveness_data: OpaqueLivenessData,
 }
 
+/// The response for the enroll operation.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Response;
+
 /// The errors on the enroll operation.
 #[derive(Debug)]
 pub enum Error {
