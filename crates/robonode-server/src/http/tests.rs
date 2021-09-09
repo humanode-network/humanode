@@ -200,7 +200,7 @@ async fn it_denies_authenticate() {
 
 #[tokio::test]
 async fn it_works_get_facetec_session_token() {
-    let input = op_get_facetec_session_token::Request {};
+    let input = op_get_facetec_session_token::Request;
 
     let mut mock_logic = MockLogic::new();
     mock_logic
@@ -225,7 +225,7 @@ async fn it_works_get_facetec_session_token() {
 
 #[tokio::test]
 async fn it_denies_get_facetec_session_token() {
-    let input = op_get_facetec_session_token::Request {};
+    let input = op_get_facetec_session_token::Request;
 
     let mut mock_logic = MockLogic::new();
     mock_logic
@@ -253,7 +253,7 @@ async fn it_denies_get_facetec_session_token() {
 
 #[tokio::test]
 async fn it_works_get_facetec_device_sdk_params() {
-    let input = op_get_facetec_device_sdk_params::Request {};
+    let input = op_get_facetec_device_sdk_params::Request;
 
     let mut mock_logic = MockLogic::new();
     mock_logic
