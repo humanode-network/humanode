@@ -6,20 +6,17 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
-humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
-pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
+pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", optional = true }
 
 async-trait = "0.1.42"
-pallet-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-consensus-slots = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 thiserror = "1"
 
@@ -27,7 +24,11 @@ thiserror = "1"
 mockall = "0.10"
 node-primitives = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }
 
 [features]
+default = []
+test = ["all"]
+all = ["aura-integration", "bioauth-pallet-integration"]
+aura-integration = ["sp-consensus-aura", "sp-application-crypto"]
+bioauth-pallet-integration = ["pallet-bioauth"]

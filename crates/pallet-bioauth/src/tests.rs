@@ -1,21 +1,20 @@
-use std::convert::TryInto;
-
 use crate as pallet_bioauth;
 use crate::*;
 use crate::{mock::*, Error};
 use frame_support::pallet_prelude::*;
 use frame_support::{assert_noop, assert_ok};
-use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 
-pub fn make_input(public_key: &[u8], nonce: &[u8], signature: &[u8]) -> crate::Authenticate {
-    let ticket =
-        primitives_auth_ticket::OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
-            public_key: Vec::from(public_key),
-            authentication_nonce: Vec::from(nonce),
-        });
+pub fn make_input(
+    public_key: &[u8],
+    nonce: &[u8],
+    signature: &[u8],
+) -> crate::Authenticate<MockOpaqueAuthTicket, Vec<u8>> {
     crate::Authenticate {
-        ticket: ticket.into(),
-        ticket_signature: Vec::from(signature),
+        ticket: MockOpaqueAuthTicket(StoredAuthTicket {
+            public_key: public_key.into(),
+            nonce: nonce.into(),
+        }),
+        ticket_signature: signature.into(),
     }
 }
 
@@ -28,9 +27,9 @@ fn it_permits_authentication_with_an_empty_state() {
         assert_ok!(Bioauth::authenticate(Origin::none(), input));
         assert_eq!(
             Bioauth::stored_auth_tickets(),
-            vec![crate::StoredAuthTicket {
-                public_key: Vec::from(&b"qwe"[..]),
-                nonce: Vec::from(&b"rty"[..]),
+            vec![StoredAuthTicket {
+                public_key: b"qwe".to_vec(),
+                nonce: b"rty".to_vec(),
             }]
         );
     });
@@ -106,10 +105,10 @@ fn signed_ext_check_bioauth_tx_permit_empty_state() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
         let input = make_input(b"qwe", b"rty", b"should_be_valid");
-
-        let opaque_auth_ticket: OpaqueAuthTicket = input.ticket.clone().into();
-        let auth_ticket: AuthTicket = (&opaque_auth_ticket).try_into().unwrap();
-        let expected_tag: StoredAuthTicket = auth_ticket.into();
+        let expected_tag = StoredAuthTicket {
+            public_key: b"qwe".to_vec(),
+            nonce: b"rty".to_vec(),
+        };
 
         let call = <pallet_bioauth::Call<Test>>::authenticate(input).into();
         let info = DispatchInfo::default();

@@ -8,9 +8,9 @@ use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
-use sc_service::{Error as ServiceError, PartialComponents, TaskManager};
+use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sp_consensus::SlotData;
-use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
+use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
 use tracing::*;
 
 use crate::configuration::Configuration;
@@ -30,6 +30,15 @@ type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 
+/// Construct a bare keystore from the configuration.
+pub fn keystore_container(
+    config: &Configuration,
+) -> Result<(KeystoreContainer, TaskManager), ServiceError> {
+    let (_client, _backend, keystore_container, task_manager) =
+        sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config.substrate, None)?;
+    Ok((keystore_container, task_manager))
+}
+
 /// Extract substrate partial components.
 pub fn new_partial(
     config: &Configuration,
@@ -41,7 +50,13 @@ pub fn new_partial(
         sc_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
-            bioauth_consensus::BioauthBlockImport<FullBackend, Block, FullClient>,
+            bioauth_consensus::BioauthBlockImport<
+                FullBackend,
+                Block,
+                FullClient,
+                bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
+                bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
+            >,
             SlotDuration,
             Duration,
         ),
@@ -65,8 +80,17 @@ pub fn new_partial(
     );
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
-    let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<FullBackend, _, _> =
-        bioauth_consensus::BioauthBlockImport::new(Arc::clone(&client));
+    let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<
+        FullBackend,
+        _,
+        _,
+        _,
+        _,
+    > = bioauth_consensus::BioauthBlockImport::new(
+        Arc::clone(&client),
+        bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
+        bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+    );
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
@@ -255,33 +279,42 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let keystore = keystore_container.keystore();
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
-            info!("bioauth flow starting up");
-
             let aura_public_key =
-                crate::validator_key::AuraPublic::from_keystore(keystore.as_ref())
-                    .await
-                    .expect("vector has to be of length 1 at this point");
+                crate::validator_key::AuraPublic::from_keystore(keystore.as_ref()).await;
+
+            let aura_public_key = match aura_public_key {
+                Some(key) => {
+                    info!("Running bioauth flow for {}", key);
+                    key
+                }
+                None => {
+                    warn!("No validator key found, skipping bioauth");
+                    return;
+                }
+            };
+
+            info!("Bioauth flow starting up");
 
             if bioauth_perform_enroll {
-                info!("bioauth flow - enrolling in progress");
+                info!("Bioauth flow - enrolling in progress");
 
                 if let Some(qrcode) = webapp_qrcode.as_ref() {
                     qrcode.print()
                 } else {
-                    info!("bioauth flow - waiting for enroll");
+                    info!("Bioauth flow - waiting for enroll");
                 }
 
                 flow.enroll(&aura_public_key).await.expect("enroll failed");
 
-                info!("bioauth flow - enrolling complete");
+                info!("Bioauth flow - enrolling complete");
             }
 
-            info!("bioauth flow - authentication in progress");
+            info!("Bioauth flow - authentication in progress");
 
             if let Some(qrcode) = webapp_qrcode.as_ref() {
                 qrcode.print()
             } else {
-                info!("bioauth flow - waiting for authentication");
+                info!("Bioauth flow - waiting for authentication");
             }
 
             let aura_signer = crate::validator_key::AuraSigner {
@@ -294,12 +327,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 match result {
                     Ok(v) => break v,
                     Err(error) => {
-                        error!(message = "bioauth flow - authentication failure", ?error);
+                        error!(message = "Bioauth flow - authentication failure", ?error);
                     }
                 };
             };
 
-            info!("bioauth flow - authentication complete");
+            info!("Bioauth flow - authentication complete");
 
             info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
 

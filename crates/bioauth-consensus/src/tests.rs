@@ -1,22 +1,29 @@
-use super::*;
 use mockall::predicate::*;
 use mockall::*;
 use node_primitives::{Block, BlockNumber, Hash, Header};
-use pallet_bioauth::StoredAuthTicket;
-use sp_api::{ApiError, ApiRef, NativeOrEncoded};
-use sp_consensus::BlockOrigin;
-use sp_consensus_aura::digests::CompatibleDigestItem;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_consensus_aura::Slot;
-use sp_core::crypto::Pair;
-use sp_runtime::traits::DigestItemFor;
-use sp_runtime::Digest;
-use std::str::FromStr;
+use pallet_bioauth::{self, BioauthApi, StoredAuthTicket};
+use sc_client_api::Finalizer;
+use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
+use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi, TransactionFor};
+use sp_application_crypto::Pair;
+use sp_blockchain::{well_known_cache_keys, HeaderBackend};
+use sp_consensus::{BlockOrigin, Error as ConsensusError};
+use sp_consensus_aura::{
+    digests::CompatibleDigestItem, sr25519::AuthorityId as AuraId, AuraApi, Slot,
+};
+use sp_runtime::{traits::DigestItemFor, Digest};
+use std::{collections::HashMap, str::FromStr, sync::Arc};
+
+use crate::{BioauthBlockImport, BioauthBlockImportError};
+
+type MockValidatorPublicKey = AuraId;
+
+type MockAuthTicket = StoredAuthTicket<MockValidatorPublicKey>;
 
 mock! {
     RuntimeApi {
         fn stored_auth_tickets(&self, _at: &sp_api::BlockId<Block>) -> Result<
-            NativeOrEncoded<Vec<StoredAuthTicket>>,
+            NativeOrEncoded<Vec<MockAuthTicket>>,
             ApiError
         >;
 
@@ -105,10 +112,10 @@ impl<'a> BlockImport<Block> for &'a MockClient {
 }
 
 sp_api::mock_impl_runtime_apis! {
-    impl BioauthApi<Block> for MockWrapperRuntimeApi {
+    impl BioauthApi<Block, MockValidatorPublicKey> for MockWrapperRuntimeApi {
         #[advanced]
         fn stored_auth_tickets(&self, at: &sp_api::BlockId<Block>) -> Result<
-            NativeOrEncoded<Vec<StoredAuthTicket>>,
+            NativeOrEncoded<Vec<MockAuthTicket>>,
             ApiError
         > {
             self.0.stored_auth_tickets(at)
@@ -175,14 +182,37 @@ fn prepare_block_import_with_aura_pre_digest(
     )
 }
 
-fn assert_sp_consensus_error(err: sp_consensus::Error, bioauth_err: BioauthBlockImportError) {
-    if let sp_consensus::Error::Other(e) = err {
-        if let Some(v) = e.downcast_ref::<BioauthBlockImportError>() {
-            assert_eq!(*v, bioauth_err);
-            return;
+fn extract_bioauth_err(
+    err: &sp_consensus::Error,
+) -> &BioauthBlockImportError<
+    crate::aura::AuraBlockAuthorExtractorError,
+    crate::bioauth::AuraAuthorizationVerifierError,
+> {
+    if let sp_consensus::Error::Other(boxed_err) = err {
+        if let Some(raw_err) = boxed_err.downcast_ref::<BioauthBlockImportError<
+            crate::aura::AuraBlockAuthorExtractorError,
+            crate::bioauth::AuraAuthorizationVerifierError,
+        >>() {
+            return raw_err;
         }
     }
-    panic!("Unexpected error");
+    panic!("Unexpected consensus error: {}", err);
+}
+
+macro_rules! assert_consensus_error {
+    ($expression:expr, $( $pattern:pat_param )|+ $( if $guard: expr )? $(,)?) => {
+        {
+            let err_hold = $expression;
+            let err = extract_bioauth_err(&err_hold);
+            match err {
+                $( $pattern )|+ $( if $guard )? => (),
+                ref e => panic!(
+                    "assertion failed: `{:?}` does not match `{}`",
+                    e, stringify!($( $pattern )|+ $( if $guard )?)
+                )
+            }
+        }
+    }
 }
 
 #[tokio::test]
@@ -207,7 +237,13 @@ async fn it_denies_block_import_with_error_extract_authorities() {
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+        _,
+        _,
+    > = BioauthBlockImport::new(
+        Arc::clone(&client),
+        crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
+        crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+    );
 
     let res = bioauth_block_import
         .import_block(
@@ -216,9 +252,11 @@ async fn it_denies_block_import_with_error_extract_authorities() {
         )
         .await;
 
-    assert_sp_consensus_error(
+    assert_consensus_error!(
         res.unwrap_err(),
-        BioauthBlockImportError::ErrorExtractAuthorities,
+        BioauthBlockImportError::BlockAuthorExtraction(
+            crate::aura::AuraBlockAuthorExtractorError::UnableToExtractAuthorities(err),
+        ) if err.to_string() == "Test error",
     );
 }
 
@@ -248,7 +286,13 @@ async fn it_denies_block_import_with_invalid_slot_number() {
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+        _,
+        _,
+    > = BioauthBlockImport::new(
+        Arc::clone(&client),
+        crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
+        crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+    );
 
     let res = bioauth_block_import
         .import_block(
@@ -257,7 +301,10 @@ async fn it_denies_block_import_with_invalid_slot_number() {
         )
         .await;
 
-    assert_sp_consensus_error(res.unwrap_err(), BioauthBlockImportError::InvalidSlotNumber);
+    assert_consensus_error!(
+        res.unwrap_err(),
+        BioauthBlockImportError::BlockAuthorExtraction(_)
+    );
 }
 
 #[tokio::test]
@@ -292,7 +339,13 @@ async fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+        _,
+        _,
+    > = BioauthBlockImport::new(
+        Arc::clone(&client),
+        crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
+        crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+    );
 
     let res = bioauth_block_import
         .import_block(
@@ -301,9 +354,11 @@ async fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
         )
         .await;
 
-    assert_sp_consensus_error(
+    assert_consensus_error!(
         res.unwrap_err(),
-        BioauthBlockImportError::ErrorExtractStoredAuthTickets,
+        BioauthBlockImportError::AuthorizationVerifier(
+            crate::bioauth::AuraAuthorizationVerifierError::UnableToExtractStoredAuthTickets(_)
+        ),
     );
 }
 
@@ -324,12 +379,15 @@ async fn it_denies_block_import_with_not_bioauth_authorized() {
     mock_runtime_api
         .expect_stored_auth_tickets()
         .returning(|_| {
-            Ok(NativeOrEncoded::from(vec![
-                pallet_bioauth::StoredAuthTicket {
-                    public_key: "invalid_author".as_bytes().to_vec(),
-                    nonce: "1".as_bytes().to_vec(),
-                },
-            ]))
+            Ok(NativeOrEncoded::from(vec![MockAuthTicket {
+                public_key: sp_consensus_aura::sr25519::AuthorityPair::from_string(
+                    &format!("//{}", "Bob"),
+                    None,
+                )
+                .expect("static values are valid; qed")
+                .public(),
+                nonce: b"1".to_vec(),
+            }]))
         });
 
     let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
@@ -344,7 +402,13 @@ async fn it_denies_block_import_with_not_bioauth_authorized() {
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+        _,
+        _,
+    > = BioauthBlockImport::new(
+        Arc::clone(&client),
+        crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
+        crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+    );
 
     let res = bioauth_block_import
         .import_block(
@@ -353,7 +417,7 @@ async fn it_denies_block_import_with_not_bioauth_authorized() {
         )
         .await;
 
-    assert_sp_consensus_error(
+    assert_consensus_error!(
         res.unwrap_err(),
         BioauthBlockImportError::NotBioauthAuthorized,
     );
@@ -376,18 +440,15 @@ async fn it_permits_block_import_with_valid_data() {
     mock_runtime_api
         .expect_stored_auth_tickets()
         .returning(|_| {
-            Ok(NativeOrEncoded::from(vec![
-                pallet_bioauth::StoredAuthTicket {
-                    public_key: sp_consensus_aura::sr25519::AuthorityPair::from_string(
-                        &format!("//{}", "Alice"),
-                        None,
-                    )
-                    .expect("static values are valid; qed")
-                    .public()
-                    .to_raw_vec(),
-                    nonce: "1".as_bytes().to_vec(),
-                },
-            ]))
+            Ok(NativeOrEncoded::from(vec![MockAuthTicket {
+                public_key: sp_consensus_aura::sr25519::AuthorityPair::from_string(
+                    &format!("//{}", "Alice"),
+                    None,
+                )
+                .expect("static values are valid; qed")
+                .public(),
+                nonce: b"1".to_vec(),
+            }]))
         });
 
     let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
@@ -410,7 +471,13 @@ async fn it_permits_block_import_with_valid_data() {
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-    > = BioauthBlockImport::new(Arc::clone(&client));
+        _,
+        _,
+    > = BioauthBlockImport::new(
+        Arc::clone(&client),
+        crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
+        crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+    );
 
     let res = bioauth_block_import
         .import_block(

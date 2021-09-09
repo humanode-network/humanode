@@ -467,22 +467,18 @@ name = "bioauth-consensus"
 version = "0.1.0"
 dependencies = [
  "async-trait",
- "humanode-runtime",
  "mockall",
  "node-primitives",
- "pallet-aura",
  "pallet-bioauth",
+ "parity-scale-codec",
  "sc-client-api",
  "sc-consensus",
  "sc-service",
- "sc-tracing 4.0.0-dev",
  "sp-api",
  "sp-application-crypto",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-aura",
- "sp-consensus-slots",
- "sp-core",
  "sp-runtime",
  "thiserror",
  "tokio 1.9.0",
@@ -2390,6 +2386,7 @@ dependencies = [
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
+ "primitives-auth-ticket",
  "robonode-crypto",
  "serde",
  "sp-api",
@@ -4317,9 +4314,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "parity-scale-codec",
- "primitives-auth-ticket",
  "serde",
- "serde-nostd",
  "sp-api",
  "sp-core",
  "sp-io",
@@ -6624,13 +6619,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f03b9878abf6d14e6779d3f24f07b2cfa90352cfec4acc5aab8f1ac7f146fae8"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde-nostd"
-version = "0.1.0"
-dependencies = [
- "serde",
 ]
 
 [[package]]
@@ -9036,8 +9024,3 @@ dependencies = [
  "cc",
  "libc",
 ]
-
-[[patch.unused]]
-name = "parity-db"
-version = "0.2.3"
-source = "git+https://github.com/paritytech/parity-db?rev=f349aa30e76f3219a90aaae99c0f3f07d994692e#f349aa30e76f3219a90aaae99c0f3f07d994692e"

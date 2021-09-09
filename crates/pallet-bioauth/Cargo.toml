@@ -6,9 +6,6 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
-primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
-serde-nostd = { version = "0.1", path = "../serde-nostd", default-features = false }
-
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -26,13 +23,12 @@ sp-io = { default-features = false, git = "https://github.com/humanode-network/s
 default = ["std"]
 std = [
   "serde",
-  "primitives-auth-ticket/std",
-  "serde-nostd/std",
   "codec/std",
   "frame-support/std",
   "frame-system/std",
   "frame-benchmarking/std",
   "sp-std/std",
+  "sp-runtime/std",
 ]
 runtime-benchmarks = ["frame-benchmarking"]
 try-runtime = ["frame-support/try-runtime"]
