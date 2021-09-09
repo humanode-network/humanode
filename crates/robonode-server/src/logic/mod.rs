@@ -15,7 +15,7 @@ pub mod op_get_facetec_device_sdk_params;
 pub mod op_get_facetec_session_token;
 #[cfg(test)]
 mod tests;
-pub mod traits;
+mod traits;
 
 pub use traits::*;
 

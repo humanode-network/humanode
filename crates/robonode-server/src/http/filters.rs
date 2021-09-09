@@ -9,7 +9,7 @@ use crate::{
     http::handlers,
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
-        traits::LogicOp,
+        LogicOp,
     },
 };
 
