@@ -17,13 +17,13 @@ pub type MatchLevel = i64;
 #[derive(Debug, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct FaceScanSecurityChecks {
-    /// TODO: document
+    /// The Audit Trail Image came from the same Session as the FaceScan and the Audit Trail Image Matches the User in the FaceScan.
     pub audit_trail_verification_check_succeeded: bool,
-    /// TODO: document
+    /// The FaceScan came from a Live Human and Liveness was Proven.
     pub face_scan_liveness_check_succeeded: bool,
-    /// TODO: document
+    /// The FaceScan was not a replay.
     pub replay_check_succeeded: bool,
-    /// TODO: document
+    /// The Session Token was valid and not expired.
     pub session_token_check_succeeded: bool,
 }
 
