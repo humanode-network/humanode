@@ -170,7 +170,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         None,
     );
 
-    let bioauth_proposer: bioauth_consensus::BioauthProposer<
+    let proposer_factory: bioauth_consensus::BioauthProposer<
         Block,
         bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
         _,
@@ -238,7 +238,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             client: Arc::clone(&client),
             select_chain,
             block_import: bioauth_consensus_block_import,
-            proposer_factory: bioauth_proposer,
+            proposer_factory,
             create_inherent_data_providers: move |_, ()| async move {
                 let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
