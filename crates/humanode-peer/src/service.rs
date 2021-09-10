@@ -173,12 +173,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let bioauth_proposer: bioauth_consensus::BioauthProposer<
         Block,
         bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient>,
-        sc_basic_authorship::ProposerFactory<
-            sc_transaction_pool::FullPool<Block, FullClient>,
-            FullBackend,
-            FullClient,
-            sp_consensus::DisableProofRecording,
-        >,
+        _,
     > = bioauth_consensus::BioauthProposer::new(
         proposer_factory,
         keystore_container.sync_keystore(),
