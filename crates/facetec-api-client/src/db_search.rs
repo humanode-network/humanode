@@ -259,7 +259,7 @@ mod tests {
             }
         });
 
-        let expected_error= "Tried to search a groupName when that groupName does not exist. groupName: humanode. Try adding a 3D FaceMap by calling /3d-db/enroll first.";
+        let expected_error = "Tried to search a groupName when that groupName does not exist. groupName: humanode. Try adding a 3D FaceMap by calling /3d-db/enroll first.";
 
         Mock::given(matchers::method("POST"))
             .and(matchers::path("/3d-db/search"))

@@ -61,12 +61,11 @@ mod tests {
         });
 
         let response: Response = serde_json::from_value(sample_response).unwrap();
-        assert_matches!(
+        assert_eq!(
             response,
             Response {
                 did_delete_database: true,
-                success: true,
-                ..
+                success: true
             }
         )
     }

@@ -81,7 +81,7 @@ mod tests {
         });
 
         let response: Response = serde_json::from_value(sample_response).unwrap();
-        assert_matches!(response, Response { success: true, .. })
+        assert_eq!(response, Response { success: true })
     }
 
     #[tokio::test]
