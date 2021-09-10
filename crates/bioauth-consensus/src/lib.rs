@@ -226,10 +226,14 @@ where
             ))))
         };
 
-        let aura_public_keys = sp_keystore::SyncCryptoStore::sr25519_public_keys(
-            self.keystore.as_ref(),
-            sp_application_crypto::key_types::AURA,
-        );
+        let keystore_ref = self.keystore.as_ref();
+
+        let aura_public_keys = tokio::task::block_in_place(move || {
+            sp_keystore::SyncCryptoStore::sr25519_public_keys(
+                keystore_ref,
+                sp_application_crypto::key_types::AURA,
+            )
+        });
 
         assert!(
             aura_public_keys.len() == 1,
