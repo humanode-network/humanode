@@ -78,7 +78,7 @@ where
         let public_key_hex = hex::encode(public_key);
 
         let unlocked = self.locked.lock().await;
-        let enroll_res_or_err = unlocked
+        let enroll_res = unlocked
             .facetec
             .enrollment_3d(ft::enrollment3d::Request {
                 external_database_ref_id: &public_key_hex,
@@ -87,17 +87,17 @@ where
                 low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
             })
             .await
-            .map_err(Error::InternalErrorEnrollment);
-
-        let enroll_res = match enroll_res_or_err {
-            Err(Error::InternalErrorEnrollment(ft::Error::Server(server_error)))
-                if server_error.error_message
-                    == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE =>
-            {
-                Err(Error::PublicKeyAlreadyUsed)
-            }
-            other => other,
-        }?;
+            .map_err(|err| -> Error {
+                match err {
+                    ft::Error::Server(server_error)
+                        if server_error.error_message
+                            == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE =>
+                    {
+                        Error::PublicKeyAlreadyUsed
+                    }
+                    _ => Error::InternalErrorEnrollment(err),
+                }
+            })?;
 
         trace!(message = "Got FaceTec enroll results", ?enroll_res);
 
