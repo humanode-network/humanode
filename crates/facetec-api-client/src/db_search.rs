@@ -231,7 +231,7 @@ mod tests {
         let actual_error = client.db_search(sample_request).await.unwrap_err();
         assert_matches!(
             actual_error,
-            crate::Error::Server(ServerError {error_message: err}) if err == expected_error
+            crate::Error::Server(ServerError {error_message}) if error_message == expected_error
         );
     }
 
@@ -273,7 +273,7 @@ mod tests {
         let actual_error = client.db_search(sample_request).await.unwrap_err();
         assert_matches!(
             actual_error,
-            crate::Error::Server(ServerError {error_message: err}) if err == expected_error
+            crate::Error::Server(ServerError {error_message}) if error_message == expected_error
         );
     }
 }

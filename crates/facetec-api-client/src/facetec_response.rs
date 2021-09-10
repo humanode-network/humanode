@@ -70,7 +70,7 @@ mod tests {
 
         assert_matches!(
             response,
-            FacetecResponse(Err(ServerError {error_message: err})) if err == expected_error
+            FacetecResponse(Err(ServerError {error_message})) if error_message == expected_error
         );
     }
 
@@ -96,7 +96,7 @@ mod tests {
 
         assert_matches!(
             response,
-            FacetecResponse(Err(ServerError {error_message: err})) if err == expected_error
+            FacetecResponse(Err(ServerError {error_message})) if error_message == expected_error
         );
     }
 
@@ -119,7 +119,7 @@ mod tests {
 
         assert_matches!(
             response,
-            FacetecResponse(Err(ServerError {error_message: err})) if err == expected_error
+            FacetecResponse(Err(ServerError {error_message})) if error_message == expected_error
         );
     }
 
