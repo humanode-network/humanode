@@ -147,11 +147,6 @@ where
             return Err(mkerr(BioauthBlockImportError::NotBioauthAuthorized));
         }
 
-        // Finalize previous imported block.
-        self.inner
-            .finalize_block(at, None, false)
-            .map_err(|_| sp_consensus::Error::CannotPropose)?;
-
         // Import a new block.
         self.inner.import_block(block, cache).await
     }
