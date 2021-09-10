@@ -46,11 +46,11 @@ pub enum Error {
     Reqwest(#[from] reqwest::Error),
 }
 
-/// The generic error response.
+/// An error response originating from the FaceTec Server itself.
 #[derive(Error, Debug, Deserialize)]
 #[error("server error: {error_message}")]
 pub struct ServerError {
-    /// An error from server response.
+    /// A human-readable message characterizing the error.
     #[serde(rename = "errorMessage")]
     pub error_message: String,
 }
@@ -139,7 +139,7 @@ where
         }
     }
 
-    /// An custom JSON parsing logic for common response.
+    /// Parse a FaceTec Server response or generate a parsing error.
     async fn parse_response<T>(&self, res: Response) -> Result<T, crate::Error>
     where
         T: for<'de> Deserialize<'de> + std::fmt::Debug,

@@ -19,8 +19,8 @@ pub fn db_search_result_adapter(
 ) -> DbSearchResult {
     match search_res {
         Ok(res) => DbSearchResult::Response(res),
-        Err(ft::Error::Server(ft::ServerError { error_message: err }))
-            if err
+        Err(ft::Error::Server(ft::ServerError { error_message }))
+            if error_message
                 .starts_with("Tried to search a groupName when that groupName does not exist.") =>
         {
             DbSearchResult::NoGroupError

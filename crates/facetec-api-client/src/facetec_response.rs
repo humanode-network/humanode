@@ -161,6 +161,7 @@ mod tests {
 
         assert_eq!(response, expected_error);
     }
+
     #[test]
     fn correct_response_with_excess_error_message() {
         use crate::db_enroll::Response;
