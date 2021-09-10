@@ -10,18 +10,18 @@
 #[macro_use]
 extern crate assert_matches;
 
+use facetec_response::FacetecResponse;
 use reqwest::{RequestBuilder, Response};
 use serde::{de::DeserializeOwned, Deserialize};
-use serde_util::FacetecResponse;
 use thiserror::Error;
 
 pub mod db_delete;
 pub mod db_enroll;
 pub mod db_search;
 pub mod enrollment3d;
+pub mod facetec_response;
 pub mod reset;
 pub mod response_body_error;
-pub mod serde_util;
 pub mod session_token;
 
 mod types;
@@ -50,7 +50,7 @@ pub enum Error {
 #[derive(Error, Debug, Deserialize)]
 #[error("server error: {error_message}")]
 pub struct ServerError {
-    /// An error from server response
+    /// An error from server response.
     #[serde(rename = "errorMessage")]
     pub error_message: String,
 }
@@ -142,7 +142,7 @@ where
     /// An custom JSON parsing logic for common response.
     async fn parse_response<T>(&self, res: Response) -> Result<T, crate::Error>
     where
-        T: for<'de> Deserialize<'de>,
+        T: for<'de> Deserialize<'de> + std::fmt::Debug,
     {
         let body: FacetecResponse<T> = self.parse_json(res).await?;
         Ok(body.into_inner()?)

@@ -1,18 +1,7 @@
-//! Utilities for serde.
+//! Generic Facetec response deserializer.
 
 use crate::ServerError;
 use serde::{Deserialize, Deserializer};
-
-/// Internal type to parse values on the contents.
-/// Useful for extracting errors from 200-ok responses.
-#[derive(Debug, Deserialize, PartialEq)]
-#[serde(untagged)]
-enum Either<A, B> {
-    /// Left variant.
-    Left(A),
-    /// Right variant.
-    Right(B),
-}
 
 /// The generic response.
 #[derive(Debug)]
@@ -27,18 +16,40 @@ impl<T> FacetecResponse<T> {
 
 impl<'de, T> Deserialize<'de> for FacetecResponse<T>
 where
-    T: Deserialize<'de>,
+    T: Deserialize<'de> + std::fmt::Debug,
 {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        let helper = Either::deserialize(deserializer)?;
+        #[allow(clippy::missing_docs_in_private_items)]
+        #[derive(Deserialize, Debug)]
+        struct Helper<T> {
+            error: bool,
+            #[serde(flatten)]
+            server_error: Option<ServerError>,
+            #[serde(flatten)]
+            content: Option<T>,
+        }
 
-        Ok(FacetecResponse(match helper {
-            Either::Left(server_error) => Err(server_error),
-            Either::Right(correct_response) => Ok(correct_response),
-        }))
+        let helper = Helper::deserialize(deserializer)?;
+
+        match helper {
+            Helper {
+                error: false,
+                content: Some(content),
+                ..
+            } => Ok(FacetecResponse(Ok(content))),
+            Helper {
+                error: true,
+                server_error: Some(server_error),
+                ..
+            } => Ok(FacetecResponse(Err(server_error))),
+            helper => Err(serde::de::Error::custom(format!(
+                "unable to pick variant: {:?}",
+                helper
+            ))),
+        }
     }
 }
 
@@ -109,6 +120,67 @@ mod tests {
         assert_matches!(
             response,
             FacetecResponse(Err(ServerError {error_message: err})) if err == expected_error
+        );
+    }
+
+    #[test]
+    fn unable_to_pick_variant_missing_error_message() {
+        let sample_response = serde_json::json!({
+            "error": true,
+            "success": false,
+            "serverInfo": {
+                "version": "9.0.0-SNAPSHOT",
+                "mode": "Development Only",
+                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
+            }
+        });
+
+        let response =
+            serde_json::from_value::<FacetecResponse<crate::db_enroll::Response>>(sample_response)
+                .unwrap_err()
+                .to_string();
+        let expected_error =
+            "unable to pick variant: Helper { error: true, server_error: None, content: Some(Response { success: false }) }".to_owned();
+
+        assert_eq!(response, expected_error);
+    }
+
+    #[test]
+    fn unable_to_pick_variant_excess_error_message() {
+        let sample_response = serde_json::json!({
+            "error": false,
+            "errorMessage": "An enrollment already exists for this externalDatabaseRefID."
+        });
+
+        let response =
+            serde_json::from_value::<FacetecResponse<crate::db_enroll::Response>>(sample_response)
+                .unwrap_err()
+                .to_string();
+        let expected_error =
+        "unable to pick variant: Helper { error: false, server_error: Some(ServerError { error_message: \"An enrollment already exists for this externalDatabaseRefID.\" }), content: None }".to_owned();
+
+        assert_eq!(response, expected_error);
+    }
+    #[test]
+    fn correct_response_with_excess_error_message() {
+        use crate::db_enroll::Response;
+
+        let sample_response = serde_json::json!({
+            "error": false,
+            "errorMessage": "An enrollment already exists for this externalDatabaseRefID.",
+            "success": false,
+            "serverInfo": {
+                "version": "9.0.0-SNAPSHOT",
+                "mode": "Development Only",
+                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
+            }
+        });
+
+        let response: FacetecResponse<Response> = serde_json::from_value(sample_response).unwrap();
+
+        assert_matches!(
+            response,
+            FacetecResponse(Ok(Response{success})) if !success
         );
     }
 }
