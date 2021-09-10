@@ -5,6 +5,9 @@ edition = "2018"
 authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
+# Run the peer by default.
+default-run = "humanode-peer"
+
 [dependencies]
 bioauth-consensus = { version = "0.1", path = "../bioauth-consensus", features = [
   "aura-integration",

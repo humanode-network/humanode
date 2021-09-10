@@ -4,15 +4,15 @@ use std::convert::TryFrom;
 
 use facetec_api_client as ft;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use tracing::{error, trace};
 
 use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
-use super::{common::*, Logic, Signer};
+use super::{common::*, Logic, LogicOp, Signer};
 
 /// The request for the enroll operation.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Request {
     /// The public key of the validator.
@@ -20,6 +20,11 @@ pub struct Request {
     /// The liveness data that the validator owner provided.
     pub liveness_data: OpaqueLivenessData,
 }
+
+/// The response for the enroll operation.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Response;
 
 /// The errors on the enroll operation.
 #[derive(Debug)]
@@ -54,13 +59,17 @@ pub enum Error {
     InternalErrorDbEnrollUnsuccessful,
 }
 
-impl<S, PK> Logic<S, PK>
+#[async_trait::async_trait]
+impl<S, PK> LogicOp<Request> for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,
 {
+    type Response = ();
+    type Error = Error;
+
     /// An enroll invocation handler.
-    pub async fn enroll(&self, req: Request) -> Result<(), Error> {
+    async fn call(&self, req: Request) -> Result<Self::Response, Self::Error> {
         let public_key = PK::try_from(&req.public_key).map_err(|_| Error::InvalidPublicKey)?;
 
         let liveness_data =

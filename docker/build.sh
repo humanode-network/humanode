@@ -6,8 +6,8 @@ cd "$(dirname "${BASH_SOURCE[0]}")"/..
 
 # Build parameters.
 PLATFORM="linux/amd64"
-BUILDER_CONTAINER_BASE="rust:latest"
-RUNTIME_CONTAINER_BASE="debian:stretch"
+BUILDER_CONTAINER_BASE="rust:bullseye"
+RUNTIME_CONTAINER_BASE="debian:bullseye"
 BUILDER_CONTAINER_TAG="humanode-builder"
 RUNTIME_CONTAINER_TAG="humanode"
 BUILD_VOLUMES_PATH="$(pwd)/target/docker/$PLATFORM"
@@ -62,7 +62,7 @@ BIN_TARGETS=(
 
 # Populate the context for the runtime image build.
 for TARGET in "${BIN_TARGETS[@]}"; do
-  cp -t "$TMP_ARTIFACTS_DIR" "$HOST_TARGET/release/${TARGET}" 
+  cp -t "$TMP_ARTIFACTS_DIR" "$HOST_TARGET/release/${TARGET}"
 done
 
 # Build docker image.

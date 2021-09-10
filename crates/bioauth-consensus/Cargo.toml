@@ -10,6 +10,7 @@ pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", optional = true 
 
 async-trait = "0.1.42"
 futures = "0.3"
+codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }

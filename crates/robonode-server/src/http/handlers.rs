@@ -1,40 +1,39 @@
 //! Handlers, the HTTP transport coupling for the internal logic.
 
-use std::{convert::TryFrom, sync::Arc};
+use serde::Serialize;
+use std::sync::Arc;
 use warp::hyper::StatusCode;
 use warp::Reply;
 
 use crate::logic::{
     op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
-    Logic, Signer, Verifier,
+    LogicOp,
 };
 
 /// Enroll operation HTTP transport coupling.
-pub async fn enroll<S, PK>(
-    logic: Arc<Logic<S, PK>>,
+pub async fn enroll<L>(
+    logic: Arc<L>,
     input: op_enroll::Request,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
-    S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,
+    L: LogicOp<op_enroll::Request>,
+    L::Error: warp::reject::Reject,
 {
-    logic.enroll(input).await.map_err(warp::reject::custom)?;
+    logic.call(input).await.map_err(warp::reject::custom)?;
     Ok(StatusCode::CREATED)
 }
 
 /// Authenticate operation HTTP transport coupling.
-pub async fn authenticate<S, PK>(
-    logic: Arc<Logic<S, PK>>,
+pub async fn authenticate<L>(
+    logic: Arc<L>,
     input: op_authenticate::Request,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
-    S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,
+    L: LogicOp<op_authenticate::Request>,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
 {
-    let res = logic
-        .authenticate(input)
-        .await
-        .map_err(warp::reject::custom)?;
+    let res = logic.call(input).await.map_err(warp::reject::custom)?;
 
     let reply = warp::reply::json(&res);
     let reply = warp::reply::with_status(reply, StatusCode::OK);
@@ -42,15 +41,16 @@ where
 }
 
 /// Get FaceTec Session Token operation HTTP transport coupling.
-pub async fn get_facetec_session_token<S, PK>(
-    logic: Arc<Logic<S, PK>>,
+pub async fn get_facetec_session_token<L>(
+    logic: Arc<L>,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
-    S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a [u8]>,
+    L: LogicOp<op_get_facetec_session_token::Request>,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
 {
     let res = logic
-        .get_facetec_session_token()
+        .call(op_get_facetec_session_token::Request {})
         .await
         .map_err(warp::reject::custom)?;
 
@@ -60,15 +60,16 @@ where
 }
 
 /// Get FaceTec Device SDK Params operation HTTP transport coupling.
-pub async fn get_facetec_device_sdk_params<S, PK>(
-    logic: Arc<Logic<S, PK>>,
+pub async fn get_facetec_device_sdk_params<L>(
+    logic: Arc<L>,
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
-    S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a [u8]>,
+    L: LogicOp<op_get_facetec_device_sdk_params::Request>,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
 {
     let res = logic
-        .get_facetec_device_sdk_params()
+        .call(op_get_facetec_device_sdk_params::Request {})
         .await
         .map_err(warp::reject::custom)?;
 

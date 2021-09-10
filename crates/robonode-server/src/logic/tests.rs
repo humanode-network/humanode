@@ -9,7 +9,7 @@ use tracing::{info, trace};
 
 use crate::{logic::common::DB_GROUP_NAME, sequence::Sequence};
 
-use super::{Locked, Logic};
+use super::{Locked, Logic, LogicOp};
 
 struct TestSigner;
 
@@ -179,7 +179,7 @@ async fn standalone_enroll() {
     let (_guard, test_params, logic) = setup().await;
 
     logic
-        .enroll(super::op_enroll::Request {
+        .call(super::op_enroll::Request {
             liveness_data: test_params.enroll_liveness_data,
             public_key: TEST_PUBLIC_KEY.to_vec(),
         })
@@ -193,7 +193,7 @@ async fn first_authenticate() {
     let (_guard, test_params, logic) = setup().await;
 
     let err = logic
-        .authenticate(super::op_authenticate::Request {
+        .call(super::op_authenticate::Request {
             liveness_data: test_params.authenticate_liveness_data,
             liveness_data_signature: b"qwe".to_vec(),
         })
@@ -209,7 +209,7 @@ async fn enroll_authenticate() {
     let (_guard, test_params, logic) = setup().await;
 
     logic
-        .enroll(super::op_enroll::Request {
+        .call(super::op_enroll::Request {
             liveness_data: test_params.enroll_liveness_data,
             public_key: TEST_PUBLIC_KEY.to_vec(),
         })
@@ -219,7 +219,7 @@ async fn enroll_authenticate() {
     info!("enroll complete, authenticating now");
 
     logic
-        .authenticate(super::op_authenticate::Request {
+        .call(super::op_authenticate::Request {
             liveness_data: test_params.authenticate_liveness_data,
             liveness_data_signature: b"qwe".to_vec(),
         })
@@ -233,7 +233,7 @@ async fn double_enroll() {
     let (_guard, test_params, logic) = setup().await;
 
     logic
-        .enroll(super::op_enroll::Request {
+        .call(super::op_enroll::Request {
             liveness_data: test_params.enroll_liveness_data,
             public_key: b"a".to_vec(),
         })
@@ -241,7 +241,7 @@ async fn double_enroll() {
         .unwrap();
 
     let err = logic
-        .enroll(super::op_enroll::Request {
+        .call(super::op_enroll::Request {
             liveness_data: test_params.authenticate_liveness_data,
             public_key: b"b".to_vec(),
         })

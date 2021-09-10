@@ -10,7 +10,7 @@ use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sp_consensus::SlotData;
-use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
+use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
 use tracing::*;
 
 use crate::configuration::Configuration;
@@ -54,8 +54,8 @@ pub fn new_partial(
                 FullBackend,
                 Block,
                 FullClient,
-                bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient>,
-                bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient>,
+                bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
+                bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
             >,
             SlotDuration,
             Duration,
@@ -172,7 +172,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let bioauth_proposer: bioauth_consensus::BioauthProposer<
         Block,
-        bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient>,
+        bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
         _,
     > = bioauth_consensus::BioauthProposer::new(
         proposer_factory,

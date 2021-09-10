@@ -11,7 +11,6 @@ use futures::future::FutureExt;
 use sc_client_api::{backend::Backend, Finalizer};
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
 use sp_api::{HeaderT, ProvideRuntimeApi, TransactionFor};
-use sp_application_crypto::Public;
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
 use sp_consensus::{Environment, Error as ConsensusError};
 use sp_keystore::SyncCryptoStorePtr;
@@ -105,10 +104,8 @@ where
         BlockImport<Block, Error = ConsensusError, Transaction = TransactionFor<Client, Block>>,
     TransactionFor<Client, Block>: 'static,
     BAX: BlockAuthorExtractor<Block = Block> + Send,
-    AV: AuthorizationVerifier<Block = Block> + Send,
-    <BAX as BlockAuthorExtractor>::PublicKeyType: Send,
-    <BAX as BlockAuthorExtractor>::PublicKeyType:
-        AsRef<<AV as AuthorizationVerifier>::PublicKeyType>,
+    AV: AuthorizationVerifier<Block = Block, PublicKeyType = BAX::PublicKeyType> + Send,
+    <BAX as BlockAuthorExtractor>::PublicKeyType: Send + Sync,
     <BAX as BlockAuthorExtractor>::Error: std::error::Error + Send + Sync + 'static,
     <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
     BE: Backend<Block>,
@@ -146,17 +143,12 @@ where
 
         let is_authorized = self
             .authorization_verifier
-            .is_authorized(&at, author_public_key.as_ref())
+            .is_authorized(&at, &author_public_key)
             .map_err(|err| mkerr(BioauthBlockImportError::AuthorizationVerifier(err)))?;
 
         if !is_authorized {
             return Err(mkerr(BioauthBlockImportError::NotBioauthAuthorized));
         }
-
-        // Finalize previous imported block.
-        self.inner
-            .finalize_block(at, None, false)
-            .map_err(|_| sp_consensus::Error::CannotPropose)?;
 
         // Import a new block.
         self.inner.import_block(block, cache).await
@@ -207,7 +199,10 @@ impl<Block: BlockT, AV, BAP> BioauthProposer<Block, AV, BAP> {
 
 impl<Block: BlockT, AV, BAP> Environment<Block> for BioauthProposer<Block, AV, BAP>
 where
-    AV: AuthorizationVerifier<Block = Block, PublicKeyType = [u8]> + Send,
+    AV: AuthorizationVerifier<
+            Block = Block,
+            PublicKeyType = sp_consensus_aura::sr25519::AuthorityId,
+        > + Send,
     <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
     BAP: Environment<Block> + Send + Sync + 'static,
     BAP::Error: Send,
@@ -247,7 +242,7 @@ where
 
         let is_authorized = match self
             .authorization_verifier
-            .is_authorized(&at, &aura_public_key.to_raw_vec())
+            .is_authorized(&at, &aura_public_key.into())
         {
             Ok(v) => v,
             Err(err) => return mkerr(BioauthProposerError::AuthorizationVerifier(err)),

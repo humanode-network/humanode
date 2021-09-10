@@ -28,38 +28,6 @@ mod tests;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 
-/// Authentication extrinsic playload.
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
-pub struct Authenticate {
-    /// The opaque auth ticket.
-    pub ticket: Vec<u8>,
-    /// The robonode signatrure for the opaque auth ticket.
-    pub ticket_signature: Vec<u8>,
-}
-
-/// The state that we keep in the blockchain for the authorized authentication tickets.
-///
-/// It is decoupled from the [`primitives_auth_ticket::AuthTicket`], such that it's possible to version
-/// and update those independently.
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
-pub struct StoredAuthTicket {
-    /// The public key of the validator.
-    pub public_key: Vec<u8>,
-    /// A one-time use value.
-    pub nonce: Vec<u8>,
-}
-
-impl From<primitives_auth_ticket::AuthTicket> for StoredAuthTicket {
-    fn from(val: primitives_auth_ticket::AuthTicket) -> Self {
-        Self {
-            public_key: val.public_key,
-            nonce: val.authentication_nonce,
-        }
-    }
-}
-
 /// Verifier provides the verification of the data accompanied with the
 /// signature or proof data.
 /// A non-async (blocking) variant, for use at runtime.
@@ -75,14 +43,43 @@ pub trait Verifier<S: ?Sized> {
         D: AsRef<[u8]> + Send + 'a;
 }
 
-sp_api::decl_runtime_apis! {
+/// A trait that enables a third-party type to define a potentially fallible conversion from A to B.
+/// Is in analogous to [`sp_runtime::Convert`] is a sense that the third-party is acting as
+/// the converter, and to [`std::convert::TryFtom`] in a sense that the converion is fallible.
+pub trait TryConvert<A, B> {
+    /// The error that can occur during conversion.
+    type Error;
 
+    /// Take A and return B on success, or an Error if the conversion fails.
+    fn try_convert(value: A) -> Result<B, Self::Error>;
+}
+
+/// Authentication extrinsic playload.
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
+pub struct Authenticate<OpaqueAuthTicket, Commitment> {
+    /// An auth ticket.
+    pub ticket: OpaqueAuthTicket,
+    /// The robonode signatrure for the opaque auth ticket.
+    pub ticket_signature: Commitment,
+}
+
+/// The state that we keep in the blockchain for the authorized auth tickets.
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
+pub struct StoredAuthTicket<PublicKey> {
+    /// The public key of a validator that was authorized by a robonode.
+    pub public_key: PublicKey,
+    /// The nonce that the robonode has provided.
+    pub nonce: Vec<u8>,
+}
+
+sp_api::decl_runtime_apis! {
     /// We need to provide a trait using decl_runtime_apis! macro to be able to call required methods
     /// from external sources using client and runtime_api().
-    pub trait BioauthApi {
-
-        /// Get existing stored tickets for current block.
-        fn stored_auth_tickets() -> Vec<StoredAuthTicket>;
+    pub trait BioauthApi<ValidatorPublicKey: codec::Decode> {
+        /// Get stored auth tickets for current block.
+        fn stored_auth_tickets() -> Vec<StoredAuthTicket<ValidatorPublicKey>>;
     }
 }
 
@@ -95,12 +92,12 @@ sp_api::decl_runtime_apis! {
 )]
 #[frame_support::pallet]
 pub mod pallet {
-    use core::convert::TryInto;
+    use crate::{StoredAuthTicket, TryConvert, Verifier};
 
-    use super::{Authenticate, StoredAuthTicket, Verifier};
+    use super::Authenticate;
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*, storage::types::ValueQuery};
     use frame_system::pallet_prelude::*;
-    use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
+    use sp_runtime::app_crypto::MaybeHash;
     use sp_std::prelude::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
@@ -109,11 +106,27 @@ pub mod pallet {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
+        /// The type of the robonode signature.
+        type RobonodeSignature: Member + Parameter;
+
         /// The public key of the robonode.
-        type RobonodePublicKey: Verifier<Vec<u8>>
-            + codec::FullCodec
-            + Default
-            + MaybeSerializeDeserialize;
+        type RobonodePublicKey: Member
+            + Parameter
+            + MaybeSerializeDeserialize
+            + Verifier<Self::RobonodeSignature>
+            + Default;
+
+        /// The public key of the validator.
+        type ValidatorPublicKey: Member + Parameter + MaybeSerializeDeserialize + MaybeHash;
+
+        /// The opaque auth ticket type.
+        type OpaqueAuthTicket: Parameter + AsRef<[u8]> + Send + Sync;
+
+        /// A converter from an opaque to a stored auth ticket.
+        type AuthTicketCoverter: TryConvert<
+            Self::OpaqueAuthTicket,
+            StoredAuthTicket<Self::ValidatorPublicKey>,
+        >;
     }
 
     #[pallet::pallet]
@@ -123,7 +136,8 @@ pub mod pallet {
     /// A list of the authorized auth tickets.
     #[pallet::storage]
     #[pallet::getter(fn stored_auth_tickets)]
-    pub type StoredAuthTickets<T> = StorageValue<_, Vec<StoredAuthTicket>, ValueQuery>;
+    pub type StoredAuthTickets<T> =
+        StorageValue<_, Vec<StoredAuthTicket<<T as Config>::ValidatorPublicKey>>, ValueQuery>;
 
     /// The public key of the robonode.
     #[pallet::storage]
@@ -132,8 +146,8 @@ pub mod pallet {
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
-        pub stored_auth_tickets: Vec<StoredAuthTicket>,
-        pub robonode_public_key: <T as Config>::RobonodePublicKey,
+        pub stored_auth_tickets: Vec<StoredAuthTicket<T::ValidatorPublicKey>>,
+        pub robonode_public_key: T::RobonodePublicKey,
     }
 
     // The default value for the genesis config type.
@@ -163,7 +177,7 @@ pub mod pallet {
     pub enum Event<T: Config> {
         /// Event documentation should end with an array that provides descriptive names for event
         /// parameters. [stored_auth_ticket]
-        AuthTicketStored(StoredAuthTicket),
+        AuthTicketStored(StoredAuthTicket<T::ValidatorPublicKey>),
     }
 
     /// Possible error conditions during `authenticate` call processing.
@@ -184,15 +198,15 @@ pub mod pallet {
         PublicKeyAlreadyUsed,
     }
 
-    pub enum AuthenticationAttemptValidationError<'a> {
+    pub enum AuthenticationAttemptValidationError<'a, T: Config> {
         NonceConflict,
-        ConflitingPublicKeys(Vec<&'a StoredAuthTicket>),
+        ConflitingPublicKeys(Vec<&'a StoredAuthTicket<T::ValidatorPublicKey>>),
     }
 
-    pub fn validate_authentication_attempt<'a>(
-        existing: &'a [StoredAuthTicket],
-        new: &StoredAuthTicket,
-    ) -> Result<(), AuthenticationAttemptValidationError<'a>> {
+    pub fn validate_authentication_attempt<'a, T: Config>(
+        existing: &'a [StoredAuthTicket<T::ValidatorPublicKey>],
+        new: &StoredAuthTicket<T::ValidatorPublicKey>,
+    ) -> Result<(), AuthenticationAttemptValidationError<'a, T>> {
         let mut conflicting_tickets = Vec::new();
         for existing in existing.iter() {
             if existing.nonce == new.nonce {
@@ -218,7 +232,10 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
-        pub fn authenticate(origin: OriginFor<T>, req: Authenticate) -> DispatchResult {
+        pub fn authenticate(
+            origin: OriginFor<T>,
+            req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
+        ) -> DispatchResult {
             ensure_none(origin)?;
 
             let stored_auth_ticket = Self::extract_auth_ticket_checked(req)?;
@@ -226,7 +243,7 @@ pub mod pallet {
 
             // Update storage.
             <StoredAuthTickets<T>>::try_mutate(move |list| {
-                match validate_authentication_attempt(list, &stored_auth_ticket) {
+                match validate_authentication_attempt::<T>(list, &stored_auth_ticket) {
                     Err(AuthenticationAttemptValidationError::NonceConflict) => {
                         Err(Error::<T>::NonceAlreadyUsed)
                     }
@@ -250,24 +267,23 @@ pub mod pallet {
 
     impl<T: Config> Pallet<T> {
         pub fn extract_auth_ticket_checked(
-            req: Authenticate,
-        ) -> Result<StoredAuthTicket, Error<T>> {
+            req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
+        ) -> Result<StoredAuthTicket<T::ValidatorPublicKey>, Error<T>> {
             let robonode_public_key =
                 RobonodePublicKey::<T>::get().ok_or(Error::<T>::RobonodePublicKeyIsAbsent)?;
+
             let signature_valid = robonode_public_key
-                .verify(&req.ticket, req.ticket_signature.clone())
+                .verify(&req.ticket, req.ticket_signature)
                 .map_err(|_| Error::<T>::UnableToValidateAuthTicketSignature)?;
+
             if !signature_valid {
                 return Err(Error::<T>::AuthTicketSignatureInvalid);
             }
 
-            let opaque_auth_ticket = OpaqueAuthTicket::from(req.ticket);
-
-            let auth_ticket: AuthTicket = (&opaque_auth_ticket)
-                .try_into()
+            let auth_ticket = <T::AuthTicketCoverter as TryConvert<_, _>>::try_convert(req.ticket)
                 .map_err(|_| Error::<T>::UnableToParseAuthTicket)?;
 
-            Ok(auth_ticket.into())
+            Ok(auth_ticket)
         }
 
         pub fn check_tx(call: &Call<T>) -> TransactionValidity {
@@ -293,7 +309,7 @@ pub mod pallet {
 
             let list = StoredAuthTickets::<T>::get();
 
-            validate_authentication_attempt(&list, &stored_auth_ticket).map_err(|_e| {
+            validate_authentication_attempt::<T>(&list, &stored_auth_ticket).map_err(|_| {
                 // Use custom code 'c' for "conflict" error.
                 TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
             })?;

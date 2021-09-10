@@ -1,12 +1,16 @@
 //! Filters, essentially how [`warp`] implements routes and middlewares.
 
-use std::{convert::TryFrom, sync::Arc};
+use std::sync::Arc;
 
+use serde::Serialize;
 use warp::Filter;
 
 use crate::{
     http::handlers,
-    logic::{op_authenticate, op_enroll, Logic, Signer, Verifier},
+    logic::{
+        op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
+        LogicOp,
+    },
 };
 
 /// Pass the [`Arc`] to the handler.
@@ -30,12 +34,23 @@ where
 }
 
 /// The root mount point with all the routes.
-pub fn root<S, PK>(
-    logic: Arc<Logic<S, PK>>,
+pub fn root<L>(
+    logic: Arc<L>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer<Vec<u8>> + Send + Sync + 'static,
-    PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,
+    L: LogicOp<op_authenticate::Request>
+        + LogicOp<op_enroll::Request>
+        + LogicOp<op_get_facetec_device_sdk_params::Request>
+        + LogicOp<op_get_facetec_session_token::Request>
+        + Send
+        + Sync,
+    <L as LogicOp<op_enroll::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_authenticate::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_authenticate::Request>>::Response: Serialize,
+    <L as LogicOp<op_get_facetec_device_sdk_params::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_get_facetec_device_sdk_params::Request>>::Response: Serialize,
+    <L as LogicOp<op_get_facetec_session_token::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_get_facetec_session_token::Request>>::Response: Serialize,
 {
     enroll(Arc::clone(&logic))
         .or(authenticate(Arc::clone(&logic)))
@@ -44,12 +59,12 @@ where
 }
 
 /// POST /enroll with JSON body.
-fn enroll<S, PK>(
-    logic: Arc<Logic<S, PK>>,
+fn enroll<L>(
+    logic: Arc<L>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,
+    L: LogicOp<op_enroll::Request> + Send + Sync,
+    L::Error: warp::reject::Reject,
 {
     warp::path!("enroll")
         .and(warp::post())
@@ -59,12 +74,13 @@ where
 }
 
 /// POST /authenticate with JSON body.
-fn authenticate<S, PK>(
-    logic: Arc<Logic<S, PK>>,
+fn authenticate<L>(
+    logic: Arc<L>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer<Vec<u8>> + Send + Sync + 'static,
-    PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,
+    L: LogicOp<op_authenticate::Request> + Send + Sync,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
 {
     warp::path!("authenticate")
         .and(warp::post())
@@ -74,12 +90,13 @@ where
 }
 
 /// GET /facetec-session-token.
-fn get_facetec_session_token<S, PK>(
-    logic: Arc<Logic<S, PK>>,
+fn get_facetec_session_token<L>(
+    logic: Arc<L>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a [u8]>,
+    L: LogicOp<op_get_facetec_session_token::Request> + Send + Sync,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
 {
     warp::path!("facetec-session-token")
         .and(warp::get())
@@ -88,12 +105,13 @@ where
 }
 
 /// GET /facetec-device-sdk-params.
-fn get_facetec_device_sdk_params<S, PK>(
-    logic: Arc<Logic<S, PK>>,
+fn get_facetec_device_sdk_params<L>(
+    logic: Arc<L>,
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
-    S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a [u8]>,
+    L: LogicOp<op_get_facetec_device_sdk_params::Request> + Send + Sync,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
 {
     warp::path!("facetec-device-sdk-params")
         .and(warp::get())

@@ -471,6 +471,7 @@ dependencies = [
  "mockall",
  "node-primitives",
  "pallet-bioauth",
+ "parity-scale-codec",
  "sc-client-api",
  "sc-consensus",
  "sc-service",
@@ -2387,6 +2388,7 @@ dependencies = [
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
+ "primitives-auth-ticket",
  "robonode-crypto",
  "serde",
  "sp-api",
@@ -4314,7 +4316,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "parity-scale-codec",
- "primitives-auth-ticket",
  "serde",
  "sp-api",
  "sp-core",
@@ -5446,6 +5447,7 @@ dependencies = [
  "async-trait",
  "facetec-api-client",
  "hex",
+ "mockall",
  "primitives-auth-ticket",
  "primitives-liveness-data",
  "rand 0.7.3",
@@ -5453,6 +5455,7 @@ dependencies = [
  "robonode-crypto",
  "sc-tracing 3.0.0",
  "serde",
+ "serde_json",
  "sp-application-crypto",
  "tokio 1.9.0",
  "tracing",
@@ -9023,8 +9026,3 @@ dependencies = [
  "cc",
  "libc",
 ]
-
-[[patch.unused]]
-name = "parity-db"
-version = "0.2.3"
-source = "git+https://github.com/paritytech/parity-db?rev=f349aa30e76f3219a90aaae99c0f3f07d994692e#f349aa30e76f3219a90aaae99c0f3f07d994692e"
