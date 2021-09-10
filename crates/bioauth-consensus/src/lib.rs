@@ -6,11 +6,14 @@
     clippy::clone_on_ref_ptr
 )]
 
+use futures::future;
+use futures::future::FutureExt;
 use sc_client_api::{backend::Backend, Finalizer};
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
-use sp_api::{ProvideRuntimeApi, TransactionFor};
+use sp_api::{HeaderT, ProvideRuntimeApi, TransactionFor};
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
-use sp_consensus::Error as ConsensusError;
+use sp_consensus::{Environment, Error as ConsensusError};
+use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::Block as BlockT;
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
@@ -147,12 +150,108 @@ where
             return Err(mkerr(BioauthBlockImportError::NotBioauthAuthorized));
         }
 
-        // Finalize previous imported block.
-        self.inner
-            .finalize_block(at, None, false)
-            .map_err(|_| sp_consensus::Error::CannotPropose)?;
-
         // Import a new block.
         self.inner.import_block(block, cache).await
+    }
+}
+
+/// A Proposer handler for Bioauth.
+pub struct BioauthProposer<Block: BlockT, AV, BAP> {
+    /// A basic authorship proposer.
+    base_proposer: BAP,
+    /// Keystore to extract validator public key.
+    keystore: SyncCryptoStorePtr,
+    /// The bioauth auhtrization verifier.
+    authorization_verifier: AV,
+    /// A phantom data for Block.
+    _phantom_block: PhantomData<Block>,
+}
+
+/// BioauthProposer Error Type.
+#[derive(Error, Debug, Eq, PartialEq)]
+pub enum BioauthProposerError<AV>
+where
+    AV: std::error::Error,
+{
+    /// The block author isn't Bioauth authorized.
+    #[error("the block author isn't bioauth-authorized")]
+    NotBioauthAuthorized,
+    /// Authorization verification error.
+    #[error("unable verify the authorization: {0}")]
+    AuthorizationVerifier(AV),
+}
+
+impl<Block: BlockT, AV, BAP> BioauthProposer<Block, AV, BAP> {
+    /// Simple constructor.
+    pub fn new(
+        base_proposer: BAP,
+        keystore: SyncCryptoStorePtr,
+        authorization_verifier: AV,
+    ) -> Self {
+        BioauthProposer {
+            base_proposer,
+            keystore,
+            authorization_verifier,
+            _phantom_block: PhantomData,
+        }
+    }
+}
+
+impl<Block: BlockT, AV, BAP> Environment<Block> for BioauthProposer<Block, AV, BAP>
+where
+    AV: AuthorizationVerifier<
+            Block = Block,
+            PublicKeyType = sp_consensus_aura::sr25519::AuthorityId,
+        > + Send,
+    <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
+    BAP: Environment<Block> + Send + Sync + 'static,
+    BAP::Error: Send,
+    BAP::Proposer: Send,
+{
+    type Proposer = BAP::Proposer;
+
+    type CreateProposer = future::BoxFuture<'static, Result<Self::Proposer, Self::Error>>;
+
+    type Error = BAP::Error;
+
+    fn init(&mut self, parent_header: &Block::Header) -> Self::CreateProposer {
+        let mkerr = |err: BioauthProposerError<AV::Error>| -> Self::CreateProposer {
+            Box::pin(future::err(Self::Error::from(sp_consensus::Error::Other(
+                Box::new(err),
+            ))))
+        };
+
+        let keystore_ref = self.keystore.as_ref();
+
+        let aura_public_keys = tokio::task::block_in_place(move || {
+            sp_keystore::SyncCryptoStore::sr25519_public_keys(
+                keystore_ref,
+                sp_application_crypto::key_types::AURA,
+            )
+        });
+
+        assert!(
+            aura_public_keys.len() == 1,
+            "The list of aura public keys should contain only 1 key, please report this"
+        );
+
+        let aura_public_key = aura_public_keys[0];
+
+        let parent_hash = parent_header.hash();
+        let at = sp_api::BlockId::hash(parent_hash);
+
+        let is_authorized = match self
+            .authorization_verifier
+            .is_authorized(&at, &aura_public_key.into())
+        {
+            Ok(v) => v,
+            Err(err) => return mkerr(BioauthProposerError::AuthorizationVerifier(err)),
+        };
+
+        if !is_authorized {
+            return mkerr(BioauthProposerError::NotBioauthAuthorized);
+        }
+
+        self.base_proposer.init(parent_header).boxed()
     }
 }

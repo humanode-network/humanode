@@ -10,6 +10,7 @@ pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", optional = true 
 
 async-trait = "0.1.42"
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
+futures = "0.3"
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -17,8 +18,10 @@ sp-application-crypto = { git = "https://github.com/humanode-network/substrate",
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 thiserror = "1"
+tokio = { version = "1", features = ["rt-multi-thread"] }
 
 [dev-dependencies]
 mockall = "0.10"

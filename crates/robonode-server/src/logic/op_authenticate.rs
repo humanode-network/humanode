@@ -11,10 +11,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
-use super::{common::*, Logic, Signer, Verifier};
+use super::{common::*, Logic, LogicOp, Signer, Verifier};
 
 /// The request of the authenticate operation.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Request {
     /// The liveness data that the validator owner provided.
@@ -79,13 +79,16 @@ pub enum Error {
     InternalErrorAuthTicketSigningFailed,
 }
 
-impl<S, PK> Logic<S, PK>
+#[async_trait::async_trait]
+impl<S, PK> LogicOp<Request> for Logic<S, PK>
 where
-    S: Signer<Vec<u8>> + Send + 'static,
+    S: Signer<Vec<u8>> + Send + 'static + Sync,
     PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + Verifier<Vec<u8>> + Into<Vec<u8>>,
 {
-    /// An authenticate invocation handler.
-    pub async fn authenticate(&self, req: Request) -> Result<Response, Error> {
+    type Response = Response;
+    type Error = Error;
+
+    async fn call(&self, req: Request) -> Result<Self::Response, Self::Error> {
         let liveness_data =
             LivenessData::try_from(&req.liveness_data).map_err(Error::InvalidLivenessData)?;
 

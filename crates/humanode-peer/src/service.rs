@@ -209,6 +209,16 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         None,
     );
 
+    let proposer_factory: bioauth_consensus::BioauthProposer<
+        Block,
+        bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
+        _,
+    > = bioauth_consensus::BioauthProposer::new(
+        proposer_factory,
+        keystore_container.sync_keystore(),
+        bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+    );
+
     let (network, system_rpc_tx, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
             config: &config,

@@ -467,6 +467,7 @@ name = "bioauth-consensus"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "futures 0.3.16",
  "mockall",
  "node-primitives",
  "pallet-bioauth",
@@ -479,6 +480,7 @@ dependencies = [
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-aura",
+ "sp-keystore",
  "sp-runtime",
  "thiserror",
  "tokio 1.9.0",
@@ -5485,6 +5487,7 @@ dependencies = [
  "async-trait",
  "facetec-api-client",
  "hex",
+ "mockall",
  "primitives-auth-ticket",
  "primitives-liveness-data",
  "rand 0.7.3",
@@ -5492,6 +5495,7 @@ dependencies = [
  "robonode-crypto",
  "sc-tracing 3.0.0",
  "serde",
+ "serde_json",
  "sp-application-crypto",
  "tokio 1.9.0",
  "tracing",
