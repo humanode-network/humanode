@@ -115,9 +115,13 @@ pub async fn run() -> sc_cli::Result<()> {
             sc_cli::print_node_infos::<Root>(&runner.config().substrate);
             runner
                 .run_node(|config| async move {
-                    service::new_full(config)
-                        .await
-                        .map_err(sc_cli::Error::Service)
+                    match config.substrate.role {
+                        sc_cli::Role::Light => Err(sc_service::Error::Other(
+                            "light client is not supported yet".into(),
+                        )),
+                        _ => service::new_full(config).await,
+                    }
+                    .map_err(sc_cli::Error::Service)
                 })
                 .await
         }
