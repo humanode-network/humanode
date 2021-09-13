@@ -1,9 +1,6 @@
 //! GET `/session-token`
 
-use reqwest::StatusCode;
 use serde::Deserialize;
-
-use crate::CommonResponse;
 
 use super::Client;
 
@@ -12,12 +9,9 @@ where
     RBEI: crate::response_body_error::Inspector,
 {
     /// Perform the `/session-token` call to the server.
-    pub async fn session_token(&self) -> Result<Response, crate::Error<Error>> {
+    pub async fn session_token(&self) -> Result<Response, crate::Error> {
         let res = self.build_get("/session-token").send().await?;
-        match res.status() {
-            StatusCode::OK => Ok(self.parse_json(res).await?),
-            _ => Err(crate::Error::Call(Error::Unknown(res.text().await?))),
-        }
+        self.parse_response(res).await
     }
 }
 
@@ -25,23 +19,10 @@ where
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    /// Common response portion.
-    #[serde(flatten)]
-    pub common: CommonResponse,
     /// The Session Token.
     pub session_token: String,
-    /// Whether the request had any errors during the execution.
-    pub error: bool,
     /// Whether the request was successful.
     pub success: bool,
-}
-
-/// The `/session-token`-specific error kind.
-#[derive(thiserror::Error, Debug, PartialEq)]
-pub enum Error {
-    /// Some error occured. We don't really expect any though.
-    #[error("unknown error: {0}")]
-    Unknown(String),
 }
 
 #[cfg(test)]
@@ -51,7 +32,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{tests::test_client, AdditionalSessionData, CallData};
+    use crate::{tests::test_client, ResponseBodyError};
 
     use super::*;
 
@@ -83,18 +64,7 @@ mod tests {
             response,
             Response {
                 session_token,
-                error: false,
                 success: true,
-                common: CommonResponse {
-                    additional_session_data: AdditionalSessionData {
-                        is_additional_data_partially_incomplete: true,
-                        ..
-                    },
-                    call_data: CallData {
-                        ..
-                    },
-                    ..
-                },
                 ..
             } if session_token == "the session token"
         )
@@ -158,7 +128,7 @@ mod tests {
         let actual_error = client.session_token().await.unwrap_err();
         assert_matches!(
             actual_error,
-            crate::Error::Call(Error::Unknown(error_text)) if error_text == sample_response
+            crate::Error::ResponseBody(ResponseBodyError::Json{body, ..}) if body == sample_response
         );
     }
 }

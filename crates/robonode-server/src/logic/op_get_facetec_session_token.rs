@@ -25,7 +25,7 @@ pub struct Response {
 pub enum Error {
     /// Internal error at session token retrieval due to the underlying request
     /// error at the API level.
-    InternalErrorSessionToken(ft::Error<ft::session_token::Error>),
+    InternalErrorSessionToken(ft::Error),
     /// Internal error at session token retrieval due to unsuccessful response.
     InternalErrorSessionTokenUnsuccessful,
 }

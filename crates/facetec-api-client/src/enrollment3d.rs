@@ -1,9 +1,8 @@
 //! POST `/enrollment-3d`
 
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{CommonResponse, FaceScanResponse, OpaqueBase64DataRef};
+use crate::OpaqueBase64DataRef;
 
 use super::Client;
 
@@ -12,12 +11,9 @@ where
     RBEI: crate::response_body_error::Inspector,
 {
     /// Perform the `/enrollment-3d` call to the server.
-    pub async fn enrollment_3d(&self, req: Request<'_>) -> Result<Response, crate::Error<Error>> {
+    pub async fn enrollment_3d(&self, req: Request<'_>) -> Result<Response, crate::Error> {
         let res = self.build_post("/enrollment-3d", &req).send().await?;
-        match res.status() {
-            StatusCode::OK => Ok(self.parse_json(res).await?),
-            _ => Err(crate::Error::Call(Error::Unknown(res.text().await?))),
-        }
+        self.parse_response(res).await
     }
 }
 
@@ -43,29 +39,51 @@ pub struct Request<'a> {
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    /// Common response portion.
-    #[serde(flatten)]
-    pub common: Option<CommonResponse>,
     /// FaceScan response portion.
     #[serde(flatten)]
-    pub face_scan: Option<FaceScanResponse>,
+    pub face_scan: FaceScanResponse,
     /// The external database ID that was associated with this item.
     #[serde(rename = "externalDatabaseRefID")]
-    pub external_database_ref_id: Option<String>,
-    /// Whether the request had any errors during the execution.
-    pub error: bool,
+    pub external_database_ref_id: String,
     /// Whether the request was successful.
     pub success: bool,
-    /// Potential error message.
-    pub error_message: Option<String>,
 }
 
-/// The `/enrollment-3d`-specific error kind.
-#[derive(thiserror::Error, Debug, PartialEq)]
-pub enum Error {
-    /// Some other error occured.
-    #[error("unknown error: {0}")]
-    Unknown(String),
+/// A FaceScan-related FaceTec API response portion.
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FaceScanResponse {
+    /// The the information about the security checks over the FaceScan data.
+    pub face_scan_security_checks: FaceScanSecurityChecks,
+    /// Something to do with the retry screen of the FaceTec Device SDK.
+    /// TODO: find more info on this parameter.
+    pub retry_screen_enum_int: i64,
+    /// The age group enum id that the input FaceScan was classified to.
+    pub age_estimate_group_enum_int: i64,
+}
+
+/// The report on the security checks.
+#[derive(Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct FaceScanSecurityChecks {
+    /// The Audit Trail Image came from the same Session as the FaceScan and the Audit Trail Image Matches the User in the FaceScan.
+    pub audit_trail_verification_check_succeeded: bool,
+    /// The FaceScan came from a Live Human and Liveness was Proven.
+    pub face_scan_liveness_check_succeeded: bool,
+    /// The FaceScan was not a replay.
+    pub replay_check_succeeded: bool,
+    /// The Session Token was valid and not expired.
+    pub session_token_check_succeeded: bool,
+}
+
+impl FaceScanSecurityChecks {
+    /// Returns `true` only if all of the underlying checks are `true`.
+    pub fn all_checks_succeeded(&self) -> bool {
+        self.audit_trail_verification_check_succeeded
+            && self.face_scan_liveness_check_succeeded
+            && self.replay_check_succeeded
+            && self.session_token_check_succeeded
+    }
 }
 
 #[cfg(test)]
@@ -75,9 +93,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{
-        tests::test_client, AdditionalSessionData, CallData, FaceScanSecurityChecks, ServerInfo,
-    };
+    use crate::{tests::test_client, ResponseBodyError, ServerError};
 
     use super::*;
 
@@ -145,57 +161,13 @@ mod tests {
         assert_matches!(
             response,
             Response {
-                external_database_ref_id: Some(external_database_ref_id),
+                external_database_ref_id,
                 success: true,
-                error: false,
-                error_message: None,
-                face_scan: Some(FaceScanResponse {
+                face_scan: FaceScanResponse {
                     age_estimate_group_enum_int: -1,
                     ..
-                }),
-                common: Some(CommonResponse {
-                    additional_session_data: AdditionalSessionData {
-                        is_additional_data_partially_incomplete: false,
-                        ..
-                    },
-                    call_data: CallData {
-                        ..
-                    },
-                    server_info: ServerInfo {
-                        version: _,
-                        mode:_,
-                        notice:_,
-                    },
-                    ..
-                }),
+                },
             } if external_database_ref_id == "test_external_dbref_id"
-        )
-    }
-
-    #[test]
-    fn already_enrolled_response_deserialization() {
-        let sample_response = serde_json::json!({
-            "error": true,
-            "errorMessage": "An enrollment already exists for this externalDatabaseRefID.",
-            "success": false,
-            "serverInfo": {
-                "version": "9.0.0-SNAPSHOT",
-                "mode": "Development Only",
-                "notice": "You should only be reading this if you are in server-side code.  Please make sure you do not allow the FaceTec Server to be called from the public internet."
-            }
-        });
-
-        let response: Response = serde_json::from_value(sample_response).unwrap();
-        assert_matches!(
-            response,
-            Response {
-                external_database_ref_id: None,
-                error_message: Some(error_message),
-                error: true,
-                success: false,
-                face_scan: None,
-                common: None,
-            } if error_message == "An enrollment already exists for this externalDatabaseRefID."
         )
     }
 
@@ -235,11 +207,9 @@ mod tests {
         assert_matches!(
             response,
             Response {
-                external_database_ref_id: Some(external_database_ref_id),
-                error_message: None,
-                error: false,
+                external_database_ref_id,
                 success: false,
-                face_scan: Some(FaceScanResponse {
+                face_scan: FaceScanResponse {
                     face_scan_security_checks: FaceScanSecurityChecks {
                         audit_trail_verification_check_succeeded: true,
                         face_scan_liveness_check_succeeded: true,
@@ -248,8 +218,7 @@ mod tests {
                     },
                     retry_screen_enum_int: 0,
                     age_estimate_group_enum_int: 2,
-                }),
-                common: Some(_),
+                },
             } if external_database_ref_id == "qwe"
         )
     }
@@ -338,7 +307,7 @@ mod tests {
             }
         });
 
-        let expected_response: Response = serde_json::from_value(sample_response.clone()).unwrap();
+        let expected_response = "An enrollment already exists for this externalDatabaseRefID.";
 
         Mock::given(matchers::method("POST"))
             .and(matchers::path("/enrollment-3d"))
@@ -349,8 +318,8 @@ mod tests {
 
         let client = test_client(mock_server.uri());
 
-        let actual_response = client.enrollment_3d(sample_request).await.unwrap();
-        assert_eq!(actual_response, expected_response);
+        let actual_response = client.enrollment_3d(sample_request).await.unwrap_err();
+        assert_matches!(actual_response, crate::Error::Server(ServerError{error_message}) if error_message == expected_response);
     }
 
     #[tokio::test]
@@ -377,7 +346,7 @@ mod tests {
         let actual_error = client.enrollment_3d(sample_request).await.unwrap_err();
         assert_matches!(
             actual_error,
-            crate::Error::Call(Error::Unknown(error_text)) if error_text == sample_response
+            crate::Error::ResponseBody(ResponseBodyError::Json{body, ..}) if body == sample_response
         );
     }
 }

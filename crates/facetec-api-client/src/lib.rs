@@ -10,17 +10,18 @@
 #[macro_use]
 extern crate assert_matches;
 
+use facetec_response::FacetecResponse;
 use reqwest::{RequestBuilder, Response};
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Deserialize};
 use thiserror::Error;
 
 pub mod db_delete;
 pub mod db_enroll;
 pub mod db_search;
 pub mod enrollment3d;
+pub mod facetec_response;
 pub mod reset;
 pub mod response_body_error;
-pub mod serde_util;
 pub mod session_token;
 
 mod types;
@@ -33,16 +34,25 @@ pub use types::*;
 
 /// The generic error type for the client calls.
 #[derive(Error, Debug)]
-pub enum Error<T: std::error::Error + 'static> {
-    /// A call-specific error.
-    #[error("server error: {0}")]
-    Call(T),
+pub enum Error {
+    /// A server error.
+    #[error(transparent)]
+    Server(#[from] ServerError),
     /// An error due to failure to load or parse the response body.
     #[error(transparent)]
     ResponseBody(#[from] ResponseBodyError),
     /// An error coming from the underlying reqwest layer.
     #[error("reqwest error: {0}")]
     Reqwest(#[from] reqwest::Error),
+}
+
+/// An error response originating from the FaceTec Server itself.
+#[derive(Error, Debug, Deserialize)]
+#[error("server error: {error_message}")]
+pub struct ServerError {
+    /// A human-readable message characterizing the error.
+    #[serde(rename = "errorMessage")]
+    pub error_message: String,
 }
 
 /// The robonode client.
@@ -127,5 +137,14 @@ where
                 Err(err)
             }
         }
+    }
+
+    /// Parse a FaceTec Server response or generate a parsing error.
+    async fn parse_response<T>(&self, res: Response) -> Result<T, crate::Error>
+    where
+        T: for<'de> Deserialize<'de> + std::fmt::Debug,
+    {
+        let body: FacetecResponse<T> = self.parse_json(res).await?;
+        Ok(body.into_inner()?)
     }
 }
