@@ -87,16 +87,14 @@ where
                 low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
             })
             .await
-            .map_err(|err| -> Error {
-                match err {
-                    ft::Error::Server(server_error)
-                        if server_error.error_message
-                            == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE =>
-                    {
-                        Error::PublicKeyAlreadyUsed
-                    }
-                    _ => Error::InternalErrorEnrollment(err),
+            .map_err(|err| match err {
+                ft::Error::Server(server_error)
+                    if server_error.error_message
+                        == EXTERNAL_DATABASE_REF_ID_ALREADY_IN_USE_ERROR_MESSAGE =>
+                {
+                    Error::PublicKeyAlreadyUsed
                 }
+                _ => Error::InternalErrorEnrollment(err),
             })?;
 
         trace!(message = "Got FaceTec enroll results", ?enroll_res);
