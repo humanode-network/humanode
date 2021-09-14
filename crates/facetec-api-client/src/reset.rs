@@ -1,6 +1,5 @@
 //! DELETE `/delete-database-if-less-than-10-records`
 
-use reqwest::StatusCode;
 use serde::Deserialize;
 
 use super::Client;
@@ -10,7 +9,7 @@ where
     RBEI: crate::response_body_error::Inspector,
 {
     /// Perform the `/delete-database-if-less-than-10-records` call to the server.
-    pub async fn reset(&self) -> Result<Response, crate::Error<Error>> {
+    pub async fn reset(&self) -> Result<Response, crate::Error> {
         let res = self
             .build("/delete-database-if-less-than-10-records", |url| {
                 self.reqwest.delete(url)
@@ -18,10 +17,7 @@ where
             .body(&b"1"[..])
             .send()
             .await?;
-        match res.status() {
-            StatusCode::OK => Ok(self.parse_json(res).await?),
-            _ => Err(crate::Error::Call(Error::Unknown(res.text().await?))),
-        }
+        self.parse_response(res).await
     }
 }
 
@@ -31,18 +27,8 @@ where
 pub struct Response {
     /// Whether the database was deleted or not.
     pub did_delete_database: bool,
-    /// Whether the request had any errors during the execution.
-    pub error: bool,
     /// Whether the request was successful.
     pub success: bool,
-}
-
-/// The `/session-token`-specific error kind.
-#[derive(thiserror::Error, Debug, PartialEq)]
-pub enum Error {
-    /// Some error occured. We don't really expect any though.
-    #[error("unknown error: {0}")]
-    Unknown(String),
 }
 
 #[cfg(test)]
@@ -52,7 +38,7 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::tests::test_client;
+    use crate::{tests::test_client, ResponseBodyError};
 
     use super::*;
 
@@ -75,13 +61,11 @@ mod tests {
         });
 
         let response: Response = serde_json::from_value(sample_response).unwrap();
-        assert_matches!(
+        assert_eq!(
             response,
             Response {
                 did_delete_database: true,
-                error: false,
-                success: true,
-                ..
+                success: true
             }
         )
     }
@@ -139,7 +123,7 @@ mod tests {
         let actual_error = client.reset().await.unwrap_err();
         assert_matches!(
             actual_error,
-            crate::Error::Call(Error::Unknown(error_text)) if error_text == sample_response
+            crate::Error::ResponseBody(ResponseBodyError::Json{body, ..}) if body == sample_response
         );
     }
 }

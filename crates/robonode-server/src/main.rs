@@ -10,7 +10,7 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let mut logger = sc_tracing::logging::LoggerBuilder::new("debug");
+    let mut logger = sc_tracing::logging::LoggerBuilder::new(parse_log_level());
     logger.with_colors(true);
     let _ = logger.init()?;
 
@@ -78,4 +78,11 @@ where
         .parse()
         .map_err(|err| format!("{} env var is not valid: {}", key, err))?;
     Ok(v)
+}
+
+/// Parse log level from the env vars.
+fn parse_log_level() -> String {
+    let maybe_level: Result<String, _> = parse_env_var("RUST_LOG");
+    let maybe_level: Result<String, _> = maybe_level.or_else(|_| parse_env_var("LOG"));
+    maybe_level.unwrap_or_else(|_| "debug".into())
 }

@@ -1,9 +1,6 @@
 //! POST `/3d-db/enroll`
 
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
-
-use crate::CommonResponse;
 
 use super::Client;
 
@@ -12,15 +9,9 @@ where
     RBEI: crate::response_body_error::Inspector,
 {
     /// Perform the `/3d-db/enroll` call to the server.
-    pub async fn db_enroll(&self, req: Request<'_>) -> Result<Response, crate::Error<Error>> {
+    pub async fn db_enroll(&self, req: Request<'_>) -> Result<Response, crate::Error> {
         let res = self.build_post("/3d-db/enroll", &req).send().await?;
-        match res.status() {
-            StatusCode::OK => Ok(self.parse_json(res).await?),
-            StatusCode::BAD_REQUEST => Err(crate::Error::Call(Error::BadRequest(
-                self.parse_json(res).await?,
-            ))),
-            _ => Err(crate::Error::Call(Error::Unknown(res.text().await?))),
-        }
+        self.parse_response(res).await
     }
 }
 
@@ -39,49 +30,15 @@ pub struct Request<'a> {
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    /// Common response portion.
-    #[serde(flatten)]
-    pub common: CommonResponse,
-    /// Whether the request had any errors during the execution.
-    pub error: bool,
     /// Whether the request was successful.
     pub success: bool,
-}
-
-/// The `/3d-db/enroll`-specific error kind.
-#[derive(thiserror::Error, Debug, PartialEq)]
-pub enum Error {
-    /// The face scan or public key were already enrolled.
-    #[error("already enrolled")]
-    AlreadyEnrolled,
-    /// Bad request error occured.
-    #[error("bad request: {0}")]
-    BadRequest(ErrorBadRequest),
-    /// Some other error occured.
-    #[error("unknown error: {0}")]
-    Unknown(String),
-}
-
-/// The error kind for the `/3d-db/enroll`-specific 400 response.
-#[derive(thiserror::Error, Debug, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-#[error("bad request: {error_message}")]
-pub struct ErrorBadRequest {
-    /// Whether the request had any errors during the execution.
-    /// Expected to always be `true` in this context.
-    pub error: bool,
-    /// Whether the request was successful.
-    /// Expected to always be `false` in this context.
-    pub success: bool,
-    /// The error message.
-    pub error_message: String,
 }
 
 #[cfg(test)]
 mod tests {
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
 
-    use crate::tests::test_client;
+    use crate::{tests::test_client, ResponseBodyError, ServerError};
 
     use super::*;
 
@@ -124,32 +81,7 @@ mod tests {
         });
 
         let response: Response = serde_json::from_value(sample_response).unwrap();
-        assert_matches!(
-            response,
-            Response {
-                error: false,
-                success: true,
-                ..
-            }
-        )
-    }
-    #[test]
-    fn bad_request_error_response_deserialization() {
-        let sample_response = serde_json::json!({
-            "error": true,
-            "errorMessage": "No entry found in the database.",
-            "success": false
-        });
-
-        let response: ErrorBadRequest = serde_json::from_value(sample_response).unwrap();
-        assert_eq!(
-            response,
-            ErrorBadRequest {
-                error: true,
-                success: false,
-                error_message: "No entry found in the database.".to_owned(),
-            }
-        )
+        assert_eq!(response, Response { success: true })
     }
 
     #[tokio::test]
@@ -217,10 +149,9 @@ mod tests {
         let actual_error = client.db_enroll(sample_request).await.unwrap_err();
         assert_matches!(
             actual_error,
-            crate::Error::Call(Error::Unknown(error_text)) if error_text == sample_response
+            crate::Error::ResponseBody(ResponseBodyError::Json{body, ..}) if body == sample_response
         );
     }
-
     #[tokio::test]
     async fn mock_error_bad_request() {
         let mock_server = MockServer::start().await;
@@ -235,8 +166,7 @@ mod tests {
             "success": false
         });
 
-        let expected_error: ErrorBadRequest =
-            serde_json::from_value(sample_response.clone()).unwrap();
+        let expected_error = "No entry found in the database.";
 
         Mock::given(matchers::method("POST"))
             .and(matchers::path("/3d-db/enroll"))
@@ -250,7 +180,7 @@ mod tests {
         let actual_error = client.db_enroll(sample_request).await.unwrap_err();
         assert_matches!(
             actual_error,
-            crate::Error::Call(Error::BadRequest(err)) if err == expected_error
+            crate::Error::Server(ServerError {error_message}) if error_message == expected_error
         );
     }
 }
