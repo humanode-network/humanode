@@ -32,13 +32,15 @@ mod traits;
 pub use traits::*;
 
 /// A block-import handler for Bioauth.
-pub struct BioauthBlockImport<Backend, Block: BlockT, Client, BAX, AV> {
+pub struct BioauthBlockImport<Backend, Block: BlockT, Client, BAX, AV, FC> {
     /// The client to interact with the chain.
     inner: Arc<Client>,
     /// The block author extractor.
     block_author_extractor: BAX,
     /// The bioauth auhtrization verifier.
     authorization_verifier: AV,
+    /// The finality consensus object.
+    finality_consensus: FC,
     /// A phantom data for Backend.
     _phantom_back_end: PhantomData<Backend>,
     /// A phantom data for Block.
@@ -63,9 +65,14 @@ where
     AuthorizationVerifier(AV),
 }
 
-impl<BE, Block: BlockT, Client, BAX, AV> BioauthBlockImport<BE, Block, Client, BAX, AV> {
+impl<BE, Block: BlockT, Client, BAX, AV, FC> BioauthBlockImport<BE, Block, Client, BAX, AV, FC> {
     /// Simple constructor.
-    pub fn new(inner: Arc<Client>, block_author_extractor: BAX, authorization_verifier: AV) -> Self
+    pub fn new(
+        inner: Arc<Client>,
+        block_author_extractor: BAX,
+        authorization_verifier: AV,
+        finality_consensus: FC,
+    ) -> Self
     where
         BE: Backend<Block> + 'static,
     {
@@ -73,22 +80,26 @@ impl<BE, Block: BlockT, Client, BAX, AV> BioauthBlockImport<BE, Block, Client, B
             inner,
             block_author_extractor,
             authorization_verifier,
+            finality_consensus,
             _phantom_back_end: PhantomData,
             _phantom_block: PhantomData,
         }
     }
 }
 
-impl<BE, Block: BlockT, Client, BAX, AV> Clone for BioauthBlockImport<BE, Block, Client, BAX, AV>
+impl<BE, Block: BlockT, Client, BAX, AV, FC> Clone
+    for BioauthBlockImport<BE, Block, Client, BAX, AV, FC>
 where
     BAX: Clone,
     AV: Clone,
+    FC: Clone,
 {
     fn clone(&self) -> Self {
         Self {
             inner: Arc::clone(&self.inner),
             block_author_extractor: self.block_author_extractor.clone(),
             authorization_verifier: self.authorization_verifier.clone(),
+            finality_consensus: self.finality_consensus.clone(),
             _phantom_back_end: PhantomData,
             _phantom_block: PhantomData,
         }
@@ -96,8 +107,8 @@ where
 }
 
 #[async_trait::async_trait]
-impl<BE, Block: BlockT, Client, BAX: Clone, AV: Clone> BlockImport<Block>
-    for BioauthBlockImport<BE, Block, Client, BAX, AV>
+impl<BE, Block: BlockT, Client, BAX: Clone, AV: Clone, FC> BlockImport<Block>
+    for BioauthBlockImport<BE, Block, Client, BAX, AV, FC>
 where
     Client: HeaderBackend<Block> + ProvideRuntimeApi<Block> + Send + Sync + Finalizer<Block, BE>,
     for<'a> &'a Client:
@@ -109,6 +120,9 @@ where
     <BAX as BlockAuthorExtractor>::Error: std::error::Error + Send + Sync + 'static,
     <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
     BE: Backend<Block>,
+    FC: Send
+        + Sync
+        + BlockImport<Block, Error = ConsensusError, Transaction = TransactionFor<Client, Block>>,
 {
     type Error = ConsensusError;
 
@@ -150,8 +164,8 @@ where
             return Err(mkerr(BioauthBlockImportError::NotBioauthAuthorized));
         }
 
-        // Import a new block.
-        self.inner.import_block(block, cache).await
+        // Import a new block and apply finality with Grandpa.
+        self.finality_consensus.import_block(block, cache).await
     }
 }
 

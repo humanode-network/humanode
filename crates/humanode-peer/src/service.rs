@@ -30,6 +30,9 @@ type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
+/// Full node Grandpa type.
+type FullGrandpa =
+    sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
 
 /// Construct a bare keystore from the configuration.
 pub fn keystore_container(
@@ -51,12 +54,7 @@ pub fn new_partial(
         sc_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
-            sc_finality_grandpa::GrandpaBlockImport<
-                FullBackend,
-                Block,
-                FullClient,
-                FullSelectChain,
-            >,
+            FullGrandpa,
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             bioauth_consensus::BioauthBlockImport<
                 FullBackend,
@@ -64,6 +62,7 @@ pub fn new_partial(
                 FullClient,
                 bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
                 bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
+                FullGrandpa,
             >,
             SlotDuration,
             Duration,
@@ -102,10 +101,12 @@ pub fn new_partial(
         _,
         _,
         _,
+        _,
     > = bioauth_consensus::BioauthBlockImport::new(
         Arc::clone(&client),
         bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+        grandpa_block_import.clone(),
     );
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
@@ -167,7 +168,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         transaction_pool,
         other:
             (
-                grandpa_block_import,
+                _grandpa_block_import,
                 grandpa_link,
                 bioauth_consensus_block_import,
                 slot_duration,
