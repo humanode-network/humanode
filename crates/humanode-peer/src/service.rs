@@ -113,7 +113,7 @@ pub fn new_partial(
         Arc::clone(&client),
         &(Arc::clone(&client) as Arc<_>),
         select_chain.clone(),
-        None,
+        telemetry.as_ref().map(|x| x.handle()),
     )?;
 
     let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<
