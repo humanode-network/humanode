@@ -8,6 +8,7 @@ use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
+use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
@@ -30,6 +31,9 @@ type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
+/// Full node Grandpa type.
+type FullGrandpa =
+    sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
 
 /// Construct a bare keystore from the configuration.
 pub fn keystore_container(
@@ -51,10 +55,13 @@ pub fn new_partial(
         sc_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
+            FullGrandpa,
+            sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             bioauth_consensus::BioauthBlockImport<
                 FullBackend,
                 Block,
                 FullClient,
+                FullGrandpa,
                 bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
                 bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
             >,
@@ -101,14 +108,24 @@ pub fn new_partial(
     );
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
+
+    let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
+        Arc::clone(&client),
+        &(Arc::clone(&client) as Arc<_>),
+        select_chain.clone(),
+        telemetry.as_ref().map(|x| x.handle()),
+    )?;
+
     let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<
         FullBackend,
         _,
         _,
         _,
         _,
+        _,
     > = bioauth_consensus::BioauthBlockImport::new(
         Arc::clone(&client),
+        grandpa_block_import.clone(),
         bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
     );
@@ -119,7 +136,7 @@ pub fn new_partial(
     let import_queue =
         sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _, _>(ImportQueueParams {
             block_import: bioauth_consensus_block_import.clone(),
-            justification_import: None,
+            justification_import: Some(Box::new(grandpa_block_import.clone())),
             client: Arc::clone(&client),
             create_inherent_data_providers: move |_, ()| async move {
                 let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
@@ -150,6 +167,8 @@ pub fn new_partial(
         select_chain,
         transaction_pool,
         other: (
+            grandpa_block_import,
+            grandpa_link,
             bioauth_consensus_block_import,
             slot_duration,
             raw_slot_duration,
@@ -169,20 +188,43 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         keystore_container,
         select_chain,
         transaction_pool,
-        other: (bioauth_consensus_block_import, slot_duration, raw_slot_duration, mut telemetry),
+        other:
+            (
+                _grandpa_block_import,
+                grandpa_link,
+                bioauth_consensus_block_import,
+                slot_duration,
+                raw_slot_duration,
+                mut telemetry,
+            ),
     } = new_partial(&config)?;
     let Configuration {
-        substrate: config,
+        substrate: mut config,
         bioauth_flow: bioauth_flow_config,
         bioauth_perform_enroll,
     } = config;
 
+    config
+        .network
+        .extra_sets
+        .push(sc_finality_grandpa::grandpa_peers_set_config());
+
+    let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
+        Arc::clone(&backend),
+        grandpa_link.shared_authority_set().clone(),
+    ));
+
     let bioauth_flow_config = bioauth_flow_config
         .ok_or_else(|| ServiceError::Other("bioauth flow config is not set".into()))?;
 
+    let role = config.role.clone();
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
+    let name = config.network.node_name.clone();
+    let keystore = Some(keystore_container.sync_keystore());
+    let enable_grandpa = !config.disable_grandpa;
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
+    let prometheus_registry = config.prometheus_registry().cloned();
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -211,7 +253,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             import_queue,
             on_demand: None,
             block_announce_validator_builder: None,
-            warp_sync: None,
+            warp_sync: Some(warp_sync),
         })?;
 
     let robonode_client = Arc::new(robonode_client::Client {
@@ -277,7 +319,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             keystore: keystore_container.sync_keystore(),
             can_author_with,
             sync_oracle: Arc::clone(&network),
-            justification_sync_link: network,
+            justification_sync_link: Arc::clone(&network),
             block_proposal_slot_portion: SlotProportion::new(2f32 / 3f32),
             max_block_proposal_slot_portion: None,
             telemetry: telemetry.as_ref().map(|x| x.handle()),
@@ -289,6 +331,35 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     task_manager
         .spawn_essential_handle()
         .spawn_blocking("aura", aura);
+
+    let grandpa_config = sc_finality_grandpa::Config {
+        // FIXME #1578 make this available through chainspec.
+        // Ref: https://github.com/paritytech/substrate/issues/1578
+        gossip_duration: Duration::from_millis(333),
+        justification_period: 512,
+        name: Some(name),
+        observer_enabled: false,
+        keystore,
+        local_role: role,
+        telemetry: None,
+    };
+
+    if enable_grandpa {
+        let grandpa_config = sc_finality_grandpa::GrandpaParams {
+            config: grandpa_config,
+            link: grandpa_link,
+            network,
+            voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
+            prometheus_registry,
+            shared_voter_state: SharedVoterState::empty(),
+            telemetry: None,
+        };
+
+        task_manager.spawn_essential_handle().spawn_blocking(
+            "grandpa-voter",
+            sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
+        );
+    }
 
     network_starter.start_network();
 

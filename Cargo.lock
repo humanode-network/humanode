@@ -2332,6 +2332,7 @@ dependencies = [
  "sc-consensus",
  "sc-consensus-aura",
  "sc-executor",
+ "sc-finality-grandpa",
  "sc-network",
  "sc-service",
  "sc-telemetry 4.0.0-dev",
@@ -2340,6 +2341,7 @@ dependencies = [
  "sp-application-crypto",
  "sp-consensus",
  "sp-consensus-aura",
+ "sp-finality-grandpa",
  "sp-keystore",
  "sp-runtime",
  "sp-timestamp",
@@ -2383,6 +2385,7 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-bioauth",
+ "pallet-grandpa",
  "pallet-randomness-collective-flip",
  "pallet-sudo",
  "pallet-timestamp",
@@ -4296,6 +4299,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-authorship"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "sp-authorship",
+ "sp-runtime",
+ "sp-std 4.0.0-dev",
+]
+
+[[package]]
 name = "pallet-balances"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
@@ -4322,6 +4339,28 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std 4.0.0-dev",
+]
+
+[[package]]
+name = "pallet-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-authorship",
+ "pallet-session",
+ "parity-scale-codec",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-finality-grandpa",
+ "sp-io",
+ "sp-runtime",
+ "sp-session",
+ "sp-staking",
  "sp-std 4.0.0-dev",
 ]
 
@@ -4355,6 +4394,7 @@ dependencies = [
  "sp-session",
  "sp-staking",
  "sp-std 4.0.0-dev",
+ "sp-trie",
 ]
 
 [[package]]
@@ -5944,6 +5984,47 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-finality-grandpa"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "async-trait",
+ "derive_more",
+ "dyn-clone",
+ "finality-grandpa",
+ "fork-tree",
+ "futures 0.3.16",
+ "futures-timer 3.0.2",
+ "linked-hash-map",
+ "log",
+ "parity-scale-codec",
+ "parking_lot 0.11.1",
+ "pin-project 1.0.8",
+ "rand 0.8.4",
+ "sc-block-builder",
+ "sc-client-api",
+ "sc-consensus",
+ "sc-keystore",
+ "sc-network",
+ "sc-network-gossip",
+ "sc-telemetry 4.0.0-dev",
+ "serde_json",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-arithmetic",
+ "sp-blockchain",
+ "sp-consensus",
+ "sp-core",
+ "sp-finality-grandpa",
+ "sp-inherents",
+ "sp-keystore",
+ "sp-runtime",
+ "sp-utils 4.0.0-dev",
+ "substrate-prometheus-endpoint",
+ "wasm-timer",
+]
+
+[[package]]
 name = "sc-informant"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
@@ -6053,6 +6134,23 @@ dependencies = [
  "void",
  "wasm-timer",
  "zeroize",
+]
+
+[[package]]
+name = "sc-network-gossip"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "futures 0.3.16",
+ "futures-timer 3.0.2",
+ "libp2p 0.37.1",
+ "log",
+ "lru",
+ "sc-network",
+ "sp-runtime",
+ "substrate-prometheus-endpoint",
+ "tracing",
+ "wasm-timer",
 ]
 
 [[package]]
@@ -6933,6 +7031,18 @@ dependencies = [
  "sp-debug-derive",
  "sp-std 4.0.0-dev",
  "static_assertions",
+]
+
+[[package]]
+name = "sp-authorship"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "async-trait",
+ "parity-scale-codec",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-std 4.0.0-dev",
 ]
 
 [[package]]

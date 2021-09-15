@@ -2,12 +2,13 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, BioauthConfig, GenesisConfig, RobonodePublicKeyWrapper,
-    Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    AccountId, AuraConfig, BalancesConfig, BioauthConfig, GenesisConfig, GrandpaConfig,
+    RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_bioauth::StoredAuthTicket;
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
     app_crypto::{sr25519, Pair, Public},
     traits::{IdentifyAccount, Verify},
@@ -35,8 +36,8 @@ where
 }
 
 /// Generate an Aura authority key.
-pub fn authority_keys_from_seed(s: &str) -> AuraId {
-    get_from_seed::<AuraId>(s)
+pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
+    (get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
 }
 
 /// A configuration for local testnet.
@@ -81,7 +82,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice"),
+                    public_key: authority_keys_from_seed("Alice").0,
                     nonce: "1".as_bytes().to_vec(),
                 }],
                 robonode_public_key,
@@ -130,7 +131,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice"),
+                    public_key: authority_keys_from_seed("Alice").0,
                     nonce: "1".as_bytes().to_vec(),
                 }],
                 robonode_public_key,
@@ -152,7 +153,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
-    initial_authorities: Vec<AuraId>,
+    initial_authorities: Vec<(AuraId, GrandpaId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     stored_auth_tickets: Vec<StoredAuthTicket<AuraId>>,
@@ -173,7 +174,13 @@ fn testnet_genesis(
                 .collect(),
         },
         aura: AuraConfig {
-            authorities: initial_authorities,
+            authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
+        },
+        grandpa: GrandpaConfig {
+            authorities: initial_authorities
+                .iter()
+                .map(|x| (x.1.clone(), 1))
+                .collect(),
         },
         sudo: SudoConfig {
             // Assign network admin rights.

@@ -8,7 +8,7 @@
 
 use futures::future;
 use futures::future::FutureExt;
-use sc_client_api::{backend::Backend, Finalizer};
+use sc_client_api::backend::Backend;
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
 use sp_api::{HeaderT, ProvideRuntimeApi, TransactionFor};
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
@@ -32,9 +32,11 @@ mod traits;
 pub use traits::*;
 
 /// A block-import handler for Bioauth.
-pub struct BioauthBlockImport<Backend, Block: BlockT, Client, BAX, AV> {
+pub struct BioauthBlockImport<Backend, Block: BlockT, Client, BI, BAX, AV> {
     /// The client to interact with the chain.
-    inner: Arc<Client>,
+    client: Arc<Client>,
+    /// The inner block import to wrap.
+    inner: BI,
     /// The block author extractor.
     block_author_extractor: BAX,
     /// The bioauth auhtrization verifier.
@@ -63,13 +65,19 @@ where
     AuthorizationVerifier(AV),
 }
 
-impl<BE, Block: BlockT, Client, BAX, AV> BioauthBlockImport<BE, Block, Client, BAX, AV> {
+impl<BE, Block: BlockT, Client, BI, BAX, AV> BioauthBlockImport<BE, Block, Client, BI, BAX, AV> {
     /// Simple constructor.
-    pub fn new(inner: Arc<Client>, block_author_extractor: BAX, authorization_verifier: AV) -> Self
+    pub fn new(
+        client: Arc<Client>,
+        inner: BI,
+        block_author_extractor: BAX,
+        authorization_verifier: AV,
+    ) -> Self
     where
         BE: Backend<Block> + 'static,
     {
         Self {
+            client,
             inner,
             block_author_extractor,
             authorization_verifier,
@@ -79,14 +87,17 @@ impl<BE, Block: BlockT, Client, BAX, AV> BioauthBlockImport<BE, Block, Client, B
     }
 }
 
-impl<BE, Block: BlockT, Client, BAX, AV> Clone for BioauthBlockImport<BE, Block, Client, BAX, AV>
+impl<BE, Block: BlockT, Client, BI, BAX, AV> Clone
+    for BioauthBlockImport<BE, Block, Client, BI, BAX, AV>
 where
+    BI: Clone,
     BAX: Clone,
     AV: Clone,
 {
     fn clone(&self) -> Self {
         Self {
-            inner: Arc::clone(&self.inner),
+            client: Arc::clone(&self.client),
+            inner: self.inner.clone(),
             block_author_extractor: self.block_author_extractor.clone(),
             authorization_verifier: self.authorization_verifier.clone(),
             _phantom_back_end: PhantomData,
@@ -96,13 +107,14 @@ where
 }
 
 #[async_trait::async_trait]
-impl<BE, Block: BlockT, Client, BAX: Clone, AV: Clone> BlockImport<Block>
-    for BioauthBlockImport<BE, Block, Client, BAX, AV>
+impl<BE, Block: BlockT, Client, BI, BAX: Clone, AV: Clone> BlockImport<Block>
+    for BioauthBlockImport<BE, Block, Client, BI, BAX, AV>
 where
-    Client: HeaderBackend<Block> + ProvideRuntimeApi<Block> + Send + Sync + Finalizer<Block, BE>,
-    for<'a> &'a Client:
-        BlockImport<Block, Error = ConsensusError, Transaction = TransactionFor<Client, Block>>,
+    Client: HeaderBackend<Block> + ProvideRuntimeApi<Block> + Send + Sync,
     TransactionFor<Client, Block>: 'static,
+    BI: BlockImport<Block, Error = ConsensusError, Transaction = TransactionFor<Client, Block>>
+        + Send
+        + Sync,
     BAX: BlockAuthorExtractor<Block = Block> + Send,
     AV: AuthorizationVerifier<Block = Block, PublicKeyType = BAX::PublicKeyType> + Send,
     <BAX as BlockAuthorExtractor>::PublicKeyType: Send + Sync,
@@ -130,7 +142,7 @@ where
         cache: HashMap<well_known_cache_keys::Id, Vec<u8>>,
     ) -> Result<ImportResult, Self::Error> {
         // Extract a number of the last imported block.
-        let at = sp_api::BlockId::Hash(self.inner.info().best_hash);
+        let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
         let mkerr = |err: BioauthBlockImportError<BAX::Error, AV::Error>| -> ConsensusError {
             ConsensusError::Other(Box::new(err))
@@ -150,7 +162,7 @@ where
             return Err(mkerr(BioauthBlockImportError::NotBioauthAuthorized));
         }
 
-        // Import a new block.
+        // Import a new block and apply finality with Grandpa.
         self.inner.import_block(block, cache).await
     }
 }
