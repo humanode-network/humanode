@@ -238,7 +238,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         Block,
         bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
         _,
-        bioauth_consensus::aura::ValidatorKeyExtractor,
+        _,
     > = bioauth_consensus::BioauthProposer::new(
         proposer_factory,
         bioauth_consensus::aura::ValidatorKeyExtractor::new(keystore_container.sync_keystore()),
