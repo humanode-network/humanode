@@ -2334,6 +2334,7 @@ dependencies = [
  "sc-executor",
  "sc-network",
  "sc-service",
+ "sc-telemetry 4.0.0-dev",
  "sc-tracing 4.0.0-dev",
  "sc-transaction-pool",
  "sp-application-crypto",

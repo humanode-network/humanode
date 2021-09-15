@@ -9,6 +9,7 @@ use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAu
 use sc_executor::native_executor_instance;
 pub use sc_executor::NativeExecutor;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
+use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
 use tracing::*;
@@ -59,6 +60,7 @@ pub fn new_partial(
             >,
             SlotDuration,
             Duration,
+            Option<Telemetry>,
         ),
     >,
     ServiceError,
@@ -67,9 +69,28 @@ pub fn new_partial(
         substrate: config, ..
     } = config;
 
+    let telemetry = config
+        .telemetry_endpoints
+        .clone()
+        .filter(|x| !x.is_empty())
+        .map(|endpoints| -> Result<_, sc_telemetry::Error> {
+            let worker = TelemetryWorker::new(16)?;
+            let telemetry = worker.handle().new_telemetry(endpoints);
+            Ok((worker, telemetry))
+        })
+        .transpose()?;
+
     let (client, backend, keystore_container, task_manager) =
-        sc_service::new_full_parts::<Block, RuntimeApi, Executor>(config, None)?;
+        sc_service::new_full_parts::<Block, RuntimeApi, Executor>(
+            config,
+            telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
+        )?;
     let client = Arc::new(client);
+
+    let telemetry = telemetry.map(|(worker, telemetry)| {
+        task_manager.spawn_handle().spawn("telemetry", worker.run());
+        telemetry
+    });
 
     let transaction_pool = sc_transaction_pool::BasicPool::new_full(
         config.transaction_pool.clone(),
@@ -117,7 +138,7 @@ pub fn new_partial(
             ),
             registry: config.prometheus_registry(),
             check_for_equivocation: Default::default(),
-            telemetry: None,
+            telemetry: telemetry.as_ref().map(|x| x.handle()),
         })?;
 
     Ok(PartialComponents {
@@ -132,6 +153,7 @@ pub fn new_partial(
             bioauth_consensus_block_import,
             slot_duration,
             raw_slot_duration,
+            telemetry,
         ),
     })
 }
@@ -147,7 +169,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         keystore_container,
         select_chain,
         transaction_pool,
-        other: (bioauth_consensus_block_import, slot_duration, raw_slot_duration),
+        other: (bioauth_consensus_block_import, slot_duration, raw_slot_duration, mut telemetry),
     } = new_partial(&config)?;
     let Configuration {
         substrate: config,
@@ -167,7 +189,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         Arc::clone(&client),
         Arc::clone(&transaction_pool),
         config.prometheus_registry(),
-        None,
+        telemetry.as_ref().map(|x| x.handle()),
     );
 
     let proposer_factory: bioauth_consensus::BioauthProposer<
@@ -229,7 +251,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         backend,
         system_rpc_tx,
         config,
-        telemetry: None,
+        telemetry: telemetry.as_mut(),
     })?;
 
     let aura = sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _, _, _>(
@@ -258,7 +280,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             justification_sync_link: network,
             block_proposal_slot_portion: SlotProportion::new(2f32 / 3f32),
             max_block_proposal_slot_portion: None,
-            telemetry: None,
+            telemetry: telemetry.as_ref().map(|x| x.handle()),
         },
     )?;
 
