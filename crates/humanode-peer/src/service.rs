@@ -61,9 +61,9 @@ pub fn new_partial(
                 FullBackend,
                 Block,
                 FullClient,
+                FullGrandpa,
                 bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
                 bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
-                FullGrandpa,
             >,
             SlotDuration,
             Duration,
@@ -125,9 +125,9 @@ pub fn new_partial(
         _,
     > = bioauth_consensus::BioauthBlockImport::new(
         Arc::clone(&client),
+        grandpa_block_import.clone(),
         bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
-        grandpa_block_import.clone(),
     );
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;

@@ -2,7 +2,6 @@ use mockall::predicate::*;
 use mockall::*;
 use node_primitives::{Block, BlockNumber, Hash, Header};
 use pallet_bioauth::{self, BioauthApi, StoredAuthTicket};
-use sc_client_api::Finalizer;
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
 use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi, TransactionFor};
 use sp_application_crypto::Pair;
@@ -67,32 +66,13 @@ mock! {
         fn number(&self, _hash: Hash) -> sc_service::Result<std::option::Option<BlockNumber>, sp_blockchain::Error>;
         fn hash(&self, _number: sp_api::NumberFor<Block>) -> sp_blockchain::Result<Option<Hash>>;
     }
-
-    impl Finalizer<Block, sc_service::TFullBackend<Block>> for Client {
-        fn apply_finality(
-            &self,
-            _operation: &mut sc_client_api::ClientImportOperation<
-                Block,
-                sc_service::TFullBackend<Block>,
-            >,
-            _id: sp_api::BlockId<Block>,
-            _justification: Option<sp_runtime::Justification>,
-            _notify: bool,
-        ) -> sp_blockchain::Result<()>;
-        fn finalize_block(
-            &self,
-            _id: sp_api::BlockId<Block>,
-            _justification: Option<sp_runtime::Justification>,
-            _notify: bool,
-        ) -> sp_blockchain::Result<()>;
-    }
 }
 
 mock! {
-    FinalityConsensus {}
+    BlockImportWrapper {}
 
     #[async_trait::async_trait]
-    impl BlockImport<Block> for FinalityConsensus {
+    impl BlockImport<Block> for BlockImportWrapper {
         type Error = ConsensusError;
         type Transaction = TransactionFor<MockClient, Block>;
 
@@ -106,29 +86,6 @@ mock! {
             block: BlockImportParams<Block, TransactionFor<MockClient, Block>>,
             cache: HashMap<well_known_cache_keys::Id, Vec<u8>>,
         ) -> Result<ImportResult, ConsensusError>;
-    }
-}
-
-// mockall doesn't allow implement trait for references inside mock
-#[async_trait::async_trait]
-impl<'a> BlockImport<Block> for &'a MockClient {
-    type Error = ConsensusError;
-
-    type Transaction = TransactionFor<MockClient, Block>;
-
-    async fn check_block(
-        &mut self,
-        block: BlockCheckParams<Block>,
-    ) -> Result<ImportResult, ConsensusError> {
-        (**self).check_block(block).await
-    }
-
-    async fn import_block(
-        &mut self,
-        block: BlockImportParams<Block, TransactionFor<MockClient, Block>>,
-        cache: HashMap<well_known_cache_keys::Id, Vec<u8>>,
-    ) -> Result<ImportResult, ConsensusError> {
-        (**self).import_block(block, cache).await
     }
 }
 
@@ -254,25 +211,25 @@ async fn it_denies_block_import_with_error_extract_authorities() {
 
     let client = Arc::new(mock_client);
 
-    let mut mock_finality_consensus = MockFinalityConsensus::new();
-    mock_finality_consensus
+    let mut mock_block_import = MockBlockImportWrapper::new();
+    mock_block_import
         .expect_import_block()
         .returning(|_, _| Ok(ImportResult::Imported(Default::default())));
 
-    let finality_consensus = mock_finality_consensus;
+    let block_import = mock_block_import;
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
+        MockBlockImportWrapper,
         _,
         _,
-        MockFinalityConsensus,
     > = BioauthBlockImport::new(
         Arc::clone(&client),
+        block_import,
         crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
-        finality_consensus,
     );
 
     let res = bioauth_block_import
@@ -312,25 +269,25 @@ async fn it_denies_block_import_with_invalid_slot_number() {
 
     let client = Arc::new(mock_client);
 
-    let mut mock_finality_consensus = MockFinalityConsensus::new();
-    mock_finality_consensus
+    let mut mock_block_import = MockBlockImportWrapper::new();
+    mock_block_import
         .expect_import_block()
         .returning(|_, _| Ok(ImportResult::Imported(Default::default())));
 
-    let finality_consensus = mock_finality_consensus;
+    let block_import = mock_block_import;
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
+        MockBlockImportWrapper,
         _,
         _,
-        MockFinalityConsensus,
     > = BioauthBlockImport::new(
         Arc::clone(&client),
+        block_import,
         crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
-        finality_consensus,
     );
 
     let res = bioauth_block_import
@@ -374,25 +331,25 @@ async fn it_denies_block_import_with_error_extract_stored_auth_ticket() {
 
     let client = Arc::new(mock_client);
 
-    let mut mock_finality_consensus = MockFinalityConsensus::new();
-    mock_finality_consensus
+    let mut mock_block_import = MockBlockImportWrapper::new();
+    mock_block_import
         .expect_import_block()
         .returning(|_, _| Ok(ImportResult::Imported(Default::default())));
 
-    let finality_consensus = mock_finality_consensus;
+    let block_import = mock_block_import;
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
+        MockBlockImportWrapper,
         _,
         _,
-        MockFinalityConsensus,
     > = BioauthBlockImport::new(
         Arc::clone(&client),
+        block_import,
         crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
-        finality_consensus,
     );
 
     let res = bioauth_block_import
@@ -446,25 +403,25 @@ async fn it_denies_block_import_with_not_bioauth_authorized() {
 
     let client = Arc::new(mock_client);
 
-    let mut mock_finality_consensus = MockFinalityConsensus::new();
-    mock_finality_consensus
+    let mut mock_block_import = MockBlockImportWrapper::new();
+    mock_block_import
         .expect_import_block()
         .returning(|_, _| Ok(ImportResult::Imported(Default::default())));
 
-    let finality_consensus = mock_finality_consensus;
+    let block_import = mock_block_import;
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
+        MockBlockImportWrapper,
         _,
         _,
-        MockFinalityConsensus,
     > = BioauthBlockImport::new(
         Arc::clone(&client),
+        block_import,
         crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
-        finality_consensus,
     );
 
     let res = bioauth_block_import
@@ -511,10 +468,6 @@ async fn it_permits_block_import_with_valid_data() {
     let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
 
     mock_client
-        .expect_finalize_block()
-        .returning(|_, _, _| Ok(()));
-
-    mock_client
         .expect_import_block()
         .returning(|_, _| Ok(ImportResult::imported(Default::default())));
 
@@ -524,25 +477,25 @@ async fn it_permits_block_import_with_valid_data() {
 
     let client = Arc::new(mock_client);
 
-    let mut mock_finality_consensus = MockFinalityConsensus::new();
-    mock_finality_consensus
+    let mut mock_block_import = MockBlockImportWrapper::new();
+    mock_block_import
         .expect_import_block()
         .returning(|_, _| Ok(ImportResult::Imported(Default::default())));
 
-    let finality_consensus = mock_finality_consensus;
+    let block_import = mock_block_import;
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
         _,
         MockClient,
-        _,
+        MockBlockImportWrapper,
         _,
         _,
     > = BioauthBlockImport::new(
         Arc::clone(&client),
+        block_import,
         crate::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         crate::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
-        finality_consensus,
     );
 
     let res = bioauth_block_import
