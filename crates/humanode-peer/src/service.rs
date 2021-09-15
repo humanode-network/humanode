@@ -221,6 +221,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
     let name = config.network.node_name.clone();
     let keystore = Some(keystore_container.sync_keystore());
+    let enable_grandpa = !config.disable_grandpa;
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
     let prometheus_registry = config.prometheus_registry().cloned();
@@ -342,20 +343,22 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry: None,
     };
 
-    let grandpa_config = sc_finality_grandpa::GrandpaParams {
-        config: grandpa_config,
-        link: grandpa_link,
-        network,
-        voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
-        prometheus_registry,
-        shared_voter_state: SharedVoterState::empty(),
-        telemetry: None,
-    };
+    if enable_grandpa {
+        let grandpa_config = sc_finality_grandpa::GrandpaParams {
+            config: grandpa_config,
+            link: grandpa_link,
+            network,
+            voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
+            prometheus_registry,
+            shared_voter_state: SharedVoterState::empty(),
+            telemetry: None,
+        };
 
-    task_manager.spawn_essential_handle().spawn_blocking(
-        "grandpa-voter",
-        sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
-    );
+        task_manager.spawn_essential_handle().spawn_blocking(
+            "grandpa-voter",
+            sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
+        );
+    }
 
     network_starter.start_network();
 
