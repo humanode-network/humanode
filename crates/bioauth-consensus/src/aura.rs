@@ -3,6 +3,7 @@
 use sp_api::{BlockId, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_consensus_aura::{digests::CompatibleDigestItem, AuraApi};
+use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::{Block as BlockT, Header};
 use std::{marker::PhantomData, sync::Arc};
 
@@ -91,5 +92,39 @@ where
             .expect("author index is mod authories list len; qed");
 
         Ok(author_public_key.clone())
+    }
+}
+
+/// Encapsulates validator public key extraction logic for aura consensus.
+pub struct ValidatorKeyExtractor {
+    /// Keystore to extract validator public key.
+    keystore: SyncCryptoStorePtr,
+}
+
+impl ValidatorKeyExtractor {
+    /// Create a new [`ValidatorKeyExtractor`].
+    pub fn new(keystore: SyncCryptoStorePtr) -> Self {
+        Self { keystore }
+    }
+}
+
+impl crate::ValidatorKeyExtractor for ValidatorKeyExtractor {
+    type PublicKeyType = sp_consensus_aura::sr25519::AuthorityId;
+
+    fn extract_validator_key(&self) -> Self::PublicKeyType {
+        let keystore_ref = self.keystore.as_ref();
+        let validator_public_keys = tokio::task::block_in_place(move || {
+            sp_keystore::SyncCryptoStore::sr25519_public_keys(
+                keystore_ref,
+                sp_application_crypto::key_types::AURA,
+            )
+        });
+
+        assert!(
+            validator_public_keys.len() == 1,
+            "The list of validator public keys should contain only 1 key, please report this"
+        );
+
+        validator_public_keys[0].into()
     }
 }

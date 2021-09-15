@@ -39,3 +39,13 @@ pub trait AuthorizationVerifier {
         public_key: &Self::PublicKeyType,
     ) -> Result<bool, Self::Error>;
 }
+
+/// ValidatorKeyExtractor provides a functionality to extract
+/// validator key.
+pub trait ValidatorKeyExtractor {
+    /// The public key type that is used for extracting validator key.
+    type PublicKeyType;
+
+    /// Extract validator public key.
+    fn extract_validator_key(&self) -> Self::PublicKeyType;
+}
