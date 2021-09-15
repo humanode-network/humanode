@@ -13,7 +13,6 @@ use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResul
 use sp_api::{HeaderT, ProvideRuntimeApi, TransactionFor};
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
 use sp_consensus::{Environment, Error as ConsensusError};
-use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::Block as BlockT;
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
@@ -168,11 +167,11 @@ where
 }
 
 /// A Proposer handler for Bioauth.
-pub struct BioauthProposer<Block: BlockT, AV, BAP> {
+pub struct BioauthProposer<Block: BlockT, AV, BAP, VKE> {
     /// A basic authorship proposer.
     base_proposer: BAP,
     /// Keystore to extract validator public key.
-    keystore: SyncCryptoStorePtr,
+    validator_key_extractor: VKE,
     /// The bioauth auhtrization verifier.
     authorization_verifier: AV,
     /// A phantom data for Block.
@@ -193,32 +192,30 @@ where
     AuthorizationVerifier(AV),
 }
 
-impl<Block: BlockT, AV, BAP> BioauthProposer<Block, AV, BAP> {
+impl<Block: BlockT, AV, BAP, VKE> BioauthProposer<Block, AV, BAP, VKE> {
     /// Simple constructor.
     pub fn new(
         base_proposer: BAP,
-        keystore: SyncCryptoStorePtr,
+        validator_key_extractor: VKE,
         authorization_verifier: AV,
     ) -> Self {
         BioauthProposer {
             base_proposer,
-            keystore,
+            validator_key_extractor,
             authorization_verifier,
             _phantom_block: PhantomData,
         }
     }
 }
 
-impl<Block: BlockT, AV, BAP> Environment<Block> for BioauthProposer<Block, AV, BAP>
+impl<Block: BlockT, AV, BAP, VKE> Environment<Block> for BioauthProposer<Block, AV, BAP, VKE>
 where
-    AV: AuthorizationVerifier<
-            Block = Block,
-            PublicKeyType = sp_consensus_aura::sr25519::AuthorityId,
-        > + Send,
+    AV: AuthorizationVerifier<Block = Block, PublicKeyType = VKE::PublicKeyType> + Send,
     <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
     BAP: Environment<Block> + Send + Sync + 'static,
     BAP::Error: Send,
     BAP::Proposer: Send,
+    VKE: ValidatorKeyExtractor,
 {
     type Proposer = BAP::Proposer;
 
@@ -233,28 +230,14 @@ where
             ))))
         };
 
-        let keystore_ref = self.keystore.as_ref();
-
-        let aura_public_keys = tokio::task::block_in_place(move || {
-            sp_keystore::SyncCryptoStore::sr25519_public_keys(
-                keystore_ref,
-                sp_application_crypto::key_types::AURA,
-            )
-        });
-
-        assert!(
-            aura_public_keys.len() == 1,
-            "The list of aura public keys should contain only 1 key, please report this"
-        );
-
-        let aura_public_key = aura_public_keys[0];
+        let validator_key = self.validator_key_extractor.extract_validator_key();
 
         let parent_hash = parent_header.hash();
         let at = sp_api::BlockId::hash(parent_hash);
 
         let is_authorized = match self
             .authorization_verifier
-            .is_authorized(&at, &aura_public_key.into())
+            .is_authorized(&at, &validator_key)
         {
             Ok(v) => v,
             Err(err) => return mkerr(BioauthProposerError::AuthorizationVerifier(err)),
