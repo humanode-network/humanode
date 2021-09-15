@@ -40,18 +40,7 @@ struct MockWrapperRuntimeApi(Arc<MockRuntimeApi>);
 
 mock! {
     #[derive(Debug)]
-    Client {
-        async fn check_block(
-            &self,
-            block: BlockCheckParams<Block>,
-        ) -> Result<ImportResult, ConsensusError>;
-
-        async fn import_block(
-            &self,
-            block: BlockImportParams<Block, TransactionFor<MockClient, Block>>,
-            cache: HashMap<well_known_cache_keys::Id, Vec<u8>>,
-        ) -> Result<ImportResult, ConsensusError>;
-    }
+    Client {}
 
     impl ProvideRuntimeApi<Block> for Client {
         type Api = MockWrapperRuntimeApi;
@@ -466,10 +455,6 @@ async fn it_permits_block_import_with_valid_data() {
         });
 
     let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
-
-    mock_client
-        .expect_import_block()
-        .returning(|_, _| Ok(ImportResult::imported(Default::default())));
 
     mock_client
         .expect_runtime_api()
