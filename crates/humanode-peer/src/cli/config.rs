@@ -3,7 +3,7 @@
 use sc_chain_spec::get_extension;
 
 use crate::{
-    chain_spec::BioauthFlowParamsExtension,
+    chain_spec::Extensions,
     configuration::{self, Configuration},
 };
 
@@ -24,7 +24,7 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         )?;
 
         let bioauth_flow_params_extension =
-            get_extension::<BioauthFlowParamsExtension>(substrate.chain_spec.extensions())
+            get_extension::<Extensions>(substrate.chain_spec.extensions())
                 .cloned()
                 .unwrap_or_default();
 
