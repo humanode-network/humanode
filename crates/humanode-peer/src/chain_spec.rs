@@ -6,7 +6,9 @@ use humanode_runtime::{
     RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_bioauth::StoredAuthTicket;
+use sc_chain_spec_derive::ChainSpecExtension;
 use sc_service::ChainType;
+use serde::{Deserialize, Serialize};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
@@ -15,7 +17,26 @@ use sp_runtime::{
 };
 
 /// The concrete chain spec type we're using for the humanode network.
-pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig>;
+pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
+
+/// Extensions for ChainSpec.
+#[derive(Serialize, Deserialize, Clone, ChainSpecExtension, Default, PartialEq, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct Extensions {
+    /// TODO
+    #[serde(flatten)]
+    pub bioauth_flow_params: BioauthFlowParamsExtension,
+}
+
+/// TODO
+#[derive(Serialize, Deserialize, Clone, Default, PartialEq, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct BioauthFlowParamsExtension {
+    /// The URL of robonode to authenticate with.
+    pub robonode_url: Option<String>,
+    /// TODO
+    pub webapp_url: Option<String>,
+}
 
 /// Generate a crypto pair from seed.
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -97,7 +118,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         // Properties
         None,
         // Extensions
-        None,
+        Extensions::default(),
     ))
 }
 
@@ -146,7 +167,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
         // Properties
         None,
         // Extensions
-        None,
+        Extensions::default(),
     ))
 }
 
@@ -191,5 +212,55 @@ fn testnet_genesis(
             stored_auth_tickets,
             robonode_public_key,
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn deserialize_bioauth_flow_params_extensions() {
+        // from_json_bytes();
+        let expected = Extensions {
+            bioauth_flow_params: BioauthFlowParamsExtension {
+                robonode_url: Some("http://127.0.0.1:3033".into()),
+                webapp_url: Some("https://webapp-test-1.dev.humanode.io".into()),
+            },
+        };
+        let value = serde_json::json!({
+            "name": "Local Testnet",
+            "id": "local_testnet",
+            "chainType": "Local",
+            "bootNodes": [
+              "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWCXvRaPbhT6BugLAApEvV3e3dZxKeR8kPtgTJdU6eGzqB"
+            ],
+            "telemetryEndpoints": null,
+            "protocolId": null,
+            "properties": null,
+            "robonodeUrl": "http://127.0.0.1:3033",
+            "webappUrl": "https://webapp-test-1.dev.humanode.io",
+            "consensusEngine": null,
+            "codeSubstitutes": {}});
+
+        let sample: Extensions = serde_json::from_value(value).unwrap();
+
+        assert_eq!(sample, expected)
+    }
+
+    #[test]
+    fn deserialize_chain_spec() {
+        let chain_spec_file_content = b"{\"name\":\"Local Testnet\",\"id\":\"local_testnet\",\"chainType\":\"Local\",\"bootNodes\":[\"/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWCXvRaPbhT6BugLAApEvV3e3dZxKeR8kPtgTJdU6eGzqB\"],\"telemetryEndpoints\":null,\"protocolId\":null,\"properties\":null,\"robonodeUrl\":\"http://127.0.0.1:3033\",\"webappUrl\":\"https://webapp-test-1.dev.humanode.io\",\"consensusEngine\":null,\"codeSubstitutes\":{},\"genesis\":{\"runtime\":{\"system\":{\"changesTrieConfig\":null,\"code\":\"0x04\"},\"aura\":{\"authorities\":[\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\",\"5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty\"]},\"balances\":{\"balances\":[[\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\",1152921504606846976],[\"5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty\",1152921504606846976]]},\"sudo\":{\"key\":\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\"},\"bioauth\":{\"storedAuthTickets\":[{\"public_key\":\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\",\"nonce\":[49]}],\"robonodePublicKey\":[93,222,3,147,68,25,37,45,19,51,110,90,88,129,245,177,239,158,164,112,132,83,142,178,41,248,99,73,231,243,148,171]}}}}";
+        let bytes = &chain_spec_file_content[..];
+        let sample: ChainSpec = ChainSpec::from_json_bytes(bytes).unwrap();
+
+        let expected = Extensions {
+            bioauth_flow_params: BioauthFlowParamsExtension {
+                robonode_url: Some("http://127.0.0.1:3033".into()),
+                webapp_url: Some("https://webapp-test-1.dev.humanode.io".into()),
+            },
+        };
+
+        assert_eq!(sample.extensions().to_owned(), expected)
     }
 }
