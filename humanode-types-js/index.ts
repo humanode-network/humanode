@@ -9,7 +9,7 @@ export const humanodeDefinitions = {
       minmax: [0],
       types: {
         StoredAuthTicket: {
-          public_key: "Vec<u8>",
+          public_key: "AccountId",
           nonce: "Vec<u8>"
         },
         RobonodePublicKey: "[u8; 32]"
