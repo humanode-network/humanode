@@ -15,18 +15,21 @@ use pallet_bioauth::StoredAuthTicket;
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
+use pallet_session::historical as pallet_session_historical;
 use primitives_auth_ticket::OpaqueAuthTicket;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
+use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::traits::{
     AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify,
 };
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
-    transaction_validity::{TransactionSource, TransactionValidity},
+    traits::OpaqueKeys,
+    transaction_validity::{TransactionPriority, TransactionSource, TransactionValidity},
     ApplyExtrinsicResult, MultiSignature,
 };
 use sp_std::prelude::*;
@@ -46,6 +49,7 @@ pub use frame_support::{
     StorageValue,
 };
 pub use pallet_balances::Call as BalancesCall;
+use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
 #[cfg(any(feature = "std", test))]
@@ -64,6 +68,9 @@ pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::Account
 
 /// Balance of an account.
 pub type Balance = u128;
+
+/// Type used for expressing timestamp.
+pub type Moment = u64;
 
 /// Index of a transaction in the chain.
 pub type Index = u32;
@@ -89,8 +96,10 @@ pub mod opaque {
 
     impl_opaque_keys! {
         pub struct SessionKeys {
-            pub aura: Aura,
+            pub babe: Babe,
             pub grandpa: Grandpa,
+            pub im_online: ImOnline,
+            pub authority_discovery: AuthorityDiscovery,
         }
     }
 }
@@ -112,22 +121,53 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     transaction_version: 1,
 };
 
-/// This determines the average expected block time that we are targeting.
-/// Blocks will be produced at a minimum duration defined by `SLOT_DURATION`.
-/// `SLOT_DURATION` is picked up by `pallet_timestamp` which is in turn picked
-/// up by `pallet_aura` to implement `fn slot_duration()`.
+/// Since BABE is probabilistic this is the average expected block time that
+/// we are targeting. Blocks will be produced at a minimum duration defined
+/// by `SLOT_DURATION`, but some slots will not be allocated to any
+/// authority and hence no block will be produced. We expect to have this
+/// block time on average following the defined slot duration and the value
+/// of `c` configured for BABE (where `1 - c` represents the probability of
+/// a slot being empty).
+/// This value is only used indirectly to define the unit constants below
+/// that are expressed in blocks. The rest of the code should use
+/// `SLOT_DURATION` instead (like the Timestamp pallet for calculating the
+/// minimum period).
 ///
-/// Change this to adjust the block time.
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
+/// If using BABE with secondary slots (default) then all of the slots will
+/// always be assigned, in which case `MILLISECS_PER_BLOCK` and
+/// `SLOT_DURATION` should have the same value.
+///
+/// <https://research.web3.foundation/en/latest/polkadot/block-production/Babe.html#-6.-practical-results>
+pub const MILLISECS_PER_BLOCK: Moment = 3000;
+pub const SECS_PER_BLOCK: Moment = MILLISECS_PER_BLOCK / 1000;
 
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
+pub const SLOT_DURATION: Moment = MILLISECS_PER_BLOCK;
 
-// Time is measured by number of blocks.
-pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
+// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
+pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
+
+// NOTE: Currently it is not possible to change the epoch duration after the chain has started.
+//       Attempting to do so will brick block production.
+pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+pub const EPOCH_DURATION_IN_SLOTS: u64 = {
+    const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
+
+    (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
+};
+
+// These time units are defined in number of blocks.
+pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
 pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
+
+/// The BABE epoch configuration at genesis.
+pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
+    sp_consensus_babe::BabeEpochConfiguration {
+        c: PRIMARY_PROBABILITY,
+        allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
+    };
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -258,11 +298,6 @@ parameter_types! {
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
-impl pallet_aura::Config for Runtime {
-    type AuthorityId = AuraId;
-    type DisabledValidators = ();
-}
-
 impl pallet_grandpa::Config for Runtime {
     type Event = Event;
     type Call = Call;
@@ -289,7 +324,7 @@ parameter_types! {
 impl pallet_timestamp::Config for Runtime {
     /// A timestamp: milliseconds since the unix epoch.
     type Moment = u64;
-    type OnTimestampSet = Aura;
+    type OnTimestampSet = Babe;
     type MinimumPeriod = MinimumPeriod;
     type WeightInfo = ();
 }
@@ -324,6 +359,138 @@ impl pallet_sudo::Config for Runtime {
     type Call = Call;
 }
 
+pub type SessionIndex = u32;
+pub struct NeedSessionManagerImpl;
+impl pallet_session::historical::SessionManager<AccountId, AccountId> for NeedSessionManagerImpl {
+    fn new_session(_new_index: SessionIndex) -> Option<Vec<(AccountId, AccountId)>> {
+        todo!()
+    }
+
+    fn start_session(_start_index: SessionIndex) {
+        todo!()
+    }
+
+    fn end_session(_end_index: SessionIndex) {
+        todo!()
+    }
+}
+impl pallet_session::SessionManager<AccountId> for NeedSessionManagerImpl {
+    fn new_session(_new_index: SessionIndex) -> Option<Vec<AccountId>> {
+        todo!()
+    }
+
+    fn end_session(_end_index: SessionIndex) {
+        todo!()
+    }
+
+    fn start_session(_sstart_index: SessionIndex) {
+        todo!()
+    }
+}
+
+impl pallet_offences::Config for Runtime {
+    type Event = Event;
+    type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
+    // type OnOffenceHandler = Staking
+    type OnOffenceHandler = ();
+}
+
+parameter_types! {
+    pub const DisabledValidatorsThreshold: Perbill = Perbill::from_percent(17);
+}
+
+impl pallet_session::Config for Runtime {
+    type Event = Event;
+    type ValidatorId = <Self as frame_system::Config>::AccountId;
+    // type ValidatorIdOf = pallet_staking::StashOf<Self>;
+    type ValidatorIdOf = ();
+    type ShouldEndSession = Babe;
+    type NextSessionRotation = Babe;
+    // type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+    type SessionManager =
+        pallet_session::historical::NoteHistoricalRoot<Self, NeedSessionManagerImpl>;
+    type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+    type Keys = opaque::SessionKeys;
+    type DisabledValidatorsThreshold = DisabledValidatorsThreshold;
+    type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_session::historical::Config for Runtime {
+    type FullIdentification = AccountId;
+    // type FullIdentificationOf = pallet_staking::ExposureOf<Runtime>;
+    type FullIdentificationOf = ();
+}
+
+impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
+where
+    Call: From<C>,
+{
+    type Extrinsic = UncheckedExtrinsic;
+    type OverarchingCall = Call;
+}
+
+parameter_types! {
+    pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+    pub const MaxAuthorities: u32 = 100;
+}
+
+impl pallet_im_online::Config for Runtime {
+    type AuthorityId = ImOnlineId;
+    type Event = Event;
+    type NextSessionRotation = Babe;
+    type ValidatorSet = Historical;
+    type ReportUnresponsiveness = Offences;
+    type UnsignedPriority = ImOnlineUnsignedPriority;
+    type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_authority_discovery::Config for Runtime {}
+
+parameter_types! {
+    // Some values are taken from pallet_staking because it provides them for Babe
+    pub const SessionsPerEra: SessionIndex = 6;
+    pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
+    pub const ExpectedBlockTime: Moment = MILLISECS_PER_BLOCK;
+    pub const ReportLongevity: u64 =
+        24 * 28 * SessionsPerEra::get() as u64 * EpochDuration::get();
+}
+
+impl pallet_babe::Config for Runtime {
+    type EpochDuration = EpochDuration;
+    type ExpectedBlockTime = ExpectedBlockTime;
+    type EpochChangeTrigger = pallet_babe::ExternalTrigger;
+    type DisabledValidators = Session;
+
+    type KeyOwnerProofSystem = Historical;
+
+    type KeyOwnerProof = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+        KeyTypeId,
+        pallet_babe::AuthorityId,
+    )>>::Proof;
+
+    type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+        KeyTypeId,
+        pallet_babe::AuthorityId,
+    )>>::IdentificationTuple;
+
+    type HandleEquivocation =
+        pallet_babe::EquivocationHandler<Self::KeyOwnerIdentification, Offences, ReportLongevity>;
+
+    type WeightInfo = ();
+}
+
+parameter_types! {
+    pub const UncleGenerations: BlockNumber = 5;
+}
+
+impl pallet_authorship::Config for Runtime {
+    type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Babe>;
+    type UncleGenerations = UncleGenerations;
+    type FilterUncle = ();
+    // type EventHandler = (Staking, ImOnline);
+    type EventHandler = ImOnline;
+}
+
 pub struct PrimitiveAuthTicketConverter;
 
 pub enum PrimitiveAuthTicketConverterError {
@@ -331,14 +498,14 @@ pub enum PrimitiveAuthTicketConverterError {
     PublicKey(()),
 }
 
-impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::StoredAuthTicket<AuraId>>
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::StoredAuthTicket<BabeId>>
     for PrimitiveAuthTicketConverter
 {
     type Error = PrimitiveAuthTicketConverterError;
 
     fn try_convert(
         value: OpaqueAuthTicket,
-    ) -> Result<pallet_bioauth::StoredAuthTicket<AuraId>, Self::Error> {
+    ) -> Result<pallet_bioauth::StoredAuthTicket<BabeId>, Self::Error> {
         use sp_std::convert::TryInto;
         let primitives_auth_ticket::AuthTicket {
             public_key,
@@ -360,7 +527,7 @@ impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
     type RobonodeSignature = Vec<u8>;
-    type ValidatorPublicKey = AuraId;
+    type ValidatorPublicKey = BabeId;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
 }
@@ -376,12 +543,18 @@ construct_runtime!(
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
         RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage},
         Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
-        Aura: pallet_aura::{Pallet, Config<T>},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
         Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
         Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
+        ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
+        Offences: pallet_offences::{Pallet, Storage, Event},
+        Historical: pallet_session_historical::{Pallet},
+        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
+        AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config},
+        Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned},
+        Authorship: pallet_authorship::{Pallet, Call, Storage, Inherent},
     }
 );
 
@@ -472,24 +645,14 @@ impl_runtime_apis! {
         }
     }
 
-    impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
-        fn slot_duration() -> sp_consensus_aura::SlotDuration {
-            sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
-        }
-
-        fn authorities() -> Vec<AuraId> {
-            Aura::authorities()
-        }
-    }
-
     impl pallet_bioauth::BioauthApi<Block, <Runtime as pallet_bioauth::Config>::ValidatorPublicKey> for Runtime {
         fn stored_auth_tickets() -> sp_std::prelude::Vec<pallet_bioauth::StoredAuthTicket<<Runtime as pallet_bioauth::Config>::ValidatorPublicKey>> {
             Bioauth::stored_auth_tickets()
         }
     }
 
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
-        fn is_authorized(id: &AuraId) -> bool {
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
+        fn is_authorized(id: &BabeId) -> bool {
             Bioauth::stored_auth_tickets()
                 .iter()
                 .any(|stored_auth_ticket| &stored_auth_ticket.public_key == id)
@@ -541,6 +704,65 @@ impl_runtime_apis! {
     impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
         fn account_nonce(account: AccountId) -> Index {
             System::account_nonce(account)
+        }
+    }
+
+    impl sp_consensus_babe::BabeApi<Block> for Runtime {
+        fn configuration() -> sp_consensus_babe::BabeGenesisConfiguration {
+            // The choice of `c` parameter (where `1 - c` represents the
+            // probability of a slot being empty), is done in accordance to the
+            // slot duration and expected target block time, for safely
+            // resisting network delays of maximum two seconds.
+            // <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
+            sp_consensus_babe::BabeGenesisConfiguration {
+                slot_duration: Babe::slot_duration(),
+                epoch_length: EpochDuration::get(),
+                c: BABE_GENESIS_EPOCH_CONFIG.c,
+                genesis_authorities: Babe::authorities(),
+                randomness: Babe::randomness(),
+                allowed_slots: BABE_GENESIS_EPOCH_CONFIG.allowed_slots,
+            }
+        }
+
+        fn current_epoch_start() -> sp_consensus_babe::Slot {
+            Babe::current_epoch_start()
+        }
+
+        fn current_epoch() -> sp_consensus_babe::Epoch {
+            Babe::current_epoch()
+        }
+
+        fn next_epoch() -> sp_consensus_babe::Epoch {
+            Babe::next_epoch()
+        }
+
+        fn generate_key_ownership_proof(
+            _slot: sp_consensus_babe::Slot,
+            authority_id: sp_consensus_babe::AuthorityId,
+        ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
+            use codec::Encode;
+
+            Historical::prove((sp_consensus_babe::KEY_TYPE, authority_id))
+                .map(|p| p.encode())
+                .map(sp_consensus_babe::OpaqueKeyOwnershipProof::new)
+        }
+
+        fn submit_report_equivocation_unsigned_extrinsic(
+            equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
+            key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
+        ) -> Option<()> {
+            let key_owner_proof = key_owner_proof.decode()?;
+
+            Babe::submit_unsigned_equivocation_report(
+                equivocation_proof,
+                key_owner_proof,
+            )
+        }
+    }
+
+    impl sp_authority_discovery::AuthorityDiscoveryApi<Block> for Runtime {
+        fn authorities() -> Vec<AuthorityDiscoveryId> {
+            AuthorityDiscovery::authorities()
         }
     }
 

@@ -22,18 +22,24 @@ frame-system = { default-features = false, git = "https://github.com/humanode-ne
 frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 hex-literal = { version = "0.3", optional = true }
-pallet-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-authority-discovery = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-authorship = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-offences = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = { version = "1", features = ["derive"], optional = true }
 sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-authority-discovery = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-consensus-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -56,25 +62,31 @@ runtime-benchmarks = [
 ]
 std = [
   "primitives-auth-ticket/std",
+  "sp-authority-discovery/std",
   "codec/std",
   "serde",
   "frame-executive/std",
   "frame-support/std",
   "frame-system/std",
   "frame-system-rpc-runtime-api/std",
-  "pallet-aura/std",
+  "pallet-babe/std",
   "pallet-bioauth/std",
   "pallet-balances/std",
   "pallet-grandpa/std",
   "pallet-randomness-collective-flip/std",
   "pallet-sudo/std",
+  "pallet-im-online/std",
+  "pallet-offences/std",
+  "pallet-session/std",
+  "pallet-authority-discovery/std",
+  "pallet-authorship/std",
   "pallet-timestamp/std",
   "pallet-transaction-payment/std",
   "pallet-transaction-payment-rpc-runtime-api/std",
   "robonode-crypto/std",
   "sp-api/std",
   "sp-block-builder/std",
-  "sp-consensus-aura/std",
+  "sp-consensus-babe/std",
   "sp-core/std",
   "sp-inherents/std",
   "sp-offchain/std",

@@ -2,14 +2,17 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, BioauthConfig, GenesisConfig, GrandpaConfig,
-    RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    opaque::SessionKeys, AccountId, AuthorityDiscoveryConfig, BabeConfig, BalancesConfig,
+    BioauthConfig, GenesisConfig, GrandpaConfig, ImOnlineConfig, RobonodePublicKeyWrapper,
+    SessionConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_bioauth::StoredAuthTicket;
+use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_authority_discovery::AuthorityId as AuthorityDiscoveryId;
+use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
     app_crypto::{sr25519, Pair, Public},
@@ -51,8 +54,37 @@ where
 }
 
 /// Generate an Aura authority key.
-pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
-    (get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
+pub fn authority_keys_from_seed(
+    s: &str,
+) -> (
+    AccountId,
+    BabeId,
+    GrandpaId,
+    ImOnlineId,
+    AuthorityDiscoveryId,
+) {
+    (
+        get_account_id_from_seed::<sr25519::Public>(s),
+        get_from_seed::<BabeId>(s),
+        get_from_seed::<GrandpaId>(s),
+        get_from_seed::<ImOnlineId>(s),
+        get_from_seed::<AuthorityDiscoveryId>(s),
+    )
+}
+
+/// Create a SessioonKeys structure.
+fn session_keys(
+    babe: BabeId,
+    grandpa: GrandpaId,
+    im_online: ImOnlineId,
+    authority_discovery: AuthorityDiscoveryId,
+) -> SessionKeys {
+    SessionKeys {
+        babe,
+        grandpa,
+        im_online,
+        authority_discovery,
+    }
 }
 
 /// A configuration for local testnet.
@@ -97,7 +129,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice").0,
+                    public_key: authority_keys_from_seed("Alice").1,
                     nonce: "1".as_bytes().to_vec(),
                 }],
                 robonode_public_key,
@@ -146,7 +178,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice").0,
+                    public_key: authority_keys_from_seed("Alice").1,
                     nonce: "1".as_bytes().to_vec(),
                 }],
                 robonode_public_key,
@@ -168,10 +200,16 @@ pub fn development_config() -> Result<ChainSpec, String> {
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
-    initial_authorities: Vec<(AuraId, GrandpaId)>,
+    initial_authorities: Vec<(
+        AccountId,
+        BabeId,
+        GrandpaId,
+        ImOnlineId,
+        AuthorityDiscoveryId,
+    )>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
-    stored_auth_tickets: Vec<StoredAuthTicket<AuraId>>,
+    stored_auth_tickets: Vec<StoredAuthTicket<BabeId>>,
     robonode_public_key: RobonodePublicKeyWrapper,
 ) -> GenesisConfig {
     GenesisConfig {
@@ -188,14 +226,26 @@ fn testnet_genesis(
                 .map(|k| (k, 1 << 60))
                 .collect(),
         },
-        aura: AuraConfig {
-            authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
-        },
-        grandpa: GrandpaConfig {
-            authorities: initial_authorities
+        session: SessionConfig {
+            keys: initial_authorities
                 .iter()
-                .map(|x| (x.1.clone(), 1))
-                .collect(),
+                .map(|x| {
+                    (
+                        x.0.clone(),
+                        x.0.clone(),
+                        session_keys(x.1.clone(), x.2.clone(), x.3.clone(), x.4.clone()),
+                    )
+                })
+                .collect::<Vec<_>>(),
+        },
+        babe: BabeConfig {
+            authorities: vec![],
+            epoch_config: Some(humanode_runtime::BABE_GENESIS_EPOCH_CONFIG),
+        },
+        im_online: ImOnlineConfig { keys: vec![] },
+        authority_discovery: AuthorityDiscoveryConfig { keys: vec![] },
+        grandpa: GrandpaConfig {
+            authorities: vec![],
         },
         sudo: SudoConfig {
             // Assign network admin rights.

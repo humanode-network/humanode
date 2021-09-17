@@ -474,12 +474,13 @@ dependencies = [
  "parity-scale-codec",
  "sc-client-api",
  "sc-consensus",
+ "sc-consensus-babe",
  "sc-service",
  "sp-api",
  "sp-application-crypto",
  "sp-blockchain",
  "sp-consensus",
- "sp-consensus-aura",
+ "sp-consensus-babe",
  "sp-keystore",
  "sp-runtime",
  "thiserror",
@@ -2324,6 +2325,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "bioauth-consensus",
+ "bioauth-consensus-api",
  "bioauth-flow",
  "frame-benchmarking-cli",
  "futures 0.3.16",
@@ -2332,17 +2334,20 @@ dependencies = [
  "humanode-runtime",
  "indoc",
  "pallet-bioauth",
+ "pallet-im-online",
  "parity-scale-codec",
  "qr2term",
  "reqwest",
  "robonode-client",
+ "sc-authority-discovery",
  "sc-basic-authorship",
  "sc-chain-spec",
  "sc-chain-spec-derive",
  "sc-cli",
  "sc-client-api",
  "sc-consensus",
- "sc-consensus-aura",
+ "sc-consensus-babe",
+ "sc-consensus-uncles",
  "sc-executor",
  "sc-finality-grandpa",
  "sc-network",
@@ -2353,8 +2358,10 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-application-crypto",
+ "sp-authority-discovery",
+ "sp-authorship",
  "sp-consensus",
- "sp-consensus-aura",
+ "sp-consensus-babe",
  "sp-finality-grandpa",
  "sp-keystore",
  "sp-runtime",
@@ -2397,11 +2404,16 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "hex-literal",
- "pallet-aura",
+ "pallet-authority-discovery",
+ "pallet-authorship",
+ "pallet-babe",
  "pallet-balances",
  "pallet-bioauth",
  "pallet-grandpa",
+ "pallet-im-online",
+ "pallet-offences",
  "pallet-randomness-collective-flip",
+ "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
@@ -2411,8 +2423,9 @@ dependencies = [
  "robonode-crypto",
  "serde",
  "sp-api",
+ "sp-authority-discovery",
  "sp-block-builder",
- "sp-consensus-aura",
+ "sp-consensus-babe",
  "sp-core",
  "sp-inherents",
  "sp-offchain",
@@ -4307,17 +4320,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-aura"
+name = "pallet-authority-discovery"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
 dependencies = [
  "frame-support",
  "frame-system",
  "pallet-session",
- "pallet-timestamp",
  "parity-scale-codec",
  "sp-application-crypto",
- "sp-consensus-aura",
+ "sp-authority-discovery",
  "sp-runtime",
  "sp-std 4.0.0-dev",
 ]
@@ -4333,6 +4345,29 @@ dependencies = [
  "parity-scale-codec",
  "sp-authorship",
  "sp-runtime",
+ "sp-std 4.0.0-dev",
+]
+
+[[package]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-authorship",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "sp-application-crypto",
+ "sp-consensus-babe",
+ "sp-consensus-vrf",
+ "sp-io",
+ "sp-runtime",
+ "sp-session",
+ "sp-staking",
  "sp-std 4.0.0-dev",
 ]
 
@@ -4384,6 +4419,40 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-session",
+ "sp-staking",
+ "sp-std 4.0.0-dev",
+]
+
+[[package]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-authorship",
+ "parity-scale-codec",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std 4.0.0-dev",
+]
+
+[[package]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-balances",
+ "parity-scale-codec",
+ "serde",
+ "sp-runtime",
  "sp-staking",
  "sp-std 4.0.0-dev",
 ]
@@ -4746,6 +4815,12 @@ checksum = "216eaa586a190f0a738f2f918511eecfa90f13295abec0e457cdebcceda80cbd"
 dependencies = [
  "crypto-mac 0.8.0",
 ]
+
+[[package]]
+name = "pdqselect"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ec91767ecc0a0bbe558ce8c9da33c068066c57ecc8bb8477ef8c1ad3ef77c27"
 
 [[package]]
 name = "peeking_take_while"
@@ -5695,6 +5770,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-authority-discovery"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "async-trait",
+ "derive_more",
+ "either",
+ "futures 0.3.16",
+ "futures-timer 3.0.2",
+ "ip_network",
+ "libp2p 0.37.1",
+ "log",
+ "parity-scale-codec",
+ "prost",
+ "prost-build",
+ "rand 0.7.3",
+ "sc-client-api",
+ "sc-network",
+ "serde_json",
+ "sp-api",
+ "sp-authority-discovery",
+ "sp-blockchain",
+ "sp-core",
+ "sp-keystore",
+ "sp-runtime",
+ "substrate-prometheus-endpoint",
+]
+
+[[package]]
 name = "sc-basic-authorship"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
@@ -5887,35 +5991,63 @@ dependencies = [
 ]
 
 [[package]]
-name = "sc-consensus-aura"
+name = "sc-consensus-babe"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
 dependencies = [
  "async-trait",
  "derive_more",
+ "fork-tree",
  "futures 0.3.16",
  "futures-timer 3.0.2",
  "log",
+ "merlin",
+ "num-bigint",
+ "num-rational 0.2.4",
+ "num-traits",
  "parity-scale-codec",
- "sc-block-builder",
+ "parking_lot 0.11.1",
+ "pdqselect",
+ "rand 0.7.3",
+ "retain_mut",
  "sc-client-api",
  "sc-consensus",
+ "sc-consensus-epochs",
  "sc-consensus-slots",
+ "sc-consensus-uncles",
+ "sc-keystore",
  "sc-telemetry 4.0.0-dev",
+ "schnorrkel",
+ "serde",
  "sp-api",
  "sp-application-crypto",
  "sp-block-builder",
  "sp-blockchain",
  "sp-consensus",
- "sp-consensus-aura",
+ "sp-consensus-babe",
  "sp-consensus-slots",
+ "sp-consensus-vrf",
  "sp-core",
  "sp-inherents",
  "sp-io",
  "sp-keystore",
  "sp-runtime",
+ "sp-utils 4.0.0-dev",
  "sp-version",
  "substrate-prometheus-endpoint",
+]
+
+[[package]]
+name = "sc-consensus-epochs"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "fork-tree",
+ "parity-scale-codec",
+ "sc-client-api",
+ "sc-consensus",
+ "sp-blockchain",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -5944,6 +6076,17 @@ dependencies = [
  "sp-state-machine",
  "sp-timestamp",
  "sp-trie",
+ "thiserror",
+]
+
+[[package]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "sc-client-api",
+ "sp-authorship",
+ "sp-runtime",
  "thiserror",
 ]
 
@@ -7058,6 +7201,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-authority-discovery"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "parity-scale-codec",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-runtime",
+ "sp-std 4.0.0-dev",
+]
+
+[[package]]
 name = "sp-authorship"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
@@ -7126,17 +7281,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-consensus-aura"
+name = "sp-consensus-babe"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
 dependencies = [
  "async-trait",
+ "merlin",
  "parity-scale-codec",
+ "serde",
  "sp-api",
  "sp-application-crypto",
  "sp-consensus",
  "sp-consensus-slots",
+ "sp-consensus-vrf",
+ "sp-core",
  "sp-inherents",
+ "sp-keystore",
  "sp-runtime",
  "sp-std 4.0.0-dev",
  "sp-timestamp",
@@ -7150,6 +7310,18 @@ dependencies = [
  "parity-scale-codec",
  "sp-arithmetic",
  "sp-runtime",
+]
+
+[[package]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
+dependencies = [
+ "parity-scale-codec",
+ "schnorrkel",
+ "sp-core",
+ "sp-runtime",
+ "sp-std 4.0.0-dev",
 ]
 
 [[package]]
