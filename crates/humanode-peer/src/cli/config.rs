@@ -23,10 +23,9 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             task_executor,
         )?;
 
-        let bioauth_flow_params_extension =
-            get_extension::<Extensions>(substrate.chain_spec.extensions())
-                .cloned()
-                .unwrap_or_default();
+        let extensions = get_extension::<Extensions>(substrate.chain_spec.extensions())
+            .cloned()
+            .unwrap_or_default();
 
         let bioauth_flow = self.bioauth_params().map(|params| {
             let rpc_url = params.rpc_url.clone().or_else(|| {
@@ -40,12 +39,9 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 robonode_url: params
                     .robonode_url
                     .clone()
-                    .or(bioauth_flow_params_extension.robonode_url)
+                    .or(extensions.robonode_url)
                     .unwrap_or_else(|| "http://127.0.0.1:3033".into()),
-                webapp_url: params
-                    .webapp_url
-                    .clone()
-                    .or(bioauth_flow_params_extension.webapp_url),
+                webapp_url: params.webapp_url.clone().or(extensions.webapp_url),
                 rpc_url,
             }
         });
