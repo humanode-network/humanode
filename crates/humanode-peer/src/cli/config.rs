@@ -1,6 +1,11 @@
 //! Machinery to populate the configuration from the CLI arguments.
 
-use crate::configuration::{self, Configuration};
+use sc_chain_spec::get_extension;
+
+use crate::{
+    chain_spec::Extensions,
+    configuration::{self, Configuration},
+};
 
 use super::params;
 
@@ -18,6 +23,10 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             task_executor,
         )?;
 
+        let extensions = get_extension::<Extensions>(substrate.chain_spec.extensions())
+            .cloned()
+            .unwrap_or_default();
+
         let bioauth_flow = self.bioauth_params().map(|params| {
             let rpc_url = params.rpc_url.clone().or_else(|| {
                 substrate
@@ -27,8 +36,12 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             });
 
             configuration::BioauthFlow {
-                robonode_url: params.robonode_url.clone(),
-                webapp_url: Some(params.webapp_url.clone()),
+                robonode_url: params
+                    .robonode_url
+                    .clone()
+                    .or(extensions.robonode_url)
+                    .unwrap_or_else(|| "http://127.0.0.1:3033".into()),
+                webapp_url: params.webapp_url.clone().or(extensions.webapp_url),
                 rpc_url,
             }
         });

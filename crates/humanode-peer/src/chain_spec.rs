@@ -6,7 +6,9 @@ use humanode_runtime::{
     RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_bioauth::StoredAuthTicket;
+use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
+use serde::{Deserialize, Serialize};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
@@ -15,7 +17,20 @@ use sp_runtime::{
 };
 
 /// The concrete chain spec type we're using for the humanode network.
-pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig>;
+pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
+
+/// Extensions for ChainSpec.
+#[derive(
+    Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension, Default,
+)]
+#[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
+pub struct Extensions {
+    /// The URL of robonode to authenticate with.
+    pub robonode_url: Option<String>,
+    /// The Web App URL, necessary for printing the Web App QR Code.
+    pub webapp_url: Option<String>,
+}
 
 /// Generate a crypto pair from seed.
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -97,7 +112,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         // Properties
         None,
         // Extensions
-        None,
+        Extensions::default(),
     ))
 }
 
@@ -146,7 +161,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
         // Properties
         None,
         // Extensions
-        None,
+        Extensions::default(),
     ))
 }
 
@@ -191,5 +206,72 @@ fn testnet_genesis(
             stored_auth_tickets,
             robonode_public_key,
         },
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use indoc::indoc;
+
+    use super::*;
+
+    #[test]
+    fn deserialize_bioauth_flow_params_extensions() {
+        let expected = Extensions {
+            robonode_url: Some("dummy_robonode_url".into()),
+            webapp_url: Some("dummy_webapp_url".into()),
+        };
+        let value = serde_json::json!({
+            "robonodeUrl": "dummy_robonode_url",
+            "webappUrl": "dummy_webapp_url"
+        });
+
+        let sample: Extensions = serde_json::from_value(value).unwrap();
+
+        assert_eq!(sample, expected)
+    }
+
+    #[test]
+    fn deserialize_chain_spec() {
+        let chain_spec_file_content = indoc! {r#"
+          {
+            "name": "Local Testnet",
+            "id": "local_testnet",
+            "chainType": "Local",
+            "bootNodes": [],
+            "telemetryEndpoints": null,
+            "protocolId": null,
+            "properties": null,
+            "robonodeUrl": "dummy_robonode_url",
+            "webappUrl": "dummy_webapp_url",
+            "consensusEngine": null,
+            "codeSubstitutes": {},
+            "genesis": {
+              "runtime": {
+                "system": { "changesTrieConfig": null, "code": "0x0" },
+                "aura": {
+                  "authorities": []
+                },
+                "balances": {
+                  "balances": []
+                },
+                "sudo": { "key": "0" },
+                "bioauth": {
+                  "storedAuthTickets": [],
+                  "robonodePublicKey": []
+                }
+              }
+            }
+          }
+        "#};
+        let bytes = chain_spec_file_content.as_bytes();
+        let sample: ChainSpec = ChainSpec::from_json_bytes(bytes).unwrap();
+
+        let expected = Extensions {
+            robonode_url: Some("dummy_robonode_url".into()),
+            webapp_url: Some("dummy_webapp_url".into()),
+        };
+
+        assert_eq!(sample.extensions().to_owned(), expected)
     }
 }
