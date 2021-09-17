@@ -56,4 +56,5 @@ tracing = "0.1"
 url = "2"
 
 [dev-dependencies]
+indoc = "1.0"
 serde_json = "1"

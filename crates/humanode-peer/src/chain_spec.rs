@@ -211,6 +211,8 @@ fn testnet_genesis(
 
 #[cfg(test)]
 mod tests {
+    use indoc::indoc;
+
     use super::*;
 
     #[test]
@@ -231,8 +233,60 @@ mod tests {
 
     #[test]
     fn deserialize_chain_spec() {
-        let chain_spec_file_content = b"{\"name\":\"Local Testnet\",\"id\":\"local_testnet\",\"chainType\":\"Local\",\"bootNodes\":[\"/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWCXvRaPbhT6BugLAApEvV3e3dZxKeR8kPtgTJdU6eGzqB\"],\"telemetryEndpoints\":null,\"protocolId\":null,\"properties\":null,\"robonodeUrl\":\"http://127.0.0.1:3033\",\"webappUrl\":\"https://webapp-test-1.dev.humanode.io\",\"consensusEngine\":null,\"codeSubstitutes\":{},\"genesis\":{\"runtime\":{\"system\":{\"changesTrieConfig\":null,\"code\":\"0x52bc\"},\"aura\":{\"authorities\":[\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\",\"5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty\"]},\"balances\":{\"balances\":[[\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\",1152921504606846976],[\"5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty\",1152921504606846976]]},\"sudo\":{\"key\":\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\"},\"bioauth\":{\"storedAuthTickets\":[{\"public_key\":\"5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY\",\"nonce\":[49]}],\"robonodePublicKey\":[93,222,3,147,68,25,37,45,19,51,110,90,88,129,245,177,239,158,164,112,132,83,142,178,41,248,99,73,231,243,148,171]}}}}";
-        let bytes = &chain_spec_file_content[..];
+        let chain_spec_file_content = indoc! {r#"
+          {
+            "name": "Local Testnet",
+            "id": "local_testnet",
+            "chainType": "Local",
+            "bootNodes": [
+              "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWC2vRaPbhT6BugL9ApEvV3e3dZxKeR8kPtgTJdF6eGzqB"
+            ],
+            "telemetryEndpoints": null,
+            "protocolId": null,
+            "properties": null,
+            "robonodeUrl": "http://127.0.0.1:3033",
+            "webappUrl": "https://webapp-test-1.dev.humanode.io",
+            "consensusEngine": null,
+            "codeSubstitutes": {},
+            "genesis": {
+              "runtime": {
+                "system": { "changesTrieConfig": null, "code": "0x567c" },
+                "aura": {
+                  "authorities": [
+                    "aaAaaAaAaaaaAAAaa1aAAaAAAAaaAAAAaaaAaaCaaaAAaaAa",
+                    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEeeeeeeeeee"
+                  ]
+                },
+                "balances": {
+                  "balances": [
+                    [
+                      "aaAaaAaAaaaaAAAaa1aAAaAAAAaaAAAAaaaAaaCaaaAAaaAa",
+                      100
+                    ],
+                    [
+                      "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEeeeeeeeeee",
+                      100
+                    ]
+                  ]
+                },
+                "sudo": { "key": "aaAaaAaAaaaaAAAaa1aAAaAAAAaaAAAAaaaAaaCaaaAAaaAa" },
+                "bioauth": {
+                  "storedAuthTickets": [
+                    {
+                      "public_key": "aaAaaAaAaaaaAAAaa1aAAaAAAAaaAAAAaaaAaaCaaaAAaaAa",
+                      "nonce": [12]
+                    }
+                  ],
+                  "robonodePublicKey": [
+                    17, 17, 24, 17, 17, 24, 17, 24, 24, 17, 17, 17, 17, 24, 17, 17, 
+                    24, 17, 24, 17, 17, 17, 17, 24, 17, 17, 17, 17, 17, 17, 17, 24
+                  ]
+                }
+              }
+            }
+          }
+        "#};
+        let bytes = chain_spec_file_content.as_bytes();
         let sample: ChainSpec = ChainSpec::from_json_bytes(bytes).unwrap();
 
         let expected = Extensions {
