@@ -218,12 +218,12 @@ mod tests {
     #[test]
     fn deserialize_bioauth_flow_params_extensions() {
         let expected = Extensions {
-            robonode_url: Some("http://127.0.0.1:3033".into()),
-            webapp_url: Some("https://webapp-test-1.dev.humanode.io".into()),
+            robonode_url: Some("dummy_robonode_url".into()),
+            webapp_url: Some("dummy_webapp_url".into()),
         };
         let value = serde_json::json!({
-            "robonodeUrl": "http://127.0.0.1:3033",
-            "webappUrl": "https://webapp-test-1.dev.humanode.io"
+            "robonodeUrl": "dummy_robonode_url",
+            "webappUrl": "dummy_webapp_url"
         });
 
         let sample: Extensions = serde_json::from_value(value).unwrap();
@@ -238,49 +238,27 @@ mod tests {
             "name": "Local Testnet",
             "id": "local_testnet",
             "chainType": "Local",
-            "bootNodes": [
-              "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWC2vRaPbhT6BugL9ApEvV3e3dZxKeR8kPtgTJdF6eGzqB"
-            ],
+            "bootNodes": [],
             "telemetryEndpoints": null,
             "protocolId": null,
             "properties": null,
-            "robonodeUrl": "http://127.0.0.1:3033",
-            "webappUrl": "https://webapp-test-1.dev.humanode.io",
+            "robonodeUrl": "dummy_robonode_url",
+            "webappUrl": "dummy_webapp_url",
             "consensusEngine": null,
             "codeSubstitutes": {},
             "genesis": {
               "runtime": {
-                "system": { "changesTrieConfig": null, "code": "0x567c" },
+                "system": { "changesTrieConfig": null, "code": "0x0" },
                 "aura": {
-                  "authorities": [
-                    "aaAaaAaAaaaaAAAaa1aAAaAAAAaaAAAAaaaAaaCaaaAAaaAa",
-                    "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEeeeeeeeeee"
-                  ]
+                  "authorities": []
                 },
                 "balances": {
-                  "balances": [
-                    [
-                      "aaAaaAaAaaaaAAAaa1aAAaAAAAaaAAAAaaaAaaCaaaAAaaAa",
-                      100
-                    ],
-                    [
-                      "eeeEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEeeeeeeeeee",
-                      100
-                    ]
-                  ]
+                  "balances": []
                 },
-                "sudo": { "key": "aaAaaAaAaaaaAAAaa1aAAaAAAAaaAAAAaaaAaaCaaaAAaaAa" },
+                "sudo": { "key": "0" },
                 "bioauth": {
-                  "storedAuthTickets": [
-                    {
-                      "public_key": "aaAaaAaAaaaaAAAaa1aAAaAAAAaaAAAAaaaAaaCaaaAAaaAa",
-                      "nonce": [12]
-                    }
-                  ],
-                  "robonodePublicKey": [
-                    17, 17, 24, 17, 17, 24, 17, 24, 24, 17, 17, 17, 17, 24, 17, 17, 
-                    24, 17, 24, 17, 17, 17, 17, 24, 17, 17, 17, 17, 17, 17, 17, 24
-                  ]
+                  "storedAuthTickets": [],
+                  "robonodePublicKey": []
                 }
               }
             }
@@ -290,8 +268,8 @@ mod tests {
         let sample: ChainSpec = ChainSpec::from_json_bytes(bytes).unwrap();
 
         let expected = Extensions {
-            robonode_url: Some("http://127.0.0.1:3033".into()),
-            webapp_url: Some("https://webapp-test-1.dev.humanode.io".into()),
+            robonode_url: Some("dummy_robonode_url".into()),
+            webapp_url: Some("dummy_webapp_url".into()),
         };
 
         assert_eq!(sample.extensions().to_owned(), expected)
