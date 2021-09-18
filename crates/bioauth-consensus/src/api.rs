@@ -1,4 +1,4 @@
-//! Runtime integration.
+//! API integration.
 
 use bioauth_consensus_api::BioauthConsensusApi;
 use sp_api::{BlockId, ProvideRuntimeApi};
