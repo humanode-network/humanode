@@ -16,7 +16,7 @@ pub struct AuthorizationVerifier<Block: BlockT, Client, Id> {
     _phantom_id: PhantomData<Id>,
 }
 
-/// An error that can occur during aura authorization verification.
+/// An error that can occur during authorization verification.
 #[derive(Debug, thiserror::Error)]
 pub enum AuthorizationVerifierError {
     /// Something went wrong while extracting the authorized ids from the chain state via
@@ -26,7 +26,7 @@ pub enum AuthorizationVerifierError {
 }
 
 impl<Block: BlockT, Client, Id> AuthorizationVerifier<Block, Client, Id> {
-    /// Create a new [`AuraAuthorizationVerifier`].
+    /// Create a new [`AuthorizationVerifier`].
     pub fn new(client: Arc<Client>) -> Self {
         Self {
             client,
