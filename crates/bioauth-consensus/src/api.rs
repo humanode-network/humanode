@@ -49,7 +49,7 @@ impl<Block: BlockT, Client, Id> Clone for AuthorizationVerifier<Block, Client, I
 impl<Block: BlockT, Client, Id> crate::AuthorizationVerifier
     for AuthorizationVerifier<Block, Client, Id>
 where
-    Client: HeaderBackend<Block> + ProvideRuntimeApi<Block>,
+    Client: ProvideRuntimeApi<Block>,
     Client::Api: BioauthConsensusApi<Block, Id>,
     Id: codec::Decode + PartialEq,
 {
@@ -68,7 +68,9 @@ where
             .ids(at)
             .map_err(AuthorizationVerifierError::UnableToExtractAuthorizedIds)?;
 
-        let is_authorized = ids.iter().any(|authorized_id| authorized_id == &id);
+        let is_authorized = authorized_ids
+            .iter()
+            .any(|authorized_id| authorized_id == id);
 
         Ok(is_authorized)
     }

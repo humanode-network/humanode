@@ -13,6 +13,14 @@ pub struct ValidatorKeyExtractor<Id> {
     _phantom_id: PhantomData<Id>,
 }
 
+/// An error that can occur at validator public key extraction logic.
+#[derive(Debug, thiserror::Error)]
+pub enum ValidatorKeyExtractorError {
+    /// Something went wrong during the keystore interop.
+    #[error("keystore error: {0}")]
+    Keystore(sp_keystore::Error),
+}
+
 impl<Id> ValidatorKeyExtractor<Id> {
     /// Create a new [`ValidatorKeyExtractor`].
     pub fn new(keystore: SyncCryptoStorePtr) -> Self {
@@ -27,7 +35,7 @@ impl<Id> crate::ValidatorKeyExtractor for ValidatorKeyExtractor<Id>
 where
     Id: AppPublic,
 {
-    type Error = sp_keystore::Error;
+    type Error = ValidatorKeyExtractorError;
     type PublicKeyType = Id;
 
     fn extract_validator_key(&self) -> Result<Option<Self::PublicKeyType>, Self::Error> {
@@ -35,7 +43,8 @@ where
 
         let crypto_type_public_pairs = tokio::task::block_in_place(move || {
             sp_keystore::SyncCryptoStore::keys(keystore_ref, Id::ID)
-        })?;
+        })
+        .map_err(ValidatorKeyExtractorError::Keystore)?;
 
         let mut matching_crypto_public_keys = crypto_type_public_pairs.into_iter().filter_map(
             |CryptoTypePublicPair(crypto_type_id, public_key)| {

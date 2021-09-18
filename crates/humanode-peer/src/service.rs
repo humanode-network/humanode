@@ -234,16 +234,14 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry.as_ref().map(|x| x.handle()),
     );
 
-    let proposer_factory: bioauth_consensus::BioauthProposer<
-        Block,
-        bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
-        _,
-        _,
-    > = bioauth_consensus::BioauthProposer::new(
-        proposer_factory,
-        bioauth_consensus::aura::ValidatorKeyExtractor::new(keystore_container.sync_keystore()),
-        bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
-    );
+    let proposer_factory: bioauth_consensus::BioauthProposer<Block, _, _, _> =
+        bioauth_consensus::BioauthProposer::new(
+            proposer_factory,
+            bioauth_consensus::keystore::ValidatorKeyExtractor::<AuraId>::new(
+                keystore_container.sync_keystore(),
+            ),
+            bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+        );
 
     let (network, system_rpc_tx, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
