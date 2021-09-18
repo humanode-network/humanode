@@ -1,6 +1,7 @@
 //! Runtime integration.
 
 use bioauth_consensus_api::BioauthConsensusApi;
+use codec::Decode;
 use sp_api::{BlockId, ProvideRuntimeApi};
 use sp_runtime::traits::Block as BlockT;
 use std::{marker::PhantomData, sync::Arc};
@@ -51,7 +52,7 @@ impl<Block: BlockT, Client, Id> crate::AuthorizationVerifier
 where
     Client: ProvideRuntimeApi<Block>,
     Client::Api: BioauthConsensusApi<Block, Id>,
-    Id: codec::Decode + PartialEq,
+    Id: Decode + PartialEq,
 {
     type Error = AuthorizationVerifierError;
     type Block = Block;

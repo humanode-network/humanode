@@ -26,16 +26,6 @@ pub mod keystore;
 #[cfg(feature = "aura-integration")]
 pub mod aura;
 
-#[cfg(feature = "bioauth-pallet-integration")]
-pub mod bioauth;
-
-#[cfg(all(
-    test,
-    feature = "aura-integration",
-    feature = "bioauth-pallet-integration"
-))]
-mod tests;
-
 mod traits;
 
 pub use traits::*;

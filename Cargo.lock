@@ -471,7 +471,6 @@ dependencies = [
  "futures 0.3.16",
  "mockall",
  "node-primitives",
- "pallet-bioauth",
  "parity-scale-codec",
  "sc-client-api",
  "sc-consensus",
