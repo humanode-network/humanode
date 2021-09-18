@@ -1,7 +1,6 @@
 //! Runtime integration.
 
 use bioauth_consensus_api::BioauthConsensusApi;
-use codec::Decode;
 use sp_api::{BlockId, ProvideRuntimeApi};
 use sp_runtime::traits::Block as BlockT;
 use std::{marker::PhantomData, sync::Arc};
@@ -52,7 +51,7 @@ impl<Block: BlockT, Client, Id> crate::AuthorizationVerifier
 where
     Client: ProvideRuntimeApi<Block>,
     Client::Api: BioauthConsensusApi<Block, Id>,
-    Id: Decode + PartialEq,
+    Id: codec::Encode + PartialEq,
 {
     type Error = AuthorizationVerifierError;
     type Block = Block;
@@ -63,16 +62,11 @@ where
         at: &BlockId<Self::Block>,
         id: &Self::PublicKeyType,
     ) -> Result<bool, Self::Error> {
-        let authorized_ids = self
+        let is_authorized = self
             .client
             .runtime_api()
-            .ids(at)
+            .is_authorized(at, id)
             .map_err(AuthorizationVerifierError::UnableToExtractAuthorizedIds)?;
-
-        let is_authorized = authorized_ids
-            .iter()
-            .any(|authorized_id| authorized_id == id);
-
         Ok(is_authorized)
     }
 }

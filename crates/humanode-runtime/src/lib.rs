@@ -489,11 +489,10 @@ impl_runtime_apis! {
     }
 
     impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
-        fn ids() -> sp_std::prelude::Vec<AuraId> {
+        fn is_authorized(id: &AuraId) -> bool {
             Bioauth::stored_auth_tickets()
-                .into_iter()
-                .map(|stored_auth_ticket| stored_auth_ticket.public_key)
-                .collect()
+                .iter()
+                .any(|stored_auth_ticket| &stored_auth_ticket.public_key == id)
         }
     }
 
