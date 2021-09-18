@@ -467,6 +467,7 @@ name = "bioauth-consensus"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "bioauth-consensus-api",
  "futures 0.3.16",
  "mockall",
  "node-primitives",
@@ -484,6 +485,15 @@ dependencies = [
  "sp-runtime",
  "thiserror",
  "tokio 1.9.0",
+]
+
+[[package]]
+name = "bioauth-consensus-api"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "sp-api",
+ "sp-std 4.0.0-dev",
 ]
 
 [[package]]

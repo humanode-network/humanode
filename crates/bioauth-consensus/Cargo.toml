@@ -6,6 +6,7 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
+bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", optional = true }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", optional = true }
 
 async-trait = "0.1.42"
@@ -18,7 +19,7 @@ sp-application-crypto = { git = "https://github.com/humanode-network/substrate",
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 thiserror = "1"
 tokio = { version = "1", features = ["rt-multi-thread"] }
@@ -31,7 +32,15 @@ tokio = { version = "1", features = ["full"] }
 
 [features]
 default = []
-test = ["all"]
-all = ["aura-integration", "bioauth-pallet-integration"]
+all = [
+  "aura-integration",
+  "bioauth-pallet-integration",
+  "keystore-integration",
+  "runtime-integration",
+  "slot-integration",
+]
 aura-integration = ["sp-consensus-aura", "sp-application-crypto"]
 bioauth-pallet-integration = ["pallet-bioauth"]
+keystore-integration = ["sp-keystore", "sp-application-crypto"]
+slot-integration = []
+runtime-integration = ["bioauth-consensus-api"]

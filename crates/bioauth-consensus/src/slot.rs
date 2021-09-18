@@ -1,10 +1,14 @@
-//! Aura consensus integration.
+//! Slots-based consensuses integration.
 
 use sp_api::{BlockId, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_consensus_aura::{digests::CompatibleDigestItem, AuraApi};
 use sp_runtime::traits::{Block as BlockT, Header};
 use std::{marker::PhantomData, sync::Arc};
+
+pub trait SlotExtractor {
+    fn extract_slot(&self, block_header: &<Self::Block as BlockT>::Header) -> Slot {}
+}
 
 /// Encapsulates block author extraction logic for aura consensus.
 #[derive(Debug)]
