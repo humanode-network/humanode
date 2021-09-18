@@ -240,7 +240,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             bioauth_consensus::keystore::ValidatorKeyExtractor::<AuraId>::new(
                 keystore_container.sync_keystore(),
             ),
-            bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+            bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
         );
 
     let (network, system_rpc_tx, network_starter) =

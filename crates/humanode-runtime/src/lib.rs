@@ -488,6 +488,15 @@ impl_runtime_apis! {
         }
     }
 
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
+        fn ids() -> sp_std::prelude::Vec<AuraId> {
+            Bioauth::stored_auth_tickets()
+                .into_iter()
+                .map(|stored_auth_ticket| stored_auth_ticket.public_key)
+                .collect()
+        }
+    }
+
     impl sp_session::SessionKeys<Block> for Runtime {
         fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
             opaque::SessionKeys::generate(seed)
