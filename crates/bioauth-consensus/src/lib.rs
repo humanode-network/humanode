@@ -17,11 +17,8 @@ use sp_runtime::traits::Block as BlockT;
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
 
-#[cfg(feature = "runtime-integration")]
-pub mod runtime;
-
-#[cfg(feature = "slot-integration")]
-pub mod slot;
+#[cfg(feature = "api-integration")]
+pub mod api;
 
 #[cfg(feature = "keystore-integration")]
 pub mod keystore;

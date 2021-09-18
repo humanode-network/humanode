@@ -36,11 +36,9 @@ all = [
   "aura-integration",
   "bioauth-pallet-integration",
   "keystore-integration",
-  "runtime-integration",
-  "slot-integration",
+  "api-integration",
 ]
 aura-integration = ["sp-consensus-aura", "sp-application-crypto"]
 bioauth-pallet-integration = ["pallet-bioauth"]
 keystore-integration = ["sp-keystore", "sp-application-crypto"]
-slot-integration = []
-runtime-integration = ["bioauth-consensus-api"]
+api-integration = ["bioauth-consensus-api"]
