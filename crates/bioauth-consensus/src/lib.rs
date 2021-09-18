@@ -17,13 +17,17 @@ use sp_runtime::traits::Block as BlockT;
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
 
-#[cfg(any(test, feature = "aura-integration"))]
+#[cfg(feature = "aura-integration")]
 pub mod aura;
 
-#[cfg(any(test, feature = "bioauth-pallet-integration"))]
+#[cfg(feature = "bioauth-pallet-integration")]
 pub mod bioauth;
 
-#[cfg(test)]
+#[cfg(all(
+    test,
+    feature = "aura-integration",
+    feature = "bioauth-pallet-integration"
+))]
 mod tests;
 
 mod traits;
