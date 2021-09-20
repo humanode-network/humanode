@@ -302,7 +302,7 @@ impl pallet_grandpa::Config for Runtime {
     type Event = Event;
     type Call = Call;
 
-    type KeyOwnerProofSystem = ();
+    type KeyOwnerProofSystem = Historical;
 
     type KeyOwnerProof =
         <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
@@ -312,7 +312,8 @@ impl pallet_grandpa::Config for Runtime {
         GrandpaId,
     )>>::IdentificationTuple;
 
-    type HandleEquivocation = ();
+    type HandleEquivocation =
+        pallet_grandpa::EquivocationHandler<Self::KeyOwnerIdentification, (), ReportLongevity>;
 
     type WeightInfo = ();
 }
@@ -360,39 +361,27 @@ impl pallet_sudo::Config for Runtime {
 }
 
 pub type SessionIndex = u32;
+
 pub struct NeedSessionManagerImpl;
+
 impl pallet_session::historical::SessionManager<AccountId, AccountId> for NeedSessionManagerImpl {
     fn new_session(_new_index: SessionIndex) -> Option<Vec<(AccountId, AccountId)>> {
-        todo!()
+        None
     }
 
-    fn start_session(_start_index: SessionIndex) {
-        todo!()
-    }
+    fn start_session(_start_index: SessionIndex) {}
 
-    fn end_session(_end_index: SessionIndex) {
-        todo!()
-    }
+    fn end_session(_end_index: SessionIndex) {}
 }
+
 impl pallet_session::SessionManager<AccountId> for NeedSessionManagerImpl {
     fn new_session(_new_index: SessionIndex) -> Option<Vec<AccountId>> {
-        todo!()
+        None
     }
 
-    fn end_session(_end_index: SessionIndex) {
-        todo!()
-    }
+    fn end_session(_end_index: SessionIndex) {}
 
-    fn start_session(_sstart_index: SessionIndex) {
-        todo!()
-    }
-}
-
-impl pallet_offences::Config for Runtime {
-    type Event = Event;
-    type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
-    // type OnOffenceHandler = Staking
-    type OnOffenceHandler = ();
+    fn start_session(_sstart_index: SessionIndex) {}
 }
 
 parameter_types! {
@@ -406,7 +395,6 @@ impl pallet_session::Config for Runtime {
     type ValidatorIdOf = ();
     type ShouldEndSession = Babe;
     type NextSessionRotation = Babe;
-    // type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
     type SessionManager =
         pallet_session::historical::NoteHistoricalRoot<Self, NeedSessionManagerImpl>;
     type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
@@ -439,7 +427,7 @@ impl pallet_im_online::Config for Runtime {
     type Event = Event;
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
-    type ReportUnresponsiveness = Offences;
+    type ReportUnresponsiveness = ();
     type UnsignedPriority = ImOnlineUnsignedPriority;
     type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
 }
@@ -463,18 +451,16 @@ impl pallet_babe::Config for Runtime {
 
     type KeyOwnerProofSystem = Historical;
 
-    type KeyOwnerProof = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-        KeyTypeId,
-        pallet_babe::AuthorityId,
-    )>>::Proof;
+    type KeyOwnerProof =
+        <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, BabeId)>>::Proof;
 
     type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
         KeyTypeId,
-        pallet_babe::AuthorityId,
+        BabeId,
     )>>::IdentificationTuple;
 
     type HandleEquivocation =
-        pallet_babe::EquivocationHandler<Self::KeyOwnerIdentification, Offences, ReportLongevity>;
+        pallet_babe::EquivocationHandler<Self::KeyOwnerIdentification, (), ReportLongevity>;
 
     type WeightInfo = ();
 }
@@ -549,7 +535,7 @@ construct_runtime!(
         Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
         Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
         ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
-        Offences: pallet_offences::{Pallet, Storage, Event},
+        // Offences: pallet_offences::{Pallet, Storage, Event},
         Historical: pallet_session_historical::{Pallet},
         Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
         AuthorityDiscovery: pallet_authority_discovery::{Pallet, Config},
@@ -681,23 +667,27 @@ impl_runtime_apis! {
         }
 
         fn submit_report_equivocation_unsigned_extrinsic(
-            _equivocation_proof: fg_primitives::EquivocationProof<
+            equivocation_proof: fg_primitives::EquivocationProof<
                 <Block as BlockT>::Hash,
                 NumberFor<Block>,
             >,
-            _key_owner_proof: fg_primitives::OpaqueKeyOwnershipProof,
+            key_owner_proof: fg_primitives::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
-            None
+            let key_owner_proof = key_owner_proof.decode()?;
+
+            Grandpa::submit_unsigned_equivocation_report(
+                equivocation_proof,
+                key_owner_proof,
+            )
         }
 
         fn generate_key_ownership_proof(
             _set_id: fg_primitives::SetId,
-            _authority_id: GrandpaId,
+            authority_id: GrandpaId,
         ) -> Option<fg_primitives::OpaqueKeyOwnershipProof> {
-            // NOTE: this is the only implementation possible since we've
-            // defined our key owner proof type as a bottom type (i.e. a type
-            // with no values).
-            None
+            Historical::prove((fg_primitives::KEY_TYPE, authority_id))
+                .map(|p| p.encode())
+                .map(fg_primitives::OpaqueKeyOwnershipProof::new)
         }
     }
 
@@ -738,10 +728,8 @@ impl_runtime_apis! {
 
         fn generate_key_ownership_proof(
             _slot: sp_consensus_babe::Slot,
-            authority_id: sp_consensus_babe::AuthorityId,
+            authority_id: BabeId,
         ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
-            use codec::Encode;
-
             Historical::prove((sp_consensus_babe::KEY_TYPE, authority_id))
                 .map(|p| p.encode())
                 .map(sp_consensus_babe::OpaqueKeyOwnershipProof::new)
