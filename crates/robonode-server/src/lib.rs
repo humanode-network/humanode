@@ -35,7 +35,7 @@ pub fn init(
             execution_id,
             facetec: facetec_api_client,
             signer: robonode_keypair,
-            public_key_type: PhantomData::<validator_key::AuraPublic>,
+            public_key_type: PhantomData::<validator_key::SubstratePublic<sp_core::sr25519::Public>>,
         }),
         facetec_device_sdk_params,
     };

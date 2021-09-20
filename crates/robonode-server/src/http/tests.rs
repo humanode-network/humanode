@@ -4,7 +4,6 @@ use mockall::predicate::*;
 use mockall::*;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use primitives_liveness_data::OpaqueLivenessData;
-use sp_application_crypto::sp_core::hexdisplay::AsBytesRef;
 use warp::hyper::StatusCode;
 
 use crate::{
@@ -167,7 +166,7 @@ async fn it_works_authenticate() {
     let expected_response = serde_json::to_string(&provide_authenticate_response()).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_bytes_ref(), expected_response.as_bytes());
+    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
 }
 
 #[tokio::test]
@@ -221,7 +220,7 @@ async fn it_works_get_facetec_session_token() {
     let expected_response = serde_json::to_string(&provide_facetec_session_token()).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_bytes_ref(), expected_response.as_bytes());
+    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
 }
 
 #[tokio::test]
@@ -274,5 +273,5 @@ async fn it_works_get_facetec_device_sdk_params() {
     let expected_response = serde_json::to_string(&provide_facetec_device_sdk_params()).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_bytes_ref(), expected_response.as_bytes());
+    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
 }

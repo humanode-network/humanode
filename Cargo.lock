@@ -5521,7 +5521,7 @@ dependencies = [
  "sc-tracing 3.0.0",
  "serde",
  "serde_json",
- "sp-application-crypto",
+ "sp-core",
  "tokio 1.9.0",
  "tracing",
  "tracing-test",
