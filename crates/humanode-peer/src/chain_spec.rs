@@ -2,10 +2,11 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, BioauthConfig, GenesisConfig, GrandpaConfig,
-    RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    AccountId, AuraConfig, BalancesConfig, BioauthConfig, BlockNumber, GenesisConfig,
+    GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, DAYS,
+    WASM_BINARY,
 };
-use pallet_bioauth::StoredAuthTicket;
+use pallet_bioauth::{PublicKeyExpiration, StoredAuthTicket};
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -101,6 +102,10 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     nonce: "1".as_bytes().to_vec(),
                 }],
                 robonode_public_key,
+                vec![pallet_bioauth::PublicKeyExpiration {
+                    public_key: authority_keys_from_seed("Alice").0,
+                    expiration_time: 30 * DAYS,
+                }],
             )
         },
         // Bootnodes
@@ -150,6 +155,10 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     nonce: "1".as_bytes().to_vec(),
                 }],
                 robonode_public_key,
+                vec![pallet_bioauth::PublicKeyExpiration {
+                    public_key: authority_keys_from_seed("Alice").0,
+                    expiration_time: 30 * DAYS,
+                }],
             )
         },
         // Bootnodes
@@ -173,6 +182,7 @@ fn testnet_genesis(
     endowed_accounts: Vec<AccountId>,
     stored_auth_tickets: Vec<StoredAuthTicket<AuraId>>,
     robonode_public_key: RobonodePublicKeyWrapper,
+    public_keys_expiration: Vec<PublicKeyExpiration<AuraId, BlockNumber>>,
 ) -> GenesisConfig {
     GenesisConfig {
         system: SystemConfig {
@@ -205,6 +215,7 @@ fn testnet_genesis(
             // Add Alice AuraId to StoredAuthTickets for producing blocks
             stored_auth_tickets,
             robonode_public_key,
+            public_keys_expiration,
         },
     }
 }

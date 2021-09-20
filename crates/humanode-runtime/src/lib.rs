@@ -378,6 +378,10 @@ impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
     }
 }
 
+parameter_types! {
+    pub const LifeTime: BlockNumber = 24 * HOURS;
+}
+
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
@@ -386,6 +390,7 @@ impl pallet_bioauth::Config for Runtime {
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = AuraValidatorSetUpdater;
+    type LifeTime = LifeTime;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously

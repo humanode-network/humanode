@@ -82,6 +82,16 @@ pub struct StoredAuthTicket<PublicKey> {
     pub nonce: Vec<u8>,
 }
 
+/// The state that we keep in the blockchain for the public keys expiration information.
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
+pub struct PublicKeyExpiration<PublicKey, ExpirationTime> {
+    /// The public key of a validator.
+    pub public_key: PublicKey,
+    /// The public key's expiration time.
+    pub expiration_time: ExpirationTime,
+}
+
 sp_api::decl_runtime_apis! {
     /// We need to provide a trait using decl_runtime_apis! macro to be able to call required methods
     /// from external sources using client and runtime_api().
@@ -100,7 +110,7 @@ sp_api::decl_runtime_apis! {
 )]
 #[frame_support::pallet]
 pub mod pallet {
-    use crate::{StoredAuthTicket, TryConvert, ValidatorSetUpdater, Verifier};
+    use crate::{PublicKeyExpiration, StoredAuthTicket, TryConvert, ValidatorSetUpdater, Verifier};
 
     use super::Authenticate;
     use frame_support::{dispatch::DispatchResult, pallet_prelude::*, storage::types::ValueQuery};
@@ -136,6 +146,8 @@ pub mod pallet {
             StoredAuthTicket<Self::ValidatorPublicKey>,
         >;
 
+        type LifeTime: Get<Self::BlockNumber>;
+
         /// The validator set updater to invoke at auth the ticket acceptace.
         type ValidatorSetUpdater: ValidatorSetUpdater<Self::ValidatorPublicKey>;
     }
@@ -155,9 +167,19 @@ pub mod pallet {
     #[pallet::getter(fn robonode_public_key)]
     pub type RobonodePublicKey<T> = StorageValue<_, <T as Config>::RobonodePublicKey>;
 
+    /// The public keys expiration information
+    #[pallet::storage]
+    #[pallet::getter(fn public_keys_expiration)]
+    pub type PublicKeysExpiration<T: Config> = StorageValue<
+        _,
+        Vec<PublicKeyExpiration<<T as Config>::ValidatorPublicKey, T::BlockNumber>>,
+        ValueQuery,
+    >;
+
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         pub stored_auth_tickets: Vec<StoredAuthTicket<T::ValidatorPublicKey>>,
+        pub public_keys_expiration: Vec<PublicKeyExpiration<T::ValidatorPublicKey, T::BlockNumber>>,
         pub robonode_public_key: T::RobonodePublicKey,
     }
 
@@ -167,6 +189,7 @@ pub mod pallet {
         fn default() -> Self {
             Self {
                 stored_auth_tickets: Default::default(),
+                public_keys_expiration: Default::default(),
                 robonode_public_key: Default::default(),
             }
         }
@@ -177,6 +200,7 @@ pub mod pallet {
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
             <StoredAuthTickets<T>>::put(&self.stored_auth_tickets);
+            <PublicKeysExpiration<T>>::put(&self.public_keys_expiration);
             <RobonodePublicKey<T>>::put(&self.robonode_public_key);
         }
     }
@@ -252,6 +276,9 @@ pub mod pallet {
             let stored_auth_ticket = Self::extract_auth_ticket_checked(req)?;
             let event_stored_auth_ticket = stored_auth_ticket.clone();
 
+            let block_number = frame_system::Pallet::<T>::block_number();
+            let public_key = stored_auth_ticket.public_key.clone();
+
             // Update storage.
             <StoredAuthTickets<T>>::try_mutate(move |list| {
                 match validate_authentication_attempt::<T>(list, &stored_auth_ticket) {
@@ -264,7 +291,13 @@ pub mod pallet {
                     Ok(()) => {
                         // Authentication was successfull, add the incoming auth ticket to the list.
                         list.push(stored_auth_ticket);
-                        Self::issue_validators_set_update(list.as_slice());
+                        <PublicKeysExpiration<T>>::mutate(move |exp_list| {
+                            exp_list.push(PublicKeyExpiration {
+                                public_key,
+                                expiration_time: T::LifeTime::get() + block_number,
+                            });
+                            Self::issue_validators_set_update(exp_list.as_slice());
+                        });
                         Ok(())
                     }
                 }
@@ -281,11 +314,17 @@ pub mod pallet {
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         // Remove all outdated tickets.
         fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+            let current_expiration = <PublicKeysExpiration<T>>::get();
+            let mut new_expiration = Vec::new();
+            for public_key_expiration in current_expiration.iter() {
+                if public_key_expiration.expiration_time > n {
+                    new_expiration.push(public_key_expiration.clone());
+                }
+            }
+            Self::issue_validators_set_update(new_expiration.as_slice());
+            <PublicKeysExpiration<T>>::put(new_expiration);
             0
         }
-
-        // Record tickets creation block number.
-        fn on_finalize(n: BlockNumberFor<T>) {}
     }
 
     impl<T: Config> Pallet<T> {
@@ -351,9 +390,11 @@ pub mod pallet {
         }
 
         fn issue_validators_set_update(
-            stored_auth_tickets: &[StoredAuthTicket<T::ValidatorPublicKey>],
+            public_keys_expiration: &[PublicKeyExpiration<T::ValidatorPublicKey, T::BlockNumber>],
         ) {
-            let validator_public_keys = stored_auth_tickets.iter().map(|ticket| &ticket.public_key);
+            let validator_public_keys = public_keys_expiration
+                .iter()
+                .map(|ticket| &ticket.public_key);
             T::ValidatorSetUpdater::update_validators_set(validator_public_keys);
         }
     }
