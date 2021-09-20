@@ -246,22 +246,7 @@ mod tests {
             "webappUrl": "dummy_webapp_url",
             "consensusEngine": null,
             "codeSubstitutes": {},
-            "genesis": {
-              "runtime": {
-                "system": { "changesTrieConfig": null, "code": "0x0" },
-                "aura": {
-                  "authorities": []
-                },
-                "balances": {
-                  "balances": []
-                },
-                "sudo": { "key": "0" },
-                "bioauth": {
-                  "storedAuthTickets": [],
-                  "robonodePublicKey": []
-                }
-              }
-            }
+            "genesis": {}
           }
         "#};
         let bytes = chain_spec_file_content.as_bytes();
