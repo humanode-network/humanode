@@ -2,6 +2,7 @@
 
 use structopt::StructOpt;
 
+pub mod authurl;
 pub mod key;
 
 /// Subcommands for the `bioauth` command.
@@ -9,4 +10,6 @@ pub mod key;
 pub enum BioauthCmd {
     /// Bioauth key utilities.
     Key(key::KeyCmd),
+    /// Web App URL with bound RPC URL.
+    AuthUrl(authurl::AuthUrlCmd),
 }

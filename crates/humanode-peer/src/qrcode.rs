@@ -20,6 +20,11 @@ impl WebApp {
         Ok(Self { url })
     }
 
+    /// Provide the Web App URL.
+    pub fn url(&self) -> &str {
+        self.url.as_str()
+    }
+
     /// Print the QR Code for the Web App to the terminal.
     pub fn print(&self) {
         info!("Please visit {} to proceed", self.url);
