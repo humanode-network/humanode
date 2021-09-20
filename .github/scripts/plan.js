@@ -1,5 +1,6 @@
 // An utility to apply common build script paths.
 const buildEnvScriptPath = (script) => `.github/scripts/build_env/${script}`;
+const buildScriptPath = (script) => `.github/scripts/${script}`;
 
 // All the platforms that we support, and their respective settings.
 const allPlatforms = {
@@ -51,7 +52,12 @@ const allModes = {
     cargoArgs: "-- --check",
     platformIndependent: true,
     cargoCacheKey: "code",
-  }
+  },
+  run: {
+    name: "run",
+    cargoCommand: buildScriptPath("cargo_run.sh"),
+    cargoCacheKey: "run",
+  },
 };
 
 // Figure out whether we want to run non-essential checks.
