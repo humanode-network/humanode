@@ -63,7 +63,7 @@ pub fn new_partial(
                 FullClient,
                 FullGrandpa,
                 bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
-                bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
+                bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, AuraId>,
             >,
             SlotDuration,
             Duration,
@@ -116,18 +116,11 @@ pub fn new_partial(
         telemetry.as_ref().map(|x| x.handle()),
     )?;
 
-    let bioauth_consensus_block_import: bioauth_consensus::BioauthBlockImport<
-        FullBackend,
-        _,
-        _,
-        _,
-        _,
-        _,
-    > = bioauth_consensus::BioauthBlockImport::new(
+    let bioauth_consensus_block_import = bioauth_consensus::BioauthBlockImport::new(
         Arc::clone(&client),
         grandpa_block_import.clone(),
         bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
-        bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+        bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
     );
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
@@ -234,15 +227,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry.as_ref().map(|x| x.handle()),
     );
 
-    let proposer_factory: bioauth_consensus::BioauthProposer<
-        Block,
-        bioauth_consensus::bioauth::AuthorizationVerifier<Block, FullClient, AuraId>,
-        _,
-        _,
-    > = bioauth_consensus::BioauthProposer::new(
+    let proposer_factory = bioauth_consensus::BioauthProposer::new(
         proposer_factory,
-        bioauth_consensus::aura::ValidatorKeyExtractor::new(keystore_container.sync_keystore()),
-        bioauth_consensus::bioauth::AuthorizationVerifier::new(Arc::clone(&client)),
+        bioauth_consensus::keystore::ValidatorKeyExtractor::new(keystore_container.sync_keystore()),
+        bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
     );
 
     let (network, system_rpc_tx, network_starter) =
@@ -383,16 +371,21 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let keystore = keystore_container.keystore();
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
-            let aura_public_key =
-                crate::validator_key::AuraPublic::from_keystore(keystore.as_ref()).await;
+            let validator_public_key =
+                crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref())
+                    .await;
 
-            let aura_public_key = match aura_public_key {
-                Some(key) => {
+            let validator_public_key = match validator_public_key {
+                Ok(Some(key)) => {
                     info!("Running bioauth flow for {}", key);
                     key
                 }
-                None => {
+                Ok(None) => {
                     warn!("No validator key found, skipping bioauth");
+                    return;
+                }
+                Err(err) => {
+                    error!("Keystore returned an error ({}), skipping bioauth", err);
                     return;
                 }
             };
@@ -408,7 +401,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     info!("Bioauth flow - waiting for enroll");
                 }
 
-                flow.enroll(&aura_public_key).await.expect("enroll failed");
+                flow.enroll(&validator_public_key)
+                    .await
+                    .expect("enroll failed");
 
                 info!("Bioauth flow - enrolling complete");
             }
@@ -421,13 +416,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 info!("Bioauth flow - waiting for authentication");
             }
 
-            let aura_signer = crate::validator_key::AuraSigner {
+            let signer = crate::validator_key::AppCryptoSigner {
                 keystore: Arc::clone(&keystore),
-                public_key: aura_public_key,
+                public_key: validator_public_key,
             };
 
             let authenticate_response = loop {
-                let result = flow.authenticate(&aura_signer).await;
+                let result = flow.authenticate(&signer).await;
                 match result {
                     Ok(v) => break v,
                     Err(error) => {

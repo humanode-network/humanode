@@ -488,6 +488,14 @@ impl_runtime_apis! {
         }
     }
 
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
+        fn is_authorized(id: &AuraId) -> bool {
+            Bioauth::stored_auth_tickets()
+                .iter()
+                .any(|stored_auth_ticket| &stored_auth_ticket.public_key == id)
+        }
+    }
+
     impl sp_session::SessionKeys<Block> for Runtime {
         fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
             opaque::SessionKeys::generate(seed)

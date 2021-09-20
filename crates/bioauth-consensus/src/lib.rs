@@ -17,14 +17,14 @@ use sp_runtime::traits::Block as BlockT;
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
 
-#[cfg(any(test, feature = "aura-integration"))]
+#[cfg(feature = "api-integration")]
+pub mod api;
+
+#[cfg(feature = "keystore-integration")]
+pub mod keystore;
+
+#[cfg(feature = "aura-integration")]
 pub mod aura;
-
-#[cfg(any(test, feature = "bioauth-pallet-integration"))]
-pub mod bioauth;
-
-#[cfg(test)]
-mod tests;
 
 mod traits;
 
@@ -167,7 +167,7 @@ where
 }
 
 /// A Proposer handler for Bioauth.
-pub struct BioauthProposer<Block: BlockT, AV, BAP, VKE> {
+pub struct BioauthProposer<Block: BlockT, BAP, VKE, AV> {
     /// A basic authorship proposer.
     base_proposer: BAP,
     /// Keystore to extract validator public key.
@@ -180,26 +180,34 @@ pub struct BioauthProposer<Block: BlockT, AV, BAP, VKE> {
 
 /// BioauthProposer Error Type.
 #[derive(Error, Debug, Eq, PartialEq)]
-pub enum BioauthProposerError<AV>
+pub enum BioauthProposerError<VKE, AV>
 where
+    VKE: std::error::Error,
     AV: std::error::Error,
 {
-    /// The block author isn't Bioauth authorized.
+    /// Unable to find validator key for the node, no we aren't allow to produce blocks as if
+    /// we are not bioauth-authorized.
+    #[error("unable to extract validator key for this node, this node is not bioauth-authorized")]
+    UnableToExtractValidatorKey,
+    /// The block author isn't bioauth-authorized.
     #[error("the block author isn't bioauth-authorized")]
     NotBioauthAuthorized,
+    /// Validator key extraction error.
+    #[error("unable extract validator key: {0}")]
+    ValidatorKeyExtraction(VKE),
     /// Authorization verification error.
     #[error("unable verify the authorization: {0}")]
-    AuthorizationVerifier(AV),
+    AuthorizationVerification(AV),
 }
 
-impl<Block: BlockT, AV, BAP, VKE> BioauthProposer<Block, AV, BAP, VKE> {
-    /// Simple constructor.
+impl<Block: BlockT, BAP, VKE, AV> BioauthProposer<Block, BAP, VKE, AV> {
+    /// Create a new [`BioauthProposer`].
     pub fn new(
         base_proposer: BAP,
         validator_key_extractor: VKE,
         authorization_verifier: AV,
     ) -> Self {
-        BioauthProposer {
+        Self {
             base_proposer,
             validator_key_extractor,
             authorization_verifier,
@@ -208,14 +216,15 @@ impl<Block: BlockT, AV, BAP, VKE> BioauthProposer<Block, AV, BAP, VKE> {
     }
 }
 
-impl<Block: BlockT, AV, BAP, VKE> Environment<Block> for BioauthProposer<Block, AV, BAP, VKE>
+impl<Block: BlockT, BAP, VKE, AV> Environment<Block> for BioauthProposer<Block, BAP, VKE, AV>
 where
-    AV: AuthorizationVerifier<Block = Block, PublicKeyType = VKE::PublicKeyType> + Send,
-    <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
     BAP: Environment<Block> + Send + Sync + 'static,
     BAP::Error: Send,
     BAP::Proposer: Send,
     VKE: ValidatorKeyExtractor,
+    <VKE as ValidatorKeyExtractor>::Error: std::error::Error + Send + Sync + 'static,
+    AV: AuthorizationVerifier<Block = Block, PublicKeyType = VKE::PublicKeyType> + Send,
+    <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
 {
     type Proposer = BAP::Proposer;
 
@@ -224,13 +233,27 @@ where
     type Error = BAP::Error;
 
     fn init(&mut self, parent_header: &Block::Header) -> Self::CreateProposer {
-        let mkerr = |err: BioauthProposerError<AV::Error>| -> Self::CreateProposer {
+        let mkerr = |err: BioauthProposerError<VKE::Error, AV::Error>| -> Self::CreateProposer {
             Box::pin(future::err(Self::Error::from(sp_consensus::Error::Other(
                 Box::new(err),
             ))))
         };
 
-        let validator_key = self.validator_key_extractor.extract_validator_key();
+        let validator_key = match self
+            .validator_key_extractor
+            .extract_validator_key()
+            .map_err(|err| mkerr(BioauthProposerError::ValidatorKeyExtraction(err)))
+        {
+            Ok(v) => v,
+            Err(err) => return err,
+        };
+
+        let validator_key = match validator_key
+            .ok_or_else(|| mkerr(BioauthProposerError::UnableToExtractValidatorKey))
+        {
+            Ok(v) => v,
+            Err(err) => return err,
+        };
 
         let parent_hash = parent_header.hash();
         let at = sp_api::BlockId::hash(parent_hash);
@@ -238,9 +261,10 @@ where
         let is_authorized = match self
             .authorization_verifier
             .is_authorized(&at, &validator_key)
+            .map_err(|err| mkerr(BioauthProposerError::AuthorizationVerification(err)))
         {
             Ok(v) => v,
-            Err(err) => return mkerr(BioauthProposerError::AuthorizationVerifier(err)),
+            Err(err) => return err,
         };
 
         if !is_authorized {
