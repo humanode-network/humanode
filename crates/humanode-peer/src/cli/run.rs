@@ -98,6 +98,10 @@ pub async fn run() -> sc_cli::Result<()> {
                 })
                 .await
         }
+        Some(Subcommand::Bioauth(bioauth::BioauthCmd::AuthUrl(cmd))) => {
+            let runner = root.create_humanode_runner(cmd)?;
+            runner.sync_run(|config| cmd.run(config.bioauth_flow))
+        }
         Some(Subcommand::Benchmark(cmd)) => {
             if cfg!(feature = "runtime-benchmarks") {
                 let runner = root.create_humanode_runner(cmd)?;
