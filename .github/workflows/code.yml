@@ -107,3 +107,40 @@ jobs:
         with:
           command: ${{ matrix.mode.cargoCommand }}
           args: ${{ matrix.mode.cargoArgs }}
+
+  smoke:
+    needs:
+      - test
+    name: Smoke test
+    runs-on: ubuntu-20.04
+    timeout-minutes: 50
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        timeout-minutes: 5
+
+      - name: Cache rustup
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/share/rust/.rustup
+          key: ${{ runner.os }}-rustup-${{ hashFiles('rust-toolchain.toml') }}
+
+      - name: Install rust toolchain
+        run: rustup show
+        timeout-minutes: 10
+
+      - name: Cache cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+
+      - name: Run script
+        run: .github/scripts/cargo_run.sh
