@@ -277,6 +277,17 @@ pub mod pallet {
         }
     }
 
+    #[pallet::hooks]
+    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+        // Remove all outdated tickets.
+        fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+            0
+        }
+
+        // Record tickets creation block number.
+        fn on_finalize(n: BlockNumberFor<T>) {}
+    }
+
     impl<T: Config> Pallet<T> {
         pub fn extract_auth_ticket_checked(
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
