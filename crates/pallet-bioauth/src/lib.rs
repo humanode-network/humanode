@@ -72,24 +72,27 @@ pub struct Authenticate<OpaqueAuthTicket, Commitment> {
     pub ticket_signature: Commitment,
 }
 
-/// The state that we keep in the blockchain for the authorized auth tickets.
+/// The nonce used by robonode in the auth tickets.
+pub type AuthTicketNonce = Vec<u8>;
+
+/// The auth ticket passed to us from the robonode.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
-pub struct StoredAuthTicket<PublicKey> {
+pub struct AuthTicket<PublicKey> {
     /// The public key of a validator that was authorized by a robonode.
     pub public_key: PublicKey,
     /// The nonce that the robonode has provided.
-    pub nonce: Vec<u8>,
+    pub nonce: AuthTicketNonce,
 }
 
-/// The state that we keep in the blockchain for the public keys expiration information.
+/// The state that we keep in the blockchain for an active authentication.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
-pub struct StoredPublicKey<PublicKey, ExpirationTime> {
+pub struct Authentication<PublicKey, BlockNumber> {
     /// The public key of a validator.
     pub public_key: PublicKey,
-    /// The public key's expiration time.
-    pub expiration_time: ExpirationTime,
+    /// The block number at which the authentication becomes expired.
+    pub expires_at: BlockNumber,
 }
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
@@ -101,10 +104,14 @@ pub struct StoredPublicKey<PublicKey, ExpirationTime> {
 )]
 #[frame_support::pallet]
 pub mod pallet {
-    use crate::{StoredAuthTicket, StoredPublicKey, TryConvert, ValidatorSetUpdater, Verifier};
+    use crate::{
+        AuthTicket, AuthTicketNonce, Authenticate, Authentication, TryConvert, ValidatorSetUpdater,
+        Verifier,
+    };
 
-    use super::Authenticate;
-    use frame_support::{dispatch::DispatchResult, pallet_prelude::*, storage::types::ValueQuery};
+    use frame_support::{
+        dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
+    };
     use frame_system::pallet_prelude::*;
     use sp_runtime::app_crypto::MaybeHash;
     use sp_std::prelude::*;
@@ -131,13 +138,14 @@ pub mod pallet {
         /// The opaque auth ticket type.
         type OpaqueAuthTicket: Parameter + AsRef<[u8]> + Send + Sync;
 
-        /// A converter from an opaque to a stored auth ticket.
+        /// A converter from an opaque to a transparent auth ticket.
         type AuthTicketCoverter: TryConvert<
             Self::OpaqueAuthTicket,
-            StoredAuthTicket<Self::ValidatorPublicKey>,
+            AuthTicket<Self::ValidatorPublicKey>,
         >;
 
-        type LifeTime: Get<Self::BlockNumber>;
+        /// The amount of time (in blocks) after which the authentications expire.
+        type AuthenticationsExpireAfter: Get<Self::BlockNumber>;
 
         /// The validator set updater to invoke at auth the ticket acceptace.
         type ValidatorSetUpdater: ValidatorSetUpdater<Self::ValidatorPublicKey>;
@@ -147,30 +155,27 @@ pub mod pallet {
     #[pallet::generate_store(pub(super) trait Store)]
     pub struct Pallet<T>(_);
 
-    /// A list of the authorized auth tickets.
-    #[pallet::storage]
-    #[pallet::getter(fn stored_nonces)]
-    pub type StoredNonces<T> = StorageValue<_, Vec<Vec<u8>>, ValueQuery>;
-
     /// The public key of the robonode.
     #[pallet::storage]
     #[pallet::getter(fn robonode_public_key)]
     pub type RobonodePublicKey<T> = StorageValue<_, <T as Config>::RobonodePublicKey>;
 
-    /// The public keys expiration information
+    /// A list of all consumed nonces.
     #[pallet::storage]
-    #[pallet::getter(fn stored_public_keys)]
-    pub type StoredPublicKeys<T: Config> = StorageValue<
-        _,
-        Vec<StoredPublicKey<<T as Config>::ValidatorPublicKey, T::BlockNumber>>,
-        ValueQuery,
-    >;
+    #[pallet::getter(fn consumed_auth_ticket_nonces)]
+    pub type ConsumedAuthTicketNonces<T> = StorageValue<_, Vec<AuthTicketNonce>, ValueQuery>;
+
+    /// A list of all active authentications.
+    #[pallet::storage]
+    #[pallet::getter(fn active_authentications)]
+    pub type ActiveAuthentications<T: Config> =
+        StorageValue<_, Vec<Authentication<T::ValidatorPublicKey, T::BlockNumber>>, ValueQuery>;
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
-        pub stored_nonces: Vec<Vec<u8>>,
-        pub stored_public_keys: Vec<StoredPublicKey<T::ValidatorPublicKey, T::BlockNumber>>,
         pub robonode_public_key: T::RobonodePublicKey,
+        pub consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
+        pub active_authentications: Vec<Authentication<T::ValidatorPublicKey, T::BlockNumber>>,
     }
 
     // The default value for the genesis config type.
@@ -178,9 +183,9 @@ pub mod pallet {
     impl<T: Config> Default for GenesisConfig<T> {
         fn default() -> Self {
             Self {
-                stored_nonces: Default::default(),
-                stored_public_keys: Default::default(),
                 robonode_public_key: Default::default(),
+                consumed_auth_ticket_nonces: Default::default(),
+                active_authentications: Default::default(),
             }
         }
     }
@@ -189,9 +194,9 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
-            <StoredNonces<T>>::put(&self.stored_nonces);
-            <StoredPublicKeys<T>>::put(&self.stored_public_keys);
             <RobonodePublicKey<T>>::put(&self.robonode_public_key);
+            <ConsumedAuthTicketNonces<T>>::put(&self.consumed_auth_ticket_nonces);
+            <ActiveAuthentications<T>>::put(&self.active_authentications);
         }
     }
 
@@ -200,9 +205,10 @@ pub mod pallet {
     #[pallet::metadata(T::AccountId = "AccountId")]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
-        /// Event documentation should end with an array that provides descriptive names for event
-        /// parameters. [stored_auth_ticket]
-        AuthTicketStored(StoredAuthTicket<T::ValidatorPublicKey>),
+        // Event documentation should end with an array that provides descriptive names for event
+        // parameters.
+        /// New authentication was added to the state. [stored_auth_ticket]
+        NewAuthentication(T::ValidatorPublicKey),
     }
 
     /// Possible error conditions during `authenticate` call processing.
@@ -225,23 +231,25 @@ pub mod pallet {
 
     pub enum AuthenticationAttemptValidationError<'a, T: Config> {
         NonceConflict,
-        ConflitingPublicKeys(&'a StoredPublicKey<T::ValidatorPublicKey, T::BlockNumber>),
+        AlreadyAuthenticated(&'a Authentication<T::ValidatorPublicKey, T::BlockNumber>),
     }
 
-    pub fn validate_authentication_attempt<'a, T: Config>(
-        existing_public_keys: &'a [StoredPublicKey<T::ValidatorPublicKey, T::BlockNumber>],
-        existing_nonces: &'a [Vec<u8>],
-        new: &StoredAuthTicket<T::ValidatorPublicKey>,
+    /// Validate the incloming authentication attempt, checking the auth ticket data against
+    /// the passed input.
+    fn validate_authentication_attempt<'a, T: Config>(
+        consumed_auth_ticket_nonces: &'a [AuthTicketNonce],
+        active_authentications: &'a [Authentication<T::ValidatorPublicKey, T::BlockNumber>],
+        auth_ticket: &AuthTicket<T::ValidatorPublicKey>,
     ) -> Result<(), AuthenticationAttemptValidationError<'a, T>> {
-        for existing_nonce in existing_nonces.iter() {
-            if existing_nonce == &new.nonce {
+        for consumed_auth_ticket_nonce in consumed_auth_ticket_nonces.iter() {
+            if consumed_auth_ticket_nonce == &auth_ticket.nonce {
                 return Err(AuthenticationAttemptValidationError::NonceConflict);
             }
         }
-        for existing_key in existing_public_keys.iter() {
-            if existing_key.public_key == new.public_key {
-                return Err(AuthenticationAttemptValidationError::ConflitingPublicKeys(
-                    existing_key,
+        for active_authentication in active_authentications.iter() {
+            if active_authentication.public_key == auth_ticket.public_key {
+                return Err(AuthenticationAttemptValidationError::AlreadyAuthenticated(
+                    active_authentication,
                 ));
             }
         }
@@ -254,75 +262,79 @@ pub mod pallet {
     /// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(10_000 + T::DbWeight::get().writes(1))]
+        #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(2, 4))]
         pub fn authenticate(
             origin: OriginFor<T>,
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
         ) -> DispatchResult {
             ensure_none(origin)?;
 
-            let stored_auth_ticket = Self::extract_auth_ticket_checked(req)?;
-            let event_stored_auth_ticket = stored_auth_ticket.clone();
+            let auth_ticket = Self::extract_auth_ticket_checked(req)?;
 
             let block_number = frame_system::Pallet::<T>::block_number();
-            let public_key = stored_auth_ticket.public_key.clone();
+            let public_key = auth_ticket.public_key.clone();
 
             // Update storage.
-            <StoredNonces<T>>::try_mutate::<_, Error<T>, _>(move |nonces_list| {
-                <StoredPublicKeys<T>>::try_mutate(move |keys_list| {
-                    match validate_authentication_attempt::<T>(
-                        keys_list,
-                        nonces_list,
-                        &stored_auth_ticket,
-                    ) {
-                        Err(AuthenticationAttemptValidationError::NonceConflict) => {
-                            Err(Error::<T>::NonceAlreadyUsed)
-                        }
-                        Err(AuthenticationAttemptValidationError::ConflitingPublicKeys(_)) => {
-                            Err(Error::<T>::PublicKeyAlreadyUsed)
-                        }
-                        Ok(()) => {
-                            nonces_list.push(stored_auth_ticket.nonce);
-                            keys_list.push(StoredPublicKey {
-                                public_key,
-                                expiration_time: T::LifeTime::get() + block_number,
-                            });
-                            Self::issue_validators_set_update(keys_list.as_slice());
-                            Ok(())
-                        }
-                    }
-                })?;
-                Ok(())
-            })?;
+            <ConsumedAuthTicketNonces<T>>::try_mutate::<_, Error<T>, _>(
+                move |consumed_auth_ticket_nonces| {
+                    <ActiveAuthentications<T>>::try_mutate(move |active_authentications| {
+                        validate_authentication_attempt::<T>(
+                            consumed_auth_ticket_nonces,
+                            active_authentications,
+                            &auth_ticket,
+                        )
+                        .map_err(|err| match err {
+                            AuthenticationAttemptValidationError::NonceConflict => {
+                                Error::<T>::NonceAlreadyUsed
+                            }
+                            AuthenticationAttemptValidationError::AlreadyAuthenticated(_) => {
+                                Error::<T>::PublicKeyAlreadyUsed
+                            }
+                        })?;
 
-            // Emit an event.
-            Self::deposit_event(Event::AuthTicketStored(event_stored_auth_ticket));
+                        // Update internal state.
+                        consumed_auth_ticket_nonces.push(auth_ticket.nonce);
+                        active_authentications.push(Authentication {
+                            public_key: public_key.clone(),
+                            expires_at: block_number + T::AuthenticationsExpireAfter::get(),
+                        });
 
+                        // Issue an update to the external validators set.
+                        Self::issue_validators_set_update(active_authentications.as_slice());
+
+                        // Emit an event.
+                        Self::deposit_event(Event::NewAuthentication(public_key));
+                        Ok(())
+                    })?;
+                    Ok(())
+                },
+            )?;
             Ok(())
         }
     }
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-        // Remove all outdated tickets.
         fn on_initialize(n: BlockNumberFor<T>) -> Weight {
-            let current_keys = <StoredPublicKeys<T>>::get();
-            let mut new_keys = Vec::new();
-            for key in current_keys.iter() {
-                if key.expiration_time > n {
-                    new_keys.push(key.clone());
-                }
-            }
-            Self::issue_validators_set_update(new_keys.as_slice());
-            <StoredPublicKeys<T>>::put(new_keys);
-            0
+            // Remove expired authentications.
+            let possibly_expired_authentications = <ActiveAuthentications<T>>::get();
+            let active_authentications = possibly_expired_authentications
+                .into_iter()
+                .filter(|possibly_expired_authentication| {
+                    possibly_expired_authentication.expires_at > n
+                })
+                .collect::<Vec<_>>();
+            Self::issue_validators_set_update(active_authentications.as_slice());
+            <ActiveAuthentications<T>>::put(active_authentications);
+
+            T::DbWeight::get().reads_writes(1, 1)
         }
     }
 
     impl<T: Config> Pallet<T> {
         pub fn extract_auth_ticket_checked(
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
-        ) -> Result<StoredAuthTicket<T::ValidatorPublicKey>, Error<T>> {
+        ) -> Result<AuthTicket<T::ValidatorPublicKey>, Error<T>> {
             let robonode_public_key =
                 RobonodePublicKey::<T>::get().ok_or(Error::<T>::RobonodePublicKeyIsAbsent)?;
 
@@ -351,24 +363,25 @@ pub mod pallet {
                 }
             };
 
-            let stored_auth_ticket = Self::extract_auth_ticket_checked(transaction.clone())
-                .map_err(|error| {
-                    frame_support::sp_tracing::error!(
-                        message = "Auth Ticket could not be extracted",
-                        ?error
-                    );
+            let auth_ticket =
+                Self::extract_auth_ticket_checked(transaction.clone()).map_err(|error| {
+                    error!(message = "Auth Ticket could not be extracted", ?error);
                     // Use custom code 's' for "signature" error.
                     TransactionValidityError::Invalid(InvalidTransaction::Custom(b's'))
                 })?;
 
-            let nonces_list = StoredNonces::<T>::get();
-            let keys_list = StoredPublicKeys::<T>::get();
+            let consumed_auth_ticket_nonces = ConsumedAuthTicketNonces::<T>::get();
+            let active_authentications = ActiveAuthentications::<T>::get();
 
-            validate_authentication_attempt::<T>(&keys_list, &nonces_list, &stored_auth_ticket)
-                .map_err(|_| {
-                    // Use custom code 'c' for "conflict" error.
-                    TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
-                })?;
+            validate_authentication_attempt::<T>(
+                &consumed_auth_ticket_nonces,
+                &active_authentications,
+                &auth_ticket,
+            )
+            .map_err(|_| {
+                // Use custom code 'c' for "conflict" error.
+                TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
+            })?;
 
             // We must use non-default [`TransactionValidity`] here.
             ValidTransaction::with_tag_prefix("bioauth")
@@ -376,7 +389,7 @@ pub mod pallet {
                 // in our case, we the structure of the [`StoredAuthTickets`] is supposed to be
                 // unordered, and act like a CRDT.
                 // TODO: ensure we have the unordered (CRDT) semantics for the [`authenticate`] txs.
-                .and_provides(stored_auth_ticket)
+                .and_provides(auth_ticket)
                 .priority(50)
                 .longevity(1)
                 .propagate(true)
@@ -384,9 +397,9 @@ pub mod pallet {
         }
 
         fn issue_validators_set_update(
-            public_keys_expiration: &[StoredPublicKey<T::ValidatorPublicKey, T::BlockNumber>],
+            active_authentications: &[Authentication<T::ValidatorPublicKey, T::BlockNumber>],
         ) {
-            let validator_public_keys = public_keys_expiration
+            let validator_public_keys = active_authentications
                 .iter()
                 .map(|ticket| &ticket.public_key);
             T::ValidatorSetUpdater::update_validators_set(validator_public_keys);

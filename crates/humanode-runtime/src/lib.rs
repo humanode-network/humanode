@@ -11,7 +11,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-use pallet_bioauth::StoredAuthTicket;
+use pallet_bioauth::AuthTicket;
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -331,14 +331,14 @@ pub enum PrimitiveAuthTicketConverterError {
     PublicKey(()),
 }
 
-impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::StoredAuthTicket<AuraId>>
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<AuraId>>
     for PrimitiveAuthTicketConverter
 {
     type Error = PrimitiveAuthTicketConverterError;
 
     fn try_convert(
         value: OpaqueAuthTicket,
-    ) -> Result<pallet_bioauth::StoredAuthTicket<AuraId>, Self::Error> {
+    ) -> Result<pallet_bioauth::AuthTicket<AuraId>, Self::Error> {
         use sp_std::convert::TryInto;
         let primitives_auth_ticket::AuthTicket {
             public_key,
@@ -352,7 +352,7 @@ impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::StoredAuthTick
             .try_into()
             .map_err(PrimitiveAuthTicketConverterError::PublicKey)?;
 
-        Ok(StoredAuthTicket { public_key, nonce })
+        Ok(AuthTicket { public_key, nonce })
     }
 }
 
@@ -379,7 +379,7 @@ impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
 }
 
 parameter_types! {
-    pub const LifeTime: BlockNumber = 24 * HOURS;
+    pub const AuthenticationsExpireAfter: BlockNumber = 24 * HOURS;
 }
 
 impl pallet_bioauth::Config for Runtime {
@@ -390,7 +390,7 @@ impl pallet_bioauth::Config for Runtime {
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = AuraValidatorSetUpdater;
-    type LifeTime = LifeTime;
+    type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
@@ -512,7 +512,7 @@ impl_runtime_apis! {
 
     impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
         fn is_authorized(id: &AuraId) -> bool {
-            Bioauth::stored_public_keys()
+            Bioauth::active_authentications()
                 .iter()
                 .any(|stored_public_key| &stored_public_key.public_key == id)
         }

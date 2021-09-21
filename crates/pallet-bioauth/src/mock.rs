@@ -1,4 +1,4 @@
-use crate::{self as pallet_bioauth, StoredAuthTicket, TryConvert};
+use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
 use codec::{Decode, Encode};
 use frame_support::{parameter_types, traits::GenesisBuild};
 use frame_system as system;
@@ -27,7 +27,7 @@ frame_support::construct_runtime!(
 
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct MockOpaqueAuthTicket(pub StoredAuthTicket<Vec<u8>>);
+pub struct MockOpaqueAuthTicket(pub AuthTicket<Vec<u8>>);
 
 impl AsRef<[u8]> for MockOpaqueAuthTicket {
     fn as_ref(&self) -> &[u8] {
@@ -37,10 +37,10 @@ impl AsRef<[u8]> for MockOpaqueAuthTicket {
 
 pub struct MockAuthTicketConverter;
 
-impl TryConvert<MockOpaqueAuthTicket, StoredAuthTicket<Vec<u8>>> for MockAuthTicketConverter {
+impl TryConvert<MockOpaqueAuthTicket, AuthTicket<Vec<u8>>> for MockAuthTicketConverter {
     type Error = Infallible;
 
-    fn try_convert(value: MockOpaqueAuthTicket) -> Result<StoredAuthTicket<Vec<u8>>, Self::Error> {
+    fn try_convert(value: MockOpaqueAuthTicket) -> Result<AuthTicket<Vec<u8>>, Self::Error> {
         Ok(value.0)
     }
 }
@@ -105,10 +105,10 @@ impl system::Config for Test {
     type OnSetCode = ();
 }
 
-pub const LIFE_TIME_CONST: u64 = 24;
+pub const AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS: u64 = 24;
 
 parameter_types! {
-    pub const LifeTime: u64 = LIFE_TIME_CONST;
+    pub const AuthenticationsExpireAfter: u64 = AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS;
 }
 
 impl pallet_bioauth::Config for Test {
@@ -119,7 +119,7 @@ impl pallet_bioauth::Config for Test {
     type OpaqueAuthTicket = MockOpaqueAuthTicket;
     type AuthTicketCoverter = MockAuthTicketConverter;
     type ValidatorSetUpdater = MockValidatorSetUpdater;
-    type LifeTime = LifeTime;
+    type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 
 // Build genesis storage according to the mock runtime.

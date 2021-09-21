@@ -10,7 +10,7 @@ pub fn make_input(
     signature: &[u8],
 ) -> crate::Authenticate<MockOpaqueAuthTicket, Vec<u8>> {
     crate::Authenticate {
-        ticket: MockOpaqueAuthTicket(StoredAuthTicket {
+        ticket: MockOpaqueAuthTicket(AuthTicket {
             public_key: public_key.into(),
             nonce: nonce.into(),
         }),
@@ -27,13 +27,16 @@ fn it_permits_authentication_with_an_empty_state() {
 
         assert_ok!(Bioauth::authenticate(Origin::none(), input));
         assert_eq!(
-            Bioauth::stored_public_keys(),
-            vec![StoredPublicKey {
+            Bioauth::active_authentications(),
+            vec![Authentication {
                 public_key: b"qwe".to_vec(),
-                expiration_time: current_block_number + LIFE_TIME_CONST,
+                expires_at: current_block_number + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS,
             }]
         );
-        assert_eq!(Bioauth::stored_nonces(), vec![b"rty".to_vec()]);
+        assert_eq!(
+            Bioauth::consumed_auth_ticket_nonces(),
+            vec![b"rty".to_vec()]
+        );
     });
 }
 
@@ -42,29 +45,29 @@ fn it_permits_expiration() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
         let current_block_number = System::block_number();
-        let alice_expiration = current_block_number + LIFE_TIME_CONST + 100;
-        <StoredPublicKeys<Test>>::put(vec![StoredPublicKey {
+        let alice_expiration = current_block_number + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS + 100;
+        <ActiveAuthentications<Test>>::put(vec![Authentication {
             public_key: b"alice".to_vec(),
-            expiration_time: alice_expiration,
+            expires_at: alice_expiration,
         }]);
-        <StoredNonces<Test>>::put(vec![b"alice".to_vec()]);
+        <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice".to_vec()]);
 
         // Prepare the test input.
         let input = make_input(b"qwe", b"rty", b"should_be_valid");
         assert_ok!(Bioauth::authenticate(Origin::none(), input));
 
         // Make test.
-        Bioauth::on_initialize(current_block_number + LIFE_TIME_CONST + 1);
+        Bioauth::on_initialize(current_block_number + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS + 1);
 
         assert_eq!(
-            Bioauth::stored_public_keys(),
-            vec![StoredPublicKey {
+            Bioauth::active_authentications(),
+            vec![Authentication {
                 public_key: b"alice".to_vec(),
-                expiration_time: alice_expiration,
+                expires_at: alice_expiration,
             }]
         );
         assert_eq!(
-            Bioauth::stored_nonces(),
+            Bioauth::consumed_auth_ticket_nonces(),
             vec![b"alice".to_vec(), b"rty".to_vec()]
         );
     });
@@ -74,19 +77,19 @@ fn it_permits_expiration() {
 fn it_permits_authentication_when_previous_one_has_been_expired() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
-        let alice_expiration = System::block_number() + LIFE_TIME_CONST + 100;
-        let bob_expiration = System::block_number() + LIFE_TIME_CONST;
-        <StoredPublicKeys<Test>>::put(vec![
-            StoredPublicKey {
+        let alice_expiration = System::block_number() + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS + 100;
+        let bob_expiration = System::block_number() + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS;
+        <ActiveAuthentications<Test>>::put(vec![
+            Authentication {
                 public_key: b"alice".to_vec(),
-                expiration_time: alice_expiration,
+                expires_at: alice_expiration,
             },
-            StoredPublicKey {
+            Authentication {
                 public_key: b"bob".to_vec(),
-                expiration_time: bob_expiration,
+                expires_at: bob_expiration,
             },
         ]);
-        <StoredNonces<Test>>::put(vec![b"alice".to_vec(), b"bob".to_vec()]);
+        <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice".to_vec(), b"bob".to_vec()]);
 
         // Prepare the test input.
         let input = make_input(b"bob", b"bob_new", b"should_be_valid");
@@ -98,20 +101,20 @@ fn it_permits_authentication_when_previous_one_has_been_expired() {
 
         assert_ok!(Bioauth::authenticate(Origin::none(), input));
         assert_eq!(
-            Bioauth::stored_public_keys(),
+            Bioauth::active_authentications(),
             vec![
-                StoredPublicKey {
+                Authentication {
                     public_key: b"alice".to_vec(),
-                    expiration_time: alice_expiration,
+                    expires_at: alice_expiration,
                 },
-                StoredPublicKey {
+                Authentication {
                     public_key: b"bob".to_vec(),
-                    expiration_time: current_block_number + LIFE_TIME_CONST,
+                    expires_at: current_block_number + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS,
                 }
             ]
         );
         assert_eq!(
-            Bioauth::stored_nonces(),
+            Bioauth::consumed_auth_ticket_nonces(),
             vec![b"alice".to_vec(), b"bob".to_vec(), b"bob_new".to_vec()]
         );
     });
@@ -152,19 +155,19 @@ fn it_denies_authentication_with_conlicting_nonce() {
 fn it_denies_authentication_with_conlicting_nonce_after_expiration() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
-        let alice_expiration = System::block_number() + LIFE_TIME_CONST + 100;
-        let bob_expiration = System::block_number() + LIFE_TIME_CONST;
-        <StoredPublicKeys<Test>>::put(vec![
-            StoredPublicKey {
+        let alice_expiration = System::block_number() + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS + 100;
+        let bob_expiration = System::block_number() + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS;
+        <ActiveAuthentications<Test>>::put(vec![
+            Authentication {
                 public_key: b"alice".to_vec(),
-                expiration_time: alice_expiration,
+                expires_at: alice_expiration,
             },
-            StoredPublicKey {
+            Authentication {
                 public_key: b"bob".to_vec(),
-                expiration_time: bob_expiration,
+                expires_at: bob_expiration,
             },
         ]);
-        <StoredNonces<Test>>::put(vec![b"alice".to_vec(), b"bob".to_vec()]);
+        <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice".to_vec(), b"bob".to_vec()]);
 
         // Prepare the test input.
         let input = make_input(b"bob", b"bob", b"should_be_valid");
@@ -179,14 +182,14 @@ fn it_denies_authentication_with_conlicting_nonce_after_expiration() {
             Error::<Test>::NonceAlreadyUsed,
         );
         assert_eq!(
-            Bioauth::stored_public_keys(),
-            vec![StoredPublicKey {
+            Bioauth::active_authentications(),
+            vec![Authentication {
                 public_key: b"alice".to_vec(),
-                expiration_time: alice_expiration,
+                expires_at: alice_expiration,
             }]
         );
         assert_eq!(
-            Bioauth::stored_nonces(),
+            Bioauth::consumed_auth_ticket_nonces(),
             vec![b"alice".to_vec(), b"bob".to_vec()]
         );
     });
@@ -210,13 +213,16 @@ fn it_denies_authentication_with_concurrent_conlicting_public_keys() {
             Error::<Test>::PublicKeyAlreadyUsed,
         );
         assert_eq!(
-            Bioauth::stored_public_keys(),
-            vec![StoredPublicKey {
+            Bioauth::active_authentications(),
+            vec![Authentication {
                 public_key: b"conflict!".to_vec(),
-                expiration_time: current_block_number + LIFE_TIME_CONST,
+                expires_at: current_block_number + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS,
             }]
         );
-        assert_eq!(Bioauth::stored_nonces(), vec![b"nonce1".to_vec()]);
+        assert_eq!(
+            Bioauth::consumed_auth_ticket_nonces(),
+            vec![b"nonce1".to_vec()]
+        );
     });
 }
 
@@ -241,7 +247,7 @@ fn signed_ext_check_bioauth_tx_permit_empty_state() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
         let input = make_input(b"qwe", b"rty", b"should_be_valid");
-        let expected_tag = StoredAuthTicket {
+        let expected_tag = AuthTicket {
             public_key: b"qwe".to_vec(),
             nonce: b"rty".to_vec(),
         };
