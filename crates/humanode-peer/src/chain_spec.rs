@@ -6,7 +6,7 @@ use humanode_runtime::{
     GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, DAYS,
     WASM_BINARY,
 };
-use pallet_bioauth::{PublicKeyExpiration, StoredAuthTicket};
+use pallet_bioauth::StoredPublicKey;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -97,12 +97,9 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice").0,
-                    nonce: "1".as_bytes().to_vec(),
-                }],
+                vec!["1".as_bytes().to_vec()],
                 robonode_public_key,
-                vec![pallet_bioauth::PublicKeyExpiration {
+                vec![pallet_bioauth::StoredPublicKey {
                     public_key: authority_keys_from_seed("Alice").0,
                     expiration_time: 30 * DAYS,
                 }],
@@ -150,12 +147,9 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
-                vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice").0,
-                    nonce: "1".as_bytes().to_vec(),
-                }],
+                vec!["1".as_bytes().to_vec()],
                 robonode_public_key,
-                vec![pallet_bioauth::PublicKeyExpiration {
+                vec![pallet_bioauth::StoredPublicKey {
                     public_key: authority_keys_from_seed("Alice").0,
                     expiration_time: 30 * DAYS,
                 }],
@@ -180,9 +174,9 @@ fn testnet_genesis(
     initial_authorities: Vec<(AuraId, GrandpaId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
-    stored_auth_tickets: Vec<StoredAuthTicket<AuraId>>,
+    stored_nonces: Vec<Vec<u8>>,
     robonode_public_key: RobonodePublicKeyWrapper,
-    public_keys_expiration: Vec<PublicKeyExpiration<AuraId, BlockNumber>>,
+    stored_public_keys: Vec<StoredPublicKey<AuraId, BlockNumber>>,
 ) -> GenesisConfig {
     GenesisConfig {
         system: SystemConfig {
@@ -213,9 +207,9 @@ fn testnet_genesis(
         },
         bioauth: BioauthConfig {
             // Add Alice AuraId to StoredAuthTickets for producing blocks
-            stored_auth_tickets,
+            stored_nonces,
             robonode_public_key,
-            public_keys_expiration,
+            stored_public_keys,
         },
     }
 }

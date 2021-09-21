@@ -510,17 +510,11 @@ impl_runtime_apis! {
         }
     }
 
-    impl pallet_bioauth::BioauthApi<Block, <Runtime as pallet_bioauth::Config>::ValidatorPublicKey> for Runtime {
-        fn stored_auth_tickets() -> sp_std::prelude::Vec<pallet_bioauth::StoredAuthTicket<<Runtime as pallet_bioauth::Config>::ValidatorPublicKey>> {
-            Bioauth::stored_auth_tickets()
-        }
-    }
-
     impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
         fn is_authorized(id: &AuraId) -> bool {
-            Bioauth::stored_auth_tickets()
+            Bioauth::stored_public_keys()
                 .iter()
-                .any(|stored_auth_ticket| &stored_auth_ticket.public_key == id)
+                .any(|stored_public_key| &stored_public_key.public_key == id)
         }
     }
 

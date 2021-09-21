@@ -105,8 +105,10 @@ impl system::Config for Test {
     type OnSetCode = ();
 }
 
+pub const LIFE_TIME_CONST: u64 = 24;
+
 parameter_types! {
-    pub const LifeTime: u32 = 24;
+    pub const LifeTime: u64 = LIFE_TIME_CONST;
 }
 
 impl pallet_bioauth::Config for Test {

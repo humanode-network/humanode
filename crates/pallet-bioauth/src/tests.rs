@@ -26,10 +26,10 @@ fn it_permits_authentication_with_an_empty_state() {
 
         assert_ok!(Bioauth::authenticate(Origin::none(), input));
         assert_eq!(
-            Bioauth::stored_auth_tickets(),
-            vec![StoredAuthTicket {
+            Bioauth::stored_public_keys(),
+            vec![StoredPublicKey {
                 public_key: b"qwe".to_vec(),
-                nonce: b"rty".to_vec(),
+                expiration_time: LIFE_TIME_CONST,
             }]
         );
     });
