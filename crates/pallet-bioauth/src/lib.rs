@@ -306,15 +306,15 @@ pub mod pallet {
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         // Remove all outdated tickets.
         fn on_initialize(n: BlockNumberFor<T>) -> Weight {
-            let current_expiration = <StoredPublicKeys<T>>::get();
-            let mut new_expiration = Vec::new();
-            for public_key_expiration in current_expiration.iter() {
-                if public_key_expiration.expiration_time > n {
-                    new_expiration.push(public_key_expiration.clone());
+            let current_keys = <StoredPublicKeys<T>>::get();
+            let mut new_keys = Vec::new();
+            for key in current_keys.iter() {
+                if key.expiration_time > n {
+                    new_keys.push(key.clone());
                 }
             }
-            Self::issue_validators_set_update(new_expiration.as_slice());
-            <StoredPublicKeys<T>>::put(new_expiration);
+            Self::issue_validators_set_update(new_keys.as_slice());
+            <StoredPublicKeys<T>>::put(new_keys);
             0
         }
     }
