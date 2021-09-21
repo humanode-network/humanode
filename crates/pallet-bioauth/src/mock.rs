@@ -60,6 +60,20 @@ impl super::Verifier<Vec<u8>> for MockVerifier {
     }
 }
 
+pub struct MockValidatorSetUpdater;
+
+impl super::ValidatorSetUpdater<Vec<u8>> for MockValidatorSetUpdater {
+    fn update_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(mut validator_public_keys: I)
+    where
+        Vec<u8>: 'a,
+    {
+        assert!(
+            validator_public_keys.next().is_some(),
+            "We should get non-empty set every time at each of the test cases"
+        );
+    }
+}
+
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
@@ -98,6 +112,7 @@ impl pallet_bioauth::Config for Test {
     type ValidatorPublicKey = Vec<u8>;
     type OpaqueAuthTicket = MockOpaqueAuthTicket;
     type AuthTicketCoverter = MockAuthTicketConverter;
+    type ValidatorSetUpdater = MockValidatorSetUpdater;
 }
 
 // Build genesis storage according to the mock runtime.
