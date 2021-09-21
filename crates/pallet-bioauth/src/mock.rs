@@ -105,6 +105,10 @@ impl system::Config for Test {
     type OnSetCode = ();
 }
 
+parameter_types! {
+    pub const LifeTime: u32 = 24;
+}
+
 impl pallet_bioauth::Config for Test {
     type Event = Event;
     type RobonodePublicKey = MockVerifier;
@@ -113,6 +117,7 @@ impl pallet_bioauth::Config for Test {
     type OpaqueAuthTicket = MockOpaqueAuthTicket;
     type AuthTicketCoverter = MockAuthTicketConverter;
     type ValidatorSetUpdater = MockValidatorSetUpdater;
+    type LifeTime = LifeTime;
 }
 
 // Build genesis storage according to the mock runtime.
