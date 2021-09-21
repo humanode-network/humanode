@@ -40,49 +40,32 @@ fn it_permits_authentication_with_an_empty_state() {
 #[test]
 fn it_permits_expiration() {
     new_test_ext().execute_with(|| {
-        // First authentication by qwe.
-        let first_input = make_input(b"qwe", b"first", b"should_be_valid");
-        let first_block_number = System::block_number();
+        // Prepare the test precondition.
+        let current_block_number = System::block_number();
+        let alice_expiration = current_block_number + LIFE_TIME_CONST + 100;
+        <StoredPublicKeys<Test>>::put(vec![StoredPublicKey {
+            public_key: b"alice".to_vec(),
+            expiration_time: alice_expiration,
+        }]);
+        <StoredNonces<Test>>::put(vec![b"alice".to_vec()]);
 
-        assert_ok!(Bioauth::authenticate(Origin::none(), first_input));
+        // Prepare the test input.
+        let input = make_input(b"qwe", b"rty", b"should_be_valid");
+        assert_ok!(Bioauth::authenticate(Origin::none(), input));
 
-        // Prepare Alice as we need to keep non-empty state for consensus.
-        let alice = make_input(b"alice", b"alice", b"should_be_valid");
-        let alice_block_number = 10;
-        System::set_block_number(alice_block_number);
-        assert_ok!(Bioauth::authenticate(Origin::none(), alice));
-
-        assert_eq!(
-            Bioauth::stored_public_keys(),
-            vec![
-                StoredPublicKey {
-                    public_key: b"qwe".to_vec(),
-                    expiration_time: first_block_number + LIFE_TIME_CONST,
-                },
-                StoredPublicKey {
-                    public_key: b"alice".to_vec(),
-                    expiration_time: alice_block_number + LIFE_TIME_CONST,
-                }
-            ]
-        );
-        assert_eq!(
-            Bioauth::stored_nonces(),
-            vec![b"first".to_vec(), b"alice".to_vec()]
-        );
-
-        // Initialize first_block_number block to expire first authentication by qwe.
-        Bioauth::on_initialize(first_block_number + LIFE_TIME_CONST + 1);
+        // Make test.
+        Bioauth::on_initialize(current_block_number + LIFE_TIME_CONST + 1);
 
         assert_eq!(
             Bioauth::stored_public_keys(),
             vec![StoredPublicKey {
                 public_key: b"alice".to_vec(),
-                expiration_time: alice_block_number + LIFE_TIME_CONST,
+                expiration_time: alice_expiration,
             }]
         );
         assert_eq!(
             Bioauth::stored_nonces(),
-            vec![b"first".to_vec(), b"alice".to_vec()]
+            vec![b"alice".to_vec(), b"rty".to_vec()]
         );
     });
 }
@@ -90,72 +73,46 @@ fn it_permits_expiration() {
 #[test]
 fn it_permits_authentication_when_previous_one_has_been_expired() {
     new_test_ext().execute_with(|| {
-        // First authentication by qwe.
-        let first_input = make_input(b"qwe", b"first", b"should_be_valid");
-        let first_block_number = System::block_number();
+        // Prepare the test precondition.
+        let alice_expiration = System::block_number() + LIFE_TIME_CONST + 100;
+        let bob_expiration = System::block_number() + LIFE_TIME_CONST;
+        <StoredPublicKeys<Test>>::put(vec![
+            StoredPublicKey {
+                public_key: b"alice".to_vec(),
+                expiration_time: alice_expiration,
+            },
+            StoredPublicKey {
+                public_key: b"bob".to_vec(),
+                expiration_time: bob_expiration,
+            },
+        ]);
+        <StoredNonces<Test>>::put(vec![b"alice".to_vec(), b"bob".to_vec()]);
 
-        assert_ok!(Bioauth::authenticate(Origin::none(), first_input));
+        // Prepare the test input.
+        let input = make_input(b"bob", b"bob_new", b"should_be_valid");
 
-        // Prepare Alice as we need to keep non-empty state for consensus.
-        let alice = make_input(b"alice", b"alice", b"should_be_valid");
-        let alice_block_number = 10;
-        System::set_block_number(alice_block_number);
-        assert_ok!(Bioauth::authenticate(Origin::none(), alice));
+        // Make test.
+        let current_block_number = bob_expiration + 1;
+        System::set_block_number(current_block_number);
+        Bioauth::on_initialize(current_block_number);
 
+        assert_ok!(Bioauth::authenticate(Origin::none(), input));
         assert_eq!(
             Bioauth::stored_public_keys(),
             vec![
                 StoredPublicKey {
-                    public_key: b"qwe".to_vec(),
-                    expiration_time: first_block_number + LIFE_TIME_CONST,
+                    public_key: b"alice".to_vec(),
+                    expiration_time: alice_expiration,
                 },
                 StoredPublicKey {
-                    public_key: b"alice".to_vec(),
-                    expiration_time: alice_block_number + LIFE_TIME_CONST,
+                    public_key: b"bob".to_vec(),
+                    expiration_time: current_block_number + LIFE_TIME_CONST,
                 }
             ]
         );
         assert_eq!(
             Bioauth::stored_nonces(),
-            vec![b"first".to_vec(), b"alice".to_vec()]
-        );
-
-        // Initialize first_block_number block to expire first authentication by qwe.
-        Bioauth::on_initialize(first_block_number + LIFE_TIME_CONST + 1);
-
-        assert_eq!(
-            Bioauth::stored_public_keys(),
-            vec![StoredPublicKey {
-                public_key: b"alice".to_vec(),
-                expiration_time: alice_block_number + LIFE_TIME_CONST,
-            }]
-        );
-        assert_eq!(
-            Bioauth::stored_nonces(),
-            vec![b"first".to_vec(), b"alice".to_vec()]
-        );
-
-        // Second authentication by qwe.
-        let second_input = make_input(b"qwe", b"second", b"should_be_valid");
-        let second_block_number = 30;
-        System::set_block_number(second_block_number);
-        assert_ok!(Bioauth::authenticate(Origin::none(), second_input));
-        assert_eq!(
-            Bioauth::stored_public_keys(),
-            vec![
-                StoredPublicKey {
-                    public_key: b"alice".to_vec(),
-                    expiration_time: alice_block_number + LIFE_TIME_CONST,
-                },
-                StoredPublicKey {
-                    public_key: b"qwe".to_vec(),
-                    expiration_time: second_block_number + LIFE_TIME_CONST,
-                },
-            ]
-        );
-        assert_eq!(
-            Bioauth::stored_nonces(),
-            vec![b"first".to_vec(), b"alice".to_vec(), b"second".to_vec()]
+            vec![b"alice".to_vec(), b"bob".to_vec(), b"bob_new".to_vec()]
         );
     });
 }
@@ -194,69 +151,43 @@ fn it_denies_authentication_with_conlicting_nonce() {
 #[test]
 fn it_denies_authentication_with_conlicting_nonce_after_expiration() {
     new_test_ext().execute_with(|| {
-        // First authentication by qwe.
-        let first_input = make_input(b"qwe", b"first", b"should_be_valid");
-        let first_block_number = System::block_number();
-
-        assert_ok!(Bioauth::authenticate(Origin::none(), first_input));
-
-        // Prepare Alice as we need to keep non-empty state for consensus.
-        let alice = make_input(b"alice", b"alice", b"should_be_valid");
-        let alice_block_number = 10;
-        System::set_block_number(alice_block_number);
-        assert_ok!(Bioauth::authenticate(Origin::none(), alice));
-
-        assert_eq!(
-            Bioauth::stored_public_keys(),
-            vec![
-                StoredPublicKey {
-                    public_key: b"qwe".to_vec(),
-                    expiration_time: first_block_number + LIFE_TIME_CONST,
-                },
-                StoredPublicKey {
-                    public_key: b"alice".to_vec(),
-                    expiration_time: alice_block_number + LIFE_TIME_CONST,
-                }
-            ]
-        );
-        assert_eq!(
-            Bioauth::stored_nonces(),
-            vec![b"first".to_vec(), b"alice".to_vec()]
-        );
-
-        // Initialize first_block_number block to expire first authentication by qwe.
-        Bioauth::on_initialize(first_block_number + LIFE_TIME_CONST + 1);
-
-        assert_eq!(
-            Bioauth::stored_public_keys(),
-            vec![StoredPublicKey {
+        // Prepare the test precondition.
+        let alice_expiration = System::block_number() + LIFE_TIME_CONST + 100;
+        let bob_expiration = System::block_number() + LIFE_TIME_CONST;
+        <StoredPublicKeys<Test>>::put(vec![
+            StoredPublicKey {
                 public_key: b"alice".to_vec(),
-                expiration_time: alice_block_number + LIFE_TIME_CONST,
-            }]
-        );
-        assert_eq!(
-            Bioauth::stored_nonces(),
-            vec![b"first".to_vec(), b"alice".to_vec()]
-        );
+                expiration_time: alice_expiration,
+            },
+            StoredPublicKey {
+                public_key: b"bob".to_vec(),
+                expiration_time: bob_expiration,
+            },
+        ]);
+        <StoredNonces<Test>>::put(vec![b"alice".to_vec(), b"bob".to_vec()]);
 
-        // Second authentication by qwe.
-        let second_input = make_input(b"qwe", b"first", b"should_be_valid");
-        let second_block_number = 30;
-        System::set_block_number(second_block_number);
+        // Prepare the test input.
+        let input = make_input(b"bob", b"bob", b"should_be_valid");
+
+        // Make test.
+        let current_block_number = bob_expiration + 1;
+        System::set_block_number(current_block_number);
+        Bioauth::on_initialize(current_block_number);
+
         assert_noop!(
-            Bioauth::authenticate(Origin::none(), second_input),
+            Bioauth::authenticate(Origin::none(), input),
             Error::<Test>::NonceAlreadyUsed,
         );
         assert_eq!(
             Bioauth::stored_public_keys(),
             vec![StoredPublicKey {
                 public_key: b"alice".to_vec(),
-                expiration_time: alice_block_number + LIFE_TIME_CONST,
+                expiration_time: alice_expiration,
             }]
         );
         assert_eq!(
             Bioauth::stored_nonces(),
-            vec![b"first".to_vec(), b"alice".to_vec()]
+            vec![b"alice".to_vec(), b"bob".to_vec()]
         );
     });
 }
