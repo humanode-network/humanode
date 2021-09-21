@@ -142,5 +142,5 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-build-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
-      - name: Run script
-        run: .github/scripts/cargo_run.sh
+      - name: Run e2e tests
+        run: utils/e2e-tests/run_tests
