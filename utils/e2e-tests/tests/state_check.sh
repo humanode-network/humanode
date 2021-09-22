@@ -2,7 +2,7 @@
 set -uo pipefail
 
 # Set up commands.
-COMMAND_TO_RUN=(cargo run)
+COMMAND_TO_RUN=(target/debug/humanode-peer --dev)
 
 # Set up timeout.
 TIME_IN_SEC=60
