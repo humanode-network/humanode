@@ -29,7 +29,7 @@ fn authentication_with_empty_state() {
         let current_block_number = System::block_number();
 
         // Set up mock expectations.
-        with_mock_validator_set_updater_mock(|mock| {
+        with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
                 .with(predicate::eq(vec![b"qwe".to_vec()]))
                 .return_const(());
@@ -48,7 +48,7 @@ fn authentication_with_empty_state() {
             vec![b"rty".to_vec()]
         );
 
-        with_mock_validator_set_updater_mock(|mock| mock.checkpoint());
+        with_mock_validator_set_updater(|mock| mock.checkpoint());
     });
 }
 
@@ -65,7 +65,7 @@ fn authentication_expires() {
         <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice_auth_ticket_nonce".to_vec()]);
 
         // Set up mock expectations.
-        with_mock_validator_set_updater_mock(|mock| {
+        with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
                 .with(predicate::eq(vec![]))
                 .return_const(());

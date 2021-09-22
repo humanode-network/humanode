@@ -85,7 +85,7 @@ impl super::ValidatorSetUpdater<Vec<u8>> for MockValidatorSetUpdater {
     }
 }
 
-pub fn with_mock_validator_set_updater_mock<F, R>(f: F) -> R
+pub fn with_mock_validator_set_updater<F, R>(f: F) -> R
 where
     F: FnOnce(&mut MockValidatorSetUpdater) -> R,
 {
