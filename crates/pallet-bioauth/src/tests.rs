@@ -86,6 +86,55 @@ fn authentication_expires() {
     });
 }
 
+/// This test ensures that authentication remains active for the whole period up until it the block
+/// at which it should expire arrives.
+#[test]
+fn authentication_expiration_lifecycle() {
+    new_test_ext().execute_with(|| {
+        // Prepare the test preconditions.
+        let current_block_number = System::block_number();
+        let expires_at = current_block_number + 10;
+
+        let authnetication = Authentication {
+            public_key: b"alice_pk".to_vec(),
+            expires_at,
+        };
+        let nonce = b"alice_auth_ticket_nonce".to_vec();
+
+        <ActiveAuthentications<Test>>::put(vec![authnetication.clone()]);
+        <ConsumedAuthTicketNonces<Test>>::put(vec![nonce.clone()]);
+
+        for n in (current_block_number + 1)..expires_at {
+            System::set_block_number(n);
+            Bioauth::on_initialize(n);
+
+            // Ensure that authentication is still active.
+            assert_eq!(
+                Bioauth::active_authentications(),
+                vec![authnetication.clone()]
+            );
+            // Ensure that nonce didn't go anywhere as is still listed as blocked.
+            assert_eq!(Bioauth::consumed_auth_ticket_nonces(), vec![nonce.clone()]);
+        }
+
+        // Only now we expect the code to issue a validators set update.
+        with_mock_validator_set_updater(|mock| {
+            mock.expect_update_validators_set()
+                .once()
+                .with(predicate::eq(vec![]))
+                .return_const(());
+        });
+
+        System::set_block_number(expires_at);
+        Bioauth::on_initialize(expires_at);
+
+        // Ensure that authentication is gone.
+        assert_eq!(Bioauth::active_authentications(), vec![]);
+        // Ensure that nonce didn't go anywhere as is still listed as blocked.
+        assert_eq!(Bioauth::consumed_auth_ticket_nonces(), vec![nonce]);
+    });
+}
+
 /// This test verifies that authentication call works correctly when a previous
 /// authentication has been expired.
 #[test]

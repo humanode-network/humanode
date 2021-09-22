@@ -318,16 +318,22 @@ pub mod pallet {
         fn on_initialize(n: BlockNumberFor<T>) -> Weight {
             // Remove expired authentications.
             let possibly_expired_authentications = <ActiveAuthentications<T>>::get();
+            let possibly_expired_authentications_len = possibly_expired_authentications.len();
             let active_authentications = possibly_expired_authentications
                 .into_iter()
                 .filter(|possibly_expired_authentication| {
                     possibly_expired_authentication.expires_at > n
                 })
                 .collect::<Vec<_>>();
-            Self::issue_validators_set_update(active_authentications.as_slice());
-            <ActiveAuthentications<T>>::put(active_authentications);
 
-            T::DbWeight::get().reads_writes(1, 1)
+            let update_required =
+                possibly_expired_authentications_len != active_authentications.len();
+            if update_required {
+                Self::issue_validators_set_update(active_authentications.as_slice());
+                <ActiveAuthentications<T>>::put(active_authentications);
+            }
+
+            T::DbWeight::get().reads_writes(1, if update_required { 1 } else { 0 })
         }
     }
 
