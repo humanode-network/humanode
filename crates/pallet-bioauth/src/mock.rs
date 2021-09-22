@@ -1,7 +1,10 @@
+use std::cell::RefCell;
+
 use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
 use codec::{Decode, Encode};
 use frame_support::{parameter_types, traits::GenesisBuild};
 use frame_system as system;
+use mockall::mock;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_core::{crypto::Infallible, H256};
@@ -60,18 +63,37 @@ impl super::Verifier<Vec<u8>> for MockVerifier {
     }
 }
 
-pub struct MockValidatorSetUpdater;
+mock! {
+    pub ValidatorSetUpdater {
+        pub fn update_validators_set(&self, validator_public_keys: Vec<Vec<u8>>);
+    }
+}
+
+thread_local! {
+    pub static MOCK_VALIDATOR_SET_UPDATER: RefCell<MockValidatorSetUpdater> = RefCell::new(MockValidatorSetUpdater::new());
+}
 
 impl super::ValidatorSetUpdater<Vec<u8>> for MockValidatorSetUpdater {
-    fn update_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(mut validator_public_keys: I)
+    fn update_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(validator_public_keys: I)
     where
         Vec<u8>: 'a,
     {
-        assert!(
-            validator_public_keys.next().is_some(),
-            "We should get non-empty set every time at each of the test cases"
-        );
+        MOCK_VALIDATOR_SET_UPDATER.with(|val| {
+            val.borrow_mut()
+                .update_validators_set(validator_public_keys.cloned().collect())
+        });
     }
+}
+
+pub fn set_mock_validator_set_updater(val: MockValidatorSetUpdater) {
+    MOCK_VALIDATOR_SET_UPDATER.with(|var| var.replace(val));
+}
+
+pub fn with_mock_validator_set_updater_mock<F, R>(f: F) -> R
+where
+    F: FnOnce(&mut MockValidatorSetUpdater) -> R,
+{
+    MOCK_VALIDATOR_SET_UPDATER.with(|var| f(&mut *var.borrow_mut()))
 }
 
 parameter_types! {

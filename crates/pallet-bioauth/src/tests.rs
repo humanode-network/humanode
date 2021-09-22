@@ -3,6 +3,7 @@ use crate::*;
 use crate::{mock::*, Error};
 use frame_support::pallet_prelude::*;
 use frame_support::{assert_noop, assert_ok};
+use mockall::predicate;
 
 pub fn make_input(
     public_key: &[u8],
@@ -18,12 +19,26 @@ pub fn make_input(
     }
 }
 
+fn setup_mocks() {
+    set_mock_validator_set_updater(MockValidatorSetUpdater::new());
+}
+
+/// This test verifies that authentication call works correctly when the state of the chain is
+/// empty.
 #[test]
-fn it_permits_authentication_with_an_empty_state() {
+fn authentication_with_empty_state() {
+    setup_mocks();
     new_test_ext().execute_with(|| {
         // Prepare test input.
         let input = make_input(b"qwe", b"rty", b"should_be_valid");
         let current_block_number = System::block_number();
+
+        // Set up mock expectations.
+        with_mock_validator_set_updater_mock(|mock| {
+            mock.expect_update_validators_set()
+                .with(predicate::eq(vec![b"qwe".to_vec()]))
+                .return_const(());
+        });
 
         assert_ok!(Bioauth::authenticate(Origin::none(), input));
         assert_eq!(
@@ -37,38 +52,38 @@ fn it_permits_authentication_with_an_empty_state() {
             Bioauth::consumed_auth_ticket_nonces(),
             vec![b"rty".to_vec()]
         );
+
+        with_mock_validator_set_updater_mock(|mock| mock.checkpoint());
     });
 }
 
 #[test]
-fn it_permits_expiration() {
+fn authentication_expires() {
     new_test_ext().execute_with(|| {
-        // Prepare the test precondition.
+        // Prepare the test preconditions.
         let current_block_number = System::block_number();
-        let alice_expiration = current_block_number + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS + 100;
+        let expires_at = current_block_number + 1;
         <ActiveAuthentications<Test>>::put(vec![Authentication {
-            public_key: b"alice".to_vec(),
-            expires_at: alice_expiration,
+            public_key: b"alice_pk".to_vec(),
+            expires_at,
         }]);
-        <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice".to_vec()]);
+        <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice_auth_ticket_nonce".to_vec()]);
 
-        // Prepare the test input.
-        let input = make_input(b"qwe", b"rty", b"should_be_valid");
-        assert_ok!(Bioauth::authenticate(Origin::none(), input));
+        // Set up mock expectations.
+        with_mock_validator_set_updater_mock(|mock| {
+            mock.expect_update_validators_set()
+                .with(predicate::eq(vec![]))
+                .return_const(());
+        });
 
-        // Make test.
-        Bioauth::on_initialize(current_block_number + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS + 1);
+        Bioauth::on_initialize(expires_at);
 
-        assert_eq!(
-            Bioauth::active_authentications(),
-            vec![Authentication {
-                public_key: b"alice".to_vec(),
-                expires_at: alice_expiration,
-            }]
-        );
+        // Ensure that authentication expires.
+        assert_eq!(Bioauth::active_authentications(), vec![]);
+        // Ensure that nonce didn't go anywhere as is still listed as blocked.
         assert_eq!(
             Bioauth::consumed_auth_ticket_nonces(),
-            vec![b"alice".to_vec(), b"rty".to_vec()]
+            vec![b"alice_auth_ticket_nonce".to_vec()]
         );
     });
 }

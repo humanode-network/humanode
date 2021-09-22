@@ -18,6 +18,7 @@ sp-std = { default-features = false, git = "https://github.com/humanode-network/
 [dev-dependencies]
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+mockall = "0.10"
 
 [features]
 default = ["std"]
