@@ -19,15 +19,10 @@ pub fn make_input(
     }
 }
 
-fn setup_mocks() {
-    set_mock_validator_set_updater(MockValidatorSetUpdater::new());
-}
-
 /// This test verifies that authentication call works correctly when the state of the chain is
 /// empty.
 #[test]
 fn authentication_with_empty_state() {
-    setup_mocks();
     new_test_ext().execute_with(|| {
         // Prepare test input.
         let input = make_input(b"qwe", b"rty", b"should_be_valid");
