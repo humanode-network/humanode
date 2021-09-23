@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
 use codec::{Decode, Encode};
-use frame_support::{parameter_types, traits::GenesisBuild};
+use frame_support::parameter_types;
 use frame_system as system;
 use mockall::mock;
 #[cfg(feature = "std")]
@@ -11,6 +11,7 @@ use sp_core::{crypto::Infallible, H256};
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
+    BuildStorage,
 };
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -24,7 +25,7 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-        Bioauth: pallet_bioauth::{Pallet, Call, Storage, Event<T>},
+        Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
     }
 );
 
@@ -142,12 +143,6 @@ impl pallet_bioauth::Config for Test {
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-    let mut storage = system::GenesisConfig::default()
-        .build_storage::<Test>()
-        .unwrap();
-
-    let config = pallet_bioauth::GenesisConfig::<Test>::default();
-    config.assimilate_storage(&mut storage).unwrap();
-
+    let storage = GenesisConfig::default().build_storage().unwrap();
     storage.into()
 }
