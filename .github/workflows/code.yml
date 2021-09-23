@@ -108,10 +108,10 @@ jobs:
           command: ${{ matrix.mode.cargoCommand }}
           args: ${{ matrix.mode.cargoArgs }}
 
-  smoke:
+  e2e:
     needs:
       - test
-    name: Smoke test
+    name: End to end tests
     runs-on: ubuntu-20.04
     timeout-minutes: 50
     steps:
@@ -119,17 +119,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         timeout-minutes: 5
-
-      - name: Cache rustup
-        uses: actions/cache@v2
-        with:
-          path: |
-            /usr/share/rust/.rustup
-          key: ${{ runner.os }}-rustup-${{ hashFiles('rust-toolchain.toml') }}
-
-      - name: Install rust toolchain
-        run: rustup show
-        timeout-minutes: 10
 
       - name: Cache cargo
         uses: actions/cache@v2
@@ -141,6 +130,9 @@ jobs:
             ~/.cargo/git/db/
             target/
           key: ${{ runner.os }}-cargo-build-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+
+      - name: Set up polkadot tools
+        run: npm install -g @polkadot/api-cli
 
       - name: Run e2e tests
         run: utils/e2e-tests/run_tests
