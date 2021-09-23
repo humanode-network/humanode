@@ -8,11 +8,13 @@ export const humanodeDefinitions = {
     {
       minmax: [0],
       types: {
-        StoredAuthTicket: {
-          public_key: "AccountId",
-          nonce: "Vec<u8>"
+        AuraId: "AccountId",
+        RobonodePublicKey: "[u8; 32]",
+        AuthTicketNonce: "Vec<u8>",
+        Authentication: {
+          public_key: "AuraId",
+          expires_at: "BlockNumber"
         },
-        RobonodePublicKey: "[u8; 32]"
       },
     }
   ],
