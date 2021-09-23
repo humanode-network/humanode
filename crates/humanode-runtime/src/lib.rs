@@ -394,7 +394,7 @@ impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
 }
 
 parameter_types! {
-    pub const AuthenticationsExpireAfter: BlockNumber = 24 * HOURS;
+    pub const AuthenticationsExpireAfter: BlockNumber = 72 * HOURS;
 }
 
 impl pallet_bioauth::Config for Runtime {
