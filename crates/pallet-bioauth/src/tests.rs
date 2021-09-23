@@ -1,8 +1,7 @@
 use crate as pallet_bioauth;
 use crate::*;
 use crate::{mock::*, Error};
-use frame_support::pallet_prelude::*;
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*};
 use mockall::predicate;
 
 pub fn make_input(
@@ -106,7 +105,7 @@ fn authentication_expiration_lifecycle() {
 
         for n in (current_block_number + 1)..expires_at {
             System::set_block_number(n);
-            Bioauth::on_initialize(n);
+            assert_storage_noop!(Bioauth::on_initialize(n));
 
             // Ensure that authentication is still active.
             assert_eq!(
