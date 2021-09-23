@@ -3,8 +3,7 @@
 use hex_literal::hex;
 use humanode_runtime::{
     AccountId, AuraConfig, BalancesConfig, BioauthConfig, BlockNumber, GenesisConfig,
-    GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, DAYS,
-    WASM_BINARY,
+    GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_bioauth::{AuthTicketNonce, Authentication};
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -56,6 +55,9 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
     (get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
 }
 
+/// An expires at value that guarantees the authentication never expires.
+pub const AUTHENTICATION_NEVER_EXPIRES: BlockNumber = BlockNumber::MAX;
+
 /// A configuration for local testnet.
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
@@ -101,7 +103,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 vec!["1".as_bytes().to_vec()],
                 vec![pallet_bioauth::Authentication {
                     public_key: authority_keys_from_seed("Alice").0,
-                    expires_at: 30 * DAYS,
+                    expires_at: AUTHENTICATION_NEVER_EXPIRES,
                 }],
             )
         },
@@ -151,7 +153,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 vec!["1".as_bytes().to_vec()],
                 vec![pallet_bioauth::Authentication {
                     public_key: authority_keys_from_seed("Alice").0,
-                    expires_at: 30 * DAYS,
+                    expires_at: AUTHENTICATION_NEVER_EXPIRES,
                 }],
             )
         },
