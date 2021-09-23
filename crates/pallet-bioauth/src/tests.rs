@@ -396,3 +396,47 @@ fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
         );
     })
 }
+
+/// This test verifies that genesis initialization properly assignes the state and invokes
+/// the validators set init.
+#[test]
+fn genesis_build() {
+    // Prepare some sample data and a config.
+    let consumed_auth_ticket_nonces = vec![b"nonce1".to_vec(), b"nonce2".to_vec()];
+    let active_authentications = vec![
+        Authentication {
+            public_key: b"key1".to_vec(),
+            expires_at: 123,
+        },
+        Authentication {
+            public_key: b"key2".to_vec(),
+            expires_at: 456,
+        },
+    ];
+    let config = pallet_bioauth::GenesisConfig {
+        robonode_public_key: MockVerifier,
+        consumed_auth_ticket_nonces: consumed_auth_ticket_nonces.clone(),
+        active_authentications: active_authentications.clone(),
+    };
+
+    // Set up mock expectations for validators set initialization.
+    with_mock_validator_set_updater(|mock| {
+        mock.expect_init_validators_set()
+            .with(predicate::eq(vec![b"key1".to_vec(), b"key2".to_vec()]))
+            .return_const(());
+    });
+
+    // Build the state from the config.
+    new_test_ext_with(config).execute_with(move || {
+        // Assert the validator set init invocation.
+        with_mock_validator_set_updater(|mock| mock.checkpoint());
+
+        // Assert the state.
+        assert_eq!(Bioauth::robonode_public_key(), Some(MockVerifier));
+        assert_eq!(
+            Bioauth::consumed_auth_ticket_nonces(),
+            consumed_auth_ticket_nonces
+        );
+        assert_eq!(Bioauth::active_authentications(), active_authentications);
+    })
+}

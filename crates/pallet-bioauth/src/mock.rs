@@ -152,22 +152,36 @@ impl pallet_bioauth::Config for Test {
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 
-// Build genesis storage according to the mock runtime.
+/// Build test externalities from the default genesis.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-    // Add mock validator set updater expectation for the genesis validators set update.
+    // Add mock validator set updater expectation for the genesis validators set init.
     with_mock_validator_set_updater(|mock| {
         mock.expect_init_validators_set()
             .with(predicate::eq(vec![]))
             .return_const(());
     });
 
-    // Build default genesis.
-    let storage = GenesisConfig::default().build_storage().unwrap();
+    // Build externalities with default genesis.
+    let externalities = new_test_ext_with(Default::default());
 
-    // Assert the genesis validators set update.
+    // Assert the genesis validators set init.
     with_mock_validator_set_updater(|mock| {
         mock.checkpoint();
     });
+
+    // Return ready-to-use externalities.
+    externalities
+}
+
+/// Build test externalities from the custom genesis.
+/// Using this call requires manual assertions on the genesis init logic.
+pub fn new_test_ext_with(config: pallet_bioauth::GenesisConfig<Test>) -> sp_io::TestExternalities {
+    // Build genesis.
+    let config = GenesisConfig {
+        bioauth: config,
+        ..Default::default()
+    };
+    let storage = config.build_storage().unwrap();
 
     // Make test externalities from the storage.
     storage.into()
