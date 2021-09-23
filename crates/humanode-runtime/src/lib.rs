@@ -11,7 +11,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-use pallet_bioauth::StoredAuthTicket;
+use pallet_bioauth::AuthTicket;
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -331,14 +331,14 @@ pub enum PrimitiveAuthTicketConverterError {
     PublicKey(()),
 }
 
-impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::StoredAuthTicket<AuraId>>
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<AuraId>>
     for PrimitiveAuthTicketConverter
 {
     type Error = PrimitiveAuthTicketConverterError;
 
     fn try_convert(
         value: OpaqueAuthTicket,
-    ) -> Result<pallet_bioauth::StoredAuthTicket<AuraId>, Self::Error> {
+    ) -> Result<pallet_bioauth::AuthTicket<AuraId>, Self::Error> {
         use sp_std::convert::TryInto;
         let primitives_auth_ticket::AuthTicket {
             public_key,
@@ -352,10 +352,11 @@ impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::StoredAuthTick
             .try_into()
             .map_err(PrimitiveAuthTicketConverterError::PublicKey)?;
 
-        Ok(StoredAuthTicket { public_key, nonce })
+        Ok(AuthTicket { public_key, nonce })
     }
 }
 
+/// Updates the validators set in aura pallet via the session pallet API.
 pub struct AuraValidatorSetUpdater;
 
 impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
@@ -368,14 +369,32 @@ impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
         // clippy is just too dumb here, but we need two iterators passed to `on_new_session` to be
         // the same type. The easiest is to use Vec's iter for both.
         #[allow(clippy::needless_collect)]
-        let authorities = validator_public_keys
+        let session_validators = validator_public_keys
             .map(|public_key| (&dummy, public_key.clone()))
             .collect::<Vec<_>>();
 
         <pallet_aura::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
             <Runtime as frame_system::Config>::AccountId,
-        >>::on_new_session(true, authorities.into_iter(), Vec::new().into_iter())
+        >>::on_new_session(true, session_validators.into_iter(), Vec::new().into_iter())
     }
+
+    fn init_validators_set<'a, I: Iterator<Item = &'a AuraId> + 'a>(validator_public_keys: I)
+    where
+        AuraId: 'a,
+    {
+        let dummy = <Runtime as frame_system::Config>::AccountId::default();
+
+        let session_validators =
+            validator_public_keys.map(|public_key| (&dummy, public_key.clone()));
+
+        <pallet_aura::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
+            <Runtime as frame_system::Config>::AccountId,
+        >>::on_genesis_session(session_validators)
+    }
+}
+
+parameter_types! {
+    pub const AuthenticationsExpireAfter: BlockNumber = 24 * HOURS;
 }
 
 impl pallet_bioauth::Config for Runtime {
@@ -386,6 +405,7 @@ impl pallet_bioauth::Config for Runtime {
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = AuraValidatorSetUpdater;
+    type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
@@ -399,11 +419,11 @@ construct_runtime!(
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
         RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage},
         Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
+        Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
         Aura: pallet_aura::{Pallet, Config<T>},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
-        Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
         Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
     }
 );
@@ -505,17 +525,11 @@ impl_runtime_apis! {
         }
     }
 
-    impl pallet_bioauth::BioauthApi<Block, <Runtime as pallet_bioauth::Config>::ValidatorPublicKey> for Runtime {
-        fn stored_auth_tickets() -> sp_std::prelude::Vec<pallet_bioauth::StoredAuthTicket<<Runtime as pallet_bioauth::Config>::ValidatorPublicKey>> {
-            Bioauth::stored_auth_tickets()
-        }
-    }
-
     impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
         fn is_authorized(id: &AuraId) -> bool {
-            Bioauth::stored_auth_tickets()
+            Bioauth::active_authentications()
                 .iter()
-                .any(|stored_auth_ticket| &stored_auth_ticket.public_key == id)
+                .any(|stored_public_key| &stored_public_key.public_key == id)
         }
     }
 

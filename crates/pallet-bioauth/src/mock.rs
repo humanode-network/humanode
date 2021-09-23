@@ -1,13 +1,17 @@
-use crate::{self as pallet_bioauth, StoredAuthTicket, TryConvert};
+use std::cell::RefCell;
+
+use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
 use codec::{Decode, Encode};
-use frame_support::{parameter_types, traits::GenesisBuild};
+use frame_support::parameter_types;
 use frame_system as system;
+use mockall::{mock, predicate};
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_core::{crypto::Infallible, H256};
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
+    BuildStorage,
 };
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -21,13 +25,13 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-        Bioauth: pallet_bioauth::{Pallet, Call, Storage, Event<T>},
+        Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
     }
 );
 
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct MockOpaqueAuthTicket(pub StoredAuthTicket<Vec<u8>>);
+pub struct MockOpaqueAuthTicket(pub AuthTicket<Vec<u8>>);
 
 impl AsRef<[u8]> for MockOpaqueAuthTicket {
     fn as_ref(&self) -> &[u8] {
@@ -37,10 +41,10 @@ impl AsRef<[u8]> for MockOpaqueAuthTicket {
 
 pub struct MockAuthTicketConverter;
 
-impl TryConvert<MockOpaqueAuthTicket, StoredAuthTicket<Vec<u8>>> for MockAuthTicketConverter {
+impl TryConvert<MockOpaqueAuthTicket, AuthTicket<Vec<u8>>> for MockAuthTicketConverter {
     type Error = Infallible;
 
-    fn try_convert(value: MockOpaqueAuthTicket) -> Result<StoredAuthTicket<Vec<u8>>, Self::Error> {
+    fn try_convert(value: MockOpaqueAuthTicket) -> Result<AuthTicket<Vec<u8>>, Self::Error> {
         Ok(value.0)
     }
 }
@@ -60,18 +64,44 @@ impl super::Verifier<Vec<u8>> for MockVerifier {
     }
 }
 
-pub struct MockValidatorSetUpdater;
+mock! {
+    pub ValidatorSetUpdater {
+        pub fn update_validators_set(&self, validator_public_keys: Vec<Vec<u8>>);
+        pub fn init_validators_set(&self, validator_public_keys: Vec<Vec<u8>>);
+    }
+}
+
+thread_local! {
+    pub static MOCK_VALIDATOR_SET_UPDATER: RefCell<MockValidatorSetUpdater> = RefCell::new(MockValidatorSetUpdater::new());
+}
 
 impl super::ValidatorSetUpdater<Vec<u8>> for MockValidatorSetUpdater {
-    fn update_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(mut validator_public_keys: I)
+    fn update_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(validator_public_keys: I)
     where
         Vec<u8>: 'a,
     {
-        assert!(
-            validator_public_keys.next().is_some(),
-            "We should get non-empty set every time at each of the test cases"
-        );
+        MOCK_VALIDATOR_SET_UPDATER.with(|val| {
+            val.borrow_mut()
+                .update_validators_set(validator_public_keys.cloned().collect())
+        });
     }
+
+    fn init_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(validator_public_keys: I)
+    where
+        Vec<u8>: 'a,
+    {
+        MOCK_VALIDATOR_SET_UPDATER.with(|val| {
+            val.borrow_mut()
+                .init_validators_set(validator_public_keys.cloned().collect())
+        });
+    }
+}
+
+pub fn with_mock_validator_set_updater<F, R>(f: F) -> R
+where
+    F: FnOnce(&mut MockValidatorSetUpdater) -> R,
+{
+    MOCK_VALIDATOR_SET_UPDATER.with(|var| f(&mut *var.borrow_mut()))
 }
 
 parameter_types! {
@@ -105,6 +135,12 @@ impl system::Config for Test {
     type OnSetCode = ();
 }
 
+pub const AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS: u64 = 24;
+
+parameter_types! {
+    pub const AuthenticationsExpireAfter: u64 = AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS;
+}
+
 impl pallet_bioauth::Config for Test {
     type Event = Event;
     type RobonodePublicKey = MockVerifier;
@@ -113,16 +149,40 @@ impl pallet_bioauth::Config for Test {
     type OpaqueAuthTicket = MockOpaqueAuthTicket;
     type AuthTicketCoverter = MockAuthTicketConverter;
     type ValidatorSetUpdater = MockValidatorSetUpdater;
+    type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 
-// Build genesis storage according to the mock runtime.
+/// Build test externalities from the default genesis.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-    let mut storage = system::GenesisConfig::default()
-        .build_storage::<Test>()
-        .unwrap();
+    // Add mock validator set updater expectation for the genesis validators set init.
+    with_mock_validator_set_updater(|mock| {
+        mock.expect_init_validators_set()
+            .with(predicate::eq(vec![]))
+            .return_const(());
+    });
 
-    let config = pallet_bioauth::GenesisConfig::<Test>::default();
-    config.assimilate_storage(&mut storage).unwrap();
+    // Build externalities with default genesis.
+    let externalities = new_test_ext_with(Default::default());
 
+    // Assert the genesis validators set init.
+    with_mock_validator_set_updater(|mock| {
+        mock.checkpoint();
+    });
+
+    // Return ready-to-use externalities.
+    externalities
+}
+
+/// Build test externalities from the custom genesis.
+/// Using this call requires manual assertions on the genesis init logic.
+pub fn new_test_ext_with(config: pallet_bioauth::GenesisConfig<Test>) -> sp_io::TestExternalities {
+    // Build genesis.
+    let config = GenesisConfig {
+        bioauth: config,
+        ..Default::default()
+    };
+    let storage = config.build_storage().unwrap();
+
+    // Make test externalities from the storage.
     storage.into()
 }

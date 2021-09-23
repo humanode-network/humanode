@@ -2,10 +2,10 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, BioauthConfig, GenesisConfig, GrandpaConfig,
-    RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    AccountId, AuraConfig, BalancesConfig, BioauthConfig, BlockNumber, GenesisConfig,
+    GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
-use pallet_bioauth::StoredAuthTicket;
+use pallet_bioauth::{AuthTicketNonce, Authentication};
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -55,6 +55,9 @@ pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
     (get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
 }
 
+/// An expires at value that guarantees the authentication never expires.
+pub const AUTHENTICATION_NEVER_EXPIRES: BlockNumber = BlockNumber::MAX;
+
 /// A configuration for local testnet.
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
@@ -96,11 +99,12 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
-                vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice").0,
-                    nonce: "1".as_bytes().to_vec(),
-                }],
                 robonode_public_key,
+                vec![],
+                vec![pallet_bioauth::Authentication {
+                    public_key: authority_keys_from_seed("Alice").0,
+                    expires_at: AUTHENTICATION_NEVER_EXPIRES,
+                }],
             )
         },
         // Bootnodes
@@ -145,11 +149,12 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
-                vec![pallet_bioauth::StoredAuthTicket {
-                    public_key: authority_keys_from_seed("Alice").0,
-                    nonce: "1".as_bytes().to_vec(),
-                }],
                 robonode_public_key,
+                vec![],
+                vec![pallet_bioauth::Authentication {
+                    public_key: authority_keys_from_seed("Alice").0,
+                    expires_at: AUTHENTICATION_NEVER_EXPIRES,
+                }],
             )
         },
         // Bootnodes
@@ -171,8 +176,9 @@ fn testnet_genesis(
     initial_authorities: Vec<(AuraId, GrandpaId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
-    stored_auth_tickets: Vec<StoredAuthTicket<AuraId>>,
     robonode_public_key: RobonodePublicKeyWrapper,
+    consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
+    active_authentications: Vec<Authentication<AuraId, BlockNumber>>,
 ) -> GenesisConfig {
     GenesisConfig {
         system: SystemConfig {
@@ -189,7 +195,7 @@ fn testnet_genesis(
                 .collect(),
         },
         aura: AuraConfig {
-            authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
+            authorities: vec![],
         },
         grandpa: GrandpaConfig {
             authorities: initial_authorities
@@ -202,9 +208,9 @@ fn testnet_genesis(
             key: root_key,
         },
         bioauth: BioauthConfig {
-            // Add Alice AuraId to StoredAuthTickets for producing blocks
-            stored_auth_tickets,
             robonode_public_key,
+            consumed_auth_ticket_nonces,
+            active_authentications,
         },
     }
 }
