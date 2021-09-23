@@ -193,7 +193,7 @@ fn testnet_genesis(
                 .collect(),
         },
         aura: AuraConfig {
-            authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
+            authorities: vec![],
         },
         grandpa: GrandpaConfig {
             authorities: initial_authorities
