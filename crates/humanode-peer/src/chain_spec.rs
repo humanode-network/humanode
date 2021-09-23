@@ -100,7 +100,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 robonode_public_key,
-                vec!["1".as_bytes().to_vec()],
+                vec![],
                 vec![pallet_bioauth::Authentication {
                     public_key: authority_keys_from_seed("Alice").0,
                     expires_at: AUTHENTICATION_NEVER_EXPIRES,
@@ -150,7 +150,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 robonode_public_key,
-                vec!["1".as_bytes().to_vec()],
+                vec![],
                 vec![pallet_bioauth::Authentication {
                     public_key: authority_keys_from_seed("Alice").0,
                     expires_at: AUTHENTICATION_NEVER_EXPIRES,
