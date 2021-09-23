@@ -432,7 +432,7 @@ fn genesis_build() {
         with_mock_validator_set_updater(|mock| mock.checkpoint());
 
         // Assert the state.
-        assert_eq!(Bioauth::robonode_public_key(), Some(MockVerifier));
+        assert_eq!(Bioauth::robonode_public_key(), MockVerifier);
         assert_eq!(
             Bioauth::consumed_auth_ticket_nonces(),
             consumed_auth_ticket_nonces

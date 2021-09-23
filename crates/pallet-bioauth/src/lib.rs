@@ -163,7 +163,7 @@ pub mod pallet {
     /// The public key of the robonode.
     #[pallet::storage]
     #[pallet::getter(fn robonode_public_key)]
-    pub type RobonodePublicKey<T> = StorageValue<_, <T as Config>::RobonodePublicKey>;
+    pub type RobonodePublicKey<T> = StorageValue<_, <T as Config>::RobonodePublicKey, ValueQuery>;
 
     /// A list of all consumed nonces.
     #[pallet::storage]
@@ -221,8 +221,6 @@ pub mod pallet {
     /// Possible error conditions during `authenticate` call processing.
     #[pallet::error]
     pub enum Error<T> {
-        /// The robonode public key is not at the chain state.
-        RobonodePublicKeyIsAbsent,
         /// We were unable to validate the signature, i.e. it is unclear whether it is valid or
         /// not.
         UnableToValidateAuthTicketSignature,
@@ -348,8 +346,7 @@ pub mod pallet {
         pub fn extract_auth_ticket_checked(
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
         ) -> Result<AuthTicket<T::ValidatorPublicKey>, Error<T>> {
-            let robonode_public_key =
-                RobonodePublicKey::<T>::get().ok_or(Error::<T>::RobonodePublicKeyIsAbsent)?;
+            let robonode_public_key = RobonodePublicKey::<T>::get();
 
             let signature_valid = robonode_public_key
                 .verify(&req.ticket, req.ticket_signature)
