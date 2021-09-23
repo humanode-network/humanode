@@ -56,8 +56,13 @@ pub trait TryConvert<A, B> {
 
 /// Provides the capability to update the current validators set.
 pub trait ValidatorSetUpdater<T> {
-    /// Updated the validators set for the of consensus.
+    /// Provide an up-to-date the validators set for the of consensus.
     fn update_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(validator_public_keys: I)
+    where
+        T: 'a;
+
+    /// Provide an initial validators set for the of consensus at genesis.
+    fn init_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(validator_public_keys: I)
     where
         T: 'a;
 }
@@ -198,7 +203,7 @@ pub mod pallet {
             <ConsumedAuthTicketNonces<T>>::put(&self.consumed_auth_ticket_nonces);
             <ActiveAuthentications<T>>::put(&self.active_authentications);
 
-            <Pallet<T>>::issue_validators_set_update(&self.active_authentications);
+            <Pallet<T>>::issue_validators_set_init(&self.active_authentications);
         }
     }
 
@@ -404,13 +409,28 @@ pub mod pallet {
                 .build()
         }
 
+        fn map_active_authentications_to_validators_set(
+            active_authentications: &[Authentication<T::ValidatorPublicKey, T::BlockNumber>],
+        ) -> impl Iterator<Item = &T::ValidatorPublicKey> {
+            active_authentications
+                .iter()
+                .map(|active_authentication| &active_authentication.public_key)
+        }
+
         fn issue_validators_set_update(
             active_authentications: &[Authentication<T::ValidatorPublicKey, T::BlockNumber>],
         ) {
-            let validator_public_keys = active_authentications
-                .iter()
-                .map(|ticket| &ticket.public_key);
+            let validator_public_keys =
+                Self::map_active_authentications_to_validators_set(active_authentications);
             T::ValidatorSetUpdater::update_validators_set(validator_public_keys);
+        }
+
+        fn issue_validators_set_init(
+            active_authentications: &[Authentication<T::ValidatorPublicKey, T::BlockNumber>],
+        ) {
+            let validator_public_keys =
+                Self::map_active_authentications_to_validators_set(active_authentications);
+            T::ValidatorSetUpdater::init_validators_set(validator_public_keys);
         }
     }
 

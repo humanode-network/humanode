@@ -67,6 +67,7 @@ impl super::Verifier<Vec<u8>> for MockVerifier {
 mock! {
     pub ValidatorSetUpdater {
         pub fn update_validators_set(&self, validator_public_keys: Vec<Vec<u8>>);
+        pub fn init_validators_set(&self, validator_public_keys: Vec<Vec<u8>>);
     }
 }
 
@@ -82,6 +83,16 @@ impl super::ValidatorSetUpdater<Vec<u8>> for MockValidatorSetUpdater {
         MOCK_VALIDATOR_SET_UPDATER.with(|val| {
             val.borrow_mut()
                 .update_validators_set(validator_public_keys.cloned().collect())
+        });
+    }
+
+    fn init_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(validator_public_keys: I)
+    where
+        Vec<u8>: 'a,
+    {
+        MOCK_VALIDATOR_SET_UPDATER.with(|val| {
+            val.borrow_mut()
+                .init_validators_set(validator_public_keys.cloned().collect())
         });
     }
 }
@@ -145,7 +156,7 @@ impl pallet_bioauth::Config for Test {
 pub fn new_test_ext() -> sp_io::TestExternalities {
     // Add mock validator set updater expectation for the genesis validators set update.
     with_mock_validator_set_updater(|mock| {
-        mock.expect_update_validators_set()
+        mock.expect_init_validators_set()
             .with(predicate::eq(vec![]))
             .return_const(());
     });
