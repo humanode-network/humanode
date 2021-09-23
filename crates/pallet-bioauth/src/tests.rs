@@ -110,7 +110,7 @@ fn authentication_expiration_lifecycle() {
                 Bioauth::active_authentications(),
                 vec![authnetication.clone()]
             );
-            // Ensure that nonce didn't go anywhere as is still listed as blocked.
+            // Ensure that nonce didn't go anywhere and it's still listed as blocked.
             assert_eq!(Bioauth::consumed_auth_ticket_nonces(), vec![nonce.clone()]);
         }
 
@@ -127,7 +127,7 @@ fn authentication_expiration_lifecycle() {
 
         // Ensure that authentication is gone.
         assert_eq!(Bioauth::active_authentications(), vec![]);
-        // Ensure that nonce didn't go anywhere as is still listed as blocked.
+        // Ensure that nonce didn't go anywhere and it's still listed as blocked.
         assert_eq!(Bioauth::consumed_auth_ticket_nonces(), vec![nonce]);
     });
 }
