@@ -1,6 +1,4 @@
-use crate as pallet_bioauth;
-use crate::*;
-use crate::{mock::*, Error};
+use crate::{self as pallet_bioauth, mock::*, *};
 use frame_support::{assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*};
 use mockall::predicate;
 
