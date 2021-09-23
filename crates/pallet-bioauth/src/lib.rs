@@ -197,6 +197,8 @@ pub mod pallet {
             <RobonodePublicKey<T>>::put(&self.robonode_public_key);
             <ConsumedAuthTicketNonces<T>>::put(&self.consumed_auth_ticket_nonces);
             <ActiveAuthentications<T>>::put(&self.active_authentications);
+
+            <Pallet<T>>::issue_validators_set_update(&self.active_authentications);
         }
     }
 

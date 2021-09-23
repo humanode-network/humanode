@@ -4,7 +4,7 @@ use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
 use codec::{Decode, Encode};
 use frame_support::parameter_types;
 use frame_system as system;
-use mockall::mock;
+use mockall::{mock, predicate};
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_core::{crypto::Infallible, H256};
@@ -143,6 +143,21 @@ impl pallet_bioauth::Config for Test {
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
+    // Add mock validator set updater expectation for the genesis validators set update.
+    with_mock_validator_set_updater(|mock| {
+        mock.expect_update_validators_set()
+            .with(predicate::eq(vec![]))
+            .return_const(());
+    });
+
+    // Build default genesis.
     let storage = GenesisConfig::default().build_storage().unwrap();
+
+    // Assert the genesis validators set update.
+    with_mock_validator_set_updater(|mock| {
+        mock.checkpoint();
+    });
+
+    // Make test externalities from the storage.
     storage.into()
 }
