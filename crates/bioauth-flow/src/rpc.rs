@@ -11,7 +11,7 @@ use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode;
 use jsonrpc_derive::rpc;
 use primitives_liveness_data::LivenessData;
-use serde::{Deserialize, Serialize};
+use serde_json::{Map, Value};
 
 use crate::flow::LivenessDataProvider;
 
@@ -25,13 +25,7 @@ pub type FutureResult<T> = Box<dyn Future<Item = T, Error = RpcError> + Send>;
 pub type TokioRuntimeHandle = tokio::runtime::Handle;
 
 /// The parameters necessary to initialize the FaceTec Device SDK.
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct FacetecDeviceSdkParams {
-    /// The public FaceMap encription key.
-    pub public_face_map_encryption_key: String,
-    /// The device key identifier.
-    pub device_key_identifier: String,
-}
+type FacetecDeviceSdkParams = Map<String, Value>;
 
 /// The API exposed via JSON-RPC.
 #[rpc]
@@ -163,10 +157,7 @@ where
                 message: format!("request to the robonode failed: {}", err),
                 data: None,
             })?;
-        Ok(FacetecDeviceSdkParams {
-            device_key_identifier: res.device_key_identifier,
-            public_face_map_encryption_key: res.public_face_map_encryption_key,
-        })
+        Ok(res)
     }
 
     /// Get the FaceTec Session Token.
