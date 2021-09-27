@@ -5507,6 +5507,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "robonode-keygen"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "rand 0.7.3",
+ "robonode-crypto",
+]
+
+[[package]]
 name = "robonode-server"
 version = "0.1.0"
 dependencies = [
@@ -5516,7 +5525,6 @@ dependencies = [
  "mockall",
  "primitives-auth-ticket",
  "primitives-liveness-data",
- "rand 0.7.3",
  "reqwest",
  "robonode-crypto",
  "sc-tracing 3.0.0",
