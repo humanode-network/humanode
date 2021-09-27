@@ -10,7 +10,7 @@ use crate::{
     http::root,
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
-        LogicOp,
+        op_get_public_key, LogicOp,
     },
 };
 
@@ -20,6 +20,7 @@ mock! {
         fn authenticate(&self, req: op_authenticate::Request) -> Result<op_authenticate::Response, op_authenticate::Error>;
         fn get_facetec_session_token(&self, req: op_get_facetec_session_token::Request) -> Result<op_get_facetec_session_token::Response, op_get_facetec_session_token::Error>;
         fn get_facetec_device_sdk_params(&self, req: op_get_facetec_device_sdk_params::Request) -> Result<op_get_facetec_device_sdk_params::Response, op_get_facetec_device_sdk_params::Error>;
+        fn get_public_key(&self, req: op_get_public_key::Request) -> Result<op_get_public_key::Response, op_get_public_key::Error>;
     }
 }
 
@@ -67,6 +68,14 @@ impl_LogicOp!(
     op_get_facetec_device_sdk_params::Response,
     op_get_facetec_device_sdk_params::Error,
     get_facetec_device_sdk_params
+);
+
+impl_LogicOp!(
+    MockLogic,
+    op_get_public_key::Request,
+    op_get_public_key::Response,
+    op_get_public_key::Error,
+    get_public_key
 );
 
 fn provide_authenticate_response() -> op_authenticate::Response {
@@ -271,6 +280,35 @@ async fn it_works_get_facetec_device_sdk_params() {
         .await;
 
     let expected_response = serde_json::to_string(&provide_facetec_device_sdk_params()).unwrap();
+
+    assert_eq!(res.status(), StatusCode::OK);
+    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
+}
+
+#[tokio::test]
+async fn it_works_get_public_key() {
+    let input = op_get_public_key::Request;
+
+    let sample_response = op_get_public_key::Response {
+        public_key: b"test_public_key".to_vec(),
+    };
+    let expected_response = serde_json::to_string(&sample_response).unwrap();
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_get_public_key()
+        .once()
+        .returning(move |_| Ok(sample_response.clone()));
+
+    let logic = Arc::new(mock_logic);
+    let filter = root(logic);
+
+    let res = warp::test::request()
+        .method("GET")
+        .path("/public-key")
+        .json(&input)
+        .reply(&filter)
+        .await;
 
     assert_eq!(res.status(), StatusCode::OK);
     assert_eq!(res.body().as_ref(), expected_response.as_bytes());

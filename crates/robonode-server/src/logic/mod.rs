@@ -13,6 +13,7 @@ pub mod op_authenticate;
 pub mod op_enroll;
 pub mod op_get_facetec_device_sdk_params;
 pub mod op_get_facetec_session_token;
+pub mod op_get_public_key;
 #[cfg(test)]
 mod tests;
 mod traits;

@@ -39,3 +39,9 @@ pub trait LogicOp<Request> {
     /// Process logic operation request.
     async fn call(&self, req: Request) -> Result<Self::Response, Self::Error>;
 }
+
+/// Public key provider, intended to return the public key of the robonode itself.
+pub trait PublicKeyProvider {
+    /// Provide the public key.
+    fn public_key(&self) -> &[u8];
+}

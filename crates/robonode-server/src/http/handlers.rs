@@ -7,7 +7,7 @@ use warp::Reply;
 
 use crate::logic::{
     op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
-    LogicOp,
+    op_get_public_key, LogicOp,
 };
 
 /// Enroll operation HTTP transport coupling.
@@ -78,7 +78,25 @@ where
     Ok(reply.into_response())
 }
 
+/// Get the robonode public key.
+pub async fn get_public_key<L>(logic: Arc<L>) -> Result<impl warp::Reply, warp::Rejection>
+where
+    L: LogicOp<op_get_public_key::Request>,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
+{
+    let res = logic
+        .call(op_get_public_key::Request)
+        .await
+        .map_err(warp::reject::custom)?;
+
+    let reply = warp::reply::json(&res);
+    let reply = warp::reply::with_status(reply, StatusCode::OK);
+    Ok(reply.into_response())
+}
+
 impl warp::reject::Reject for op_enroll::Error {}
 impl warp::reject::Reject for op_authenticate::Error {}
 impl warp::reject::Reject for op_get_facetec_device_sdk_params::Error {}
 impl warp::reject::Reject for op_get_facetec_session_token::Error {}
+impl warp::reject::Reject for op_get_public_key::Error {}
