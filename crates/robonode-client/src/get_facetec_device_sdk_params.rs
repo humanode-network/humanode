@@ -1,7 +1,7 @@
 //! Client API for the Humanode's Bioauth Robonode.
 
 use reqwest::StatusCode;
-use serde::Deserialize;
+use serde_json::{Map, Value};
 
 use crate::{Client, Error};
 
@@ -21,15 +21,8 @@ impl Client {
     }
 }
 
-/// Input data for the get facetec device sdk params request.
-#[derive(Debug, Deserialize, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct GetFacetecDeviceSdkParamsResponse {
-    /// The public FaceMap encription key.
-    pub public_face_map_encryption_key: String,
-    /// The device key identifier.
-    pub device_key_identifier: String,
-}
+/// The parameters necessary to initialize the FaceTec Device SDK.
+type GetFacetecDeviceSdkParamsResponse = Map<String, Value>;
 
 /// The get-facetec-session-token-specific error condition.
 #[derive(Error, Debug, PartialEq)]
@@ -42,26 +35,32 @@ pub enum GetFacetecDeviceSdkParamsError {
 #[cfg(test)]
 mod tests {
     use assert_matches::assert_matches;
+    use serde_json::json;
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
 
     use super::*;
 
     #[test]
     fn response_deserialization() {
-        let sample_response = serde_json::json!({
+        let sample_response = json!({
             "publicFaceMapEncryptionKey": "my encryption key",
             "deviceKeyIdentifier": "my device key identifier",
         });
 
         let response: GetFacetecDeviceSdkParamsResponse =
             serde_json::from_value(sample_response).unwrap();
-        assert_eq!(
-            response,
-            GetFacetecDeviceSdkParamsResponse {
-                public_face_map_encryption_key: "my encryption key".into(),
-                device_key_identifier: "my device key identifier".into(),
-            }
-        )
+
+        let mut expected_response = GetFacetecDeviceSdkParamsResponse::default();
+        expected_response.insert(
+            "publicFaceMapEncryptionKey".to_owned(),
+            json!("my encryption key"),
+        );
+        expected_response.insert(
+            "deviceKeyIdentifier".to_owned(),
+            json!("my device key identifier"),
+        );
+
+        assert_eq!(response, expected_response)
     }
 
     #[tokio::test]

@@ -508,6 +508,7 @@ dependencies = [
  "primitives-liveness-data",
  "robonode-client",
  "serde",
+ "serde_json",
  "tokio 1.9.0",
 ]
 
