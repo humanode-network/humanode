@@ -56,3 +56,10 @@ impl logic::Signer<Vec<u8>> for robonode_crypto::Keypair {
         Ok(sig.as_ref().to_owned())
     }
 }
+
+#[async_trait::async_trait]
+impl logic::PublicKeyProvider for robonode_crypto::Keypair {
+    fn public_key(&self) -> &[u8] {
+        &*self.public.as_bytes()
+    }
+}

@@ -9,7 +9,7 @@ use crate::{
     http::handlers,
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
-        LogicOp,
+        op_get_public_key, LogicOp,
     },
 };
 
@@ -42,6 +42,7 @@ where
         + LogicOp<op_enroll::Request>
         + LogicOp<op_get_facetec_device_sdk_params::Request>
         + LogicOp<op_get_facetec_session_token::Request>
+        + LogicOp<op_get_public_key::Request>
         + Send
         + Sync,
     <L as LogicOp<op_enroll::Request>>::Error: warp::reject::Reject,
@@ -51,11 +52,14 @@ where
     <L as LogicOp<op_get_facetec_device_sdk_params::Request>>::Response: Serialize,
     <L as LogicOp<op_get_facetec_session_token::Request>>::Error: warp::reject::Reject,
     <L as LogicOp<op_get_facetec_session_token::Request>>::Response: Serialize,
+    <L as LogicOp<op_get_public_key::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_get_public_key::Request>>::Response: Serialize,
 {
     enroll(Arc::clone(&logic))
         .or(authenticate(Arc::clone(&logic)))
         .or(get_facetec_session_token(Arc::clone(&logic)))
-        .or(get_facetec_device_sdk_params(logic))
+        .or(get_facetec_device_sdk_params(Arc::clone(&logic)))
+        .or(get_public_key(logic))
 }
 
 /// POST /enroll with JSON body.
@@ -117,4 +121,19 @@ where
         .and(warp::get())
         .and(with_arc(logic))
         .and_then(handlers::get_facetec_device_sdk_params)
+}
+
+/// GET /public-key.
+fn get_public_key<L>(
+    logic: Arc<L>,
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+where
+    L: LogicOp<op_get_public_key::Request> + Send + Sync,
+    L::Error: warp::reject::Reject,
+    L::Response: Serialize,
+{
+    warp::path!("public-key")
+        .and(warp::get())
+        .and(with_arc(logic))
+        .and_then(handlers::get_public_key)
 }
