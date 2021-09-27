@@ -58,6 +58,7 @@ trap 'rm -rf "$TMP_ARTIFACTS_DIR"' EXIT
 BIN_TARGETS=(
   humanode-peer
   robonode-server
+  robonode-keygen
 )
 
 # Populate the context for the runtime image build.
