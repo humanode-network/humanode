@@ -53,4 +53,6 @@ pub struct FacetecDeviceSdkParams {
     pub public_face_map_encryption_key: String,
     /// The device key identifier.
     pub device_key_identifier: String,
+    /// The production key.
+    pub production_key: Option<String>,
 }
