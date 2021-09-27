@@ -50,8 +50,7 @@ mod tests {
         let response: GetFacetecDeviceSdkParamsResponse =
             serde_json::from_value(sample_response).unwrap();
 
-        let mut expected_response: GetFacetecDeviceSdkParamsResponse =
-            GetFacetecDeviceSdkParamsResponse::default();
+        let mut expected_response = GetFacetecDeviceSdkParamsResponse::default();
         expected_response.insert(
             "publicFaceMapEncryptionKey".to_owned(),
             json!("my encryption key"),
