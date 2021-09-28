@@ -19,6 +19,9 @@ pub struct Response {
     pub public_face_map_encryption_key: String,
     /// The device key identifier.
     pub device_key_identifier: String,
+    /// The production key.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub production_key: Option<String>,
 }
 
 /// Errors for the get facetec device sdk params operation.
@@ -41,6 +44,7 @@ where
                 .facetec_device_sdk_params
                 .public_face_map_encryption_key
                 .clone(),
+            production_key: self.facetec_device_sdk_params.production_key.clone(),
         })
     }
 }

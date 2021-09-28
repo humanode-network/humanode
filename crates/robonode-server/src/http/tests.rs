@@ -95,6 +95,7 @@ fn provide_facetec_device_sdk_params() -> op_get_facetec_device_sdk_params::Resp
     op_get_facetec_device_sdk_params::Response {
         public_face_map_encryption_key: "key".to_owned(),
         device_key_identifier: "id".to_owned(),
+        production_key: None,
     }
 }
 
