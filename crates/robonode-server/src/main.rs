@@ -89,7 +89,9 @@ where
     let val = match std::env::var(key) {
         Ok(val) => val,
         Err(VarError::NotPresent) => return Ok(None),
-        Err(err) => format!("{} env var is not a valid unicode string: {}", key, err),
+        Err(VarError::NotUnicode(err)) => {
+            format!("{} env var is not a valid unicode string: {:?}", key, err)
+        }
     };
     let val = val
         .parse()
