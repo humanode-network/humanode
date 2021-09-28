@@ -6,7 +6,7 @@
     clippy::clone_on_ref_ptr
 )]
 
-use std::{env::VarError, str::FromStr};
+use std::env::VarError;
 
 use tracing::info;
 
@@ -68,7 +68,11 @@ async fn shutdown_signal() {
 ///
 /// Returns an error if the variable is not set, if the value is an invalid unicode, or if
 /// the value could not be parsed.
-fn env<T: FromStr>(key: &str) -> Result<T, Box<dyn std::error::Error + Send + Sync>> {
+fn env<T>(key: &str) -> Result<T, Box<dyn std::error::Error + Send + Sync>>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
+{
     let val = maybe_env(key)?;
     let val = val.ok_or_else(|| format!("env variable {} is not set", key))?;
     Ok(val)
@@ -77,15 +81,19 @@ fn env<T: FromStr>(key: &str) -> Result<T, Box<dyn std::error::Error + Send + Sy
 /// Get the value of process environment variable `key` and parse it into the type `T` if variable is set.
 ///
 /// Returns an error if the value is an invalid unicode or if the value could not be parsed.
-fn maybe_env<T: FromStr>(key: &str) -> Result<Option<T>, Box<dyn std::error::Error + Send + Sync>> {
+fn maybe_env<T>(key: &str) -> Result<Option<T>, Box<dyn std::error::Error + Send + Sync>>
+where
+    T: std::str::FromStr,
+    <T as std::str::FromStr>::Err: std::fmt::Display,
+{
     let val = match std::env::var(key) {
         Ok(val) => val,
         Err(VarError::NotPresent) => return Ok(None),
-        Err(err) => format!("{} env var is not valid: {}", key, err),
+        Err(err) => format!("{} env var is not a valid unicode string: {}", key, err),
     };
     let val = val
         .parse()
-        .map_err(|_| format!("unable to parse env variable {}", key))?;
+        .map_err(|err| format!("{} env var is not valid: {}", key, err))?;
     Ok(Some(val))
 }
 
