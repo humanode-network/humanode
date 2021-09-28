@@ -167,6 +167,7 @@ async fn setup() -> (
         facetec_device_sdk_params: crate::FacetecDeviceSdkParams {
             device_key_identifier: "device_key_identifier".to_owned(),
             public_face_map_encryption_key: "public_face_map_encryption_key".to_owned(),
+            production_key: None,
         },
     };
 
