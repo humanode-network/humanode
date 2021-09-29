@@ -109,8 +109,6 @@ jobs:
           args: ${{ matrix.mode.cargoArgs }}
 
   e2e:
-    needs:
-      - test
     name: End-to-end tests
     runs-on: ubuntu-20.04
     timeout-minutes: 50
@@ -129,13 +127,13 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-build-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          key: ${{ runner.os }}-e2e-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - name: Set up polkadot tools
         run: npm install -g @polkadot/api-cli
 
       - name: Build binaries
-        run: cargo build
+        run: cargo build --release
 
       - name: Run e2e tests
         run: utils/e2e-tests/run-tests "target/debug/humanode-peer"
