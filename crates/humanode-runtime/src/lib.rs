@@ -286,9 +286,11 @@ parameter_types! {
     pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
 }
 
+/// A timestamp: milliseconds since the unix epoch.
+type UnixMilliseconds = u64;
+
 impl pallet_timestamp::Config for Runtime {
-    /// A timestamp: milliseconds since the unix epoch.
-    type Moment = u64;
+    type Moment = UnixMilliseconds;
     type OnTimestampSet = Aura;
     type MinimumPeriod = MinimumPeriod;
     type WeightInfo = ();
@@ -393,8 +395,12 @@ impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
     }
 }
 
+const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
+const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
+const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_HOUR;
+
 parameter_types! {
-    pub const AuthenticationsExpireAfter: BlockNumber = 72 * HOURS;
+    pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
 }
 
 impl pallet_bioauth::Config for Runtime {
@@ -405,6 +411,8 @@ impl pallet_bioauth::Config for Runtime {
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = AuraValidatorSetUpdater;
+    type Moment = UnixMilliseconds;
+    type CurrentMoment = pallet_timestamp::Now<Self>;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 
