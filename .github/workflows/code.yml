@@ -111,7 +111,7 @@ jobs:
   e2e:
     needs:
       - test
-    name: End to end tests
+    name: End-to-end tests
     runs-on: ubuntu-20.04
     timeout-minutes: 50
     steps:
@@ -134,5 +134,8 @@ jobs:
       - name: Set up polkadot tools
         run: npm install -g @polkadot/api-cli
 
+      - name: Build binaries
+        run: cargo build
+
       - name: Run e2e tests
-        run: utils/e2e-tests/run_tests
+        run: utils/e2e-tests/run-tests "target/debug/humanode-peer"

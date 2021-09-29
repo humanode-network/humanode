@@ -1,25 +1,36 @@
 #!/bin/bash
-set -uo pipefail
+set -euo pipefail
 
-# Set up commands.
-COMMAND_TO_RUN=(target/debug/humanode-peer --dev)
+# Make temporary test directory.
+TEMPDIR="$(mktemp -d)"
+trap 'rm -rf "$TEMPDIR"' EXIT
+
+# Set up command.
+COMMAND_TO_RUN=("$@" --dev --base-path "$TEMPDIR")
 
 # Set up timeout.
-TIME_IN_SEC=60
+TIME_IN_SEC=20
 
 run_with_timeout() {
-    ANCHOR=$SECONDS
-    # shellcheck disable=SC2251
-    timeout "$@"
-    EXITCODE="$?"
-    if [[ "$EXITCODE" -ne 124 ]]; then
-        printf "App run lasted for %d seconds and was terminated with error code %d\n" "$(( "$SECONDS" - "$ANCHOR" ))" "$EXITCODE" >&2
+    ANCHOR="$SECONDS"
+    if timeout "$@"; then
+        printf "App run lasted for %d seconds and was terminated successfully (wich is bad because we expect it to keep running)\n" "$(( "$SECONDS" - "$ANCHOR" ))" >&2
         exit
+    else
+        EXITCODE="$?"
+        if [[ "$EXITCODE" -ne 124 ]]; then
+            printf "App run lasted for %d seconds and was terminated with error code %d\n" "$(( "$SECONDS" - "$ANCHOR" ))" "$EXITCODE" >&2
+            exit
+        else
+            printf "App run lasted for %d seconds and was terminated by timeout\n" "$TIME_IN_SEC" >&2
+        fi
     fi
-    printf "App run lasted for %d seconds and was terminated by timeout\n" "$TIME_IN_SEC" >&2
 }
 
 # Run with empty state, then 2nd time with non-empty state.
-for (( i=1; i <= 2; i++ )); do
+for RUN in {1..2}; do
+    printf "Run %d started\n" "$RUN" >&2
     run_with_timeout "$TIME_IN_SEC" "${COMMAND_TO_RUN[@]}"
 done
+
+printf "Test succeded\n" >&2

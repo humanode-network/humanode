@@ -1,11 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Build the node.
-cargo build
-
 # Run all e2e tests.
 for filename in utils/e2e-tests/tests/*.sh; do
-    [ -e "$filename" ] || continue
-    "$filename"
+    "$filename" "$@"
 done
