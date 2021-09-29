@@ -276,6 +276,9 @@ fn authentication_with_concurrent_conlicting_public_keys() {
                 .with(predicate::eq(vec![b"conflict!".to_vec()]))
                 .return_const(());
         });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_get().with().return_const(0u64);
+        });
 
         // Prepare the test precondition.
         let precondition_input = make_input(b"conflict!", b"nonce1", b"should_be_valid");

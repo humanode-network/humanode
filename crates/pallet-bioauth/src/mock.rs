@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
 use codec::{Decode, Encode};
-use frame_support::parameter_types;
+use frame_support::{parameter_types, traits::Get};
 use frame_system as system;
 use mockall::{mock, predicate};
 #[cfg(feature = "std")]
@@ -16,6 +16,8 @@ use sp_runtime::{
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
+
+type Moment = u64;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -104,6 +106,29 @@ where
     MOCK_VALIDATOR_SET_UPDATER.with(|var| f(&mut *var.borrow_mut()))
 }
 
+mock! {
+    pub CurrentMomentProvider {
+        pub fn get(&self) -> Moment;
+    }
+}
+
+thread_local! {
+    pub static MOCK_CURRENT_MOMENT_PROVIDER: RefCell<MockCurrentMomentProvider> = RefCell::new(MockCurrentMomentProvider::new());
+}
+
+impl Get<Moment> for MockCurrentMomentProvider {
+    fn get() -> Moment {
+        MOCK_CURRENT_MOMENT_PROVIDER.with(|val| val.borrow().get())
+    }
+}
+
+pub fn with_mock_current_moment_provider<F, R>(f: F) -> R
+where
+    F: FnOnce(&mut MockCurrentMomentProvider) -> R,
+{
+    MOCK_CURRENT_MOMENT_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
+}
+
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
@@ -149,6 +174,8 @@ impl pallet_bioauth::Config for Test {
     type OpaqueAuthTicket = MockOpaqueAuthTicket;
     type AuthTicketCoverter = MockAuthTicketConverter;
     type ValidatorSetUpdater = MockValidatorSetUpdater;
+    type Moment = Moment;
+    type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 

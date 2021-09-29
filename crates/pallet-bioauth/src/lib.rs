@@ -93,11 +93,11 @@ pub struct AuthTicket<PublicKey> {
 /// The state that we keep in the blockchain for an active authentication.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
-pub struct Authentication<PublicKey, BlockNumber> {
+pub struct Authentication<PublicKey, Moment> {
     /// The public key of a validator.
     pub public_key: PublicKey,
-    /// The block number at which the authentication becomes expired.
-    pub expires_at: BlockNumber,
+    /// The moment at which the authentication becomes expired.
+    pub expires_at: Moment,
 }
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
@@ -118,7 +118,7 @@ pub mod pallet {
         dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
     };
     use frame_system::pallet_prelude::*;
-    use sp_runtime::app_crypto::MaybeHash;
+    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
     use sp_std::prelude::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
@@ -149,8 +149,14 @@ pub mod pallet {
             AuthTicket<Self::ValidatorPublicKey>,
         >;
 
-        /// The amount of time (in blocks) after which the authentications expire.
-        type AuthenticationsExpireAfter: Get<Self::BlockNumber>;
+        /// Type used for expressing timestamp.
+        type Moment: Parameter + Default + AtLeast32Bit + Copy + MaybeSerializeDeserialize;
+
+        /// The getter for the current moment.
+        type CurrentMoment: Get<Self::Moment>;
+
+        /// The amount of time (in moments) after which the authentications expire.
+        type AuthenticationsExpireAfter: Get<Self::Moment>;
 
         /// The validator set updater to invoke at auth the ticket acceptace.
         type ValidatorSetUpdater: ValidatorSetUpdater<Self::ValidatorPublicKey>;
@@ -174,13 +180,13 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn active_authentications)]
     pub type ActiveAuthentications<T: Config> =
-        StorageValue<_, Vec<Authentication<T::ValidatorPublicKey, T::BlockNumber>>, ValueQuery>;
+        StorageValue<_, Vec<Authentication<T::ValidatorPublicKey, T::Moment>>, ValueQuery>;
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         pub robonode_public_key: T::RobonodePublicKey,
         pub consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
-        pub active_authentications: Vec<Authentication<T::ValidatorPublicKey, T::BlockNumber>>,
+        pub active_authentications: Vec<Authentication<T::ValidatorPublicKey, T::Moment>>,
     }
 
     // The default value for the genesis config type.
@@ -236,14 +242,14 @@ pub mod pallet {
 
     pub enum AuthenticationAttemptValidationError<'a, T: Config> {
         NonceConflict,
-        AlreadyAuthenticated(&'a Authentication<T::ValidatorPublicKey, T::BlockNumber>),
+        AlreadyAuthenticated(&'a Authentication<T::ValidatorPublicKey, T::Moment>),
     }
 
     /// Validate the incloming authentication attempt, checking the auth ticket data against
     /// the passed input.
     fn validate_authentication_attempt<'a, T: Config>(
         consumed_auth_ticket_nonces: &'a [AuthTicketNonce],
-        active_authentications: &'a [Authentication<T::ValidatorPublicKey, T::BlockNumber>],
+        active_authentications: &'a [Authentication<T::ValidatorPublicKey, T::Moment>],
         auth_ticket: &AuthTicket<T::ValidatorPublicKey>,
     ) -> Result<(), AuthenticationAttemptValidationError<'a, T>> {
         for consumed_auth_ticket_nonce in consumed_auth_ticket_nonces.iter() {
@@ -276,7 +282,7 @@ pub mod pallet {
 
             let auth_ticket = Self::extract_auth_ticket_checked(req)?;
 
-            let block_number = frame_system::Pallet::<T>::block_number();
+            let current_moment = T::CurrentMoment::get();
             let public_key = auth_ticket.public_key.clone();
 
             // Update storage.
@@ -301,7 +307,7 @@ pub mod pallet {
                         consumed_auth_ticket_nonces.push(auth_ticket.nonce);
                         active_authentications.push(Authentication {
                             public_key: public_key.clone(),
-                            expires_at: block_number + T::AuthenticationsExpireAfter::get(),
+                            expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
                         });
 
                         // Issue an update to the external validators set.
@@ -320,14 +326,15 @@ pub mod pallet {
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-        fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+        fn on_initialize(_n: BlockNumberFor<T>) -> Weight {
             // Remove expired authentications.
+            let current_moment = T::CurrentMoment::get();
             let possibly_expired_authentications = <ActiveAuthentications<T>>::get();
             let possibly_expired_authentications_len = possibly_expired_authentications.len();
             let active_authentications = possibly_expired_authentications
                 .into_iter()
                 .filter(|possibly_expired_authentication| {
-                    possibly_expired_authentication.expires_at > n
+                    possibly_expired_authentication.expires_at > current_moment
                 })
                 .collect::<Vec<_>>();
 
@@ -407,7 +414,7 @@ pub mod pallet {
         }
 
         fn map_active_authentications_to_validators_set(
-            active_authentications: &[Authentication<T::ValidatorPublicKey, T::BlockNumber>],
+            active_authentications: &[Authentication<T::ValidatorPublicKey, T::Moment>],
         ) -> impl Iterator<Item = &T::ValidatorPublicKey> {
             active_authentications
                 .iter()
@@ -415,7 +422,7 @@ pub mod pallet {
         }
 
         fn issue_validators_set_update(
-            active_authentications: &[Authentication<T::ValidatorPublicKey, T::BlockNumber>],
+            active_authentications: &[Authentication<T::ValidatorPublicKey, T::Moment>],
         ) {
             let validator_public_keys =
                 Self::map_active_authentications_to_validators_set(active_authentications);
@@ -423,7 +430,7 @@ pub mod pallet {
         }
 
         fn issue_validators_set_init(
-            active_authentications: &[Authentication<T::ValidatorPublicKey, T::BlockNumber>],
+            active_authentications: &[Authentication<T::ValidatorPublicKey, T::Moment>],
         ) {
             let validator_public_keys =
                 Self::map_active_authentications_to_validators_set(active_authentications);
