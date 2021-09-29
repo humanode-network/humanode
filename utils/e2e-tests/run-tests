@@ -1,7 +1,8 @@
 #!/bin/bash
 set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # Run all e2e tests.
-for filename in utils/e2e-tests/tests/*.sh; do
-    "$filename" "$@"
+for TESTFILE in utils/e2e-tests/tests/*.sh; do
+    "$TESTFILE" "$@"
 done
