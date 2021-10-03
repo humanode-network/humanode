@@ -4101,6 +4101,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ngrok-api"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "http 0.2.4",
+ "http-body 0.4.3",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "url 2.2.2",
+]
+
+[[package]]
 name = "node-primitives"
 version = "2.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#b7409a2257c7c231b485ee827daa73d05d303047"
