@@ -99,6 +99,20 @@ impl<C: SubstrateCli> Runner<C> {
         future.await
     }
 
+    /// Execute asyncronously.
+    pub async fn async_run<F, E>(
+        self,
+        runner: impl FnOnce(Configuration) -> F,
+    ) -> std::result::Result<(), E>
+    where
+        F: Future<Output = std::result::Result<(), E>>,
+        E: std::error::Error + Send + Sync + 'static + From<ServiceError> + From<CliError>,
+    {
+        let future = runner(self.config);
+        let future = with_signal(future);
+        future.await
+    }
+
     /// Execute syncronously.
     pub fn sync_run<E>(
         self,
