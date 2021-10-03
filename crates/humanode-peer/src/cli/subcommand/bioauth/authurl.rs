@@ -22,17 +22,12 @@ pub struct AuthUrlCmd {
 
 impl AuthUrlCmd {
     /// Run the command.
-    pub fn run(&self, bioauth_flow: Option<BioauthFlow>) -> sc_cli::Result<()> {
-        let (webapp_url, rpc_url) = match bioauth_flow {
-            Some(BioauthFlow {
-                webapp_url: Some(ref webapp_url),
-                rpc_url: Some(ref rpc_url),
-                ..
-            }) => (webapp_url, rpc_url),
-            _ => {
-                return Err("bioauth flow is not configured".into());
-            }
-        };
+    pub async fn run(&self, bioauth_flow: Option<BioauthFlow>) -> sc_cli::Result<()> {
+        let bioauth_flow = bioauth_flow.ok_or("bioauth flow is not configured")?;
+        let (webapp_url, rpc_url) = bioauth_flow
+            .qrcode_params()
+            .await
+            .map_err(|err| format!("unable to resolve the RPC URL: {}", err))?;
 
         let webapp = WebApp::new(webapp_url, rpc_url)?;
         println!("{}", webapp.url());

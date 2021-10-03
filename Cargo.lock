@@ -2332,6 +2332,7 @@ dependencies = [
  "humanode-rpc",
  "humanode-runtime",
  "indoc",
+ "ngrok-api",
  "pallet-bioauth",
  "parity-scale-codec",
  "qr2term",

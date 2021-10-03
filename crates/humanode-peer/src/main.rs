@@ -10,6 +10,7 @@ mod chain_spec;
 mod cli;
 mod configuration;
 mod qrcode;
+mod rpc_url;
 mod service;
 mod validator_key;
 
