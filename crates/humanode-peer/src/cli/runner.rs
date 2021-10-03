@@ -81,10 +81,10 @@ impl<C: SubstrateCli> Runner<C> {
         Ok(res?)
     }
 
-    /// Execute asyncronously.
+    /// Run some tasks with task manager.
     /// The runner is executing till completion, or until till the signal is received.
     /// Task manager is shutdown cleanly at the end (even on error).
-    pub async fn async_run<R, F, E>(
+    pub async fn run_tasks<R, F, E>(
         self,
         runner: impl FnOnce(Configuration) -> R,
     ) -> std::result::Result<(), E>

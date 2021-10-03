@@ -20,7 +20,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::CheckBlock(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| async move {
+                .run_tasks(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -34,7 +34,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::ExportBlocks(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| async move {
+                .run_tasks(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -47,7 +47,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::ExportState(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| async move {
+                .run_tasks(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -60,7 +60,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::ImportBlocks(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| async move {
+                .run_tasks(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -78,7 +78,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::Revert(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| async move {
+                .run_tasks(|config| async move {
                     let PartialComponents {
                         client,
                         task_manager,
@@ -92,7 +92,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::List(cmd)))) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner
-                .async_run(|config| async move {
+                .run_tasks(|config| async move {
                     let (keystore_container, task_manager) = service::keystore_container(&config)?;
                     Ok((cmd.run(keystore_container), task_manager))
                 })
