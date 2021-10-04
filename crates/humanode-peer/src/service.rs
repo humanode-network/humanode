@@ -371,7 +371,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         Ok(ref qrcode) => qrcode.print(),
         Err(ref err) => {
             error!("Bioauth flow - unable to display QR Code: {}", err);
-            info!(prompt);
+            info!(message = prompt);
         }
     };
 
