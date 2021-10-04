@@ -1,5 +1,7 @@
 //! The RPC URL configuration logic.
 
+use std::borrow::Cow;
+
 /// An RPC URL, represents the configuration parameters allowing to resolve the RPC URL.
 #[derive(Debug, Clone)]
 pub enum RpcUrl {
@@ -43,15 +45,15 @@ impl RpcUrlResolver {
     /// Performs the RPC URL resolution according to the passed settings.
     /// Returns an error if the RPC URL is unset, or if we were unable to
     /// resolve it due to an error.
-    pub async fn resolve(&self, val: &RpcUrl) -> Result<String, String> {
+    pub async fn resolve<'a>(&self, val: &'a RpcUrl) -> Result<Cow<'a, str>, Cow<'static, str>> {
         match val {
-            RpcUrl::Unset => Err("RPC URL was not set".to_owned()),
-            RpcUrl::Set(url) => Ok(url.clone()),
+            RpcUrl::Unset => Err(Cow::Borrowed("RPC URL was not set")),
+            RpcUrl::Set(url) => Ok(Cow::Borrowed(url)),
             RpcUrl::LocalhostWithPort { rpc_endpoint_port } => {
-                Ok(format!("http://localhost:{}", rpc_endpoint_port))
+                Ok(format!("http://localhost:{}", rpc_endpoint_port).into())
             }
             RpcUrl::DetectFromNgrok { tunnel_name } => {
-                Ok(self.detect_from_ngrok(&*tunnel_name).await?)
+                Ok(self.detect_from_ngrok(&*tunnel_name).await?.into())
             }
         }
     }
