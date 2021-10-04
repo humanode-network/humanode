@@ -169,7 +169,7 @@ pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
 const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
 
-pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 1 * TIMESTAMP_MINUTE;
+pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = TIMESTAMP_MINUTE;
 
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = AUTHENTICATIONS_EXPIRE_AFTER;
