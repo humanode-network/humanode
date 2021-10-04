@@ -361,10 +361,19 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let webapp_qrcode = bioauth_flow_config
         .qrcode_params()
-        .map(|(webapp_url, rpc_url)| {
-            crate::qrcode::WebApp::new(webapp_url, rpc_url).map_err(ServiceError::Other)
-        })
-        .transpose()?;
+        .await
+        .map_err(ServiceError::Other)
+        .and_then(|(webapp_url, rpc_url)| {
+            crate::qrcode::WebApp::new(webapp_url, &rpc_url).map_err(ServiceError::Other)
+        });
+
+    let render_qr_code = move |prompt: &str| match &webapp_qrcode {
+        Ok(ref qrcode) => qrcode.print(),
+        Err(ref err) => {
+            error!("Bioauth flow - unable to display QR Code: {}", err);
+            info!(prompt);
+        }
+    };
 
     let bioauth_flow_future = {
         let client = Arc::clone(&client);
@@ -395,11 +404,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             if bioauth_perform_enroll {
                 info!("Bioauth flow - enrolling in progress");
 
-                if let Some(qrcode) = webapp_qrcode.as_ref() {
-                    qrcode.print()
-                } else {
-                    info!("Bioauth flow - waiting for enroll");
-                }
+                render_qr_code("Bioauth flow - waiting for enroll");
 
                 flow.enroll(&validator_public_key)
                     .await
@@ -410,11 +415,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             info!("Bioauth flow - authentication in progress");
 
-            if let Some(qrcode) = webapp_qrcode.as_ref() {
-                qrcode.print()
-            } else {
-                info!("Bioauth flow - waiting for authentication");
-            }
+            render_qr_code("Bioauth flow - waiting for authentication");
 
             let signer = crate::validator_key::AppCryptoSigner {
                 keystore: Arc::clone(&keystore),
