@@ -287,7 +287,7 @@ parameter_types! {
 }
 
 /// A timestamp: milliseconds since the unix epoch.
-type UnixMilliseconds = u64;
+pub type UnixMilliseconds = u64;
 
 impl pallet_timestamp::Config for Runtime {
     type Moment = UnixMilliseconds;
@@ -395,9 +395,17 @@ impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
     }
 }
 
+pub struct CurrentMoment;
+
+impl pallet_bioauth::CurrentMoment<UnixMilliseconds> for CurrentMoment {
+    fn now() -> UnixMilliseconds {
+        pallet_timestamp::Pallet::<Runtime>::now()
+    }
+}
+
 const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
 const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
-const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_HOUR;
+const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
@@ -412,7 +420,7 @@ impl pallet_bioauth::Config for Runtime {
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = AuraValidatorSetUpdater;
     type Moment = UnixMilliseconds;
-    type CurrentMoment = pallet_timestamp::Now<Self>;
+    type CurrentMoment = CurrentMoment;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 

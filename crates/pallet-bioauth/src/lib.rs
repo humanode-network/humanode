@@ -67,6 +67,12 @@ pub trait ValidatorSetUpdater<T> {
         T: 'a;
 }
 
+/// Provides the capability to get current moment.
+pub trait CurrentMoment<Moment> {
+    /// Return current moment.
+    fn now() -> Moment;
+}
+
 /// Authentication extrinsic playload.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
@@ -110,8 +116,8 @@ pub struct Authentication<PublicKey, Moment> {
 #[frame_support::pallet]
 pub mod pallet {
     use crate::{
-        AuthTicket, AuthTicketNonce, Authenticate, Authentication, TryConvert, ValidatorSetUpdater,
-        Verifier,
+        AuthTicket, AuthTicketNonce, Authenticate, Authentication, CurrentMoment, TryConvert,
+        ValidatorSetUpdater, Verifier,
     };
 
     use frame_support::{
@@ -153,7 +159,7 @@ pub mod pallet {
         type Moment: Parameter + Default + AtLeast32Bit + Copy + MaybeSerializeDeserialize;
 
         /// The getter for the current moment.
-        type CurrentMoment: Get<Self::Moment>;
+        type CurrentMoment: CurrentMoment<Self::Moment>;
 
         /// The amount of time (in moments) after which the authentications expire.
         type AuthenticationsExpireAfter: Get<Self::Moment>;
@@ -282,7 +288,7 @@ pub mod pallet {
 
             let auth_ticket = Self::extract_auth_ticket_checked(req)?;
 
-            let current_moment = T::CurrentMoment::get();
+            let current_moment = T::CurrentMoment::now();
             let public_key = auth_ticket.public_key.clone();
 
             // Update storage.
@@ -328,7 +334,7 @@ pub mod pallet {
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         fn on_initialize(_n: BlockNumberFor<T>) -> Weight {
             // Remove expired authentications.
-            let current_moment = T::CurrentMoment::get();
+            let current_moment = T::CurrentMoment::now();
             let possibly_expired_authentications = <ActiveAuthentications<T>>::get();
             let possibly_expired_authentications_len = possibly_expired_authentications.len();
             let active_authentications = possibly_expired_authentications

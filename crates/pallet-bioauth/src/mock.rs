@@ -2,7 +2,7 @@ use std::cell::RefCell;
 
 use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
 use codec::{Decode, Encode};
-use frame_support::{parameter_types, traits::Get};
+use frame_support::parameter_types;
 use frame_system as system;
 use mockall::{mock, predicate};
 #[cfg(feature = "std")]
@@ -37,7 +37,7 @@ pub struct MockOpaqueAuthTicket(pub AuthTicket<Vec<u8>>);
 
 impl AsRef<[u8]> for MockOpaqueAuthTicket {
     fn as_ref(&self) -> &[u8] {
-        panic!("should be ununsed in tests")
+        panic!("should be unused in tests")
     }
 }
 
@@ -108,7 +108,7 @@ where
 
 mock! {
     pub CurrentMomentProvider {
-        pub fn get(&self) -> Moment;
+        pub fn now(&self) -> Moment;
     }
 }
 
@@ -116,9 +116,9 @@ thread_local! {
     pub static MOCK_CURRENT_MOMENT_PROVIDER: RefCell<MockCurrentMomentProvider> = RefCell::new(MockCurrentMomentProvider::new());
 }
 
-impl Get<Moment> for MockCurrentMomentProvider {
-    fn get() -> Moment {
-        MOCK_CURRENT_MOMENT_PROVIDER.with(|val| val.borrow().get())
+impl super::CurrentMoment<Moment> for MockCurrentMomentProvider {
+    fn now() -> Moment {
+        MOCK_CURRENT_MOMENT_PROVIDER.with(|val| val.borrow().now())
     }
 }
 
@@ -160,10 +160,10 @@ impl system::Config for Test {
     type OnSetCode = ();
 }
 
-pub const AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS: u64 = 24;
+pub const AUTHENTICATIONS_EXPIRE_AFTER: u64 = 24;
 
 parameter_types! {
-    pub const AuthenticationsExpireAfter: u64 = AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS;
+    pub const AuthenticationsExpireAfter: u64 = AUTHENTICATIONS_EXPIRE_AFTER;
 }
 
 impl pallet_bioauth::Config for Test {

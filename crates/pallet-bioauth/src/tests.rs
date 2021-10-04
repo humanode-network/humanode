@@ -23,13 +23,17 @@ fn authentication_with_empty_state() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
         let input = make_input(b"qwe", b"rty", b"should_be_valid");
-        let expires_at = System::block_number() + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS;
+        let current_moment = 0u64;
+        let expires_at = current_moment + AUTHENTICATIONS_EXPIRE_AFTER;
 
         // Set up mock expectations.
         with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
                 .with(predicate::eq(vec![b"qwe".to_vec()]))
                 .return_const(());
+        });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().with().return_const(current_moment);
         });
 
         // Ensure that authentication call is processed successfully.
@@ -57,7 +61,7 @@ fn authentication_with_empty_state() {
 fn authentication_expires() {
     new_test_ext().execute_with(|| {
         // Prepare the test preconditions.
-        let expires_at = System::block_number();
+        let expires_at = 0u64;
         <ActiveAuthentications<Test>>::put(vec![Authentication {
             public_key: b"alice_pk".to_vec(),
             expires_at,
@@ -69,6 +73,9 @@ fn authentication_expires() {
             mock.expect_update_validators_set()
                 .with(predicate::eq(vec![]))
                 .return_const(());
+        });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().with().return_const(expires_at);
         });
 
         Bioauth::on_initialize(expires_at);
@@ -89,19 +96,24 @@ fn authentication_expires() {
 fn authentication_expiration_lifecycle() {
     new_test_ext().execute_with(|| {
         // Prepare the test preconditions.
-        let current_block_number = System::block_number();
-        let expires_at = current_block_number + 10;
+        let current_block_number_moment = 0u64;
+        let expires_at_moment = current_block_number_moment + 10;
 
         let authnetication = Authentication {
             public_key: b"alice_pk".to_vec(),
-            expires_at,
+            expires_at: expires_at_moment,
         };
         let nonce = b"alice_auth_ticket_nonce".to_vec();
 
         <ActiveAuthentications<Test>>::put(vec![authnetication.clone()]);
         <ConsumedAuthTicketNonces<Test>>::put(vec![nonce.clone()]);
 
-        for n in (current_block_number + 1)..expires_at {
+        for n in (current_block_number_moment + 1)..expires_at_moment {
+            // Set up mock expectations.
+            with_mock_current_moment_provider(|mock| {
+                mock.expect_now().once().with().return_const(n);
+            });
+
             System::set_block_number(n);
             assert_storage_noop!(Bioauth::on_initialize(n));
 
@@ -117,13 +129,16 @@ fn authentication_expiration_lifecycle() {
         // Only now we expect the code to issue a validators set update.
         with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
-                .once()
                 .with(predicate::eq(vec![]))
                 .return_const(());
         });
 
-        System::set_block_number(expires_at);
-        Bioauth::on_initialize(expires_at);
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().with().return_const(expires_at_moment);
+        });
+
+        // System::set_block_number(expires_at);
+        Bioauth::on_initialize(expires_at_moment);
 
         // Ensure that authentication is gone.
         assert_eq!(Bioauth::active_authentications(), vec![]);
@@ -138,7 +153,7 @@ fn authentication_expiration_lifecycle() {
 fn authentication_when_previous_one_has_been_expired() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
-        let expires_at = System::block_number();
+        let expires_at = 0u64;
         <ActiveAuthentications<Test>>::put(vec![Authentication {
             public_key: b"alice_pk".to_vec(),
             expires_at,
@@ -159,6 +174,10 @@ fn authentication_when_previous_one_has_been_expired() {
                 .return_const(());
         });
 
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().with().return_const(expires_at);
+        });
+
         // Make on_initialize.
         Bioauth::on_initialize(expires_at);
 
@@ -177,7 +196,7 @@ fn authentication_when_previous_one_has_been_expired() {
             Bioauth::active_authentications(),
             vec![Authentication {
                 public_key: b"alice_pk".to_vec(),
-                expires_at: expires_at + AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS,
+                expires_at: expires_at + AUTHENTICATIONS_EXPIRE_AFTER,
             }]
         );
 
@@ -217,6 +236,9 @@ fn authentication_with_conlicting_nonce() {
                 .with(predicate::eq(vec![b"pk1".to_vec()]))
                 .return_const(());
         });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().with().return_const(0u64);
+        });
 
         // Prepare the test precondition.
         let precondition_input = make_input(b"pk1", b"conflict!", b"should_be_valid");
@@ -239,7 +261,7 @@ fn authentication_with_conlicting_nonce() {
 fn authentication_with_conlicting_nonce_after_expiration() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
-        let expires_at = System::block_number();
+        let expires_at = 0u64;
         <ActiveAuthentications<Test>>::put(vec![Authentication {
             public_key: b"alice_pk".to_vec(),
             expires_at,
@@ -254,6 +276,9 @@ fn authentication_with_conlicting_nonce_after_expiration() {
             mock.expect_update_validators_set()
                 .with(predicate::eq(vec![]))
                 .return_const(());
+        });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().with().return_const(expires_at);
         });
 
         Bioauth::on_initialize(expires_at);
@@ -277,7 +302,7 @@ fn authentication_with_concurrent_conlicting_public_keys() {
                 .return_const(());
         });
         with_mock_current_moment_provider(|mock| {
-            mock.expect_get().with().return_const(0u64);
+            mock.expect_now().with().return_const(0u64);
         });
 
         // Prepare the test precondition.
@@ -353,6 +378,9 @@ fn signed_ext_check_bioauth_tx_denies_conlicting_nonce() {
                 .with(predicate::eq(vec![b"pk1".to_vec()]))
                 .return_const(());
         });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().with().return_const(0u64);
+        });
 
         assert_ok!(Bioauth::authenticate(Origin::none(), precondition_input));
 
@@ -382,6 +410,9 @@ fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
             mock.expect_update_validators_set()
                 .with(predicate::eq(vec![b"conflict!".to_vec()]))
                 .return_const(());
+        });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().with().return_const(0u64);
         });
 
         assert_ok!(Bioauth::authenticate(Origin::none(), precondition_input));
