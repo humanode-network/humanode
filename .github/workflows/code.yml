@@ -136,4 +136,4 @@ jobs:
         run: cargo build --release
 
       - name: Run e2e tests
-        run: utils/e2e-tests/run-tests "target/debug/humanode-peer"
+        run: utils/e2e-tests/run-tests "target/release/humanode-peer"
