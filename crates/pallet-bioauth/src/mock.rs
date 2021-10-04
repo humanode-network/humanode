@@ -19,6 +19,9 @@ type Block = frame_system::mocking::MockBlock<Test>;
 
 type Moment = u64;
 
+/// A timestamp: milliseconds since the unix epoch.
+type UnixMilliseconds = u64;
+
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
     pub enum Test where
@@ -160,10 +163,16 @@ impl system::Config for Test {
     type OnSetCode = ();
 }
 
-pub const AUTHENTICATIONS_EXPIRE_AFTER: u64 = 24;
+pub const MILLISECS_PER_BLOCK: u64 = 6000;
+pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
+
+const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
+const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
+
+pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 1 * TIMESTAMP_MINUTE;
 
 parameter_types! {
-    pub const AuthenticationsExpireAfter: u64 = AUTHENTICATIONS_EXPIRE_AFTER;
+    pub const AuthenticationsExpireAfter: UnixMilliseconds = AUTHENTICATIONS_EXPIRE_AFTER;
 }
 
 impl pallet_bioauth::Config for Test {

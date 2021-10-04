@@ -96,8 +96,12 @@ fn authentication_expires() {
 fn authentication_expiration_lifecycle() {
     new_test_ext().execute_with(|| {
         // Prepare the test preconditions.
-        let current_block_number_moment = 0u64;
-        let expires_at_moment = current_block_number_moment + 10;
+        let mut current_moment = 0u64;
+        let expires_at_moment = current_moment + AUTHENTICATIONS_EXPIRE_AFTER;
+
+        let current_block_number = System::block_number();
+        let block_number_ticket_invalid =
+            current_block_number + (expires_at_moment - current_moment) / SLOT_DURATION;
 
         let authnetication = Authentication {
             public_key: b"alice_pk".to_vec(),
@@ -108,10 +112,12 @@ fn authentication_expiration_lifecycle() {
         <ActiveAuthentications<Test>>::put(vec![authnetication.clone()]);
         <ConsumedAuthTicketNonces<Test>>::put(vec![nonce.clone()]);
 
-        for n in (current_block_number_moment + 1)..expires_at_moment {
+        for n in (current_block_number + 1)..block_number_ticket_invalid {
+            current_moment += SLOT_DURATION;
+
             // Set up mock expectations.
             with_mock_current_moment_provider(|mock| {
-                mock.expect_now().once().with().return_const(n);
+                mock.expect_now().once().with().return_const(current_moment);
             });
 
             System::set_block_number(n);
@@ -129,6 +135,7 @@ fn authentication_expiration_lifecycle() {
         // Only now we expect the code to issue a validators set update.
         with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
+                .once()
                 .with(predicate::eq(vec![]))
                 .return_const(());
         });
@@ -138,7 +145,7 @@ fn authentication_expiration_lifecycle() {
         });
 
         // System::set_block_number(expires_at);
-        Bioauth::on_initialize(expires_at_moment);
+        Bioauth::on_initialize(block_number_ticket_invalid);
 
         // Ensure that authentication is gone.
         assert_eq!(Bioauth::active_authentications(), vec![]);
