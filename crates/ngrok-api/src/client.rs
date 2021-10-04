@@ -6,7 +6,7 @@ use crate::data::response;
 
 /// HTTP client params.
 pub struct Client {
-    /// Underyling HTTP client used to execute network calls.
+    /// Underlying HTTP client used to execute network calls.
     reqwest: reqwest::Client,
     /// The URL to use as a base.
     base_url: Url,

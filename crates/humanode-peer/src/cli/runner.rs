@@ -99,7 +99,7 @@ impl<C: SubstrateCli> Runner<C> {
         future.await
     }
 
-    /// Execute asyncronously.
+    /// Execute asynchronously.
     pub async fn async_run<F, E>(
         self,
         runner: impl FnOnce(Configuration) -> F,

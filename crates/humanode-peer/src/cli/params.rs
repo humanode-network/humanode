@@ -23,7 +23,7 @@ pub struct BioauthFlowParams {
     #[structopt(long, conflicts_with_all = &["rpc-url", "rpc-url-ngrok-detect"])]
     pub rpc_url_unset: bool,
 
-    /// The tunnel name at ngrok to detext RPC URL from, if ngrok is used to detect the RPC URL.
+    /// The tunnel name at ngrok to detect RPC URL from, if ngrok is used to detect the RPC URL.
     #[structopt(long, value_name = "TUNNEL_NAME", default_value = "command_line")]
     pub rpc_url_ngrok_detect_from: String,
 

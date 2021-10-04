@@ -21,7 +21,7 @@ pub enum RpcUrl {
     },
 }
 
-/// An RPC URL resolver provides nesessary runtime components to perform RPC URL resolution.
+/// An RPC URL resolver provides necessary runtime components to perform RPC URL resolution.
 pub struct RpcUrlResolver {
     /// The `ngrok` agent API client.
     pub ngrok_client: ngrok_api::client::Client,
@@ -41,7 +41,7 @@ impl Default for RpcUrlResolver {
 
 impl RpcUrlResolver {
     /// Performs the RPC URL resolution according to the passed settings.
-    /// Retunts an error if the RPC URL is unset, or if we were unable to
+    /// Returns an error if the RPC URL is unset, or if we were unable to
     /// resolve it due to an error.
     pub async fn resolve(&self, val: &RpcUrl) -> Result<String, String> {
         match val {
