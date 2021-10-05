@@ -41,7 +41,7 @@ pub struct BioauthFlow {
 
 impl BioauthFlow {
     /// Obtain QR Code URL params.
-    pub async fn qrcode_params(&self) -> Result<(&str, Cow<'_, str>), String> {
+    pub async fn qrcode_params(&self) -> Result<(&str, Cow<'_, str>), Cow<'static, str>> {
         let webapp_url = self.webapp_url.as_deref().ok_or("Webapp URL is not set")?;
         let rpc_url = self.rpc_url_resolver.resolve(&self.rpc_url).await?;
         Ok((webapp_url, rpc_url))

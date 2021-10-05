@@ -7,6 +7,7 @@ mod run;
 mod run_cmd;
 mod runner;
 mod subcommand;
+mod utils;
 
 pub use config::*;
 pub use params::*;

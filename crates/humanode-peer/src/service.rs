@@ -362,10 +362,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let webapp_qrcode = bioauth_flow_config
         .qrcode_params()
         .await
-        .map_err(ServiceError::Other)
-        .and_then(|(webapp_url, rpc_url)| {
-            crate::qrcode::WebApp::new(webapp_url, &rpc_url).map_err(ServiceError::Other)
-        });
+        .and_then(|(webapp_url, rpc_url)| crate::qrcode::WebApp::new(webapp_url, &rpc_url));
 
     let render_qr_code = move |prompt: &str| match &webapp_qrcode {
         Ok(ref qrcode) => qrcode.print(),
