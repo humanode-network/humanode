@@ -288,7 +288,6 @@ pub mod pallet {
 
             let auth_ticket = Self::extract_auth_ticket_checked(req)?;
 
-            let current_moment = T::CurrentMoment::now();
             let public_key = auth_ticket.public_key.clone();
 
             // Update storage.
@@ -310,6 +309,7 @@ pub mod pallet {
                         })?;
 
                         // Update internal state.
+                        let current_moment = T::CurrentMoment::now();
                         consumed_auth_ticket_nonces.push(auth_ticket.nonce);
                         active_authentications.push(Authentication {
                             public_key: public_key.clone(),
