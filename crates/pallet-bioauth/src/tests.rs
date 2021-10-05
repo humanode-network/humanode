@@ -146,7 +146,7 @@ fn authentication_expiration_lifecycle() {
             mock.expect_now().with().return_const(expires_at);
         });
 
-        // System::set_block_number(expires_at);
+        System::set_block_number(expires_at);
         Bioauth::on_initialize(block_number_ticket_invalid);
 
         // Ensure that authentication is gone.
