@@ -17,10 +17,11 @@ use sp_runtime::{
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-type Moment = u64;
-
 /// A timestamp: milliseconds since the unix epoch.
-type UnixMilliseconds = u64;
+pub type UnixMilliseconds = u64;
+
+/// An index to a block.
+pub type BlockNumber = u64;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -111,7 +112,7 @@ where
 
 mock! {
     pub CurrentMomentProvider {
-        pub fn now(&self) -> Moment;
+        pub fn now(&self) -> UnixMilliseconds;
     }
 }
 
@@ -119,8 +120,8 @@ thread_local! {
     pub static MOCK_CURRENT_MOMENT_PROVIDER: RefCell<MockCurrentMomentProvider> = RefCell::new(MockCurrentMomentProvider::new());
 }
 
-impl super::CurrentMoment<Moment> for MockCurrentMomentProvider {
-    fn now() -> Moment {
+impl super::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
+    fn now() -> UnixMilliseconds {
         MOCK_CURRENT_MOMENT_PROVIDER.with(|val| val.borrow().now())
     }
 }
@@ -145,7 +146,7 @@ impl system::Config for Test {
     type Origin = Origin;
     type Call = Call;
     type Index = u64;
-    type BlockNumber = u64;
+    type BlockNumber = BlockNumber;
     type Hash = H256;
     type Hashing = BlakeTwo256;
     type AccountId = u64;
@@ -183,7 +184,7 @@ impl pallet_bioauth::Config for Test {
     type OpaqueAuthTicket = MockOpaqueAuthTicket;
     type AuthTicketCoverter = MockAuthTicketConverter;
     type ValidatorSetUpdater = MockValidatorSetUpdater;
-    type Moment = Moment;
+    type Moment = UnixMilliseconds;
     type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }

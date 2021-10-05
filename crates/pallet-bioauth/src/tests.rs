@@ -2,6 +2,8 @@ use crate::{self as pallet_bioauth, mock::*, *};
 use frame_support::{assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*};
 use mockall::predicate;
 
+const JANUARY_1_2021: UnixMilliseconds = 1609459200;
+
 pub fn make_input(
     public_key: &[u8],
     nonce: &[u8],
@@ -23,7 +25,7 @@ fn authentication_with_empty_state() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
         let input = make_input(b"qwe", b"rty", b"should_be_valid");
-        let current_moment = 0u64;
+        let current_moment = JANUARY_1_2021;
         let expires_at = current_moment + AUTHENTICATIONS_EXPIRE_AFTER;
 
         // Set up mock expectations.
@@ -61,7 +63,7 @@ fn authentication_with_empty_state() {
 fn authentication_expires() {
     new_test_ext().execute_with(|| {
         // Prepare the test preconditions.
-        let expires_at = 0u64;
+        let expires_at = JANUARY_1_2021;
         <ActiveAuthentications<Test>>::put(vec![Authentication {
             public_key: b"alice_pk".to_vec(),
             expires_at,
@@ -96,16 +98,16 @@ fn authentication_expires() {
 fn authentication_expiration_lifecycle() {
     new_test_ext().execute_with(|| {
         // Prepare the test preconditions.
-        let mut current_moment = 0u64;
-        let expires_at_moment = current_moment + AUTHENTICATIONS_EXPIRE_AFTER;
+        let mut current_moment = JANUARY_1_2021;
+        let expires_at = current_moment + AUTHENTICATIONS_EXPIRE_AFTER;
 
         let current_block_number = System::block_number();
-        let block_number_ticket_invalid =
-            current_block_number + (expires_at_moment - current_moment) / SLOT_DURATION;
+        let block_number_ticket_invalid: mock::BlockNumber =
+            current_block_number + (expires_at - current_moment) / SLOT_DURATION;
 
         let authnetication = Authentication {
             public_key: b"alice_pk".to_vec(),
-            expires_at: expires_at_moment,
+            expires_at,
         };
         let nonce = b"alice_auth_ticket_nonce".to_vec();
 
@@ -141,7 +143,7 @@ fn authentication_expiration_lifecycle() {
         });
 
         with_mock_current_moment_provider(|mock| {
-            mock.expect_now().with().return_const(expires_at_moment);
+            mock.expect_now().with().return_const(expires_at);
         });
 
         // System::set_block_number(expires_at);
@@ -160,7 +162,7 @@ fn authentication_expiration_lifecycle() {
 fn authentication_when_previous_one_has_been_expired() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
-        let expires_at = 0u64;
+        let expires_at = JANUARY_1_2021;
         <ActiveAuthentications<Test>>::put(vec![Authentication {
             public_key: b"alice_pk".to_vec(),
             expires_at,
@@ -268,7 +270,7 @@ fn authentication_with_conlicting_nonce() {
 fn authentication_with_conlicting_nonce_after_expiration() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
-        let expires_at = 0u64;
+        let expires_at = JANUARY_1_2021;
         <ActiveAuthentications<Test>>::put(vec![Authentication {
             public_key: b"alice_pk".to_vec(),
             expires_at,
