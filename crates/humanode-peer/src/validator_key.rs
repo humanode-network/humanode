@@ -99,6 +99,27 @@ where
     T: AppPublic,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
+        use sp_application_crypto::Ss58Codec;
+        write!(f, "{}", self.0.to_ss58check())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn display() {
+        let key = AppCryptoPublic(sp_consensus_aura::sr25519::AuthorityId::default());
+        assert_eq!(
+            key.to_string(),
+            "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM"
+        );
+    }
+
+    #[test]
+    fn display_matches_raw_key() {
+        let key = sp_consensus_aura::sr25519::AuthorityId::default();
+        assert_eq!(key.to_string(), AppCryptoPublic(key).to_string());
     }
 }
