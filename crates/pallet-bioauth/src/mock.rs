@@ -17,6 +17,12 @@ use sp_runtime::{
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
+/// A timestamp: milliseconds since the unix epoch.
+pub type UnixMilliseconds = u64;
+
+/// An index to a block.
+pub type BlockNumber = u64;
+
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
     pub enum Test where
@@ -35,7 +41,7 @@ pub struct MockOpaqueAuthTicket(pub AuthTicket<Vec<u8>>);
 
 impl AsRef<[u8]> for MockOpaqueAuthTicket {
     fn as_ref(&self) -> &[u8] {
-        panic!("should be ununsed in tests")
+        panic!("should be unused in tests")
     }
 }
 
@@ -104,6 +110,29 @@ where
     MOCK_VALIDATOR_SET_UPDATER.with(|var| f(&mut *var.borrow_mut()))
 }
 
+mock! {
+    pub CurrentMomentProvider {
+        pub fn now(&self) -> UnixMilliseconds;
+    }
+}
+
+thread_local! {
+    pub static MOCK_CURRENT_MOMENT_PROVIDER: RefCell<MockCurrentMomentProvider> = RefCell::new(MockCurrentMomentProvider::new());
+}
+
+impl super::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
+    fn now() -> UnixMilliseconds {
+        MOCK_CURRENT_MOMENT_PROVIDER.with(|val| val.borrow().now())
+    }
+}
+
+pub fn with_mock_current_moment_provider<F, R>(f: F) -> R
+where
+    F: FnOnce(&mut MockCurrentMomentProvider) -> R,
+{
+    MOCK_CURRENT_MOMENT_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
+}
+
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
@@ -117,7 +146,7 @@ impl system::Config for Test {
     type Origin = Origin;
     type Call = Call;
     type Index = u64;
-    type BlockNumber = u64;
+    type BlockNumber = BlockNumber;
     type Hash = H256;
     type Hashing = BlakeTwo256;
     type AccountId = u64;
@@ -135,10 +164,16 @@ impl system::Config for Test {
     type OnSetCode = ();
 }
 
-pub const AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS: u64 = 24;
+pub const MILLISECS_PER_BLOCK: u64 = 6000;
+pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
+
+const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
+const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
+
+pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = TIMESTAMP_MINUTE;
 
 parameter_types! {
-    pub const AuthenticationsExpireAfter: u64 = AUTHENTICATIONS_EXPIRE_AFTER_BLOCKS;
+    pub const AuthenticationsExpireAfter: UnixMilliseconds = AUTHENTICATIONS_EXPIRE_AFTER;
 }
 
 impl pallet_bioauth::Config for Test {
@@ -149,6 +184,8 @@ impl pallet_bioauth::Config for Test {
     type OpaqueAuthTicket = MockOpaqueAuthTicket;
     type AuthTicketCoverter = MockAuthTicketConverter;
     type ValidatorSetUpdater = MockValidatorSetUpdater;
+    type Moment = UnixMilliseconds;
+    type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 
