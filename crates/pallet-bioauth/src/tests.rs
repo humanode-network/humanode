@@ -127,7 +127,7 @@ fn authentication_expires_exactly_at_the_moment() {
 }
 
 /// This test verifies that authentication expiration logic works correctly after getting
-/// a block whose timestamp is after the the moment at which the authentication becomes expired.
+/// a block which timestamp is after the moment at which the authentication becomes expired.
 #[test]
 fn authentication_expires_in_successive_block() {
     new_test_ext().execute_with(|| {
