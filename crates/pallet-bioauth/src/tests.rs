@@ -167,7 +167,7 @@ fn authentication_expires_in_successive_block() {
 }
 
 /// This test ensures that authentication remains active for the whole period up until the block
-/// at which it should expire arrives.
+/// with the timestamp past it's expiration time arrives.
 #[test]
 fn authentication_expiration_lifecycle() {
     new_test_ext().execute_with(|| {
