@@ -3,7 +3,9 @@
 use structopt::StructOpt;
 
 use crate::{
-    cli::{params, CliConfigurationExt, SubstrateCliConfigurationProvider},
+    cli::{
+        params, utils::application_error, CliConfigurationExt, SubstrateCliConfigurationProvider,
+    },
     configuration::BioauthFlow,
     qrcode::WebApp,
 };
@@ -22,19 +24,16 @@ pub struct AuthUrlCmd {
 
 impl AuthUrlCmd {
     /// Run the command.
-    pub fn run(&self, bioauth_flow: Option<BioauthFlow>) -> sc_cli::Result<()> {
-        let (webapp_url, rpc_url) = match bioauth_flow {
-            Some(BioauthFlow {
-                webapp_url: Some(ref webapp_url),
-                rpc_url: Some(ref rpc_url),
-                ..
-            }) => (webapp_url, rpc_url),
-            _ => {
-                return Err("bioauth flow is not configured".into());
-            }
-        };
+    pub async fn run(&self, bioauth_flow: Option<BioauthFlow>) -> sc_cli::Result<()> {
+        let bioauth_flow = bioauth_flow
+            .ok_or("bioauth flow is not configured")
+            .map_err(application_error)?;
+        let (webapp_url, rpc_url) = bioauth_flow
+            .qrcode_params()
+            .await
+            .map_err(application_error)?;
 
-        let webapp = WebApp::new(webapp_url, rpc_url)?;
+        let webapp = WebApp::new(webapp_url, rpc_url).map_err(application_error)?;
         println!("{}", webapp.url());
         Ok(())
     }

@@ -81,10 +81,10 @@ impl<C: SubstrateCli> Runner<C> {
         Ok(res?)
     }
 
-    /// Execute asyncronously.
+    /// Run some tasks with task manager.
     /// The runner is executing till completion, or until till the signal is received.
     /// Task manager is shutdown cleanly at the end (even on error).
-    pub async fn async_run<R, F, E>(
+    pub async fn run_tasks<R, F, E>(
         self,
         runner: impl FnOnce(Configuration) -> R,
     ) -> std::result::Result<(), E>
@@ -96,6 +96,20 @@ impl<C: SubstrateCli> Runner<C> {
         let (future, task_manager) = runner(self.config).await?;
         let future = with_signal(future);
         let future = with_clean_shutdown(future, task_manager);
+        future.await
+    }
+
+    /// Execute asynchronously.
+    pub async fn async_run<F, E>(
+        self,
+        runner: impl FnOnce(Configuration) -> F,
+    ) -> std::result::Result<(), E>
+    where
+        F: Future<Output = std::result::Result<(), E>>,
+        E: std::error::Error + Send + Sync + 'static + From<ServiceError> + From<CliError>,
+    {
+        let future = runner(self.config);
+        let future = with_signal(future);
         future.await
     }
 

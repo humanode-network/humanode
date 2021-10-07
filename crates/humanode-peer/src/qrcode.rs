@@ -1,5 +1,7 @@
 //! QR Code generation.
 
+use std::borrow::Cow;
+
 use tracing::{error, info};
 use url::Url;
 
@@ -11,12 +13,15 @@ pub struct WebApp {
 
 impl WebApp {
     /// Create a new [`WebApp`] and validate that the resulting URL is valid.
-    pub fn new(base_url: &str, rpc_url: &str) -> Result<Self, String> {
-        let mut url = Url::parse(base_url).map_err(|err| err.to_string())?;
+    pub fn new(
+        base_url: impl AsRef<str>,
+        rpc_url: impl AsRef<str>,
+    ) -> Result<Self, Cow<'static, str>> {
+        let mut url = Url::parse(base_url.as_ref()).map_err(|err| err.to_string())?;
         url.path_segments_mut()
-            .map_err(|_| "invalid base URL".to_owned())?
+            .map_err(|()| Cow::Borrowed("invalid web app URL"))?
             .push("open");
-        url.query_pairs_mut().append_pair("url", rpc_url);
+        url.query_pairs_mut().append_pair("url", rpc_url.as_ref());
         Ok(Self { url })
     }
 

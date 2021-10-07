@@ -91,10 +91,19 @@ fn provide_facetec_session_token() -> op_get_facetec_session_token::Response {
     }
 }
 
-fn provide_facetec_device_sdk_params() -> op_get_facetec_device_sdk_params::Response {
+fn provide_facetec_device_sdk_params_in_dev_mode() -> op_get_facetec_device_sdk_params::Response {
     op_get_facetec_device_sdk_params::Response {
         public_face_map_encryption_key: "key".to_owned(),
         device_key_identifier: "id".to_owned(),
+        production_key: None,
+    }
+}
+
+fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk_params::Response {
+    op_get_facetec_device_sdk_params::Response {
+        public_face_map_encryption_key: "key".to_owned(),
+        device_key_identifier: "id".to_owned(),
+        production_key: Some("ProdKey".to_owned()),
     }
 }
 
@@ -261,13 +270,13 @@ async fn it_denies_get_facetec_session_token() {
 }
 
 #[tokio::test]
-async fn it_works_get_facetec_device_sdk_params() {
+async fn it_works_get_facetec_device_sdk_params_in_dev_mode() {
     let input = op_get_facetec_device_sdk_params::Request;
 
     let mut mock_logic = MockLogic::new();
     mock_logic
         .expect_get_facetec_device_sdk_params()
-        .returning(|_| Ok(provide_facetec_device_sdk_params()));
+        .returning(|_| Ok(provide_facetec_device_sdk_params_in_dev_mode()));
 
     let logic = Arc::new(mock_logic);
     let filter = root(logic);
@@ -279,7 +288,34 @@ async fn it_works_get_facetec_device_sdk_params() {
         .reply(&filter)
         .await;
 
-    let expected_response = serde_json::to_string(&provide_facetec_device_sdk_params()).unwrap();
+    let expected_response =
+        serde_json::to_string(&provide_facetec_device_sdk_params_in_dev_mode()).unwrap();
+
+    assert_eq!(res.status(), StatusCode::OK);
+    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
+}
+
+#[tokio::test]
+async fn it_works_get_facetec_device_sdk_params_in_prod_mode() {
+    let input = op_get_facetec_device_sdk_params::Request;
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_get_facetec_device_sdk_params()
+        .returning(|_| Ok(provide_facetec_device_sdk_params_in_prod_mode()));
+
+    let logic = Arc::new(mock_logic);
+    let filter = root(logic);
+
+    let res = warp::test::request()
+        .method("GET")
+        .path("/facetec-device-sdk-params")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_response =
+        serde_json::to_string(&provide_facetec_device_sdk_params_in_prod_mode()).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
     assert_eq!(res.body().as_ref(), expected_response.as_bytes());

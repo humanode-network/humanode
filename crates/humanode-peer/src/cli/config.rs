@@ -5,9 +5,10 @@ use sc_chain_spec::get_extension;
 use crate::{
     chain_spec::Extensions,
     configuration::{self, Configuration},
+    rpc_url::RpcUrl,
 };
 
-use super::params;
+use super::{params, BioauthFlowParams};
 
 /// An extension to the [`sc_cli::CliConfiguration`] to enable us to pass custom params.
 pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
@@ -28,14 +29,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             .unwrap_or_default();
 
         let bioauth_flow = self.bioauth_params().map(|params| {
-            let rpc_url = params.rpc_url.clone().or_else(|| {
-                substrate
-                    .rpc_http
-                    .map(|v| v.port())
-                    .map(|port| format!("http://localhost:{}", port))
-            });
+            let rpc_port = substrate.rpc_http.map(|v| v.port());
+            let rpc_url = rpc_url_from_params(params, rpc_port);
 
             configuration::BioauthFlow {
+                rpc_url_resolver: Default::default(),
                 robonode_url: params
                     .robonode_url
                     .clone()
@@ -79,4 +77,25 @@ impl<T: sc_cli::CliConfiguration> SubstrateCliConfigurationProvider for T {
     fn substrate_cli_configuration(&self) -> &Self::SubstrateCliConfiguration {
         self
     }
+}
+
+/// Construct an RPC URL from the bioauth flow params and an RPC endpoint port.
+fn rpc_url_from_params(params: &BioauthFlowParams, rpc_port: Option<u16>) -> RpcUrl {
+    if let Some(val) = &params.rpc_url {
+        return RpcUrl::Set(val.clone());
+    }
+    if params.rpc_url_unset {
+        return RpcUrl::Unset;
+    }
+    if params.rpc_url_ngrok_detect {
+        return RpcUrl::DetectFromNgrok {
+            tunnel_name: params.rpc_url_ngrok_detect_from.clone(),
+        };
+    }
+
+    if let Some(rpc_endpoint_port) = rpc_port {
+        return RpcUrl::LocalhostWithPort { rpc_endpoint_port };
+    }
+
+    RpcUrl::Unset
 }
