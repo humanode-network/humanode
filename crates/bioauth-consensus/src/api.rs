@@ -70,3 +70,142 @@ where
         Ok(is_authorized)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use mockall::predicate::*;
+    use mockall::*;
+    use node_primitives::Block;
+    use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi};
+    use std::sync::Arc;
+
+    type MockPublicKeyType = ();
+
+    mock! {
+        RuntimeApi {
+            fn is_authorized(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<bool>, ApiError>;
+        }
+    }
+
+    #[derive(Clone)]
+    struct MockWrapperRuntimeApi(Arc<MockRuntimeApi>);
+
+    sp_api::mock_impl_runtime_apis! {
+        impl bioauth_consensus_api::BioauthConsensusApi<Block, MockPublicKeyType> for MockWrapperRuntimeApi {
+
+            #[advanced]
+            fn is_authorized(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<bool>, ApiError> {
+                self.0.is_authorized(at, id)
+            }
+        }
+    }
+
+    mock! {
+        #[derive(Debug)]
+        Client {}
+
+        impl ProvideRuntimeApi<Block> for Client {
+            type Api = MockWrapperRuntimeApi;
+
+            fn runtime_api<'a>(&'a self) -> ApiRef<'a, MockWrapperRuntimeApi>;
+        }
+    }
+
+    #[test]
+    fn it_permits_authorization_verifier() {
+        let mut mock_client = MockClient::new();
+
+        let mut mock_runtime_api = MockRuntimeApi::new();
+        mock_runtime_api
+            .expect_is_authorized()
+            .returning(|_, _| Ok(NativeOrEncoded::from(true)));
+
+        let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
+
+        mock_client
+            .expect_runtime_api()
+            .returning(move || runtime_api.clone().into());
+
+        let client = Arc::new(mock_client);
+
+        let authorization_verifier: AuthorizationVerifier<Block, _, MockPublicKeyType> =
+            AuthorizationVerifier::new(Arc::clone(&client));
+
+        let res = crate::AuthorizationVerifier::is_authorized(
+            &authorization_verifier,
+            &sp_api::BlockId::Number(0),
+            &MockPublicKeyType::default(),
+        );
+
+        assert!(res.unwrap());
+    }
+
+    #[test]
+    fn it_denies_authorization_verifier_if_id_not_bioauth_authorized() {
+        let mut mock_client = MockClient::new();
+
+        let mut mock_runtime_api = MockRuntimeApi::new();
+        mock_runtime_api
+            .expect_is_authorized()
+            .returning(|_, _| Ok(NativeOrEncoded::from(false)));
+
+        let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
+
+        mock_client
+            .expect_runtime_api()
+            .returning(move || runtime_api.clone().into());
+
+        let client = Arc::new(mock_client);
+
+        let authorization_verifier: AuthorizationVerifier<Block, _, MockPublicKeyType> =
+            AuthorizationVerifier::new(Arc::clone(&client));
+
+        let res = crate::AuthorizationVerifier::is_authorized(
+            &authorization_verifier,
+            &sp_api::BlockId::Number(0),
+            &MockPublicKeyType::default(),
+        );
+
+        assert!(!res.unwrap());
+    }
+
+    #[test]
+    fn it_denies_authorization_verifier_with_error_is_authorized() {
+        let mut mock_client = MockClient::new();
+
+        let mut mock_runtime_api = MockRuntimeApi::new();
+        mock_runtime_api.expect_is_authorized().returning(|_, _| {
+            Err((Box::from("Test error") as Box<dyn std::error::Error + Send + Sync>).into())
+        });
+
+        let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
+
+        mock_client
+            .expect_runtime_api()
+            .returning(move || runtime_api.clone().into());
+
+        let client = Arc::new(mock_client);
+
+        let authorization_verifier: AuthorizationVerifier<Block, _, MockPublicKeyType> =
+            AuthorizationVerifier::new(Arc::clone(&client));
+
+        let res = crate::AuthorizationVerifier::is_authorized(
+            &authorization_verifier,
+            &sp_api::BlockId::Number(0),
+            &MockPublicKeyType::default(),
+        );
+
+        match res.unwrap_err() {
+            AuthorizationVerifierError::UnableToExtractAuthorizedIds(e)
+                if e.to_string() == "Test error" => {}
+            ref e => panic!(
+                "assertion failed: `{:?}` does not match `{}`",
+                e,
+                stringify!(AuthorizationVerifierError::UnableToExtractAuthorizedIds(
+                    "Test error"
+                ))
+            ),
+        }
+    }
+}
