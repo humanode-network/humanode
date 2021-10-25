@@ -26,6 +26,9 @@ pub mod keystore;
 #[cfg(feature = "aura-integration")]
 pub mod aura;
 
+#[cfg(test)]
+mod tests;
+
 mod traits;
 
 pub use traits::*;
