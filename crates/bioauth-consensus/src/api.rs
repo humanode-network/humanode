@@ -171,7 +171,7 @@ mod tests {
     }
 
     #[test]
-    fn it_denies_authorization_verifier_with_error_is_authorized() {
+    fn it_denies_authorization_verifier_with_runtime_error_is_authorized() {
         let mut mock_client = MockClient::new();
 
         let mut mock_runtime_api = MockRuntimeApi::new();
