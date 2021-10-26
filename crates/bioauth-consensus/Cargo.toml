@@ -26,6 +26,7 @@ tokio = { version = "1", features = ["rt-multi-thread"] }
 mockall = "0.10"
 node-primitives = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }
 
 [features]

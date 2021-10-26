@@ -1,14 +1,18 @@
+use futures::future;
 use mockall::predicate::*;
 use mockall::*;
 use node_primitives::{Block, BlockNumber, Hash, Header};
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
 use sp_api::{ApiRef, ProvideRuntimeApi, TransactionFor};
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
-use sp_consensus::{BlockOrigin, Error as ConsensusError};
-use sp_runtime::{traits::Block as BlockT, Digest};
-use std::{collections::HashMap, sync::Arc};
+use sp_consensus::{BlockOrigin, Environment, Error as ConsensusError};
+use sp_runtime::{
+    traits::{Block as BlockT, DigestFor},
+    Digest,
+};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 
-use crate::{BioauthBlockImport, BioauthBlockImportError};
+use crate::{BioauthBlockImport, BioauthBlockImportError, BioauthProposer, BioauthProposerError};
 
 type MockPublicKeyType = ();
 type MockRuntimeApi = ();
@@ -45,7 +49,7 @@ mock! {
 /// BioauthBlockImport requires impl std::error::Error.
 #[derive(Debug, thiserror::Error)]
 pub enum MockBlockAuthorExtractorError {
-    #[error("block author error")]
+    #[error("")]
     BlockAuthorExtractorError,
 }
 
@@ -72,7 +76,7 @@ mock! {
 /// BioauthBlockImport requires impl std::error::Error.
 #[derive(Debug, thiserror::Error)]
 pub enum MockAuthorizationVerifierError {
-    #[error("authorization error")]
+    #[error("")]
     AuthorizationVerifierError,
 }
 
@@ -117,6 +121,98 @@ mock! {
     }
 }
 
+/// BioauthProposer requires impl std::error::Error.
+#[derive(Debug, thiserror::Error, PartialEq)]
+pub enum MockValidatorKeyExtractorError {
+    #[error("")]
+    ValidatorKeyExtractorError,
+}
+
+mock! {
+    ValidatorKeyExtractor {}
+
+    impl crate::ValidatorKeyExtractor for ValidatorKeyExtractor {
+        type Error = MockValidatorKeyExtractorError;
+        type PublicKeyType = MockPublicKeyType;
+
+        fn extract_validator_key(&self) -> Result<Option<MockPublicKeyType>, MockValidatorKeyExtractorError>;
+    }
+}
+
+type MockProposal = future::Ready<
+    Result<
+        sp_consensus::Proposal<Block, TransactionFor<MockClient, Block>, ()>,
+        sp_blockchain::Error,
+    >,
+>;
+
+mock! {
+    Proposer {
+        fn propose(
+            &self,
+            inherent_data: sp_inherents::InherentData,
+            inherent_digests: DigestFor<Block>,
+            max_duration: Duration,
+            block_size_limit: Option<usize>,
+        ) -> MockProposal;
+    }
+}
+
+#[derive(Clone)]
+struct MockWrapperProposer(Arc<MockProposer>, &'static str);
+
+/// We need to be able to compare MockProposer.
+impl std::cmp::PartialEq for MockWrapperProposer {
+    fn eq(&self, other: &MockWrapperProposer) -> bool {
+        if self.1 == other.1 {
+            return true;
+        }
+        false
+    }
+}
+
+/// We need to be able to debug MockProposer.
+impl std::fmt::Debug for MockWrapperProposer {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.1)
+    }
+}
+
+impl sp_consensus::Proposer<Block> for MockWrapperProposer {
+    type Error = sp_blockchain::Error;
+    type Transaction = TransactionFor<MockClient, Block>;
+    type Proposal = MockProposal;
+    type ProofRecording = sp_consensus::DisableProofRecording;
+    type Proof = ();
+
+    fn propose(
+        self,
+        inherent_data: sp_inherents::InherentData,
+        inherent_digests: DigestFor<Block>,
+        max_duration: Duration,
+        block_size_limit: Option<usize>,
+    ) -> MockProposal {
+        self.0.propose(
+            inherent_data,
+            inherent_digests,
+            max_duration,
+            block_size_limit,
+        )
+    }
+}
+
+mock! {
+    BasicAuthorshipProposer {}
+
+    impl Environment<Block> for BasicAuthorshipProposer {
+        type Proposer = MockWrapperProposer;
+        type CreateProposer = future::BoxFuture<'static, Result<MockWrapperProposer, sp_blockchain::Error>>;
+        type Error = sp_blockchain::Error;
+
+        fn init(&mut self, parent_header: &<Block as BlockT>::Header) -> future::BoxFuture<'static, Result<MockWrapperProposer, sp_blockchain::Error>>;
+    }
+}
+
 /// A helper function to get a current blockchain info.
 fn prepare_get_info() -> sp_blockchain::Info<Block> {
     sp_blockchain::Info::<Block> {
@@ -158,6 +254,22 @@ fn extract_bioauth_err(
         }
     }
     panic!("Unexpected consensus error: {}", err);
+}
+
+fn extract_proposer_err(
+    err: &sp_blockchain::Error,
+) -> &BioauthProposerError<MockValidatorKeyExtractorError, MockAuthorizationVerifierError> {
+    if let sp_blockchain::Error::Consensus(sp_consensus::Error::Other(boxed_err)) = err {
+        if let Some(raw_err) =
+            boxed_err.downcast_ref::<BioauthProposerError<
+                MockValidatorKeyExtractorError,
+                MockAuthorizationVerifierError,
+            >>()
+        {
+            return raw_err;
+        }
+    }
+    panic!("Unexpected proposer error: {}", err);
 }
 
 macro_rules! assert_consensus_error {
@@ -383,4 +495,280 @@ async fn it_denies_block_import_with_error_not_bioauth_authorized() {
         res.unwrap_err(),
         BioauthBlockImportError::NotBioauthAuthorized
     );
+}
+
+#[tokio::test]
+async fn it_permits_bioauth_proposer() {
+    let mock_proposer = MockProposer::new();
+    let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
+    let cloned_wrapper_proposer = wrapper_proposer.clone();
+
+    let mut mock_basic_authorship_proposer = MockBasicAuthorshipProposer::new();
+    mock_basic_authorship_proposer
+        .expect_init()
+        .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
+
+    let basic_authorship_proposer = mock_basic_authorship_proposer;
+
+    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
+    mock_authorization_verifier
+        .expect_is_authorized()
+        .returning(|_, _| Ok(true));
+
+    let authorization_verifier = mock_authorization_verifier;
+
+    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
+    mock_validator_key_extractor
+        .expect_extract_validator_key()
+        .returning(|| Ok(Some(())));
+
+    let validator_key_extractor = mock_validator_key_extractor;
+
+    let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
+        basic_authorship_proposer,
+        validator_key_extractor,
+        authorization_verifier,
+    );
+
+    let res = bioauth_proposer.init(&Header {
+        parent_hash: Default::default(),
+        number: 1,
+        state_root: Default::default(),
+        extrinsics_root: Default::default(),
+        digest: Digest { logs: vec![] },
+    });
+
+    assert_eq!(res.await.unwrap(), wrapper_proposer);
+}
+
+#[tokio::test]
+async fn it_denies_bioauth_proposer_with_error_validator_key_extractor() {
+    let mock_proposer = MockProposer::new();
+    let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
+    let cloned_wrapper_proposer = wrapper_proposer.clone();
+
+    let mut mock_basic_authorship_proposer = MockBasicAuthorshipProposer::new();
+    mock_basic_authorship_proposer
+        .expect_init()
+        .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
+
+    let basic_authorship_proposer = mock_basic_authorship_proposer;
+
+    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
+    mock_authorization_verifier
+        .expect_is_authorized()
+        .returning(|_, _| Ok(true));
+
+    let authorization_verifier = mock_authorization_verifier;
+
+    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
+    mock_validator_key_extractor
+        .expect_extract_validator_key()
+        .returning(|| Err(MockValidatorKeyExtractorError::ValidatorKeyExtractorError));
+
+    let validator_key_extractor = mock_validator_key_extractor;
+
+    let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
+        basic_authorship_proposer,
+        validator_key_extractor,
+        authorization_verifier,
+    );
+
+    let res = bioauth_proposer.init(&Header {
+        parent_hash: Default::default(),
+        number: 1,
+        state_root: Default::default(),
+        extrinsics_root: Default::default(),
+        digest: Digest { logs: vec![] },
+    });
+
+    let err = res.await.unwrap_err();
+    let err = extract_proposer_err(&err);
+
+    match err {
+        BioauthProposerError::ValidatorKeyExtraction(
+            MockValidatorKeyExtractorError::ValidatorKeyExtractorError,
+        ) => (),
+        ref e => panic!(
+            "assertion failed: `{:?}` does not match `{}`",
+            e,
+            BioauthProposerError::ValidatorKeyExtraction::<
+                MockValidatorKeyExtractorError,
+                MockAuthorizationVerifierError,
+            >(MockValidatorKeyExtractorError::ValidatorKeyExtractorError,)
+        ),
+    }
+}
+
+#[tokio::test]
+async fn it_denies_bioauth_proposer_with_error_unable_to_extract_validator_key() {
+    let mock_proposer = MockProposer::new();
+    let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
+    let cloned_wrapper_proposer = wrapper_proposer.clone();
+
+    let mut mock_basic_authorship_proposer = MockBasicAuthorshipProposer::new();
+    mock_basic_authorship_proposer
+        .expect_init()
+        .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
+
+    let basic_authorship_proposer = mock_basic_authorship_proposer;
+
+    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
+    mock_authorization_verifier
+        .expect_is_authorized()
+        .returning(|_, _| Ok(true));
+
+    let authorization_verifier = mock_authorization_verifier;
+
+    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
+    mock_validator_key_extractor
+        .expect_extract_validator_key()
+        .returning(|| Ok(None));
+
+    let validator_key_extractor = mock_validator_key_extractor;
+
+    let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
+        basic_authorship_proposer,
+        validator_key_extractor,
+        authorization_verifier,
+    );
+
+    let res = bioauth_proposer.init(&Header {
+        parent_hash: Default::default(),
+        number: 1,
+        state_root: Default::default(),
+        extrinsics_root: Default::default(),
+        digest: Digest { logs: vec![] },
+    });
+
+    let err = res.await.unwrap_err();
+    let err = extract_proposer_err(&err);
+
+    match err {
+        BioauthProposerError::UnableToExtractValidatorKey => (),
+        ref e => panic!(
+            "assertion failed: `{:?}` does not match `{}`",
+            e,
+            BioauthProposerError::UnableToExtractValidatorKey::<
+                MockValidatorKeyExtractorError,
+                MockAuthorizationVerifierError,
+            >
+        ),
+    }
+}
+
+#[tokio::test]
+async fn it_denies_bioauth_proposer_with_error_authorization_verification() {
+    let mock_proposer = MockProposer::new();
+    let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
+    let cloned_wrapper_proposer = wrapper_proposer.clone();
+
+    let mut mock_basic_authorship_proposer = MockBasicAuthorshipProposer::new();
+    mock_basic_authorship_proposer
+        .expect_init()
+        .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
+
+    let basic_authorship_proposer = mock_basic_authorship_proposer;
+
+    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
+    mock_authorization_verifier
+        .expect_is_authorized()
+        .returning(|_, _| Err(MockAuthorizationVerifierError::AuthorizationVerifierError));
+
+    let authorization_verifier = mock_authorization_verifier;
+
+    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
+    mock_validator_key_extractor
+        .expect_extract_validator_key()
+        .returning(|| Ok(Some(())));
+
+    let validator_key_extractor = mock_validator_key_extractor;
+
+    let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
+        basic_authorship_proposer,
+        validator_key_extractor,
+        authorization_verifier,
+    );
+
+    let res = bioauth_proposer.init(&Header {
+        parent_hash: Default::default(),
+        number: 1,
+        state_root: Default::default(),
+        extrinsics_root: Default::default(),
+        digest: Digest { logs: vec![] },
+    });
+
+    let err = res.await.unwrap_err();
+    let err = extract_proposer_err(&err);
+
+    match err {
+        BioauthProposerError::AuthorizationVerification(
+            MockAuthorizationVerifierError::AuthorizationVerifierError,
+        ) => (),
+        ref e => panic!(
+            "assertion failed: `{:?}` does not match `{}`",
+            e,
+            BioauthProposerError::AuthorizationVerification::<
+                MockValidatorKeyExtractorError,
+                MockAuthorizationVerifierError,
+            >(MockAuthorizationVerifierError::AuthorizationVerifierError,)
+        ),
+    }
+}
+
+#[tokio::test]
+async fn it_denies_bioauth_proposer_with_error_not_bioauth_authorized() {
+    let mock_proposer = MockProposer::new();
+    let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
+    let cloned_wrapper_proposer = wrapper_proposer.clone();
+
+    let mut mock_basic_authorship_proposer = MockBasicAuthorshipProposer::new();
+    mock_basic_authorship_proposer
+        .expect_init()
+        .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
+
+    let basic_authorship_proposer = mock_basic_authorship_proposer;
+
+    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
+    mock_authorization_verifier
+        .expect_is_authorized()
+        .returning(|_, _| Ok(false));
+
+    let authorization_verifier = mock_authorization_verifier;
+
+    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
+    mock_validator_key_extractor
+        .expect_extract_validator_key()
+        .returning(|| Ok(Some(())));
+
+    let validator_key_extractor = mock_validator_key_extractor;
+
+    let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
+        basic_authorship_proposer,
+        validator_key_extractor,
+        authorization_verifier,
+    );
+
+    let res = bioauth_proposer.init(&Header {
+        parent_hash: Default::default(),
+        number: 1,
+        state_root: Default::default(),
+        extrinsics_root: Default::default(),
+        digest: Digest { logs: vec![] },
+    });
+
+    let err = res.await.unwrap_err();
+    let err = extract_proposer_err(&err);
+
+    match err {
+        BioauthProposerError::NotBioauthAuthorized => (),
+        ref e => panic!(
+            "assertion failed: `{:?}` does not match `{}`",
+            e,
+            BioauthProposerError::NotBioauthAuthorized::<
+                MockValidatorKeyExtractorError,
+                MockAuthorizationVerifierError,
+            >
+        ),
+    }
 }
