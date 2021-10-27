@@ -27,6 +27,9 @@ pub mod keystore;
 pub mod aura;
 
 #[cfg(test)]
+mod mock;
+
+#[cfg(test)]
 mod tests;
 
 mod traits;
