@@ -112,8 +112,8 @@ mod tests {
         }
     }
 
-    /// This test verifies authorizatin success if a respective runtime_api call (is_authorized)
-    /// succeeds and the provided id is already authorized.
+    /// This test verifies authorization success when a respective runtime_api call (is_authorized)
+    /// succeeds and the provided id is authorized.
     #[test]
     fn success() {
         let mut mock_client = MockClient::new();
@@ -143,7 +143,7 @@ mod tests {
         assert!(res.unwrap());
     }
 
-    /// This test verifies authorizatin failer if a respective runtime_api call (is_authorized)
+    /// This test verifies authorization failure when a respective runtime_api call (is_authorized)
     /// succeeds, but the provided id isn't authorized.
     #[test]
     fn error_id_not_bioauth_authorized() {
@@ -174,7 +174,7 @@ mod tests {
         assert!(!res.unwrap());
     }
 
-    /// This test verifies authorizatin failer if a respective runtime_api call (is_authorized) fails.
+    /// This test verifies authorization failure when a respective runtime_api call (is_authorized) fails.
     #[test]
     fn runtime_error() {
         let mut mock_client = MockClient::new();

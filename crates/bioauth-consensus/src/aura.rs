@@ -161,8 +161,10 @@ mod tests {
         }
     }
 
+    /// This test verifies aura block author extraction success when a respective runtime_api call (authorities)
+    /// succeeds and a block header contains correct aura digest.
     #[test]
-    fn it_permits_block_author_extractor() {
+    fn success() {
         let mut mock_client = MockClient::new();
 
         let mut mock_runtime_api = MockRuntimeApi::new();
@@ -190,8 +192,10 @@ mod tests {
         assert_eq!(res.unwrap(), MockAuraAuthorityId::default());
     }
 
+    /// This test verifies aura block author extraction failure when a respective runtime_api call (authorities)
+    /// succeeds, but a block header contains incorrect digest.
     #[test]
-    fn it_denies_block_author_extractor_with_error_obtain_slot() {
+    fn error_unable_to_obtain_slot() {
         let mut mock_client = MockClient::new();
 
         let mut mock_runtime_api = MockRuntimeApi::new();
@@ -226,8 +230,10 @@ mod tests {
         }
     }
 
+    /// This test verifies aura block author extraction failure when
+    /// a respective runtime_api call (authorities) fails.
     #[test]
-    fn it_denies_block_author_extractor_with_runtime_error_authorities() {
+    fn runtime_error() {
         let mut mock_client = MockClient::new();
 
         let mut mock_runtime_api = MockRuntimeApi::new();
