@@ -1,4 +1,4 @@
-//! A block-import handler for Bioauth.
+//! A consensus layer of the bioauth.
 
 #![warn(
     missing_docs,
@@ -35,7 +35,7 @@ mod traits;
 
 pub use traits::*;
 
-/// A block-import handler for Bioauth.
+/// A [`BlockImport`] for the bioauth.
 pub struct BioauthBlockImport<Backend, Block: BlockT, Client, BI, BAX, AV> {
     /// The client to interact with the chain.
     client: Arc<Client>,
@@ -51,7 +51,7 @@ pub struct BioauthBlockImport<Backend, Block: BlockT, Client, BI, BAX, AV> {
     _phantom_block: PhantomData<Block>,
 }
 
-/// BioauthBlockImport Error Type.
+/// An error type for the [`BioauthBlockImport`].
 #[derive(Error, Debug, Eq, PartialEq)]
 pub enum BioauthBlockImportError<BAX, AV>
 where
@@ -171,11 +171,14 @@ where
     }
 }
 
-/// A Proposer handler for Bioauth.
+/// A [`Proposer`] for the bioauth.
 pub struct BioauthProposer<Block: BlockT, BAP, VKE, AV> {
+    /// The ARC with the internal functionality, required to pass
+    /// the static context to the boxed future.
     inner: Arc<Mutex<BioauthProposerInner<Block, BAP, VKE, AV>>>,
 }
 
+/// The actual implementation of the [`BioauthProposer`].
 struct BioauthProposerInner<Block: BlockT, BAP, VKE, AV> {
     /// A basic authorship proposer.
     base_proposer: BAP,
@@ -187,7 +190,7 @@ struct BioauthProposerInner<Block: BlockT, BAP, VKE, AV> {
     _phantom_block: PhantomData<Block>,
 }
 
-/// BioauthProposer Error Type.
+/// The error type for the [`BioauthProposer`].
 #[derive(Error, Debug, Eq, PartialEq)]
 pub enum BioauthProposerError<VKE, AV>
 where
@@ -241,6 +244,7 @@ where
         + 'static,
     <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
 {
+    /// Check if the block author from is bioauth authorized.
     async fn check(
         &self,
         parent_header: &Block::Header,
@@ -248,10 +252,10 @@ where
         let validator_key = self
             .validator_key_extractor
             .extract_validator_key()
-            .map_err(|err| BioauthProposerError::ValidatorKeyExtraction(err))?;
+            .map_err(BioauthProposerError::ValidatorKeyExtraction)?;
 
         let validator_key =
-            validator_key.ok_or_else(|| BioauthProposerError::UnableToExtractValidatorKey)?;
+            validator_key.ok_or(BioauthProposerError::UnableToExtractValidatorKey)?;
 
         let parent_hash = parent_header.hash();
         let at = sp_api::BlockId::hash(parent_hash);
@@ -259,7 +263,7 @@ where
         let is_authorized = self
             .authorization_verifier
             .is_authorized(&at, &validator_key)
-            .map_err(|err| BioauthProposerError::AuthorizationVerification(err))?;
+            .map_err(BioauthProposerError::AuthorizationVerification)?;
 
         if !is_authorized {
             return Err(BioauthProposerError::NotBioauthAuthorized);
@@ -268,6 +272,8 @@ where
         Ok(())
     }
 
+    /// Our init implementations runs the check and then passes the control to thw wrapped block
+    /// proposer.
     async fn init(&mut self, parent_header: Block::Header) -> Result<BAP::Proposer, BAP::Error> {
         self.check(&parent_header)
             .await
