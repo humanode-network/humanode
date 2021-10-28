@@ -162,7 +162,7 @@ mod tests {
     }
 
     /// This test verifies aura block author extractor success when a respective runtime_api call (authorities)
-    /// succeeds and a block header contains correct aura digest.
+    /// succeeds and the block header contains a correct aura digest.
     #[test]
     fn success() {
         let mut mock_client = MockClient::new();
@@ -193,7 +193,7 @@ mod tests {
     }
 
     /// This test verifies aura block author extractor failure when a respective runtime_api call (authorities)
-    /// succeeds, but a block header contains incorrect digest.
+    /// succeeds, but the block header contains an incorrect digest.
     #[test]
     fn error_unable_to_obtain_slot() {
         let mut mock_client = MockClient::new();

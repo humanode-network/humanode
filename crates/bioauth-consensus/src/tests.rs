@@ -68,8 +68,8 @@ macro_rules! assert_consensus_error {
     }
 }
 
-/// This test verifies block import success when a block author is extracted succesfully
-/// and an authorization verifier succeeds where the block author is authorized.
+/// This test verifies block import success when a block author is extracted successfully,
+/// the authorization status is retrieved successfully and the block author is authorized.
 #[tokio::test]
 async fn block_import_success() {
     let mut mock_client = MockClient::new();
@@ -119,7 +119,7 @@ async fn block_import_success() {
     assert_eq!(res.unwrap(), ImportResult::imported(Default::default()));
 }
 
-/// This test verifies block import failure when a block author extractor fails.
+/// This test verifies block import failure when the block author extractor fails.
 #[tokio::test]
 async fn block_import_error_block_author_extraction() {
     let mut mock_client = MockClient::new();
@@ -133,20 +133,8 @@ async fn block_import_error_block_author_extraction() {
         .returning(|_, _| Err(MockBlockAuthorExtractorError::BlockAuthorExtractorError));
 
     let block_author_extractor = mock_block_author_extractor;
-
-    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
-    mock_authorization_verifier
-        .expect_is_authorized()
-        .returning(|_, _| Ok(true));
-
-    let authorization_verifier = mock_authorization_verifier;
-
-    let mut mock_block_import = MockBlockImportWrapper::new();
-    mock_block_import
-        .expect_import_block()
-        .returning(|_, _| Ok(ImportResult::Imported(Default::default())));
-
-    let block_import = mock_block_import;
+    let authorization_verifier = MockAuthorizationVerifier::new();
+    let block_import = MockBlockImportWrapper::new();
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
@@ -175,7 +163,7 @@ async fn block_import_error_block_author_extraction() {
     );
 }
 
-/// This test verifies block import failure when an authorization verifier fails.
+/// This test verifies block import failure when the authorization verifier fails.
 #[tokio::test]
 async fn block_import_error_authorization_verifier() {
     let mut mock_client = MockClient::new();
@@ -196,13 +184,7 @@ async fn block_import_error_authorization_verifier() {
         .returning(|_, _| Err(MockAuthorizationVerifierError::AuthorizationVerifierError));
 
     let authorization_verifier = mock_authorization_verifier;
-
-    let mut mock_block_import = MockBlockImportWrapper::new();
-    mock_block_import
-        .expect_import_block()
-        .returning(|_, _| Ok(ImportResult::Imported(Default::default())));
-
-    let block_import = mock_block_import;
+    let block_import = MockBlockImportWrapper::new();
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
@@ -231,7 +213,7 @@ async fn block_import_error_authorization_verifier() {
     );
 }
 
-/// This test verifies block import failer when a block author isn't authorized.
+/// This test verifies block import failure when the block author is not authorized.
 #[tokio::test]
 async fn block_import_error_not_bioauth_authorized() {
     let mut mock_client = MockClient::new();
@@ -252,13 +234,7 @@ async fn block_import_error_not_bioauth_authorized() {
         .returning(|_, _| Ok(false));
 
     let authorization_verifier = mock_authorization_verifier;
-
-    let mut mock_block_import = MockBlockImportWrapper::new();
-    mock_block_import
-        .expect_import_block()
-        .returning(|_, _| Ok(ImportResult::Imported(Default::default())));
-
-    let block_import = mock_block_import;
+    let block_import = MockBlockImportWrapper::new();
 
     let mut bioauth_block_import: BioauthBlockImport<
         sc_service::TFullBackend<Block>,
@@ -285,10 +261,25 @@ async fn block_import_error_not_bioauth_authorized() {
     );
 }
 
-/// This test verifies proposer success when a validator key is extracted succesfully
-/// and an authorization verifier succeeds where the owner of the validator key is authorized.
+/// This test verifies proposer success when a validator key is extracted successfully,
+/// the authorization status for the validator key is retrieved successfully, and
+/// the key is authorized.
 #[tokio::test]
 async fn proposer_success() {
+    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
+    mock_validator_key_extractor
+        .expect_extract_validator_key()
+        .returning(|| Ok(Some(())));
+
+    let validator_key_extractor = mock_validator_key_extractor;
+
+    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
+    mock_authorization_verifier
+        .expect_is_authorized()
+        .returning(|_, _| Ok(true));
+
+    let authorization_verifier = mock_authorization_verifier;
+
     let mock_proposer = MockProposer::new();
     let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
     let cloned_wrapper_proposer = wrapper_proposer.clone();
@@ -299,20 +290,6 @@ async fn proposer_success() {
         .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
 
     let basic_authorship_proposer = mock_basic_authorship_proposer;
-
-    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
-    mock_authorization_verifier
-        .expect_is_authorized()
-        .returning(|_, _| Ok(true));
-
-    let authorization_verifier = mock_authorization_verifier;
-
-    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
-    mock_validator_key_extractor
-        .expect_extract_validator_key()
-        .returning(|| Ok(Some(())));
-
-    let validator_key_extractor = mock_validator_key_extractor;
 
     let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
         basic_authorship_proposer,
@@ -334,30 +311,15 @@ async fn proposer_success() {
 /// This test verifies proposer failure when a validator key extractor fails.
 #[tokio::test]
 async fn proposer_error_validator_key_extractor() {
-    let mock_proposer = MockProposer::new();
-    let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
-    let cloned_wrapper_proposer = wrapper_proposer.clone();
-
-    let mut mock_basic_authorship_proposer = MockBasicAuthorshipProposer::new();
-    mock_basic_authorship_proposer
-        .expect_init()
-        .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
-
-    let basic_authorship_proposer = mock_basic_authorship_proposer;
-
-    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
-    mock_authorization_verifier
-        .expect_is_authorized()
-        .returning(|_, _| Ok(true));
-
-    let authorization_verifier = mock_authorization_verifier;
-
     let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
     mock_validator_key_extractor
         .expect_extract_validator_key()
         .returning(|| Err(MockValidatorKeyExtractorError::ValidatorKeyExtractorError));
 
     let validator_key_extractor = mock_validator_key_extractor;
+
+    let authorization_verifier = MockAuthorizationVerifier::new();
+    let basic_authorship_proposer = MockBasicAuthorshipProposer::new();
 
     let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
         basic_authorship_proposer,
@@ -382,34 +344,18 @@ async fn proposer_error_validator_key_extractor() {
     );
 }
 
-/// This test verifies proposer failure when a validator key extractor succeeds
-/// but the key cann't be extracted as the validator key.
+/// This test verifies proposer failure when the validator key extractor returns no key.
 #[tokio::test]
 async fn proposer_error_unable_to_extract_validator_key() {
-    let mock_proposer = MockProposer::new();
-    let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
-    let cloned_wrapper_proposer = wrapper_proposer.clone();
-
-    let mut mock_basic_authorship_proposer = MockBasicAuthorshipProposer::new();
-    mock_basic_authorship_proposer
-        .expect_init()
-        .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
-
-    let basic_authorship_proposer = mock_basic_authorship_proposer;
-
-    let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
-    mock_authorization_verifier
-        .expect_is_authorized()
-        .returning(|_, _| Ok(true));
-
-    let authorization_verifier = mock_authorization_verifier;
-
     let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
     mock_validator_key_extractor
         .expect_extract_validator_key()
         .returning(|| Ok(None));
 
     let validator_key_extractor = mock_validator_key_extractor;
+
+    let authorization_verifier = MockAuthorizationVerifier::new();
+    let basic_authorship_proposer = MockBasicAuthorshipProposer::new();
 
     let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
         basic_authorship_proposer,
@@ -432,19 +378,15 @@ async fn proposer_error_unable_to_extract_validator_key() {
     );
 }
 
-/// This test verifies proposer failure when an authorization verifier fails.
+/// This test verifies proposer failure when the authorization verifier fails.
 #[tokio::test]
 async fn proposer_error_authorization_verifier() {
-    let mock_proposer = MockProposer::new();
-    let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
-    let cloned_wrapper_proposer = wrapper_proposer.clone();
+    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
+    mock_validator_key_extractor
+        .expect_extract_validator_key()
+        .returning(|| Ok(Some(())));
 
-    let mut mock_basic_authorship_proposer = MockBasicAuthorshipProposer::new();
-    mock_basic_authorship_proposer
-        .expect_init()
-        .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
-
-    let basic_authorship_proposer = mock_basic_authorship_proposer;
+    let validator_key_extractor = mock_validator_key_extractor;
 
     let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
     mock_authorization_verifier
@@ -453,12 +395,7 @@ async fn proposer_error_authorization_verifier() {
 
     let authorization_verifier = mock_authorization_verifier;
 
-    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
-    mock_validator_key_extractor
-        .expect_extract_validator_key()
-        .returning(|| Ok(Some(())));
-
-    let validator_key_extractor = mock_validator_key_extractor;
+    let basic_authorship_proposer = MockBasicAuthorshipProposer::new();
 
     let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
         basic_authorship_proposer,
@@ -483,19 +420,15 @@ async fn proposer_error_authorization_verifier() {
     );
 }
 
-/// This test verifies proposer failure when the owner of the validator key isn't authorized.
+/// This test verifies proposer failure when the validator key is not authorized.
 #[tokio::test]
 async fn proposer_error_not_bioauth_authorized() {
-    let mock_proposer = MockProposer::new();
-    let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
-    let cloned_wrapper_proposer = wrapper_proposer.clone();
+    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
+    mock_validator_key_extractor
+        .expect_extract_validator_key()
+        .returning(|| Ok(Some(())));
 
-    let mut mock_basic_authorship_proposer = MockBasicAuthorshipProposer::new();
-    mock_basic_authorship_proposer
-        .expect_init()
-        .returning(move |_| Box::pin(future::ready(Ok(cloned_wrapper_proposer.clone()))));
-
-    let basic_authorship_proposer = mock_basic_authorship_proposer;
+    let validator_key_extractor = mock_validator_key_extractor;
 
     let mut mock_authorization_verifier = MockAuthorizationVerifier::new();
     mock_authorization_verifier
@@ -504,12 +437,7 @@ async fn proposer_error_not_bioauth_authorized() {
 
     let authorization_verifier = mock_authorization_verifier;
 
-    let mut mock_validator_key_extractor = MockValidatorKeyExtractor::new();
-    mock_validator_key_extractor
-        .expect_extract_validator_key()
-        .returning(|| Ok(Some(())));
-
-    let validator_key_extractor = mock_validator_key_extractor;
+    let basic_authorship_proposer = MockBasicAuthorshipProposer::new();
 
     let mut bioauth_proposer: BioauthProposer<Block, _, _, _> = BioauthProposer::new(
         basic_authorship_proposer,
