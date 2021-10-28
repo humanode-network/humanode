@@ -68,8 +68,10 @@ macro_rules! assert_consensus_error {
     }
 }
 
+/// This test verifies block import success when a block author is extracted succesfully
+/// and an authorization verifier succeeds where the block author is authorized.
 #[tokio::test]
-async fn it_permits_block_import_with_valid_data() {
+async fn block_import_success() {
     let mut mock_client = MockClient::new();
     mock_client.expect_info().returning(prepare_get_info);
 
@@ -117,8 +119,9 @@ async fn it_permits_block_import_with_valid_data() {
     assert_eq!(res.unwrap(), ImportResult::imported(Default::default()));
 }
 
+/// This test verifies block import failure when a block author extractor fails.
 #[tokio::test]
-async fn it_denies_block_import_with_error_block_author_extractor() {
+async fn block_import_error_block_author_extraction() {
     let mut mock_client = MockClient::new();
     mock_client.expect_info().returning(prepare_get_info);
 
@@ -172,8 +175,9 @@ async fn it_denies_block_import_with_error_block_author_extractor() {
     );
 }
 
+/// This test verifies block import failure when an authorization verifier fails.
 #[tokio::test]
-async fn it_denies_block_import_with_error_authorization_verifier() {
+async fn block_import_error_authorization_verifier() {
     let mut mock_client = MockClient::new();
     mock_client.expect_info().returning(prepare_get_info);
 
@@ -227,8 +231,9 @@ async fn it_denies_block_import_with_error_authorization_verifier() {
     );
 }
 
+/// This test verifies block import failer when a block author isn't authorized.
 #[tokio::test]
-async fn it_denies_block_import_with_error_not_bioauth_authorized() {
+async fn block_import_error_not_bioauth_authorized() {
     let mut mock_client = MockClient::new();
     mock_client.expect_info().returning(prepare_get_info);
 
@@ -280,8 +285,10 @@ async fn it_denies_block_import_with_error_not_bioauth_authorized() {
     );
 }
 
+/// This test verifies proposer success when a validator key is extracted succesfully
+/// and an authorization verifier succeeds where the owner of the validator key is authorized.
 #[tokio::test]
-async fn it_permits_bioauth_proposer() {
+async fn proposer_success() {
     let mock_proposer = MockProposer::new();
     let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
     let cloned_wrapper_proposer = wrapper_proposer.clone();
@@ -324,8 +331,9 @@ async fn it_permits_bioauth_proposer() {
     assert_eq!(res.await.unwrap(), wrapper_proposer);
 }
 
+/// This test verifies proposer failure when a validator key extractor fails.
 #[tokio::test]
-async fn it_denies_bioauth_proposer_with_error_validator_key_extractor() {
+async fn proposer_error_validator_key_extractor() {
     let mock_proposer = MockProposer::new();
     let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
     let cloned_wrapper_proposer = wrapper_proposer.clone();
@@ -374,8 +382,10 @@ async fn it_denies_bioauth_proposer_with_error_validator_key_extractor() {
     );
 }
 
+/// This test verifies proposer failure when a validator key extractor succeeds
+/// but the key cann't be extracted as the validator key.
 #[tokio::test]
-async fn it_denies_bioauth_proposer_with_error_unable_to_extract_validator_key() {
+async fn proposer_error_unable_to_extract_validator_key() {
     let mock_proposer = MockProposer::new();
     let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
     let cloned_wrapper_proposer = wrapper_proposer.clone();
@@ -422,8 +432,9 @@ async fn it_denies_bioauth_proposer_with_error_unable_to_extract_validator_key()
     );
 }
 
+/// This test verifies proposer failure when an authorization verifier fails.
 #[tokio::test]
-async fn it_denies_bioauth_proposer_with_error_authorization_verification() {
+async fn proposer_error_authorization_verifier() {
     let mock_proposer = MockProposer::new();
     let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
     let cloned_wrapper_proposer = wrapper_proposer.clone();
@@ -472,8 +483,9 @@ async fn it_denies_bioauth_proposer_with_error_authorization_verification() {
     );
 }
 
+/// This test verifies proposer failure when the owner of the validator key isn't authorized.
 #[tokio::test]
-async fn it_denies_bioauth_proposer_with_error_not_bioauth_authorized() {
+async fn proposer_error_not_bioauth_authorized() {
     let mock_proposer = MockProposer::new();
     let wrapper_proposer = MockWrapperProposer(Arc::new(mock_proposer), "Test proposer");
     let cloned_wrapper_proposer = wrapper_proposer.clone();

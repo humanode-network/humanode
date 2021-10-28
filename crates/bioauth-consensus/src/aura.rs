@@ -161,7 +161,7 @@ mod tests {
         }
     }
 
-    /// This test verifies aura block author extraction success when a respective runtime_api call (authorities)
+    /// This test verifies aura block author extractor success when a respective runtime_api call (authorities)
     /// succeeds and a block header contains correct aura digest.
     #[test]
     fn success() {
@@ -192,7 +192,7 @@ mod tests {
         assert_eq!(res.unwrap(), MockAuraAuthorityId::default());
     }
 
-    /// This test verifies aura block author extraction failure when a respective runtime_api call (authorities)
+    /// This test verifies aura block author extractor failure when a respective runtime_api call (authorities)
     /// succeeds, but a block header contains incorrect digest.
     #[test]
     fn error_unable_to_obtain_slot() {
@@ -230,7 +230,7 @@ mod tests {
         }
     }
 
-    /// This test verifies aura block author extraction failure when
+    /// This test verifies aura block author extractor failure when
     /// a respective runtime_api call (authorities) fails.
     #[test]
     fn runtime_error() {
