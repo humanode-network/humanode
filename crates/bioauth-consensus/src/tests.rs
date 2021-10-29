@@ -154,6 +154,9 @@ async fn block_import_error_block_author_extraction() {
         .import_block(prepare_block_import(), Default::default())
         .await;
 
+    // Drop the test object and all the mocks in it, effectively running the mock assertions.
+    drop(bioauth_block_import);
+
     assert_consensus_error!(
         res.unwrap_err(),
         BioauthBlockImportError::BlockAuthorExtraction(
@@ -204,6 +207,9 @@ async fn block_import_error_authorization_verifier() {
         .import_block(prepare_block_import(), Default::default())
         .await;
 
+    // Drop the test object and all the mocks in it, effectively running the mock assertions.
+    drop(bioauth_block_import);
+
     assert_consensus_error!(
         res.unwrap_err(),
         BioauthBlockImportError::AuthorizationVerifier(
@@ -253,6 +259,9 @@ async fn block_import_error_not_bioauth_authorized() {
     let res = bioauth_block_import
         .import_block(prepare_block_import(), Default::default())
         .await;
+
+    // Drop the test object and all the mocks in it, effectively running the mock assertions.
+    drop(bioauth_block_import);
 
     assert_consensus_error!(
         res.unwrap_err(),
@@ -305,6 +314,9 @@ async fn proposer_success() {
         digest: Digest { logs: vec![] },
     });
 
+    // Drop the test object and all the mocks in it, effectively running the mock assertions.
+    drop(bioauth_proposer);
+
     assert_eq!(res.await.unwrap(), wrapper_proposer);
 }
 
@@ -334,6 +346,9 @@ async fn proposer_error_validator_key_extractor() {
         extrinsics_root: Default::default(),
         digest: Digest { logs: vec![] },
     });
+
+    // Drop the test object and all the mocks in it, effectively running the mock assertions.
+    drop(bioauth_proposer);
 
     assert_consensus_error!(
         res.await.unwrap_err(),
@@ -370,6 +385,9 @@ async fn proposer_error_unable_to_extract_validator_key() {
         extrinsics_root: Default::default(),
         digest: Digest { logs: vec![] },
     });
+
+    // Drop the test object and all the mocks in it, effectively running the mock assertions.
+    drop(bioauth_proposer);
 
     assert_consensus_error!(
         res.await.unwrap_err(),
@@ -410,6 +428,9 @@ async fn proposer_error_authorization_verifier() {
         extrinsics_root: Default::default(),
         digest: Digest { logs: vec![] },
     });
+
+    // Drop the test object and all the mocks in it, effectively running the mock assertions.
+    drop(bioauth_proposer);
 
     assert_consensus_error!(
         res.await.unwrap_err(),
@@ -452,6 +473,9 @@ async fn proposer_error_not_bioauth_authorized() {
         extrinsics_root: Default::default(),
         digest: Digest { logs: vec![] },
     });
+
+    // Drop the test object and all the mocks in it, effectively running the mock assertions.
+    drop(bioauth_proposer);
 
     assert_consensus_error!(
         res.await.unwrap_err(),

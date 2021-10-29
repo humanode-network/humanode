@@ -189,6 +189,11 @@ mod tests {
             &prepare_block_header_with_aura_pre_digest(false),
         );
 
+        // Drop the test object and all the mocks in it, effectively running the mock assertions.
+        drop(block_author_extractor);
+        // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
+        drop(Arc::try_unwrap(client).unwrap());
+
         assert_eq!(res.unwrap(), MockAuraAuthorityId::default());
     }
 
@@ -219,6 +224,11 @@ mod tests {
             &sp_api::BlockId::Number(0),
             &prepare_block_header_with_aura_pre_digest(true),
         );
+
+        // Drop the test object and all the mocks in it, effectively running the mock assertions.
+        drop(block_author_extractor);
+        // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
+        drop(Arc::try_unwrap(client).unwrap());
 
         match res.unwrap_err() {
             AuraBlockAuthorExtractorError::UnableToObtainSlot => {}
@@ -257,6 +267,11 @@ mod tests {
             &sp_api::BlockId::Number(0),
             &prepare_block_header_with_aura_pre_digest(false),
         );
+
+        // Drop the test object and all the mocks in it, effectively running the mock assertions.
+        drop(block_author_extractor);
+        // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
+        drop(Arc::try_unwrap(client).unwrap());
 
         match res.unwrap_err() {
             AuraBlockAuthorExtractorError::UnableToExtractAuthorities(e)

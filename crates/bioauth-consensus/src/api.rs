@@ -140,6 +140,11 @@ mod tests {
             &MockPublicKeyType::default(),
         );
 
+        // Drop the test object and all the mocks in it, effectively running the mock assertions.
+        drop(authorization_verifier);
+        // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
+        drop(Arc::try_unwrap(client).unwrap());
+
         assert!(res.unwrap());
     }
 
@@ -171,6 +176,11 @@ mod tests {
             &MockPublicKeyType::default(),
         );
 
+        // Drop the test object and all the mocks in it, effectively running the mock assertions.
+        drop(authorization_verifier);
+        // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
+        drop(Arc::try_unwrap(client).unwrap());
+
         assert!(!res.unwrap());
     }
 
@@ -200,6 +210,11 @@ mod tests {
             &sp_api::BlockId::Number(0),
             &MockPublicKeyType::default(),
         );
+
+        // Drop the test object and all the mocks in it, effectively running the mock assertions.
+        drop(authorization_verifier);
+        // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
+        drop(Arc::try_unwrap(client).unwrap());
 
         match res.unwrap_err() {
             AuthorizationVerifierError::UnableToExtractAuthorizedIds(e)

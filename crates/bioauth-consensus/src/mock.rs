@@ -24,6 +24,7 @@ sp_api::mock_impl_runtime_apis! {
 }
 
 mock! {
+    #[derive(Debug)]
     pub Client {}
 
     impl ProvideRuntimeApi<Block> for Client {
