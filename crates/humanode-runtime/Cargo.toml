@@ -54,6 +54,7 @@ runtime-benchmarks = [
   "sp-runtime/runtime-benchmarks",
 ]
 std = [
+  "bioauth-consensus-api/std",
   "primitives-auth-ticket/std",
   "codec/std",
   "serde",
