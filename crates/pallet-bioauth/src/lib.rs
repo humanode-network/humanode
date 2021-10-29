@@ -19,6 +19,8 @@ use sp_std::fmt::Debug;
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 
+pub mod weights;
+
 #[cfg(test)]
 mod mock;
 
@@ -116,8 +118,8 @@ pub struct Authentication<PublicKey, Moment> {
 #[frame_support::pallet]
 pub mod pallet {
     use crate::{
-        AuthTicket, AuthTicketNonce, Authenticate, Authentication, CurrentMoment, TryConvert,
-        ValidatorSetUpdater, Verifier,
+        weights::WeightInfo, AuthTicket, AuthTicketNonce, Authenticate, Authentication,
+        CurrentMoment, TryConvert, ValidatorSetUpdater, Verifier,
     };
 
     use frame_support::{
@@ -166,6 +168,9 @@ pub mod pallet {
 
         /// The validator set updater to invoke at auth the ticket acceptace.
         type ValidatorSetUpdater: ValidatorSetUpdater<Self::ValidatorPublicKey>;
+
+        /// Weight information for extrinsics in this pallet.
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::pallet]
@@ -279,7 +284,7 @@ pub mod pallet {
     /// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(2, 4))]
+        #[pallet::weight(T::WeightInfo::authenticate())]
         pub fn authenticate(
             origin: OriginFor<T>,
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
@@ -351,7 +356,7 @@ pub mod pallet {
                 <ActiveAuthentications<T>>::put(active_authentications);
             }
 
-            T::DbWeight::get().reads_writes(1, if update_required { 1 } else { 0 })
+            T::WeightInfo::on_initialize(update_required)
         }
     }
 

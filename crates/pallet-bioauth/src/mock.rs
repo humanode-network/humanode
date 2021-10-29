@@ -1,6 +1,6 @@
 use std::cell::RefCell;
 
-use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
+use crate::{self as pallet_bioauth, weights, AuthTicket, TryConvert};
 use codec::{Decode, Encode};
 use frame_support::parameter_types;
 use frame_system as system;
@@ -187,6 +187,7 @@ impl pallet_bioauth::Config for Test {
     type Moment = UnixMilliseconds;
     type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
+    type WeightInfo = weights::SubstrateWeight<Test>;
 }
 
 /// Build test externalities from the default genesis.
