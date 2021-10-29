@@ -116,6 +116,9 @@ async fn block_import_success() {
         .import_block(prepare_block_import(), Default::default())
         .await;
 
+    // Drop the test object and all the mocks in it, effectively running the mock assertions.
+    drop(bioauth_block_import);
+
     assert_eq!(res.unwrap(), ImportResult::imported(Default::default()));
 }
 
