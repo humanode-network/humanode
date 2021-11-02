@@ -422,6 +422,7 @@ impl pallet_bioauth::Config for Runtime {
     type Moment = UnixMilliseconds;
     type CurrentMoment = CurrentMoment;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
+    type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
