@@ -480,6 +480,7 @@ dependencies = [
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-aura",
+ "sp-inherents",
  "sp-keystore",
  "sp-runtime",
  "thiserror",
