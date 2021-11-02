@@ -21,6 +21,7 @@ frame-system = { default-features = false, git = "https://github.com/humanode-ne
 frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 hex-literal = { version = "0.3", optional = true }
+log = "0.4.14"
 pallet-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -54,6 +55,7 @@ runtime-benchmarks = [
   "sp-runtime/runtime-benchmarks",
 ]
 std = [
+  "bioauth-consensus-api/std",
   "primitives-auth-ticket/std",
   "codec/std",
   "serde",

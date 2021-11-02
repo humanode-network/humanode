@@ -106,7 +106,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 100,
+    spec_version: 101,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -286,9 +286,12 @@ parameter_types! {
     pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
 }
 
+/// A timestamp: milliseconds since the unix epoch.
+pub type UnixMilliseconds = u64;
+
 impl pallet_timestamp::Config for Runtime {
     /// A timestamp: milliseconds since the unix epoch.
-    type Moment = u64;
+    type Moment = UnixMilliseconds;
     type OnTimestampSet = Aura;
     type MinimumPeriod = MinimumPeriod;
     type WeightInfo = ();
@@ -393,8 +396,20 @@ impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
     }
 }
 
+pub struct CurrentMoment;
+
+impl pallet_bioauth::CurrentMoment<UnixMilliseconds> for CurrentMoment {
+    fn now() -> UnixMilliseconds {
+        pallet_timestamp::Pallet::<Runtime>::now()
+    }
+}
+
+const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
+const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
+const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
+
 parameter_types! {
-    pub const AuthenticationsExpireAfter: BlockNumber = 72 * HOURS;
+    pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
 }
 
 impl pallet_bioauth::Config for Runtime {
@@ -405,6 +420,8 @@ impl pallet_bioauth::Config for Runtime {
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = AuraValidatorSetUpdater;
+    type Moment = UnixMilliseconds;
+    type CurrentMoment = CurrentMoment;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
 }
 
@@ -527,9 +544,18 @@ impl_runtime_apis! {
 
     impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
         fn is_authorized(id: &AuraId) -> bool {
-            Bioauth::active_authentications()
+            let active_authentications = Bioauth::active_authentications();
+            if active_authentications.is_empty() {
+                log::debug!("Bioauth consensus is verifying authorization based on Active Authentications V1");
+                Bioauth::active_authentications_old()
                 .iter()
                 .any(|stored_public_key| &stored_public_key.public_key == id)
+            } else {
+                log::debug!("Bioauth consensus is verifying authorization based on Active Authentications V2");
+                active_authentications
+                .iter()
+                .any(|stored_public_key| &stored_public_key.public_key == id)
+            }
         }
     }
 
