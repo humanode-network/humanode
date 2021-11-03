@@ -244,7 +244,11 @@ where
         + 'static,
     <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
 {
-    /// Check if the block author from is bioauth authorized.
+    /// Check if we (as in currently running node) are bioauth-authorized, based on the parent
+    /// block state.
+    /// We are not eligible to produce a new block if we're not bioauth-authorized in the parent
+    /// block, but this check is here only to reduce the extra work the nodes do; without
+    /// this check, the produced block will still be rejected at block import.
     async fn check(
         &self,
         parent_header: &Block::Header,
