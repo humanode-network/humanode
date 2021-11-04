@@ -218,7 +218,7 @@ impl LivenessDataProvider for Provider {
 
         {
             let mut maybe_tx_guard = self.liveness_data_tx_slot.lock().await;
-            let _res = maybe_tx_guard.insert(tx); // insert a new sender value and free the lock asap
+            let _ = maybe_tx_guard.insert(tx); // insert a new sender value and free the lock asap
         }
 
         Ok(rx.await?)

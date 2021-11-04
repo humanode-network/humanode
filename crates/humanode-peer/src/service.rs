@@ -37,9 +37,10 @@ impl sc_executor::NativeExecutionDispatch for ExecutorDispatch {
     }
 }
 
+/// Executor type.
+type Executor = NativeElseWasmExecutor<ExecutorDispatch>;
 /// Full node client type.
-type FullClient =
-    sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ExecutorDispatch>>;
+type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 /// Full node backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
@@ -52,7 +53,7 @@ type FullGrandpa =
 pub fn keystore_container(
     config: &Configuration,
 ) -> Result<(KeystoreContainer, TaskManager), ServiceError> {
-    let executor = NativeElseWasmExecutor::<ExecutorDispatch>::new(
+    let executor = Executor::new(
         config.substrate.wasm_method,
         config.substrate.default_heap_pages,
         config.substrate.max_runtime_instances,
@@ -106,7 +107,7 @@ pub fn new_partial(
         })
         .transpose()?;
 
-    let executor = NativeElseWasmExecutor::<ExecutorDispatch>::new(
+    let executor = Executor::new(
         config.wasm_method,
         config.default_heap_pages,
         config.max_runtime_instances,

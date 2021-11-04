@@ -48,14 +48,6 @@ impl<C: SubstrateCli> Runner<C> {
     /// Create a new runner for the specified command.
     pub fn new<T: CliConfigurationExt>(cli: &Root, command: &T) -> Result<Self> {
         let runtime_handle = tokio::runtime::Handle::current();
-
-        // let task_executor = move |fut, task_type| match task_type {
-        //     TaskType::Async => runtime_handle.spawn(fut).map(drop),
-        //     TaskType::Blocking => runtime_handle
-        //         .spawn_blocking(move || futures::executor::block_on(fut))
-        //         .map(drop),
-        // };
-
         let config = command.create_humanode_configuration(cli, runtime_handle)?;
 
         Ok(Self {

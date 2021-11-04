@@ -2214,7 +2214,6 @@ dependencies = [
  "jsonrpc-core",
  "pallet-transaction-payment-rpc",
  "robonode-client",
- "sc-rpc",
  "sc-rpc-api",
  "sc-transaction-pool-api",
  "sp-api",
@@ -4831,6 +4830,7 @@ name = "primitives-liveness-data"
 version = "0.1.0"
 dependencies = [
  "parity-scale-codec",
+ "scale-info",
  "serde",
 ]
 

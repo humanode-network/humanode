@@ -23,7 +23,7 @@ use sp_std::prelude::*;
 pub struct OpaqueAuthTicket(pub Vec<u8>);
 
 /// The one-time ticket to authenticate in the network.
-#[derive(Debug, PartialEq, Encode, Decode)]
+#[derive(Debug, PartialEq, Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct AuthTicket {
     /// The public key that matched with the provided FaceTec 3D FaceScan.
