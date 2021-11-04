@@ -18,34 +18,34 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 
 async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
-frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
+frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 futures = "0.3"
 hex-literal = "0.3"
 qr2term = "0.2"
 reqwest = "0.11"
-sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-chain-spec = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-chain-spec-derive = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-network = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-service = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-telemetry = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
+sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-chain-spec = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-chain-spec-derive = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-telemetry = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = { version = "1", features = ["derive"] }
-sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
+sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 structopt = "0.3.8"
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }

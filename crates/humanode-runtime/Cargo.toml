@@ -5,7 +5,7 @@ edition = "2018"
 publish = false
 
 [build-dependencies]
-substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
+substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [dependencies]
 bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", default-features = false }
@@ -14,34 +14,34 @@ primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", 
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
+frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 hex-literal = { version = "0.3", optional = true }
-pallet-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
+pallet-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 serde = { version = "1", features = ["derive"], optional = true }
-sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-consensus-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
+sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [features]
 default = ["std"]

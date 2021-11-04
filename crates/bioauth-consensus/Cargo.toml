@@ -10,22 +10,22 @@ bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", op
 async-trait = "0.1.42"
 codec = { package = "parity-scale-codec", version = "2", default-features = false, optional = true }
 futures = "0.3"
-sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update", optional = true }
-sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update", optional = true }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update", optional = true }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
+sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 thiserror = "1"
 tokio = { version = "1", features = ["rt-multi-thread"] }
 
 [dev-dependencies]
 mockall = "0.10"
-node-primitives = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
-sc-service = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
+node-primitives = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = { version = "1", features = ["full"] }
 
 [features]
