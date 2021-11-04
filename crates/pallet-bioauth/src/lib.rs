@@ -9,6 +9,7 @@ use codec::{Decode, Encode};
 use frame_support::traits::IsSubType;
 use frame_support::weights::DispatchInfo;
 pub use pallet::*;
+use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
@@ -77,7 +78,7 @@ pub trait CurrentMoment<Moment> {
 
 /// Authentication extrinsic playload.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 pub struct Authenticate<OpaqueAuthTicket, Commitment> {
     /// An auth ticket.
     pub ticket: OpaqueAuthTicket,
@@ -90,7 +91,7 @@ pub type AuthTicketNonce = Vec<u8>;
 
 /// The auth ticket passed to us from the robonode.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
+#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 pub struct AuthTicket<PublicKey> {
     /// The public key of a validator that was authorized by a robonode.
     pub public_key: PublicKey,
@@ -100,7 +101,7 @@ pub struct AuthTicket<PublicKey> {
 
 /// The state that we keep in the blockchain for an active authentication.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
+#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 pub struct Authentication<PublicKey, Moment> {
     /// The public key of a validator.
     pub public_key: PublicKey,
@@ -226,7 +227,6 @@ pub mod pallet {
 
     // Pallets use events to inform users when important changes are made.
     #[pallet::event]
-    #[pallet::metadata(T::AccountId = "AccountId")]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         // Event documentation should end with an array that provides descriptive names for event
@@ -382,7 +382,7 @@ pub mod pallet {
 
         pub fn check_tx(call: &Call<T>) -> TransactionValidity {
             let transaction = match call {
-                Call::authenticate(ref transaction) => transaction,
+                Call::authenticate { req: transaction } => transaction,
                 // Deny all unknown transactions.
                 _ => {
                     // The only supported transaction by this pallet is `authenticate`, so anything
@@ -466,7 +466,8 @@ pub mod pallet {
 }
 
 /// Checks the validity of the unsigned [`Call::authenticate`] tx.
-#[derive(Encode, Decode, Clone, Eq, PartialEq, Default)]
+#[derive(Encode, Decode, Clone, Eq, PartialEq, Default, TypeInfo)]
+#[scale_info(skip_type_params(T))]
 pub struct CheckBioauthTx<T: Config + Send + Sync>(PhantomData<T>);
 
 /// Debug impl for the `CheckBioauthTx` struct.

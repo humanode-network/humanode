@@ -6,8 +6,7 @@ use std::{marker::PhantomData, sync::Arc, time::Duration};
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
-use sc_executor::native_executor_instance;
-pub use sc_executor::NativeExecutor;
+pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
@@ -17,16 +16,30 @@ use tracing::*;
 
 use crate::configuration::Configuration;
 
-// Native executor for the runtime based on the runtime API that is available
-// at the current compile time.
-native_executor_instance!(
-    pub Executor,
-    humanode_runtime::api::dispatch,
-    humanode_runtime::native_version,
-);
+/// Declare an instance of the native executor named `ExecutorDispatch`. Include the wasm binary as
+/// the equivalent wasm code.
+pub struct ExecutorDispatch;
+
+impl sc_executor::NativeExecutionDispatch for ExecutorDispatch {
+    /// Only enable the benchmarking host functions when we actually want to benchmark.
+    #[cfg(feature = "runtime-benchmarks")]
+    type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+    /// Otherwise we only use the default Substrate host functions.
+    #[cfg(not(feature = "runtime-benchmarks"))]
+    type ExtendHostFunctions = ();
+
+    fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
+        humanode_runtime::api::dispatch(method, data)
+    }
+
+    fn native_version() -> sc_executor::NativeVersion {
+        humanode_runtime::native_version()
+    }
+}
 
 /// Full node client type.
-type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
+type FullClient =
+    sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ExecutorDispatch>>;
 /// Full node backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
@@ -39,8 +52,14 @@ type FullGrandpa =
 pub fn keystore_container(
     config: &Configuration,
 ) -> Result<(KeystoreContainer, TaskManager), ServiceError> {
+    let executor = NativeElseWasmExecutor::<ExecutorDispatch>::new(
+        config.substrate.wasm_method,
+        config.substrate.default_heap_pages,
+        config.substrate.max_runtime_instances,
+    );
+
     let (_client, _backend, keystore_container, task_manager) =
-        sc_service::new_full_parts::<Block, RuntimeApi, Executor>(&config.substrate, None)?;
+        sc_service::new_full_parts::<Block, RuntimeApi, _>(&config.substrate, None, executor)?;
     Ok((keystore_container, task_manager))
 }
 
@@ -87,10 +106,17 @@ pub fn new_partial(
         })
         .transpose()?;
 
+    let executor = NativeElseWasmExecutor::<ExecutorDispatch>::new(
+        config.wasm_method,
+        config.default_heap_pages,
+        config.max_runtime_instances,
+    );
+
     let (client, backend, keystore_container, task_manager) =
-        sc_service::new_full_parts::<Block, RuntimeApi, Executor>(
+        sc_service::new_full_parts::<Block, RuntimeApi, _>(
             config,
             telemetry.as_ref().map(|(_, telemetry)| telemetry.handle()),
+            executor,
         )?;
     let client = Arc::new(client);
 
@@ -205,6 +231,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
         Arc::clone(&backend),
         grandpa_link.shared_authority_set().clone(),
+        Vec::default(),
     ));
 
     let bioauth_flow_config = bioauth_flow_config
@@ -437,7 +464,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 ticket: authenticate_response.auth_ticket.into(),
                 ticket_signature: authenticate_response.auth_ticket_signature.into(),
             };
-            let call = pallet_bioauth::Call::authenticate(authenticate);
+            let call = pallet_bioauth::Call::authenticate { req: authenticate };
 
             let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
 

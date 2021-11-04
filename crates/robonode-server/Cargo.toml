@@ -15,7 +15,7 @@ hex = "0.4"
 reqwest = "0.11"
 sc-tracing = "3"
 serde = { version = "1", features = ["derive"] }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "hmnd-substrate-update" }
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 uuid = { version = "0.8", features = ["v4"] }

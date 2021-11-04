@@ -107,7 +107,9 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::Benchmark(cmd)) => {
             if cfg!(feature = "runtime-benchmarks") {
                 let runner = root.create_humanode_runner(cmd)?;
-                runner.sync_run(|config| cmd.run::<Block, service::Executor>(config.substrate))
+                runner.sync_run(|config| {
+                    cmd.run::<Block, service::ExecutorDispatch>(config.substrate)
+                })
             } else {
                 Err(
                     "Benchmarking wasn't enabled when building the node. You can enable it with \
