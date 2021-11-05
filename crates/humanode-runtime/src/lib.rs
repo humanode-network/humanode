@@ -260,7 +260,7 @@ parameter_types! {
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
 parameter_types! {
-    pub const MaxAuthorities: u32 = 32;
+    pub const MaxAuthorities: u32 = 512;
 }
 
 impl pallet_aura::Config for Runtime {
