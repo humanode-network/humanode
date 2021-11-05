@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use futures::channel::oneshot;
 use futures::lock::BiLock;
-use futures::TryFutureExt;
+use futures::FutureExt;
 use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode;
 use jsonrpc_derive::rpc;
@@ -18,9 +18,6 @@ pub type Result<T> = std::result::Result<T, RpcError>;
 
 /// A futures that resolves to the specified `T`, or an [`RpcError`].
 pub type FutureResult<T> = jsonrpc_core::BoxFuture<Result<T>>;
-
-/// A re-exported tokio runtime handle.
-pub type TokioRuntimeHandle = tokio::runtime::Handle;
 
 /// The parameters necessary to initialize the FaceTec Device SDK.
 type FacetecDeviceSdkParams = Map<String, Value>;
@@ -57,12 +54,10 @@ where
     C: AsRef<robonode_client::Client>,
 {
     /// The underlying implementation.
-    /// We have to wrap it with `Arc` because we have to provide compatibility with `futures` `0.1`,
-    /// up until `substrate` switches to 0.16+ version of the `jsonrpc-core`.
+    /// We have to wrap it with `Arc` because `jsonrpc-core` doesn't allow us to use `self` for
+    /// the duration of the future; we `clone` the `Arc` to get the `'static` lifetime to
+    /// a shared `Inner` instead.
     inner: Arc<Inner<C>>,
-
-    /// Compat tokio runtime.
-    rt: TokioRuntimeHandle,
 }
 
 impl<C> Bioauth<C>
@@ -70,18 +65,13 @@ where
     C: AsRef<robonode_client::Client>,
 {
     /// Create a new [`Bioauth`] API implementation.
-    pub fn new(
-        robonode_client: C,
-        liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-        rt: TokioRuntimeHandle,
-    ) -> Self {
+    pub fn new(robonode_client: C, liveness_data_tx_slot: Arc<LivenessDataTxSlot>) -> Self {
         let inner = Inner {
             client: robonode_client,
             liveness_data_tx_slot,
         };
         Self {
             inner: Arc::new(inner),
-            rt,
         }
     }
 }
@@ -90,18 +80,17 @@ impl<C> Bioauth<C>
 where
     C: AsRef<robonode_client::Client> + Send + Sync + 'static,
 {
-    /// Run the code in the `tokio` `0.1` & `futurtes` `0.1` compat mode.
-    fn run_in_compat<F, Fut, R>(&self, f: F) -> FutureResult<R>
+    /// A helper function that provides a conveneient way to to execute a future with a clone of
+    /// the `Arc<Inner>`.
+    /// It also boxes the resulting [`Future`] `Fut` so it fits into the [`FutureResult`].
+    fn with_inner_clone<F, Fut, R>(&self, f: F) -> FutureResult<R>
     where
         F: FnOnce(Arc<Inner<C>>) -> Fut,
         Fut: std::future::Future<Output = Result<R>> + Send + 'static,
         R: Send + 'static,
     {
         let inner = Arc::clone(&self.inner);
-        let call = f(inner);
-        let call = self.rt.spawn(call);
-        let call = call.unwrap_or_else(|err| panic!("{}", err));
-        Box::pin(call)
+        f(inner).boxed()
     }
 }
 
@@ -109,24 +98,27 @@ impl<C> BioauthApi for Bioauth<C>
 where
     C: AsRef<robonode_client::Client> + Send + Sync + 'static,
 {
-    /// Wrap `get_facetec_device_sdk_params` with `futures` `0.1` compat layer.
+    /// See [`Inner::get_facetec_device_sdk_params`].
     fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams> {
-        self.run_in_compat(move |inner| inner.get_facetec_device_sdk_params())
+        self.with_inner_clone(move |inner| inner.get_facetec_device_sdk_params())
     }
 
-    /// Wrap `get_facetec_session_token` with `futures` `0.1` compat layer.
+    /// See [`Inner::get_facetec_session_token`].
     fn get_facetec_session_token(&self) -> FutureResult<String> {
-        self.run_in_compat(move |inner| inner.get_facetec_session_token())
+        self.with_inner_clone(move |inner| inner.get_facetec_session_token())
     }
 
-    /// Wrap `provide_liveness_data` with `futures` `0.1` compat layer.
+    /// See [`Inner::provide_liveness_data`].
     fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        self.run_in_compat(move |inner| inner.provide_liveness_data(liveness_data))
+        self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
     }
 }
 
-/// The underlying implementation of the RPC part, extracted into a subobject to ensure the compat
-/// is properly set up.
+/// The underlying implementation of the RPC part, extracted into a subobject to work around
+/// the common pitfall with the poor async engines implementations of requiring future objects to
+/// be static.
+/// Stop it people, why do you even use Rust if you do things like this? Ffs...
+/// See https://github.com/paritytech/jsonrpc/issues/580
 struct Inner<C>
 where
     C: AsRef<robonode_client::Client>,
