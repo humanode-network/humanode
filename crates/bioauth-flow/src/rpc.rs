@@ -80,7 +80,7 @@ impl<C> Bioauth<C>
 where
     C: AsRef<robonode_client::Client> + Send + Sync + 'static,
 {
-    /// A helper function that provides a conveneient way to to execute a future with a clone of
+    /// A helper function that provides a convenient way to execute a future with a clone of
     /// the `Arc<Inner>`.
     /// It also boxes the resulting [`Future`] `Fut` so it fits into the [`FutureResult`].
     fn with_inner_clone<F, Fut, R>(&self, f: F) -> FutureResult<R>
