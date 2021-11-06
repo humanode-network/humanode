@@ -5,6 +5,7 @@ use codec::{Decode, Encode};
 use frame_support::parameter_types;
 use frame_system as system;
 use mockall::{mock, predicate};
+use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_core::{crypto::Infallible, H256};
@@ -35,7 +36,7 @@ frame_support::construct_runtime!(
     }
 );
 
-#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug)]
+#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct MockOpaqueAuthTicket(pub AuthTicket<Vec<u8>>);
 
@@ -55,7 +56,7 @@ impl TryConvert<MockOpaqueAuthTicket, AuthTicket<Vec<u8>>> for MockAuthTicketCon
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct MockVerifier;
 
@@ -139,7 +140,7 @@ parameter_types! {
 }
 
 impl system::Config for Test {
-    type BaseCallFilter = frame_support::traits::AllowAll;
+    type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
     type BlockLength = ();
     type DbWeight = ();

@@ -33,7 +33,7 @@ pub struct Deps<C, P> {
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P>(deps: Deps<C, P>) -> jsonrpc_core::IoHandler<sc_rpc::Metadata>
+pub fn create<C, P>(deps: Deps<C, P>) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
     C: ProvideRuntimeApi<Block>,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,

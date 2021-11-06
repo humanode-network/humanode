@@ -3,10 +3,8 @@
 use std::sync::Arc;
 
 use futures::channel::oneshot;
-use futures::compat::Compat;
 use futures::lock::BiLock;
 use futures::TryFutureExt;
-use jsonrpc_core::futures::Future;
 use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode;
 use jsonrpc_derive::rpc;
@@ -19,7 +17,7 @@ use crate::flow::LivenessDataProvider;
 pub type Result<T> = std::result::Result<T, RpcError>;
 
 /// A futures that resolves to the specified `T`, or an [`RpcError`].
-pub type FutureResult<T> = Box<dyn Future<Item = T, Error = RpcError> + Send>;
+pub type FutureResult<T> = jsonrpc_core::BoxFuture<Result<T>>;
 
 /// A re-exported tokio runtime handle.
 pub type TokioRuntimeHandle = tokio::runtime::Handle;
@@ -103,7 +101,7 @@ where
         let call = f(inner);
         let call = self.rt.spawn(call);
         let call = call.unwrap_or_else(|err| panic!("{}", err));
-        Box::new(Compat::new(Box::pin(call)))
+        Box::pin(call)
     }
 }
 
@@ -220,7 +218,7 @@ impl LivenessDataProvider for Provider {
 
         {
             let mut maybe_tx_guard = self.liveness_data_tx_slot.lock().await;
-            maybe_tx_guard.insert(tx); // insert a new sender value and free the lock asap
+            let _ = maybe_tx_guard.insert(tx); // insert a new sender value and free the lock asap
         }
 
         Ok(rx.await?)

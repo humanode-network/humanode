@@ -16,12 +16,12 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
     fn create_humanode_configuration<C: sc_cli::SubstrateCli>(
         &self,
         cli: &C,
-        task_executor: sc_service::TaskExecutor,
+        tokio_handle: tokio::runtime::Handle,
     ) -> sc_cli::Result<Configuration> {
         let substrate = sc_cli::CliConfiguration::create_configuration(
             self.substrate_cli_configuration(),
             cli,
-            task_executor,
+            tokio_handle,
         )?;
 
         let extensions = get_extension::<Extensions>(substrate.chain_spec.extensions())

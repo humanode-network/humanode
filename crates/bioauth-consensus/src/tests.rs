@@ -24,6 +24,7 @@ fn prepare_get_info() -> sp_blockchain::Info<Block> {
         finalized_number: 0,
         finalized_state: None,
         number_leaves: 0,
+        block_gap: None,
     }
 }
 

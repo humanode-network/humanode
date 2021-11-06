@@ -16,6 +16,7 @@ use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
 use primitives_auth_ticket::OpaqueAuthTicket;
+use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
@@ -155,7 +156,7 @@ parameter_types! {
 
 impl frame_system::Config for Runtime {
     /// The basic call filter to use in dispatchable.
-    type BaseCallFilter = frame_support::traits::AllowAll;
+    type BaseCallFilter = frame_support::traits::Everything;
     /// Block & extrinsics weights: base values and limits.
     type BlockWeights = BlockWeights;
     /// The maximum length of a block (in bytes).
@@ -205,7 +206,7 @@ impl frame_system::Config for Runtime {
 }
 
 /// The wrapper for the robonode public key, that enables ssotring it in the state.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Encode, Decode)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct RobonodePublicKeyWrapper([u8; 32]);
 
@@ -258,9 +259,14 @@ parameter_types! {
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
+parameter_types! {
+    pub const MaxAuthorities: u32 = 512;
+}
+
 impl pallet_aura::Config for Runtime {
     type AuthorityId = AuraId;
     type DisabledValidators = ();
+    type MaxAuthorities = MaxAuthorities;
 }
 
 impl pallet_grandpa::Config for Runtime {
@@ -280,6 +286,7 @@ impl pallet_grandpa::Config for Runtime {
     type HandleEquivocation = ();
 
     type WeightInfo = ();
+    type MaxAuthorities = MaxAuthorities;
 }
 
 parameter_types! {
@@ -312,11 +319,13 @@ impl pallet_balances::Config for Runtime {
 
 parameter_types! {
     pub const TransactionByteFee: Balance = 1;
+    pub const OperationalFeeMultiplier: u8 = 5;
 }
 
 impl pallet_transaction_payment::Config for Runtime {
     type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
     type TransactionByteFee = TransactionByteFee;
+    type OperationalFeeMultiplier = OperationalFeeMultiplier;
     type WeightToFee = IdentityFee<Balance>;
     type FeeMultiplierUpdate = ();
 }
@@ -490,7 +499,7 @@ impl_runtime_apis! {
 
     impl sp_api::Metadata<Block> for Runtime {
         fn metadata() -> OpaqueMetadata {
-            Runtime::metadata().into()
+            OpaqueMetadata::new(Runtime::metadata().into())
         }
     }
 
@@ -538,7 +547,7 @@ impl_runtime_apis! {
         }
 
         fn authorities() -> Vec<AuraId> {
-            Aura::authorities()
+            Aura::authorities().into_inner()
         }
     }
 
@@ -619,10 +628,13 @@ impl_runtime_apis! {
         fn dispatch_benchmark(
             config: frame_benchmarking::BenchmarkConfig
         ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-            use frame_benchmarking::{Benchmarking, BenchmarkBatch, add_benchmark, TrackedStorageKey};
+            use frame_benchmarking::{Benchmarking, baseline, BenchmarkBatch, add_benchmark, TrackedStorageKey};
 
             use frame_system_benchmarking::Pallet as SystemBench;
+            use baseline::Pallet as BaselineBench;
+
             impl frame_system_benchmarking::Config for Runtime {}
+            impl baseline::Config for Runtime {}
 
             let whitelist: Vec<TrackedStorageKey> = vec![
                 // Block Number
@@ -645,10 +657,10 @@ impl_runtime_apis! {
             let mut batches = Vec::<BenchmarkBatch>::new();
             let params = (&config, &whitelist);
 
+            add_benchmark!(params, batches, frame_benchmarking, BaselineBench::<Runtime>);
             add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
             add_benchmark!(params, batches, pallet_balances, Balances);
 
-            if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
             Ok(batches)
         }
     }

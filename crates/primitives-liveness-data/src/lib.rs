@@ -6,13 +6,13 @@
     clippy::clone_on_ref_ptr
 )]
 
-use core::convert::TryFrom;
-
 use codec::{Decode, Encode};
+use core::convert::TryFrom;
+use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 
 /// The data packet required to conduct liveness checks via the FaceTec Server.
-#[derive(Debug, PartialEq, Encode, Decode, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Encode, Decode, Serialize, Deserialize, TypeInfo)]
 pub struct LivenessData {
     /// The face scan.
     pub face_scan: String,
@@ -40,7 +40,7 @@ impl From<&LivenessData> for Vec<u8> {
 /// Used for signing.
 /// Does not guarantee that the underlying bytes indeed represent a valid [`LivenessData`] packet,
 /// but allows one to attempt to decode one via [`TryFrom`].
-#[derive(Debug, PartialEq, Encode, Decode, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Encode, Decode, Serialize, Deserialize, TypeInfo)]
 #[serde(transparent)]
 pub struct OpaqueLivenessData(pub Vec<u8>);
 

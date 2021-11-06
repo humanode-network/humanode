@@ -37,6 +37,7 @@ sc-service = { git = "https://github.com/humanode-network/substrate", branch = "
 sc-telemetry = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = { version = "1", features = ["derive"] }
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -45,7 +46,6 @@ sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", b
 sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-utils = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 structopt = "0.3.8"
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }

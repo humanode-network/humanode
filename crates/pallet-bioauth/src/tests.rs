@@ -14,8 +14,8 @@ pub fn make_input(
     public_key: &[u8],
     nonce: &[u8],
     signature: &[u8],
-) -> crate::Authenticate<MockOpaqueAuthTicket, Vec<u8>> {
-    crate::Authenticate {
+) -> pallet_bioauth::Authenticate<MockOpaqueAuthTicket, Vec<u8>> {
+    pallet_bioauth::Authenticate {
         ticket: MockOpaqueAuthTicket(AuthTicket {
             public_key: public_key.into(),
             nonce: nonce.into(),
@@ -427,7 +427,7 @@ fn signed_ext_check_bioauth_tx_permits_empty_state() {
         };
 
         // Make test.
-        let call = <pallet_bioauth::Call<Test>>::authenticate(input).into();
+        let call = pallet_bioauth::Call::authenticate { req: input }.into();
         let info = DispatchInfo::default();
 
         assert_eq!(
@@ -450,7 +450,7 @@ fn signed_ext_check_bioauth_tx_deny_invalid_signature() {
         let input = make_input(b"qwe", b"rty", b"invalid");
 
         // Make test.
-        let call = <pallet_bioauth::Call<Test>>::authenticate(input).into();
+        let call = pallet_bioauth::Call::authenticate { req: input }.into();
         let info = DispatchInfo::default();
 
         assert_eq!(
@@ -484,7 +484,7 @@ fn signed_ext_check_bioauth_tx_denies_conlicting_nonce() {
         let input = make_input(b"pk2", b"conflict!", b"should_be_valid");
 
         // Make test.
-        let call = <pallet_bioauth::Call<Test>>::authenticate(input).into();
+        let call = pallet_bioauth::Call::authenticate { req: input }.into();
         let info = DispatchInfo::default();
 
         assert_eq!(
@@ -518,7 +518,7 @@ fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
         let input = make_input(b"conflict!", b"nonce2", b"should_be_valid");
 
         // Make test.
-        let call = <pallet_bioauth::Call<Test>>::authenticate(input).into();
+        let call = pallet_bioauth::Call::authenticate { req: input }.into();
         let info = DispatchInfo::default();
 
         assert_eq!(

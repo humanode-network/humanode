@@ -11,18 +11,19 @@
 use core::convert::TryFrom;
 
 use codec::{Decode, Encode};
+use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_std::prelude::*;
 
 /// The one-time ticket to authenticate in the network.
-#[derive(Debug, PartialEq, Eq, Encode, Decode, Clone)]
+#[derive(Debug, PartialEq, Eq, Encode, Decode, Clone, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "std", serde(transparent))]
 pub struct OpaqueAuthTicket(pub Vec<u8>);
 
 /// The one-time ticket to authenticate in the network.
-#[derive(Debug, PartialEq, Encode, Decode)]
+#[derive(Debug, PartialEq, Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct AuthTicket {
     /// The public key that matched with the provided FaceTec 3D FaceScan.
