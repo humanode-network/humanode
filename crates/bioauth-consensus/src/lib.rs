@@ -1,4 +1,4 @@
-//! A block-import handler for Bioauth.
+//! A consensus layer of the bioauth.
 
 #![warn(
     missing_docs,
@@ -6,8 +6,7 @@
     clippy::clone_on_ref_ptr
 )]
 
-use futures::future;
-use futures::future::FutureExt;
+use futures::{future, lock::Mutex, FutureExt};
 use sc_client_api::backend::Backend;
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
 use sp_api::{HeaderT, ProvideRuntimeApi, TransactionFor};
@@ -26,11 +25,17 @@ pub mod keystore;
 #[cfg(feature = "aura-integration")]
 pub mod aura;
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 mod traits;
 
 pub use traits::*;
 
-/// A block-import handler for Bioauth.
+/// A [`BlockImport`] for the bioauth.
 pub struct BioauthBlockImport<Backend, Block: BlockT, Client, BI, BAX, AV> {
     /// The client to interact with the chain.
     client: Arc<Client>,
@@ -46,7 +51,7 @@ pub struct BioauthBlockImport<Backend, Block: BlockT, Client, BI, BAX, AV> {
     _phantom_block: PhantomData<Block>,
 }
 
-/// BioauthBlockImport Error Type.
+/// An error type for the [`BioauthBlockImport`].
 #[derive(Error, Debug, Eq, PartialEq)]
 pub enum BioauthBlockImportError<BAX, AV>
 where
@@ -166,8 +171,15 @@ where
     }
 }
 
-/// A Proposer handler for Bioauth.
+/// A [`Proposer`] for the bioauth.
 pub struct BioauthProposer<Block: BlockT, BAP, VKE, AV> {
+    /// The ARC with the internal functionality, required to pass
+    /// the static context to the boxed future.
+    inner: Arc<Mutex<BioauthProposerInner<Block, BAP, VKE, AV>>>,
+}
+
+/// The actual implementation of the [`BioauthProposer`].
+struct BioauthProposerInner<Block: BlockT, BAP, VKE, AV> {
     /// A basic authorship proposer.
     base_proposer: BAP,
     /// Keystore to extract validator public key.
@@ -178,7 +190,7 @@ pub struct BioauthProposer<Block: BlockT, BAP, VKE, AV> {
     _phantom_block: PhantomData<Block>,
 }
 
-/// BioauthProposer Error Type.
+/// The error type for the [`BioauthProposer`].
 #[derive(Error, Debug, Eq, PartialEq)]
 pub enum BioauthProposerError<VKE, AV>
 where
@@ -207,12 +219,70 @@ impl<Block: BlockT, BAP, VKE, AV> BioauthProposer<Block, BAP, VKE, AV> {
         validator_key_extractor: VKE,
         authorization_verifier: AV,
     ) -> Self {
-        Self {
+        let inner = BioauthProposerInner {
             base_proposer,
             validator_key_extractor,
             authorization_verifier,
             _phantom_block: PhantomData,
+        };
+        Self {
+            inner: Arc::new(Mutex::new(inner)),
         }
+    }
+}
+
+impl<Block: BlockT, BAP, VKE, AV> BioauthProposerInner<Block, BAP, VKE, AV>
+where
+    BAP: Environment<Block> + Send + Sync + 'static,
+    BAP::Error: Send,
+    BAP::Proposer: Send,
+    VKE: ValidatorKeyExtractor + Send + Sync + 'static,
+    <VKE as ValidatorKeyExtractor>::Error: std::error::Error + Send + Sync + 'static,
+    AV: AuthorizationVerifier<Block = Block, PublicKeyType = VKE::PublicKeyType>
+        + Send
+        + Sync
+        + 'static,
+    <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
+{
+    /// Check if we (as in currently running node) are bioauth-authorized, based on the parent
+    /// block state.
+    /// We are not eligible to produce a new block if we're not bioauth-authorized in the parent
+    /// block, but this check is here only to reduce the extra work the nodes do; without
+    /// this check, the produced block will still be rejected at block import.
+    async fn check(
+        &self,
+        parent_header: &Block::Header,
+    ) -> Result<(), BioauthProposerError<VKE::Error, AV::Error>> {
+        let validator_key = self
+            .validator_key_extractor
+            .extract_validator_key()
+            .map_err(BioauthProposerError::ValidatorKeyExtraction)?;
+
+        let validator_key =
+            validator_key.ok_or(BioauthProposerError::UnableToExtractValidatorKey)?;
+
+        let parent_hash = parent_header.hash();
+        let at = sp_api::BlockId::hash(parent_hash);
+
+        let is_authorized = self
+            .authorization_verifier
+            .is_authorized(&at, &validator_key)
+            .map_err(BioauthProposerError::AuthorizationVerification)?;
+
+        if !is_authorized {
+            return Err(BioauthProposerError::NotBioauthAuthorized);
+        }
+
+        Ok(())
+    }
+
+    /// Our init implementations runs the check and then passes the control to thw wrapped block
+    /// proposer.
+    async fn init(&mut self, parent_header: Block::Header) -> Result<BAP::Proposer, BAP::Error> {
+        self.check(&parent_header)
+            .await
+            .map_err(|err| sp_consensus::Error::Other(Box::new(err)))?;
+        self.base_proposer.init(&parent_header).await
     }
 }
 
@@ -221,9 +291,12 @@ where
     BAP: Environment<Block> + Send + Sync + 'static,
     BAP::Error: Send,
     BAP::Proposer: Send,
-    VKE: ValidatorKeyExtractor,
+    VKE: ValidatorKeyExtractor + Send + Sync + 'static,
     <VKE as ValidatorKeyExtractor>::Error: std::error::Error + Send + Sync + 'static,
-    AV: AuthorizationVerifier<Block = Block, PublicKeyType = VKE::PublicKeyType> + Send,
+    AV: AuthorizationVerifier<Block = Block, PublicKeyType = VKE::PublicKeyType>
+        + Send
+        + Sync
+        + 'static,
     <AV as AuthorizationVerifier>::Error: std::error::Error + Send + Sync + 'static,
 {
     type Proposer = BAP::Proposer;
@@ -233,44 +306,16 @@ where
     type Error = BAP::Error;
 
     fn init(&mut self, parent_header: &Block::Header) -> Self::CreateProposer {
-        let mkerr = |err: BioauthProposerError<VKE::Error, AV::Error>| -> Self::CreateProposer {
-            Box::pin(future::err(Self::Error::from(sp_consensus::Error::Other(
-                Box::new(err),
-            ))))
-        };
-
-        let validator_key = match self
-            .validator_key_extractor
-            .extract_validator_key()
-            .map_err(|err| mkerr(BioauthProposerError::ValidatorKeyExtraction(err)))
-        {
-            Ok(v) => v,
-            Err(err) => return err,
-        };
-
-        let validator_key = match validator_key
-            .ok_or_else(|| mkerr(BioauthProposerError::UnableToExtractValidatorKey))
-        {
-            Ok(v) => v,
-            Err(err) => return err,
-        };
-
-        let parent_hash = parent_header.hash();
-        let at = sp_api::BlockId::hash(parent_hash);
-
-        let is_authorized = match self
-            .authorization_verifier
-            .is_authorized(&at, &validator_key)
-            .map_err(|err| mkerr(BioauthProposerError::AuthorizationVerification(err)))
-        {
-            Ok(v) => v,
-            Err(err) => return err,
-        };
-
-        if !is_authorized {
-            return mkerr(BioauthProposerError::NotBioauthAuthorized);
+        let parent_header = parent_header.clone();
+        let inner = Arc::clone(&self.inner);
+        async move {
+            let mut inner = inner
+                .try_lock()
+                .expect("mutex must always be lockable due to surrounding mutability rules");
+            let result = inner.init(parent_header).await;
+            drop(inner);
+            result
         }
-
-        self.base_proposer.init(parent_header).boxed()
+        .boxed()
     }
 }
