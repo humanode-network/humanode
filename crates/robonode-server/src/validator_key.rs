@@ -1,7 +1,5 @@
 //! The validator key integration logic.
 
-use std::convert::{TryFrom, TryInto};
-
 use sp_core::crypto::{CryptoType, Pair, Public};
 
 use crate::logic;

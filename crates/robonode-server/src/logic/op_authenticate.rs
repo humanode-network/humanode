@@ -1,7 +1,5 @@
 //! Authenticate operation.
 
-use std::convert::TryFrom;
-
 use facetec_api_client as ft;
 use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};

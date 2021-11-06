@@ -26,7 +26,6 @@ mod tests {
     use super::*;
     use hex_literal::hex;
     use rand::rngs::OsRng;
-    use std::convert::TryInto;
 
     // Test vectors.
     // See: https://ed25519.cr.yp.to/python/sign.py

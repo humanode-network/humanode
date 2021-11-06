@@ -1,7 +1,5 @@
 //! Get Facetec Device Sdk Params operation.
 
-use std::convert::TryFrom;
-
 use serde::{Deserialize, Serialize};
 
 use super::{Logic, LogicOp, Signer};

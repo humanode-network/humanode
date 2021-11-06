@@ -8,8 +8,6 @@
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use core::convert::TryFrom;
-
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
