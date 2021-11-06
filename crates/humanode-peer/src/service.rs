@@ -293,7 +293,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 deny_unsafe,
                 robonode_client: Arc::clone(&robonode_client),
                 bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
-                bioauth_runtime_handle: tokio::runtime::Handle::current(),
             }))
         })
     };
