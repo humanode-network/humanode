@@ -106,7 +106,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 101,
+    spec_version: 102,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -546,12 +546,12 @@ impl_runtime_apis! {
         fn is_authorized(id: &AuraId) -> bool {
             let active_authentications = Bioauth::active_authentications();
             if active_authentications.is_empty() {
-                log::debug!("Bioauth consensus is verifying authorization based on Active Authentications V1");
+                log::debug!("Bioauth consensus is verifying authorization based on Active Authentications");
                 Bioauth::active_authentications_old()
                 .iter()
                 .any(|stored_public_key| &stored_public_key.public_key == id)
             } else {
-                log::debug!("Bioauth consensus is verifying authorization based on Active Authentications V2");
+                log::debug!("Bioauth consensus is verifying authorization based on Active Authentications V2 (Old now)");
                 active_authentications
                 .iter()
                 .any(|stored_public_key| &stored_public_key.public_key == id)
