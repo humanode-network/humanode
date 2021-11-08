@@ -1,5 +1,3 @@
-use std::convert::TryFrom;
-
 pub use hex::{decode, encode};
 pub use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 

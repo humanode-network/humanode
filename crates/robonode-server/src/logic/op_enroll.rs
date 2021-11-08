@@ -1,7 +1,5 @@
 //! Enroll operation.
 
-use std::convert::TryFrom;
-
 use facetec_api_client as ft;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use serde::{Deserialize, Serialize};

@@ -233,7 +233,6 @@ impl pallet_bioauth::Verifier<Vec<u8>> for RobonodePublicKeyWrapper {
     where
         D: AsRef<[u8]> + Send + 'a,
     {
-        use core::convert::TryInto;
         use robonode_crypto::Verifier;
 
         let actual_key = robonode_crypto::PublicKey::from_bytes(&self.0)
@@ -350,7 +349,6 @@ impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<Aur
     fn try_convert(
         value: OpaqueAuthTicket,
     ) -> Result<pallet_bioauth::AuthTicket<AuraId>, Self::Error> {
-        use sp_std::convert::TryInto;
         let primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce: nonce,

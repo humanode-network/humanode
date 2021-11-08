@@ -1,7 +1,5 @@
 //! Get Facetec Session Token operation.
 
-use std::convert::TryFrom;
-
 use facetec_api_client as ft;
 use serde::{Deserialize, Serialize};
 
