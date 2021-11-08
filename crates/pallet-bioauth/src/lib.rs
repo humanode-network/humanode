@@ -182,16 +182,16 @@ pub mod pallet {
     #[pallet::getter(fn consumed_auth_ticket_nonces)]
     pub type ConsumedAuthTicketNonces<T> = StorageValue<_, Vec<AuthTicketNonce>, ValueQuery>;
 
-    /// A list of all active authentications V1.
-    #[pallet::storage]
-    #[pallet::storage_prefix = "ActiveAuthentications"]
-    #[pallet::getter(fn active_authentications_old)]
-    pub type ActiveAuthenticationsOld<T: Config> =
-        StorageValue<_, Vec<Authentication<T::ValidatorPublicKey, T::BlockNumber>>, ValueQuery>;
-
-    /// A list of all active authentications V2.
+    /// A list of all active authentications V2 (Old now).
     #[pallet::storage]
     #[pallet::storage_prefix = "ActiveAuthenticationsV2"]
+    #[pallet::getter(fn active_authentications_old)]
+    pub type ActiveAuthenticationsOld<T: Config> =
+        StorageValue<_, Vec<Authentication<T::ValidatorPublicKey, T::Moment>>, ValueQuery>;
+
+    /// A list of all active authentications.
+    #[pallet::storage]
+    #[pallet::storage_prefix = "ActiveAuthentications"]
     #[pallet::getter(fn active_authentications)]
     pub type ActiveAuthentications<T: Config> =
         StorageValue<_, Vec<Authentication<T::ValidatorPublicKey, T::Moment>>, ValueQuery>;
@@ -534,29 +534,11 @@ pub mod migration {
     use super::*;
 
     use frame_support::{traits::Get, weights::Weight};
-    use sp_runtime::traits::Bounded;
 
-    /// Add authentication v2 based on existing authentication v1.
+    /// Move ActiveAuthenticationsV2 to base ActiveAuthentications.
     pub fn migrate<T: Config>() -> Weight {
         let active_authentications_old = <ActiveAuthenticationsOld<T>>::get();
-        let active_authentications = active_authentications_old
-            .iter()
-            .map(|a| {
-                let public_key = a.public_key.clone();
-                let expires_at = if a.expires_at == T::BlockNumber::max_value() {
-                    T::Moment::max_value()
-                } else {
-                    T::CurrentMoment::now() + T::AuthenticationsExpireAfter::get()
-                };
-
-                Authentication::<T::ValidatorPublicKey, T::Moment> {
-                    public_key,
-                    expires_at,
-                }
-            })
-            .collect::<Vec<_>>();
-
-        <ActiveAuthentications<T>>::put(active_authentications);
+        <ActiveAuthentications<T>>::put(active_authentications_old);
         <ActiveAuthenticationsOld<T>>::kill();
 
         T::DbWeight::get().reads_writes(1, 1)
