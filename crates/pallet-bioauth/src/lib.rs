@@ -287,6 +287,7 @@ pub mod pallet {
             ensure_none(origin)?;
 
             let auth_ticket = Self::extract_auth_ticket_checked(req)?;
+
             let public_key = auth_ticket.public_key.clone();
 
             // Update storage.

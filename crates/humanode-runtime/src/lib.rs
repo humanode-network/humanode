@@ -290,7 +290,6 @@ parameter_types! {
 pub type UnixMilliseconds = u64;
 
 impl pallet_timestamp::Config for Runtime {
-    /// A timestamp: milliseconds since the unix epoch.
     type Moment = UnixMilliseconds;
     type OnTimestampSet = Aura;
     type MinimumPeriod = MinimumPeriod;

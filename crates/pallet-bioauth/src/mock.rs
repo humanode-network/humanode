@@ -41,7 +41,7 @@ pub struct MockOpaqueAuthTicket(pub AuthTicket<Vec<u8>>);
 
 impl AsRef<[u8]> for MockOpaqueAuthTicket {
     fn as_ref(&self) -> &[u8] {
-        panic!("should be ununsed in tests")
+        panic!("should be unused in tests")
     }
 }
 
