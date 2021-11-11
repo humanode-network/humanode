@@ -116,8 +116,8 @@ pub struct Authentication<PublicKey, Moment> {
 #[frame_support::pallet]
 pub mod pallet {
     use crate::{
-        migration, AuthTicket, AuthTicketNonce, Authenticate, Authentication, CurrentMoment,
-        TryConvert, ValidatorSetUpdater, Verifier,
+        AuthTicket, AuthTicketNonce, Authenticate, Authentication, CurrentMoment, TryConvert,
+        ValidatorSetUpdater, Verifier,
     };
 
     use frame_support::{
@@ -182,16 +182,8 @@ pub mod pallet {
     #[pallet::getter(fn consumed_auth_ticket_nonces)]
     pub type ConsumedAuthTicketNonces<T> = StorageValue<_, Vec<AuthTicketNonce>, ValueQuery>;
 
-    /// A list of all active authentications V2 (Old now).
-    #[pallet::storage]
-    #[pallet::storage_prefix = "ActiveAuthenticationsV2"]
-    #[pallet::getter(fn active_authentications_old)]
-    pub type ActiveAuthenticationsOld<T: Config> =
-        StorageValue<_, Vec<Authentication<T::ValidatorPublicKey, T::Moment>>, ValueQuery>;
-
     /// A list of all active authentications.
     #[pallet::storage]
-    #[pallet::storage_prefix = "ActiveAuthentications"]
     #[pallet::getter(fn active_authentications)]
     pub type ActiveAuthentications<T: Config> =
         StorageValue<_, Vec<Authentication<T::ValidatorPublicKey, T::Moment>>, ValueQuery>;
@@ -360,10 +352,6 @@ pub mod pallet {
 
             T::DbWeight::get().reads_writes(1, if update_required { 1 } else { 0 })
         }
-
-        fn on_runtime_upgrade() -> Weight {
-            migration::migrate::<T>()
-        }
     }
 
     impl<T: Config> Pallet<T> {
@@ -526,21 +514,5 @@ where
             Some(call) => Pallet::<T>::check_tx(call),
             _ => Ok(Default::default()),
         }
-    }
-}
-
-/// Provides storage migration logic.
-pub mod migration {
-    use super::*;
-
-    use frame_support::{traits::Get, weights::Weight};
-
-    /// Move ActiveAuthenticationsV2 to base ActiveAuthentications.
-    pub fn migrate<T: Config>() -> Weight {
-        let active_authentications_old = <ActiveAuthenticationsOld<T>>::get();
-        <ActiveAuthentications<T>>::put(active_authentications_old);
-        <ActiveAuthenticationsOld<T>>::kill();
-
-        T::DbWeight::get().reads_writes(1, 1)
     }
 }
