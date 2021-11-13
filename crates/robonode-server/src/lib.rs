@@ -28,7 +28,7 @@ pub fn init(
     facetec_api_client: facetec_api_client::Client<LoggingInspector>,
     facetec_device_sdk_params: FacetecDeviceSdkParams,
     robonode_keypair: robonode_crypto::Keypair,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
+) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone {
     let logic = logic::Logic {
         locked: Mutex::new(logic::Locked {
             sequence: sequence::Sequence::new(0),

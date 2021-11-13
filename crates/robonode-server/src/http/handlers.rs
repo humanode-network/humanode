@@ -10,6 +10,66 @@ use crate::logic::{
     op_get_public_key, LogicOp,
 };
 
+/// An API error serializable to JSON.
+#[derive(Serialize)]
+pub struct ErrorMessage {
+    /// Status code rejection.
+    pub code: u16,
+    /// Message rejection.
+    pub message: String,
+}
+
+/// This function receives a `Rejection` and tries to return a custom
+/// value, otherwise simply passes the rejection along.
+pub async fn handle_rejection(
+    err: warp::reject::Rejection,
+) -> Result<impl Reply, std::convert::Infallible> {
+    let code;
+    let message;
+
+    if err.is_not_found() {
+        code = StatusCode::NOT_FOUND;
+        message = "NOT_FOUND";
+    } else if let Some(op_enroll::Error::InvalidPublicKey) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "INVALID_PUBLIC_KEY";
+    } else if let Some(op_enroll::Error::InvalidLivenessData(_)) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "INVALID_LIVENESS_DATA_ENROLL";
+    } else if let Some(op_enroll::Error::FaceScanRejected) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "FACE_SCAN_REJECTED_ENROLL";
+    } else if let Some(op_enroll::Error::PublicKeyAlreadyUsed) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "PUBLIC_KEY_ALREADY_USED";
+    } else if let Some(op_enroll::Error::PersonAlreadyEnrolled) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "PERSON_ALREADY_ENROLLED";
+    } else if let Some(op_authenticate::Error::InvalidLivenessData(_)) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "INVALID_LIVENESS_DATA_AUTHENTICATE";
+    } else if let Some(op_authenticate::Error::PersonNotFound) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "PERSON_NOT_FOUND";
+    } else if let Some(op_authenticate::Error::FaceScanRejected) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "FACE_SCAN_REJECTED_AUTHENTICATE";
+    } else if let Some(op_authenticate::Error::SignatureInvalid) = err.find() {
+        code = StatusCode::BAD_REQUEST;
+        message = "SIGNATURE_INVALID";
+    } else {
+        code = StatusCode::INTERNAL_SERVER_ERROR;
+        message = "UNHANDLED_REJECTION";
+    }
+
+    let json = warp::reply::json(&ErrorMessage {
+        code: code.as_u16(),
+        message: message.into(),
+    });
+
+    Ok(warp::reply::with_status(json, code))
+}
+
 /// Enroll operation HTTP transport coupling.
 pub async fn enroll<L>(
     logic: Arc<L>,

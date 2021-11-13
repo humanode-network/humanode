@@ -5,9 +5,10 @@ use mockall::*;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use primitives_liveness_data::OpaqueLivenessData;
 use warp::hyper::StatusCode;
+use warp::Reply;
 
 use crate::{
-    http::root,
+    http::{handlers, root},
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
         op_get_public_key, LogicOp,
@@ -107,6 +108,17 @@ fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk
     }
 }
 
+async fn expect_body_response(code: StatusCode, message: &str) -> warp::hyper::body::Bytes {
+    let json = warp::reply::json(&handlers::ErrorMessage {
+        code: code.as_u16(),
+        message: message.into(),
+    });
+
+    let response = warp::reply::with_status(json, code).into_response();
+
+    warp::hyper::body::to_bytes(response).await.unwrap()
+}
+
 #[tokio::test]
 async fn it_works_enroll() {
     let input = op_enroll::Request {
@@ -155,8 +167,11 @@ async fn it_denies_enroll_with_invalid_public_key() {
         .reply(&filter)
         .await;
 
-    assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(res.body(), "Unhandled rejection: InvalidPublicKey");
+    let expected_body_response =
+        expect_body_response(StatusCode::BAD_REQUEST, "INVALID_PUBLIC_KEY").await;
+
+    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(res.body(), &expected_body_response);
 }
 
 #[tokio::test]
@@ -209,11 +224,11 @@ async fn it_denies_authenticate() {
         .reply(&filter)
         .await;
 
+    let expected_body_response =
+        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "UNHANDLED_REJECTION").await;
+
     assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(
-        res.body(),
-        "Unhandled rejection: InternalErrorDbSearchUnsuccessful"
-    );
+    assert_eq!(res.body(), &expected_body_response);
 }
 
 #[tokio::test]
@@ -262,11 +277,11 @@ async fn it_denies_get_facetec_session_token() {
         .reply(&filter)
         .await;
 
+    let expected_body_response =
+        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "UNHANDLED_REJECTION").await;
+
     assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(
-        res.body(),
-        "Unhandled rejection: InternalErrorSessionTokenUnsuccessful"
-    );
+    assert_eq!(res.body(), &expected_body_response);
 }
 
 #[tokio::test]
