@@ -1,1 +1,10 @@
-
+[target.'cfg(all())']
+rustflags = [
+  "-Dunsafe_code",
+  "-Wclippy::all",
+  "-Wclippy::cargo",
+  "-Wmissing_docs",
+  "-Wclippy::missing_docs_in_private_items",
+  "-Wclippy::clone_on_ref_ptr",
+  "-Wclippy::await_holding_lock",
+]
