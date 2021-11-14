@@ -53,6 +53,12 @@ const plan = async () => {
       platformIndependent: true,
       cargoCacheKey: "code",
     },
+    "test-features": {
+      name: "test-features",
+      cargoCommand: "hack",
+      cargoArgs: ["check", "--feature-powerset", "--no-dev-deps"],
+      cargoCacheKey: "test-features",
+    },
   };
 
   // Figure out whether we want to run non-essential checks.
