@@ -56,7 +56,7 @@ const plan = async () => {
   };
 
   // Figure out whether we want to run non-essential checks.
-  const essentialOnly = true; // hardcoding for now
+  const essentialOnly = false; // hardcoding for now
 
   // Compute the effective list of platforms to use.
   const effectivePlatforms = Object.values(allPlatforms).filter(
