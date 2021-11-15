@@ -56,7 +56,7 @@ const plan = async () => {
     "test-features": {
       name: "test-features",
       cargoCommand: "hack",
-      cargoArgs: ["check", "--feature-powerset", "--no-dev-deps"],
+      cargoArgs: "check --feature-powerset --no-dev-deps",
       cargoCacheKey: "test-features",
     },
   };
