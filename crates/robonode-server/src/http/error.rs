@@ -41,13 +41,13 @@ impl From<op_enroll::Error> for Logic {
                 Self::new(StatusCode::BAD_REQUEST, "ENROLL_INVALID_LIVENESS_DATA")
             }
             op_enroll::Error::FaceScanRejected => {
-                Self::new(StatusCode::BAD_REQUEST, "ENROLL_FACE_SCAN_REJECTED")
+                Self::new(StatusCode::FORBIDDEN, "ENROLL_FACE_SCAN_REJECTED")
             }
             op_enroll::Error::PublicKeyAlreadyUsed => {
-                Self::new(StatusCode::BAD_REQUEST, "ENROLL_PUBLIC_KEY_ALREADY_USED")
+                Self::new(StatusCode::CONFLICT, "ENROLL_PUBLIC_KEY_ALREADY_USED")
             }
             op_enroll::Error::PersonAlreadyEnrolled => {
-                Self::new(StatusCode::BAD_REQUEST, "ENROLL_PERSON_ALREADY_ENROLLED")
+                Self::new(StatusCode::CONFLICT, "ENROLL_PERSON_ALREADY_ENROLLED")
             }
             op_enroll::Error::InternalErrorEnrollment(_)
             | op_enroll::Error::InternalErrorEnrollmentUnsuccessful
@@ -67,13 +67,13 @@ impl From<op_authenticate::Error> for Logic {
                 "AUTHENTICATE_INVALID_LIVENESS_DATA",
             ),
             op_authenticate::Error::PersonNotFound => {
-                Self::new(StatusCode::BAD_REQUEST, "AUTHENTICATE_PERSON_NOT_FOUND")
+                Self::new(StatusCode::NOT_FOUND, "AUTHENTICATE_PERSON_NOT_FOUND")
             }
             op_authenticate::Error::FaceScanRejected => {
-                Self::new(StatusCode::BAD_REQUEST, "AUTHENTICATE_FACE_SCAN_REJECTED")
+                Self::new(StatusCode::FORBIDDEN, "AUTHENTICATE_FACE_SCAN_REJECTED")
             }
             op_authenticate::Error::SignatureInvalid => {
-                Self::new(StatusCode::BAD_REQUEST, "AUTHENTICATE_SIGNATURE_INVALID")
+                Self::new(StatusCode::FORBIDDEN, "AUTHENTICATE_SIGNATURE_INVALID")
             }
             op_authenticate::Error::InternalErrorEnrollment(_)
             | op_authenticate::Error::InternalErrorEnrollmentUnsuccessful
