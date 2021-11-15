@@ -168,7 +168,7 @@ async fn it_denies_enroll_with_invalid_public_key() {
         .await;
 
     let expected_body_response =
-        expect_body_response(StatusCode::BAD_REQUEST, "INVALID_PUBLIC_KEY").await;
+        expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_INVALID_PUBLIC_KEY").await;
 
     assert_eq!(res.status(), StatusCode::BAD_REQUEST);
     assert_eq!(res.body(), &expected_body_response);
@@ -225,7 +225,7 @@ async fn it_denies_authenticate() {
         .await;
 
     let expected_body_response =
-        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "UNHANDLED_REJECTION").await;
+        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "AUTHENTICATE_INTERNAL").await;
 
     assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
     assert_eq!(res.body(), &expected_body_response);

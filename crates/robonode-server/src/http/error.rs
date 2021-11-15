@@ -29,13 +29,45 @@ fn not_found() -> ErrorMessage {
 }
 
 /// Handle enroll rejection.
-fn enroll(_err: &op_enroll::Error) -> ErrorMessage {
-    ErrorMessage::new(StatusCode::BAD_REQUEST, "ENROLL_ERROR")
+fn enroll(err: &op_enroll::Error) -> ErrorMessage {
+    match err {
+        op_enroll::Error::InvalidPublicKey => {
+            ErrorMessage::new(StatusCode::BAD_REQUEST, "ENROLL_INVALID_PUBLIC_KEY")
+        }
+        op_enroll::Error::InvalidLivenessData(_) => {
+            ErrorMessage::new(StatusCode::BAD_REQUEST, "ENROLL_INVALID_LIVENESS_DATA")
+        }
+        op_enroll::Error::FaceScanRejected => {
+            ErrorMessage::new(StatusCode::BAD_REQUEST, "ENROLL_FACE_SCAN_REJECTED")
+        }
+        op_enroll::Error::PublicKeyAlreadyUsed => {
+            ErrorMessage::new(StatusCode::BAD_REQUEST, "ENROLL_PUBLIC_KEY_ALREADY_USED")
+        }
+        op_enroll::Error::PersonAlreadyEnrolled => {
+            ErrorMessage::new(StatusCode::BAD_REQUEST, "ENROLL_PERSON_ALREADY_ENROLLED")
+        }
+        _ => ErrorMessage::new(StatusCode::INTERNAL_SERVER_ERROR, "ENROLL_INTERNAL"),
+    }
 }
 
 /// Handle authenticate rejection.
-fn authenticate(_err: &op_authenticate::Error) -> ErrorMessage {
-    ErrorMessage::new(StatusCode::BAD_REQUEST, "AUTHENTICATE_ERROR")
+fn authenticate(err: &op_authenticate::Error) -> ErrorMessage {
+    match err {
+        op_authenticate::Error::InvalidLivenessData(_) => ErrorMessage::new(
+            StatusCode::BAD_REQUEST,
+            "AUTHENTICATE_INVALID_LIVENESS_DATA",
+        ),
+        op_authenticate::Error::PersonNotFound => {
+            ErrorMessage::new(StatusCode::BAD_REQUEST, "AUTHENTICATE_PERSON_NOT_FOUND")
+        }
+        op_authenticate::Error::FaceScanRejected => {
+            ErrorMessage::new(StatusCode::BAD_REQUEST, "AUTHENTICATE_FACE_SCAN_REJECTED")
+        }
+        op_authenticate::Error::SignatureInvalid => {
+            ErrorMessage::new(StatusCode::BAD_REQUEST, "AUTHENTICATE_SIGNATURE_INVALID")
+        }
+        _ => ErrorMessage::new(StatusCode::INTERNAL_SERVER_ERROR, "AUTHENTICATE_INTERNAL"),
+    }
 }
 
 /// Internal server rejection.
@@ -59,7 +91,8 @@ pub async fn handle_rejection(
     };
 
     let json = warp::reply::json(&error_message);
-    let code = StatusCode::from_u16(error_message.code).unwrap();
+    let code =
+        StatusCode::from_u16(error_message.code).expect("Pre-defined status code should work");
 
     Ok(warp::reply::with_status(json, code))
 }
