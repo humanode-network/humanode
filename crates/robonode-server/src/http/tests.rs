@@ -108,14 +108,12 @@ fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk
     }
 }
 
-async fn expect_body_response(code: StatusCode, message: &str) -> warp::hyper::body::Bytes {
-    let json = warp::reply::json(&error::ErrorMessage {
-        code: code.as_u16(),
-        message: message.into(),
-    });
-
-    let response = warp::reply::with_status(json, code).into_response();
-
+async fn expect_body_response(
+    status_code: StatusCode,
+    error_code: &'static str,
+) -> warp::hyper::body::Bytes {
+    let json = warp::reply::json(&error::Response { error_code });
+    let response = warp::reply::with_status(json, status_code).into_response();
     warp::hyper::body::to_bytes(response).await.unwrap()
 }
 
@@ -225,7 +223,7 @@ async fn it_denies_authenticate() {
         .await;
 
     let expected_body_response =
-        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "AUTHENTICATE_INTERNAL").await;
+        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "LOGIC_INTERNAL_ERROR").await;
 
     assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
     assert_eq!(res.body(), &expected_body_response);
@@ -278,7 +276,7 @@ async fn it_denies_get_facetec_session_token() {
         .await;
 
     let expected_body_response =
-        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "UNHANDLED_REJECTION").await;
+        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "LOGIC_INTERNAL_ERROR").await;
 
     assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
     assert_eq!(res.body(), &expected_body_response);
