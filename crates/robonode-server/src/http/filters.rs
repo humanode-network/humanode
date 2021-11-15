@@ -6,7 +6,7 @@ use serde::Serialize;
 use warp::Filter;
 
 use crate::{
-    http::handlers,
+    http::{error, handlers},
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
         op_get_public_key, LogicOp,
@@ -60,7 +60,7 @@ where
         .or(get_facetec_session_token(Arc::clone(&logic)))
         .or(get_facetec_device_sdk_params(Arc::clone(&logic)))
         .or(get_public_key(logic))
-        .recover(handlers::handle_rejection)
+        .recover(error::handle_rejection)
 }
 
 /// POST /enroll with JSON body.

@@ -16,7 +16,7 @@ pub mod op_get_facetec_session_token;
 pub mod op_get_public_key;
 #[cfg(test)]
 mod tests;
-mod traits;
+pub mod traits;
 
 pub use traits::*;
 

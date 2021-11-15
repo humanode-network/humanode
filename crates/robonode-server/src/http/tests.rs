@@ -8,7 +8,7 @@ use warp::hyper::StatusCode;
 use warp::Reply;
 
 use crate::{
-    http::{error, handlers, root},
+    http::{error, root},
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
         op_get_public_key, LogicOp,
