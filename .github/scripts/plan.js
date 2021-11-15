@@ -80,19 +80,21 @@ const plan = async () => {
     (mode) => mode.platformIndependent
   );
 
-  // Compute the individual mixins for indep modes.
-  const effectiveIncludes = effectiveIndepModes.map((mode) => ({
-    // Run the platform independent tests on Ubuntu.
-    platform: allPlatforms.ubuntu,
+  const mergeMatrixElements = (platform, mode) => ({
+    platform,
     mode,
-  }));
+  });
 
-  // Prepare the effective matrix.
-  const matrix = {
-    platform: effectivePlatforms,
-    mode: effectiveModes,
-    include: effectiveIncludes,
-  };
+  // Mix platforms and modes.
+  const fullCombinations = effectivePlatforms.flatMap((platform) =>
+    effectiveModes.flatMap((mode) => mergeMatrixElements(platform, mode))
+  );
+  const indepCombinations = effectiveIndepModes.flatMap((mode) =>
+    // Run the platform independent tests on Ubuntu.
+    mergeMatrixElements(allPlatforms.ubuntu, mode)
+  );
+  const plan = [...fullCombinations, ...indepCombinations];
+  const matrix = { plan };
 
   // Print the matrix, useful for local debugging.
   console.log(JSON.stringify(matrix, null, "  "));
