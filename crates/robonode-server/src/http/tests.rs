@@ -8,7 +8,7 @@ use warp::hyper::StatusCode;
 use warp::Reply;
 
 use crate::{
-    http::{handlers, root},
+    http::{error, handlers, root},
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
         op_get_public_key, LogicOp,
@@ -109,7 +109,7 @@ fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk
 }
 
 async fn expect_body_response(code: StatusCode, message: &str) -> warp::hyper::body::Bytes {
-    let json = warp::reply::json(&handlers::ErrorMessage {
+    let json = warp::reply::json(&error::ErrorMessage {
         code: code.as_u16(),
         message: message.into(),
     });

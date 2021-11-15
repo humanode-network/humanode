@@ -5,19 +5,13 @@ use std::sync::Arc;
 use warp::hyper::StatusCode;
 use warp::Reply;
 
-use crate::logic::{
-    op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
-    op_get_public_key, LogicOp,
+use crate::{
+    http::error::ErrorMessage,
+    logic::{
+        op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
+        op_get_public_key, LogicOp,
+    },
 };
-
-/// An API error serializable to JSON.
-#[derive(Serialize)]
-pub struct ErrorMessage {
-    /// Status code rejection.
-    pub code: u16,
-    /// Message rejection.
-    pub message: String,
-}
 
 /// This function receives a `Rejection` and tries to return a custom
 /// value, otherwise simply passes the rejection along.

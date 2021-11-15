@@ -1,5 +1,6 @@
 //! The HTTP transport realted stuff.
 
+mod error;
 mod filters;
 mod handlers;
 
