@@ -5,6 +5,7 @@ edition = "2021"
 publish = false
 
 [build-dependencies]
+# See https://github.com/paritytech/substrate/pull/10284
 substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "wasm-builder-fix" }
 
 [dependencies]
