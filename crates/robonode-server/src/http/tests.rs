@@ -7,7 +7,7 @@ use primitives_liveness_data::OpaqueLivenessData;
 use warp::{hyper::StatusCode, Filter, Reply};
 
 use crate::{
-    http::{error, root},
+    http::{rejection, root},
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
         op_get_public_key, LogicOp,
@@ -110,14 +110,14 @@ fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk
 fn root_with_error_handler(
     logic: MockLogic,
 ) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone {
-    root(Arc::new(logic)).recover(error::handle_rejection)
+    root(Arc::new(logic)).recover(rejection::handle)
 }
 
 async fn expect_body_response(
     status_code: StatusCode,
     error_code: &'static str,
 ) -> warp::hyper::body::Bytes {
-    let json = warp::reply::json(&error::Response { error_code });
+    let json = warp::reply::json(&rejection::ErrorResponse { error_code });
     let response = warp::reply::with_status(json, status_code).into_response();
     warp::hyper::body::to_bytes(response).await.unwrap()
 }

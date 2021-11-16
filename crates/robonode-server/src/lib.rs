@@ -42,7 +42,7 @@ pub fn init(
     let log = warp::log("robonode::api");
     root(Arc::new(logic))
         .with(log)
-        .recover(http::error::handle_rejection)
+        .recover(http::rejection::handle)
 }
 
 #[async_trait::async_trait]

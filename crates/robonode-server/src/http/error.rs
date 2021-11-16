@@ -4,8 +4,7 @@ use crate::logic::{
     op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
     op_get_public_key,
 };
-use serde::Serialize;
-use warp::{hyper::StatusCode, Reply};
+use warp::hyper::StatusCode;
 
 /// A logic error.
 #[derive(Debug, Clone)]
@@ -109,36 +108,4 @@ impl From<op_get_public_key::Error> for Logic {
     fn from(err: op_get_public_key::Error) -> Self {
         match err {}
     }
-}
-
-/// Error response shape that we can return for the error body.
-#[derive(Debug, Serialize)]
-#[serde(rename = "camelCase")]
-pub(super) struct Response {
-    /// The machine-readable error code describing the error condition.
-    pub error_code: &'static str,
-}
-
-/// This function receives a `Rejection` and generates an error response.
-pub async fn handle_rejection(
-    err: warp::reject::Rejection,
-) -> Result<impl Reply, std::convert::Infallible> {
-    let (status_code, error_response) = if let Some(logic_error) = err.find::<Logic>() {
-        (
-            logic_error.status_code,
-            Response {
-                error_code: logic_error.error_code,
-            },
-        )
-    } else {
-        (
-            StatusCode::NOT_IMPLEMENTED,
-            Response {
-                error_code: "UNKNOWN_CALL",
-            },
-        )
-    };
-
-    let json = warp::reply::json(&error_response);
-    Ok(warp::reply::with_status(json, status_code))
 }
