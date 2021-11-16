@@ -1,6 +1,5 @@
 //! A substrate pallet containing the bioauth integration.
 
-#![warn(missing_docs, clippy::clone_on_ref_ptr)]
 #![cfg_attr(not(feature = "std"), no_std)]
 // Fix clippy for sp_api::decl_runtime_apis!
 #![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]

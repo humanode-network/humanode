@@ -5563,7 +5563,7 @@ dependencies = [
  "pwasm-utils",
  "sc-allocator",
  "sp-core",
- "sp-maybe-compressed-blob",
+ "sp-maybe-compressed-blob 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-serializer",
  "sp-wasm-interface",
  "thiserror",
@@ -6780,6 +6780,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-maybe-compressed-blob"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=wasm-builder-fix#562fff6886b3667dd89959d65d9b49fcc5a78560"
+dependencies = [
+ "zstd",
+]
+
+[[package]]
 name = "sp-offchain"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#abca10f32a1844d4d05884c92ea2e08b17c6b8c3"
@@ -7202,12 +7210,12 @@ dependencies = [
 [[package]]
 name = "substrate-wasm-builder"
 version = "5.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=master#abca10f32a1844d4d05884c92ea2e08b17c6b8c3"
+source = "git+https://github.com/humanode-network/substrate?branch=wasm-builder-fix#562fff6886b3667dd89959d65d9b49fcc5a78560"
 dependencies = [
  "ansi_term 0.12.1",
  "build-helper",
  "cargo_metadata",
- "sp-maybe-compressed-blob",
+ "sp-maybe-compressed-blob 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=wasm-builder-fix)",
  "tempfile",
  "toml",
  "walkdir",

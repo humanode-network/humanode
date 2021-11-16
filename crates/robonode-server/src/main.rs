@@ -1,11 +1,5 @@
 //! Main entrypoint for the Humanode's Bioauth Robonode server.
 
-#![warn(
-    missing_docs,
-    clippy::missing_docs_in_private_items,
-    clippy::clone_on_ref_ptr
-)]
-
 use std::env::VarError;
 
 use tracing::info;

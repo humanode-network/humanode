@@ -1,6 +1,5 @@
 //! The substrate runtime for the Humanode network.
 
-#![warn(clippy::clone_on_ref_ptr)]
 // TODO: switch back to warn
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
