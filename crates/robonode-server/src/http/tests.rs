@@ -122,8 +122,9 @@ async fn expect_body_response(
     warp::hyper::body::to_bytes(response).await.unwrap()
 }
 
+/// This test verifies getting expected HTTP response during succesfull enrollment.
 #[tokio::test]
-async fn it_works_enroll() {
+async fn enroll_success() {
     let input = op_enroll::Request {
         public_key: b"key".to_vec(),
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
@@ -147,8 +148,10 @@ async fn it_works_enroll() {
     assert!(res.body().is_empty());
 }
 
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with InvalidPublicKey error.
 #[tokio::test]
-async fn it_denies_enroll_with_invalid_public_key() {
+async fn enroll_error_invalid_public_key() {
     let input = op_enroll::Request {
         public_key: b"key".to_vec(),
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
@@ -175,8 +178,161 @@ async fn it_denies_enroll_with_invalid_public_key() {
     assert_eq!(res.body(), &expected_body_response);
 }
 
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with InvalidLivenessData error.
 #[tokio::test]
-async fn it_works_authenticate() {
+async fn enroll_error_invalid_liveness_data() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic.expect_enroll().returning(|_| {
+        Err(op_enroll::Error::InvalidLivenessData(codec::Error::from(
+            "invalid_data",
+        )))
+    });
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/enroll")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response =
+        expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_INVALID_LIVENESS_DATA").await;
+
+    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with FaceScanRejected error.
+#[tokio::test]
+async fn enroll_error_face_scan_rejected() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_enroll()
+        .returning(|_| Err(op_enroll::Error::FaceScanRejected));
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/enroll")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response =
+        expect_body_response(StatusCode::FORBIDDEN, "ENROLL_FACE_SCAN_REJECTED").await;
+
+    assert_eq!(res.status(), StatusCode::FORBIDDEN);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with PublicKeyAlreadyUsed error.
+#[tokio::test]
+async fn enroll_error_public_key_already_used() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_enroll()
+        .returning(|_| Err(op_enroll::Error::PublicKeyAlreadyUsed));
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/enroll")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response =
+        expect_body_response(StatusCode::CONFLICT, "ENROLL_PUBLIC_KEY_ALREADY_USED").await;
+
+    assert_eq!(res.status(), StatusCode::CONFLICT);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with PersonAlreadyEnrolled error.
+#[tokio::test]
+async fn enroll_error_person_already_enrolled() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_enroll()
+        .returning(|_| Err(op_enroll::Error::PersonAlreadyEnrolled));
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/enroll")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response =
+        expect_body_response(StatusCode::CONFLICT, "ENROLL_PERSON_ALREADY_ENROLLED").await;
+
+    assert_eq!(res.status(), StatusCode::CONFLICT);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with internal error.
+#[tokio::test]
+async fn enroll_error_internal() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_enroll()
+        .returning(|_| Err(op_enroll::Error::InternalErrorEnrollmentUnsuccessful));
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/enroll")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response =
+        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "LOGIC_INTERNAL_ERROR").await;
+
+    assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+/// This test verifies getting expected HTTP response during succesfull authentication request.
+#[tokio::test]
+async fn authenticate_success() {
     let input = op_authenticate::Request {
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
         liveness_data_signature: b"signature".to_vec(),
@@ -202,8 +358,45 @@ async fn it_works_authenticate() {
     assert_eq!(res.body().as_ref(), expected_response.as_bytes());
 }
 
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with InvalidLivenessData error.
 #[tokio::test]
-async fn it_denies_authenticate() {
+async fn authenticate_error_invalid_liveness_data() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic.expect_authenticate().returning(|_| {
+        Err(op_authenticate::Error::InvalidLivenessData(
+            codec::Error::from("invalid_data"),
+        ))
+    });
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/authenticate")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response = expect_body_response(
+        StatusCode::BAD_REQUEST,
+        "AUTHENTICATE_INVALID_LIVENESS_DATA",
+    )
+    .await;
+
+    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with FaceScanRejected error.
+#[tokio::test]
+async fn authenticate_error_face_scan_rejected() {
     let input = op_authenticate::Request {
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
         liveness_data_signature: b"signature".to_vec(),
@@ -212,7 +405,97 @@ async fn it_denies_authenticate() {
     let mut mock_logic = MockLogic::new();
     mock_logic
         .expect_authenticate()
-        .returning(|_| Err(op_authenticate::Error::InternalErrorDbSearchUnsuccessful));
+        .returning(|_| Err(op_authenticate::Error::FaceScanRejected));
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/authenticate")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response =
+        expect_body_response(StatusCode::FORBIDDEN, "AUTHENTICATE_FACE_SCAN_REJECTED").await;
+
+    assert_eq!(res.status(), StatusCode::FORBIDDEN);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with PersonNotFound error.
+#[tokio::test]
+async fn authenticate_error_person_not_found() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_authenticate()
+        .returning(|_| Err(op_authenticate::Error::PersonNotFound));
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/authenticate")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response =
+        expect_body_response(StatusCode::NOT_FOUND, "AUTHENTICATE_PERSON_NOT_FOUND").await;
+
+    assert_eq!(res.status(), StatusCode::NOT_FOUND);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with SignatureInvalid error.
+#[tokio::test]
+async fn authenticate_error_signature_invalid() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_authenticate()
+        .returning(|_| Err(op_authenticate::Error::SignatureInvalid));
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/authenticate")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response =
+        expect_body_response(StatusCode::FORBIDDEN, "AUTHENTICATE_SIGNATURE_INVALID").await;
+
+    assert_eq!(res.status(), StatusCode::FORBIDDEN);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with internal error.
+#[tokio::test]
+async fn authenticate_error_internal() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_authenticate()
+        .returning(|_| Err(op_authenticate::Error::InternalErrorEnrollmentUnsuccessful));
 
     let filter = root_with_error_handler(mock_logic);
 
@@ -230,8 +513,10 @@ async fn it_denies_authenticate() {
     assert_eq!(res.body(), &expected_body_response);
 }
 
+/// This test verifies getting expected HTTP response during
+/// succesfull get_facetec_session_token request.
 #[tokio::test]
-async fn it_works_get_facetec_session_token() {
+async fn get_facetec_session_token_success() {
     let input = op_get_facetec_session_token::Request;
 
     let mut mock_logic = MockLogic::new();
@@ -254,8 +539,10 @@ async fn it_works_get_facetec_session_token() {
     assert_eq!(res.body().as_ref(), expected_response.as_bytes());
 }
 
+/// This test verifies getting expected HTTP response during
+/// failer get_facetec_session_token request with internal error.
 #[tokio::test]
-async fn it_denies_get_facetec_session_token() {
+async fn get_facetec_session_token_error_internal() {
     let input = op_get_facetec_session_token::Request;
 
     let mut mock_logic = MockLogic::new();
@@ -281,8 +568,10 @@ async fn it_denies_get_facetec_session_token() {
     assert_eq!(res.body(), &expected_body_response);
 }
 
+/// This test verifies getting expected HTTP response during
+/// get_facetec_device_sdk_params request in Dev mode.
 #[tokio::test]
-async fn it_works_get_facetec_device_sdk_params_in_dev_mode() {
+async fn get_facetec_device_sdk_params_in_dev_mode() {
     let input = op_get_facetec_device_sdk_params::Request;
 
     let mut mock_logic = MockLogic::new();
@@ -306,8 +595,10 @@ async fn it_works_get_facetec_device_sdk_params_in_dev_mode() {
     assert_eq!(res.body().as_ref(), expected_response.as_bytes());
 }
 
+/// This test verifies getting expected HTTP response during
+/// get_facetec_device_sdk_params request in Prod mode.
 #[tokio::test]
-async fn it_works_get_facetec_device_sdk_params_in_prod_mode() {
+async fn get_facetec_device_sdk_params_in_prod_mode() {
     let input = op_get_facetec_device_sdk_params::Request;
 
     let mut mock_logic = MockLogic::new();
@@ -331,8 +622,10 @@ async fn it_works_get_facetec_device_sdk_params_in_prod_mode() {
     assert_eq!(res.body().as_ref(), expected_response.as_bytes());
 }
 
+/// This test verifies getting expected HTTP response during
+/// get_public_key request.
 #[tokio::test]
-async fn it_works_get_public_key() {
+async fn get_public_key() {
     let input = op_get_public_key::Request;
 
     let sample_response = op_get_public_key::Response {
