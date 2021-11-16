@@ -1,5 +1,8 @@
+//! The entrypoint to the auth ticket dev utils cli.
+
 use devutil_auth_ticket::*;
 
+/// Read the HEX-encoded binary value from an env var, and panic if we couldn't.
 fn read_hex_env(key: &'static str) -> Vec<u8> {
     let val = std::env::var(key).unwrap();
     decode(val).unwrap()

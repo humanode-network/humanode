@@ -1,3 +1,6 @@
+//! A tiny utility for generating a robonode keypair.
+//! Prints the keypair in HEX.
+
 use rand::rngs::OsRng;
 
 fn main() {
