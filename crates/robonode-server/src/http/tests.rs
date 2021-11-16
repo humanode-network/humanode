@@ -4,8 +4,7 @@ use mockall::predicate::*;
 use mockall::*;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use primitives_liveness_data::OpaqueLivenessData;
-use warp::Reply;
-use warp::{hyper::StatusCode, Filter};
+use warp::{hyper::StatusCode, Filter, Reply};
 
 use crate::{
     http::{error, root},
@@ -108,6 +107,12 @@ fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk
     }
 }
 
+fn root_with_error_handler(
+    logic: MockLogic,
+) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone {
+    root(Arc::new(logic)).recover(error::handle_rejection)
+}
+
 async fn expect_body_response(
     status_code: StatusCode,
     error_code: &'static str,
@@ -129,8 +134,7 @@ async fn it_works_enroll() {
         .expect_enroll()
         .returning(|_| Ok(op_enroll::Response));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic).recover(error::handle_rejection);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("POST")
@@ -155,8 +159,7 @@ async fn it_denies_enroll_with_invalid_public_key() {
         .expect_enroll()
         .returning(|_| Err(op_enroll::Error::InvalidPublicKey));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic).recover(error::handle_rejection);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("POST")
@@ -184,8 +187,7 @@ async fn it_works_authenticate() {
         .expect_authenticate()
         .returning(|_| Ok(provide_authenticate_response()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic).recover(error::handle_rejection);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("POST")
@@ -212,8 +214,7 @@ async fn it_denies_authenticate() {
         .expect_authenticate()
         .returning(|_| Err(op_authenticate::Error::InternalErrorDbSearchUnsuccessful));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic).recover(error::handle_rejection);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("POST")
@@ -238,8 +239,7 @@ async fn it_works_get_facetec_session_token() {
         .expect_get_facetec_session_token()
         .returning(|_| Ok(provide_facetec_session_token()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic).recover(error::handle_rejection);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")
@@ -265,8 +265,7 @@ async fn it_denies_get_facetec_session_token() {
             Err(op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful)
         });
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic).recover(error::handle_rejection);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")
@@ -291,8 +290,7 @@ async fn it_works_get_facetec_device_sdk_params_in_dev_mode() {
         .expect_get_facetec_device_sdk_params()
         .returning(|_| Ok(provide_facetec_device_sdk_params_in_dev_mode()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic).recover(error::handle_rejection);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")
@@ -317,8 +315,7 @@ async fn it_works_get_facetec_device_sdk_params_in_prod_mode() {
         .expect_get_facetec_device_sdk_params()
         .returning(|_| Ok(provide_facetec_device_sdk_params_in_prod_mode()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic).recover(error::handle_rejection);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")
@@ -349,8 +346,7 @@ async fn it_works_get_public_key() {
         .once()
         .returning(move |_| Ok(sample_response.clone()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic).recover(error::handle_rejection);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")
