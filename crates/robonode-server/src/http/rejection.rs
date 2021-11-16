@@ -15,22 +15,12 @@ pub(super) struct ErrorResponse {
 
 /// This function receives a `Rejection` and generates an error response.
 pub async fn handle(err: warp::reject::Rejection) -> Result<impl Reply, std::convert::Infallible> {
-    let (status_code, error_response) = if let Some(logic_error) = err.find::<error::Logic>() {
-        (
-            logic_error.status_code,
-            ErrorResponse {
-                error_code: logic_error.error_code,
-            },
-        )
+    let (status_code, error_code) = if let Some(logic_error) = err.find::<error::Logic>() {
+        (logic_error.status_code, logic_error.error_code)
     } else {
-        (
-            StatusCode::NOT_IMPLEMENTED,
-            ErrorResponse {
-                error_code: "UNKNOWN_CALL",
-            },
-        )
+        (StatusCode::NOT_IMPLEMENTED, "UNKNOWN_CALL")
     };
 
-    let json = warp::reply::json(&error_response);
+    let json = warp::reply::json(&ErrorResponse { error_code });
     Ok(warp::reply::with_status(json, status_code))
 }
