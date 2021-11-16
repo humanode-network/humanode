@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+[package.metadata.build-info]
+wasm-checks = true
+wasm-features = ["runtime-benchmarks"]
+
 [build-dependencies]
 substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 

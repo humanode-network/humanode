@@ -1,0 +1,3272 @@
+{
+  "packages": [
+    {
+      "name": "bioauth-consensus",
+      "version": "0.1.0",
+      "id": "bioauth-consensus 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/bioauth-consensus)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "async-trait",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.1.42",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "bioauth-consensus-api",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-consensus-api"
+        },
+        {
+          "name": "parity-scale-codec",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^2",
+          "kind": null,
+          "rename": "codec",
+          "optional": true,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "futures",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.3",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-client-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-consensus",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-application-crypto",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-blockchain",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-consensus",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-consensus-aura",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-keystore",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-runtime",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "thiserror",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tokio",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "rt-multi-thread"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "mockall",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.10",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "node-primitives",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-service",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-inherents",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tokio",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "full"
+          ],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "bioauth-consensus",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-consensus/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {
+        "all": [
+          "aura-integration",
+          "keystore-integration",
+          "api-integration"
+        ],
+        "api-integration": [
+          "bioauth-consensus-api",
+          "codec"
+        ],
+        "aura-integration": [
+          "sp-consensus-aura",
+          "sp-application-crypto",
+          "codec"
+        ],
+        "default": [],
+        "keystore-integration": [
+          "sp-keystore",
+          "sp-application-crypto"
+        ]
+      },
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-consensus/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "bioauth-consensus-api",
+      "version": "0.1.0",
+      "id": "bioauth-consensus-api 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/bioauth-consensus-api)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "parity-scale-codec",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^2",
+          "kind": null,
+          "rename": "codec",
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-std",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "bioauth-consensus-api",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-consensus-api/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {
+        "default": [
+          "std"
+        ],
+        "std": [
+          "codec/std",
+          "sp-api/std",
+          "sp-std/std"
+        ]
+      },
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-consensus-api/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "bioauth-flow",
+      "version": "0.1.0",
+      "id": "bioauth-flow 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/bioauth-flow)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "anyhow",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "async-trait",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "futures",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.3",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "compat",
+            "bilock",
+            "unstable"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "jsonrpc-core",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^18",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "jsonrpc-core-client",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^18",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "jsonrpc-derive",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^18",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "primitives-liveness-data",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/primitives-liveness-data"
+        },
+        {
+          "name": "robonode-client",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/robonode-client"
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde_json",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tokio",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "bioauth-flow",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-flow/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-flow/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "primitives-liveness-data",
+      "version": "0.1.0",
+      "id": "primitives-liveness-data 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/primitives-liveness-data)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "parity-scale-codec",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^2",
+          "kind": null,
+          "rename": "codec",
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "scale-info",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1.0",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "primitives-liveness-data",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/primitives-liveness-data/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/primitives-liveness-data/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "robonode-client",
+      "version": "0.1.0",
+      "id": "robonode-client 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/robonode-client)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "reqwest",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.11",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "json"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde_json",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "thiserror",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "assert_matches",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1.5",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tokio",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "full"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "wiremock",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.5",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "robonode-client",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/robonode-client/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/robonode-client/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "devutil-auth-ticket",
+      "version": "0.1.0",
+      "id": "devutil-auth-ticket 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/devutil-auth-ticket)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "anyhow",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "hex",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.4",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "primitives-auth-ticket",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/primitives-auth-ticket"
+        },
+        {
+          "name": "robonode-crypto",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/robonode-crypto"
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "devutil-auth-ticket",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/devutil-auth-ticket/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        },
+        {
+          "kind": [
+            "bin"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "devutil-auth-ticket",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/devutil-auth-ticket/src/main.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": false,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/devutil-auth-ticket/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "primitives-auth-ticket",
+      "version": "0.1.0",
+      "id": "primitives-auth-ticket 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/primitives-auth-ticket)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "parity-scale-codec",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^2",
+          "kind": null,
+          "rename": "codec",
+          "optional": false,
+          "uses_default_features": false,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "scale-info",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1.0",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-std",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "primitives-auth-ticket",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/primitives-auth-ticket/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {
+        "default": [
+          "std"
+        ],
+        "std": [
+          "serde",
+          "codec/std",
+          "sp-std/std",
+          "scale-info/std"
+        ]
+      },
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/primitives-auth-ticket/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "robonode-crypto",
+      "version": "0.1.0",
+      "id": "robonode-crypto 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/robonode-crypto)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "ed25519-dalek",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [
+            "rand",
+            "u64_backend"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "hex-literal",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.3.1",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "rand",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.7",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "robonode-crypto",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/robonode-crypto/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {
+        "default": [
+          "std"
+        ],
+        "std": [
+          "ed25519-dalek/std"
+        ]
+      },
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/robonode-crypto/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "facetec-api-client",
+      "version": "0.1.0",
+      "id": "facetec-api-client 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/facetec-api-client)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "async-trait",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "bytes",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "reqwest",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.11",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "json"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde_json",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "thiserror",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "assert_matches",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1.5",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tokio",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "full"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "wiremock",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.5",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "facetec-api-client",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/facetec-api-client/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/facetec-api-client/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "humanode-peer",
+      "version": "0.1.0",
+      "id": "humanode-peer 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/humanode-peer)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "async-trait",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "bioauth-consensus",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "all"
+          ],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-consensus"
+        },
+        {
+          "name": "bioauth-flow",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-flow"
+        },
+        {
+          "name": "parity-scale-codec",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^2.0.0",
+          "kind": null,
+          "rename": "codec",
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-benchmarking-cli",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "futures",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.3",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "hex-literal",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.3",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "humanode-rpc",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/humanode-rpc"
+        },
+        {
+          "name": "humanode-runtime",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/humanode-runtime"
+        },
+        {
+          "name": "ngrok-api",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/ngrok-api"
+        },
+        {
+          "name": "pallet-bioauth",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/pallet-bioauth"
+        },
+        {
+          "name": "qr2term",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.2",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "reqwest",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.11",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "robonode-client",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/robonode-client"
+        },
+        {
+          "name": "sc-basic-authorship",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-chain-spec",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-chain-spec-derive",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-cli",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-client-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-consensus",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-consensus-aura",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-executor",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-finality-grandpa",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-network",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-service",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-telemetry",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-tracing",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-transaction-pool",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-utils",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-application-crypto",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-consensus",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-consensus-aura",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-finality-grandpa",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-keystore",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-runtime",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-timestamp",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "structopt",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.3.8",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "thiserror",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tokio",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "full"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tracing",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "url",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^2",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "indoc",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1.0",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde_json",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "bin"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "humanode-peer",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/humanode-peer/src/main.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": false,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/humanode-peer/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": "humanode-peer",
+      "rust_version": null
+    },
+    {
+      "name": "humanode-rpc",
+      "version": "0.1.0",
+      "id": "humanode-rpc 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/humanode-rpc)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "bioauth-flow",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-flow"
+        },
+        {
+          "name": "humanode-runtime",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/humanode-runtime"
+        },
+        {
+          "name": "jsonrpc-core",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^18",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "pallet-transaction-payment-rpc",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "robonode-client",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/robonode-client"
+        },
+        {
+          "name": "sc-rpc-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sc-transaction-pool-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-block-builder",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-blockchain",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "substrate-frame-rpc-system",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "humanode-rpc",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/humanode-rpc/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/humanode-rpc/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "humanode-runtime",
+      "version": "0.1.0",
+      "id": "humanode-runtime 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/humanode-runtime)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "bioauth-consensus-api",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/bioauth-consensus-api"
+        },
+        {
+          "name": "parity-scale-codec",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^2",
+          "kind": null,
+          "rename": "codec",
+          "optional": false,
+          "uses_default_features": false,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-benchmarking",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-executive",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-support",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-system",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-system-benchmarking",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-system-rpc-runtime-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "hex-literal",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.3",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "pallet-aura",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "pallet-balances",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "pallet-bioauth",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/pallet-bioauth"
+        },
+        {
+          "name": "pallet-grandpa",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "pallet-randomness-collective-flip",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "pallet-sudo",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "pallet-timestamp",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "pallet-transaction-payment",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "pallet-transaction-payment-rpc-runtime-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "primitives-auth-ticket",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/primitives-auth-ticket"
+        },
+        {
+          "name": "robonode-crypto",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/robonode-crypto"
+        },
+        {
+          "name": "scale-info",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1.0",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-block-builder",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-consensus-aura",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-core",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-inherents",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-offchain",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-runtime",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-session",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-std",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-transaction-pool",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-version",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "substrate-wasm-builder",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": "build",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "humanode-runtime",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/humanode-runtime/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        },
+        {
+          "kind": [
+            "custom-build"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "build-script-build",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/humanode-runtime/build.rs",
+          "edition": "2021",
+          "doc": false,
+          "doctest": false,
+          "test": false
+        }
+      ],
+      "features": {
+        "default": [
+          "std"
+        ],
+        "runtime-benchmarks": [
+          "hex-literal",
+          "frame-benchmarking",
+          "frame-support/runtime-benchmarks",
+          "frame-system-benchmarking",
+          "frame-system/runtime-benchmarks",
+          "pallet-balances/runtime-benchmarks",
+          "sp-runtime/runtime-benchmarks"
+        ],
+        "std": [
+          "bioauth-consensus-api/std",
+          "primitives-auth-ticket/std",
+          "codec/std",
+          "scale-info/std",
+          "serde",
+          "frame-executive/std",
+          "frame-support/std",
+          "frame-system/std",
+          "frame-system-rpc-runtime-api/std",
+          "pallet-aura/std",
+          "pallet-bioauth/std",
+          "pallet-balances/std",
+          "pallet-grandpa/std",
+          "pallet-randomness-collective-flip/std",
+          "pallet-sudo/std",
+          "pallet-timestamp/std",
+          "pallet-transaction-payment/std",
+          "pallet-transaction-payment-rpc-runtime-api/std",
+          "robonode-crypto/std",
+          "sp-api/std",
+          "sp-block-builder/std",
+          "sp-consensus-aura/std",
+          "sp-core/std",
+          "sp-inherents/std",
+          "sp-offchain/std",
+          "sp-runtime/std",
+          "sp-session/std",
+          "sp-std/std",
+          "sp-transaction-pool/std",
+          "sp-version/std"
+        ]
+      },
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/humanode-runtime/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "pallet-bioauth",
+      "version": "0.1.0",
+      "id": "pallet-bioauth 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/pallet-bioauth)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "parity-scale-codec",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^2",
+          "kind": null,
+          "rename": "codec",
+          "optional": false,
+          "uses_default_features": false,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-benchmarking",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-support",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "frame-system",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "scale-info",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1.0",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-api",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-runtime",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-std",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "mockall",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.10",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-core",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-io",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": false,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "pallet-bioauth",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/pallet-bioauth/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {
+        "default": [
+          "std"
+        ],
+        "runtime-benchmarks": [
+          "frame-benchmarking"
+        ],
+        "std": [
+          "serde",
+          "codec/std",
+          "scale-info/std",
+          "frame-support/std",
+          "frame-system/std",
+          "frame-benchmarking/std",
+          "sp-std/std",
+          "sp-runtime/std"
+        ],
+        "try-runtime": [
+          "frame-support/try-runtime"
+        ]
+      },
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/pallet-bioauth/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "ngrok-api",
+      "version": "0.1.0",
+      "id": "ngrok-api 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/ngrok-api)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "async-trait",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "http",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.2",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "http-body",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.4",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "reqwest",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.11",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [
+            "json"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde_json",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "thiserror",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "url",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^2",
+          "kind": null,
+          "rename": null,
+          "optional": true,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "ngrok-api",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/ngrok-api/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        }
+      ],
+      "features": {
+        "client": [
+          "http",
+          "url",
+          "http-body",
+          "thiserror",
+          "async-trait",
+          "reqwest"
+        ],
+        "default": [
+          "client",
+          "http"
+        ]
+      },
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/ngrok-api/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [
+        "Humanode Team <core@humanode.io>"
+      ],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "robonode-keygen",
+      "version": "0.1.0",
+      "id": "robonode-keygen 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/robonode-keygen)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "hex",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.4",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "rand",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.7",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "robonode-crypto",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/robonode-crypto"
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "bin"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "robonode-keygen",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/robonode-keygen/src/main.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": false,
+          "test": true
+        }
+      ],
+      "features": {},
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/robonode-keygen/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    },
+    {
+      "name": "robonode-server",
+      "version": "0.1.0",
+      "id": "robonode-server 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/robonode-server)",
+      "license": null,
+      "license_file": null,
+      "description": null,
+      "source": null,
+      "dependencies": [
+        {
+          "name": "async-trait",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "facetec-api-client",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/facetec-api-client"
+        },
+        {
+          "name": "hex",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.4",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "primitives-auth-ticket",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/primitives-auth-ticket"
+        },
+        {
+          "name": "primitives-liveness-data",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/primitives-liveness-data"
+        },
+        {
+          "name": "reqwest",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.11",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "robonode-crypto",
+          "source": null,
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null,
+          "path": "/Users/mozgiii/Desktop/humanode/crates/robonode-crypto"
+        },
+        {
+          "name": "sc-tracing",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "derive"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "sp-core",
+          "source": "git+https://github.com/humanode-network/substrate?branch=master",
+          "req": "*",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tokio",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "full"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tracing",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.1",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "uuid",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.8",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [
+            "v4"
+          ],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "warp",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.3",
+          "kind": null,
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "mockall",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.10",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "serde_json",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^1",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        },
+        {
+          "name": "tracing-test",
+          "source": "registry+https://github.com/rust-lang/crates.io-index",
+          "req": "^0.1",
+          "kind": "dev",
+          "rename": null,
+          "optional": false,
+          "uses_default_features": true,
+          "features": [],
+          "target": null,
+          "registry": null
+        }
+      ],
+      "targets": [
+        {
+          "kind": [
+            "lib"
+          ],
+          "crate_types": [
+            "lib"
+          ],
+          "name": "robonode-server",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/robonode-server/src/lib.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": true,
+          "test": true
+        },
+        {
+          "kind": [
+            "bin"
+          ],
+          "crate_types": [
+            "bin"
+          ],
+          "name": "robonode-server",
+          "src_path": "/Users/mozgiii/Desktop/humanode/crates/robonode-server/src/main.rs",
+          "edition": "2021",
+          "doc": true,
+          "doctest": false,
+          "test": true
+        }
+      ],
+      "features": {
+        "logic-integration-tests": []
+      },
+      "manifest_path": "/Users/mozgiii/Desktop/humanode/crates/robonode-server/Cargo.toml",
+      "metadata": null,
+      "publish": [],
+      "authors": [],
+      "categories": [],
+      "keywords": [],
+      "readme": null,
+      "repository": null,
+      "homepage": null,
+      "documentation": null,
+      "edition": "2021",
+      "links": null,
+      "default_run": null,
+      "rust_version": null
+    }
+  ],
+  "workspace_members": [
+    "bioauth-consensus 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/bioauth-consensus)",
+    "bioauth-consensus-api 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/bioauth-consensus-api)",
+    "bioauth-flow 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/bioauth-flow)",
+    "primitives-liveness-data 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/primitives-liveness-data)",
+    "robonode-client 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/robonode-client)",
+    "devutil-auth-ticket 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/devutil-auth-ticket)",
+    "primitives-auth-ticket 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/primitives-auth-ticket)",
+    "robonode-crypto 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/robonode-crypto)",
+    "facetec-api-client 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/facetec-api-client)",
+    "humanode-peer 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/humanode-peer)",
+    "humanode-rpc 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/humanode-rpc)",
+    "humanode-runtime 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/humanode-runtime)",
+    "pallet-bioauth 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/pallet-bioauth)",
+    "ngrok-api 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/ngrok-api)",
+    "robonode-keygen 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/robonode-keygen)",
+    "robonode-server 0.1.0 (path+file:///Users/mozgiii/Desktop/humanode/crates/robonode-server)"
+  ],
+  "resolve": null,
+  "target_directory": "/Users/mozgiii/Desktop/humanode/target",
+  "version": 1,
+  "workspace_root": "/Users/mozgiii/Desktop/humanode",
+  "metadata": null
+}

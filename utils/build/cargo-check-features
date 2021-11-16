@@ -1,0 +1,16 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+
+BUILD_INFO="$(utils/build-utils/list)"
+
+set -x
+
+WASM_FEATURES="$(jq -r '.[] | (."build-info"."wasm-features" // [])' <<<"$BUILD_INFO")"
+
+# ARGS=()
+# for PACKAGE in $PACKAGES; do
+#   ARGS+=(-p "$PACKAGE")
+# done
+
+# cargo hack check --feature-powerset --no-dev-deps --exclude-no-default-features "${ARGS[@]}"

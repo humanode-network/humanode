@@ -35,16 +35,19 @@ const plan = async () => {
       cargoCommand: "clippy",
       cargoArgs: "--all-targets -- -D warnings",
       cargoCacheKey: "clippy",
+      env: {},
     },
     test: {
       name: "test",
       cargoCommand: "test",
       cargoCacheKey: "test",
+      env: {},
     },
     build: {
       name: "build",
       cargoCommand: "build",
       cargoCacheKey: "build",
+      env: {},
     },
     fmt: {
       name: "fmt",
@@ -52,12 +55,22 @@ const plan = async () => {
       cargoArgs: "-- --check",
       platformIndependent: true,
       cargoCacheKey: "code",
+      env: {},
     },
-    "test-features": {
-      name: "test-features",
+    "test-std-features": {
+      name: "test std features",
+      cargoCommand: "hack",
+      cargoArgs:
+        "check --feature-powerset --no-dev-deps --exclude-no-default-features --skip runtime-benchmarks --skip try-runtime",
+      cargoCacheKey: "test-features-std",
+      env: {},
+    },
+    "test-no-std-features": {
+      name: "test no_std features",
       cargoCommand: "hack",
       cargoArgs: "check --feature-powerset --no-dev-deps",
-      cargoCacheKey: "test-features",
+      cargoCacheKey: "test-features-no-std",
+      env: {},
     },
   };
 
