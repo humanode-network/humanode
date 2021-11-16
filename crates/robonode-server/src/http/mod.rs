@@ -1,6 +1,6 @@
 //! The HTTP transport realted stuff.
 
-mod error;
+pub mod error;
 mod filters;
 mod handlers;
 

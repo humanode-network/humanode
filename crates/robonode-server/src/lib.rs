@@ -40,7 +40,9 @@ pub fn init(
         facetec_device_sdk_params,
     };
     let log = warp::log("robonode::api");
-    root(Arc::new(logic)).with(log)
+    root(Arc::new(logic))
+        .with(log)
+        .recover(http::error::handle_rejection)
 }
 
 #[async_trait::async_trait]

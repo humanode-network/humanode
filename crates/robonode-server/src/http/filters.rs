@@ -36,7 +36,7 @@ where
 /// The root mount point with all the routes.
 pub fn root<L>(
     logic: Arc<L>,
-) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone
+) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_authenticate::Request>
         + LogicOp<op_enroll::Request>
@@ -60,7 +60,6 @@ where
         .or(get_facetec_session_token(Arc::clone(&logic)))
         .or(get_facetec_device_sdk_params(Arc::clone(&logic)))
         .or(get_public_key(logic))
-        .recover(error::handle_rejection)
 }
 
 /// POST /enroll with JSON body.

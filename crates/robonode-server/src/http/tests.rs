@@ -4,8 +4,8 @@ use mockall::predicate::*;
 use mockall::*;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use primitives_liveness_data::OpaqueLivenessData;
-use warp::hyper::StatusCode;
 use warp::Reply;
+use warp::{hyper::StatusCode, Filter};
 
 use crate::{
     http::{error, root},
@@ -130,7 +130,7 @@ async fn it_works_enroll() {
         .returning(|_| Ok(op_enroll::Response));
 
     let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root(logic).recover(error::handle_rejection);
 
     let res = warp::test::request()
         .method("POST")
@@ -156,7 +156,7 @@ async fn it_denies_enroll_with_invalid_public_key() {
         .returning(|_| Err(op_enroll::Error::InvalidPublicKey));
 
     let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root(logic).recover(error::handle_rejection);
 
     let res = warp::test::request()
         .method("POST")
@@ -185,7 +185,7 @@ async fn it_works_authenticate() {
         .returning(|_| Ok(provide_authenticate_response()));
 
     let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root(logic).recover(error::handle_rejection);
 
     let res = warp::test::request()
         .method("POST")
@@ -213,7 +213,7 @@ async fn it_denies_authenticate() {
         .returning(|_| Err(op_authenticate::Error::InternalErrorDbSearchUnsuccessful));
 
     let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root(logic).recover(error::handle_rejection);
 
     let res = warp::test::request()
         .method("POST")
@@ -239,7 +239,7 @@ async fn it_works_get_facetec_session_token() {
         .returning(|_| Ok(provide_facetec_session_token()));
 
     let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root(logic).recover(error::handle_rejection);
 
     let res = warp::test::request()
         .method("GET")
@@ -266,7 +266,7 @@ async fn it_denies_get_facetec_session_token() {
         });
 
     let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root(logic).recover(error::handle_rejection);
 
     let res = warp::test::request()
         .method("GET")
@@ -292,7 +292,7 @@ async fn it_works_get_facetec_device_sdk_params_in_dev_mode() {
         .returning(|_| Ok(provide_facetec_device_sdk_params_in_dev_mode()));
 
     let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root(logic).recover(error::handle_rejection);
 
     let res = warp::test::request()
         .method("GET")
@@ -318,7 +318,7 @@ async fn it_works_get_facetec_device_sdk_params_in_prod_mode() {
         .returning(|_| Ok(provide_facetec_device_sdk_params_in_prod_mode()));
 
     let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root(logic).recover(error::handle_rejection);
 
     let res = warp::test::request()
         .method("GET")
@@ -350,7 +350,7 @@ async fn it_works_get_public_key() {
         .returning(move |_| Ok(sample_response.clone()));
 
     let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root(logic).recover(error::handle_rejection);
 
     let res = warp::test::request()
         .method("GET")
