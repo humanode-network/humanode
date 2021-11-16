@@ -6,7 +6,7 @@ use serde::Serialize;
 use warp::Filter;
 
 use crate::{
-    http::handlers,
+    http::{error, handlers},
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
         op_get_public_key, LogicOp,
@@ -45,14 +45,14 @@ where
         + LogicOp<op_get_public_key::Request>
         + Send
         + Sync,
-    <L as LogicOp<op_enroll::Request>>::Error: warp::reject::Reject,
-    <L as LogicOp<op_authenticate::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_enroll::Request>>::Error: Into<error::Logic>,
+    <L as LogicOp<op_authenticate::Request>>::Error: Into<error::Logic>,
     <L as LogicOp<op_authenticate::Request>>::Response: Serialize,
-    <L as LogicOp<op_get_facetec_device_sdk_params::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_get_facetec_device_sdk_params::Request>>::Error: Into<error::Logic>,
     <L as LogicOp<op_get_facetec_device_sdk_params::Request>>::Response: Serialize,
-    <L as LogicOp<op_get_facetec_session_token::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_get_facetec_session_token::Request>>::Error: Into<error::Logic>,
     <L as LogicOp<op_get_facetec_session_token::Request>>::Response: Serialize,
-    <L as LogicOp<op_get_public_key::Request>>::Error: warp::reject::Reject,
+    <L as LogicOp<op_get_public_key::Request>>::Error: Into<error::Logic>,
     <L as LogicOp<op_get_public_key::Request>>::Response: Serialize,
 {
     enroll(Arc::clone(&logic))
@@ -68,7 +68,7 @@ fn enroll<L>(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_enroll::Request> + Send + Sync,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
 {
     warp::path!("enroll")
         .and(warp::post())
@@ -83,7 +83,7 @@ fn authenticate<L>(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_authenticate::Request> + Send + Sync,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
     L::Response: Serialize,
 {
     warp::path!("authenticate")
@@ -99,7 +99,7 @@ fn get_facetec_session_token<L>(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_get_facetec_session_token::Request> + Send + Sync,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
     L::Response: Serialize,
 {
     warp::path!("facetec-session-token")
@@ -114,7 +114,7 @@ fn get_facetec_device_sdk_params<L>(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_get_facetec_device_sdk_params::Request> + Send + Sync,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
     L::Response: Serialize,
 {
     warp::path!("facetec-device-sdk-params")
@@ -129,7 +129,7 @@ fn get_public_key<L>(
 ) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_get_public_key::Request> + Send + Sync,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
     L::Response: Serialize,
 {
     warp::path!("public-key")

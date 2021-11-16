@@ -4,10 +4,10 @@ use mockall::predicate::*;
 use mockall::*;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use primitives_liveness_data::OpaqueLivenessData;
-use warp::hyper::StatusCode;
+use warp::{hyper::StatusCode, Filter, Reply};
 
 use crate::{
-    http::root,
+    http::{rejection, root},
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
         op_get_public_key, LogicOp,
@@ -107,6 +107,21 @@ fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk
     }
 }
 
+fn root_with_error_handler(
+    logic: MockLogic,
+) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone {
+    root(Arc::new(logic)).recover(rejection::handle)
+}
+
+async fn expect_body_response(
+    status_code: StatusCode,
+    error_code: &'static str,
+) -> warp::hyper::body::Bytes {
+    let json = warp::reply::json(&rejection::ErrorResponse { error_code });
+    let response = warp::reply::with_status(json, status_code).into_response();
+    warp::hyper::body::to_bytes(response).await.unwrap()
+}
+
 #[tokio::test]
 async fn it_works_enroll() {
     let input = op_enroll::Request {
@@ -119,8 +134,7 @@ async fn it_works_enroll() {
         .expect_enroll()
         .returning(|_| Ok(op_enroll::Response));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("POST")
@@ -145,8 +159,7 @@ async fn it_denies_enroll_with_invalid_public_key() {
         .expect_enroll()
         .returning(|_| Err(op_enroll::Error::InvalidPublicKey));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("POST")
@@ -155,8 +168,11 @@ async fn it_denies_enroll_with_invalid_public_key() {
         .reply(&filter)
         .await;
 
-    assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(res.body(), "Unhandled rejection: InvalidPublicKey");
+    let expected_body_response =
+        expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_INVALID_PUBLIC_KEY").await;
+
+    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(res.body(), &expected_body_response);
 }
 
 #[tokio::test]
@@ -171,8 +187,7 @@ async fn it_works_authenticate() {
         .expect_authenticate()
         .returning(|_| Ok(provide_authenticate_response()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("POST")
@@ -199,8 +214,7 @@ async fn it_denies_authenticate() {
         .expect_authenticate()
         .returning(|_| Err(op_authenticate::Error::InternalErrorDbSearchUnsuccessful));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("POST")
@@ -209,11 +223,11 @@ async fn it_denies_authenticate() {
         .reply(&filter)
         .await;
 
+    let expected_body_response =
+        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "LOGIC_INTERNAL_ERROR").await;
+
     assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(
-        res.body(),
-        "Unhandled rejection: InternalErrorDbSearchUnsuccessful"
-    );
+    assert_eq!(res.body(), &expected_body_response);
 }
 
 #[tokio::test]
@@ -225,8 +239,7 @@ async fn it_works_get_facetec_session_token() {
         .expect_get_facetec_session_token()
         .returning(|_| Ok(provide_facetec_session_token()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")
@@ -252,8 +265,7 @@ async fn it_denies_get_facetec_session_token() {
             Err(op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful)
         });
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")
@@ -262,11 +274,11 @@ async fn it_denies_get_facetec_session_token() {
         .reply(&filter)
         .await;
 
+    let expected_body_response =
+        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "LOGIC_INTERNAL_ERROR").await;
+
     assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(
-        res.body(),
-        "Unhandled rejection: InternalErrorSessionTokenUnsuccessful"
-    );
+    assert_eq!(res.body(), &expected_body_response);
 }
 
 #[tokio::test]
@@ -278,8 +290,7 @@ async fn it_works_get_facetec_device_sdk_params_in_dev_mode() {
         .expect_get_facetec_device_sdk_params()
         .returning(|_| Ok(provide_facetec_device_sdk_params_in_dev_mode()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")
@@ -304,8 +315,7 @@ async fn it_works_get_facetec_device_sdk_params_in_prod_mode() {
         .expect_get_facetec_device_sdk_params()
         .returning(|_| Ok(provide_facetec_device_sdk_params_in_prod_mode()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")
@@ -336,8 +346,7 @@ async fn it_works_get_public_key() {
         .once()
         .returning(move |_| Ok(sample_response.clone()));
 
-    let logic = Arc::new(mock_logic);
-    let filter = root(logic);
+    let filter = root_with_error_handler(mock_logic);
 
     let res = warp::test::request()
         .method("GET")

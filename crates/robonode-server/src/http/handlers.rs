@@ -10,6 +10,8 @@ use crate::logic::{
     op_get_public_key, LogicOp,
 };
 
+use super::error;
+
 /// Enroll operation HTTP transport coupling.
 pub async fn enroll<L>(
     logic: Arc<L>,
@@ -17,9 +19,9 @@ pub async fn enroll<L>(
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     L: LogicOp<op_enroll::Request>,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
 {
-    logic.call(input).await.map_err(warp::reject::custom)?;
+    logic.call(input).await.map_err(Into::into)?;
     Ok(StatusCode::CREATED)
 }
 
@@ -30,10 +32,10 @@ pub async fn authenticate<L>(
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     L: LogicOp<op_authenticate::Request>,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
     L::Response: Serialize,
 {
-    let res = logic.call(input).await.map_err(warp::reject::custom)?;
+    let res = logic.call(input).await.map_err(Into::into)?;
 
     let reply = warp::reply::json(&res);
     let reply = warp::reply::with_status(reply, StatusCode::OK);
@@ -46,13 +48,13 @@ pub async fn get_facetec_session_token<L>(
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     L: LogicOp<op_get_facetec_session_token::Request>,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
     L::Response: Serialize,
 {
     let res = logic
         .call(op_get_facetec_session_token::Request {})
         .await
-        .map_err(warp::reject::custom)?;
+        .map_err(Into::into)?;
 
     let reply = warp::reply::json(&res);
     let reply = warp::reply::with_status(reply, StatusCode::OK);
@@ -65,13 +67,13 @@ pub async fn get_facetec_device_sdk_params<L>(
 ) -> Result<impl warp::Reply, warp::Rejection>
 where
     L: LogicOp<op_get_facetec_device_sdk_params::Request>,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
     L::Response: Serialize,
 {
     let res = logic
         .call(op_get_facetec_device_sdk_params::Request {})
         .await
-        .map_err(warp::reject::custom)?;
+        .map_err(Into::into)?;
 
     let reply = warp::reply::json(&res);
     let reply = warp::reply::with_status(reply, StatusCode::OK);
@@ -82,21 +84,15 @@ where
 pub async fn get_public_key<L>(logic: Arc<L>) -> Result<impl warp::Reply, warp::Rejection>
 where
     L: LogicOp<op_get_public_key::Request>,
-    L::Error: warp::reject::Reject,
+    L::Error: Into<error::Logic>,
     L::Response: Serialize,
 {
     let res = logic
         .call(op_get_public_key::Request)
         .await
-        .map_err(warp::reject::custom)?;
+        .map_err(Into::into)?;
 
     let reply = warp::reply::json(&res);
     let reply = warp::reply::with_status(reply, StatusCode::OK);
     Ok(reply.into_response())
 }
-
-impl warp::reject::Reject for op_enroll::Error {}
-impl warp::reject::Reject for op_authenticate::Error {}
-impl warp::reject::Reject for op_get_facetec_device_sdk_params::Error {}
-impl warp::reject::Reject for op_get_facetec_session_token::Error {}
-impl warp::reject::Reject for op_get_public_key::Error {}
