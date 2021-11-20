@@ -426,6 +426,7 @@ impl pallet_bioauth::Config for Runtime {
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = AuraValidatorSetUpdater;
     type Moment = UnixMilliseconds;
+    type DisplayMoment = UnixMilliseconds; // TODO: format as timestamp
     type CurrentMoment = CurrentMoment;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
     type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;

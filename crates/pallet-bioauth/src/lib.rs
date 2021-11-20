@@ -160,6 +160,9 @@ pub mod pallet {
         /// Type used for expressing timestamp.
         type Moment: Parameter + Default + AtLeast32Bit + Copy + MaybeSerializeDeserialize;
 
+        /// Type used for pretty printing the timestamp.
+        type DisplayMoment: From<Self::Moment> + core::fmt::Display;
+
         /// The getter for the current moment.
         type CurrentMoment: CurrentMoment<Self::Moment>;
 
@@ -261,6 +264,21 @@ pub mod pallet {
                 AuthenticationAttemptValidationError::NonceConflict => Self::NonceAlreadyUsed,
                 AuthenticationAttemptValidationError::AlreadyAuthenticated(_) => {
                     Self::PublicKeyAlreadyUsed
+                }
+            }
+        }
+    }
+
+    impl<'a, T: Config> core::fmt::Display for AuthenticationAttemptValidationError<'a, T> {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            match self {
+                Self::NonceConflict => write!(f, "nonce has already been used"),
+                Self::AlreadyAuthenticated(authentication) => {
+                    write!(
+                        f,
+                        "previous authentication exists and is valid till {}",
+                        T::DisplayMoment::from(authentication.expires_at)
+                    )
                 }
             }
         }
@@ -411,15 +429,8 @@ pub mod pallet {
                 &auth_ticket,
             )
             .map_err(|err| {
-                let log_err = match err {
-                    AuthenticationAttemptValidationError::NonceConflict => {
-                        Error::<T>::NonceAlreadyUsed
-                    }
-                    AuthenticationAttemptValidationError::AlreadyAuthenticated(_) => {
-                        Error::<T>::PublicKeyAlreadyUsed
-                    }
-                };
-                error!(message = "Authentication attemption failed", ?log_err);
+                error!(message = "Authentication attemption failed", error = %err);
+
                 // Use custom code 'c' for "conflict" error.
                 TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
             })?;
