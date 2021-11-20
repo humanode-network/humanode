@@ -405,7 +405,16 @@ pub mod pallet {
                 &active_authentications,
                 &auth_ticket,
             )
-            .map_err(|_| {
+            .map_err(|err| {
+                let log_err = match err {
+                    AuthenticationAttemptValidationError::NonceConflict => {
+                        Error::<T>::NonceAlreadyUsed
+                    }
+                    AuthenticationAttemptValidationError::AlreadyAuthenticated(_) => {
+                        Error::<T>::PublicKeyAlreadyUsed
+                    }
+                };
+                error!(message = "Authentication attemption failed", ?log_err);
                 // Use custom code 'c' for "conflict" error.
                 TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
             })?;
