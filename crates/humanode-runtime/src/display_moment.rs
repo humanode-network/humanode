@@ -1,20 +1,21 @@
 //! DisplayMoment implementation to display timestamp.
 
-use chrono::{DateTime, TimeZone, Utc};
+use crate::UnixMilliseconds;
+use chrono::{TimeZone, Utc};
 
 /// Provides a functionality to extract and display timestamp properly.
-pub struct DisplayMoment(DateTime<Utc>);
+pub struct DisplayMoment(UnixMilliseconds);
 
-impl From<u64> for DisplayMoment {
-    fn from(moment: u64) -> Self {
-        let dt = Utc.timestamp(moment as i64, 0);
-        DisplayMoment(dt)
+impl From<UnixMilliseconds> for DisplayMoment {
+    fn from(moment: UnixMilliseconds) -> Self {
+        DisplayMoment(moment)
     }
 }
 
 impl core::fmt::Display for DisplayMoment {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "{}", self.0)
+        let dt = Utc.timestamp(self.0 as i64, 0);
+        write!(f, "{}", dt)
     }
 }
 
