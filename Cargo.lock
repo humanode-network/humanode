@@ -2176,6 +2176,7 @@ name = "humanode-runtime"
 version = "0.1.0"
 dependencies = [
  "bioauth-consensus-api",
+ "chrono",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",

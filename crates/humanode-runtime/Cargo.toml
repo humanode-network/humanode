@@ -14,6 +14,7 @@ pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 
+chrono = { version = "0.4.19", default-features = false }
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -58,6 +59,7 @@ runtime-benchmarks = [
 std = [
   "bioauth-consensus-api/std",
   "primitives-auth-ticket/std",
+  "chrono/std",
   "codec/std",
   "scale-info/std",
   "serde",
