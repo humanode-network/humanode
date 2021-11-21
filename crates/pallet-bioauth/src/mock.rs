@@ -177,6 +177,20 @@ parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = AUTHENTICATIONS_EXPIRE_AFTER;
 }
 
+pub struct DisplayMoment;
+
+impl From<UnixMilliseconds> for DisplayMoment {
+    fn from(_moment: UnixMilliseconds) -> Self {
+        panic!("should be unused in tests")
+    }
+}
+
+impl core::fmt::Display for DisplayMoment {
+    fn fmt(&self, _f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        panic!("should be unused in tests")
+    }
+}
+
 impl pallet_bioauth::Config for Test {
     type Event = Event;
     type RobonodePublicKey = MockVerifier;
@@ -186,6 +200,7 @@ impl pallet_bioauth::Config for Test {
     type AuthTicketCoverter = MockAuthTicketConverter;
     type ValidatorSetUpdater = MockValidatorSetUpdater;
     type Moment = UnixMilliseconds;
+    type DisplayMoment = DisplayMoment;
     type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
     type WeightInfo = weights::SubstrateWeight<Test>;

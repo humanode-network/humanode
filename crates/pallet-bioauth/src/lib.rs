@@ -160,6 +160,9 @@ pub mod pallet {
         /// Type used for expressing timestamp.
         type Moment: Parameter + Default + AtLeast32Bit + Copy + MaybeSerializeDeserialize;
 
+        /// Type used for pretty printing the timestamp.
+        type DisplayMoment: From<Self::Moment> + core::fmt::Display;
+
         /// The getter for the current moment.
         type CurrentMoment: CurrentMoment<Self::Moment>;
 
@@ -255,6 +258,32 @@ pub mod pallet {
         AlreadyAuthenticated(&'a Authentication<T::ValidatorPublicKey, T::Moment>),
     }
 
+    impl<'a, T: Config> From<AuthenticationAttemptValidationError<'a, T>> for Error<T> {
+        fn from(err: AuthenticationAttemptValidationError<'a, T>) -> Self {
+            match err {
+                AuthenticationAttemptValidationError::NonceConflict => Self::NonceAlreadyUsed,
+                AuthenticationAttemptValidationError::AlreadyAuthenticated(_) => {
+                    Self::PublicKeyAlreadyUsed
+                }
+            }
+        }
+    }
+
+    impl<'a, T: Config> core::fmt::Display for AuthenticationAttemptValidationError<'a, T> {
+        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+            match self {
+                Self::NonceConflict => write!(f, "nonce has already been used"),
+                Self::AlreadyAuthenticated(authentication) => {
+                    write!(
+                        f,
+                        "previous authentication exists and is valid till {}",
+                        T::DisplayMoment::from(authentication.expires_at)
+                    )
+                }
+            }
+        }
+    }
+
     /// Validate the incloming authentication attempt, checking the auth ticket data against
     /// the passed input.
     fn validate_authentication_attempt<'a, T: Config>(
@@ -297,36 +326,30 @@ pub mod pallet {
             // Update storage.
             <ConsumedAuthTicketNonces<T>>::try_mutate::<_, Error<T>, _>(
                 move |consumed_auth_ticket_nonces| {
-                    <ActiveAuthentications<T>>::try_mutate(move |active_authentications| {
-                        validate_authentication_attempt::<T>(
-                            consumed_auth_ticket_nonces,
-                            active_authentications,
-                            &auth_ticket,
-                        )
-                        .map_err(|err| match err {
-                            AuthenticationAttemptValidationError::NonceConflict => {
-                                Error::<T>::NonceAlreadyUsed
-                            }
-                            AuthenticationAttemptValidationError::AlreadyAuthenticated(_) => {
-                                Error::<T>::PublicKeyAlreadyUsed
-                            }
-                        })?;
+                    <ActiveAuthentications<T>>::try_mutate::<_, Error<T>, _>(
+                        move |active_authentications| {
+                            validate_authentication_attempt::<T>(
+                                consumed_auth_ticket_nonces,
+                                active_authentications,
+                                &auth_ticket,
+                            )?;
 
-                        // Update internal state.
-                        let current_moment = T::CurrentMoment::now();
-                        consumed_auth_ticket_nonces.push(auth_ticket.nonce);
-                        active_authentications.push(Authentication {
-                            public_key: public_key.clone(),
-                            expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
-                        });
+                            // Update internal state.
+                            let current_moment = T::CurrentMoment::now();
+                            consumed_auth_ticket_nonces.push(auth_ticket.nonce);
+                            active_authentications.push(Authentication {
+                                public_key: public_key.clone(),
+                                expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
+                            });
 
-                        // Issue an update to the external validators set.
-                        Self::issue_validators_set_update(active_authentications.as_slice());
+                            // Issue an update to the external validators set.
+                            Self::issue_validators_set_update(active_authentications.as_slice());
 
-                        // Emit an event.
-                        Self::deposit_event(Event::NewAuthentication(public_key));
-                        Ok(())
-                    })?;
+                            // Emit an event.
+                            Self::deposit_event(Event::NewAuthentication(public_key));
+                            Ok(())
+                        },
+                    )?;
                     Ok(())
                 },
             )?;
@@ -405,7 +428,9 @@ pub mod pallet {
                 &active_authentications,
                 &auth_ticket,
             )
-            .map_err(|_| {
+            .map_err(|err| {
+                error!(message = "Authentication attemption failed", error = %err);
+
                 // Use custom code 'c' for "conflict" error.
                 TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
             })?;

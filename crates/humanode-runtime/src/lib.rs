@@ -52,6 +52,8 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
+mod display_moment;
+
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -426,6 +428,7 @@ impl pallet_bioauth::Config for Runtime {
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = AuraValidatorSetUpdater;
     type Moment = UnixMilliseconds;
+    type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
     type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
