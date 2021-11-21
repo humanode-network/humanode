@@ -14,7 +14,7 @@ impl From<UnixMilliseconds> for DisplayMoment {
 
 impl core::fmt::Display for DisplayMoment {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let dt = Utc.timestamp(self.0 as i64, 0);
+        let dt = Utc.timestamp_millis(self.0 as i64);
         write!(f, "{}", dt)
     }
 }
@@ -27,8 +27,8 @@ mod tests {
     fn correct_display_output() {
         // https://www.epochconverter.com has been used for getting test input data.
         assert_eq!(
-            DisplayMoment::from(1637497887).to_string(),
-            "2021-11-21 12:31:27 UTC"
+            DisplayMoment::from(1637521860001).to_string(),
+            "2021-11-21 19:11:00.001 UTC"
         );
     }
 }
