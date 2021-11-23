@@ -39,10 +39,10 @@ macro_rules! impl_LogicOp {
     };
 }
 
-macro_rules! internal_error {
-    ($request:expr, $expect:ident, $input:expr, $error:expr) => {
+macro_rules! do_error_and_verify_expected_behaviour {
+    ($request:expr, $input:expr, $expect:ident, $mock_error:expr, $status_code: expr, $error_code: expr) => {
         let mut mock_logic = MockLogic::new();
-        mock_logic.$expect().returning(|_| Err($error));
+        mock_logic.$expect().returning(|_| Err($mock_error));
 
         let filter = root_with_error_handler(mock_logic);
 
@@ -53,10 +53,9 @@ macro_rules! internal_error {
             .reply(&filter)
             .await;
 
-        let expected_body_response =
-            expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "LOGIC_INTERNAL_ERROR").await;
+        let expected_body_response = expect_body_response($status_code, $error_code).await;
 
-        assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
+        assert_eq!(res.status(), $status_code);
         assert_eq!(res.body(), &expected_body_response);
     };
 }
@@ -180,25 +179,14 @@ async fn enroll_error_invalid_public_key() {
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
     };
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_enroll()
-        .returning(|_| Err(op_enroll::Error::InvalidPublicKey));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/enroll")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response =
-        expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_INVALID_PUBLIC_KEY").await;
-
-    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
-    assert_eq!(res.body(), &expected_body_response);
+    do_error_and_verify_expected_behaviour!(
+        "/enroll",
+        input,
+        expect_enroll,
+        op_enroll::Error::InvalidPublicKey,
+        StatusCode::BAD_REQUEST,
+        "ENROLL_INVALID_PUBLIC_KEY"
+    );
 }
 
 /// This test verifies getting expected HTTP response
@@ -210,27 +198,14 @@ async fn enroll_error_invalid_liveness_data() {
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
     };
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic.expect_enroll().returning(|_| {
-        Err(op_enroll::Error::InvalidLivenessData(codec::Error::from(
-            "invalid_data",
-        )))
-    });
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/enroll")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response =
-        expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_INVALID_LIVENESS_DATA").await;
-
-    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
-    assert_eq!(res.body(), &expected_body_response);
+    do_error_and_verify_expected_behaviour!(
+        "/enroll",
+        input,
+        expect_enroll,
+        op_enroll::Error::InvalidLivenessData(codec::Error::from("invalid_data",)),
+        StatusCode::BAD_REQUEST,
+        "ENROLL_INVALID_LIVENESS_DATA"
+    );
 }
 
 /// This test verifies getting expected HTTP response
@@ -242,25 +217,14 @@ async fn enroll_error_face_scan_rejected() {
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
     };
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_enroll()
-        .returning(|_| Err(op_enroll::Error::FaceScanRejected));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/enroll")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response =
-        expect_body_response(StatusCode::FORBIDDEN, "ENROLL_FACE_SCAN_REJECTED").await;
-
-    assert_eq!(res.status(), StatusCode::FORBIDDEN);
-    assert_eq!(res.body(), &expected_body_response);
+    do_error_and_verify_expected_behaviour!(
+        "/enroll",
+        input,
+        expect_enroll,
+        op_enroll::Error::FaceScanRejected,
+        StatusCode::FORBIDDEN,
+        "ENROLL_FACE_SCAN_REJECTED"
+    );
 }
 
 /// This test verifies getting expected HTTP response
@@ -272,25 +236,14 @@ async fn enroll_error_public_key_already_used() {
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
     };
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_enroll()
-        .returning(|_| Err(op_enroll::Error::PublicKeyAlreadyUsed));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/enroll")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response =
-        expect_body_response(StatusCode::CONFLICT, "ENROLL_PUBLIC_KEY_ALREADY_USED").await;
-
-    assert_eq!(res.status(), StatusCode::CONFLICT);
-    assert_eq!(res.body(), &expected_body_response);
+    do_error_and_verify_expected_behaviour!(
+        "/enroll",
+        input,
+        expect_enroll,
+        op_enroll::Error::PublicKeyAlreadyUsed,
+        StatusCode::CONFLICT,
+        "ENROLL_PUBLIC_KEY_ALREADY_USED"
+    );
 }
 
 /// This test verifies getting expected HTTP response
@@ -302,77 +255,133 @@ async fn enroll_error_person_already_enrolled() {
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
     };
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_enroll()
-        .returning(|_| Err(op_enroll::Error::PersonAlreadyEnrolled));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/enroll")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response =
-        expect_body_response(StatusCode::CONFLICT, "ENROLL_PERSON_ALREADY_ENROLLED").await;
-
-    assert_eq!(res.status(), StatusCode::CONFLICT);
-    assert_eq!(res.body(), &expected_body_response);
+    do_error_and_verify_expected_behaviour!(
+        "/enroll",
+        input,
+        expect_enroll,
+        op_enroll::Error::PersonAlreadyEnrolled,
+        StatusCode::CONFLICT,
+        "ENROLL_PERSON_ALREADY_ENROLLED"
+    );
 }
 
 /// This test verifies getting expected HTTP response
-/// during failer enrollment request for each possible internal error.
+/// during failer enrollment request with InternalErrorEnrollment error.
 #[tokio::test]
-async fn enroll_error_internal() {
+async fn enroll_error_internal_enrollment() {
     let input = op_enroll::Request {
         public_key: b"key".to_vec(),
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
     };
 
-    internal_error!(
+    do_error_and_verify_expected_behaviour!(
         "/enroll",
-        expect_enroll,
         input,
+        expect_enroll,
         op_enroll::Error::InternalErrorEnrollment(facetec_api_client::Error::Server(ServerError {
             error_message: "error".to_owned()
-        }))
+        })),
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
-    internal_error!(
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with InternalErrorEnrollmentUnsuccessful error.
+#[tokio::test]
+async fn enroll_error_internal_enrollment_unsuccessful() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/enroll",
-        expect_enroll,
         input,
-        op_enroll::Error::InternalErrorEnrollmentUnsuccessful
+        expect_enroll,
+        op_enroll::Error::InternalErrorEnrollmentUnsuccessful,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
-    internal_error!(
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with InternalErrorDbSearch error.
+#[tokio::test]
+async fn enroll_error_internal_db_search() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/enroll",
-        expect_enroll,
         input,
+        expect_enroll,
         op_enroll::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(ServerError {
             error_message: "error".to_owned()
-        }))
+        })),
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
-    internal_error!(
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with InternalErrorDbSearchUnsuccessful error.
+#[tokio::test]
+async fn enroll_error_internal_db_search_unsuccessful() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/enroll",
-        expect_enroll,
         input,
-        op_enroll::Error::InternalErrorDbSearchUnsuccessful
+        expect_enroll,
+        op_enroll::Error::InternalErrorDbSearchUnsuccessful,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
-    internal_error!(
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with InternalErrorDbEnroll error.
+#[tokio::test]
+async fn enroll_error_internal_db_enroll() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/enroll",
-        expect_enroll,
         input,
+        expect_enroll,
         op_enroll::Error::InternalErrorDbEnroll(facetec_api_client::Error::Server(ServerError {
             error_message: "error".to_owned()
-        }))
+        })),
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
-    internal_error!(
+}
+
+/// This test verifies getting expected HTTP response
+/// during failer enrollment request with InternalErrorDbEnrollUnsuccessful error.
+#[tokio::test]
+async fn enroll_error_internal_db_enroll_unsuccessful() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/enroll",
-        expect_enroll,
         input,
-        op_enroll::Error::InternalErrorDbEnrollUnsuccessful
+        expect_enroll,
+        op_enroll::Error::InternalErrorDbEnrollUnsuccessful,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
 }
 
@@ -413,30 +422,14 @@ async fn authenticate_error_invalid_liveness_data() {
         liveness_data_signature: b"signature".to_vec(),
     };
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic.expect_authenticate().returning(|_| {
-        Err(op_authenticate::Error::InvalidLivenessData(
-            codec::Error::from("invalid_data"),
-        ))
-    });
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/authenticate")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response = expect_body_response(
+    do_error_and_verify_expected_behaviour!(
+        "/authenticate",
+        input,
+        expect_authenticate,
+        op_authenticate::Error::InvalidLivenessData(codec::Error::from("invalid_data")),
         StatusCode::BAD_REQUEST,
-        "AUTHENTICATE_INVALID_LIVENESS_DATA",
-    )
-    .await;
-
-    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
-    assert_eq!(res.body(), &expected_body_response);
+        "AUTHENTICATE_INVALID_LIVENESS_DATA"
+    );
 }
 
 /// This test verifies getting expected HTTP response
@@ -448,25 +441,14 @@ async fn authenticate_error_face_scan_rejected() {
         liveness_data_signature: b"signature".to_vec(),
     };
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_authenticate()
-        .returning(|_| Err(op_authenticate::Error::FaceScanRejected));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/authenticate")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response =
-        expect_body_response(StatusCode::FORBIDDEN, "AUTHENTICATE_FACE_SCAN_REJECTED").await;
-
-    assert_eq!(res.status(), StatusCode::FORBIDDEN);
-    assert_eq!(res.body(), &expected_body_response);
+    do_error_and_verify_expected_behaviour!(
+        "/authenticate",
+        input,
+        expect_authenticate,
+        op_authenticate::Error::FaceScanRejected,
+        StatusCode::FORBIDDEN,
+        "AUTHENTICATE_FACE_SCAN_REJECTED"
+    );
 }
 
 /// This test verifies getting expected HTTP response
@@ -478,25 +460,14 @@ async fn authenticate_error_person_not_found() {
         liveness_data_signature: b"signature".to_vec(),
     };
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_authenticate()
-        .returning(|_| Err(op_authenticate::Error::PersonNotFound));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/authenticate")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response =
-        expect_body_response(StatusCode::NOT_FOUND, "AUTHENTICATE_PERSON_NOT_FOUND").await;
-
-    assert_eq!(res.status(), StatusCode::NOT_FOUND);
-    assert_eq!(res.body(), &expected_body_response);
+    do_error_and_verify_expected_behaviour!(
+        "/authenticate",
+        input,
+        expect_authenticate,
+        op_authenticate::Error::PersonNotFound,
+        StatusCode::NOT_FOUND,
+        "AUTHENTICATE_PERSON_NOT_FOUND"
+    );
 }
 
 /// This test verifies getting expected HTTP response
@@ -508,105 +479,192 @@ async fn authenticate_error_signature_invalid() {
         liveness_data_signature: b"signature".to_vec(),
     };
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_authenticate()
-        .returning(|_| Err(op_authenticate::Error::SignatureInvalid));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/authenticate")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response =
-        expect_body_response(StatusCode::FORBIDDEN, "AUTHENTICATE_SIGNATURE_INVALID").await;
-
-    assert_eq!(res.status(), StatusCode::FORBIDDEN);
-    assert_eq!(res.body(), &expected_body_response);
+    do_error_and_verify_expected_behaviour!(
+        "/authenticate",
+        input,
+        expect_authenticate,
+        op_authenticate::Error::SignatureInvalid,
+        StatusCode::FORBIDDEN,
+        "AUTHENTICATE_SIGNATURE_INVALID"
+    );
 }
 
 /// This test verifies getting expected HTTP response
-/// during failer authentication request for each possible internal error.
+/// during failer authentication request with InternalErrorEnrollment error.
 #[tokio::test]
-async fn authenticate_error_internal() {
+async fn authenticate_error_internall_enrollment() {
     let input = op_authenticate::Request {
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
         liveness_data_signature: b"signature".to_vec(),
     };
 
-    internal_error!(
+    do_error_and_verify_expected_behaviour!(
         "/authenticate",
-        expect_authenticate,
         input,
+        expect_authenticate,
         op_authenticate::Error::InternalErrorEnrollment(facetec_api_client::Error::Server(
             ServerError {
                 error_message: "error".to_owned()
             }
-        ))
+        )),
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
+}
 
-    internal_error!(
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with InternalErrorEnrollmentUnsuccessful error.
+#[tokio::test]
+async fn authenticate_error_internall_enrollment_unsuccessful() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/authenticate",
-        expect_authenticate,
         input,
-        op_authenticate::Error::InternalErrorEnrollmentUnsuccessful
+        expect_authenticate,
+        op_authenticate::Error::InternalErrorEnrollmentUnsuccessful,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
+}
 
-    internal_error!(
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with InternalErrorDbSearch error.
+#[tokio::test]
+async fn authenticate_error_internall_db_search() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/authenticate",
-        expect_authenticate,
         input,
+        expect_authenticate,
         op_authenticate::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(
             ServerError {
                 error_message: "error".to_owned()
             }
-        ))
+        )),
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
+}
 
-    internal_error!(
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with InternalErrorDbSearchUnsuccessful error.
+#[tokio::test]
+async fn authenticate_error_internall_db_search_unsuccessful() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/authenticate",
-        expect_authenticate,
         input,
-        op_authenticate::Error::InternalErrorDbSearchUnsuccessful
+        expect_authenticate,
+        op_authenticate::Error::InternalErrorDbSearchUnsuccessful,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
+}
 
-    internal_error!(
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with InternalErrorDbSearchMatchLevelMismatch error.
+#[tokio::test]
+async fn authenticate_error_internall_db_search_match_level_mismatch() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/authenticate",
-        expect_authenticate,
         input,
-        op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch
+        expect_authenticate,
+        op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
+}
 
-    internal_error!(
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with InternalErrorInvalidPublicKeyHex error.
+#[tokio::test]
+async fn authenticate_error_internall_invalid_public_key_hex() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/authenticate",
-        expect_authenticate,
         input,
-        op_authenticate::Error::InternalErrorInvalidPublicKeyHex
+        expect_authenticate,
+        op_authenticate::Error::InternalErrorInvalidPublicKeyHex,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
+}
 
-    internal_error!(
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with InternalErrorInvalidPublicKey error.
+#[tokio::test]
+async fn authenticate_error_internall_invalid_public_key() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/authenticate",
-        expect_authenticate,
         input,
-        op_authenticate::Error::InternalErrorInvalidPublicKey
+        expect_authenticate,
+        op_authenticate::Error::InternalErrorInvalidPublicKey,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
+}
 
-    internal_error!(
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with InternalErrorSignatureVerificationFailed error.
+#[tokio::test]
+async fn authenticate_error_internall_signature_verification_failed() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/authenticate",
-        expect_authenticate,
         input,
-        op_authenticate::Error::InternalErrorSignatureVerificationFailed
+        expect_authenticate,
+        op_authenticate::Error::InternalErrorSignatureVerificationFailed,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
+}
 
-    internal_error!(
+/// This test verifies getting expected HTTP response
+/// during failer authentication request with InternalErrorAuthTicketSigningFailed error.
+#[tokio::test]
+async fn authenticate_error_internal_auth_ticket_signing_failed() {
+    let input = op_authenticate::Request {
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    do_error_and_verify_expected_behaviour!(
         "/authenticate",
-        expect_authenticate,
         input,
-        op_authenticate::Error::InternalErrorAuthTicketSigningFailed
+        expect_authenticate,
+        op_authenticate::Error::InternalErrorAuthTicketSigningFailed,
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR"
     );
 }
 
