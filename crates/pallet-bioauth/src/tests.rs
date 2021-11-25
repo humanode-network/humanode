@@ -1,7 +1,9 @@
 use std::ops::Div;
 
 use crate::{self as pallet_bioauth, mock::*, *};
-use frame_support::{assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*};
+use frame_support::{
+    assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, WeakBoundedVec,
+};
 use mockall::predicate;
 
 /// An exact value of January 1st 2021 in UNIX time milliseconds.
@@ -10,14 +12,14 @@ const JANUARY_1_2021: UnixMilliseconds = 1609459200 * 1000;
 /// The time at which the test chain "started".
 const CHAIN_START: UnixMilliseconds = JANUARY_1_2021;
 
-pub fn make_input(
-    public_key: &[u8],
+fn make_input(
+    public_key: ValidatorPublicKey,
     nonce: &[u8],
     signature: &[u8],
 ) -> pallet_bioauth::Authenticate<MockOpaqueAuthTicket, Vec<u8>> {
     pallet_bioauth::Authenticate {
         ticket: MockOpaqueAuthTicket(AuthTicket {
-            public_key: public_key.into(),
+            public_key,
             nonce: nonce.into(),
         }),
         ticket_signature: signature.into(),
@@ -29,6 +31,25 @@ fn block_to_process_moment(moment: UnixMilliseconds) -> BlockNumber {
     total_work_time
         .saturating_add(SLOT_DURATION - 1)
         .div(SLOT_DURATION)
+}
+
+fn make_bounded_active_authentications(
+    authentications: Vec<Authentication<ValidatorPublicKey, UnixMilliseconds>>,
+) -> WeakBoundedVec<Authentication<ValidatorPublicKey, UnixMilliseconds>, MaxAuthentications> {
+    WeakBoundedVec::<_, MaxAuthentications>::try_from(authentications).unwrap()
+}
+
+fn make_bounded_consumed_auth_nonces(
+    auth_nonces: Vec<Vec<u8>>,
+) -> WeakBoundedVec<pallet_bioauth::BoundedAuthTicketNonce, MaxNonces> {
+    WeakBoundedVec::<_, MaxNonces>::try_from(
+        auth_nonces
+            .iter()
+            .cloned()
+            .map(|nonce| BoundedAuthTicketNonce::try_from(nonce).unwrap())
+            .collect::<Vec<_>>(),
+    )
+    .unwrap()
 }
 
 #[test]
@@ -53,7 +74,7 @@ fn test_block_to_process_moment_before_chain_start() {
 fn authentication_with_empty_state() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
-        let input = make_input(b"qwe", b"rty", b"should_be_valid");
+        let input = make_input(*b"key", b"rty", b"should_be_valid");
         let current_moment = CHAIN_START + 2 * SLOT_DURATION;
         let expires_at = current_moment + AUTHENTICATIONS_EXPIRE_AFTER;
 
@@ -61,7 +82,7 @@ fn authentication_with_empty_state() {
         with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
                 .once()
-                .with(predicate::eq(vec![b"qwe".to_vec()]))
+                .with(predicate::eq(vec![*b"key"]))
                 .return_const(());
         });
         with_mock_current_moment_provider(|mock| {
@@ -75,13 +96,13 @@ fn authentication_with_empty_state() {
         assert_eq!(
             Bioauth::active_authentications(),
             vec![Authentication {
-                public_key: b"qwe".to_vec(),
+                public_key: *b"key",
                 expires_at,
             }]
         );
         // Ensure that the state of ConsumedAuthTicketNonces has been updated.
         assert_eq!(
-            Bioauth::consumed_auth_ticket_nonces(),
+            Bioauth::consumed_auth_ticket_nonces().into_inner(),
             vec![b"rty".to_vec()]
         );
     });
@@ -94,11 +115,18 @@ fn authentication_expires_exactly_at_the_moment() {
     new_test_ext().execute_with(|| {
         // Prepare the test preconditions.
         let expires_at = CHAIN_START + 2 * SLOT_DURATION;
-        <ActiveAuthentications<Test>>::put(vec![Authentication {
-            public_key: b"alice_pk".to_vec(),
-            expires_at,
-        }]);
-        <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice_auth_ticket_nonce".to_vec()]);
+
+        let bounded_active_authentications =
+            make_bounded_active_authentications(vec![Authentication {
+                public_key: *b"key",
+                expires_at,
+            }]);
+
+        let bounded_consumed_auth_ticket_nonces =
+            make_bounded_consumed_auth_nonces(vec![b"alice_auth_ticket_nonce".to_vec()]);
+
+        <ActiveAuthentications<Test>>::put(bounded_active_authentications);
+        <ConsumedAuthTicketNonces<Test>>::put(bounded_consumed_auth_ticket_nonces);
 
         // Set up mock expectations.
         with_mock_validator_set_updater(|mock| {
@@ -120,7 +148,7 @@ fn authentication_expires_exactly_at_the_moment() {
         assert_eq!(Bioauth::active_authentications(), vec![]);
         // Ensure that nonce didn't go anywhere as it's still listed as blocked.
         assert_eq!(
-            Bioauth::consumed_auth_ticket_nonces(),
+            Bioauth::consumed_auth_ticket_nonces().into_inner(),
             vec![b"alice_auth_ticket_nonce".to_vec()]
         );
     });
@@ -134,11 +162,18 @@ fn authentication_expires_in_successive_block() {
         // Prepare the test preconditions.
         let current_moment = CHAIN_START + 2 * SLOT_DURATION;
         let expires_at = current_moment - 10;
-        <ActiveAuthentications<Test>>::put(vec![Authentication {
-            public_key: b"alice_pk".to_vec(),
-            expires_at,
-        }]);
-        <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice_auth_ticket_nonce".to_vec()]);
+
+        let bounded_active_authentications =
+            make_bounded_active_authentications(vec![Authentication {
+                public_key: *b"key",
+                expires_at,
+            }]);
+
+        let bounded_consumed_auth_ticket_nonces =
+            make_bounded_consumed_auth_nonces(vec![b"alice_auth_ticket_nonce".to_vec()]);
+
+        <ActiveAuthentications<Test>>::put(bounded_active_authentications);
+        <ConsumedAuthTicketNonces<Test>>::put(bounded_consumed_auth_ticket_nonces);
 
         // Set up mock expectations.
         with_mock_validator_set_updater(|mock| {
@@ -160,7 +195,7 @@ fn authentication_expires_in_successive_block() {
         assert_eq!(Bioauth::active_authentications(), vec![]);
         // Ensure that nonce didn't go anywhere as it's still listed as blocked.
         assert_eq!(
-            Bioauth::consumed_auth_ticket_nonces(),
+            Bioauth::consumed_auth_ticket_nonces().into_inner(),
             vec![b"alice_auth_ticket_nonce".to_vec()]
         );
     });
@@ -175,14 +210,20 @@ fn authentication_expiration_lifecycle() {
         let mut current_moment = CHAIN_START + 2 * SLOT_DURATION;
         let expires_at = current_moment + AUTHENTICATIONS_EXPIRE_AFTER;
 
-        let authnetication = Authentication {
-            public_key: b"alice_pk".to_vec(),
+        let authentication = Authentication {
+            public_key: *b"key",
             expires_at,
         };
+
         let nonce = b"alice_auth_ticket_nonce".to_vec();
 
-        <ActiveAuthentications<Test>>::put(vec![authnetication.clone()]);
-        <ConsumedAuthTicketNonces<Test>>::put(vec![nonce.clone()]);
+        let bounded_authentication =
+            make_bounded_active_authentications(vec![authentication.clone()]);
+
+        let bounded_nonce = make_bounded_consumed_auth_nonces(vec![nonce.clone()]);
+
+        <ActiveAuthentications<Test>>::put(bounded_authentication);
+        <ConsumedAuthTicketNonces<Test>>::put(bounded_nonce);
 
         loop {
             // Set up mock expectations.
@@ -195,10 +236,13 @@ fn authentication_expiration_lifecycle() {
             // Ensure that authentication is still active.
             assert_eq!(
                 Bioauth::active_authentications(),
-                vec![authnetication.clone()]
+                vec![authentication.clone()]
             );
             // Ensure that nonce didn't go anywhere and it's still listed as blocked.
-            assert_eq!(Bioauth::consumed_auth_ticket_nonces(), vec![nonce.clone()]);
+            assert_eq!(
+                Bioauth::consumed_auth_ticket_nonces().into_inner(),
+                vec![nonce.clone()]
+            );
 
             // Advance the block number and the current moment.
             System::set_block_number(System::block_number() + 1);
@@ -231,7 +275,10 @@ fn authentication_expiration_lifecycle() {
         // Ensure that authentication is gone.
         assert_eq!(Bioauth::active_authentications(), vec![]);
         // Ensure that nonce didn't go anywhere and it's still listed as blocked.
-        assert_eq!(Bioauth::consumed_auth_ticket_nonces(), vec![nonce]);
+        assert_eq!(
+            Bioauth::consumed_auth_ticket_nonces().into_inner(),
+            vec![nonce]
+        );
     });
 }
 
@@ -242,18 +289,21 @@ fn authentication_when_previous_one_has_been_expired() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
         let expires_at = CHAIN_START + 2 * SLOT_DURATION;
-        <ActiveAuthentications<Test>>::put(vec![Authentication {
-            public_key: b"alice_pk".to_vec(),
-            expires_at,
-        }]);
-        <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice_auth_ticket_nonce".to_vec()]);
+
+        let bounded_active_authentications =
+            make_bounded_active_authentications(vec![Authentication {
+                public_key: *b"key",
+                expires_at,
+            }]);
+
+        let bounded_consumed_auth_ticket_nonces =
+            make_bounded_consumed_auth_nonces(vec![b"alice_auth_ticket_nonce".to_vec()]);
+
+        <ActiveAuthentications<Test>>::put(bounded_active_authentications);
+        <ConsumedAuthTicketNonces<Test>>::put(bounded_consumed_auth_ticket_nonces);
 
         // Prepare the test input.
-        let input = make_input(
-            b"alice_pk",
-            b"new_alice_auth_ticket_nonce",
-            b"should_be_valid",
-        );
+        let input = make_input(*b"key", b"new_alice_auth_ticket_nonce", b"should_be_valid");
 
         // Set up mock expectations for Bioauth::on_initialize.
         with_mock_validator_set_updater(|mock| {
@@ -273,7 +323,7 @@ fn authentication_when_previous_one_has_been_expired() {
         with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
                 .once()
-                .with(predicate::eq(vec![b"alice_pk".to_vec()]))
+                .with(predicate::eq(vec![*b"key"]))
                 .return_const(());
         });
         with_mock_current_moment_provider(|mock| {
@@ -287,14 +337,14 @@ fn authentication_when_previous_one_has_been_expired() {
         assert_eq!(
             Bioauth::active_authentications(),
             vec![Authentication {
-                public_key: b"alice_pk".to_vec(),
+                public_key: *b"key",
                 expires_at: expires_at + AUTHENTICATIONS_EXPIRE_AFTER,
             }]
         );
 
         // Ensure that the current state of ConsumedAuthTicketNonces has nonces from both authentications.
         assert_eq!(
-            Bioauth::consumed_auth_ticket_nonces(),
+            Bioauth::consumed_auth_ticket_nonces().into_inner(),
             vec![
                 b"alice_auth_ticket_nonce".to_vec(),
                 b"new_alice_auth_ticket_nonce".to_vec()
@@ -308,7 +358,7 @@ fn authentication_when_previous_one_has_been_expired() {
 fn authentication_with_invalid_signature() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
-        let input = make_input(b"qwe", b"rty", b"invalid");
+        let input = make_input(*b"qwe", b"rty", b"invalid");
 
         // Make test.
         assert_noop!(
@@ -326,7 +376,7 @@ fn authentication_with_conlicting_nonce() {
         with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
                 .once()
-                .with(predicate::eq(vec![b"pk1".to_vec()]))
+                .with(predicate::eq(vec![*b"pk1"]))
                 .return_const(());
         });
         with_mock_current_moment_provider(|mock| {
@@ -334,11 +384,11 @@ fn authentication_with_conlicting_nonce() {
         });
 
         // Prepare the test precondition.
-        let precondition_input = make_input(b"pk1", b"conflict!", b"should_be_valid");
+        let precondition_input = make_input(*b"pk1", b"conflict!", b"should_be_valid");
         assert_ok!(Bioauth::authenticate(Origin::none(), precondition_input));
 
         // Prepare test input.
-        let input = make_input(b"pk2", b"conflict!", b"should_be_valid");
+        let input = make_input(*b"pk1", b"conflict!", b"should_be_valid");
 
         // Make test and ensure the expected error is thrown when no value is present.
         assert_noop!(
@@ -355,11 +405,18 @@ fn authentication_with_conlicting_nonce_after_expiration() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
         let expires_at = CHAIN_START + 2 * SLOT_DURATION;
-        <ActiveAuthentications<Test>>::put(vec![Authentication {
-            public_key: b"alice_pk".to_vec(),
-            expires_at,
-        }]);
-        <ConsumedAuthTicketNonces<Test>>::put(vec![b"alice_auth_ticket_nonce".to_vec()]);
+
+        let bounded_active_authentications =
+            make_bounded_active_authentications(vec![Authentication {
+                public_key: *b"key",
+                expires_at,
+            }]);
+
+        let bounded_consumed_auth_ticket_nonces =
+            make_bounded_consumed_auth_nonces(vec![b"alice_auth_ticket_nonce".to_vec()]);
+
+        <ActiveAuthentications<Test>>::put(bounded_active_authentications);
+        <ConsumedAuthTicketNonces<Test>>::put(bounded_consumed_auth_ticket_nonces);
 
         // Set up mock expectations for Bioauth::on_initialize.
         with_mock_validator_set_updater(|mock| {
@@ -375,7 +432,7 @@ fn authentication_with_conlicting_nonce_after_expiration() {
         Bioauth::on_initialize(block_to_process_moment(expires_at));
 
         // Prepare the test input.
-        let input = make_input(b"alice_pk", b"alice_auth_ticket_nonce", b"should_be_valid");
+        let input = make_input(*b"key", b"alice_auth_ticket_nonce", b"should_be_valid");
 
         // Ensure the expected error is thrown when conflicting nonce is used.
         assert_noop!(
@@ -393,7 +450,7 @@ fn authentication_with_concurrent_conlicting_public_keys() {
         with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
                 .once()
-                .with(predicate::eq(vec![b"conflict!".to_vec()]))
+                .with(predicate::eq(vec![*b"key"]))
                 .return_const(());
         });
         with_mock_current_moment_provider(|mock| {
@@ -401,11 +458,11 @@ fn authentication_with_concurrent_conlicting_public_keys() {
         });
 
         // Prepare the test precondition.
-        let precondition_input = make_input(b"conflict!", b"nonce1", b"should_be_valid");
+        let precondition_input = make_input(*b"key", b"nonce1", b"should_be_valid");
         assert_ok!(Bioauth::authenticate(Origin::none(), precondition_input));
 
         // Prepare test input.
-        let input = make_input(b"conflict!", b"nonce2", b"should_be_valid");
+        let input = make_input(*b"key", b"nonce2", b"should_be_valid");
 
         // Make test and ensure the expected error is thrown when conflicting public keys is used.
         assert_noop!(
@@ -420,9 +477,9 @@ fn authentication_with_concurrent_conlicting_public_keys() {
 fn signed_ext_check_bioauth_tx_permits_empty_state() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
-        let input = make_input(b"qwe", b"rty", b"should_be_valid");
+        let input = make_input(*b"qwe", b"rty", b"should_be_valid");
         let expected_tag = AuthTicket {
-            public_key: b"qwe".to_vec(),
+            public_key: *b"qwe",
             nonce: b"rty".to_vec(),
         };
 
@@ -447,7 +504,7 @@ fn signed_ext_check_bioauth_tx_permits_empty_state() {
 fn signed_ext_check_bioauth_tx_deny_invalid_signature() {
     new_test_ext().execute_with(|| {
         // Prepare test input.
-        let input = make_input(b"qwe", b"rty", b"invalid");
+        let input = make_input(*b"qwe", b"rty", b"invalid");
 
         // Make test.
         let call = pallet_bioauth::Call::authenticate { req: input }.into();
@@ -465,13 +522,13 @@ fn signed_ext_check_bioauth_tx_deny_invalid_signature() {
 fn signed_ext_check_bioauth_tx_denies_conlicting_nonce() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
-        let precondition_input = make_input(b"pk1", b"conflict!", b"should_be_valid");
+        let precondition_input = make_input(*b"pk1", b"conflict!", b"should_be_valid");
 
         // Set up mock expectations for Bioauth::on_initialize.
         with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
                 .once()
-                .with(predicate::eq(vec![b"pk1".to_vec()]))
+                .with(predicate::eq(vec![*b"pk1"]))
                 .return_const(());
         });
         with_mock_current_moment_provider(|mock| {
@@ -481,7 +538,7 @@ fn signed_ext_check_bioauth_tx_denies_conlicting_nonce() {
         assert_ok!(Bioauth::authenticate(Origin::none(), precondition_input));
 
         // Prepare test input.
-        let input = make_input(b"pk2", b"conflict!", b"should_be_valid");
+        let input = make_input(*b"pk2", b"conflict!", b"should_be_valid");
 
         // Make test.
         let call = pallet_bioauth::Call::authenticate { req: input }.into();
@@ -499,13 +556,13 @@ fn signed_ext_check_bioauth_tx_denies_conlicting_nonce() {
 fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
-        let precondition_input = make_input(b"conflict!", b"nonce1", b"should_be_valid");
+        let precondition_input = make_input(*b"key", b"nonce1", b"should_be_valid");
 
         // Set up mock expectations for Bioauth::on_initialize.
         with_mock_validator_set_updater(|mock| {
             mock.expect_update_validators_set()
                 .once()
-                .with(predicate::eq(vec![b"conflict!".to_vec()]))
+                .with(predicate::eq(vec![*b"key"]))
                 .return_const(());
         });
         with_mock_current_moment_provider(|mock| {
@@ -515,7 +572,7 @@ fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
         assert_ok!(Bioauth::authenticate(Origin::none(), precondition_input));
 
         // Prepare test input.
-        let input = make_input(b"conflict!", b"nonce2", b"should_be_valid");
+        let input = make_input(*b"key", b"nonce2", b"should_be_valid");
 
         // Make test.
         let call = pallet_bioauth::Call::authenticate { req: input }.into();
@@ -536,11 +593,11 @@ fn genesis_build() {
     let consumed_auth_ticket_nonces = vec![b"nonce1".to_vec(), b"nonce2".to_vec()];
     let active_authentications = vec![
         Authentication {
-            public_key: b"key1".to_vec(),
+            public_key: *b"k_1",
             expires_at: 123,
         },
         Authentication {
-            public_key: b"key2".to_vec(),
+            public_key: *b"k_2",
             expires_at: 456,
         },
     ];
@@ -554,7 +611,7 @@ fn genesis_build() {
     with_mock_validator_set_updater(|mock| {
         mock.expect_init_validators_set()
             .once()
-            .with(predicate::eq(vec![b"key1".to_vec(), b"key2".to_vec()]))
+            .with(predicate::eq(vec![*b"k_1", *b"k_2"]))
             .return_const(());
     });
 
@@ -566,7 +623,7 @@ fn genesis_build() {
         // Assert the state.
         assert_eq!(Bioauth::robonode_public_key(), MockVerifier);
         assert_eq!(
-            Bioauth::consumed_auth_ticket_nonces(),
+            Bioauth::consumed_auth_ticket_nonces().into_inner(),
             consumed_auth_ticket_nonces
         );
         assert_eq!(Bioauth::active_authentications(), active_authentications);

@@ -4,9 +4,9 @@
 // Fix clippy for sp_api::decl_runtime_apis!
 #![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]
 
-use codec::{Decode, Encode};
-use frame_support::traits::IsSubType;
+use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::weights::DispatchInfo;
+use frame_support::{parameter_types, traits::IsSubType, WeakBoundedVec};
 pub use pallet::*;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -85,8 +85,16 @@ pub struct Authenticate<OpaqueAuthTicket, Commitment> {
     pub ticket_signature: Commitment,
 }
 
+parameter_types! {
+    /// Bytes Max number at nonce in this pallet.
+    pub const AuthTicketNonceMaxBytes: u32 = 256;
+}
+
 /// The nonce used by robonode in the auth tickets.
 pub type AuthTicketNonce = Vec<u8>;
+
+/// The nonce type in this pallet with bounded number of bytes at the nonce.
+pub type BoundedAuthTicketNonce = WeakBoundedVec<u8, AuthTicketNonceMaxBytes>;
 
 /// The auth ticket passed to us from the robonode.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -100,7 +108,7 @@ pub struct AuthTicket<PublicKey> {
 
 /// The state that we keep in the blockchain for an active authentication.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
+#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo, MaxEncodedLen)]
 pub struct Authentication<PublicKey, Moment> {
     /// The public key of a validator.
     pub public_key: PublicKey,
@@ -119,11 +127,13 @@ pub struct Authentication<PublicKey, Moment> {
 pub mod pallet {
     use crate::{
         weights::WeightInfo, AuthTicket, AuthTicketNonce, Authenticate, Authentication,
-        CurrentMoment, TryConvert, ValidatorSetUpdater, Verifier,
+        BoundedAuthTicketNonce, CurrentMoment, TryConvert, ValidatorSetUpdater, Verifier,
     };
 
+    use codec::MaxEncodedLen;
     use frame_support::{
         dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
+        WeakBoundedVec,
     };
     use frame_system::pallet_prelude::*;
     use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
@@ -143,10 +153,15 @@ pub mod pallet {
             + Parameter
             + MaybeSerializeDeserialize
             + Verifier<Self::RobonodeSignature>
-            + Default;
+            + Default
+            + MaxEncodedLen;
 
         /// The public key of the validator.
-        type ValidatorPublicKey: Member + Parameter + MaybeSerializeDeserialize + MaybeHash;
+        type ValidatorPublicKey: Member
+            + Parameter
+            + MaybeSerializeDeserialize
+            + MaybeHash
+            + MaxEncodedLen;
 
         /// The opaque auth ticket type.
         type OpaqueAuthTicket: Parameter + AsRef<[u8]> + Send + Sync;
@@ -158,7 +173,12 @@ pub mod pallet {
         >;
 
         /// Type used for expressing timestamp.
-        type Moment: Parameter + Default + AtLeast32Bit + Copy + MaybeSerializeDeserialize;
+        type Moment: Parameter
+            + Default
+            + AtLeast32Bit
+            + Copy
+            + MaybeSerializeDeserialize
+            + MaxEncodedLen;
 
         /// Type used for pretty printing the timestamp.
         type DisplayMoment: From<Self::Moment> + core::fmt::Display;
@@ -174,10 +194,17 @@ pub mod pallet {
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
+
+        /// The maximum number of authentications.
+        type MaxAuthentications: Get<u32>;
+
+        /// The maximum number of nonces.
+        type MaxNonces: Get<u32>;
     }
 
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
+    #[pallet::generate_storage_info]
     pub struct Pallet<T>(_);
 
     /// The public key of the robonode.
@@ -188,13 +215,17 @@ pub mod pallet {
     /// A list of all consumed nonces.
     #[pallet::storage]
     #[pallet::getter(fn consumed_auth_ticket_nonces)]
-    pub type ConsumedAuthTicketNonces<T> = StorageValue<_, Vec<AuthTicketNonce>, ValueQuery>;
+    pub type ConsumedAuthTicketNonces<T: Config> =
+        StorageValue<_, WeakBoundedVec<BoundedAuthTicketNonce, T::MaxNonces>, ValueQuery>;
 
     /// A list of all active authentications.
     #[pallet::storage]
     #[pallet::getter(fn active_authentications)]
-    pub type ActiveAuthentications<T: Config> =
-        StorageValue<_, Vec<Authentication<T::ValidatorPublicKey, T::Moment>>, ValueQuery>;
+    pub type ActiveAuthentications<T: Config> = StorageValue<
+        _,
+        WeakBoundedVec<Authentication<T::ValidatorPublicKey, T::Moment>, T::MaxAuthentications>,
+        ValueQuery,
+    >;
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
@@ -219,9 +250,27 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
+            let bounded_consumed_auth_ticket_nonces = WeakBoundedVec::<_, T::MaxNonces>::try_from(
+                self.consumed_auth_ticket_nonces
+                    .iter()
+                    .cloned()
+                    .map(|nonce| {
+                        BoundedAuthTicketNonce::try_from(nonce)
+                            .expect("Initial nonce len must be less than AuthTicketNonceMaxBytes")
+                    })
+                    .collect::<Vec<_>>(),
+            )
+            .expect("Initial nonces must be less than T::MaxNonces");
+
+            let bounded_active_authentications =
+                WeakBoundedVec::<_, T::MaxAuthentications>::try_from(
+                    self.active_authentications.clone(),
+                )
+                .expect("Initial authentications must be less than T::MaxAuthentications");
+
             <RobonodePublicKey<T>>::put(&self.robonode_public_key);
-            <ConsumedAuthTicketNonces<T>>::put(&self.consumed_auth_ticket_nonces);
-            <ActiveAuthentications<T>>::put(&self.active_authentications);
+            <ConsumedAuthTicketNonces<T>>::put(bounded_consumed_auth_ticket_nonces);
+            <ActiveAuthentications<T>>::put(bounded_active_authentications);
 
             <Pallet<T>>::issue_validators_set_init(&self.active_authentications);
         }
@@ -251,6 +300,12 @@ pub mod pallet {
         NonceAlreadyUsed,
         /// This public key has already been used.
         PublicKeyAlreadyUsed,
+        /// Exceeded limit of Authentications.
+        AuthenticationsLimit,
+        /// Exceeded limit of Nonces.
+        NoncesLimit,
+        /// Exceeded limit of nonce bytes.
+        NonceBytesLimit,
     }
 
     pub enum AuthenticationAttemptValidationError<'a, T: Config> {
@@ -287,7 +342,7 @@ pub mod pallet {
     /// Validate the incloming authentication attempt, checking the auth ticket data against
     /// the passed input.
     fn validate_authentication_attempt<'a, T: Config>(
-        consumed_auth_ticket_nonces: &'a [AuthTicketNonce],
+        consumed_auth_ticket_nonces: &'a [BoundedAuthTicketNonce],
         active_authentications: &'a [Authentication<T::ValidatorPublicKey, T::Moment>],
         auth_ticket: &AuthTicket<T::ValidatorPublicKey>,
     ) -> Result<(), AuthenticationAttemptValidationError<'a, T>> {
@@ -336,11 +391,19 @@ pub mod pallet {
 
                             // Update internal state.
                             let current_moment = T::CurrentMoment::now();
-                            consumed_auth_ticket_nonces.push(auth_ticket.nonce);
-                            active_authentications.push(Authentication {
-                                public_key: public_key.clone(),
-                                expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
-                            });
+                            consumed_auth_ticket_nonces
+                                .try_push(
+                                    BoundedAuthTicketNonce::try_from(auth_ticket.nonce)
+                                        .map_err(|_| Error::<T>::NonceBytesLimit)?,
+                                )
+                                .map_err(|_| Error::<T>::NoncesLimit)?;
+                            active_authentications
+                                .try_push(Authentication {
+                                    public_key: public_key.clone(),
+                                    expires_at: current_moment
+                                        + T::AuthenticationsExpireAfter::get(),
+                                })
+                                .map_err(|_| Error::<T>::AuthenticationsLimit)?;
 
                             // Issue an update to the external validators set.
                             Self::issue_validators_set_update(active_authentications.as_slice());
@@ -374,8 +437,15 @@ pub mod pallet {
             let update_required =
                 possibly_expired_authentications_len != active_authentications.len();
             if update_required {
+                // We use force_from and None as a resulted active authentications Vec
+                // can't become bigger than it was. Just filtering was done before.
+                let bounded_active_authentications =
+                    WeakBoundedVec::<_, T::MaxAuthentications>::force_from(
+                        active_authentications.clone(),
+                        None,
+                    );
                 Self::issue_validators_set_update(active_authentications.as_slice());
-                <ActiveAuthentications<T>>::put(active_authentications);
+                <ActiveAuthentications<T>>::put(bounded_active_authentications);
             }
 
             T::WeightInfo::on_initialize(update_required)

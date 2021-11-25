@@ -1,7 +1,7 @@
 use std::cell::RefCell;
 
 use crate::{self as pallet_bioauth, weights, AuthTicket, TryConvert};
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::parameter_types;
 use frame_system as system;
 use mockall::{mock, predicate};
@@ -36,9 +36,12 @@ frame_support::construct_runtime!(
     }
 );
 
+/// Validator public key. Should be bounded.
+pub type ValidatorPublicKey = [u8; 3];
+
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct MockOpaqueAuthTicket(pub AuthTicket<Vec<u8>>);
+pub struct MockOpaqueAuthTicket(pub AuthTicket<ValidatorPublicKey>);
 
 impl AsRef<[u8]> for MockOpaqueAuthTicket {
     fn as_ref(&self) -> &[u8] {
@@ -48,10 +51,12 @@ impl AsRef<[u8]> for MockOpaqueAuthTicket {
 
 pub struct MockAuthTicketConverter;
 
-impl TryConvert<MockOpaqueAuthTicket, AuthTicket<Vec<u8>>> for MockAuthTicketConverter {
+impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAuthTicketConverter {
     type Error = Infallible;
 
-    fn try_convert(value: MockOpaqueAuthTicket) -> Result<AuthTicket<Vec<u8>>, Self::Error> {
+    fn try_convert(
+        value: MockOpaqueAuthTicket,
+    ) -> Result<AuthTicket<ValidatorPublicKey>, Self::Error> {
         Ok(value.0)
     }
 }
@@ -71,10 +76,16 @@ impl super::Verifier<Vec<u8>> for MockVerifier {
     }
 }
 
+impl MaxEncodedLen for MockVerifier {
+    fn max_encoded_len() -> usize {
+        panic!("should be unused in tests")
+    }
+}
+
 mock! {
     pub ValidatorSetUpdater {
-        pub fn update_validators_set(&self, validator_public_keys: Vec<Vec<u8>>);
-        pub fn init_validators_set(&self, validator_public_keys: Vec<Vec<u8>>);
+        pub fn update_validators_set(&self, validator_public_keys: Vec<ValidatorPublicKey>);
+        pub fn init_validators_set(&self, validator_public_keys: Vec<ValidatorPublicKey>);
     }
 }
 
@@ -82,10 +93,11 @@ thread_local! {
     pub static MOCK_VALIDATOR_SET_UPDATER: RefCell<MockValidatorSetUpdater> = RefCell::new(MockValidatorSetUpdater::new());
 }
 
-impl super::ValidatorSetUpdater<Vec<u8>> for MockValidatorSetUpdater {
-    fn update_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(validator_public_keys: I)
-    where
-        Vec<u8>: 'a,
+impl super::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater {
+    fn update_validators_set<'a, I: Iterator<Item = &'a ValidatorPublicKey> + 'a>(
+        validator_public_keys: I,
+    ) where
+        ValidatorPublicKey: 'a,
     {
         MOCK_VALIDATOR_SET_UPDATER.with(|val| {
             val.borrow_mut()
@@ -93,9 +105,10 @@ impl super::ValidatorSetUpdater<Vec<u8>> for MockValidatorSetUpdater {
         });
     }
 
-    fn init_validators_set<'a, I: Iterator<Item = &'a Vec<u8>> + 'a>(validator_public_keys: I)
-    where
-        Vec<u8>: 'a,
+    fn init_validators_set<'a, I: Iterator<Item = &'a ValidatorPublicKey> + 'a>(
+        validator_public_keys: I,
+    ) where
+        ValidatorPublicKey: 'a,
     {
         MOCK_VALIDATOR_SET_UPDATER.with(|val| {
             val.borrow_mut()
@@ -175,6 +188,8 @@ pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = TIMESTAMP_MINUTE;
 
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = AUTHENTICATIONS_EXPIRE_AFTER;
+    pub const MaxAuthentications: u32 = 512;
+    pub const MaxNonces: u32 = 512;
 }
 
 pub struct DisplayMoment;
@@ -195,7 +210,7 @@ impl pallet_bioauth::Config for Test {
     type Event = Event;
     type RobonodePublicKey = MockVerifier;
     type RobonodeSignature = Vec<u8>;
-    type ValidatorPublicKey = Vec<u8>;
+    type ValidatorPublicKey = ValidatorPublicKey;
     type OpaqueAuthTicket = MockOpaqueAuthTicket;
     type AuthTicketCoverter = MockAuthTicketConverter;
     type ValidatorSetUpdater = MockValidatorSetUpdater;
@@ -204,6 +219,8 @@ impl pallet_bioauth::Config for Test {
     type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
     type WeightInfo = weights::SubstrateWeight<Test>;
+    type MaxAuthentications = MaxAuthentications;
+    type MaxNonces = MaxNonces;
 }
 
 /// Build test externalities from the default genesis.
