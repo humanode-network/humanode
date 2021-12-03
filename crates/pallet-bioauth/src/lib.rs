@@ -371,55 +371,64 @@ pub mod pallet {
             let auth_ticket = Self::extract_auth_ticket_checked(req)?;
             let public_key = auth_ticket.public_key.clone();
 
-            let consumed_auth_ticket_nonces = <ConsumedAuthTicketNonces<T>>::get();
-            let active_authentications = <ActiveAuthentications<T>>::get();
+            // Update storage.
+            <ConsumedAuthTicketNonces<T>>::try_mutate::<_, Error<T>, _>(
+                move |consumed_auth_ticket_nonces| {
+                    <ActiveAuthentications<T>>::try_mutate::<_, Error<T>, _>(
+                        move |active_authentications| {
+                            validate_authentication_attempt::<T>(
+                                consumed_auth_ticket_nonces,
+                                active_authentications,
+                                &auth_ticket,
+                            )?;
 
-            validate_authentication_attempt::<T>(
-                &consumed_auth_ticket_nonces,
-                &active_authentications,
-                &auth_ticket,
-            )
-            .map_err(Error::<T>::from)?;
+                            // Update internal state.
+                            let current_moment = T::CurrentMoment::now();
+                            let mut updated_consumed_auth_ticket_nonces =
+                                consumed_auth_ticket_nonces.clone().into_inner();
 
-            // Update internal state.
-            let current_moment = T::CurrentMoment::now();
-            let mut updated_consumed_auth_ticket_nonces = consumed_auth_ticket_nonces.into_inner();
-            updated_consumed_auth_ticket_nonces.push(BoundedAuthTicketNonce::force_from(
-                auth_ticket.nonce,
-                Some(
-                    "Warning: The length of the nonce in bytes are more than expected. \
-                      A runtime configuration adjustment may be needed.",
-                ),
-            ));
+                            updated_consumed_auth_ticket_nonces.push(BoundedAuthTicketNonce::force_from(
+                                auth_ticket.nonce,
+                                Some(
+                                    "Warning: The length of the nonce in bytes are more than expected. \
+                                      A runtime configuration adjustment may be needed.",
+                                ),
+                            ));
 
-            let mut updated_active_authentications = active_authentications.into_inner();
-            updated_active_authentications.push(Authentication {
-                public_key: public_key.clone(),
-                expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
-            });
+                            *consumed_auth_ticket_nonces = WeakBoundedVec::<_, T::MaxNonces>::force_from(
+                                    updated_consumed_auth_ticket_nonces,
+                                    Some(
+                                        "Warning: The number of consumed auth-ticket nonces are more than expected. \
+                                          A runtime configuration adjustment may be needed.",
+                                    ),
+                                );
 
-            Self::issue_validators_set_update(updated_active_authentications.as_slice());
-            Self::deposit_event(Event::NewAuthentication(public_key));
+                            let mut updated_active_authentications =
+                                active_authentications.clone().into_inner();
+                            updated_active_authentications.push(Authentication {
+                                public_key: public_key.clone(),
+                                expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
+                            });
 
-            let bounded_updated_consumed_auth_ticket_nonces = WeakBoundedVec::<_, T::MaxNonces>::force_from(
-                updated_consumed_auth_ticket_nonces,
-                Some(
-                    "Warning: The number of consumed auth-ticket nonces are more than expected. \
-                      A runtime configuration adjustment may be needed.",
-                ),
-            );
+                            *active_authentications = WeakBoundedVec::<_, T::MaxAuthentications>::force_from(
+                                        updated_active_authentications,
+                                        Some(
+                                            "Warning: The number of active authentications are more than expected. \
+                                              A runtime configuration adjustment may be needed.",
+                                        ),
+                                    );
 
-            let bounded_updated_active_authentications =
-                WeakBoundedVec::<_, T::MaxAuthentications>::force_from(
-                    updated_active_authentications,
-                    Some(
-                        "Warning: The number of active authentications are more than expected. \
-                          A runtime configuration adjustment may be needed.",
-                    ),
-                );
+                            // Issue an update to the external validators set.
+                            Self::issue_validators_set_update(active_authentications.as_slice());
 
-            <ActiveAuthentications<T>>::put(bounded_updated_active_authentications);
-            <ConsumedAuthTicketNonces<T>>::put(bounded_updated_consumed_auth_ticket_nonces);
+                            // Emit an event.
+                            Self::deposit_event(Event::NewAuthentication(public_key));
+                            Ok(())
+                        },
+                    )?;
+                    Ok(())
+                },
+            )?;
             Ok(())
         }
     }
