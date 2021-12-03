@@ -398,7 +398,7 @@ fn authentication_with_conlicting_nonce() {
         assert_ok!(Bioauth::authenticate(Origin::none(), precondition_input));
 
         // Prepare test input.
-        let input = make_input(bounded(b"pk1"), b"conflict!", b"should_be_valid");
+        let input = make_input(bounded(b"pk2"), b"conflict!", b"should_be_valid");
 
         // Make test and ensure the expected error is thrown when no value is present.
         assert_noop!(
