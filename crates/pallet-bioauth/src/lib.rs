@@ -86,7 +86,7 @@ pub struct Authenticate<OpaqueAuthTicket, Commitment> {
 }
 
 parameter_types! {
-    /// Bytes Max number at nonce in this pallet.
+    /// The maximum length of a single nonce (in bytes).
     pub const AuthTicketNonceMaxBytes: u32 = 256;
 }
 
@@ -387,7 +387,7 @@ pub mod pallet {
             updated_consumed_auth_ticket_nonces.push(BoundedAuthTicketNonce::force_from(
                 auth_ticket.nonce,
                 Some(
-                    "Warning: The number of auth-ticket nonce bytes are more than expected. \
+                    "Warning: The length of the nonce in bytes are more than expected. \
                       A runtime configuration adjustment may be needed.",
                 ),
             ));
