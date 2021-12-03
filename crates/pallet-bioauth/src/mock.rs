@@ -37,7 +37,7 @@ frame_support::construct_runtime!(
 );
 
 /// Validator public key. Should be bounded.
-pub type ValidatorPublicKey = [u8; 3];
+pub type ValidatorPublicKey = [u8; 32];
 
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
