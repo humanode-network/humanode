@@ -1,7 +1,7 @@
 //! Authenticate operation.
 
 use facetec_api_client as ft;
-use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
+use primitives_auth_ticket::AuthTicket;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use tracing::{error, trace};
 
@@ -29,7 +29,7 @@ pub struct Response {
     /// An opaque auth ticket generated for this authentication attempt.
     /// Contains a public key that matched with the provided FaceScan and a nonce to prevent replay
     /// attacks.
-    pub auth_ticket: OpaqueAuthTicket,
+    pub auth_ticket: Vec<u8>,
     /// The signature of the auth ticket, signed with the robonode's private key.
     /// Can be used together with the auth ticket above to prove that this
     /// auth ticket was vetted by the robonode and verified to be associated
@@ -189,7 +189,7 @@ where
         };
 
         // Prepare an opaque auth ticket, get ready for signing.
-        let opaque_auth_ticket = (&auth_ticket).into();
+        let opaque_auth_ticket = Vec::<u8>::from(&auth_ticket);
 
         // Sign the auth ticket with our private key, so that later on it's possible to validate
         // this ticket was issues by us.

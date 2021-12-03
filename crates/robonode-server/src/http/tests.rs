@@ -2,7 +2,6 @@ use std::sync::Arc;
 
 use mockall::predicate::*;
 use mockall::*;
-use primitives_auth_ticket::OpaqueAuthTicket;
 use primitives_liveness_data::OpaqueLivenessData;
 use warp::{hyper::StatusCode, Filter, Reply};
 
@@ -80,7 +79,7 @@ impl_LogicOp!(
 
 fn provide_authenticate_response() -> op_authenticate::Response {
     op_authenticate::Response {
-        auth_ticket: OpaqueAuthTicket(b"ticket".to_vec()),
+        auth_ticket: b"ticket".to_vec(),
         auth_ticket_signature: b"signature".to_vec(),
     }
 }
