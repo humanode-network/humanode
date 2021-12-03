@@ -420,7 +420,7 @@ const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
     pub const MaxAuthentications: u32 = 512;
-    pub const MaxNonces: u32 = 512;
+    pub const MaxNonces: u32 = 102400;
 }
 
 impl pallet_bioauth::Config for Runtime {
