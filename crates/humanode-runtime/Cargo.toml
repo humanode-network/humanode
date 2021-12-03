@@ -28,6 +28,8 @@ frame-system-rpc-runtime-api = { default-features = false, git = "https://github
 hex-literal = { version = "0.3", optional = true }
 pallet-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -76,6 +78,8 @@ std = [
   "pallet-aura/std",
   "pallet-bioauth/std",
   "pallet-balances/std",
+  "pallet-ethereum/std",
+  "pallet-evm/std",
   "pallet-grandpa/std",
   "pallet-randomness-collective-flip/std",
   "pallet-sudo/std",
