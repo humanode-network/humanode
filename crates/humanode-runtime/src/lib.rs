@@ -14,6 +14,7 @@ use pallet_bioauth::AuthTicket;
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
+use primitives_auth_ticket::OpaqueAuthTicket;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -341,12 +342,14 @@ pub enum PrimitiveAuthTicketConverterError {
     PublicKey(()),
 }
 
-impl pallet_bioauth::TryConvert<Vec<u8>, pallet_bioauth::AuthTicket<AuraId>>
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<AuraId>>
     for PrimitiveAuthTicketConverter
 {
     type Error = PrimitiveAuthTicketConverterError;
 
-    fn try_convert(value: Vec<u8>) -> Result<pallet_bioauth::AuthTicket<AuraId>, Self::Error> {
+    fn try_convert(
+        value: OpaqueAuthTicket,
+    ) -> Result<pallet_bioauth::AuthTicket<AuraId>, Self::Error> {
         let primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce: nonce,
@@ -421,7 +424,7 @@ impl pallet_bioauth::Config for Runtime {
     type RobonodePublicKey = RobonodePublicKeyWrapper;
     type RobonodeSignature = Vec<u8>;
     type ValidatorPublicKey = AuraId;
-    type OpaqueAuthTicket = Vec<u8>;
+    type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = AuraValidatorSetUpdater;
     type Moment = UnixMilliseconds;

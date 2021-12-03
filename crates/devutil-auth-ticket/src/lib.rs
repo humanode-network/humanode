@@ -1,7 +1,7 @@
 //! Auth Ticket development utilities.
 
 pub use hex::{decode, encode};
-pub use primitives_auth_ticket::AuthTicket;
+pub use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 
 use robonode_crypto::{ed25519_dalek::Signer, Keypair};
 
@@ -32,7 +32,7 @@ pub fn make(input: Input) -> Result<Output, anyhow::Error> {
 
     let robonode_keypair = Keypair::from_bytes(&robonode_keypair)?;
 
-    let opaque_auth_ticket = Vec::<u8>::from(&auth_ticket);
+    let opaque_auth_ticket = OpaqueAuthTicket::from(&auth_ticket);
 
     let robonode_signature = robonode_keypair
         .sign(opaque_auth_ticket.as_ref())
