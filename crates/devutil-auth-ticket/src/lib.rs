@@ -46,7 +46,7 @@ pub fn make(input: Input) -> Result<Output, anyhow::Error> {
         .is_ok());
 
     Ok(Output {
-        auth_ticket: opaque_auth_ticket,
+        auth_ticket: opaque_auth_ticket.into(),
         robonode_signature: robonode_signature.into(),
         robonode_public_key: robonode_keypair.public.as_bytes()[..].into(),
     })
