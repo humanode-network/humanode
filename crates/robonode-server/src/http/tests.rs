@@ -2,6 +2,8 @@ use std::sync::Arc;
 
 use mockall::predicate::*;
 use mockall::*;
+use primitives_auth_ticket::OpaqueAuthTicket;
+use primitives_liveness_data::OpaqueLivenessData;
 use warp::{hyper::StatusCode, Filter, Reply};
 
 use crate::{
@@ -78,7 +80,7 @@ impl_LogicOp!(
 
 fn provide_authenticate_response() -> op_authenticate::Response {
     op_authenticate::Response {
-        auth_ticket: b"ticket".to_vec(),
+        auth_ticket: OpaqueAuthTicket(b"ticket".to_vec()),
         auth_ticket_signature: b"signature".to_vec(),
     }
 }
@@ -124,7 +126,7 @@ async fn expect_body_response(
 async fn it_works_enroll() {
     let input = op_enroll::Request {
         public_key: b"key".to_vec(),
-        liveness_data: b"data".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
     };
 
     let mut mock_logic = MockLogic::new();
@@ -149,7 +151,7 @@ async fn it_works_enroll() {
 async fn it_denies_enroll_with_invalid_public_key() {
     let input = op_enroll::Request {
         public_key: b"key".to_vec(),
-        liveness_data: b"data".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
     };
 
     let mut mock_logic = MockLogic::new();
@@ -176,7 +178,7 @@ async fn it_denies_enroll_with_invalid_public_key() {
 #[tokio::test]
 async fn it_works_authenticate() {
     let input = op_authenticate::Request {
-        liveness_data: b"data".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
         liveness_data_signature: b"signature".to_vec(),
     };
 
@@ -203,7 +205,7 @@ async fn it_works_authenticate() {
 #[tokio::test]
 async fn it_denies_authenticate() {
     let input = op_authenticate::Request {
-        liveness_data: b"data".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
         liveness_data_signature: b"signature".to_vec(),
     };
 

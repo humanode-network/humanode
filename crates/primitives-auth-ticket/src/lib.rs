@@ -10,7 +10,10 @@ use serde::{Deserialize, Serialize};
 use sp_std::prelude::*;
 
 /// The one-time ticket to authenticate in the network.
-pub type OpaqueAuthTicket = Vec<u8>;
+#[derive(Debug, PartialEq, Eq, Encode, Decode, Clone, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "std", serde(transparent))]
+pub struct OpaqueAuthTicket(pub Vec<u8>);
 
 /// The one-time ticket to authenticate in the network.
 #[derive(Debug, PartialEq, Encode, Decode, TypeInfo)]
@@ -28,12 +31,36 @@ impl TryFrom<&OpaqueAuthTicket> for AuthTicket {
     type Error = codec::Error;
 
     fn try_from(value: &OpaqueAuthTicket) -> Result<Self, Self::Error> {
-        Self::decode(&mut &**value)
+        Self::decode(&mut &*value.0)
     }
 }
 
 impl From<&AuthTicket> for OpaqueAuthTicket {
     fn from(val: &AuthTicket) -> Self {
-        val.encode()
+        Self(val.encode())
+    }
+}
+
+impl AsRef<[u8]> for OpaqueAuthTicket {
+    fn as_ref(&self) -> &[u8] {
+        self.0.as_slice()
+    }
+}
+
+impl From<Vec<u8>> for OpaqueAuthTicket {
+    fn from(val: Vec<u8>) -> Self {
+        Self(val)
+    }
+}
+
+impl From<Box<[u8]>> for OpaqueAuthTicket {
+    fn from(val: Box<[u8]>) -> Self {
+        Self(val.into())
+    }
+}
+
+impl From<OpaqueAuthTicket> for Vec<u8> {
+    fn from(val: OpaqueAuthTicket) -> Self {
+        val.0
     }
 }
