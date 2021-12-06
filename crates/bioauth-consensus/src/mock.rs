@@ -6,7 +6,7 @@ use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResul
 use sp_api::{ApiRef, ProvideRuntimeApi, TransactionFor};
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
 use sp_consensus::{Environment, Error as ConsensusError};
-use sp_runtime::traits::{Block as BlockT, DigestFor};
+use sp_runtime::{traits::Block as BlockT, Digest};
 use std::{collections::HashMap, sync::Arc, time::Duration};
 
 type MockPublicKeyType = ();
@@ -147,7 +147,7 @@ mock! {
         fn propose(
             &self,
             inherent_data: sp_inherents::InherentData,
-            inherent_digests: DigestFor<Block>,
+            inherent_digests: Digest,
             max_duration: Duration,
             block_size_limit: Option<usize>,
         ) -> MockProposal;
@@ -184,7 +184,7 @@ impl sp_consensus::Proposer<Block> for MockWrapperProposer {
     fn propose(
         self,
         inherent_data: sp_inherents::InherentData,
-        inherent_digests: DigestFor<Block>,
+        inherent_digests: Digest,
         max_duration: Duration,
         block_size_limit: Option<usize>,
     ) -> MockProposal {
