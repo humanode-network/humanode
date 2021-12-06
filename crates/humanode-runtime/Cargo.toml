@@ -6,7 +6,7 @@ publish = false
 
 [build-dependencies]
 # See https://github.com/paritytech/substrate/pull/10284
-substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "wasm-builder-fix" }
+substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [dependencies]
 bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", default-features = false }
@@ -49,7 +49,7 @@ sp-version = { default-features = false, git = "https://github.com/humanode-netw
 default = ["std"]
 runtime-benchmarks = [
   "hex-literal",
-  "frame-benchmarking",
+  "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
   "frame-system-benchmarking",
   "frame-system/runtime-benchmarks",

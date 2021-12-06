@@ -122,9 +122,7 @@ pub mod pallet {
         CurrentMoment, TryConvert, ValidatorSetUpdater, Verifier,
     };
 
-    use frame_support::{
-        dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
-    };
+    use frame_support::{pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery};
     use frame_system::pallet_prelude::*;
     use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
     use sp_std::prelude::*;

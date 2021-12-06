@@ -122,7 +122,9 @@ pub fn new_partial(
     let client = Arc::new(client);
 
     let telemetry = telemetry.map(|(worker, telemetry)| {
-        task_manager.spawn_handle().spawn("telemetry", worker.run());
+        task_manager
+            .spawn_handle()
+            .spawn("telemetry", None, worker.run());
         telemetry
     });
 
@@ -268,7 +270,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             transaction_pool: Arc::clone(&transaction_pool),
             spawn_handle: task_manager.spawn_handle(),
             import_queue,
-            on_demand: None,
             block_announce_validator_builder: None,
             warp_sync: Some(warp_sync),
         })?;
@@ -304,8 +305,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         task_manager: &mut task_manager,
         transaction_pool: Arc::clone(&transaction_pool),
         rpc_extensions_builder,
-        on_demand: None,
-        remote_blockchain: None,
         backend,
         system_rpc_tx,
         config,
@@ -346,7 +345,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     // fails we take down the service with it.
     task_manager
         .spawn_essential_handle()
-        .spawn_blocking("aura", aura);
+        .spawn_blocking("aura", Some("block-authoring"), aura);
 
     let grandpa_config = sc_finality_grandpa::Config {
         // FIXME #1578 make this available through chainspec.
@@ -373,6 +372,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
         task_manager.spawn_essential_handle().spawn_blocking(
             "grandpa-voter",
+            Some("block-finalization"),
             sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
         );
     }
@@ -481,9 +481,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         })
     };
 
-    task_manager
-        .spawn_handle()
-        .spawn_blocking("bioauth-flow", bioauth_flow_future);
+    task_manager.spawn_handle().spawn_blocking(
+        "bioauth-flow",
+        Some("bioauth"),
+        bioauth_flow_future,
+    );
 
     Ok(task_manager)
 }
