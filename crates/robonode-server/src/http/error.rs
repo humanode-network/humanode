@@ -48,11 +48,15 @@ impl From<op_enroll::Error> for Logic {
             op_enroll::Error::PersonAlreadyEnrolled => {
                 Self::new(StatusCode::CONFLICT, "ENROLL_PERSON_ALREADY_ENROLLED")
             }
+            op_enroll::Error::SignatureInvalid => {
+                Self::new(StatusCode::FORBIDDEN, "AUTHENTICATE_SIGNATURE_INVALID")
+            }
             op_enroll::Error::InternalErrorEnrollment(_)
             | op_enroll::Error::InternalErrorEnrollmentUnsuccessful
             | op_enroll::Error::InternalErrorDbSearch(_)
             | op_enroll::Error::InternalErrorDbSearchUnsuccessful
             | op_enroll::Error::InternalErrorDbEnroll(_)
+            | op_enroll::Error::InternalErrorSignatureVerificationFailed
             | op_enroll::Error::InternalErrorDbEnrollUnsuccessful => INTERNAL.clone(),
         }
     }

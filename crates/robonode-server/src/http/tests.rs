@@ -127,6 +127,7 @@ async fn it_works_enroll() {
     let input = op_enroll::Request {
         public_key: b"key".to_vec(),
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
     };
 
     let mut mock_logic = MockLogic::new();
@@ -152,6 +153,7 @@ async fn it_denies_enroll_with_invalid_public_key() {
     let input = op_enroll::Request {
         public_key: b"key".to_vec(),
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
     };
 
     let mut mock_logic = MockLogic::new();

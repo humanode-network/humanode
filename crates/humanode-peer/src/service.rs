@@ -425,12 +425,17 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             info!("Bioauth flow starting up");
 
+            let signer = crate::validator_key::AppCryptoSigner {
+                keystore: Arc::clone(&keystore),
+                public_key: validator_public_key.clone(),
+            };
+
             if bioauth_perform_enroll {
                 info!("Bioauth flow - enrolling in progress");
 
                 render_qr_code("Bioauth flow - waiting for enroll");
 
-                flow.enroll(&validator_public_key)
+                flow.enroll(&validator_public_key, &signer)
                     .await
                     .expect("enroll failed");
 
@@ -440,11 +445,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             info!("Bioauth flow - authentication in progress");
 
             render_qr_code("Bioauth flow - waiting for authentication");
-
-            let signer = crate::validator_key::AppCryptoSigner {
-                keystore: Arc::clone(&keystore),
-                public_key: validator_public_key,
-            };
 
             let authenticate_response = loop {
                 let result = flow.authenticate(&signer).await;
