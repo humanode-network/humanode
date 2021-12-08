@@ -7,7 +7,6 @@ use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
 use sp_keystore::CryptoStore;
 
 /// The validator public key implementation using the app crypto public key.
-#[derive(Clone)]
 pub struct AppCryptoPublic<T>(pub T);
 
 /// The validator signer implementation using the keystore and app crypto public key.
@@ -15,7 +14,7 @@ pub struct AppCryptoSigner<T> {
     /// The keystore to use for signing.
     pub keystore: Arc<dyn CryptoStore>,
     /// The public key to provide the signature for.
-    pub public_key: AppCryptoPublic<T>,
+    pub public_key: Arc<AppCryptoPublic<T>>,
 }
 
 /// An error that occured at the signer.
