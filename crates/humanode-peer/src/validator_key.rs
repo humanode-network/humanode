@@ -10,28 +10,28 @@ use sp_keystore::CryptoStore;
 pub struct AppCryptoPublic<T>(pub T);
 
 /// The validator signer implementation using the keystore and app crypto public key.
-pub struct AppCryptoSigner<T, PK>
+pub struct AppCryptoSigner<PK, PKR>
 where
-    PK: AsRef<AppCryptoPublic<T>>,
+    PKR: AsRef<AppCryptoPublic<PK>>,
 {
     /// The keystore to use for signing.
     pub keystore: Arc<dyn CryptoStore>,
     /// The public key to provide the signature for.
-    pub public_key: PK,
-    /// The type of the public key.
-    _phantom_pk: PhantomData<T>,
+    pub public_key_ref: PKR,
+    /// The type of the public key behind the ref.
+    _public_key_type: PhantomData<PK>,
 }
 
-impl<T, PK> AppCryptoSigner<T, PK>
+impl<PK, PKR> AppCryptoSigner<PK, PKR>
 where
-    PK: AsRef<AppCryptoPublic<T>>,
+    PKR: AsRef<AppCryptoPublic<PK>>,
 {
     /// Create a new [`AppCryptoSigner`].
-    pub fn new(keystore: Arc<dyn CryptoStore>, public_key: PK) -> Self {
+    pub fn new(keystore: Arc<dyn CryptoStore>, public_key_ref: PKR) -> Self {
         Self {
             keystore,
-            public_key,
-            _phantom_pk: PhantomData,
+            public_key_ref,
+            _public_key_type: PhantomData,
         }
     }
 }
@@ -48,10 +48,10 @@ pub enum SignerError {
 }
 
 #[async_trait::async_trait]
-impl<T, PK> Signer<Vec<u8>> for AppCryptoSigner<T, PK>
+impl<PK, PKR> Signer<Vec<u8>> for AppCryptoSigner<PK, PKR>
 where
-    T: AppPublic,
-    PK: AsRef<AppCryptoPublic<T>> + Sync + Send,
+    PK: AppPublic,
+    PKR: AsRef<AppCryptoPublic<PK>> + Sync + Send,
 {
     type Error = SignerError;
 
@@ -63,8 +63,8 @@ where
         let outcome = self
             .keystore
             .sign_with(
-                T::ID,
-                &self.public_key.as_ref().0.to_public_crypto_pair(),
+                PK::ID,
+                &self.public_key_ref.as_ref().0.to_public_crypto_pair(),
                 data,
             )
             .await
