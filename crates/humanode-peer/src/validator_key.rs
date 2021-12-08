@@ -19,7 +19,7 @@ where
     /// The public key to provide the signature for.
     pub public_key_ref: PKR,
     /// The type of the public key behind the ref.
-    _public_key_type: PhantomData<PK>,
+    pub public_key_type: PhantomData<PK>,
 }
 
 impl<PK, PKR> AppCryptoSigner<PK, PKR>
@@ -31,7 +31,7 @@ where
         Self {
             keystore,
             public_key_ref,
-            _public_key_type: PhantomData,
+            public_key_type: PhantomData,
         }
     }
 }
