@@ -64,19 +64,24 @@ where
 
 impl<LDP, RC, VPK, VS> Flow<LDP, RC, VPK, VS>
 where
+    VS: Signer<Vec<u8>>,
+    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
     LDP: LivenessDataProvider,
     <LDP as LivenessDataProvider>::Error: Send + Sync + std::error::Error + 'static,
     RC: Deref<Target = robonode_client::Client>,
     VPK: AsRef<[u8]>,
 {
     /// The enroll flow.
-    pub async fn enroll(&mut self, public_key: &VPK) -> Result<(), anyhow::Error> {
+    pub async fn enroll(&mut self, public_key: &VPK, signer: &VS) -> Result<(), anyhow::Error> {
         let opaque_liveness_data = self.obtain_opaque_liveness_data().await?;
+
+        let signature = signer.sign(&opaque_liveness_data).await?;
 
         self.robonode_client
             .enroll(EnrollRequest {
                 liveness_data: opaque_liveness_data.as_ref(),
                 public_key: public_key.as_ref(),
+                liveness_data_signature: signature.as_ref(),
             })
             .await?;
 

@@ -27,6 +27,9 @@ pub struct EnrollRequest<'a> {
     /// An opaque liveness data, containing the FaceScan to associate with the identity and
     /// the rest of the parameters necessary to conduct a liveness check.
     pub liveness_data: &'a [u8],
+    /// The signature of the liveness data with the private key of the node.
+    /// Proves the posession of the private key by the liveness data bearer.
+    pub liveness_data_signature: &'a [u8],
 }
 
 /// The enroll-specific error condition.
@@ -53,11 +56,13 @@ mod tests {
         let expected_request = serde_json::json!({
             "livenessData": [1, 2, 3],
             "publicKey": [4, 5, 6],
+            "livenessDataSignature": [7, 8, 9],
         });
 
         let actual_request = serde_json::to_value(&EnrollRequest {
             liveness_data: &[1, 2, 3],
             public_key: &[4, 5, 6],
+            liveness_data_signature: &[7, 8, 9],
         })
         .unwrap();
 
@@ -71,6 +76,7 @@ mod tests {
         let sample_request = EnrollRequest {
             liveness_data: b"dummy liveness data",
             public_key: b"123",
+            liveness_data_signature: b"signature",
         };
 
         Mock::given(matchers::method("POST"))
@@ -94,6 +100,7 @@ mod tests {
 
         let sample_request = EnrollRequest {
             liveness_data: b"dummy liveness data",
+            liveness_data_signature: b"signature",
             public_key: b"123",
         };
 
@@ -119,6 +126,7 @@ mod tests {
 
         let sample_request = EnrollRequest {
             liveness_data: b"dummy liveness data",
+            liveness_data_signature: b"signature",
             public_key: b"123",
         };
         let sample_response = "Some error text";
