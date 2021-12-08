@@ -425,10 +425,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             info!("Bioauth flow starting up");
 
-            let signer = crate::validator_key::AppCryptoSigner {
-                keystore: Arc::clone(&keystore),
-                public_key: Arc::clone(&validator_public_key),
-            };
+            let signer = crate::validator_key::AppCryptoSigner::new(
+                Arc::clone(&keystore),
+                Arc::clone(&validator_public_key),
+            );
 
             if bioauth_perform_enroll {
                 info!("Bioauth flow - enrolling in progress");
