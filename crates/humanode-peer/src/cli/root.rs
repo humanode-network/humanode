@@ -37,7 +37,7 @@ impl SubstrateCli for Root {
     }
 
     fn support_url() -> String {
-        "https://github.com/humanode-network/humanode/issues/new".into()
+        "https://link.humanode.io/bug-report".into()
     }
 
     fn copyright_start_year() -> i32 {
