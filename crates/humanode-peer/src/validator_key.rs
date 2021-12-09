@@ -1,6 +1,6 @@
 //! The validator key integration logic.
 
-use std::{fmt::Display, sync::Arc};
+use std::{fmt::Display, marker::PhantomData, sync::Arc};
 
 use bioauth_flow::flow::Signer;
 use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
@@ -10,11 +10,30 @@ use sp_keystore::CryptoStore;
 pub struct AppCryptoPublic<T>(pub T);
 
 /// The validator signer implementation using the keystore and app crypto public key.
-pub struct AppCryptoSigner<T> {
+pub struct AppCryptoSigner<PK, PKR>
+where
+    PKR: AsRef<AppCryptoPublic<PK>>,
+{
     /// The keystore to use for signing.
     pub keystore: Arc<dyn CryptoStore>,
     /// The public key to provide the signature for.
-    pub public_key: AppCryptoPublic<T>,
+    pub public_key_ref: PKR,
+    /// The type of the public key behind the ref.
+    pub public_key_type: PhantomData<PK>,
+}
+
+impl<PK, PKR> AppCryptoSigner<PK, PKR>
+where
+    PKR: AsRef<AppCryptoPublic<PK>>,
+{
+    /// Create a new [`AppCryptoSigner`].
+    pub fn new(keystore: Arc<dyn CryptoStore>, public_key_ref: PKR) -> Self {
+        Self {
+            keystore,
+            public_key_ref,
+            public_key_type: PhantomData,
+        }
+    }
 }
 
 /// An error that occured at the signer.
@@ -29,9 +48,10 @@ pub enum SignerError {
 }
 
 #[async_trait::async_trait]
-impl<T> Signer<Vec<u8>> for AppCryptoSigner<T>
+impl<PK, PKR> Signer<Vec<u8>> for AppCryptoSigner<PK, PKR>
 where
-    T: AppPublic,
+    PK: AppPublic,
+    PKR: AsRef<AppCryptoPublic<PK>> + Sync + Send,
 {
     type Error = SignerError;
 
@@ -42,7 +62,11 @@ where
         let data = data.as_ref();
         let outcome = self
             .keystore
-            .sign_with(T::ID, &self.public_key.0.to_public_crypto_pair(), data)
+            .sign_with(
+                PK::ID,
+                &self.public_key_ref.as_ref().0.to_public_crypto_pair(),
+                data,
+            )
             .await
             .map_err(SignerError::Keystore)?;
 
