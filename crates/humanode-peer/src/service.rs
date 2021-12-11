@@ -440,7 +440,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     match result {
                         Ok(()) => break,
                         Err(error) => {
-                            error!(message = "Bioauth flow - enrollment failure", ?error);
+                            let (error, retry) = handle_bioauth_error(&error);
+                            error!(message = "Bioauth flow - enrollment failure", %error, ?retry);
+                            if !retry {
+                                panic!("{}", error);
+                            }
                         }
                     };
                 }
@@ -457,7 +461,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 match result {
                     Ok(v) => break v,
                     Err(error) => {
-                        error!(message = "Bioauth flow - authentication failure", ?error);
+                        let (error, retry) = handle_bioauth_error(&error);
+                        error!(message = "Bioauth flow - authentication failure", %error, ?retry);
+                        if !retry {
+                            panic!("{}", error);
+                        }
                     }
                 };
             };
@@ -492,4 +500,26 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         .spawn_blocking("bioauth-flow", bioauth_flow_future);
 
     Ok(task_manager)
+}
+
+fn handle_bioauth_error(error: &anyhow::Error) -> (String, bool) {
+    use robonode_client::{AuthenticateError, EnrollError, Error};
+
+    if let Some(error) = error.downcast_ref::<Error<EnrollError>>() {
+        match error {
+            Error::Call(EnrollError::AlreadyEnrolled) => ("access denied: you have already enrolled with another validator key, or this validator key was already used by someone else".to_owned(), true),
+            Error::Call(EnrollError::Unknown(err)) => (err.clone(), true),
+            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
+            other=> (other.to_string(), false),
+        }
+    } else if let Some(error) = error.downcast_ref::<Error<AuthenticateError>>() {
+        match error {
+            Error::Call(AuthenticateError::MatchNotFound) => ("access denied: the bioathentication system was unable to match your biometics with an enrolled validator keypair; you might need to enroll first".to_owned(), true),
+            Error::Call(AuthenticateError::Unknown(err)) => (err.clone(), true),
+            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
+            other=> (other.to_string(), false),
+        }
+    } else {
+        (error.to_string(), false)
+    }
 }
