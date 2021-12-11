@@ -12,8 +12,10 @@ impl Client {
         let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
             StatusCode::CREATED => Ok(()),
-            StatusCode::CONFLICT => Err(Error::Call(EnrollError::AlreadyEnrolled)),
-            _ => Err(Error::Call(EnrollError::Unknown(res.text().await?))),
+            status => Err(Error::Call(EnrollError::from_response(
+                status,
+                res.text().await?,
+            ))),
         }
     }
 }
@@ -42,6 +44,16 @@ pub enum EnrollError {
     /// Some other error occured.
     #[error("unknown error: {0}")]
     Unknown(String),
+}
+
+impl EnrollError {
+    /// Parse the error response.
+    fn from_response(status: StatusCode, body: String) -> Self {
+        match status {
+            StatusCode::CONFLICT => Self::AlreadyEnrolled,
+            _ => Self::Unknown(body),
+        }
+    }
 }
 
 #[cfg(test)]

@@ -15,8 +15,10 @@ impl Client {
         let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
             StatusCode::OK => Ok(res.json().await?),
-            StatusCode::NOT_FOUND => Err(Error::Call(AuthenticateError::MatchNotFound)),
-            _ => Err(Error::Call(AuthenticateError::Unknown(res.text().await?))),
+            status => Err(Error::Call(AuthenticateError::from_response(
+                status,
+                res.text().await?,
+            ))),
         }
     }
 }
@@ -53,6 +55,16 @@ pub enum AuthenticateError {
     /// Some other error occured.
     #[error("unknown error: {0}")]
     Unknown(String),
+}
+
+impl AuthenticateError {
+    /// Parse the error response.
+    fn from_response(status: StatusCode, body: String) -> Self {
+        match status {
+            StatusCode::NOT_FOUND => Self::MatchNotFound,
+            _ => Self::Unknown(body),
+        }
+    }
 }
 
 #[cfg(test)]
