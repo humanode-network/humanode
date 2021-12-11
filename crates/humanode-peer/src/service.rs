@@ -435,9 +435,15 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
                 render_qr_code("Bioauth flow - waiting for enroll");
 
-                flow.enroll(validator_public_key.as_ref(), &signer)
-                    .await
-                    .expect("enroll failed");
+                loop {
+                    let result = flow.enroll(validator_public_key.as_ref(), &signer).await;
+                    match result {
+                        Ok(()) => break,
+                        Err(error) => {
+                            error!(message = "Bioauth flow - enrollment failure", ?error);
+                        }
+                    };
+                }
 
                 info!("Bioauth flow - enrolling complete");
             }
