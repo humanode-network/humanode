@@ -39,6 +39,9 @@ impl From<op_enroll::Error> for Logic {
             op_enroll::Error::InvalidLivenessData(_) => {
                 Self::new(StatusCode::BAD_REQUEST, "ENROLL_INVALID_LIVENESS_DATA")
             }
+            op_enroll::Error::SignatureInvalid => {
+                Self::new(StatusCode::BAD_REQUEST, "ENROLL_SIGNATURE_INVALID")
+            }
             op_enroll::Error::FaceScanRejected => {
                 Self::new(StatusCode::FORBIDDEN, "ENROLL_FACE_SCAN_REJECTED")
             }
@@ -47,9 +50,6 @@ impl From<op_enroll::Error> for Logic {
             }
             op_enroll::Error::PersonAlreadyEnrolled => {
                 Self::new(StatusCode::CONFLICT, "ENROLL_PERSON_ALREADY_ENROLLED")
-            }
-            op_enroll::Error::SignatureInvalid => {
-                Self::new(StatusCode::FORBIDDEN, "AUTHENTICATE_SIGNATURE_INVALID")
             }
             op_enroll::Error::InternalErrorEnrollment(_)
             | op_enroll::Error::InternalErrorEnrollmentUnsuccessful
