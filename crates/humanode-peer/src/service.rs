@@ -502,7 +502,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     Ok(task_manager)
 }
 
-/// Handle the bioauth error in a user-firendly way.
+/// Handle the bioauth error in a user-friendly way.
 fn handle_bioauth_error(error: &anyhow::Error) -> (String, bool) {
     use robonode_client::{AuthenticateError, EnrollError, Error};
 
