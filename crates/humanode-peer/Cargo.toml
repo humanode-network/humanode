@@ -16,6 +16,7 @@ ngrok-api = { version = "0.1", path = "../ngrok-api" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
+anyhow = "1"
 async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }

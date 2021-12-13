@@ -435,9 +435,19 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
                 render_qr_code("Bioauth flow - waiting for enroll");
 
-                flow.enroll(validator_public_key.as_ref(), &signer)
-                    .await
-                    .expect("enroll failed");
+                loop {
+                    let result = flow.enroll(validator_public_key.as_ref(), &signer).await;
+                    match result {
+                        Ok(()) => break,
+                        Err(error) => {
+                            let (error, retry) = handle_bioauth_error(&error);
+                            error!(message = "Bioauth flow - enrollment failure", %error, ?retry);
+                            if !retry {
+                                panic!("{}", error);
+                            }
+                        }
+                    };
+                }
 
                 info!("Bioauth flow - enrolling complete");
             }
@@ -451,7 +461,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 match result {
                     Ok(v) => break v,
                     Err(error) => {
-                        error!(message = "Bioauth flow - authentication failure", ?error);
+                        let (error, retry) = handle_bioauth_error(&error);
+                        error!(message = "Bioauth flow - authentication failure", %error, ?retry);
+                        if !retry {
+                            panic!("{}", error);
+                        }
                     }
                 };
             };
@@ -486,4 +500,74 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         .spawn_blocking("bioauth-flow", bioauth_flow_future);
 
     Ok(task_manager)
+}
+
+/// Handle the bioauth error in a user-friendly way.
+fn handle_bioauth_error(error: &anyhow::Error) -> (String, bool) {
+    use robonode_client::{AuthenticateError, EnrollError, Error};
+
+    let face_scan_rejected_message = "the face scan was rejected, this is likely caused by a failed liveness check, so please try again; changing lighting conditions or using a different phone can help";
+
+    if let Some(error) = error.downcast_ref::<Error<EnrollError>>() {
+        match error {
+            Error::Call(EnrollError::PersonAlreadyEnrolled) => {
+                ("you have already enrolled".to_owned(), false)
+            }
+            Error::Call(EnrollError::PublicKeyAlreadyUsed) => (
+                "the validator key you supplied was already used".to_owned(),
+                false,
+            ),
+            Error::Call(EnrollError::FaceScanRejected) => {
+                (face_scan_rejected_message.to_owned(), true)
+            }
+            Error::Call(EnrollError::InvalidLivenessData) => {
+                ("the provided liveness data was invalid".to_owned(), true)
+            }
+            Error::Call(EnrollError::InvalidPublicKey) => {
+                ("the public key was invalid".to_owned(), false)
+            }
+            Error::Call(EnrollError::LogicInternal) => {
+                ("an internal logic error has occured".to_owned(), true)
+            }
+            Error::Call(EnrollError::UnknownCode(error_code)) => (
+                format!(
+                    "an unknown error code received from the server: {}",
+                    error_code
+                ),
+                false,
+            ),
+            Error::Call(EnrollError::Unknown(err)) => (err.clone(), true),
+            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
+        }
+    } else if let Some(error) = error.downcast_ref::<Error<AuthenticateError>>() {
+        match error {
+            Error::Call(AuthenticateError::InvalidLivenessData) => {
+                ("the provided liveness data was invalid".to_owned(), true)
+            }
+            Error::Call(AuthenticateError::PersonNotFound) => (
+                "we were unable to find you in the system; have you already enrolled?".to_owned(),
+                true,
+            ),
+            Error::Call(AuthenticateError::FaceScanRejected) => {
+                (face_scan_rejected_message.to_owned(), true)
+            }
+            Error::Call(AuthenticateError::SignatureInvalid) => {
+                ("the validator key used for authentication does not match the one used during enroll; you have likely used a different mnemonic, but you have to use the same one, otherwise you will be unable to authenticate; you have saved the mnemonic somewhere as requested, right? ;) if you've lost your menmonic you will be unable to continue.".to_owned(), true)
+            }
+            Error::Call(AuthenticateError::LogicInternal) => {
+                ("an internal logic error has occured".to_owned(), true)
+            }
+            Error::Call(AuthenticateError::UnknownCode(error_code)) => (
+                format!(
+                    "an unknown error code received from the server: {}",
+                    error_code
+                ),
+                false,
+            ),
+            Error::Call(AuthenticateError::Unknown(err)) => (err.clone(), true),
+            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
+        }
+    } else {
+        (error.to_string(), false)
+    }
 }

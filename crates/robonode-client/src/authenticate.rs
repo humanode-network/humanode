@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{Client, Error};
+use crate::{error_response::ErrorResponse, Client, Error};
 
 impl Client {
     /// Perform the authenticate call to the server.
@@ -15,8 +15,10 @@ impl Client {
         let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
             StatusCode::OK => Ok(res.json().await?),
-            StatusCode::NOT_FOUND => Err(Error::Call(AuthenticateError::MatchNotFound)),
-            _ => Err(Error::Call(AuthenticateError::Unknown(res.text().await?))),
+            status => Err(Error::Call(AuthenticateError::from_response(
+                status,
+                res.text().await?,
+            ))),
         }
     }
 }
@@ -46,19 +48,54 @@ pub struct AuthenticateResponse {
 /// The authenticate-specific error condition.
 #[derive(Error, Debug, PartialEq)]
 pub enum AuthenticateError {
-    /// The match was not found, user likely needs to register first, or retry
-    /// with another face scan.
-    #[error("match not found")]
-    MatchNotFound,
+    /// The provided liveness data was invalid.
+    #[error("invalid liveness data")]
+    InvalidLivenessData,
+    /// The person was not found, it is likely because they haven't enrolled first.
+    #[error("person not found")]
+    PersonNotFound,
+    /// The face scan was rejected, this is likely due to a failed liveness check.
+    #[error("face scan rejected")]
+    FaceScanRejected,
+    /// The signature was invalid, which means that the validator private key used for signing and
+    /// the public key that the person enrolled with don't match.
+    #[error("signature invalid")]
+    SignatureInvalid,
+    /// A logic internal error occured on the server end.
+    #[error("logic internal error")]
+    LogicInternal,
+    /// An error with an unknown code occured.
+    #[error("unknown error code: {0}")]
+    UnknownCode(String),
     /// Some other error occured.
     #[error("unknown error: {0}")]
     Unknown(String),
+}
+
+impl AuthenticateError {
+    /// Parse the error response.
+    fn from_response(_status: StatusCode, body: String) -> Self {
+        let error_code = match body.try_into() {
+            Ok(ErrorResponse { error_code }) => error_code,
+            Err(body) => return Self::Unknown(body),
+        };
+        match error_code.as_str() {
+            "AUTHENTICATE_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData,
+            "AUTHENTICATE_PERSON_NOT_FOUND" => Self::PersonNotFound,
+            "AUTHENTICATE_FACE_SCAN_REJECTED" => Self::FaceScanRejected,
+            "AUTHENTICATE_SIGNATURE_INVALID" => Self::SignatureInvalid,
+            "LOGIC_INTERNAL_ERROR" => Self::LogicInternal,
+            _ => Self::UnknownCode(error_code),
+        }
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use assert_matches::assert_matches;
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
+
+    use crate::test_utils::mkerr;
 
     use super::*;
 
@@ -128,28 +165,65 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn mock_error_match_not_found() {
-        let mock_server = MockServer::start().await;
+    async fn mock_error_response() {
+        let cases = [
+            (
+                StatusCode::BAD_REQUEST,
+                "AUTHENTICATE_INVALID_LIVENESS_DATA",
+                AuthenticateError::InvalidLivenessData,
+            ),
+            (
+                StatusCode::NOT_FOUND,
+                "AUTHENTICATE_PERSON_NOT_FOUND",
+                AuthenticateError::PersonNotFound,
+            ),
+            (
+                StatusCode::FORBIDDEN,
+                "AUTHENTICATE_FACE_SCAN_REJECTED",
+                AuthenticateError::FaceScanRejected,
+            ),
+            (
+                StatusCode::FORBIDDEN,
+                "AUTHENTICATE_SIGNATURE_INVALID",
+                AuthenticateError::SignatureInvalid,
+            ),
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "LOGIC_INTERNAL_ERROR",
+                AuthenticateError::LogicInternal,
+            ),
+            (
+                StatusCode::BAD_REQUEST,
+                "MY_ERR_CODE",
+                AuthenticateError::UnknownCode("MY_ERR_CODE".to_owned()),
+            ),
+        ];
 
-        let sample_request = AuthenticateRequest {
-            liveness_data: b"dummy liveness data",
-            liveness_data_signature: b"123",
-        };
+        for case in cases {
+            let mock_server = MockServer::start().await;
 
-        Mock::given(matchers::method("POST"))
-            .and(matchers::path("/authenticate"))
-            .and(matchers::body_json(&sample_request))
-            .respond_with(ResponseTemplate::new(404))
-            .mount(&mock_server)
-            .await;
+            let sample_request = AuthenticateRequest {
+                liveness_data: b"dummy liveness data",
+                liveness_data_signature: b"123",
+            };
 
-        let client = Client {
-            base_url: mock_server.uri(),
-            reqwest: reqwest::Client::new(),
-        };
+            let response = ResponseTemplate::new(case.0).set_body_json(mkerr(case.1));
 
-        let actual_error = client.authenticate(sample_request).await.unwrap_err();
-        assert_matches!(actual_error, Error::Call(AuthenticateError::MatchNotFound));
+            Mock::given(matchers::method("POST"))
+                .and(matchers::path("/authenticate"))
+                .and(matchers::body_json(&sample_request))
+                .respond_with(response)
+                .mount(&mock_server)
+                .await;
+
+            let client = Client {
+                base_url: mock_server.uri(),
+                reqwest: reqwest::Client::new(),
+            };
+
+            let actual_error = client.authenticate(sample_request).await.unwrap_err();
+            assert_matches!(actual_error, Error::Call(err) if err == case.2);
+        }
     }
 
     #[tokio::test]
