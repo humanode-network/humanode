@@ -34,6 +34,8 @@ pub enum Error {
     InvalidPublicKey,
     /// The provided opaque liveness data could not be decoded.
     InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
+    /// The liveness data signature validation failed.
+    SignatureInvalid,
     /// This FaceScan was rejected.
     FaceScanRejected,
     /// This Public Key was already used.
@@ -41,8 +43,6 @@ pub enum Error {
     /// This person has already enrolled into the system.
     /// It can also happen if matching returns false-positive.
     PersonAlreadyEnrolled,
-    /// The liveness data signature validation failed.
-    SignatureInvalid,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
     InternalErrorEnrollment(ft::Error),
