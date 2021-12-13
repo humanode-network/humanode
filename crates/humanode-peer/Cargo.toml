@@ -23,6 +23,7 @@ frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate"
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.3"
+pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 qr2term = "0.2"
 reqwest = "0.11"
 sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -44,6 +45,7 @@ serde = { version = "1", features = ["derive"] }
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }

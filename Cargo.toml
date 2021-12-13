@@ -1,3 +1,17 @@
 [workspace]
 resolver = "2"
 members = ["crates/*"]
+
+[patch."https://github.com/paritytech/substrate"]
+ frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ frame-support = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ frame-system = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ pallet-balances = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ pallet-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ sp-io = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ sp-std = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ sp-externalities = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+ sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }

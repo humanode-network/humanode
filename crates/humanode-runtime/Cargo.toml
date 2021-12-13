@@ -51,6 +51,13 @@ sp-session = { default-features = false, git = "https://github.com/humanode-netw
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 
 [features]
 default = ["std"]
@@ -78,8 +85,12 @@ std = [
   "pallet-aura/std",
   "pallet-bioauth/std",
   "pallet-balances/std",
+  "pallet-base-fee/std",
   "pallet-ethereum/std",
   "pallet-evm/std",
+  "pallet-evm-precompile-simple/std",
+	"pallet-evm-precompile-sha3fips/std",
+  "pallet-dynamic-fee/std",
   "pallet-grandpa/std",
   "pallet-randomness-collective-flip/std",
   "pallet-sudo/std",
