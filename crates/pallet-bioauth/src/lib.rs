@@ -387,20 +387,17 @@ pub mod pallet {
                             let mut updated_consumed_auth_ticket_nonces =
                                 consumed_auth_ticket_nonces.clone().into_inner();
 
-                            updated_consumed_auth_ticket_nonces.push(BoundedAuthTicketNonce::force_from(
-                                auth_ticket.nonce,
-                                Some(
-                                    "Warning: The length of the nonce in bytes are more than expected. \
-                                      A runtime configuration adjustment may be needed.",
+                            updated_consumed_auth_ticket_nonces.push(
+                                BoundedAuthTicketNonce::force_from(
+                                    auth_ticket.nonce,
+                                    Some("bioauth::authenticate::auth_ticket_nonce"),
                                 ),
-                            ));
+                            );
 
-                            *consumed_auth_ticket_nonces = WeakBoundedVec::<_, T::MaxNonces>::force_from(
+                            *consumed_auth_ticket_nonces =
+                                WeakBoundedVec::<_, T::MaxNonces>::force_from(
                                     updated_consumed_auth_ticket_nonces,
-                                    Some(
-                                        "Warning: The number of consumed auth-ticket nonces are more than expected. \
-                                          A runtime configuration adjustment may be needed.",
-                                    ),
+                                    Some("bioauth::authenticate::nonces"),
                                 );
 
                             let mut updated_active_authentications =
@@ -410,13 +407,11 @@ pub mod pallet {
                                 expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
                             });
 
-                            *active_authentications = WeakBoundedVec::<_, T::MaxAuthentications>::force_from(
-                                        updated_active_authentications,
-                                        Some(
-                                            "Warning: The number of active authentications are more than expected. \
-                                              A runtime configuration adjustment may be needed.",
-                                        ),
-                                    );
+                            *active_authentications =
+                                WeakBoundedVec::<_, T::MaxAuthentications>::force_from(
+                                    updated_active_authentications,
+                                    Some("bioauth::authentication::authentications"),
+                                );
 
                             // Issue an update to the external validators set.
                             Self::issue_validators_set_update(active_authentications.as_slice());
