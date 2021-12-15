@@ -31,3 +31,11 @@ pub struct BioauthFlowParams {
     #[structopt(long, value_name = "ROBONODE_URL")]
     pub robonode_url: Option<String>,
 }
+
+/// Shared CLI parameters used to configure evm.
+#[derive(Debug, StructOpt, Clone)]
+pub struct EvmParams {
+    /// Maximum number of logs in a query.
+    #[structopt(long, default_value = "10000")]
+    pub max_past_logs: u32,
+}

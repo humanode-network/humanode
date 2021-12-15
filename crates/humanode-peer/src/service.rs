@@ -254,6 +254,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
         bioauth_perform_enroll,
+        evm: evm_config,
     } = config;
 
     config
@@ -269,6 +270,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let bioauth_flow_config = bioauth_flow_config
         .ok_or_else(|| ServiceError::Other("bioauth flow config is not set".into()))?;
+
+    let evm_config =
+        evm_config.ok_or_else(|| ServiceError::Other("evm config is not set".into()))?;
 
     let role = config.role.clone();
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
@@ -319,6 +323,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let subscription_task_executor =
         sc_rpc::SubscriptionTaskExecutor::new(task_manager.spawn_handle());
     let frontier_backend = open_frontier_backend(&config)?;
+    let max_past_logs = evm_config.max_past_logs;
 
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);

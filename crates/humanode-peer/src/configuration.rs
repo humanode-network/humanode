@@ -17,6 +17,9 @@ pub struct Configuration {
 
     /// Whether to perform the bioauth enroll before the authentication or not.
     pub bioauth_perform_enroll: bool,
+
+    /// EVM configuration,
+    pub evm: Option<Evm>,
 }
 
 /// Bioauth flow configuration parameters.
@@ -46,4 +49,10 @@ impl BioauthFlow {
         let rpc_url = self.rpc_url_resolver.resolve(&self.rpc_url).await?;
         Ok((webapp_url, rpc_url))
     }
+}
+
+/// EVM configuration parameters.
+pub struct Evm {
+    /// Maximum number of logs in a query.
+    pub max_past_logs: u32,
 }
