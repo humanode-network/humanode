@@ -18,10 +18,6 @@ impl<R> FrontierPrecompiles<R>
 where
     R: pallet_evm::Config,
 {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
     pub fn used_addresses() -> sp_std::vec::Vec<H160> {
         sp_std::vec![1, 2, 3, 4, 5, 1024, 1025]
             .into_iter()

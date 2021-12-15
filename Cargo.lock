@@ -1494,6 +1494,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "fc-mapping-sync"
+version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-1a30fa2#26bf32c18044785756eba89478c24b2bf730f719"
+dependencies = [
+ "fc-consensus",
+ "fc-db",
+ "fp-consensus",
+ "fp-rpc",
+ "futures 0.3.17",
+ "futures-timer 3.0.2",
+ "log",
+ "sc-client-api",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=substrate-1a30fa2#26bf32c18044785756eba89478c24b2bf730f719"
@@ -2430,6 +2448,8 @@ dependencies = [
  "bioauth-consensus",
  "bioauth-flow",
  "fc-db",
+ "fc-mapping-sync",
+ "fc-rpc",
  "fc-rpc-core",
  "frame-benchmarking-cli",
  "futures 0.3.17",
@@ -7940,7 +7960,7 @@ dependencies = [
 [[package]]
 name = "substrate-prometheus-endpoint"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate#027368fe34e9a57ead752d4f900db6b5f85352e6"
+source = "git+https://github.com/paritytech/substrate#1306573829700eb5912e342e4372a3735a0b0679"
 dependencies = [
  "async-std",
  "derive_more",

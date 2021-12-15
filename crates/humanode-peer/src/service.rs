@@ -1,11 +1,12 @@
 //! Initializing, bootstrapping and launching the node from a provided configuration.
 
 #![allow(clippy::type_complexity)]
-use std::{marker::PhantomData, sync::Arc, time::Duration};
-
+use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
+use fc_rpc::EthTask;
+use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_cli::SubstrateCli;
-use sc_client_api::ExecutorProvider;
+use sc_client_api::{BlockchainEvents, ExecutorProvider};
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
@@ -15,6 +16,7 @@ use sc_service::{
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
+use std::{marker::PhantomData, sync::Arc, time::Duration};
 use tracing::*;
 
 use crate::configuration::Configuration;
@@ -320,10 +322,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let (bioauth_flow_rpc_slot, bioauth_flow_provider_slot) =
         bioauth_flow::rpc::new_liveness_data_tx_slot();
 
+    let frontier_backend = open_frontier_backend(&config)?;
     let subscription_task_executor =
         sc_rpc::SubscriptionTaskExecutor::new(task_manager.spawn_handle());
-    let frontier_backend = open_frontier_backend(&config)?;
-    let max_past_logs = evm_config.max_past_logs;
 
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);
@@ -334,6 +335,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let network = Arc::clone(&network);
         let frontier_backend = Arc::clone(&frontier_backend);
         let max_past_logs = evm_config.max_past_logs;
+
         Box::new(move |deny_unsafe, _| {
             Ok(humanode_rpc::create(
                 humanode_rpc::Deps {
@@ -360,7 +362,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         task_manager: &mut task_manager,
         transaction_pool: Arc::clone(&transaction_pool),
         rpc_extensions_builder,
-        backend,
+        backend: Arc::clone(&backend),
         system_rpc_tx,
         config,
         telemetry: telemetry.as_mut(),
@@ -431,6 +433,26 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
         );
     }
+
+    task_manager.spawn_essential_handle().spawn(
+        "frontier-mapping-sync-worker",
+        Some("evm"),
+        MappingSyncWorker::new(
+            client.import_notification_stream(),
+            Duration::new(6, 0),
+            Arc::clone(&client),
+            backend,
+            Arc::clone(&frontier_backend),
+            SyncStrategy::Normal,
+        )
+        .for_each(|()| futures::future::ready(())),
+    );
+
+    task_manager.spawn_essential_handle().spawn(
+        "frontier-schema-cache-task",
+        Some("evm"),
+        EthTask::ethereum_schema_cache_task(Arc::clone(&client), frontier_backend),
+    );
 
     network_starter.start_network();
 
