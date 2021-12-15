@@ -133,15 +133,11 @@ pub mod pallet {
 
     use crate::weights::WeightInfo;
 
-<<<<<<< HEAD
     use codec::MaxEncodedLen;
     use frame_support::{
         dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
         WeakBoundedVec,
     };
-=======
-    use frame_support::{pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery};
->>>>>>> Changes based on substrate commits till the current master
     use frame_system::pallet_prelude::*;
     use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
 

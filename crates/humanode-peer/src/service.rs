@@ -4,11 +4,14 @@
 use std::{marker::PhantomData, sync::Arc, time::Duration};
 
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
+use sc_cli::SubstrateCli;
 use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
-use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
+use sc_service::{
+    BasePath, Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager,
+};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
@@ -62,6 +65,33 @@ pub fn keystore_container(
     let (_client, _backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, _>(&config.substrate, None, executor)?;
     Ok((keystore_container, task_manager))
+}
+
+/// Create frontier dir.
+pub fn frontier_database_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
+    let config_dir = config
+        .base_path
+        .as_ref()
+        .map(|base_path| base_path.config_dir(config.chain_spec.id()))
+        .unwrap_or_else(|| {
+            BasePath::from_project("", "", &crate::cli::Root::executable_name())
+                .config_dir(config.chain_spec.id())
+        });
+    config_dir.join("frontier").join("db")
+}
+
+/// Construct frontier backend.
+pub fn open_frontier_backend(
+    config: &sc_service::Configuration,
+) -> Result<Arc<fc_db::Backend<Block>>, String> {
+    Ok(Arc::new(fc_db::Backend::<Block>::new(
+        &fc_db::DatabaseSettings {
+            source: fc_db::DatabaseSettingsSrc::RocksDb {
+                path: frontier_database_dir(config),
+                cache_size: 0,
+            },
+        },
+    )?))
 }
 
 /// Extract substrate partial components.
@@ -286,21 +316,35 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let (bioauth_flow_rpc_slot, bioauth_flow_provider_slot) =
         bioauth_flow::rpc::new_liveness_data_tx_slot();
 
+    let subscription_task_executor =
+        sc_rpc::SubscriptionTaskExecutor::new(task_manager.spawn_handle());
+    let frontier_backend = open_frontier_backend(&config)?;
+
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
         let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
         let validator_key_extractor = Arc::clone(&validator_key_extractor);
+        let network = Arc::clone(&network);
+        let frontier_backend = Arc::clone(&frontier_backend);
+        let max_past_logs = evm_config.max_past_logs;
         Box::new(move |deny_unsafe, _| {
-            Ok(humanode_rpc::create(humanode_rpc::Deps {
-                client: Arc::clone(&client),
-                pool: Arc::clone(&pool),
-                deny_unsafe,
-                robonode_client: Arc::clone(&robonode_client),
-                bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
-                validator_key_extractor: Arc::clone(&validator_key_extractor),
-            }))
+            Ok(humanode_rpc::create(
+                humanode_rpc::Deps {
+                    client: Arc::clone(&client),
+                    pool: Arc::clone(&pool),
+                    deny_unsafe,
+                    robonode_client: Arc::clone(&robonode_client),
+                    bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
+                    validator_key_extractor: Arc::clone(&validator_key_extractor),
+                    graph: Arc::clone(pool.pool()),
+                    network: Arc::clone(&network),
+                    backend: Arc::clone(&frontier_backend),
+                    max_past_logs,
+                },
+                subscription_task_executor.clone(),
+            ))
         })
     };
 
