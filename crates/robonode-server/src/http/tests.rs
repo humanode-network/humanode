@@ -200,9 +200,9 @@ async fn it_denies_enroll_with_invalid_signature() {
         .await;
 
     let expected_body_response =
-        expect_body_response(StatusCode::FORBIDDEN, "AUTHENTICATE_SIGNATURE_INVALID").await;
+        expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_SIGNATURE_INVALID").await;
 
-    assert_eq!(res.status(), StatusCode::FORBIDDEN);
+    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
     assert_eq!(res.body(), &expected_body_response);
 }
 
