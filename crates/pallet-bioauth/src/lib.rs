@@ -129,11 +129,9 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 )]
 #[frame_support::pallet]
 pub mod pallet {
-    use crate::{
-        weights::WeightInfo, AuthTicket, AuthTicketNonce, Authenticate, Authentication,
-        BoundedAuthTicketNonce, CurrentMoment, TryConvert, ValidatorSetUpdater, Verifier,
-        STORAGE_VERSION,
-    };
+    use super::*;
+
+    use crate::weights::WeightInfo;
 
     use codec::MaxEncodedLen;
     use frame_support::{
@@ -142,7 +140,6 @@ pub mod pallet {
     };
     use frame_system::pallet_prelude::*;
     use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
-    use sp_std::prelude::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
