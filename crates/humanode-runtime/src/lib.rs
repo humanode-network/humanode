@@ -35,7 +35,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 // A few exports that help ease life for downstream crates.
-use codec::{Decode, Encode};
+use codec::{Decode, Encode, MaxEncodedLen};
 pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{KeyOwnerProofSystem, Randomness},
@@ -207,7 +207,9 @@ impl frame_system::Config for Runtime {
 }
 
 /// The wrapper for the robonode public key, that enables ssotring it in the state.
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Encode, Decode, TypeInfo)]
+#[derive(
+    Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Encode, Decode, TypeInfo, MaxEncodedLen,
+)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct RobonodePublicKeyWrapper([u8; 32]);
 
@@ -417,6 +419,8 @@ const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
+    pub const MaxAuthentications: u32 = 512;
+    pub const MaxNonces: u32 = 102400;
 }
 
 impl pallet_bioauth::Config for Runtime {
@@ -432,6 +436,8 @@ impl pallet_bioauth::Config for Runtime {
     type CurrentMoment = CurrentMoment;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
     type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
+    type MaxAuthentications = MaxAuthentications;
+    type MaxNonces = MaxNonces;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
@@ -553,7 +559,7 @@ impl_runtime_apis! {
 
     impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
         fn is_authorized(id: &AuraId) -> bool {
-            Bioauth::active_authentications()
+            Bioauth::active_authentications().into_inner()
                 .iter()
                 .any(|stored_public_key| &stored_public_key.public_key == id)
         }
