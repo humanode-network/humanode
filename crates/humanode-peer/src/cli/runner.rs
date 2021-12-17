@@ -10,16 +10,6 @@ use crate::configuration::Configuration;
 
 use super::{CliConfigurationExt, Root};
 
-/// Run the given future and then clean shutdown the task manager before returning the control.
-async fn with_clean_shutdown<F, O>(fut: F, task_manager: TaskManager) -> O
-where
-    F: Future<Output = O>,
-{
-    let res = fut.await;
-    task_manager.clean_shutdown().await;
-    res
-}
-
 /// Run a future until it completes or a signal is recevied.
 async fn with_signal<F, E>(future: F) -> std::result::Result<(), E>
 where
@@ -56,7 +46,7 @@ impl<C: SubstrateCli> Runner<C> {
         })
     }
 
-    /// Run the task manager to completion, or till the signal, with clean shutdown.
+    /// Run the task manager to completion, or till the signal.
     pub async fn run_node<F, E>(
         self,
         initialize: impl FnOnce(Configuration) -> F,
@@ -69,13 +59,11 @@ impl<C: SubstrateCli> Runner<C> {
         let future = task_manager.future();
         let future = with_signal(future);
         let res = future.await;
-        task_manager.clean_shutdown().await;
         Ok(res?)
     }
 
     /// Run some tasks with task manager.
     /// The runner is executing till completion, or until till the signal is received.
-    /// Task manager is shutdown cleanly at the end (even on error).
     pub async fn run_tasks<R, F, E>(
         self,
         runner: impl FnOnce(Configuration) -> R,
@@ -87,7 +75,7 @@ impl<C: SubstrateCli> Runner<C> {
     {
         let (future, task_manager) = runner(self.config).await?;
         let future = with_signal(future);
-        let future = with_clean_shutdown(future, task_manager);
+        drop(task_manager);
         future.await
     }
 
