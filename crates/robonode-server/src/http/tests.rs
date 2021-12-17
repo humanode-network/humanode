@@ -127,6 +127,7 @@ async fn it_works_enroll() {
     let input = op_enroll::Request {
         public_key: b"key".to_vec(),
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
     };
 
     let mut mock_logic = MockLogic::new();
@@ -152,6 +153,7 @@ async fn it_denies_enroll_with_invalid_public_key() {
     let input = op_enroll::Request {
         public_key: b"key".to_vec(),
         liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
     };
 
     let mut mock_logic = MockLogic::new();
@@ -170,6 +172,35 @@ async fn it_denies_enroll_with_invalid_public_key() {
 
     let expected_body_response =
         expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_INVALID_PUBLIC_KEY").await;
+
+    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
+    assert_eq!(res.body(), &expected_body_response);
+}
+
+#[tokio::test]
+async fn it_denies_enroll_with_invalid_signature() {
+    let input = op_enroll::Request {
+        public_key: b"key".to_vec(),
+        liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        liveness_data_signature: b"signature".to_vec(),
+    };
+
+    let mut mock_logic = MockLogic::new();
+    mock_logic
+        .expect_enroll()
+        .returning(|_| Err(op_enroll::Error::SignatureInvalid));
+
+    let filter = root_with_error_handler(mock_logic);
+
+    let res = warp::test::request()
+        .method("POST")
+        .path("/enroll")
+        .json(&input)
+        .reply(&filter)
+        .await;
+
+    let expected_body_response =
+        expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_SIGNATURE_INVALID").await;
 
     assert_eq!(res.status(), StatusCode::BAD_REQUEST);
     assert_eq!(res.body(), &expected_body_response);

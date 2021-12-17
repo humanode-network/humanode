@@ -15,20 +15,6 @@ pub struct LivenessData {
     pub low_quality_audit_trail_image: String,
 }
 
-impl TryFrom<&[u8]> for LivenessData {
-    type Error = codec::Error;
-
-    fn try_from(value: &[u8]) -> Result<Self, Self::Error> {
-        Self::decode(&mut &*value)
-    }
-}
-
-impl From<&LivenessData> for Vec<u8> {
-    fn from(value: &LivenessData) -> Vec<u8> {
-        value.encode()
-    }
-}
-
 /// The opaque encoded form of the [`LivenessData`].
 /// Used for signing.
 /// Does not guarantee that the underlying bytes indeed represent a valid [`LivenessData`] packet,
@@ -53,13 +39,13 @@ impl TryFrom<&OpaqueLivenessData> for LivenessData {
     type Error = codec::Error;
 
     fn try_from(value: &OpaqueLivenessData) -> Result<Self, Self::Error> {
-        Self::try_from(value.0.as_slice())
+        Self::decode(&mut &*value.0)
     }
 }
 
 impl From<&LivenessData> for OpaqueLivenessData {
     fn from(val: &LivenessData) -> Self {
-        Self(val.into())
+        Self(val.encode())
     }
 }
 
@@ -87,6 +73,6 @@ impl<'a> TryFrom<OpaqueLivenessDataRef<'a>> for LivenessData {
     type Error = codec::Error;
 
     fn try_from(value: OpaqueLivenessDataRef<'a>) -> Result<Self, Self::Error> {
-        Self::try_from(value.0)
+        Self::decode(&mut &*value.0)
     }
 }

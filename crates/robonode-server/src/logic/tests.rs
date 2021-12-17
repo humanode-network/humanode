@@ -182,6 +182,7 @@ async fn standalone_enroll() {
     logic
         .call(super::op_enroll::Request {
             liveness_data: test_params.enroll_liveness_data,
+            liveness_data_signature: b"qwe".to_vec(),
             public_key: TEST_PUBLIC_KEY.to_vec(),
         })
         .await
@@ -212,6 +213,7 @@ async fn enroll_authenticate() {
     logic
         .call(super::op_enroll::Request {
             liveness_data: test_params.enroll_liveness_data,
+            liveness_data_signature: b"qwe".to_vec(),
             public_key: TEST_PUBLIC_KEY.to_vec(),
         })
         .await
@@ -236,6 +238,7 @@ async fn double_enroll() {
     logic
         .call(super::op_enroll::Request {
             liveness_data: test_params.enroll_liveness_data,
+            liveness_data_signature: b"qwe".to_vec(),
             public_key: b"a".to_vec(),
         })
         .await
@@ -244,6 +247,7 @@ async fn double_enroll() {
     let err = logic
         .call(super::op_enroll::Request {
             liveness_data: test_params.authenticate_liveness_data,
+            liveness_data_signature: b"qwe".to_vec(),
             public_key: b"b".to_vec(),
         })
         .await

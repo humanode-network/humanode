@@ -4,8 +4,11 @@ use thiserror::Error;
 
 mod authenticate;
 mod enroll;
+mod error_response;
 mod get_facetec_device_sdk_params;
 mod get_facetec_session_token;
+#[cfg(test)]
+mod test_utils;
 
 pub use authenticate::*;
 pub use enroll::*;

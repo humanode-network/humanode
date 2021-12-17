@@ -122,7 +122,9 @@ pub fn new_partial(
     let client = Arc::new(client);
 
     let telemetry = telemetry.map(|(worker, telemetry)| {
-        task_manager.spawn_handle().spawn("telemetry", worker.run());
+        task_manager
+            .spawn_handle()
+            .spawn("telemetry", None, worker.run());
         telemetry
     });
 
@@ -268,7 +270,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             transaction_pool: Arc::clone(&transaction_pool),
             spawn_handle: task_manager.spawn_handle(),
             import_queue,
-            on_demand: None,
             block_announce_validator_builder: None,
             warp_sync: Some(warp_sync),
         })?;
@@ -304,8 +305,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         task_manager: &mut task_manager,
         transaction_pool: Arc::clone(&transaction_pool),
         rpc_extensions_builder,
-        on_demand: None,
-        remote_blockchain: None,
         backend,
         system_rpc_tx,
         config,
@@ -346,7 +345,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     // fails we take down the service with it.
     task_manager
         .spawn_essential_handle()
-        .spawn_blocking("aura", aura);
+        .spawn_blocking("aura", Some("block-authoring"), aura);
 
     let grandpa_config = sc_finality_grandpa::Config {
         // FIXME #1578 make this available through chainspec.
@@ -373,6 +372,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
         task_manager.spawn_essential_handle().spawn_blocking(
             "grandpa-voter",
+            Some("block-finalization"),
             sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
         );
     }
@@ -411,7 +411,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             let validator_public_key = match validator_public_key {
                 Ok(Some(key)) => {
                     info!("Running bioauth flow for {}", key);
-                    key
+                    Arc::new(key)
                 }
                 Ok(None) => {
                     warn!("No validator key found, skipping bioauth");
@@ -425,14 +425,29 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             info!("Bioauth flow starting up");
 
+            let signer = crate::validator_key::AppCryptoSigner::new(
+                Arc::clone(&keystore),
+                Arc::clone(&validator_public_key),
+            );
+
             if bioauth_perform_enroll {
                 info!("Bioauth flow - enrolling in progress");
 
                 render_qr_code("Bioauth flow - waiting for enroll");
 
-                flow.enroll(&validator_public_key)
-                    .await
-                    .expect("enroll failed");
+                loop {
+                    let result = flow.enroll(validator_public_key.as_ref(), &signer).await;
+                    match result {
+                        Ok(()) => break,
+                        Err(error) => {
+                            let (error, retry) = handle_bioauth_error(&error);
+                            error!(message = "Bioauth flow - enrollment failure", %error, ?retry);
+                            if !retry {
+                                panic!("{}", error);
+                            }
+                        }
+                    };
+                }
 
                 info!("Bioauth flow - enrolling complete");
             }
@@ -441,17 +456,16 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             render_qr_code("Bioauth flow - waiting for authentication");
 
-            let signer = crate::validator_key::AppCryptoSigner {
-                keystore: Arc::clone(&keystore),
-                public_key: validator_public_key,
-            };
-
             let authenticate_response = loop {
                 let result = flow.authenticate(&signer).await;
                 match result {
                     Ok(v) => break v,
                     Err(error) => {
-                        error!(message = "Bioauth flow - authentication failure", ?error);
+                        let (error, retry) = handle_bioauth_error(&error);
+                        error!(message = "Bioauth flow - authentication failure", %error, ?retry);
+                        if !retry {
+                            panic!("{}", error);
+                        }
                     }
                 };
             };
@@ -481,9 +495,81 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         })
     };
 
-    task_manager
-        .spawn_handle()
-        .spawn_blocking("bioauth-flow", bioauth_flow_future);
+    task_manager.spawn_handle().spawn_blocking(
+        "bioauth-flow",
+        Some("bioauth"),
+        bioauth_flow_future,
+    );
 
     Ok(task_manager)
+}
+
+/// Handle the bioauth error in a user-friendly way.
+fn handle_bioauth_error(error: &anyhow::Error) -> (String, bool) {
+    use robonode_client::{AuthenticateError, EnrollError, Error};
+
+    let face_scan_rejected_message = "the face scan was rejected, this is likely caused by a failed liveness check, so please try again; changing lighting conditions or using a different phone can help";
+
+    if let Some(error) = error.downcast_ref::<Error<EnrollError>>() {
+        match error {
+            Error::Call(EnrollError::PersonAlreadyEnrolled) => {
+                ("you have already enrolled".to_owned(), false)
+            }
+            Error::Call(EnrollError::PublicKeyAlreadyUsed) => (
+                "the validator key you supplied was already used".to_owned(),
+                false,
+            ),
+            Error::Call(EnrollError::FaceScanRejected) => {
+                (face_scan_rejected_message.to_owned(), true)
+            }
+            Error::Call(EnrollError::InvalidLivenessData) => {
+                ("the provided liveness data was invalid".to_owned(), true)
+            }
+            Error::Call(EnrollError::InvalidPublicKey) => {
+                ("the public key was invalid".to_owned(), false)
+            }
+            Error::Call(EnrollError::LogicInternal) => {
+                ("an internal logic error has occured".to_owned(), true)
+            }
+            Error::Call(EnrollError::UnknownCode(error_code)) => (
+                format!(
+                    "an unknown error code received from the server: {}",
+                    error_code
+                ),
+                false,
+            ),
+            Error::Call(EnrollError::Unknown(err)) => (err.clone(), true),
+            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
+        }
+    } else if let Some(error) = error.downcast_ref::<Error<AuthenticateError>>() {
+        match error {
+            Error::Call(AuthenticateError::InvalidLivenessData) => {
+                ("the provided liveness data was invalid".to_owned(), true)
+            }
+            Error::Call(AuthenticateError::PersonNotFound) => (
+                "we were unable to find you in the system; have you already enrolled?".to_owned(),
+                true,
+            ),
+            Error::Call(AuthenticateError::FaceScanRejected) => {
+                (face_scan_rejected_message.to_owned(), true)
+            }
+            Error::Call(AuthenticateError::SignatureInvalid) => {
+                ("the validator key used for authentication does not match the one used during enroll; you have likely used a different mnemonic, but you have to use the same one, otherwise you will be unable to authenticate; you have saved the mnemonic somewhere as requested, right? ;) if you've lost your menmonic you will be unable to continue.".to_owned(), true)
+            }
+            Error::Call(AuthenticateError::LogicInternal) => {
+                ("an internal logic error has occured".to_owned(), true)
+            }
+            Error::Call(AuthenticateError::UnknownCode(error_code)) => (
+                format!(
+                    "an unknown error code received from the server: {}",
+                    error_code
+                ),
+                false,
+            ),
+            Error::Call(AuthenticateError::Unknown(err)) => (err.clone(), true),
+            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
+        }
+    } else {
+        (error.to_string(), false)
+    }
 }

@@ -7,7 +7,7 @@ use tracing::{error, trace};
 
 use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
-use super::{common::*, Logic, LogicOp, Signer};
+use super::{common::*, Logic, LogicOp, Signer, Verifier};
 
 /// The request for the enroll operation.
 #[derive(Debug, Deserialize, Serialize)]
@@ -17,6 +17,9 @@ pub struct Request {
     pub public_key: Vec<u8>,
     /// The liveness data that the validator owner provided.
     pub liveness_data: OpaqueLivenessData,
+    /// The signature of the liveness data with the private key of the node.
+    /// Proves the posession of the private key by the liveness data bearer.
+    pub liveness_data_signature: Vec<u8>,
 }
 
 /// The response for the enroll operation.
@@ -31,6 +34,8 @@ pub enum Error {
     InvalidPublicKey,
     /// The provided opaque liveness data could not be decoded.
     InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
+    /// The liveness data signature validation failed.
+    SignatureInvalid,
     /// This FaceScan was rejected.
     FaceScanRejected,
     /// This Public Key was already used.
@@ -55,13 +60,15 @@ pub enum Error {
     InternalErrorDbEnroll(ft::Error),
     /// Internal error at 3D-DB enrollment due to unsuccessful response.
     InternalErrorDbEnrollUnsuccessful,
+    /// Internal error at signature verification.
+    InternalErrorSignatureVerificationFailed,
 }
 
 #[async_trait::async_trait]
 impl<S, PK> LogicOp<Request> for Logic<S, PK>
 where
     S: Signer<Vec<u8>> + Send + 'static,
-    PK: Send + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]>,
+    PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]> + Verifier<Vec<u8>>,
 {
     type Response = ();
     type Error = Error;
@@ -72,6 +79,15 @@ where
 
         let liveness_data =
             LivenessData::try_from(&req.liveness_data).map_err(Error::InvalidLivenessData)?;
+
+        let signature_valid = public_key
+            .verify(&req.liveness_data, req.liveness_data_signature)
+            .await
+            .map_err(|_| Error::InternalErrorSignatureVerificationFailed)?;
+
+        if !signature_valid {
+            return Err(Error::SignatureInvalid);
+        }
 
         let public_key_hex = hex::encode(public_key);
 

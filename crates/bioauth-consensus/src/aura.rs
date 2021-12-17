@@ -100,7 +100,7 @@ mod tests {
     use mockall::*;
     use node_primitives::{Block, Header};
     use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi};
-    use sp_runtime::{traits::DigestItemFor, Digest};
+    use sp_runtime::{Digest, DigestItem};
     use std::sync::Arc;
 
     type MockAuraAuthorityId = sp_consensus_aura::sr25519::AuthorityId;
@@ -146,7 +146,7 @@ mod tests {
         let mut digest_items = vec![];
         if !empty_digest {
             let slot = sp_consensus_aura::Slot::from(1);
-            let item = <DigestItemFor<Block> as CompatibleDigestItem<
+            let item = <DigestItem as CompatibleDigestItem<
                 sp_consensus_aura::sr25519::AuthoritySignature,
             >>::aura_pre_digest(slot);
             digest_items.push(item);
