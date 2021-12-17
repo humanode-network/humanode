@@ -18,7 +18,7 @@ pub use logic::FacetecDeviceSdkParams;
 /// Initialize the [`warp::Filter`] implementing the HTTP transport for
 /// the robonode.
 pub fn init(
-    execution_id: String,
+    execution_id: uuid::Uuid,
     facetec_api_client: facetec_api_client::Client<LoggingInspector>,
     facetec_device_sdk_params: FacetecDeviceSdkParams,
     robonode_keypair: robonode_crypto::Keypair,

@@ -98,7 +98,7 @@ where
 
         // Prepare the ID to be used for this temporary FaceScan.
         let tmp_external_database_ref_id =
-            format!("tmp-{}-{}", &unlocked.execution_id, sequence_value);
+            make_tmp_external_database_ref_id(unlocked.execution_id, sequence_value);
 
         let enroll_res = unlocked
             .facetec
@@ -178,9 +178,7 @@ where
         }
 
         // Prepare an authentication nonce from the sequence number.
-        // TODO: we don't want to expose our internal sequence number, so this value should
-        // be hashed, or obfuscated by other means.
-        let authentication_nonce = Vec::from(&sequence_value.to_ne_bytes()[..]);
+        let authentication_nonce = make_authentication_nonce(unlocked.execution_id, sequence_value);
 
         // Prepare the raw auth ticket.
         let auth_ticket = AuthTicket {
@@ -203,5 +201,69 @@ where
             auth_ticket: opaque_auth_ticket,
             auth_ticket_signature,
         })
+    }
+}
+
+/// Make an key to store the temporary scan at.
+fn make_tmp_external_database_ref_id(execution_id: uuid::Uuid, sequence_value: u64) -> String {
+    format!("tmp-{}-{}", execution_id, sequence_value)
+}
+
+/// Make an authentication nonce.
+// TODO: we don't want to expose our internal sequence number, so this value should
+// be hashed, or obfuscated by other means.
+fn make_authentication_nonce(execution_id: uuid::Uuid, sequence_value: u64) -> Vec<u8> {
+    let mut data = Vec::from(&execution_id.as_bytes()[..]);
+    data.extend_from_slice(&sequence_value.to_ne_bytes()[..]);
+    data
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tmp_external_database_ref_id() {
+        assert_eq!(
+            make_tmp_external_database_ref_id(
+                uuid::Uuid::from_bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,],),
+                0
+            ),
+            "tmp-00000000-0000-0000-0000-000000000000-0",
+        );
+        assert_eq!(
+            make_tmp_external_database_ref_id(
+                uuid::Uuid::from_bytes([
+                    0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc,
+                    0xfd, 0xfe, 0xff
+                ],),
+                123
+            ),
+            "tmp-f0f1f2f3-f4f5-f6f7-f8f9-fafbfcfdfeff-123",
+        );
+    }
+
+    #[test]
+    fn authentication_nonce() {
+        assert_eq!(
+            make_authentication_nonce(
+                uuid::Uuid::from_bytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+                0
+            ),
+            vec![0u8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        );
+        assert_eq!(
+            make_authentication_nonce(
+                uuid::Uuid::from_bytes([
+                    0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc,
+                    0xfd, 0xfe, 0xff
+                ],),
+                1
+            ),
+            vec![
+                0xf0u8, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc,
+                0xfd, 0xfe, 0xff, 1, 0, 0, 0, 0, 0, 0, 0
+            ],
+        );
     }
 }

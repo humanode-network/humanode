@@ -32,7 +32,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         production_key: facetec_production_key,
     };
 
-    let execution_id = uuid::Uuid::new_v4().to_string();
+    let execution_id = uuid::Uuid::new_v4();
 
     let root_filter = robonode_server::init(
         execution_id,

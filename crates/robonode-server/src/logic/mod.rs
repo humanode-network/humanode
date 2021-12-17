@@ -37,7 +37,7 @@ pub struct Locked<S, PK> {
     pub sequence: Sequence,
     /// An execution ID, to be used together with sequence to guarantee unqiueness of the temporary
     /// enrollment external database IDs.
-    pub execution_id: String,
+    pub execution_id: uuid::Uuid,
     /// The client for the FaceTec Server API.
     pub facetec: ft::Client<crate::LoggingInspector>,
     /// The utility for signing the responses.
