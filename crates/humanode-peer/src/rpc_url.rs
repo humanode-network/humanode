@@ -62,12 +62,25 @@ impl RpcUrlResolver {
     /// Returns the public URL from the specified tunnel.
     /// Assumes that the tunnel has a proper protocol and points to a proper port.
     async fn detect_from_ngrok(&self, tunnel_name: &str) -> Result<String, String> {
-        let tunnel_name = std::borrow::Cow::Owned(tunnel_name.to_owned());
-        let res = self
-            .ngrok_client
-            .call(&ngrok_api::data::request::TunnelInfo, (tunnel_name,))
-            .await
-            .map_err(|err| err.to_string())?;
+        let mut attempts_left = 10;
+        let res = loop {
+            let tunnel_name = std::borrow::Cow::Owned(tunnel_name.to_owned());
+            let result = self
+                .ngrok_client
+                .call(&ngrok_api::data::request::TunnelInfo, (tunnel_name,))
+                .await;
+            match result {
+                Ok(res) => break res,
+                Err(ngrok_api::client::Error::BadStatus(status)) if status == 404 => {
+                    if attempts_left <= 0 {
+                        return Err("ngrok did not start the tunnel in time".to_owned());
+                    }
+                    attempts_left -= 1;
+                    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                }
+                Err(err) => return Err(err.to_string()),
+            }
+        };
         Ok(res.public_url)
     }
 }
