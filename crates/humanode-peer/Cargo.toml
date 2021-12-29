@@ -21,6 +21,7 @@ async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 futures = "0.3"
+hex = "0.4.3"
 hex-literal = "0.3"
 qr2term = "0.2"
 reqwest = "0.11"

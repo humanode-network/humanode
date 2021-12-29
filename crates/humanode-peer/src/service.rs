@@ -410,7 +410,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             let validator_public_key = match validator_public_key {
                 Ok(Some(key)) => {
-                    info!("Running bioauth flow for {}", key);
+                    info!("Running bioauth flow for 0x{}", hex::encode(key.as_ref()));
                     Arc::new(key)
                 }
                 Ok(None) => {
