@@ -5,8 +5,9 @@
 #![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
+use frame_support::traits::{IsSubType, StorageVersion};
 use frame_support::weights::DispatchInfo;
-use frame_support::{parameter_types, traits::IsSubType, WeakBoundedVec};
+use frame_support::{parameter_types, WeakBoundedVec};
 pub use pallet::*;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -116,6 +117,9 @@ pub struct Authentication<PublicKey, Moment> {
     pub expires_at: Moment,
 }
 
+/// The current storage version.
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(
@@ -125,10 +129,9 @@ pub struct Authentication<PublicKey, Moment> {
 )]
 #[frame_support::pallet]
 pub mod pallet {
-    use crate::{
-        weights::WeightInfo, AuthTicket, AuthTicketNonce, Authenticate, Authentication,
-        BoundedAuthTicketNonce, CurrentMoment, TryConvert, ValidatorSetUpdater, Verifier,
-    };
+    use super::*;
+
+    use crate::weights::WeightInfo;
 
     use codec::MaxEncodedLen;
     use frame_support::{
@@ -137,7 +140,6 @@ pub mod pallet {
     };
     use frame_system::pallet_prelude::*;
     use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
-    use sp_std::prelude::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
@@ -203,6 +205,7 @@ pub mod pallet {
     }
 
     #[pallet::pallet]
+    #[pallet::storage_version(STORAGE_VERSION)]
     #[pallet::generate_store(pub(super) trait Store)]
     #[pallet::generate_storage_info]
     pub struct Pallet<T>(_);
