@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 
 /// The data packet required to conduct liveness checks via the FaceTec Server.
 #[derive(Debug, PartialEq, Encode, Decode, Serialize, Deserialize, TypeInfo)]
+#[serde(rename_all = "camelCase")]
 pub struct LivenessData {
     /// The face scan.
     pub face_scan: String,
