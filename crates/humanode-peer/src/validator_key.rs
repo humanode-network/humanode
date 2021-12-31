@@ -123,8 +123,7 @@ where
     T: AppPublic,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use sp_application_crypto::Ss58Codec;
-        write!(f, "{}", self.0.to_ss58check())
+        write!(f, "0x{}", hex::encode(&self.0))
     }
 }
 
@@ -137,13 +136,13 @@ mod tests {
         let key = AppCryptoPublic(sp_consensus_aura::sr25519::AuthorityId::default());
         assert_eq!(
             key.to_string(),
-            "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM"
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
         );
     }
 
     #[test]
-    fn display_matches_raw_key() {
+    fn display_does_not_match_raw_key() {
         let key = sp_consensus_aura::sr25519::AuthorityId::default();
-        assert_eq!(key.to_string(), AppCryptoPublic(key).to_string());
+        assert_ne!(key.to_string(), AppCryptoPublic(key).to_string());
     }
 }

@@ -2108,6 +2108,7 @@ dependencies = [
  "bioauth-flow",
  "frame-benchmarking-cli",
  "futures 0.3.17",
+ "hex",
  "hex-literal",
  "humanode-rpc",
  "humanode-runtime",
