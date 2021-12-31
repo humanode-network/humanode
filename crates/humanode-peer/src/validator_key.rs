@@ -130,7 +130,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sp_application_crypto::Public;
 
     #[test]
     fn display() {
@@ -142,9 +141,8 @@ mod tests {
     }
 
     #[test]
-    fn display_matches_raw_key() {
+    fn display_does_not_match_raw_key() {
         let key = sp_consensus_aura::sr25519::AuthorityId::default();
-        let expected_key = format!("0x{}", hex::encode(key.to_raw_vec()));
-        assert_eq!(expected_key, AppCryptoPublic(key).to_string());
+        assert_ne!(key.to_string(), AppCryptoPublic(key).to_string());
     }
 }
