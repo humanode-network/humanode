@@ -2,7 +2,7 @@
 set -euo pipefail
 
 get_address() {
-    "$COMMAND" key inspect "$@" | grep "SS58 Address:" | awk '{print $3}'
+  "$COMMAND" key inspect "$@" | grep "SS58 Address:" | awk '{print $3}'
 }
 
 # Set up command.
