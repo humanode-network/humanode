@@ -20,7 +20,7 @@ pub type Result<T> = std::result::Result<T, RpcError>;
 pub type FutureResult<T> = jsonrpc_core::BoxFuture<Result<T>>;
 
 /// The parameters necessary to initialize the FaceTec Device SDK.
-type FacetecDeviceSdkParams = Map<String, Value>;
+pub type FacetecDeviceSdkParams = Map<String, Value>;
 
 /// The API exposed via JSON-RPC.
 #[rpc]
@@ -36,6 +36,14 @@ pub trait BioauthApi {
     /// Provide the liveness data for the currently running enrollemnt or authentication process.
     #[rpc(name = "bioauth_provideLivenessData")]
     fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()>;
+
+    /// Enroll
+    #[rpc(name = "bioauth_enroll")]
+    fn enroll(&self, liveness_data: LivenessData) -> FutureResult<()>;
+
+    /// Authenticate
+    #[rpc(name = "bioauth_authenticate")]
+    fn authenticate(&self, liveness_data: LivenessData) -> FutureResult<()>;
 }
 
 /// The shared [`LivenessData`] sender slot, that we can swap with our ephemernal
@@ -110,6 +118,14 @@ where
 
     /// See [`Inner::provide_liveness_data`].
     fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()> {
+        self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
+    }
+
+    fn enroll(&self, liveness_data: LivenessData) -> FutureResult<()> {
+        self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
+    }
+
+    fn authenticate(&self, liveness_data: LivenessData) -> FutureResult<()> {
         self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
     }
 }

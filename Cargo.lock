@@ -465,13 +465,17 @@ dependencies = [
  "anyhow",
  "async-trait",
  "futures 0.3.17",
+ "humanode-runtime",
  "jsonrpc-core",
  "jsonrpc-core-client",
  "jsonrpc-derive",
+ "pallet-bioauth",
  "primitives-liveness-data",
  "robonode-client",
+ "sc-transaction-pool-api",
  "serde",
  "serde_json",
+ "sp-runtime",
  "tokio",
 ]
 

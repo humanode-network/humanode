@@ -5,6 +5,12 @@ edition = "2021"
 publish = false
 
 [dependencies]
+pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
+humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
+
+sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+
 primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-data" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
