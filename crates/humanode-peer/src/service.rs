@@ -279,21 +279,47 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         reqwest: reqwest::Client::new(),
     });
 
-    let (bioauth_flow_rpc_slot, bioauth_flow_provider_slot) =
-        bioauth_flow::rpc::new_liveness_data_tx_slot();
-
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
-        let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
+
+        let keystore = keystore_container.keystore();
+        let validator_public_key =
+            crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref()).await;
+
+        let validator_public_key = match validator_public_key {
+            Ok(Some(key)) => {
+                info!("Running bioauth flow for {}", key);
+                Some(Arc::new(key))
+            }
+            Ok(None) => {
+                warn!("No validator key found, skipping bioauth");
+                None
+            }
+            Err(err) => {
+                error!("Keystore returned an error ({}), skipping bioauth", err);
+                None
+            }
+        };
+
+        info!("Bioauth flow starting up");
+
+        let validator_signer = validator_public_key.as_ref().map(|val| {
+            Arc::new(crate::validator_key::AppCryptoSigner::new(
+                Arc::clone(&keystore),
+                Arc::clone(&val),
+            ))
+        });
+
         Box::new(move |deny_unsafe, _| {
             Ok(humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
                 deny_unsafe,
                 robonode_client: Arc::clone(&robonode_client),
-                bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
+                validator_public_key: validator_public_key.as_ref().map(Arc::clone),
+                validator_signer: validator_signer.as_ref().map(Arc::clone),
             }))
         })
     };
@@ -379,12 +405,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     network_starter.start_network();
 
-    let mut flow = bioauth_flow::flow::Flow {
-        liveness_data_provider: bioauth_flow::rpc::Provider::new(bioauth_flow_provider_slot),
-        robonode_client,
-        validator_public_key_type: PhantomData,
-        validator_signer_type: PhantomData,
-    };
+    // let mut flow = bioauth_flow::flow::Flow {
+    // liveness_data_provider: bioauth_flow::rpc::Provider::new(bioauth_flow_provider_slot),
+    // robonode_client,
+    // validator_public_key_type: PhantomData,
+    // validator_signer_type: PhantomData,
+    // };
 
     let webapp_qrcode = bioauth_flow_config
         .qrcode_params()
@@ -399,107 +425,107 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         }
     };
 
-    let bioauth_flow_future = {
-        let client = Arc::clone(&client);
-        let keystore = keystore_container.keystore();
-        let transaction_pool = Arc::clone(&transaction_pool);
-        Box::pin(async move {
-            let validator_public_key =
-                crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref())
-                    .await;
+    // let bioauth_flow_future = {
+    // let client = Arc::clone(&client);
+    // let keystore = keystore_container.keystore();
+    // let transaction_pool = Arc::clone(&transaction_pool);
+    // Box::pin(async move {
+    // let validator_public_key =
+    // crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref())
+    // .await;
 
-            let validator_public_key = match validator_public_key {
-                Ok(Some(key)) => {
-                    info!("Running bioauth flow for {}", key);
-                    Arc::new(key)
-                }
-                Ok(None) => {
-                    warn!("No validator key found, skipping bioauth");
-                    return;
-                }
-                Err(err) => {
-                    error!("Keystore returned an error ({}), skipping bioauth", err);
-                    return;
-                }
-            };
+    // let validator_public_key = match validator_public_key {
+    // Ok(Some(key)) => {
+    // info!("Running bioauth flow for {}", key);
+    // Arc::new(key)
+    // }
+    // Ok(None) => {
+    // warn!("No validator key found, skipping bioauth");
+    // return;
+    // }
+    // Err(err) => {
+    // error!("Keystore returned an error ({}), skipping bioauth", err);
+    // return;
+    // }
+    // };
 
-            info!("Bioauth flow starting up");
+    // info!("Bioauth flow starting up");
 
-            let signer = crate::validator_key::AppCryptoSigner::new(
-                Arc::clone(&keystore),
-                Arc::clone(&validator_public_key),
-            );
+    // let signer = crate::validator_key::AppCryptoSigner::new(
+    // Arc::clone(&keystore),
+    // Arc::clone(&validator_public_key),
+    // );
 
-            if bioauth_perform_enroll {
-                info!("Bioauth flow - enrolling in progress");
+    // if bioauth_perform_enroll {
+    // info!("Bioauth flow - enrolling in progress");
 
-                render_qr_code("Bioauth flow - waiting for enroll");
+    // render_qr_code("Bioauth flow - waiting for enroll");
 
-                loop {
-                    let result = flow.enroll(validator_public_key.as_ref(), &signer).await;
-                    match result {
-                        Ok(()) => break,
-                        Err(error) => {
-                            let (error, retry) = handle_bioauth_error(&error);
-                            error!(message = "Bioauth flow - enrollment failure", %error, ?retry);
-                            if !retry {
-                                panic!("{}", error);
-                            }
-                        }
-                    };
-                }
+    // loop {
+    // let result = flow.enroll(validator_public_key.as_ref(), &signer).await;
+    // match result {
+    // Ok(()) => break,
+    // Err(error) => {
+    // let (error, retry) = handle_bioauth_error(&error);
+    // error!(message = "Bioauth flow - enrollment failure", %error, ?retry);
+    // if !retry {
+    // panic!("{}", error);
+    // }
+    // }
+    // };
+    // }
 
-                info!("Bioauth flow - enrolling complete");
-            }
+    // info!("Bioauth flow - enrolling complete");
+    // }
 
-            info!("Bioauth flow - authentication in progress");
+    // info!("Bioauth flow - authentication in progress");
 
-            render_qr_code("Bioauth flow - waiting for authentication");
+    // render_qr_code("Bioauth flow - waiting for authentication");
 
-            let authenticate_response = loop {
-                let result = flow.authenticate(&signer).await;
-                match result {
-                    Ok(v) => break v,
-                    Err(error) => {
-                        let (error, retry) = handle_bioauth_error(&error);
-                        error!(message = "Bioauth flow - authentication failure", %error, ?retry);
-                        if !retry {
-                            panic!("{}", error);
-                        }
-                    }
-                };
-            };
+    // let authenticate_response = loop {
+    // let result = flow.authenticate(&signer).await;
+    // match result {
+    // Ok(v) => break v,
+    // Err(error) => {
+    // let (error, retry) = handle_bioauth_error(&error);
+    // error!(message = "Bioauth flow - authentication failure", %error, ?retry);
+    // if !retry {
+    // panic!("{}", error);
+    // }
+    // }
+    // };
+    // };
 
-            info!("Bioauth flow - authentication complete");
+    // info!("Bioauth flow - authentication complete");
 
-            info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
+    // info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
 
-            let authenticate = pallet_bioauth::Authenticate {
-                ticket: authenticate_response.auth_ticket.into(),
-                ticket_signature: authenticate_response.auth_ticket_signature.into(),
-            };
-            let call = pallet_bioauth::Call::authenticate { req: authenticate };
+    // let authenticate = pallet_bioauth::Authenticate {
+    // ticket: authenticate_response.auth_ticket.into(),
+    // ticket_signature: authenticate_response.auth_ticket_signature.into(),
+    // };
+    // let call = pallet_bioauth::Call::authenticate { req: authenticate };
 
-            let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
+    // let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
 
-            let at = client.chain_info().best_hash;
-            transaction_pool
-                .pool()
-                .submit_and_watch(
-                    &sp_runtime::generic::BlockId::Hash(at),
-                    sp_runtime::transaction_validity::TransactionSource::Local,
-                    ext.into(),
-                )
-                .await
-                .unwrap();
-        })
-    };
+    // let at = client.chain_info().best_hash;
+    // transaction_pool
+    // .pool()
+    // .submit_and_watch(
+    // &sp_runtime::generic::BlockId::Hash(at),
+    // sp_runtime::transaction_validity::TransactionSource::Local,
+    // ext.into(),
+    // )
+    // .await
+    // .unwrap();
+    // })
+    // };
 
-    task_manager.spawn_handle().spawn_blocking(
-        "bioauth-flow",
-        Some("bioauth"),
-        bioauth_flow_future,
-    );
+    // task_manager.spawn_handle().spawn_blocking(
+    // "bioauth-flow",
+    // Some("bioauth"),
+    // bioauth_flow_future,
+    // );
 
     Ok(task_manager)
 }

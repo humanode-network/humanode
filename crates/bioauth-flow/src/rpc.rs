@@ -11,7 +11,7 @@ use jsonrpc_derive::rpc;
 use primitives_liveness_data::LivenessData;
 use serde_json::{Map, Value};
 
-use crate::flow::LivenessDataProvider;
+use crate::{flow::LivenessDataProvider, handler::RpcHandler};
 
 /// A result type that wraps.
 pub type Result<T> = std::result::Result<T, RpcError>;
@@ -33,10 +33,6 @@ pub trait BioauthApi {
     #[rpc(name = "bioauth_getFacetecSessionToken")]
     fn get_facetec_session_token(&self) -> FutureResult<String>;
 
-    /// Provide the liveness data for the currently running enrollemnt or authentication process.
-    #[rpc(name = "bioauth_provideLivenessData")]
-    fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()>;
-
     /// Enroll
     #[rpc(name = "bioauth_enroll")]
     fn enroll(&self, liveness_data: LivenessData) -> FutureResult<()>;
@@ -57,147 +53,73 @@ pub fn new_liveness_data_tx_slot() -> (LivenessDataTxSlot, LivenessDataTxSlot) {
 }
 
 /// The RPC implementation.
-pub struct Bioauth<C>
+pub struct Bioauth<H>
 where
-    C: AsRef<robonode_client::Client>,
+    H: RpcHandler,
 {
     /// The underlying implementation.
     /// We have to wrap it with `Arc` because `jsonrpc-core` doesn't allow us to use `self` for
     /// the duration of the future; we `clone` the `Arc` to get the `'static` lifetime to
     /// a shared `Inner` instead.
-    inner: Arc<Inner<C>>,
+    handler: Arc<H>,
 }
 
-impl<C> Bioauth<C>
+impl<H> Bioauth<H>
 where
-    C: AsRef<robonode_client::Client>,
+    H: RpcHandler,
 {
     /// Create a new [`Bioauth`] API implementation.
-    pub fn new(robonode_client: C, liveness_data_tx_slot: Arc<LivenessDataTxSlot>) -> Self {
-        let inner = Inner {
-            client: robonode_client,
-            liveness_data_tx_slot,
-        };
+    pub fn new(handler: H) -> Self {
         Self {
-            inner: Arc::new(inner),
+            handler: handler.into(),
         }
     }
 }
 
-impl<C> Bioauth<C>
+impl<H> Bioauth<H>
 where
-    C: AsRef<robonode_client::Client> + Send + Sync + 'static,
+    H: RpcHandler + Send + Sync + 'static,
 {
     /// A helper function that provides a convenient way to execute a future with a clone of
     /// the `Arc<Inner>`.
     /// It also boxes the resulting [`Future`] `Fut` so it fits into the [`FutureResult`].
-    fn with_inner_clone<F, Fut, R>(&self, f: F) -> FutureResult<R>
+    fn with_handler_clone<F, Fut, R>(&self, f: F) -> FutureResult<R>
     where
-        F: FnOnce(Arc<Inner<C>>) -> Fut,
+        F: FnOnce(Arc<H>) -> Fut,
         Fut: std::future::Future<Output = Result<R>> + Send + 'static,
         R: Send + 'static,
     {
-        let inner = Arc::clone(&self.inner);
-        f(inner).boxed()
+        let handler = Arc::clone(&self.handler);
+        f(handler).boxed()
     }
 }
 
-impl<C> BioauthApi for Bioauth<C>
+impl<H> BioauthApi for Bioauth<H>
 where
-    C: AsRef<robonode_client::Client> + Send + Sync + 'static,
+    H: RpcHandler + Send + Sync + 'static,
 {
     /// See [`Inner::get_facetec_device_sdk_params`].
     fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams> {
-        self.with_inner_clone(move |inner| inner.get_facetec_device_sdk_params())
+        self.with_handler_clone(move |handler| async move {
+            handler.get_facetec_device_sdk_params().await
+        })
     }
 
     /// See [`Inner::get_facetec_session_token`].
     fn get_facetec_session_token(&self) -> FutureResult<String> {
-        self.with_inner_clone(move |inner| inner.get_facetec_session_token())
-    }
-
-    /// See [`Inner::provide_liveness_data`].
-    fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
+        self.with_handler_clone(
+            move |handler| async move { handler.get_facetec_session_token().await },
+        )
     }
 
     fn enroll(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
+        self.with_handler_clone(move |handler| async move { handler.enroll(liveness_data).await })
     }
 
     fn authenticate(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
-    }
-}
-
-/// The underlying implementation of the RPC part, extracted into a subobject to work around
-/// the common pitfall with the poor async engines implementations of requiring future objects to
-/// be static.
-/// Stop it people, why do you even use Rust if you do things like this? Ffs...
-/// See https://github.com/paritytech/jsonrpc/issues/580
-struct Inner<C>
-where
-    C: AsRef<robonode_client::Client>,
-{
-    /// The robonode client, used for fetching the FaceTec Session Token.
-    client: C,
-    /// The liveness data provider sink.
-    /// We need an [`Arc`] here to allow sharing the data from across multiple invocations of the
-    /// RPC extension builder that will be using this RPC.
-    liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-}
-
-impl<C> Inner<C>
-where
-    C: AsRef<robonode_client::Client>,
-{
-    /// Get the FaceTec Device SDK parameters to use at the device.
-    async fn get_facetec_device_sdk_params(self: Arc<Self>) -> Result<FacetecDeviceSdkParams> {
-        let res = self
-            .client
-            .as_ref()
-            .get_facetec_device_sdk_params()
-            .await
-            .map_err(|err| RpcError {
-                code: ErrorCode::ServerError(1),
-                message: format!("request to the robonode failed: {}", err),
-                data: None,
-            })?;
-        Ok(res)
-    }
-
-    /// Get the FaceTec Session Token.
-    async fn get_facetec_session_token(self: Arc<Self>) -> Result<String> {
-        let res = self
-            .client
-            .as_ref()
-            .get_facetec_session_token()
-            .await
-            .map_err(|err| RpcError {
-                code: ErrorCode::ServerError(1),
-                message: format!("request to the robonode failed: {}", err),
-                data: None,
-            })?;
-        Ok(res.session_token)
-    }
-
-    /// Collect the liveness data and provide to the consumer.
-    async fn provide_liveness_data(self: Arc<Self>, liveness_data: LivenessData) -> Result<()> {
-        let maybe_tx = {
-            let mut maybe_tx_guard = self.liveness_data_tx_slot.lock().await;
-            maybe_tx_guard.take() // take the guarded option value and release the lock asap
-        };
-        let tx = maybe_tx.ok_or_else(|| RpcError {
-            code: ErrorCode::InternalError,
-            message: "Flow is not engaged, unable to accept liveness data".into(),
-            data: None,
-        })?;
-        tx.send(liveness_data).map_err(|_| RpcError {
-            code: ErrorCode::InternalError,
-            message: "Flow was aborted before the liveness data could be submitted".into(),
-            data: None,
-        })?;
-        Ok(())
+        self.with_handler_clone(
+            move |handler| async move { handler.authenticate(liveness_data).await },
+        )
     }
 }
 

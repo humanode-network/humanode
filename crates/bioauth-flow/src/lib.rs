@@ -3,5 +3,5 @@
 //! and the robonode server that's responsible for authenticating against the bioauth system.
 
 pub mod flow;
-mod handler;
+pub mod handler;
 pub mod rpc;

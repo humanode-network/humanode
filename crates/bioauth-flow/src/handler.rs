@@ -34,18 +34,31 @@ pub trait Signer<S> {
         D: AsRef<[u8]> + Send + 'a;
 }
 
+#[async_trait::async_trait]
+pub trait RpcHandler {
+    /// Get the FaceTec Device SDK parameters to use at the device.
+    async fn get_facetec_device_sdk_params(&self) -> Result<FacetecDeviceSdkParams, RpcError>;
+
+    /// Get the FaceTec Session Token.
+    async fn get_facetec_session_token(&self) -> Result<String, RpcError>;
+
+    async fn authenticate(&self, liveness_data: LivenessData) -> Result<(), RpcError>;
+
+    async fn enroll(&self, liveness_data: LivenessData) -> Result<(), RpcError>;
+}
+
 /// The underlying implementation of the RPC part, extracted into a subobject to work around
 /// the common pitfall with the poor async engines implementations of requiring future objects to
 /// be static.
 /// Stop it people, why do you even use Rust if you do things like this? Ffs...
 /// See https://github.com/paritytech/jsonrpc/issues/580
-struct Handler<RC, VPK, VS, TP> {
+pub struct Handler<RC, VPK, VS, TP> {
     /// The robonode client.
     pub client: RC,
     /// The type used to encode the public key.
-    pub validator_public_key: VPK,
+    pub validator_public_key: Arc<VPK>,
     /// The type that provides signing with the validator private key.
-    pub validator_signer: VS,
+    pub validator_signer: Arc<VS>,
     pub transaction_pool: Arc<TP>,
 }
 
@@ -54,9 +67,7 @@ where
     RC: Deref<Target = robonode_client::Client>,
 {
     /// Get the FaceTec Device SDK parameters to use at the device.
-    async fn get_facetec_device_sdk_params(
-        self: Arc<Self>,
-    ) -> Result<FacetecDeviceSdkParams, RpcError> {
+    async fn get_facetec_device_sdk_params(&self) -> Result<FacetecDeviceSdkParams, RpcError> {
         let res = self
             .client
             .get_facetec_device_sdk_params()
@@ -70,7 +81,7 @@ where
     }
 
     /// Get the FaceTec Session Token.
-    async fn get_facetec_session_token(self: Arc<Self>) -> Result<String, RpcError> {
+    async fn get_facetec_session_token(&self) -> Result<String, RpcError> {
         let res = self
             .client
             .get_facetec_session_token()
@@ -93,7 +104,7 @@ where
     TP: TransactionPool,
 {
     /// Authenticate
-    async fn authenticate(self: Arc<Self>, liveness_data: LivenessData) -> Result<(), RpcError> {
+    async fn authenticate(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
         let opaque_liveness_data = OpaqueLivenessData::from(&liveness_data);
 
         let signature = self
@@ -141,7 +152,7 @@ where
     VPK: AsRef<[u8]>,
 {
     /// Enroll
-    async fn enroll(self: Arc<Self>, liveness_data: LivenessData) -> Result<(), RpcError> {
+    async fn enroll(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
         let opaque_liveness_data = OpaqueLivenessData::from(&liveness_data);
 
         let signature = self
@@ -154,10 +165,43 @@ where
             .enroll(EnrollRequest {
                 liveness_data: opaque_liveness_data.as_ref(),
                 liveness_data_signature: signature.as_ref(),
-                public_key: self.validator_public_key.as_ref(),
+                public_key: self.validator_public_key.as_ref().as_ref(),
             })
             .await
             .unwrap();
         Ok(())
+    }
+}
+
+#[async_trait::async_trait]
+impl<RC, VPK, VS, TP> RpcHandler for Handler<RC, VPK, VS, TP>
+where
+    Self: Send + Sync,
+    RC: Deref<Target = robonode_client::Client>,
+    VS: Signer<Vec<u8>>,
+    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
+    VPK: AsRef<[u8]> + Send,
+    TP: TransactionPool,
+{
+    /// Get the FaceTec Device SDK parameters to use at the device.
+    async fn get_facetec_device_sdk_params(&self) -> Result<FacetecDeviceSdkParams, RpcError> {
+        // self.get_facetec_device_sdk_params().await
+        todo!();
+    }
+
+    /// Get the FaceTec Session Token.
+    async fn get_facetec_session_token(&self) -> Result<String, RpcError> {
+        // self.get_facetec_session_token().await
+        todo!();
+    }
+
+    async fn authenticate(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
+        // self.authenticate(liveness_data).await
+        todo!();
+    }
+
+    async fn enroll(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
+        // self.enroll(liveness_data).await
+        todo!();
     }
 }
