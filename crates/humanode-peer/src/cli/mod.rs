@@ -1,6 +1,7 @@
 //! Command line interface.
 
 mod config;
+mod init;
 mod params;
 mod root;
 mod run;

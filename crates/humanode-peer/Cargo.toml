@@ -8,7 +8,9 @@ publish = false
 default-run = "humanode-peer"
 
 [dependencies]
-bioauth-consensus = { version = "0.1", path = "../bioauth-consensus", features = ["all"] }
+bioauth-consensus = { version = "0.1", path = "../bioauth-consensus", features = [
+  "all",
+] }
 bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
@@ -19,6 +21,7 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 anyhow = "1"
 async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
+fdlimit = "0.2"
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 futures = "0.3"
 hex = "0.4.3"
@@ -46,6 +49,7 @@ sp-consensus = { git = "https://github.com/humanode-network/substrate", branch =
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-panic-handler = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 structopt = "0.3.8"
