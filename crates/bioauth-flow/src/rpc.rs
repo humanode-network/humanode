@@ -6,7 +6,7 @@ use futures::channel::oneshot;
 use futures::lock::BiLock;
 use futures::FutureExt;
 use jsonrpc_core::Error as RpcError;
-use jsonrpc_core::ErrorCode;
+
 use jsonrpc_derive::rpc;
 use primitives_liveness_data::LivenessData;
 use serde_json::{Map, Value};

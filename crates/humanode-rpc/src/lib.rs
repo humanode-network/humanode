@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use bioauth_flow::{
     handler::{Handler, Signer},
-    rpc::{Bioauth, BioauthApi, LivenessDataTxSlot},
+    rpc::{Bioauth, BioauthApi},
 };
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index};
 use sc_client_api::UsageProvider;

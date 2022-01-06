@@ -1,7 +1,7 @@
 //! Initializing, bootstrapping and launching the node from a provided configuration.
 
 #![allow(clippy::type_complexity)]
-use std::{marker::PhantomData, sync::Arc, time::Duration};
+use std::{sync::Arc, time::Duration};
 
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::ExecutorProvider;
@@ -223,7 +223,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let Configuration {
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
-        bioauth_perform_enroll,
+        bioauth_perform_enroll: _,
     } = config;
 
     config
@@ -308,7 +308,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let validator_signer = validator_public_key.as_ref().map(|val| {
             Arc::new(crate::validator_key::AppCryptoSigner::new(
                 Arc::clone(&keystore),
-                Arc::clone(&val),
+                Arc::clone(val),
             ))
         });
 
@@ -417,7 +417,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         .await
         .and_then(|(webapp_url, rpc_url)| crate::qrcode::WebApp::new(webapp_url, &rpc_url));
 
-    let render_qr_code = move |prompt: &str| match &webapp_qrcode {
+    let _render_qr_code = move |prompt: &str| match &webapp_qrcode {
         Ok(ref qrcode) => qrcode.print(),
         Err(ref err) => {
             error!("Bioauth flow - unable to display QR Code: {}", err);
@@ -533,72 +533,72 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     Ok(task_manager)
 }
 
-/// Handle the bioauth error in a user-friendly way.
-fn handle_bioauth_error(error: &anyhow::Error) -> (String, bool) {
-    use robonode_client::{AuthenticateError, EnrollError, Error};
+//// Handle the bioauth error in a user-friendly way.
+// fn handle_bioauth_error(error: &anyhow::Error) -> (String, bool) {
+// use robonode_client::{AuthenticateError, EnrollError, Error};
 
-    let face_scan_rejected_message = "the face scan was rejected, this is likely caused by a failed liveness check, so please try again; changing lighting conditions or using a different phone can help";
+// let face_scan_rejected_message = "the face scan was rejected, this is likely caused by a failed liveness check, so please try again; changing lighting conditions or using a different phone can help";
 
-    if let Some(error) = error.downcast_ref::<Error<EnrollError>>() {
-        match error {
-            Error::Call(EnrollError::PersonAlreadyEnrolled) => {
-                ("you have already enrolled".to_owned(), false)
-            }
-            Error::Call(EnrollError::PublicKeyAlreadyUsed) => (
-                "the validator key you supplied was already used".to_owned(),
-                false,
-            ),
-            Error::Call(EnrollError::FaceScanRejected) => {
-                (face_scan_rejected_message.to_owned(), true)
-            }
-            Error::Call(EnrollError::InvalidLivenessData) => {
-                ("the provided liveness data was invalid".to_owned(), true)
-            }
-            Error::Call(EnrollError::InvalidPublicKey) => {
-                ("the public key was invalid".to_owned(), false)
-            }
-            Error::Call(EnrollError::LogicInternal) => {
-                ("an internal logic error has occured".to_owned(), true)
-            }
-            Error::Call(EnrollError::UnknownCode(error_code)) => (
-                format!(
-                    "an unknown error code received from the server: {}",
-                    error_code
-                ),
-                false,
-            ),
-            Error::Call(EnrollError::Unknown(err)) => (err.clone(), true),
-            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
-        }
-    } else if let Some(error) = error.downcast_ref::<Error<AuthenticateError>>() {
-        match error {
-            Error::Call(AuthenticateError::InvalidLivenessData) => {
-                ("the provided liveness data was invalid".to_owned(), true)
-            }
-            Error::Call(AuthenticateError::PersonNotFound) => (
-                "we were unable to find you in the system; have you already enrolled?".to_owned(),
-                true,
-            ),
-            Error::Call(AuthenticateError::FaceScanRejected) => {
-                (face_scan_rejected_message.to_owned(), true)
-            }
-            Error::Call(AuthenticateError::SignatureInvalid) => {
-                ("the validator key used for authentication does not match the one used during enroll; you have likely used a different mnemonic, but you have to use the same one, otherwise you will be unable to authenticate; you have saved the mnemonic somewhere as requested, right? ;) if you've lost your menmonic you will be unable to continue.".to_owned(), true)
-            }
-            Error::Call(AuthenticateError::LogicInternal) => {
-                ("an internal logic error has occured".to_owned(), true)
-            }
-            Error::Call(AuthenticateError::UnknownCode(error_code)) => (
-                format!(
-                    "an unknown error code received from the server: {}",
-                    error_code
-                ),
-                false,
-            ),
-            Error::Call(AuthenticateError::Unknown(err)) => (err.clone(), true),
-            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
-        }
-    } else {
-        (error.to_string(), false)
-    }
-}
+// if let Some(error) = error.downcast_ref::<Error<EnrollError>>() {
+// match error {
+// Error::Call(EnrollError::PersonAlreadyEnrolled) => {
+// ("you have already enrolled".to_owned(), false)
+// }
+// Error::Call(EnrollError::PublicKeyAlreadyUsed) => (
+// "the validator key you supplied was already used".to_owned(),
+// false,
+// ),
+// Error::Call(EnrollError::FaceScanRejected) => {
+// (face_scan_rejected_message.to_owned(), true)
+// }
+// Error::Call(EnrollError::InvalidLivenessData) => {
+// ("the provided liveness data was invalid".to_owned(), true)
+// }
+// Error::Call(EnrollError::InvalidPublicKey) => {
+// ("the public key was invalid".to_owned(), false)
+// }
+// Error::Call(EnrollError::LogicInternal) => {
+// ("an internal logic error has occured".to_owned(), true)
+// }
+// Error::Call(EnrollError::UnknownCode(error_code)) => (
+// format!(
+// "an unknown error code received from the server: {}",
+// error_code
+// ),
+// false,
+// ),
+// Error::Call(EnrollError::Unknown(err)) => (err.clone(), true),
+// Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
+// }
+// } else if let Some(error) = error.downcast_ref::<Error<AuthenticateError>>() {
+// match error {
+// Error::Call(AuthenticateError::InvalidLivenessData) => {
+// ("the provided liveness data was invalid".to_owned(), true)
+// }
+// Error::Call(AuthenticateError::PersonNotFound) => (
+// "we were unable to find you in the system; have you already enrolled?".to_owned(),
+// true,
+// ),
+// Error::Call(AuthenticateError::FaceScanRejected) => {
+// (face_scan_rejected_message.to_owned(), true)
+// }
+// Error::Call(AuthenticateError::SignatureInvalid) => {
+// ("the validator key used for authentication does not match the one used during enroll; you have likely used a different mnemonic, but you have to use the same one, otherwise you will be unable to authenticate; you have saved the mnemonic somewhere as requested, right? ;) if you've lost your menmonic you will be unable to continue.".to_owned(), true)
+// }
+// Error::Call(AuthenticateError::LogicInternal) => {
+// ("an internal logic error has occured".to_owned(), true)
+// }
+// Error::Call(AuthenticateError::UnknownCode(error_code)) => (
+// format!(
+// "an unknown error code received from the server: {}",
+// error_code
+// ),
+// false,
+// ),
+// Error::Call(AuthenticateError::Unknown(err)) => (err.clone(), true),
+// Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
+// }
+// } else {
+// (error.to_string(), false)
+// }
+// }
