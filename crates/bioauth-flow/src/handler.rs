@@ -47,6 +47,33 @@ pub trait RpcHandler {
     async fn enroll(&self, liveness_data: LivenessData) -> Result<(), RpcError>;
 }
 
+#[async_trait::async_trait]
+impl<RC, VPK, VS, TP> RpcHandler for Handler<RC, VPK, VS, TP>
+where
+    Self: Send + Sync,
+    RC: Deref<Target = robonode_client::Client> + Send + Sync,
+    VS: Signer<Vec<u8>> + Send + Sync,
+    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
+    VPK: AsRef<[u8]> + Send + Sync,
+    TP: TransactionPool,
+{
+    async fn get_facetec_device_sdk_params(&self) -> Result<FacetecDeviceSdkParams, RpcError> {
+        Handler::get_facetec_device_sdk_params(self).await
+    }
+
+    async fn get_facetec_session_token(&self) -> Result<String, RpcError> {
+        Handler::get_facetec_session_token(self).await
+    }
+
+    async fn authenticate(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
+        Handler::authenticate(self, liveness_data).await
+    }
+
+    async fn enroll(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
+        Handler::enroll(self, liveness_data).await
+    }
+}
+
 /// The underlying implementation of the RPC part, extracted into a subobject to work around
 /// the common pitfall with the poor async engines implementations of requiring future objects to
 /// be static.
@@ -170,38 +197,5 @@ where
             .await
             .unwrap();
         Ok(())
-    }
-}
-
-#[async_trait::async_trait]
-impl<RC, VPK, VS, TP> RpcHandler for Handler<RC, VPK, VS, TP>
-where
-    Self: Send + Sync,
-    RC: Deref<Target = robonode_client::Client>,
-    VS: Signer<Vec<u8>>,
-    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
-    VPK: AsRef<[u8]> + Send,
-    TP: TransactionPool,
-{
-    /// Get the FaceTec Device SDK parameters to use at the device.
-    async fn get_facetec_device_sdk_params(&self) -> Result<FacetecDeviceSdkParams, RpcError> {
-        // self.get_facetec_device_sdk_params().await
-        todo!();
-    }
-
-    /// Get the FaceTec Session Token.
-    async fn get_facetec_session_token(&self) -> Result<String, RpcError> {
-        // self.get_facetec_session_token().await
-        todo!();
-    }
-
-    async fn authenticate(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
-        // self.authenticate(liveness_data).await
-        todo!();
-    }
-
-    async fn enroll(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
-        // self.enroll(liveness_data).await
-        todo!();
     }
 }
