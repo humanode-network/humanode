@@ -425,6 +425,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         }
     };
 
+    client.chain_info();
+
     // let bioauth_flow_future = {
     // let client = Arc::clone(&client);
     // let keystore = keystore_container.keystore();
@@ -510,7 +512,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     // let at = client.chain_info().best_hash;
     // transaction_pool
-    // .pool()
+    // .
+    // pool()
     // .submit_and_watch(
     // &sp_runtime::generic::BlockId::Hash(at),
     // sp_runtime::transaction_validity::TransactionSource::Local,

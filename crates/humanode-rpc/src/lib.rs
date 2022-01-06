@@ -7,6 +7,7 @@ use bioauth_flow::{
     rpc::{Bioauth, BioauthApi, LivenessDataTxSlot},
 };
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index};
+use sc_client_api::UsageProvider;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
@@ -37,13 +38,14 @@ where
     VS: Signer<Vec<u8>> + Send + Sync + 'static,
     <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
     VPK: AsRef<[u8]> + Send + Sync + 'static,
+    C: UsageProvider<Block>,
     C: ProvideRuntimeApi<Block>,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
     C: Send + Sync + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
     C::Api: BlockBuilder<Block>,
-    P: TransactionPool + 'static,
+    P: TransactionPool<Block = Block> + 'static,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
@@ -72,10 +74,10 @@ where
         (validator_public_key, validator_signer)
     {
         io.extend_with(BioauthApi::to_delegate(Bioauth::new(Handler {
-            client: robonode_client,
+            robonode_client,
             validator_public_key,
             validator_signer,
-            transaction_pool: pool,
+            transaction_manager: bioauth_flow::handler::TransactionManager { client, pool },
         })));
     }
 
