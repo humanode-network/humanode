@@ -477,6 +477,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sp-runtime",
+ "thiserror",
  "tokio",
 ]
 

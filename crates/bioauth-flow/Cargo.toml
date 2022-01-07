@@ -15,6 +15,7 @@ sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 anyhow = "1"
+thiserror = "1"
 async-trait = "0.1"
 futures = { version = "0.3", features = ["compat", "bilock", "unstable"] }
 jsonrpc-core = "18"

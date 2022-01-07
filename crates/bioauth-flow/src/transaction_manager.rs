@@ -6,11 +6,23 @@ use sc_transaction_pool_api::TransactionPool;
 
 use robonode_client::AuthenticateResponse;
 
+/// Errors that may occur from a transaction manager.
+#[derive(thiserror::Error, Debug)]
+pub enum TransactionError {
+    /// Authentication failed
+    // TODO: Do we want to include the original error here?
+    #[error("Authenticate transaction failed.")]
+    AuthenticateFailed,
+}
+
 /// Interface for rpc transactions.
 #[async_trait::async_trait]
 pub trait TransactionManager {
     /// Submit an authenticate transaction.
-    async fn submit_authenticate(&self, response: AuthenticateResponse);
+    async fn submit_authenticate(
+        &self,
+        response: AuthenticateResponse,
+    ) -> Result<(), TransactionError>;
 }
 
 /// Implementation for rpc transactions.
@@ -29,7 +41,10 @@ where
     <<TP as TransactionPool>::Block as sp_runtime::traits::Block>::Extrinsic:
         From<humanode_runtime::UncheckedExtrinsic>,
 {
-    async fn submit_authenticate(&self, response: AuthenticateResponse) {
+    async fn submit_authenticate(
+        &self,
+        response: AuthenticateResponse,
+    ) -> Result<(), TransactionError> {
         let authenticate = pallet_bioauth::Authenticate {
             ticket: response.auth_ticket.into(),
             ticket_signature: response.auth_ticket_signature.into(),
@@ -40,6 +55,7 @@ where
         let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
 
         let at = self.client.usage_info().chain.best_hash;
+
         self.pool
             .submit_and_watch(
                 &sp_runtime::generic::BlockId::Hash(at),
@@ -47,6 +63,8 @@ where
                 ext.into(),
             )
             .await
-            .unwrap();
+            .map_err(|_| TransactionError::AuthenticateFailed)?;
+
+        Ok(())
     }
 }

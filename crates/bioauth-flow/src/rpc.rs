@@ -33,11 +33,11 @@ pub trait BioauthApi {
     #[rpc(name = "bioauth_getFacetecSessionToken")]
     fn get_facetec_session_token(&self) -> FutureResult<String>;
 
-    /// Enroll
+    /// Enroll with provided liveness data.
     #[rpc(name = "bioauth_enroll")]
     fn enroll(&self, liveness_data: LivenessData) -> FutureResult<()>;
 
-    /// Authenticate
+    /// Authenticate with provided liveness data.
     #[rpc(name = "bioauth_authenticate")]
     fn authenticate(&self, liveness_data: LivenessData) -> FutureResult<()>;
 }
@@ -98,21 +98,21 @@ impl<B> BioauthApi for Bioauth<B>
 where
     B: BioauthFlow + Send + Sync + 'static,
 {
-    /// See [`Inner::get_facetec_device_sdk_params`].
     fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams> {
-        self.with_flow_clone(move |flow| async move { flow.get_facetec_device_sdk_params().await })
+        self.with_flow_clone(
+            move |flow| async move { Ok(flow.get_facetec_device_sdk_params().await?) },
+        )
     }
 
-    /// See [`Inner::get_facetec_session_token`].
     fn get_facetec_session_token(&self) -> FutureResult<String> {
-        self.with_flow_clone(move |flow| async move { flow.get_facetec_session_token().await })
+        self.with_flow_clone(move |flow| async move { Ok(flow.get_facetec_session_token().await?) })
     }
 
     fn enroll(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        self.with_flow_clone(move |flow| async move { flow.enroll(liveness_data).await })
+        self.with_flow_clone(move |flow| async move { Ok(flow.enroll(liveness_data).await?) })
     }
 
     fn authenticate(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        self.with_flow_clone(move |flow| async move { flow.authenticate(liveness_data).await })
+        self.with_flow_clone(move |flow| async move { Ok(flow.authenticate(liveness_data).await?) })
     }
 }
