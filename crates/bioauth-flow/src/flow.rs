@@ -75,10 +75,9 @@ where
 #[async_trait::async_trait]
 impl<RC, VPK, VS, M> BioauthFlow for Flow<RC, VPK, VS, M>
 where
-    Self: Send + Sync,
     RC: Deref<Target = robonode_client::Client> + Send + Sync,
     VS: Signer<Vec<u8>> + Send + Sync,
-    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
+    <VS as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
     VPK: AsRef<[u8]> + Send + Sync,
     M: TransactionManager + Send + Sync,
 {
