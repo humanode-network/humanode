@@ -50,3 +50,12 @@ pub trait ValidatorKeyExtractor {
     /// Extract validator public key.
     fn extract_validator_key(&self) -> Result<Option<Self::PublicKeyType>, Self::Error>;
 }
+
+impl<T: ValidatorKeyExtractor> ValidatorKeyExtractor for std::sync::Arc<T> {
+    type Error = T::Error;
+    type PublicKeyType = T::PublicKeyType;
+
+    fn extract_validator_key(&self) -> Result<Option<Self::PublicKeyType>, Self::Error> {
+        self.as_ref().extract_validator_key()
+    }
+}

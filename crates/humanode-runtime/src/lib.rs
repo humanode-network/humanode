@@ -565,6 +565,21 @@ impl_runtime_apis! {
         }
     }
 
+    impl bioauth_flow_api::BioauthFlowApi<Block, AuraId, UnixMilliseconds> for Runtime {
+        fn bioauth_status(id: &AuraId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+            let active_authentications = Bioauth::active_authentications().into_inner();
+            let maybe_active_authentication = active_authentications
+                .iter()
+                .find(|stored_public_key| &stored_public_key.public_key == id);
+            match maybe_active_authentication {
+                None => bioauth_flow_api::BioauthStatus::Inactive,
+                Some(v) => bioauth_flow_api::BioauthStatus::Active {
+                    expires_at: v.expires_at,
+                },
+            }
+        }
+    }
+
     impl sp_session::SessionKeys<Block> for Runtime {
         fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
             opaque::SessionKeys::generate(seed)

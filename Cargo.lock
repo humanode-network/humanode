@@ -464,6 +464,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "bioauth-consensus",
+ "bioauth-flow-api",
  "futures 0.3.17",
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -472,7 +474,20 @@ dependencies = [
  "robonode-client",
  "serde",
  "serde_json",
+ "sp-api",
+ "sp-blockchain",
  "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "bioauth-flow-api"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-std",
 ]
 
 [[package]]
@@ -2155,6 +2170,7 @@ name = "humanode-rpc"
 version = "0.1.0"
 dependencies = [
  "bioauth-flow",
+ "bioauth-flow-api",
  "humanode-runtime",
  "jsonrpc-core",
  "pallet-transaction-payment-rpc",
@@ -2172,6 +2188,7 @@ name = "humanode-runtime"
 version = "0.1.0"
 dependencies = [
  "bioauth-consensus-api",
+ "bioauth-flow-api",
  "chrono",
  "frame-benchmarking",
  "frame-executive",

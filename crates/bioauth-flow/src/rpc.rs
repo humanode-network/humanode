@@ -1,7 +1,10 @@
 //! RPC interface for the bioauth flow.
 
+use std::marker::PhantomData;
 use std::sync::Arc;
 
+pub use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
+use bioauth_flow_api::BioauthFlowApi;
 use futures::channel::oneshot;
 use futures::lock::BiLock;
 use futures::FutureExt;
@@ -9,7 +12,10 @@ use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode;
 use jsonrpc_derive::rpc;
 use primitives_liveness_data::LivenessData;
+use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
+use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
+use sp_blockchain::HeaderBackend;
 
 use crate::flow::LivenessDataProvider;
 
@@ -22,9 +28,33 @@ pub type FutureResult<T> = jsonrpc_core::BoxFuture<Result<T>>;
 /// The parameters necessary to initialize the FaceTec Device SDK.
 type FacetecDeviceSdkParams = Map<String, Value>;
 
+/// The bioauth status as used in the RPC.
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub enum BioauthStatus<Timestamp> {
+    /// When the status can't be determined, but there was no error.
+    /// Can happen if the validator key is absent.
+    Unknown,
+    /// There is no active authentication for the currently used validator key.
+    Inactive,
+    /// There is an active authentication for the currently used validator key.
+    Active {
+        /// The timestamp when the authentication will expire.
+        expires_at: Timestamp,
+    },
+}
+
+impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
+    fn from(status: bioauth_flow_api::BioauthStatus<T>) -> Self {
+        match status {
+            bioauth_flow_api::BioauthStatus::Inactive => Self::Inactive,
+            bioauth_flow_api::BioauthStatus::Active { expires_at } => Self::Active { expires_at },
+        }
+    }
+}
+
 /// The API exposed via JSON-RPC.
 #[rpc]
-pub trait BioauthApi {
+pub trait BioauthApi<Timestamp> {
     /// Get the configuration required for the Device SDK.
     #[rpc(name = "bioauth_getFacetecDeviceSdkParams")]
     fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams>;
@@ -36,6 +66,10 @@ pub trait BioauthApi {
     /// Provide the liveness data for the currently running enrollemnt or authentication process.
     #[rpc(name = "bioauth_provideLivenessData")]
     fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()>;
+
+    /// Get the current bioauth status.
+    #[rpc(name = "bioauth_status")]
+    fn status(&self) -> FutureResult<BioauthStatus<Timestamp>>;
 }
 
 /// The shared [`LivenessData`] sender slot, that we can swap with our ephemernal
@@ -49,43 +83,44 @@ pub fn new_liveness_data_tx_slot() -> (LivenessDataTxSlot, LivenessDataTxSlot) {
 }
 
 /// The RPC implementation.
-pub struct Bioauth<C>
-where
-    C: AsRef<robonode_client::Client>,
-{
+pub struct Bioauth<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp> {
     /// The underlying implementation.
     /// We have to wrap it with `Arc` because `jsonrpc-core` doesn't allow us to use `self` for
     /// the duration of the future; we `clone` the `Arc` to get the `'static` lifetime to
     /// a shared `Inner` instead.
-    inner: Arc<Inner<C>>,
+    inner: Arc<Inner<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp>>,
 }
 
-impl<C> Bioauth<C>
-where
-    C: AsRef<robonode_client::Client>,
+impl<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp>
+    Bioauth<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp>
 {
     /// Create a new [`Bioauth`] API implementation.
-    pub fn new(robonode_client: C, liveness_data_tx_slot: Arc<LivenessDataTxSlot>) -> Self {
+    pub fn new(
+        robonode_client: RobonodeClient,
+        liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
+        validator_key_extractor: ValidatorKeyExtractor,
+        client: Arc<Client>,
+    ) -> Self {
         let inner = Inner {
-            client: robonode_client,
+            robonode_client,
             liveness_data_tx_slot,
+            validator_key_extractor,
+            client,
+            phantom_types: PhantomData,
         };
         Self {
             inner: Arc::new(inner),
         }
     }
-}
 
-impl<C> Bioauth<C>
-where
-    C: AsRef<robonode_client::Client> + Send + Sync + 'static,
-{
     /// A helper function that provides a convenient way to execute a future with a clone of
     /// the `Arc<Inner>`.
     /// It also boxes the resulting [`Future`] `Fut` so it fits into the [`FutureResult`].
     fn with_inner_clone<F, Fut, R>(&self, f: F) -> FutureResult<R>
     where
-        F: FnOnce(Arc<Inner<C>>) -> Fut,
+        F: FnOnce(
+            Arc<Inner<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp>>,
+        ) -> Fut,
         Fut: std::future::Future<Output = Result<R>> + Send + 'static,
         R: Send + 'static,
     {
@@ -94,9 +129,26 @@ where
     }
 }
 
-impl<C> BioauthApi for Bioauth<C>
+impl<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp> BioauthApi<Timestamp>
+    for Bioauth<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp>
 where
-    C: AsRef<robonode_client::Client> + Send + Sync + 'static,
+    RobonodeClient: Send + Sync + 'static,
+    ValidatorKeyExtractor: Send + Sync + 'static,
+    Client: Send + Sync + 'static,
+    Block: Send + Sync + 'static,
+    Timestamp: Send + Sync + 'static,
+
+    RobonodeClient: AsRef<robonode_client::Client>,
+    ValidatorKeyExtractor: ValidatorKeyExtractorT,
+    ValidatorKeyExtractor::PublicKeyType: Encode,
+    ValidatorKeyExtractor::Error: std::fmt::Debug,
+    Client: HeaderBackend<Block>,
+    Client: ProvideRuntimeApi<Block>,
+    Client: Send + Sync + 'static,
+    Client::Api:
+        bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+    Block: BlockT,
+    Timestamp: Encode + Decode,
 {
     /// See [`Inner::get_facetec_device_sdk_params`].
     fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams> {
@@ -112,6 +164,11 @@ where
     fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()> {
         self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
     }
+
+    /// See [`Inner::status`].
+    fn status(&self) -> FutureResult<BioauthStatus<Timestamp>> {
+        self.with_inner_clone(move |inner| inner.status())
+    }
 }
 
 /// The underlying implementation of the RPC part, extracted into a subobject to work around
@@ -119,26 +176,40 @@ where
 /// be static.
 /// Stop it people, why do you even use Rust if you do things like this? Ffs...
 /// See https://github.com/paritytech/jsonrpc/issues/580
-struct Inner<C>
-where
-    C: AsRef<robonode_client::Client>,
-{
+struct Inner<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp> {
     /// The robonode client, used for fetching the FaceTec Session Token.
-    client: C,
+    robonode_client: RobonodeClient,
     /// The liveness data provider sink.
     /// We need an [`Arc`] here to allow sharing the data from across multiple invocations of the
     /// RPC extension builder that will be using this RPC.
     liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
+    /// Provider of the local validator key.
+    validator_key_extractor: ValidatorKeyExtractor,
+    /// The substrate client, provides access to the runtime APIs.
+    client: Arc<Client>,
+    /// The phantom types.
+    phantom_types: PhantomData<(Block, Timestamp)>,
 }
 
-impl<C> Inner<C>
+impl<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp>
+    Inner<RobonodeClient, ValidatorKeyExtractor, Client, Block, Timestamp>
 where
-    C: AsRef<robonode_client::Client>,
+    RobonodeClient: AsRef<robonode_client::Client>,
+    ValidatorKeyExtractor: ValidatorKeyExtractorT,
+    ValidatorKeyExtractor::PublicKeyType: Encode,
+    ValidatorKeyExtractor::Error: std::fmt::Debug,
+    Client: HeaderBackend<Block>,
+    Client: ProvideRuntimeApi<Block>,
+    Client: Send + Sync + 'static,
+    Client::Api:
+        bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+    Block: BlockT,
+    Timestamp: Encode + Decode,
 {
     /// Get the FaceTec Device SDK parameters to use at the device.
     async fn get_facetec_device_sdk_params(self: Arc<Self>) -> Result<FacetecDeviceSdkParams> {
         let res = self
-            .client
+            .robonode_client
             .as_ref()
             .get_facetec_device_sdk_params()
             .await
@@ -153,7 +224,7 @@ where
     /// Get the FaceTec Session Token.
     async fn get_facetec_session_token(self: Arc<Self>) -> Result<String> {
         let res = self
-            .client
+            .robonode_client
             .as_ref()
             .get_facetec_session_token()
             .await
@@ -182,6 +253,43 @@ where
             data: None,
         })?;
         Ok(())
+    }
+
+    /// Obtain the status of the bioauth.
+    async fn status(self: Arc<Self>) -> Result<BioauthStatus<Timestamp>> {
+        let own_key = self
+            .validator_key_extractor
+            .extract_validator_key()
+            .map_err(|error| {
+                tracing::error!(
+                    message = "Unable to extract own key at bioauth flow RPC",
+                    ?error
+                );
+                RpcError {
+                    code: ErrorCode::InternalError,
+                    message: "Unable to extract own key".into(),
+                    data: None,
+                }
+            })?;
+        let own_key = match own_key {
+            Some(v) => v,
+            None => return Ok(BioauthStatus::Unknown),
+        };
+
+        // Extract an id of the last imported block.
+        let at = sp_api::BlockId::Hash(self.client.info().best_hash);
+
+        let status = self
+            .client
+            .runtime_api()
+            .bioauth_status(&at, &own_key)
+            .map_err(|err| RpcError {
+                code: ErrorCode::InternalError,
+                message: format!("Unable to get status from the runtime: {}", err),
+                data: None,
+            })?;
+
+        Ok(status.into())
     }
 }
 
