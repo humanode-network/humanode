@@ -11,7 +11,7 @@ use jsonrpc_derive::rpc;
 use primitives_liveness_data::LivenessData;
 use serde_json::{Map, Value};
 
-use crate::{flow::LivenessDataProvider, handler::RpcHandler};
+use crate::flow::BioauthFlow;
 
 /// A result type that wraps.
 pub type Result<T> = std::result::Result<T, RpcError>;
@@ -53,104 +53,66 @@ pub fn new_liveness_data_tx_slot() -> (LivenessDataTxSlot, LivenessDataTxSlot) {
 }
 
 /// The RPC implementation.
-pub struct Bioauth<H>
+pub struct Bioauth<B>
 where
-    H: RpcHandler,
+    B: BioauthFlow,
 {
     /// The underlying implementation.
     /// We have to wrap it with `Arc` because `jsonrpc-core` doesn't allow us to use `self` for
     /// the duration of the future; we `clone` the `Arc` to get the `'static` lifetime to
     /// a shared `Inner` instead.
-    handler: Arc<H>,
+    flow: Arc<B>,
 }
 
-impl<H> Bioauth<H>
+impl<B> Bioauth<B>
 where
-    H: RpcHandler,
+    B: BioauthFlow,
 {
     /// Create a new [`Bioauth`] API implementation.
-    pub fn new(handler: H) -> Self {
+    pub fn new(handler: B) -> Self {
         Self {
-            handler: handler.into(),
+            flow: handler.into(),
         }
     }
 }
 
-impl<H> Bioauth<H>
+impl<B> Bioauth<B>
 where
-    H: RpcHandler + Send + Sync + 'static,
+    B: BioauthFlow + Send + Sync + 'static,
 {
     /// A helper function that provides a convenient way to execute a future with a clone of
     /// the `Arc<Inner>`.
     /// It also boxes the resulting [`Future`] `Fut` so it fits into the [`FutureResult`].
-    fn with_handler_clone<F, Fut, R>(&self, f: F) -> FutureResult<R>
+    fn with_flow_clone<F, Fut, R>(&self, f: F) -> FutureResult<R>
     where
-        F: FnOnce(Arc<H>) -> Fut,
+        F: FnOnce(Arc<B>) -> Fut,
         Fut: std::future::Future<Output = Result<R>> + Send + 'static,
         R: Send + 'static,
     {
-        let handler = Arc::clone(&self.handler);
+        let handler = Arc::clone(&self.flow);
         f(handler).boxed()
     }
 }
 
-impl<H> BioauthApi for Bioauth<H>
+impl<B> BioauthApi for Bioauth<B>
 where
-    H: RpcHandler + Send + Sync + 'static,
+    B: BioauthFlow + Send + Sync + 'static,
 {
     /// See [`Inner::get_facetec_device_sdk_params`].
     fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams> {
-        self.with_handler_clone(move |handler| async move {
-            handler.get_facetec_device_sdk_params().await
-        })
+        self.with_flow_clone(move |flow| async move { flow.get_facetec_device_sdk_params().await })
     }
 
     /// See [`Inner::get_facetec_session_token`].
     fn get_facetec_session_token(&self) -> FutureResult<String> {
-        self.with_handler_clone(
-            move |handler| async move { handler.get_facetec_session_token().await },
-        )
+        self.with_flow_clone(move |flow| async move { flow.get_facetec_session_token().await })
     }
 
     fn enroll(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        self.with_handler_clone(move |handler| async move { handler.enroll(liveness_data).await })
+        self.with_flow_clone(move |flow| async move { flow.enroll(liveness_data).await })
     }
 
     fn authenticate(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        self.with_handler_clone(
-            move |handler| async move { handler.authenticate(liveness_data).await },
-        )
-    }
-}
-
-/// Provider implements a [`LivenessDataProvider`].
-pub struct Provider {
-    /// The shared liveness data sender slot, that we can swap with our ephemernal
-    /// channel upon a liveness data reuqest.
-    liveness_data_tx_slot: LivenessDataTxSlot,
-}
-
-impl Provider {
-    /// Construct a new [`Provider`].
-    pub fn new(liveness_data_tx_slot: LivenessDataTxSlot) -> Self {
-        Self {
-            liveness_data_tx_slot,
-        }
-    }
-}
-
-#[async_trait::async_trait]
-impl LivenessDataProvider for Provider {
-    type Error = oneshot::Canceled;
-
-    async fn provide(&mut self) -> std::result::Result<LivenessData, Self::Error> {
-        let (tx, rx) = oneshot::channel();
-
-        {
-            let mut maybe_tx_guard = self.liveness_data_tx_slot.lock().await;
-            let _ = maybe_tx_guard.insert(tx); // insert a new sender value and free the lock asap
-        }
-
-        Ok(rx.await?)
+        self.with_flow_clone(move |flow| async move { flow.authenticate(liveness_data).await })
     }
 }

@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use bioauth_flow::{
-    handler::{Handler, Signer},
+    flow::{Flow, Signer},
     rpc::{Bioauth, BioauthApi},
 };
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index};
@@ -73,11 +73,11 @@ where
     if let (Some(validator_public_key), Some(validator_signer)) =
         (validator_public_key, validator_signer)
     {
-        io.extend_with(BioauthApi::to_delegate(Bioauth::new(Handler {
+        io.extend_with(BioauthApi::to_delegate(Bioauth::new(Flow {
             robonode_client,
             validator_public_key,
             validator_signer,
-            transaction_manager: bioauth_flow::handler::TransactionManager { client, pool },
+            transaction_manager: bioauth_flow::transaction_manager::Manager { client, pool },
         })));
     }
 

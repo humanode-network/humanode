@@ -2,7 +2,7 @@
 
 use std::{fmt::Display, marker::PhantomData, sync::Arc};
 
-use bioauth_flow::handler::Signer;
+use bioauth_flow::flow::Signer;
 use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
 use sp_keystore::CryptoStore;
 

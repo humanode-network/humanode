@@ -1,24 +1,16 @@
-//! The flow implementation.
+//! Handle rpc endpoints
 
-use std::{marker::PhantomData, ops::Deref};
+use std::ops::Deref;
+use std::sync::Arc;
 
-use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
-use robonode_client::{AuthenticateRequest, EnrollRequest};
+use jsonrpc_core::Error as RpcError;
+use jsonrpc_core::ErrorCode;
+use primitives_liveness_data::LivenessData;
+use primitives_liveness_data::OpaqueLivenessData;
+use robonode_client::AuthenticateRequest;
+use robonode_client::EnrollRequest;
 
-/// Something that can provide us with the [`LivenessData`].
-/// Typically this would be implemented by a state-machine that powers the LDP, and interacts with
-/// the handheld device to establish a session and capture the FaceScan and the rest of
-/// the parameters that contribute to the [`LivenessData`].
-#[async_trait::async_trait]
-pub trait LivenessDataProvider {
-    /// The error type that can occur while we're obtaining the [`LivenessData`].
-    type Error;
-
-    /// Obtain and return the [`LivenessData`].
-    ///
-    /// Takes `self` by `&mut` to allow internal state-machine to progress.
-    async fn provide(&mut self) -> Result<LivenessData, Self::Error>;
-}
+use crate::{rpc::FacetecDeviceSdkParams, transaction_manager::TransactionManager};
 
 /// Signer provides signatures for the data.
 #[async_trait::async_trait]
@@ -33,80 +25,91 @@ pub trait Signer<S> {
         D: AsRef<[u8]> + Send + 'a;
 }
 
-/// The necessary components for the bioauth flow.
-///
-/// The goal of this component is to encapsulate interoperation with the handheld device
-/// and the robonode.
-pub struct Flow<LDP, RC, VPK, VS> {
-    /// The provider of the liveness data.
-    pub liveness_data_provider: LDP,
-    /// The Robonode API client.
+/// Interface for handling bioauth rpc.
+#[async_trait::async_trait]
+pub trait BioauthFlow {
+    /// Get the FaceTec Device SDK parameters to use at the device.
+    async fn get_facetec_device_sdk_params(&self) -> Result<FacetecDeviceSdkParams, RpcError>;
+
+    /// Get the FaceTec Session Token.
+    async fn get_facetec_session_token(&self) -> Result<String, RpcError>;
+
+    /// Authenticate given liveness data.
+    async fn authenticate(&self, liveness_data: LivenessData) -> Result<(), RpcError>;
+
+    /// Enroll with given liveness data.
+    async fn enroll(&self, liveness_data: LivenessData) -> Result<(), RpcError>;
+}
+
+/// Implementation for handling bioauth rpc.
+pub struct Flow<RC, VPK, VS, M> {
+    /// The transaction manager to use.
+    pub transaction_manager: M,
+    /// The robonode client.
     pub robonode_client: RC,
     /// The type used to encode the public key.
-    pub validator_public_key_type: PhantomData<VPK>,
+    pub validator_public_key: Arc<VPK>,
     /// The type that provides signing with the validator private key.
-    pub validator_signer_type: PhantomData<VS>,
+    pub validator_signer: Arc<VS>,
 }
 
-impl<LDP, RC, VPK, VS> Flow<LDP, RC, VPK, VS>
+impl<RC, VPK, VS, M> Flow<RC, VPK, VS, M>
 where
-    LDP: LivenessDataProvider,
+    VS: Signer<Vec<u8>>,
+    <VS as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
 {
-    /// The common logic to obtain the plain [`LivenessData`] from a provider and  convert it to
-    /// an [`OpaqueLivenessData`].
-    async fn obtain_opaque_liveness_data(
-        &mut self,
-    ) -> Result<OpaqueLivenessData, <LDP as LivenessDataProvider>::Error> {
-        let liveness_data = self.liveness_data_provider.provide().await?;
-        Ok(OpaqueLivenessData::from(&liveness_data))
+    /// Return the opaque liveness data and corresponding signature.
+    async fn sign(&self, liveness_data: &LivenessData) -> (OpaqueLivenessData, Vec<u8>) {
+        let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
+
+        let signature = self
+            .validator_signer
+            .sign(&opaque_liveness_data)
+            .await
+            .unwrap();
+
+        (opaque_liveness_data, signature)
     }
 }
 
-impl<LDP, RC, VPK, VS> Flow<LDP, RC, VPK, VS>
+#[async_trait::async_trait]
+impl<RC, VPK, VS, M> BioauthFlow for Flow<RC, VPK, VS, M>
 where
-    VS: Signer<Vec<u8>>,
+    Self: Send + Sync,
+    RC: Deref<Target = robonode_client::Client> + Send + Sync,
+    VS: Signer<Vec<u8>> + Send + Sync,
     <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
-    LDP: LivenessDataProvider,
-    <LDP as LivenessDataProvider>::Error: Send + Sync + std::error::Error + 'static,
-    RC: Deref<Target = robonode_client::Client>,
-    VPK: AsRef<[u8]>,
+    VPK: AsRef<[u8]> + Send + Sync,
+    M: TransactionManager + Send + Sync,
 {
-    /// The enroll flow.
-    pub async fn enroll(&mut self, public_key: &VPK, signer: &VS) -> Result<(), anyhow::Error> {
-        let opaque_liveness_data = self.obtain_opaque_liveness_data().await?;
-
-        let signature = signer.sign(&opaque_liveness_data).await?;
-
-        self.robonode_client
-            .enroll(EnrollRequest {
-                liveness_data: opaque_liveness_data.as_ref(),
-                public_key: public_key.as_ref(),
-                liveness_data_signature: signature.as_ref(),
-            })
-            .await?;
-
-        Ok(())
+    async fn get_facetec_device_sdk_params(&self) -> Result<FacetecDeviceSdkParams, RpcError> {
+        let res = self
+            .robonode_client
+            .get_facetec_device_sdk_params()
+            .await
+            .map_err(|err| RpcError {
+                code: ErrorCode::ServerError(1),
+                message: format!("request to the robonode failed: {}", err),
+                data: None,
+            })?;
+        Ok(res)
     }
-}
 
-impl<LDP, RC, VPK, VS> Flow<LDP, RC, VPK, VS>
-where
-    VS: Signer<Vec<u8>>,
-    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
-    LDP: LivenessDataProvider,
-    <LDP as LivenessDataProvider>::Error: Send + Sync + std::error::Error + 'static,
-    RC: Deref<Target = robonode_client::Client>,
-{
-    /// The authentication flow.
-    ///
-    /// Returns the authentication response, providing the auth ticket and its signature.
-    pub async fn authenticate(
-        &mut self,
-        signer: &VS,
-    ) -> Result<robonode_client::AuthenticateResponse, anyhow::Error> {
-        let opaque_liveness_data = self.obtain_opaque_liveness_data().await?;
+    async fn get_facetec_session_token(&self) -> Result<String, RpcError> {
+        let res = self
+            .robonode_client
+            .get_facetec_session_token()
+            .await
+            .map_err(|err| RpcError {
+                code: ErrorCode::ServerError(1),
+                message: format!("request to the robonode failed: {}", err),
+                data: None,
+            })?;
+        Ok(res.session_token)
+    }
 
-        let signature = signer.sign(&opaque_liveness_data).await?;
+    async fn authenticate(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
+        let (opaque_liveness_data, signature) = self.sign(&liveness_data).await;
 
         let response = self
             .robonode_client
@@ -114,8 +117,26 @@ where
                 liveness_data: opaque_liveness_data.as_ref(),
                 liveness_data_signature: signature.as_ref(),
             })
-            .await?;
+            .await
+            .unwrap();
 
-        Ok(response)
+        self.transaction_manager.submit_authenticate(response).await;
+
+        Ok(())
+    }
+
+    async fn enroll(&self, liveness_data: LivenessData) -> Result<(), RpcError> {
+        let (opaque_liveness_data, signature) = self.sign(&liveness_data).await;
+
+        self.robonode_client
+            .enroll(EnrollRequest {
+                liveness_data: opaque_liveness_data.as_ref(),
+                liveness_data_signature: signature.as_ref(),
+                public_key: self.validator_public_key.as_ref().as_ref(),
+            })
+            .await
+            .unwrap();
+
+        Ok(())
     }
 }
