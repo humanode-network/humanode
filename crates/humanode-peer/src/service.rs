@@ -304,7 +304,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         .ok_or_else(|| ServiceError::Other("bioauth flow config is not set".into()))?;
 
     let evm_config =
-        evm_config.ok_or_else(|| ServiceError::Other("evm config is not set".into()))?;
+        evm_config.expect("already used during substrate partial components exctraction");
 
     let role = config.role.clone();
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
