@@ -89,7 +89,7 @@ std = [
   "pallet-ethereum/std",
   "pallet-evm/std",
   "pallet-evm-precompile-simple/std",
-	"pallet-evm-precompile-sha3fips/std",
+  "pallet-evm-precompile-sha3fips/std",
   "pallet-dynamic-fee/std",
   "pallet-grandpa/std",
   "pallet-randomness-collective-flip/std",
