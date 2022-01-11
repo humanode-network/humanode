@@ -2,10 +2,7 @@
 
 use std::sync::Arc;
 
-use bioauth_flow::{
-    flow::{Flow, Signer},
-    rpc::{Bioauth, BioauthApi},
-};
+use bioauth_flow::{Bioauth, BioauthApi, Signer};
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index};
 use sc_client_api::UsageProvider;
 pub use sc_rpc_api::DenyUnsafe;
@@ -73,12 +70,13 @@ where
     if let (Some(validator_public_key), Some(validator_signer)) =
         (validator_public_key, validator_signer)
     {
-        io.extend_with(BioauthApi::to_delegate(Bioauth::new(Flow {
+        io.extend_with(BioauthApi::to_delegate(Bioauth::new(
             robonode_client,
             validator_public_key,
             validator_signer,
-            transaction_manager: bioauth_flow::transaction_manager::Manager { client, pool },
-        })));
+            client,
+            pool,
+        )));
     }
 
     io
