@@ -479,6 +479,7 @@ dependencies = [
  "sp-runtime",
  "thiserror",
  "tokio",
+ "tracing",
 ]
 
 [[package]]

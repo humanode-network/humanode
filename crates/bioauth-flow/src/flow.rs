@@ -9,6 +9,7 @@ use robonode_client::{
     AuthenticateError, AuthenticateRequest, EnrollError, EnrollRequest, Error as RobonodeError,
     GetFacetecDeviceSdkParamsError, GetFacetecSessionTokenError,
 };
+use tracing::*;
 
 use crate::{
     rpc::FacetecDeviceSdkParams,
@@ -131,6 +132,8 @@ where
     }
 
     async fn authenticate(&self, liveness_data: LivenessData) -> Result<(), BioauthError> {
+        info!("Bioauth flow - authentication in progress");
+
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
         let response = self
@@ -141,14 +144,22 @@ where
             })
             .await?;
 
+        info!("Bioauth flow - authentication complete");
+
+        info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
+
         self.transaction_manager
             .submit_authenticate(response)
             .await?;
+
+        info!("Bioauth flow - authenticate transaction complete");
 
         Ok(())
     }
 
     async fn enroll(&self, liveness_data: LivenessData) -> Result<(), BioauthError> {
+        info!("Bioauth flow - enrolling in progress");
+
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
         self.robonode_client
@@ -158,6 +169,8 @@ where
                 public_key: self.validator_public_key.as_ref().as_ref(),
             })
             .await?;
+
+        info!("Bioauth flow - enrolling complete");
 
         Ok(())
     }

@@ -425,8 +425,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         }
     };
 
-    client.chain_info();
-
     // let bioauth_flow_future = {
     // let client = Arc::clone(&client);
     // let keystore = keystore_container.keystore();
