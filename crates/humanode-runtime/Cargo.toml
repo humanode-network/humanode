@@ -16,7 +16,9 @@ primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", 
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 
 chrono = { version = "0.4.19", default-features = false }
-codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "2", default-features = false, features = [
+  "derive",
+] }
 fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
