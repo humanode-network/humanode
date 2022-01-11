@@ -2,17 +2,17 @@
 
 use std::sync::Arc;
 
-use bioauth_flow::{Bioauth, BioauthApi, Signer};
-use humanode_runtime::{opaque::Block, AccountId, Balance, Index};
+use bioauth_flow::{Bioauth, BioauthApi, Signer, ValidatorKeyExtractorT};
+use humanode_runtime::{opaque::Block, AccountId, Balance, Index, UnixMilliseconds};
 use sc_client_api::UsageProvider;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
-use sp_api::ProvideRuntimeApi;
+use sp_api::{Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
 /// RPC subsystem dependencies.
-pub struct Deps<C, P, VPK, VS> {
+pub struct Deps<C, P, VPK, VS, VKE> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
@@ -25,11 +25,13 @@ pub struct Deps<C, P, VPK, VS> {
     pub deny_unsafe: DenyUnsafe,
     /// An ready robonode API client to tunnel the calls to.
     pub robonode_client: Arc<robonode_client::Client>,
+    /// Extracts the currently used validator key.
+    pub validator_key_extractor: VKE,
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, VPK, VS>(
-    deps: Deps<C, P, VPK, VS>,
+pub fn create<C, P, VPK, VS, VKE>(
+    deps: Deps<C, P, VPK, VS, VKE>,
 ) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
     VS: Signer<Vec<u8>> + Send + Sync + 'static,
@@ -41,8 +43,12 @@ where
     C: Send + Sync + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
+    C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
     C::Api: BlockBuilder<Block>,
     P: TransactionPool<Block = Block> + 'static,
+    VKE: ValidatorKeyExtractorT + Send + Sync + 'static,
+    VKE::PublicKeyType: Encode,
+    VKE::Error: std::fmt::Debug,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
@@ -55,6 +61,7 @@ where
         validator_signer,
         deny_unsafe,
         robonode_client,
+        validator_key_extractor,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -76,6 +83,7 @@ where
             validator_signer,
             client,
             pool,
+            validator_key_extractor,
         )));
     }
 

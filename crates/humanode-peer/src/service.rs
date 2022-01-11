@@ -257,9 +257,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry.as_ref().map(|x| x.handle()),
     );
 
+    let validator_key_extractor = Arc::new(
+        bioauth_consensus::keystore::ValidatorKeyExtractor::new(keystore_container.sync_keystore()),
+    );
+
     let proposer_factory = bioauth_consensus::BioauthProposer::new(
         proposer_factory,
-        bioauth_consensus::keystore::ValidatorKeyExtractor::new(keystore_container.sync_keystore()),
+        Arc::clone(&validator_key_extractor),
         bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
     );
 
@@ -332,6 +336,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             render_qr_code("Bioauth flow ready");
         }
 
+        let validator_key_extractor = Arc::clone(&validator_key_extractor);
         Box::new(move |deny_unsafe, _| {
             Ok(humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
@@ -340,6 +345,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 robonode_client: Arc::clone(&robonode_client),
                 validator_public_key: validator_public_key.as_ref().map(Arc::clone),
                 validator_signer: validator_signer.as_ref().map(Arc::clone),
+                validator_key_extractor: Arc::clone(&validator_key_extractor),
             }))
         })
     };
