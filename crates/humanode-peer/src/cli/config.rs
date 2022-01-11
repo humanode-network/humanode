@@ -46,6 +46,7 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
 
         let evm = self.evm_params().map(|params| configuration::Evm {
             max_past_logs: params.max_past_logs,
+            target_gas_price: params.target_gas_price,
         });
 
         Ok(Configuration {

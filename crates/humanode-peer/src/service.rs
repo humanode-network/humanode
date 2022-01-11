@@ -16,6 +16,7 @@ use sc_service::{
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
+use sp_core::U256;
 use std::{marker::PhantomData, sync::Arc, time::Duration};
 use tracing::*;
 
@@ -125,8 +126,14 @@ pub fn new_partial(
     ServiceError,
 > {
     let Configuration {
-        substrate: config, ..
+        substrate: config,
+        evm: evm_config,
+        ..
     } = config;
+
+    let evm_config = evm_config
+        .as_ref()
+        .ok_or_else(|| ServiceError::Other("evm config is not set".into()))?;
 
     let telemetry = config
         .telemetry_endpoints
@@ -186,6 +193,7 @@ pub fn new_partial(
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
+    let target_gas_price = evm_config.target_gas_price;
 
     let import_queue =
         sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _, _>(ImportQueueParams {
@@ -201,7 +209,10 @@ pub fn new_partial(
                         raw_slot_duration,
                     );
 
-                Ok((timestamp, slot))
+                let dynamic_fee =
+                    pallet_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
+
+                Ok((timestamp, slot, dynamic_fee))
             },
             spawner: &task_manager.spawn_essential_handle(),
             can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(
@@ -284,6 +295,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
     let prometheus_registry = config.prometheus_registry().cloned();
+    let target_gas_price = evm_config.target_gas_price;
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -384,7 +396,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                         raw_slot_duration,
                     );
 
-                Ok((timestamp, slot))
+                let dynamic_fee =
+                    pallet_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
+
+                Ok((timestamp, slot, dynamic_fee))
             },
             force_authoring,
             backoff_authoring_blocks,

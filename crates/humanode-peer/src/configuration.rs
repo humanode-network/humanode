@@ -55,4 +55,7 @@ impl BioauthFlow {
 pub struct Evm {
     /// Maximum number of logs in a query.
     pub max_past_logs: u32,
+
+    /// The dynamic-fee pallet target gas price set by block author.
+    pub target_gas_price: u64,
 }
