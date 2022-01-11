@@ -565,7 +565,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 .submit_and_watch(
                     &sp_runtime::generic::BlockId::Hash(at),
                     sp_runtime::transaction_validity::TransactionSource::Local,
-                    ext.into(),
+                    ext.0.into(),
                 )
                 .await
                 .unwrap();

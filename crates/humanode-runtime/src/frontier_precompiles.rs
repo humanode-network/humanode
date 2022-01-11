@@ -25,6 +25,7 @@ where
             .collect()
     }
 }
+
 impl<R> PrecompileSet for FrontierPrecompiles<R>
 where
     R: pallet_evm::Config,
