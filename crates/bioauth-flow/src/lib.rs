@@ -94,7 +94,6 @@ pub trait BioauthApi<Timestamp> {
 /// The RPC implementation.
 pub struct Bioauth<
     RobonodeClient,
-    ValidatorPublicKey,
     ValidatorSigner,
     Client,
     TransactionPool,
@@ -108,7 +107,6 @@ pub struct Bioauth<
     inner: Arc<
         Inner<
             RobonodeClient,
-            ValidatorPublicKey,
             ValidatorSigner,
             Client,
             TransactionPool,
@@ -120,7 +118,6 @@ pub struct Bioauth<
 
 impl<
         RobonodeClient,
-        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         TransactionPool,
@@ -129,7 +126,6 @@ impl<
     >
     Bioauth<
         RobonodeClient,
-        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         TransactionPool,
@@ -140,7 +136,6 @@ impl<
     /// Create a new [`Bioauth`] API implementation.
     pub fn new(
         robonode_client: RobonodeClient,
-        validator_public_key: Arc<ValidatorPublicKey>,
         validator_signer: Arc<ValidatorSigner>,
         client: Arc<Client>,
         pool: Arc<TransactionPool>,
@@ -151,7 +146,6 @@ impl<
                 robonode_client,
                 client,
                 pool,
-                validator_public_key,
                 validator_signer,
                 validator_key_extractor,
                 phantom: Default::default(),
@@ -163,7 +157,6 @@ impl<
 
 impl<
         RobonodeClient,
-        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         TransactionPool,
@@ -172,7 +165,6 @@ impl<
     >
     Bioauth<
         RobonodeClient,
-        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         TransactionPool,
@@ -189,7 +181,6 @@ impl<
             Arc<
                 Inner<
                     RobonodeClient,
-                    ValidatorPublicKey,
                     ValidatorSigner,
                     Client,
                     TransactionPool,
@@ -208,7 +199,6 @@ impl<
 
 impl<
         RobonodeClient,
-        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         TransactionPool,
@@ -217,7 +207,6 @@ impl<
     > BioauthApi<Timestamp>
     for Bioauth<
         RobonodeClient,
-        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         TransactionPool,
@@ -227,20 +216,20 @@ impl<
 where
     RobonodeClient: Send + Sync + 'static,
     ValidatorSigner: Send + Sync + 'static,
-    ValidatorPublicKey: Send + Sync + 'static,
     TransactionPool: Send + Sync + 'static,
     Client: Send + Sync + 'static,
     ValidatorKeyExtractor: Send + Sync + 'static,
     Timestamp: Send + Sync + 'static,
+    ValidatorKeyExtractor::PublicKeyType: Send + Sync,
 
     RobonodeClient: Deref<Target = robonode_client::Client>,
     ValidatorSigner: Signer<Vec<u8>>,
     <ValidatorSigner as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
-    ValidatorPublicKey: AsRef<[u8]>,
     TransactionPool: TransactionPoolT,
     Client: UsageProvider<<TransactionPool as TransactionPoolT>::Block>,
     ValidatorKeyExtractor: ValidatorKeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode,
+    ValidatorKeyExtractor::PublicKeyType: AsRef<[u8]>,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
     <<TransactionPool as TransactionPoolT>::Block as sp_runtime::traits::Block>::Extrinsic:
         From<humanode_runtime::UncheckedExtrinsic>,
@@ -286,7 +275,6 @@ where
 /// See https://github.com/paritytech/jsonrpc/issues/580
 struct Inner<
     RobonodeClient,
-    ValidatorPublicKey,
     ValidatorSigner,
     Client,
     TransactionPool,
@@ -299,8 +287,6 @@ struct Inner<
     client: Arc<Client>,
     /// The transaction pool to use.
     pool: Arc<TransactionPool>,
-    /// The type used to encode the public key.
-    validator_public_key: Arc<ValidatorPublicKey>,
     /// The type that provides signing with the validator private key.
     validator_signer: Arc<ValidatorSigner>,
     /// Provider of the local validator key.
@@ -311,7 +297,6 @@ struct Inner<
 
 impl<
         RobonodeClient,
-        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         TransactionPool,
@@ -320,7 +305,6 @@ impl<
     >
     Inner<
         RobonodeClient,
-        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         TransactionPool,
@@ -331,11 +315,11 @@ where
     RobonodeClient: Deref<Target = robonode_client::Client>,
     ValidatorSigner: Signer<Vec<u8>>,
     <ValidatorSigner as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
-    ValidatorPublicKey: AsRef<[u8]>,
     TransactionPool: sc_transaction_pool_api::TransactionPool,
     Client: UsageProvider<<TransactionPool as sc_transaction_pool_api::TransactionPool>::Block>,
     ValidatorKeyExtractor: ValidatorKeyExtractorT,
-    ValidatorKeyExtractor::PublicKeyType: Encode,
+    ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]>,
+    ValidatorKeyExtractor::PublicKeyType: AsRef<[u8]>,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
     <<TransactionPool as sc_transaction_pool_api::TransactionPool>::Block as sp_runtime::traits::Block>::Extrinsic:
         From<humanode_runtime::UncheckedExtrinsic>,
@@ -432,11 +416,16 @@ where
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
+        let public_key = self.validator_public_key()?.ok_or(RpcError {
+                code: ErrorCode::ServerError(1),
+                message: "Validator public key not found".to_string(),
+                data: None,
+        })?;
         self.robonode_client
             .enroll(EnrollRequest {
                 liveness_data: opaque_liveness_data.as_ref(),
                 liveness_data_signature: signature.as_ref(),
-                public_key: self.validator_public_key.as_ref().as_ref(),
+                public_key: public_key.as_ref(),
             })
             .await
             .map_err(|err| RpcError {
@@ -452,20 +441,7 @@ where
 
     /// Obtain the status of the bioauth.
     async fn status(self: Arc<Self>) -> Result<BioauthStatus<Timestamp>> {
-        let own_key = self
-            .validator_key_extractor
-            .extract_validator_key()
-            .map_err(|error| {
-                tracing::error!(
-                    message = "Unable to extract own key at bioauth flow RPC",
-                    ?error
-                );
-                RpcError {
-                    code: ErrorCode::InternalError,
-                    message: "Unable to extract own key".into(),
-                    data: None,
-                }
-            })?;
+        let own_key = self.validator_public_key()?;
         let own_key = match own_key {
             Some(v) => v,
             None => return Ok(BioauthStatus::Unknown),
@@ -485,6 +461,24 @@ where
             })?;
 
         Ok(status.into())
+    }
+
+    /// Extract the validator public key.
+    fn validator_public_key(&self) -> Result<Option<ValidatorKeyExtractor::PublicKeyType>>  {
+         self
+            .validator_key_extractor
+            .extract_validator_key()
+            .map_err(|error| {
+                tracing::error!(
+                    message = "Unable to extract own key at bioauth flow RPC",
+                    ?error
+                );
+                RpcError {
+                    code: ErrorCode::InternalError,
+                    message: "Unable to extract own key".into(),
+                    data: None,
+                }
+            })
     }
 
     /// Return the opaque liveness data and corresponding signature.

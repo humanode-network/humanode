@@ -12,13 +12,11 @@ use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
 /// RPC subsystem dependencies.
-pub struct Deps<C, P, VPK, VS, VKE> {
+pub struct Deps<C, P, VS, VKE> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
     pub pool: Arc<P>,
-    /// The type used to encode the public key.
-    pub validator_public_key: Option<Arc<VPK>>,
     /// The type that provides signing with the validator private key.
     pub validator_signer: Option<Arc<VS>>,
     /// Whether to deny unsafe calls.
@@ -30,13 +28,13 @@ pub struct Deps<C, P, VPK, VS, VKE> {
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, VPK, VS, VKE>(
-    deps: Deps<C, P, VPK, VS, VKE>,
+pub fn create<C, P, VS, VKE>(
+    deps: Deps<C, P, VS, VKE>,
 ) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
     VS: Signer<Vec<u8>> + Send + Sync + 'static,
     <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
-    VPK: AsRef<[u8]> + Send + Sync + 'static,
+    VKE::PublicKeyType: Send + Sync,
     C: UsageProvider<Block>,
     C: ProvideRuntimeApi<Block>,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
@@ -48,6 +46,7 @@ where
     P: TransactionPool<Block = Block> + 'static,
     VKE: ValidatorKeyExtractorT + Send + Sync + 'static,
     VKE::PublicKeyType: Encode,
+    VKE::PublicKeyType: AsRef<[u8]>,
     VKE::Error: std::fmt::Debug,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
@@ -57,7 +56,6 @@ where
     let Deps {
         client,
         pool,
-        validator_public_key,
         validator_signer,
         deny_unsafe,
         robonode_client,
@@ -74,12 +72,9 @@ where
         Arc::clone(&client),
     )));
 
-    if let (Some(validator_public_key), Some(validator_signer)) =
-        (validator_public_key, validator_signer)
-    {
+    if let Some(validator_signer) = validator_signer {
         io.extend_with(BioauthApi::to_delegate(Bioauth::new(
             robonode_client,
-            validator_public_key,
             validator_signer,
             client,
             pool,

@@ -343,7 +343,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 pool: Arc::clone(&pool),
                 deny_unsafe,
                 robonode_client: Arc::clone(&robonode_client),
-                validator_public_key: validator_public_key.as_ref().map(Arc::clone),
                 validator_signer: validator_signer.as_ref().map(Arc::clone),
                 validator_key_extractor: Arc::clone(&validator_key_extractor),
             }))
