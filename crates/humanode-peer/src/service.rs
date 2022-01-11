@@ -279,6 +279,19 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         reqwest: reqwest::Client::new(),
     });
 
+    let webapp_qrcode = bioauth_flow_config
+        .qrcode_params()
+        .await
+        .and_then(|(webapp_url, rpc_url)| crate::qrcode::WebApp::new(webapp_url, &rpc_url));
+
+    let render_qr_code = move |prompt: &str| match &webapp_qrcode {
+        Ok(ref qrcode) => qrcode.print(),
+        Err(ref err) => {
+            error!("Bioauth flow - unable to display QR Code: {}", err);
+            info!(message = prompt);
+        }
+    };
+
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
@@ -311,6 +324,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 Arc::clone(val),
             ))
         });
+
+        // TODO: We assume bioauth is ready because it should be initialized when both
+        // `validator_public_key` and `validator_signer` are not None, however it would probably be
+        // better to render the QR code when the actual decision to attach bioauth is made.
+        if validator_public_key.is_some() && validator_signer.is_some() {
+            render_qr_code("Bioauth flow ready");
+        }
 
         Box::new(move |deny_unsafe, _| {
             Ok(humanode_rpc::create(humanode_rpc::Deps {
@@ -404,129 +424,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     }
 
     network_starter.start_network();
-
-    // let mut flow = bioauth_flow::flow::Flow {
-    // liveness_data_provider: bioauth_flow::rpc::Provider::new(bioauth_flow_provider_slot),
-    // robonode_client,
-    // validator_public_key_type: PhantomData,
-    // validator_signer_type: PhantomData,
-    // };
-
-    let webapp_qrcode = bioauth_flow_config
-        .qrcode_params()
-        .await
-        .and_then(|(webapp_url, rpc_url)| crate::qrcode::WebApp::new(webapp_url, &rpc_url));
-
-    let _render_qr_code = move |prompt: &str| match &webapp_qrcode {
-        Ok(ref qrcode) => qrcode.print(),
-        Err(ref err) => {
-            error!("Bioauth flow - unable to display QR Code: {}", err);
-            info!(message = prompt);
-        }
-    };
-
-    // let bioauth_flow_future = {
-    // let client = Arc::clone(&client);
-    // let keystore = keystore_container.keystore();
-    // let transaction_pool = Arc::clone(&transaction_pool);
-    // Box::pin(async move {
-    // let validator_public_key =
-    // crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref())
-    // .await;
-
-    // let validator_public_key = match validator_public_key {
-    // Ok(Some(key)) => {
-    // info!("Running bioauth flow for {}", key);
-    // Arc::new(key)
-    // }
-    // Ok(None) => {
-    // warn!("No validator key found, skipping bioauth");
-    // return;
-    // }
-    // Err(err) => {
-    // error!("Keystore returned an error ({}), skipping bioauth", err);
-    // return;
-    // }
-    // };
-
-    // info!("Bioauth flow starting up");
-
-    // let signer = crate::validator_key::AppCryptoSigner::new(
-    // Arc::clone(&keystore),
-    // Arc::clone(&validator_public_key),
-    // );
-
-    // if bioauth_perform_enroll {
-    // info!("Bioauth flow - enrolling in progress");
-
-    // render_qr_code("Bioauth flow - waiting for enroll");
-
-    // loop {
-    // let result = flow.enroll(validator_public_key.as_ref(), &signer).await;
-    // match result {
-    // Ok(()) => break,
-    // Err(error) => {
-    // let (error, retry) = handle_bioauth_error(&error);
-    // error!(message = "Bioauth flow - enrollment failure", %error, ?retry);
-    // if !retry {
-    // panic!("{}", error);
-    // }
-    // }
-    // };
-    // }
-
-    // info!("Bioauth flow - enrolling complete");
-    // }
-
-    // info!("Bioauth flow - authentication in progress");
-
-    // render_qr_code("Bioauth flow - waiting for authentication");
-
-    // let authenticate_response = loop {
-    // let result = flow.authenticate(&signer).await;
-    // match result {
-    // Ok(v) => break v,
-    // Err(error) => {
-    // let (error, retry) = handle_bioauth_error(&error);
-    // error!(message = "Bioauth flow - authentication failure", %error, ?retry);
-    // if !retry {
-    // panic!("{}", error);
-    // }
-    // }
-    // };
-    // };
-
-    // info!("Bioauth flow - authentication complete");
-
-    // info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
-
-    // let authenticate = pallet_bioauth::Authenticate {
-    // ticket: authenticate_response.auth_ticket.into(),
-    // ticket_signature: authenticate_response.auth_ticket_signature.into(),
-    // };
-    // let call = pallet_bioauth::Call::authenticate { req: authenticate };
-
-    // let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
-
-    // let at = client.chain_info().best_hash;
-    // transaction_pool
-    // .
-    // pool()
-    // .submit_and_watch(
-    // &sp_runtime::generic::BlockId::Hash(at),
-    // sp_runtime::transaction_validity::TransactionSource::Local,
-    // ext.into(),
-    // )
-    // .await
-    // .unwrap();
-    // })
-    // };
-
-    // task_manager.spawn_handle().spawn_blocking(
-    // "bioauth-flow",
-    // Some("bioauth"),
-    // bioauth_flow_future,
-    // );
 
     Ok(task_manager)
 }
