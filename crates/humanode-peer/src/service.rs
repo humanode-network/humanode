@@ -1,6 +1,7 @@
 //! Initializing, bootstrapping and launching the node from a provided configuration.
 
 #![allow(clippy::type_complexity)]
+use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use futures::StreamExt;
@@ -54,6 +55,14 @@ type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 /// Full node Grandpa type.
 type FullGrandpa =
     sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
+/// Full BlockImport Frontier type.
+type FullFrontier = FrontierBlockImport<
+    Block,
+    sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>,
+    FullClient,
+>;
+/// Frontier backend type.
+type FrontierBackend = fc_db::Backend<Block>;
 
 /// Construct a bare keystore from the configuration.
 pub fn keystore_container(
@@ -114,12 +123,13 @@ pub fn new_partial(
                 FullBackend,
                 Block,
                 FullClient,
-                FullGrandpa,
+                FullFrontier,
                 bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
                 bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, AuraId>,
             >,
             SlotDuration,
             Duration,
+            Arc<FrontierBackend>,
             Option<Telemetry>,
         ),
     >,
@@ -184,9 +194,16 @@ pub fn new_partial(
         telemetry.as_ref().map(|x| x.handle()),
     )?;
 
+    let frontier_backend = open_frontier_backend(config)?;
+    let frontier_block_import = FrontierBlockImport::new(
+        grandpa_block_import.clone(),
+        Arc::clone(&client),
+        Arc::clone(&frontier_backend),
+    );
+
     let bioauth_consensus_block_import = bioauth_consensus::BioauthBlockImport::new(
         Arc::clone(&client),
-        grandpa_block_import.clone(),
+        frontier_block_import,
         bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
     );
@@ -237,6 +254,7 @@ pub fn new_partial(
             bioauth_consensus_block_import,
             slot_duration,
             raw_slot_duration,
+            frontier_backend,
             telemetry,
         ),
     })
@@ -260,6 +278,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 bioauth_consensus_block_import,
                 slot_duration,
                 raw_slot_duration,
+                frontier_backend,
                 mut telemetry,
             ),
     } = new_partial(&config)?;
@@ -334,7 +353,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let (bioauth_flow_rpc_slot, bioauth_flow_provider_slot) =
         bioauth_flow::rpc::new_liveness_data_tx_slot();
 
-    let frontier_backend = open_frontier_backend(&config)?;
     let subscription_task_executor =
         sc_rpc::SubscriptionTaskExecutor::new(task_manager.spawn_handle());
 

@@ -426,12 +426,12 @@ dependencies = [
  "node-primitives",
  "parity-scale-codec",
  "sc-client-api",
- "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-consensus",
  "sc-service",
  "sp-api",
  "sp-application-crypto",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-consensus-aura",
  "sp-inherents",
  "sp-keystore",
@@ -1456,11 +1456,11 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "sc-client-api",
- "sc-consensus 0.10.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
+ "sc-consensus",
  "sp-api",
- "sp-block-builder 4.0.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
+ "sp-block-builder",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
+ "sp-consensus",
  "sp-core",
  "sp-inherents",
  "sp-runtime",
@@ -1783,7 +1783,7 @@ dependencies = [
  "sp-externalities",
  "sp-keystore",
  "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "structopt",
 ]
 
@@ -1838,7 +1838,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-staking",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-std",
  "sp-tracing",
  "tt-call",
@@ -1892,7 +1892,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
- "sp-version 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-version",
 ]
 
 [[package]]
@@ -2433,6 +2433,7 @@ dependencies = [
  "async-trait",
  "bioauth-consensus",
  "bioauth-flow",
+ "fc-consensus",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc",
@@ -2457,7 +2458,7 @@ dependencies = [
  "sc-chain-spec-derive",
  "sc-cli",
  "sc-client-api",
- "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-consensus",
  "sc-consensus-aura",
  "sc-executor",
  "sc-finality-grandpa",
@@ -2467,11 +2468,11 @@ dependencies = [
  "sc-telemetry",
  "sc-tracing",
  "sc-transaction-pool",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "serde",
  "serde_json",
  "sp-application-crypto",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-consensus-aura",
  "sp-core",
  "sp-finality-grandpa",
@@ -2508,7 +2509,7 @@ dependencies = [
  "sc-transaction-pool",
  "sc-transaction-pool-api",
  "sp-api",
- "sp-block-builder 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-block-builder",
  "sp-blockchain",
  "substrate-frame-rpc-system",
 ]
@@ -2551,7 +2552,7 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-api",
- "sp-block-builder 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-block-builder",
  "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
@@ -2560,7 +2561,7 @@ dependencies = [
  "sp-session",
  "sp-std",
  "sp-transaction-pool",
- "sp-version 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-version",
  "substrate-wasm-builder",
 ]
 
@@ -4652,7 +4653,7 @@ dependencies = [
  "sp-session",
  "sp-staking",
  "sp-std",
- "sp-trie 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
 ]
 
 [[package]]
@@ -5836,7 +5837,7 @@ dependencies = [
  "sc-transaction-pool-api",
  "sp-api",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-core",
  "sp-inherents",
  "sp-runtime",
@@ -5851,12 +5852,12 @@ dependencies = [
  "parity-scale-codec",
  "sc-client-api",
  "sp-api",
- "sp-block-builder 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-block-builder",
  "sp-blockchain",
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
 ]
 
 [[package]]
@@ -5909,16 +5910,16 @@ dependencies = [
  "sc-service",
  "sc-telemetry",
  "sc-tracing",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "serde",
  "serde_json",
  "sp-blockchain",
  "sp-core",
  "sp-keyring",
  "sp-keystore",
- "sp-panic-handler 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-panic-handler",
  "sp-runtime",
- "sp-version 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-version",
  "structopt",
  "thiserror",
  "tiny-bip39",
@@ -5938,18 +5939,18 @@ dependencies = [
  "parking_lot",
  "sc-executor",
  "sc-transaction-pool-api",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "sp-api",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-core",
  "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-externalities",
  "sp-keystore",
  "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-storage",
- "sp-trie 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
  "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
 ]
 
@@ -5974,8 +5975,8 @@ dependencies = [
  "sp-core",
  "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
- "sp-trie 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
+ "sp-trie",
 ]
 
 [[package]]
@@ -5990,39 +5991,15 @@ dependencies = [
  "log",
  "parking_lot",
  "sc-client-api",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "serde",
  "sp-api",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-core",
  "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
- "thiserror",
-]
-
-[[package]]
-name = "sc-consensus"
-version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "async-trait",
- "futures 0.3.17",
- "futures-timer 3.0.2",
- "libp2p",
- "log",
- "parking_lot",
- "sc-client-api",
- "sc-utils 4.0.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
- "serde",
- "sp-api",
- "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
- "sp-core",
- "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
  "thiserror",
 ]
 
@@ -6038,14 +6015,14 @@ dependencies = [
  "parity-scale-codec",
  "sc-block-builder",
  "sc-client-api",
- "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-consensus",
  "sc-consensus-slots",
  "sc-telemetry",
  "sp-api",
  "sp-application-crypto",
- "sp-block-builder 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-block-builder",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-consensus-aura",
  "sp-consensus-slots",
  "sp-core",
@@ -6066,17 +6043,17 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "sc-client-api",
- "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-consensus",
  "sc-telemetry",
  "sp-api",
  "sp-arithmetic",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-consensus-slots",
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-timestamp 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
  "thiserror",
 ]
@@ -6098,11 +6075,11 @@ dependencies = [
  "sp-core-hashing-proc-macro",
  "sp-externalities",
  "sp-io",
- "sp-panic-handler 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-panic-handler",
  "sp-runtime-interface",
  "sp-tasks",
- "sp-trie 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
- "sp-version 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
+ "sp-version",
  "sp-wasm-interface",
  "wasmi",
 ]
@@ -6159,18 +6136,18 @@ dependencies = [
  "rand 0.8.4",
  "sc-block-builder",
  "sc-client-api",
- "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-consensus",
  "sc-keystore",
  "sc-network",
  "sc-network-gossip",
  "sc-telemetry",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "serde_json",
  "sp-api",
  "sp-application-crypto",
  "sp-arithmetic",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-core",
  "sp-finality-grandpa",
  "sp-keystore",
@@ -6242,15 +6219,15 @@ dependencies = [
  "rand 0.7.3",
  "sc-block-builder",
  "sc-client-api",
- "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-consensus",
  "sc-peerset",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "serde",
  "serde_json",
  "smallvec",
  "sp-arithmetic",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-core",
  "sp-finality-grandpa",
  "sp-runtime",
@@ -6296,7 +6273,7 @@ dependencies = [
  "rand 0.7.3",
  "sc-client-api",
  "sc-network",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "sp-api",
  "sp-core",
  "sp-offchain",
@@ -6313,7 +6290,7 @@ dependencies = [
  "futures 0.3.17",
  "libp2p",
  "log",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "serde_json",
  "wasm-timer",
 ]
@@ -6345,7 +6322,7 @@ dependencies = [
  "sc-rpc-api",
  "sc-tracing",
  "sc-transaction-pool-api",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "serde_json",
  "sp-api",
  "sp-blockchain",
@@ -6355,7 +6332,7 @@ dependencies = [
  "sp-rpc",
  "sp-runtime",
  "sp-session",
- "sp-version 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-version",
 ]
 
 [[package]]
@@ -6379,7 +6356,7 @@ dependencies = [
  "sp-rpc",
  "sp-runtime",
  "sp-tracing",
- "sp-version 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-version",
  "thiserror",
 ]
 
@@ -6423,7 +6400,7 @@ dependencies = [
  "sc-chain-spec",
  "sc-client-api",
  "sc-client-db",
- "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-consensus",
  "sc-executor",
  "sc-informant",
  "sc-keystore",
@@ -6435,27 +6412,27 @@ dependencies = [
  "sc-tracing",
  "sc-transaction-pool",
  "sc-transaction-pool-api",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "serde",
  "serde_json",
  "sp-api",
  "sp-application-crypto",
- "sp-block-builder 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-block-builder",
  "sp-blockchain",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-core",
  "sp-externalities",
  "sp-inherents",
  "sp-keystore",
  "sp-runtime",
  "sp-session",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-storage",
  "sp-tracing",
  "sp-transaction-pool",
  "sp-transaction-storage-proof",
- "sp-trie 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
- "sp-version 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
+ "sp-version",
  "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
  "tempfile",
  "thiserror",
@@ -6553,7 +6530,7 @@ dependencies = [
  "retain_mut",
  "sc-client-api",
  "sc-transaction-pool-api",
- "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-utils",
  "serde",
  "sp-api",
  "sp-blockchain",
@@ -6583,17 +6560,6 @@ dependencies = [
 name = "sc-utils"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "futures 0.3.17",
- "futures-timer 3.0.2",
- "lazy_static",
- "prometheus",
-]
-
-[[package]]
-name = "sc-utils"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
 dependencies = [
  "futures 0.3.17",
  "futures-timer 3.0.2",
@@ -7036,9 +7002,9 @@ dependencies = [
  "sp-api-proc-macro",
  "sp-core",
  "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-std",
- "sp-version 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-version",
  "thiserror",
 ]
 
@@ -7107,18 +7073,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-block-builder"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "parity-scale-codec",
- "sp-api",
- "sp-inherents",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "sp-blockchain"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
@@ -7129,10 +7083,10 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot",
  "sp-api",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
  "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "thiserror",
 ]
 
@@ -7149,28 +7103,9 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-std",
- "sp-version 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
- "thiserror",
-]
-
-[[package]]
-name = "sp-consensus"
-version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "async-trait",
- "futures 0.3.17",
- "futures-timer 3.0.2",
- "log",
- "parity-scale-codec",
- "sp-core",
- "sp-inherents",
- "sp-runtime",
- "sp-state-machine 0.10.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
- "sp-std",
- "sp-version 4.0.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
+ "sp-version",
  "thiserror",
 ]
 
@@ -7184,7 +7119,7 @@ dependencies = [
  "scale-info",
  "sp-api",
  "sp-application-crypto",
- "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-consensus",
  "sp-consensus-slots",
  "sp-inherents",
  "sp-runtime",
@@ -7362,10 +7297,10 @@ dependencies = [
  "sp-externalities",
  "sp-keystore",
  "sp-runtime-interface",
- "sp-state-machine 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-std",
  "sp-tracing",
- "sp-trie 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
  "sp-wasm-interface",
  "tracing",
  "tracing-core",
@@ -7421,16 +7356,6 @@ dependencies = [
 name = "sp-panic-handler"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "backtrace",
- "lazy_static",
- "regex",
-]
-
-[[package]]
-name = "sp-panic-handler"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
 dependencies = [
  "backtrace",
  "lazy_static",
@@ -7546,32 +7471,9 @@ dependencies = [
  "smallvec",
  "sp-core",
  "sp-externalities",
- "sp-panic-handler 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-panic-handler",
  "sp-std",
- "sp-trie 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
- "thiserror",
- "tracing",
- "trie-db",
- "trie-root",
-]
-
-[[package]]
-name = "sp-state-machine"
-version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "hash-db",
- "log",
- "num-traits",
- "parity-scale-codec",
- "parking_lot",
- "rand 0.7.3",
- "smallvec",
- "sp-core",
- "sp-externalities",
- "sp-panic-handler 4.0.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
- "sp-std",
- "sp-trie 4.0.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
+ "sp-trie",
  "thiserror",
  "tracing",
  "trie-db",
@@ -7675,28 +7577,13 @@ dependencies = [
  "sp-inherents",
  "sp-runtime",
  "sp-std",
- "sp-trie 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
 ]
 
 [[package]]
 name = "sp-trie"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "hash-db",
- "memory-db",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-std",
- "trie-db",
- "trie-root",
-]
-
-[[package]]
-name = "sp-trie"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
 dependencies = [
  "hash-db",
  "memory-db",
@@ -7720,23 +7607,7 @@ dependencies = [
  "serde",
  "sp-runtime",
  "sp-std",
- "sp-version-proc-macro 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
- "thiserror",
-]
-
-[[package]]
-name = "sp-version"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "impl-serde",
- "parity-scale-codec",
- "parity-wasm 0.42.2",
- "scale-info",
- "serde",
- "sp-runtime",
- "sp-std",
- "sp-version-proc-macro 4.0.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
+ "sp-version-proc-macro",
  "thiserror",
 ]
 
@@ -7744,17 +7615,6 @@ dependencies = [
 name = "sp-version-proc-macro"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "parity-scale-codec",
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "sp-version-proc-macro"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
 dependencies = [
  "parity-scale-codec",
  "proc-macro2",
@@ -7898,7 +7758,7 @@ dependencies = [
  "sc-rpc-api",
  "sc-transaction-pool-api",
  "sp-api",
- "sp-block-builder 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-block-builder",
  "sp-blockchain",
  "sp-core",
  "sp-runtime",
@@ -7908,20 +7768,6 @@ dependencies = [
 name = "substrate-prometheus-endpoint"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "async-std",
- "derive_more",
- "futures-util",
- "hyper",
- "log",
- "prometheus",
- "tokio",
-]
-
-[[package]]
-name = "substrate-prometheus-endpoint"
-version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
 dependencies = [
  "async-std",
  "derive_more",
