@@ -56,11 +56,7 @@ type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 type FullGrandpa =
     sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
 /// Full BlockImport Frontier type.
-type FullFrontier = FrontierBlockImport<
-    Block,
-    sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>,
-    FullClient,
->;
+type FullFrontier = FrontierBlockImport<Block, FullGrandpa, FullClient>;
 /// Frontier backend type.
 type FrontierBackend = fc_db::Backend<Block>;
 
