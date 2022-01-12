@@ -4,13 +4,14 @@ use std::sync::Arc;
 
 use bioauth_flow::rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT};
 use fc_rpc::{
-    EthApi, EthApiServer, EthPubSubApi, EthPubSubApiServer, HexEncodedIdProvider, NetApi,
-    NetApiServer, Web3Api, Web3ApiServer,
+    EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi, EthPubSubApiServer,
+    HexEncodedIdProvider, NetApi, NetApiServer, Web3Api, Web3ApiServer,
 };
 use fc_rpc::{
     EthBlockDataCache, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
     SchemaV2Override, StorageOverride,
 };
+use fc_rpc_core::types::FilterPool;
 use humanode_runtime::{opaque::Block, AccountId, Balance, Hash, Index, UnixMilliseconds};
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
@@ -46,6 +47,8 @@ pub struct Deps<C, P, VKE, A: ChainApi> {
     pub graph: Arc<Pool<A>>,
     /// Network service
     pub network: Arc<NetworkService<Block, Hash>>,
+    /// EthFilterApi pool.
+    pub filter_pool: Option<FilterPool>,
     /// Backend.
     pub backend: Arc<fc_db::Backend<Block>>,
     /// Maximum number of logs in a query.
@@ -87,6 +90,7 @@ where
         validator_key_extractor,
         graph,
         network,
+        filter_pool,
         backend,
         max_past_logs,
     } = deps;
@@ -153,14 +157,27 @@ where
             HexEncodedIdProvider::default(),
             Arc::new(subscription_task_executor),
         ),
-        overrides,
+        Arc::clone(&overrides),
     )));
 
     io.extend_with(NetApiServer::to_delegate(NetApi::new(
-        client, network,
+        Arc::clone(&client),
+        Arc::clone(&network),
         // Whether to format the `peer_count` response as Hex (default) or not.
         true,
     )));
+
+    if let Some(filter_pool) = filter_pool {
+        io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
+            client,
+            backend,
+            filter_pool,
+            500_usize, // max stored filters
+            overrides,
+            max_past_logs,
+            block_data_cache,
+        )));
+    }
 
     io
 }

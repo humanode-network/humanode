@@ -4,6 +4,7 @@
 use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
+use fc_rpc_core::types::FilterPool;
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_cli::SubstrateCli;
@@ -18,7 +19,12 @@ use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
 use sp_core::U256;
-use std::{marker::PhantomData, sync::Arc, time::Duration};
+use std::{
+    collections::BTreeMap,
+    marker::PhantomData,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 use tracing::*;
 
 use crate::configuration::Configuration;
@@ -311,6 +317,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let backoff_authoring_blocks: Option<()> = None;
     let prometheus_registry = config.prometheus_registry().cloned();
     let target_gas_price = evm_config.target_gas_price;
+    let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -359,6 +366,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
         let validator_key_extractor = Arc::clone(&validator_key_extractor);
         let network = Arc::clone(&network);
+        let filter_pool = filter_pool.clone();
         let frontier_backend = Arc::clone(&frontier_backend);
         let max_past_logs = evm_config.max_past_logs;
 
@@ -373,6 +381,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     validator_key_extractor: Arc::clone(&validator_key_extractor),
                     graph: Arc::clone(pool.pool()),
                     network: Arc::clone(&network),
+                    filter_pool: filter_pool.clone(),
                     backend: Arc::clone(&frontier_backend),
                     max_past_logs,
                 },
@@ -482,6 +491,17 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         Some("evm"),
         EthTask::ethereum_schema_cache_task(Arc::clone(&client), frontier_backend),
     );
+
+    // Spawn Frontier EthFilterApi maintenance task.
+    if let Some(filter_pool) = filter_pool {
+        /// Each filter is allowed to stay in the pool for 100 blocks.
+        const FILTER_RETAIN_THRESHOLD: u64 = 100;
+        task_manager.spawn_essential_handle().spawn(
+            "frontier-filter-pool",
+            Some("evm"),
+            EthTask::filter_pool_task(Arc::clone(&client), filter_pool, FILTER_RETAIN_THRESHOLD),
+        );
+    }
 
     network_starter.start_network();
 
