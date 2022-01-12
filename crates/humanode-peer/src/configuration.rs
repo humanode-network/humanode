@@ -56,6 +56,9 @@ pub struct Evm {
     /// Maximum number of logs in a query.
     pub max_past_logs: u32,
 
+    /// Maximum number of stored filters.
+    pub max_stored_filters: usize,
+
     /// The dynamic-fee pallet target gas price set by block author.
     pub target_gas_price: u64,
 }

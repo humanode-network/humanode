@@ -367,6 +367,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let validator_key_extractor = Arc::clone(&validator_key_extractor);
         let network = Arc::clone(&network);
         let filter_pool = filter_pool.clone();
+        let max_stored_filters = evm_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
         let max_past_logs = evm_config.max_past_logs;
 
@@ -382,6 +383,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     graph: Arc::clone(pool.pool()),
                     network: Arc::clone(&network),
                     filter_pool: filter_pool.clone(),
+                    max_stored_filters,
                     backend: Arc::clone(&frontier_backend),
                     max_past_logs,
                 },

@@ -49,6 +49,8 @@ pub struct Deps<C, P, VKE, A: ChainApi> {
     pub network: Arc<NetworkService<Block, Hash>>,
     /// EthFilterApi pool.
     pub filter_pool: Option<FilterPool>,
+    /// Maximum number of stored filters.
+    pub max_stored_filters: usize,
     /// Backend.
     pub backend: Arc<fc_db::Backend<Block>>,
     /// Maximum number of logs in a query.
@@ -91,6 +93,7 @@ where
         graph,
         network,
         filter_pool,
+        max_stored_filters,
         backend,
         max_past_logs,
     } = deps;
@@ -172,7 +175,7 @@ where
             client,
             backend,
             filter_pool,
-            500_usize, // max stored filters
+            max_stored_filters,
             overrides,
             max_past_logs,
             block_data_cache,

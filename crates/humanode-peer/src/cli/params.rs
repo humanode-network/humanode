@@ -39,7 +39,11 @@ pub struct EvmParams {
     #[structopt(long, default_value = "10000")]
     pub max_past_logs: u32,
 
-    /// The dynamic-fee pallet target gas price set by block author
+    /// Maximum number of stored filters.
+    #[structopt(long, default_value = "500")]
+    pub max_stored_filters: usize,
+
+    /// The dynamic-fee pallet target gas price set by block author.
     #[structopt(long, default_value = "1")]
     pub target_gas_price: u64,
 }
