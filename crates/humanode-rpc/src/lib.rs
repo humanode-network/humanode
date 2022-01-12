@@ -2,7 +2,7 @@
 
 use std::sync::Arc;
 
-use bioauth_flow::{Bioauth, BioauthApi, Signer, ValidatorKeyExtractorT};
+use bioauth_flow::rpc::{Bioauth, BioauthApi, Signer, ValidatorKeyExtractorT};
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index, UnixMilliseconds};
 use sc_client_api::UsageProvider;
 pub use sc_rpc_api::DenyUnsafe;
