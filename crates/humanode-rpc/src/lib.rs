@@ -4,8 +4,8 @@ use std::sync::Arc;
 
 use bioauth_flow::rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT};
 use fc_rpc::{
-    EthApi, EthApiServer, EthPubSubApi, EthPubSubApiServer, HexEncodedIdProvider, Web3Api,
-    Web3ApiServer,
+    EthApi, EthApiServer, EthPubSubApi, EthPubSubApiServer, HexEncodedIdProvider, NetApi,
+    NetApiServer, Web3Api, Web3ApiServer,
 };
 use fc_rpc::{
     EthBlockDataCache, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
@@ -147,13 +147,19 @@ where
 
     io.extend_with(EthPubSubApiServer::to_delegate(EthPubSubApi::new(
         pool,
-        client,
-        network,
+        Arc::clone(&client),
+        Arc::clone(&network),
         SubscriptionManager::<HexEncodedIdProvider>::with_id_provider(
             HexEncodedIdProvider::default(),
             Arc::new(subscription_task_executor),
         ),
         overrides,
+    )));
+
+    io.extend_with(NetApiServer::to_delegate(NetApi::new(
+        client, network,
+        // Whether to format the `peer_count` response as Hex (default) or not.
+        true,
     )));
 
     io
