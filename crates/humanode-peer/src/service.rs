@@ -63,6 +63,15 @@ type FullGrandpa =
     sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
 /// Full type for FrontierBlockImport.
 type FullFrontier = FrontierBlockImport<Block, FullGrandpa, FullClient>;
+/// Full type for BioauthBlockImport.
+type FullBioauth = bioauth_consensus::BioauthBlockImport<
+    FullBackend,
+    Block,
+    FullClient,
+    FullFrontier,
+    bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
+    bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, AuraId>,
+>;
 /// Frontier backend type.
 type FrontierBackend = fc_db::Backend<Block>;
 
@@ -121,14 +130,7 @@ pub fn new_partial(
         (
             FullGrandpa,
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
-            bioauth_consensus::BioauthBlockImport<
-                FullBackend,
-                Block,
-                FullClient,
-                FullFrontier,
-                bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
-                bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, AuraId>,
-            >,
+            FullBioauth,
             SlotDuration,
             Duration,
             Arc<FrontierBackend>,
