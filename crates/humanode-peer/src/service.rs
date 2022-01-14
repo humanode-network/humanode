@@ -106,15 +106,13 @@ pub fn frontier_database_dir(config: &sc_service::Configuration) -> std::path::P
 /// Construct frontier backend.
 pub fn open_frontier_backend(
     config: &sc_service::Configuration,
-) -> Result<Arc<fc_db::Backend<Block>>, String> {
-    Ok(Arc::new(fc_db::Backend::<Block>::new(
-        &fc_db::DatabaseSettings {
-            source: fc_db::DatabaseSettingsSrc::RocksDb {
-                path: frontier_database_dir(config),
-                cache_size: 0,
-            },
+) -> Result<fc_db::Backend<Block>, String> {
+    fc_db::Backend::<Block>::new(&fc_db::DatabaseSettings {
+        source: fc_db::DatabaseSettingsSrc::RocksDb {
+            path: frontier_database_dir(config),
+            cache_size: 0,
         },
-    )?))
+    })
 }
 
 /// Extract substrate partial components.
@@ -198,7 +196,7 @@ pub fn new_partial(
         telemetry.as_ref().map(|x| x.handle()),
     )?;
 
-    let frontier_backend = open_frontier_backend(config)?;
+    let frontier_backend = Arc::new(open_frontier_backend(config)?);
     let frontier_block_import = FrontierBlockImport::new(
         grandpa_block_import.clone(),
         Arc::clone(&client),
