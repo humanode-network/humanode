@@ -1464,8 +1464,8 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-timestamp 4.0.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/paritytech/substrate)",
+ "sp-timestamp",
+ "substrate-prometheus-endpoint",
 ]
 
 [[package]]
@@ -1480,7 +1480,7 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot",
  "sp-core",
- "sp-database 4.0.0-dev (git+https://github.com/paritytech/substrate?rev=1a30fa2)",
+ "sp-database",
  "sp-runtime",
 ]
 
@@ -2480,7 +2480,7 @@ dependencies = [
  "sp-keystore",
  "sp-panic-handler",
  "sp-runtime",
- "sp-timestamp 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-timestamp",
  "structopt",
  "thiserror",
  "tokio",
@@ -4686,7 +4686,7 @@ dependencies = [
  "sp-inherents",
  "sp-runtime",
  "sp-std",
- "sp-timestamp 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-timestamp",
 ]
 
 [[package]]
@@ -5843,7 +5843,7 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
 ]
 
 [[package]]
@@ -5946,14 +5946,14 @@ dependencies = [
  "sp-blockchain",
  "sp-consensus",
  "sp-core",
- "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-database",
  "sp-externalities",
  "sp-keystore",
  "sp-runtime",
  "sp-state-machine",
  "sp-storage",
  "sp-trie",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
 ]
 
 [[package]]
@@ -5975,7 +5975,7 @@ dependencies = [
  "sp-arithmetic",
  "sp-blockchain",
  "sp-core",
- "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-database",
  "sp-runtime",
  "sp-state-machine",
  "sp-trie",
@@ -6001,7 +6001,7 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-state-machine",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
  "thiserror",
 ]
 
@@ -6031,7 +6031,7 @@ dependencies = [
  "sp-inherents",
  "sp-keystore",
  "sp-runtime",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
 ]
 
 [[package]]
@@ -6056,7 +6056,7 @@ dependencies = [
  "sp-inherents",
  "sp-runtime",
  "sp-state-machine",
- "sp-timestamp 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-timestamp",
  "thiserror",
 ]
 
@@ -6154,7 +6154,7 @@ dependencies = [
  "sp-finality-grandpa",
  "sp-keystore",
  "sp-runtime",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
 ]
 
 [[package]]
@@ -6233,7 +6233,7 @@ dependencies = [
  "sp-core",
  "sp-finality-grandpa",
  "sp-runtime",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
  "thiserror",
  "unsigned-varint 0.6.0",
  "void",
@@ -6252,7 +6252,7 @@ dependencies = [
  "lru 0.7.0",
  "sc-network",
  "sp-runtime",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
  "tracing",
 ]
 
@@ -6303,7 +6303,7 @@ version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
 dependencies = [
  "log",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
 ]
 
 [[package]]
@@ -6375,7 +6375,7 @@ dependencies = [
  "jsonrpc-ws-server",
  "log",
  "serde_json",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
  "tokio",
 ]
 
@@ -6435,7 +6435,7 @@ dependencies = [
  "sp-transaction-storage-proof",
  "sp-trie",
  "sp-version",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
  "tempfile",
  "thiserror",
  "tokio",
@@ -6540,7 +6540,7 @@ dependencies = [
  "sp-runtime",
  "sp-tracing",
  "sp-transaction-pool",
- "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "substrate-prometheus-endpoint",
  "thiserror",
 ]
 
@@ -7086,7 +7086,7 @@ dependencies = [
  "parking_lot",
  "sp-api",
  "sp-consensus",
- "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-database",
  "sp-runtime",
  "sp-state-machine",
  "thiserror",
@@ -7126,7 +7126,7 @@ dependencies = [
  "sp-inherents",
  "sp-runtime",
  "sp-std",
- "sp-timestamp 4.0.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-timestamp",
 ]
 
 [[package]]
@@ -7217,15 +7217,6 @@ dependencies = [
 name = "sp-database"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "kvdb",
- "parking_lot",
-]
-
-[[package]]
-name = "sp-database"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
 dependencies = [
  "kvdb",
  "parking_lot",
@@ -7530,22 +7521,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-timestamp"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=1a30fa2#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "async-trait",
- "futures-timer 3.0.2",
- "log",
- "parity-scale-codec",
- "sp-api",
- "sp-inherents",
- "sp-runtime",
- "sp-std",
- "thiserror",
-]
-
-[[package]]
 name = "sp-tracing"
 version = "4.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
@@ -7770,20 +7745,6 @@ dependencies = [
 name = "substrate-prometheus-endpoint"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "async-std",
- "derive_more",
- "futures-util",
- "hyper",
- "log",
- "prometheus",
- "tokio",
-]
-
-[[package]]
-name = "substrate-prometheus-endpoint"
-version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate#004412194a73741866b9fedc9931a69e6f21de34"
 dependencies = [
  "async-std",
  "derive_more",
