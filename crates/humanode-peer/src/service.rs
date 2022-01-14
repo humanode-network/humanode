@@ -58,10 +58,10 @@ type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
-/// Full node Grandpa type.
+/// Full type for GrandpaBlockImport.
 type FullGrandpa =
     sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
-/// Full BlockImport Frontier type.
+/// Full type for FrontierBlockImport.
 type FullFrontier = FrontierBlockImport<Block, FullGrandpa, FullClient>;
 /// Frontier backend type.
 type FrontierBackend = fc_db::Backend<Block>;
