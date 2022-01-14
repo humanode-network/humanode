@@ -35,7 +35,8 @@ pub struct BioauthFlowParams {
 /// Shared CLI parameters used to configure evm.
 #[derive(Debug, StructOpt, Clone)]
 pub struct EvmParams {
-    /// Maximum number of logs in a query.
+    /// Maximum number of logs to keep from the latest block;
+    /// it is notpossible to query logs older than this in the past.
     #[structopt(long, default_value = "10000")]
     pub max_past_logs: u32,
 
