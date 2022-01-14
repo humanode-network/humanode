@@ -139,7 +139,7 @@ impl<
     pub fn new(
         robonode_client: RobonodeClient,
         liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-        validator_signer: Arc<ValidatorSigner>,
+        validator_signer: Option<Arc<ValidatorSigner>>,
         client: Arc<Client>,
         pool: Arc<TransactionPool>,
         validator_key_extractor: ValidatorKeyExtractor,
@@ -300,7 +300,7 @@ struct Inner<
     /// The transaction pool to use.
     pool: Arc<TransactionPool>,
     /// The type that provides signing with the validator private key.
-    validator_signer: Arc<ValidatorSigner>,
+    validator_signer: Option<Arc<ValidatorSigner>>,
     /// Provider of the local validator key.
     validator_key_extractor: ValidatorKeyExtractor,
     /// The phantom types.
@@ -517,6 +517,12 @@ where
 
         let signature = self
             .validator_signer
+            .as_ref()
+            .ok_or(RpcError {
+                code: ErrorCode::InternalError,
+                message: "Validator signer not found".into(),
+                data: None,
+            })?
             .sign(&opaque_liveness_data)
             .await
             .map_err(|err| RpcError {

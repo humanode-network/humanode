@@ -76,16 +76,14 @@ where
         Arc::clone(&client),
     )));
 
-    if let Some(validator_signer) = validator_signer {
-        io.extend_with(BioauthApi::to_delegate(Bioauth::new(
-            robonode_client,
-            bioauth_flow_slot,
-            validator_signer,
-            client,
-            pool,
-            validator_key_extractor,
-        )));
-    }
+    io.extend_with(BioauthApi::to_delegate(Bioauth::new(
+        robonode_client,
+        bioauth_flow_slot,
+        validator_signer,
+        client,
+        pool,
+        validator_key_extractor,
+    )));
 
     io
 }
