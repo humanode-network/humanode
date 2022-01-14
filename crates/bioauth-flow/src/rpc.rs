@@ -8,7 +8,6 @@ use futures::lock::BiLock;
 use futures::FutureExt;
 use jsonrpc_core::{Error as RpcError, ErrorCode};
 use jsonrpc_derive::rpc;
-use sc_client_api::UsageProvider;
 use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -231,7 +230,6 @@ where
     ValidatorSigner: Signer<Vec<u8>>,
     <ValidatorSigner as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
     TransactionPool: TransactionPoolT,
-    Client: UsageProvider<<TransactionPool as TransactionPoolT>::Block>,
     ValidatorKeyExtractor: ValidatorKeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode,
     ValidatorKeyExtractor::PublicKeyType: AsRef<[u8]>,
@@ -330,7 +328,6 @@ where
     ValidatorSigner: Signer<Vec<u8>>,
     <ValidatorSigner as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
     TransactionPool: sc_transaction_pool_api::TransactionPool,
-    Client: UsageProvider<<TransactionPool as sc_transaction_pool_api::TransactionPool>::Block>,
     ValidatorKeyExtractor: ValidatorKeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]>,
     ValidatorKeyExtractor::PublicKeyType: AsRef<[u8]>,
@@ -404,7 +401,7 @@ where
 
         let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
 
-        let at = self.client.usage_info().chain.best_hash;
+        let at = self.client.info().best_hash;
 
         self.pool
             .submit_and_watch(

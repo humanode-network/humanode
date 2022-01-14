@@ -12,7 +12,6 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 
 jsonrpc-core = "18"
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }

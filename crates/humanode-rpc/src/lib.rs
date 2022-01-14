@@ -7,7 +7,6 @@ use bioauth_flow::{
     Signer,
 };
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index, UnixMilliseconds};
-use sc_client_api::UsageProvider;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::{Encode, ProvideRuntimeApi};
@@ -40,7 +39,6 @@ where
     VS: Signer<Vec<u8>> + Send + Sync + 'static,
     <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
     VKE::PublicKeyType: Send + Sync,
-    C: UsageProvider<Block>,
     C: ProvideRuntimeApi<Block>,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
     C: Send + Sync + 'static,
