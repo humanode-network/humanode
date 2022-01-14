@@ -2,4 +2,18 @@
 //! (aka humanode-peer), the app on the handheld device that perform that biometric capture,
 //! and the robonode server that's responsible for authenticating against the bioauth system.
 
+pub mod flow;
 pub mod rpc;
+
+/// Signer provides signatures for the data.
+#[async_trait::async_trait]
+pub trait Signer<S> {
+    /// Signature error.
+    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
+    type Error;
+
+    /// Sign the provided data and return the signature, or an error if the signing fails.
+    async fn sign<'a, D>(&self, data: D) -> std::result::Result<S, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a;
+}

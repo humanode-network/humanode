@@ -2,7 +2,10 @@
 
 use std::sync::Arc;
 
-use bioauth_flow::rpc::{Bioauth, BioauthApi, Signer, ValidatorKeyExtractorT};
+use bioauth_flow::{
+    rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT},
+    Signer,
+};
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index, UnixMilliseconds};
 use sc_client_api::UsageProvider;
 pub use sc_rpc_api::DenyUnsafe;
@@ -23,6 +26,8 @@ pub struct Deps<C, P, VS, VKE> {
     pub deny_unsafe: DenyUnsafe,
     /// An ready robonode API client to tunnel the calls to.
     pub robonode_client: Arc<robonode_client::Client>,
+    /// The liveness data tx slot to use in the bioauth flow RPC.
+    pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
     /// Extracts the currently used validator key.
     pub validator_key_extractor: VKE,
 }
@@ -59,6 +64,7 @@ where
         validator_signer,
         deny_unsafe,
         robonode_client,
+        bioauth_flow_slot,
         validator_key_extractor,
     } = deps;
 
@@ -75,6 +81,7 @@ where
     if let Some(validator_signer) = validator_signer {
         io.extend_with(BioauthApi::to_delegate(Bioauth::new(
             robonode_client,
+            bioauth_flow_slot,
             validator_signer,
             client,
             pool,

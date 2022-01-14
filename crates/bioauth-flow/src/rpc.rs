@@ -3,6 +3,8 @@
 use std::marker::PhantomData;
 use std::{ops::Deref, sync::Arc};
 
+use futures::channel::oneshot;
+use futures::lock::BiLock;
 use futures::FutureExt;
 use jsonrpc_core::{Error as RpcError, ErrorCode};
 use jsonrpc_derive::rpc;
@@ -19,18 +21,7 @@ use bioauth_flow_api::BioauthFlowApi;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
 
-/// Signer provides signatures for the data.
-#[async_trait::async_trait]
-pub trait Signer<S> {
-    /// Signature error.
-    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
-    type Error;
-
-    /// Sign the provided data and return the signature, or an error if the signing fails.
-    async fn sign<'a, D>(&self, data: D) -> std::result::Result<S, Self::Error>
-    where
-        D: AsRef<[u8]> + Send + 'a;
-}
+use crate::{flow::LivenessDataProvider, Signer};
 
 /// The bioauth status as used in the RPC.
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -84,9 +75,23 @@ pub trait BioauthApi<Timestamp> {
     #[rpc(name = "bioauth_authenticate")]
     fn authenticate(&self, liveness_data: LivenessData) -> FutureResult<()>;
 
+    /// Provide the liveness data for the currently running enrollemnt or authentication process.
+    #[rpc(name = "bioauth_provideLivenessData")]
+    fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()>;
+
     /// Get the current bioauth status.
     #[rpc(name = "bioauth_status")]
     fn status(&self) -> FutureResult<BioauthStatus<Timestamp>>;
+}
+
+/// The shared [`LivenessData`] sender slot, that we can swap with our ephemernal
+/// channel upon a liveness data request.
+pub type LivenessDataTxSlot = BiLock<Option<oneshot::Sender<LivenessData>>>;
+
+/// Create an linked pair of an empty [`LivenessDataTxSlot`]s.
+/// To be used in the initialization process.
+pub fn new_liveness_data_tx_slot() -> (LivenessDataTxSlot, LivenessDataTxSlot) {
+    BiLock::new(None)
 }
 
 /// The RPC implementation.
@@ -134,6 +139,7 @@ impl<
     /// Create a new [`Bioauth`] API implementation.
     pub fn new(
         robonode_client: RobonodeClient,
+        liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
         validator_signer: Arc<ValidatorSigner>,
         client: Arc<Client>,
         pool: Arc<TransactionPool>,
@@ -142,6 +148,7 @@ impl<
         Self {
             inner: Inner {
                 robonode_client,
+                liveness_data_tx_slot,
                 client,
                 pool,
                 validator_signer,
@@ -240,24 +247,29 @@ where
     >,
     Timestamp: Encode + Decode,
 {
-    /// See `Inner::get_facetec_device_sdk_params`.
+    /// See [`Inner::get_facetec_device_sdk_params`].
     fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams> {
         self.with_inner_clone(move |inner| inner.get_facetec_device_sdk_params())
     }
 
-    /// See `Inner::get_facetec_session_token`.
+    /// See [`Inner::get_facetec_session_token`].
     fn get_facetec_session_token(&self) -> FutureResult<String> {
         self.with_inner_clone(move |inner| inner.get_facetec_session_token())
     }
 
-    /// See `Inner::enroll`.
+    /// See [`Inner::enroll`].
     fn enroll(&self, liveness_data: LivenessData) -> FutureResult<()> {
         self.with_inner_clone(move |inner| inner.enroll(liveness_data))
     }
 
-    /// See `Inner::authenticate`.
+    /// See [`Inner::authenticate`].
     fn authenticate(&self, liveness_data: LivenessData) -> FutureResult<()> {
         self.with_inner_clone(move |inner| inner.authenticate(liveness_data))
+    }
+
+    /// See [`Inner::provide_liveness_data`].
+    fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()> {
+        self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
     }
 
     /// See [`Inner::status`].
@@ -281,6 +293,10 @@ struct Inner<
 > {
     /// The robonode client, used for fetching the FaceTec Session Token.
     robonode_client: RobonodeClient,
+    /// The liveness data provider sink.
+    /// We need an [`Arc`] here to allow sharing the data from across multiple invocations of the
+    /// RPC extension builder that will be using this RPC.
+    liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
     /// The client to use for transactions.
     client: Arc<Client>,
     /// The transaction pool to use.
@@ -437,6 +453,25 @@ where
         Ok(())
     }
 
+     /// Collect the liveness data and provide to the consumer.
+    async fn provide_liveness_data(self: Arc<Self>, liveness_data: LivenessData) -> Result<()> {
+        let maybe_tx = {
+            let mut maybe_tx_guard = self.liveness_data_tx_slot.lock().await;
+            maybe_tx_guard.take() // take the guarded option value and release the lock asap
+        };
+        let tx = maybe_tx.ok_or_else(|| RpcError {
+            code: ErrorCode::InternalError,
+            message: "Flow is not engaged, unable to accept liveness data".into(),
+            data: None,
+        })?;
+        tx.send(liveness_data).map_err(|_| RpcError {
+            code: ErrorCode::InternalError,
+            message: "Flow was aborted before the liveness data could be submitted".into(),
+            data: None,
+        })?;
+        Ok(())
+    }
+
     /// Obtain the status of the bioauth.
     async fn status(self: Arc<Self>) -> Result<BioauthStatus<Timestamp>> {
         let own_key = self.validator_public_key()?;
@@ -494,5 +529,37 @@ where
             })?;
 
         Ok((opaque_liveness_data, signature))
+    }
+}
+
+/// Provider implements a [`LivenessDataProvider`].
+pub struct Provider {
+    /// The shared liveness data sender slot, that we can swap with our ephemernal
+    /// channel upon a liveness data reuqest.
+    liveness_data_tx_slot: LivenessDataTxSlot,
+}
+
+impl Provider {
+    /// Construct a new [`Provider`].
+    pub fn new(liveness_data_tx_slot: LivenessDataTxSlot) -> Self {
+        Self {
+            liveness_data_tx_slot,
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl LivenessDataProvider for Provider {
+    type Error = oneshot::Canceled;
+
+    async fn provide(&mut self) -> std::result::Result<LivenessData, Self::Error> {
+        let (tx, rx) = oneshot::channel();
+
+        {
+            let mut maybe_tx_guard = self.liveness_data_tx_slot.lock().await;
+            let _ = maybe_tx_guard.insert(tx); // insert a new sender value and free the lock asap
+        }
+
+        Ok(rx.await?)
     }
 }
