@@ -36,7 +36,7 @@ pub struct BioauthFlowParams {
 #[derive(Debug, StructOpt, Clone)]
 pub struct EvmParams {
     /// Maximum number of logs to keep from the latest block;
-    /// it is notpossible to query logs older than this in the past.
+    /// it is not possible to query logs older than this amount from the latest block in the past.
     #[structopt(long, default_value = "10000")]
     pub max_past_logs: u32,
 

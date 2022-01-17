@@ -53,8 +53,8 @@ impl BioauthFlow {
 
 /// EVM configuration parameters.
 pub struct Evm {
-    /// Maximum number of logs to keep from the latest block;
-    /// it is notpossible to query logs older than this in the past.
+    /// Maximum number of blocks to keep the log information available
+    /// for querying via the RPC (from the latest block).
     pub max_past_logs: u32,
 
     /// Maximum number of stored filters.
