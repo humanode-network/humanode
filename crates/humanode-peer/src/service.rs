@@ -477,7 +477,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         Some("evm"),
         MappingSyncWorker::new(
             client.import_notification_stream(),
-            Duration::new(6, 0),
+            raw_slot_duration,
             Arc::clone(&client),
             backend,
             Arc::clone(&frontier_backend),
