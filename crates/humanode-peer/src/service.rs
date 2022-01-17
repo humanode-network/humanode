@@ -356,9 +356,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let (bioauth_flow_rpc_slot, bioauth_flow_provider_slot) =
         bioauth_flow::rpc::new_liveness_data_tx_slot();
 
-    let subscription_task_executor =
-        sc_rpc::SubscriptionTaskExecutor::new(task_manager.spawn_handle());
-
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
@@ -370,25 +367,26 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let max_stored_filters = evm_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
         let max_past_logs = evm_config.max_past_logs;
+        let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
+            task_manager.spawn_handle(),
+        ));
 
         Box::new(move |deny_unsafe, _| {
-            Ok(humanode_rpc::create(
-                humanode_rpc::Deps {
-                    client: Arc::clone(&client),
-                    pool: Arc::clone(&pool),
-                    deny_unsafe,
-                    robonode_client: Arc::clone(&robonode_client),
-                    bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
-                    validator_key_extractor: Arc::clone(&validator_key_extractor),
-                    graph: Arc::clone(pool.pool()),
-                    network: Arc::clone(&network),
-                    filter_pool: filter_pool.clone(),
-                    max_stored_filters,
-                    backend: Arc::clone(&frontier_backend),
-                    max_past_logs,
-                },
-                subscription_task_executor.clone(),
-            ))
+            Ok(humanode_rpc::create(humanode_rpc::Deps {
+                client: Arc::clone(&client),
+                pool: Arc::clone(&pool),
+                deny_unsafe,
+                robonode_client: Arc::clone(&robonode_client),
+                bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
+                validator_key_extractor: Arc::clone(&validator_key_extractor),
+                graph: Arc::clone(pool.pool()),
+                network: Arc::clone(&network),
+                filter_pool: filter_pool.clone(),
+                max_stored_filters,
+                backend: Arc::clone(&frontier_backend),
+                max_past_logs,
+                subscription_task_executor: Arc::clone(&subscription_task_executor),
+            }))
         })
     };
 

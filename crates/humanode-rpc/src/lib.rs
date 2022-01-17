@@ -20,7 +20,6 @@ use sc_client_api::{
     client::BlockchainEvents,
 };
 use sc_network::NetworkService;
-use sc_rpc::SubscriptionTaskExecutor;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool::{ChainApi, Pool};
 use sc_transaction_pool_api::TransactionPool;
@@ -55,12 +54,13 @@ pub struct Deps<C, P, VKE, A: ChainApi> {
     pub backend: Arc<fc_db::Backend<Block>>,
     /// Maximum number of logs in a query.
     pub max_past_logs: u32,
+    /// Subscription task executor instance.
+    pub subscription_task_executor: Arc<sc_rpc::SubscriptionTaskExecutor>,
 }
 
 /// Instantiate all RPC extensions.
 pub fn create<C, P, BE, VKE, A>(
     deps: Deps<C, P, VKE, A>,
-    subscription_task_executor: SubscriptionTaskExecutor,
 ) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
     BE: Backend<Block> + 'static,
@@ -96,6 +96,7 @@ where
         max_stored_filters,
         backend,
         max_past_logs,
+        subscription_task_executor,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -158,7 +159,7 @@ where
         Arc::clone(&network),
         SubscriptionManager::<HexEncodedIdProvider>::with_id_provider(
             HexEncodedIdProvider::default(),
-            Arc::new(subscription_task_executor),
+            subscription_task_executor,
         ),
         Arc::clone(&overrides),
     )));
