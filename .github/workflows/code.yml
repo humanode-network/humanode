@@ -135,3 +135,32 @@ jobs:
 
       - name: Run e2e tests
         run: utils/e2e-tests/run-tests "target/release/humanode-peer"
+
+  check-utils:
+    strategy:
+      matrix:
+        util:
+          - name: Require fork dependencies
+            run: utils/checks/require-fork-deps
+      fail-fast: false
+    name: ${{ matrix.util.name }}
+    runs-on: ubuntu-20.04
+    timeout-minutes: 20
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        timeout-minutes: 5
+
+      - name: Cache cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-check-utils-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+
+      - run: ${{ matrix.util.run }}
