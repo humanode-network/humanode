@@ -233,6 +233,23 @@ fn testnet_genesis(
                         storage: Default::default(),
                     },
                 );
+                map.insert(
+                    // H160 address of Gerald dev account
+                    // Public address: 0x6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b
+                    // Private key: 0x99b3c12287537e38c90a9219d4cb074a89a16e9cdb20bf85728ebd97c343e342
+                    // A proper private key should be used to allow testing EVM as Ethereum developer
+                    // For example, use it at Metamask, Remix, Truffle configuration, etc
+                    // We don't have a good converter between Substrate and Ethereum private keys for now.
+                    H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
+                        .expect("internal H160 is valid; qed"),
+                    pallet_evm::GenesisAccount {
+                        balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+                            .expect("internal U256 is valid; qed"),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
                 map
             },
         },
