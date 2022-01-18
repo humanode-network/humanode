@@ -1,3 +1,5 @@
+//! The Frontier related stuff.
+
 use humanode_runtime::opaque::Block;
 use sc_cli::SubstrateCli;
 use sc_service::BasePath;
