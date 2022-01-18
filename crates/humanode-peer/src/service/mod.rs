@@ -7,14 +7,11 @@ use fc_rpc::EthTask;
 use fc_rpc_core::types::FilterPool;
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
-use sc_cli::SubstrateCli;
 use sc_client_api::{BlockchainEvents, ExecutorProvider};
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
-use sc_service::{
-    BasePath, Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager,
-};
+use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
@@ -28,6 +25,8 @@ use std::{
 use tracing::*;
 
 use crate::configuration::Configuration;
+
+pub mod frontier;
 
 /// Declare an instance of the native executor named `ExecutorDispatch`. Include the wasm binary as
 /// the equivalent wasm code.
@@ -88,31 +87,6 @@ pub fn keystore_container(
     let (_client, _backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, _>(&config.substrate, None, executor)?;
     Ok((keystore_container, task_manager))
-}
-
-/// Create frontier dir.
-pub fn frontier_database_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
-    let config_dir = config
-        .base_path
-        .as_ref()
-        .map(|base_path| base_path.config_dir(config.chain_spec.id()))
-        .unwrap_or_else(|| {
-            BasePath::from_project("", "", &crate::cli::Root::executable_name())
-                .config_dir(config.chain_spec.id())
-        });
-    config_dir.join("frontier").join("db")
-}
-
-/// Construct frontier backend.
-pub fn open_frontier_backend(
-    config: &sc_service::Configuration,
-) -> Result<fc_db::Backend<Block>, String> {
-    fc_db::Backend::<Block>::new(&fc_db::DatabaseSettings {
-        source: fc_db::DatabaseSettingsSrc::RocksDb {
-            path: frontier_database_dir(config),
-            cache_size: 0,
-        },
-    })
 }
 
 /// Extract substrate partial components.
@@ -196,7 +170,7 @@ pub fn new_partial(
         telemetry.as_ref().map(|x| x.handle()),
     )?;
 
-    let frontier_backend = Arc::new(open_frontier_backend(config)?);
+    let frontier_backend = Arc::new(frontier::open_backend(config)?);
     let frontier_block_import = FrontierBlockImport::new(
         grandpa_block_import.clone(),
         Arc::clone(&client),
