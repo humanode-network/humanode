@@ -446,7 +446,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         );
     }
 
-    task_manager.spawn_essential_handle().spawn(
+    task_manager.spawn_essential_handle().spawn_blocking(
         "frontier-mapping-sync-worker",
         Some("evm"),
         MappingSyncWorker::new(
