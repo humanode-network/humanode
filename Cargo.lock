@@ -1920,6 +1920,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "frontier-api"
+version = "0.1.0"
+dependencies = [
+ "pallet-ethereum",
+ "parity-scale-codec",
+ "sp-api",
+ "sp-std",
+]
+
+[[package]]
 name = "fs-swap"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2498,11 +2508,13 @@ dependencies = [
  "fc-rpc",
  "fc-rpc-core",
  "fp-rpc",
+ "frontier-api",
  "humanode-runtime",
  "jsonrpc-core",
  "jsonrpc-pubsub",
  "pallet-ethereum",
  "pallet-transaction-payment-rpc",
+ "primitives-frontier",
  "robonode-client",
  "sc-client-api",
  "sc-network",
@@ -2513,6 +2525,7 @@ dependencies = [
  "sp-api",
  "sp-block-builder",
  "sp-blockchain",
+ "sp-runtime",
  "substrate-frame-rpc-system",
 ]
 
@@ -2531,6 +2544,7 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "frontier-api",
  "hex-literal",
  "pallet-aura",
  "pallet-balances",
@@ -5144,6 +5158,18 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-std",
+]
+
+[[package]]
+name = "primitives-frontier"
+version = "0.1.0"
+dependencies = [
+ "fp-rpc",
+ "frontier-api",
+ "pallet-ethereum",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
 ]
 
 [[package]]

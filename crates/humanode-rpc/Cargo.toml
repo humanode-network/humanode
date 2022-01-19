@@ -7,7 +7,9 @@ publish = false
 [dependencies]
 bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
+frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
+primitives-frontier = { version = "0.1", path = "../primitives-frontier" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
 fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
@@ -27,4 +29,5 @@ sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "master" }

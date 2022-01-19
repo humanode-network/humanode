@@ -545,30 +545,6 @@ construct_runtime!(
     }
 );
 
-pub struct TransactionConverter;
-
-impl fp_rpc::ConvertTransaction<UncheckedExtrinsic> for TransactionConverter {
-    fn convert_transaction(&self, transaction: pallet_ethereum::Transaction) -> UncheckedExtrinsic {
-        UncheckedExtrinsic::new_unsigned(
-            pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
-        )
-    }
-}
-
-impl fp_rpc::ConvertTransaction<opaque::UncheckedExtrinsic> for TransactionConverter {
-    fn convert_transaction(
-        &self,
-        transaction: pallet_ethereum::Transaction,
-    ) -> opaque::UncheckedExtrinsic {
-        let extrinsic = UncheckedExtrinsic::new_unsigned(
-            pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
-        );
-        let encoded = extrinsic.encode();
-        opaque::UncheckedExtrinsic::decode(&mut &encoded[..])
-            .expect("Encoded extrinsic is always valid")
-    }
-}
-
 /// The address format for describing accounts.
 pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
@@ -735,6 +711,17 @@ impl_runtime_apis! {
                     expires_at: v.expires_at,
                 },
             }
+        }
+    }
+
+    impl frontier_api::TransactionConverterApi<Block, opaque::UncheckedExtrinsic> for Runtime {
+        fn convert_transaction(transaction: pallet_ethereum::Transaction) -> opaque::UncheckedExtrinsic {
+            let extrinsic = UncheckedExtrinsic::new_unsigned(
+                pallet_ethereum::Call::<Runtime>::transact { transaction }.into(),
+            );
+            let encoded = extrinsic.encode();
+            opaque::UncheckedExtrinsic::decode(&mut &encoded[..])
+                .expect("Encoded extrinsic is always valid")
         }
     }
 

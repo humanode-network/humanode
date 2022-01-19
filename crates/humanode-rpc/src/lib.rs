@@ -12,7 +12,10 @@ use fc_rpc::{
     SchemaV2Override, StorageOverride,
 };
 use fc_rpc_core::types::FilterPool;
-use humanode_runtime::{opaque::Block, AccountId, Balance, Hash, Index, UnixMilliseconds};
+use humanode_runtime::{
+    opaque::{Block, UncheckedExtrinsic},
+    AccountId, Balance, Hash, Index, UnixMilliseconds,
+};
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
 use sc_client_api::{
@@ -73,6 +76,7 @@ where
     C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
     C::Api: BlockBuilder<Block>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
     VKE: ValidatorKeyExtractorT + Send + Sync + 'static,
     VKE::PublicKeyType: Encode,
     VKE::Error: std::fmt::Debug,
@@ -139,7 +143,7 @@ where
         Arc::clone(&client),
         Arc::clone(&pool),
         graph,
-        humanode_runtime::TransactionConverter,
+        primitives_frontier::RuntimeTransactionConverter::new(Arc::clone(&client)),
         Arc::clone(&network),
         Vec::new(),
         Arc::clone(&overrides),
