@@ -487,7 +487,7 @@ where
         Ok(())
     }
 
-    // Extract the validator public key.
+    /// Extract the validator public key.
     fn validator_public_key(&self) -> Result<Option<ValidatorKeyExtractor::PublicKeyType>> {
         self.validator_key_extractor
             .extract_validator_key()
