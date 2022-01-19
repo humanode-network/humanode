@@ -14,13 +14,11 @@ use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
 /// RPC subsystem dependencies.
-pub struct Deps<C, P, VS, VKE> {
+pub struct Deps<C, P, VKE, VS> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
     pub pool: Arc<P>,
-    /// The type that provides signing with the validator private key.
-    pub validator_signer: Option<Arc<VS>>,
     /// Whether to deny unsafe calls.
     pub deny_unsafe: DenyUnsafe,
     /// An ready robonode API client to tunnel the calls to.
@@ -29,16 +27,15 @@ pub struct Deps<C, P, VS, VKE> {
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
     /// Extracts the currently used validator key.
     pub validator_key_extractor: VKE,
+    /// The type that provides signing with the validator private key.
+    pub validator_signer: Option<Arc<VS>>,
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, VS, VKE>(
-    deps: Deps<C, P, VS, VKE>,
+pub fn create<C, P, VKE, VS>(
+    deps: Deps<C, P, VKE, VS>,
 ) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
-    VS: Signer<Vec<u8>> + Send + Sync + 'static,
-    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
-    VKE::PublicKeyType: Send + Sync,
     C: ProvideRuntimeApi<Block>,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
     C: Send + Sync + 'static,
@@ -48,9 +45,10 @@ where
     C::Api: BlockBuilder<Block>,
     P: TransactionPool<Block = Block> + 'static,
     VKE: ValidatorKeyExtractorT + Send + Sync + 'static,
-    VKE::PublicKeyType: Encode,
-    VKE::PublicKeyType: AsRef<[u8]>,
+    VKE::PublicKeyType: Encode + AsRef<[u8]> + Send + Sync,
     VKE::Error: std::fmt::Debug,
+    VS: Signer<Vec<u8>> + Send + Sync + 'static,
+    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
@@ -59,11 +57,11 @@ where
     let Deps {
         client,
         pool,
-        validator_signer,
         deny_unsafe,
         robonode_client,
         bioauth_flow_slot,
         validator_key_extractor,
+        validator_signer,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -79,10 +77,10 @@ where
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,
         bioauth_flow_slot,
-        validator_signer,
-        client,
-        pool,
         validator_key_extractor,
+        validator_signer,
+        Arc::clone(&client),
+        Arc::clone(&pool),
     )));
 
     io
