@@ -7,7 +7,6 @@ publish = false
 [dependencies]
 bioauth-consensus = { version = "0.1", path = "../bioauth-consensus" }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
-humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-data" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
@@ -18,11 +17,9 @@ futures = { version = "0.3", features = ["compat", "bilock", "unstable"] }
 jsonrpc-core = "18"
 jsonrpc-core-client = "18"
 jsonrpc-derive = "18"
-sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = "1"
 serde_json = "1"
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 tokio = "1"
 tracing = "0.1"

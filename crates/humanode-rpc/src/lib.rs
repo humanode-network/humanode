@@ -9,9 +9,59 @@ use bioauth_flow::{
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index, UnixMilliseconds};
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
-use sp_api::{Encode, ProvideRuntimeApi};
+use sp_api::{BlockT, Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
+
+/// The humanode runtime specific transaction manager.
+struct TransactionManager<C, P> {
+    /// The substrate client, provides access to the runtime APIs.
+    client: Arc<C>,
+    /// The transaction pool, used to submit transactions.
+    pool: Arc<P>,
+}
+
+#[async_trait::async_trait]
+impl<C, P> bioauth_flow::TransactionManager for TransactionManager<C, P>
+where
+    C: HeaderBackend<P::Block> + Send + Sync,
+    P: TransactionPool + Send + Sync,
+    <<P as TransactionPool>::Block as BlockT>::Extrinsic:
+        From<humanode_runtime::UncheckedExtrinsic>,
+{
+    type Error = P::Error;
+
+    async fn submit_authenticate<OpaqueAuthTicket, Commitment>(
+        &self,
+        auth_ticket: OpaqueAuthTicket,
+        ticket_signature: Commitment,
+    ) -> Result<(), Self::Error>
+    where
+        OpaqueAuthTicket: AsRef<[u8]> + Send + Sync,
+        Commitment: AsRef<[u8]> + Send + Sync,
+    {
+        let authenticate = pallet_bioauth::Authenticate {
+            ticket: auth_ticket.as_ref().to_vec().into(),
+            ticket_signature: ticket_signature.as_ref().to_vec(),
+        };
+
+        let call = pallet_bioauth::Call::authenticate { req: authenticate };
+
+        let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
+
+        let at = self.client.info().best_hash;
+
+        self.pool
+            .submit_and_watch(
+                &sp_runtime::generic::BlockId::Hash(at),
+                sp_runtime::transaction_validity::TransactionSource::Local,
+                ext.into(),
+            )
+            .await?;
+
+        Ok(())
+    }
+}
 
 /// RPC subsystem dependencies.
 pub struct Deps<C, P, VKE, VS> {
@@ -80,7 +130,10 @@ where
         validator_key_extractor,
         validator_signer,
         Arc::clone(&client),
-        Arc::clone(&pool),
+        TransactionManager {
+            client: Arc::clone(&client),
+            pool: Arc::clone(&pool),
+        },
     )));
 
     io

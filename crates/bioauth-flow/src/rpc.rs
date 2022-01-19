@@ -13,14 +13,13 @@ use jsonrpc_core::ErrorCode;
 use jsonrpc_derive::rpc;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
-use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use tracing::*;
 
-use crate::{flow::LivenessDataProvider, Signer};
+use crate::{flow::LivenessDataProvider, Signer, TransactionManager as TransactionManagerT};
 
 /// A result type that wraps.
 pub type Result<T> = std::result::Result<T, RpcError>;
@@ -101,7 +100,7 @@ pub struct Bioauth<
     Client,
     Block,
     Timestamp,
-    TransactionPool,
+    TransactionManager,
 > {
     /// The underlying implementation.
     /// We have to wrap it with `Arc` because `jsonrpc-core` doesn't allow us to use `self` for
@@ -115,7 +114,7 @@ pub struct Bioauth<
             Client,
             Block,
             Timestamp,
-            TransactionPool,
+            TransactionManager,
         >,
     >,
 }
@@ -127,7 +126,7 @@ impl<
         Client,
         Block,
         Timestamp,
-        TransactionPool,
+        TransactionManager,
     >
     Bioauth<
         RobonodeClient,
@@ -136,7 +135,7 @@ impl<
         Client,
         Block,
         Timestamp,
-        TransactionPool,
+        TransactionManager,
     >
 {
     /// Create a new [`Bioauth`] API implementation.
@@ -146,7 +145,7 @@ impl<
         validator_key_extractor: ValidatorKeyExtractor,
         validator_signer: Option<Arc<ValidatorSigner>>,
         client: Arc<Client>,
-        pool: Arc<TransactionPool>,
+        transaction_manager: TransactionManager,
     ) -> Self {
         let inner = Inner {
             robonode_client,
@@ -154,7 +153,7 @@ impl<
             validator_key_extractor,
             validator_signer,
             client,
-            pool,
+            transaction_manager,
             phantom_types: PhantomData,
         };
         Self {
@@ -176,7 +175,7 @@ impl<
                     Client,
                     Block,
                     Timestamp,
-                    TransactionPool,
+                    TransactionManager,
                 >,
             >,
         ) -> Fut,
@@ -195,7 +194,7 @@ impl<
         Client,
         Block,
         Timestamp,
-        TransactionPool,
+        TransactionManager,
     > BioauthApi<Timestamp>
     for Bioauth<
         RobonodeClient,
@@ -204,7 +203,7 @@ impl<
         Client,
         Block,
         Timestamp,
-        TransactionPool,
+        TransactionManager,
     >
 where
     RobonodeClient: Send + Sync + 'static,
@@ -214,7 +213,7 @@ where
     Client: Send + Sync + 'static,
     Block: Send + Sync + 'static,
     Timestamp: Send + Sync + 'static,
-    TransactionPool: Send + Sync + 'static,
+    TransactionManager: Send + Sync + 'static,
 
     RobonodeClient: AsRef<robonode_client::Client>,
     ValidatorKeyExtractor: ValidatorKeyExtractorT,
@@ -228,9 +227,8 @@ where
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
     Block: BlockT,
-    <Block as BlockT>::Extrinsic: From<humanode_runtime::UncheckedExtrinsic>,
     Timestamp: Encode + Decode,
-    TransactionPool: TransactionPoolT<Block = Block>,
+    TransactionManager: TransactionManagerT,
 {
     /// See [`Inner::get_facetec_device_sdk_params`].
     fn get_facetec_device_sdk_params(&self) -> FutureResult<FacetecDeviceSdkParams> {
@@ -275,7 +273,7 @@ struct Inner<
     Client,
     Block,
     Timestamp,
-    TransactionPool,
+    TransactionManager,
 > {
     /// The robonode client, used for fetching the FaceTec Session Token.
     robonode_client: RobonodeClient,
@@ -289,8 +287,8 @@ struct Inner<
     validator_signer: Option<Arc<ValidatorSigner>>,
     /// The substrate client, provides access to the runtime APIs.
     client: Arc<Client>,
-    /// The transaction pool to use.
-    pool: Arc<TransactionPool>,
+    /// The transaction manager to use.
+    transaction_manager: TransactionManager,
     /// The phantom types.
     phantom_types: PhantomData<(Block, Timestamp)>,
 }
@@ -302,7 +300,7 @@ impl<
         Client,
         Block,
         Timestamp,
-        TransactionPool,
+        TransactionManager,
     >
     Inner<
         RobonodeClient,
@@ -311,7 +309,7 @@ impl<
         Client,
         Block,
         Timestamp,
-        TransactionPool,
+        TransactionManager,
     >
 where
     RobonodeClient: AsRef<robonode_client::Client>,
@@ -326,9 +324,8 @@ where
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
     Block: BlockT,
-    <Block as BlockT>::Extrinsic: From<humanode_runtime::UncheckedExtrinsic>,
     Timestamp: Encode + Decode,
-    TransactionPool: TransactionPoolT<Block = Block>,
+    TransactionManager: TransactionManagerT,
 {
     /// Get the FaceTec Device SDK parameters to use at the device.
     async fn get_facetec_device_sdk_params(self: Arc<Self>) -> Result<FacetecDeviceSdkParams> {
@@ -458,23 +455,8 @@ where
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
 
-        let authenticate = pallet_bioauth::Authenticate {
-            ticket: response.auth_ticket.into(),
-            ticket_signature: response.auth_ticket_signature.into(),
-        };
-
-        let call = pallet_bioauth::Call::authenticate { req: authenticate };
-
-        let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
-
-        let at = self.client.info().best_hash;
-
-        self.pool
-            .submit_and_watch(
-                &sp_runtime::generic::BlockId::Hash(at),
-                sp_runtime::transaction_validity::TransactionSource::Local,
-                ext.into(),
-            )
+        self.transaction_manager
+            .submit_authenticate(response.auth_ticket, response.auth_ticket_signature)
             .await
             .map_err(|_| RpcError {
                 code: ErrorCode::ServerError(1),

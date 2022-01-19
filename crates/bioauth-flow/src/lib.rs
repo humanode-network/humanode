@@ -17,3 +17,20 @@ pub trait Signer<S> {
     where
         D: AsRef<[u8]> + Send + 'a;
 }
+
+/// Interface for calling transactions.
+#[async_trait::async_trait]
+pub trait TransactionManager {
+    /// Transaction error.
+    type Error;
+
+    /// Submit an authenticate transaction.
+    async fn submit_authenticate<OpaqueAuthTicket, Commitment>(
+        &self,
+        auth_ticket: OpaqueAuthTicket,
+        ticket_signature: Commitment,
+    ) -> Result<(), Self::Error>
+    where
+        OpaqueAuthTicket: AsRef<[u8]> + Send + Sync,
+        Commitment: AsRef<[u8]> + Send + Sync;
+}
