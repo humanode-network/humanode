@@ -1385,7 +1385,7 @@ checksum = "408ffdd509e16de15ea9b51f5333748f6086601f29d445d2ba53dd7e95565574"
 dependencies = [
  "auto_impl",
  "environmental",
- "ethereum 0.10.0",
+ "ethereum 0.11.1",
  "evm-core",
  "evm-gasometer",
  "evm-runtime",
