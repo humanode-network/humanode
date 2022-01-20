@@ -1,10 +1,13 @@
 //! Initializing, bootstrapping and launching the node from a provided configuration.
 
 #![allow(clippy::type_complexity)]
-use std::{marker::PhantomData, sync::Arc, time::Duration};
-
+use fc_consensus::FrontierBlockImport;
+use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
+use fc_rpc::EthTask;
+use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
+use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
-use sc_client_api::ExecutorProvider;
+use sc_client_api::{BlockchainEvents, ExecutorProvider};
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
@@ -12,9 +15,18 @@ use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, Ta
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
+use sp_core::U256;
+use std::{
+    collections::BTreeMap,
+    marker::PhantomData,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 use tracing::*;
 
 use crate::configuration::Configuration;
+
+pub mod frontier;
 
 /// Declare an instance of the native executor named `ExecutorDispatch`. Include the wasm binary as
 /// the equivalent wasm code.
@@ -45,9 +57,22 @@ type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
-/// Full node Grandpa type.
+/// Full type for GrandpaBlockImport.
 type FullGrandpa =
     sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
+/// Full type for FrontierBlockImport.
+type FullFrontier = FrontierBlockImport<Block, FullGrandpa, FullClient>;
+/// Full type for BioauthBlockImport.
+type FullBioauth = bioauth_consensus::BioauthBlockImport<
+    FullBackend,
+    Block,
+    FullClient,
+    FullFrontier,
+    bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
+    bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, AuraId>,
+>;
+/// Frontier backend type.
+type FrontierBackend = fc_db::Backend<Block>;
 
 /// Construct a bare keystore from the configuration.
 pub fn keystore_container(
@@ -77,24 +102,24 @@ pub fn new_partial(
         (
             FullGrandpa,
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
-            bioauth_consensus::BioauthBlockImport<
-                FullBackend,
-                Block,
-                FullClient,
-                FullGrandpa,
-                bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
-                bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, AuraId>,
-            >,
+            FullBioauth,
             SlotDuration,
             Duration,
+            Arc<FrontierBackend>,
             Option<Telemetry>,
         ),
     >,
     ServiceError,
 > {
     let Configuration {
-        substrate: config, ..
+        substrate: config,
+        evm: evm_config,
+        ..
     } = config;
+
+    let evm_config = evm_config
+        .as_ref()
+        .ok_or_else(|| ServiceError::Other("evm config is not set".into()))?;
 
     let telemetry = config
         .telemetry_endpoints
@@ -145,15 +170,23 @@ pub fn new_partial(
         telemetry.as_ref().map(|x| x.handle()),
     )?;
 
+    let frontier_backend = Arc::new(frontier::open_backend(config)?);
+    let frontier_block_import = FrontierBlockImport::new(
+        grandpa_block_import.clone(),
+        Arc::clone(&client),
+        Arc::clone(&frontier_backend),
+    );
+
     let bioauth_consensus_block_import = bioauth_consensus::BioauthBlockImport::new(
         Arc::clone(&client),
-        grandpa_block_import.clone(),
+        frontier_block_import,
         bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
         bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
     );
 
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
+    let eth_target_gas_price = evm_config.target_gas_price;
 
     let import_queue =
         sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _, _>(ImportQueueParams {
@@ -169,7 +202,10 @@ pub fn new_partial(
                         raw_slot_duration,
                     );
 
-                Ok((timestamp, slot))
+                let dynamic_fee =
+                    pallet_dynamic_fee::InherentDataProvider(U256::from(eth_target_gas_price));
+
+                Ok((timestamp, slot, dynamic_fee))
             },
             spawner: &task_manager.spawn_essential_handle(),
             can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(
@@ -194,6 +230,7 @@ pub fn new_partial(
             bioauth_consensus_block_import,
             slot_duration,
             raw_slot_duration,
+            frontier_backend,
             telemetry,
         ),
     })
@@ -217,6 +254,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 bioauth_consensus_block_import,
                 slot_duration,
                 raw_slot_duration,
+                frontier_backend,
                 mut telemetry,
             ),
     } = new_partial(&config)?;
@@ -224,6 +262,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
         bioauth_perform_enroll,
+        evm: evm_config,
     } = config;
 
     config
@@ -240,6 +279,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let bioauth_flow_config = bioauth_flow_config
         .ok_or_else(|| ServiceError::Other("bioauth flow config is not set".into()))?;
 
+    let evm_config =
+        evm_config.expect("already used during substrate partial components exctraction");
+
     let role = config.role.clone();
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
     let name = config.network.node_name.clone();
@@ -248,6 +290,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
     let prometheus_registry = config.prometheus_registry().cloned();
+    let eth_target_gas_price = evm_config.target_gas_price;
+    let eth_filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
+    let eth_fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
+    let eth_fee_history_limit = evm_config.fee_history_limit;
+    let eth_overrides = humanode_rpc::overrides_handle(Arc::clone(&client));
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -292,6 +339,23 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let robonode_client = Arc::clone(&robonode_client);
         let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
         let validator_key_extractor = Arc::clone(&validator_key_extractor);
+        let network = Arc::clone(&network);
+        let eth_filter_pool = eth_filter_pool.clone();
+        let eth_max_stored_filters = evm_config.max_stored_filters;
+        let frontier_backend = Arc::clone(&frontier_backend);
+        let eth_max_past_logs = evm_config.max_past_logs;
+        let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
+        let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
+            task_manager.spawn_handle(),
+        ));
+        let eth_overrides = Arc::clone(&eth_overrides);
+        let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCache::new(
+            task_manager.spawn_handle(),
+            Arc::clone(&eth_overrides),
+            50,
+            50,
+        ));
+
         Box::new(move |deny_unsafe, _| {
             Ok(humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
@@ -300,6 +364,17 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 robonode_client: Arc::clone(&robonode_client),
                 bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
                 validator_key_extractor: Arc::clone(&validator_key_extractor),
+                graph: Arc::clone(pool.pool()),
+                network: Arc::clone(&network),
+                eth_filter_pool: eth_filter_pool.clone(),
+                eth_max_stored_filters,
+                eth_backend: Arc::clone(&frontier_backend),
+                eth_max_past_logs,
+                eth_fee_history_limit,
+                eth_fee_history_cache: Arc::clone(&eth_fee_history_cache),
+                subscription_task_executor: Arc::clone(&subscription_task_executor),
+                eth_overrides: Arc::clone(&eth_overrides),
+                eth_block_data_cache: Arc::clone(&eth_block_data_cache),
             }))
         })
     };
@@ -311,7 +386,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         task_manager: &mut task_manager,
         transaction_pool: Arc::clone(&transaction_pool),
         rpc_extensions_builder,
-        backend,
+        backend: Arc::clone(&backend),
         system_rpc_tx,
         config,
         telemetry: telemetry.as_mut(),
@@ -333,7 +408,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                         raw_slot_duration,
                     );
 
-                Ok((timestamp, slot))
+                let dynamic_fee =
+                    pallet_dynamic_fee::InherentDataProvider(U256::from(eth_target_gas_price));
+
+                Ok((timestamp, slot, dynamic_fee))
             },
             force_authoring,
             backoff_authoring_blocks,
@@ -380,6 +458,53 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             "grandpa-voter",
             Some("block-finalization"),
             sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
+        );
+    }
+
+    task_manager.spawn_essential_handle().spawn_blocking(
+        "frontier-mapping-sync-worker",
+        Some("evm"),
+        MappingSyncWorker::new(
+            client.import_notification_stream(),
+            raw_slot_duration,
+            Arc::clone(&client),
+            backend,
+            Arc::clone(&frontier_backend),
+            SyncStrategy::Normal,
+        )
+        .for_each(|()| futures::future::ready(())),
+    );
+
+    // Spawn Frontier FeeHistory cache maintenance task.
+    task_manager.spawn_essential_handle().spawn(
+        "frontier-fee-history",
+        Some("evm"),
+        EthTask::fee_history_task(
+            Arc::clone(&client),
+            Arc::clone(&eth_overrides),
+            eth_fee_history_cache,
+            eth_fee_history_limit,
+        ),
+    );
+
+    task_manager.spawn_essential_handle().spawn(
+        "frontier-schema-cache-task",
+        Some("evm"),
+        EthTask::ethereum_schema_cache_task(Arc::clone(&client), frontier_backend),
+    );
+
+    // Spawn Frontier EthFilterApi maintenance task.
+    if let Some(eth_filter_pool) = eth_filter_pool {
+        /// Each filter is allowed to stay in the pool for 100 blocks.
+        const FILTER_RETAIN_THRESHOLD: u64 = 100;
+        task_manager.spawn_essential_handle().spawn(
+            "frontier-filter-pool",
+            Some("evm"),
+            EthTask::filter_pool_task(
+                Arc::clone(&client),
+                eth_filter_pool,
+                FILTER_RETAIN_THRESHOLD,
+            ),
         );
     }
 
