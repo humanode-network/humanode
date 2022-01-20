@@ -50,23 +50,23 @@ pub struct Deps<C, P, VKE, A: ChainApi> {
     /// Network service
     pub network: Arc<NetworkService<Block, Hash>>,
     /// EthFilterApi pool.
-    pub filter_pool: Option<FilterPool>,
+    pub eth_filter_pool: Option<FilterPool>,
     /// Maximum number of stored filters.
-    pub max_stored_filters: usize,
+    pub eth_max_stored_filters: usize,
     /// Backend.
-    pub backend: Arc<fc_db::Backend<Block>>,
+    pub eth_backend: Arc<fc_db::Backend<Block>>,
     /// Maximum number of logs in a query.
-    pub max_past_logs: u32,
+    pub eth_max_past_logs: u32,
     /// Maximum fee history cache size.
-    pub fee_history_limit: u64,
+    pub eth_fee_history_limit: u64,
     /// Fee history cache.
-    pub fee_history_cache: FeeHistoryCache,
+    pub eth_fee_history_cache: FeeHistoryCache,
     /// Subscription task executor instance.
     pub subscription_task_executor: Arc<sc_rpc::SubscriptionTaskExecutor>,
     /// Ethereum data access overrides.
-    pub overrides: Arc<OverrideHandle<Block>>,
+    pub eth_overrides: Arc<OverrideHandle<Block>>,
     /// Cache for Ethereum block data.
-    pub block_data_cache: Arc<EthBlockDataCache<Block>>,
+    pub eth_block_data_cache: Arc<EthBlockDataCache<Block>>,
 }
 
 /// A helper function to handle overrides.
@@ -137,15 +137,15 @@ where
         validator_key_extractor,
         graph,
         network,
-        filter_pool,
-        max_stored_filters,
-        backend,
-        max_past_logs,
-        fee_history_limit,
-        fee_history_cache,
+        eth_filter_pool,
+        eth_max_stored_filters,
+        eth_backend,
+        eth_max_past_logs,
+        eth_fee_history_limit,
+        eth_fee_history_cache,
         subscription_task_executor,
-        overrides,
-        block_data_cache,
+        eth_overrides,
+        eth_block_data_cache,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -172,13 +172,13 @@ where
         primitives_frontier::RuntimeTransactionConverter::new(Arc::clone(&client)),
         Arc::clone(&network),
         Vec::new(),
-        Arc::clone(&overrides),
-        Arc::clone(&backend),
+        Arc::clone(&eth_overrides),
+        Arc::clone(&eth_backend),
         true,
-        max_past_logs,
-        Arc::clone(&block_data_cache),
-        fee_history_limit,
-        fee_history_cache,
+        eth_max_past_logs,
+        Arc::clone(&eth_block_data_cache),
+        eth_fee_history_limit,
+        eth_fee_history_cache,
     )));
 
     io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(Arc::clone(
@@ -193,7 +193,7 @@ where
             HexEncodedIdProvider::default(),
             subscription_task_executor,
         ),
-        Arc::clone(&overrides),
+        Arc::clone(&eth_overrides),
     )));
 
     io.extend_with(NetApiServer::to_delegate(NetApi::new(
@@ -203,14 +203,14 @@ where
         true,
     )));
 
-    if let Some(filter_pool) = filter_pool {
+    if let Some(eth_filter_pool) = eth_filter_pool {
         io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
             client,
-            backend,
-            filter_pool,
-            max_stored_filters,
-            max_past_logs,
-            block_data_cache,
+            eth_backend,
+            eth_filter_pool,
+            eth_max_stored_filters,
+            eth_max_past_logs,
+            eth_block_data_cache,
         )));
     }
 
