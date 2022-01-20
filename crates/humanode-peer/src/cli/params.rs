@@ -47,4 +47,8 @@ pub struct EvmParams {
     /// The dynamic-fee pallet target gas price set by block author.
     #[structopt(long, default_value = "1")]
     pub target_gas_price: u64,
+
+    /// Maximum fee history cache size.
+    #[structopt(long, default_value = "2048")]
+    pub fee_history_limit: u64,
 }

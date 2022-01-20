@@ -62,4 +62,7 @@ pub struct Evm {
 
     /// The dynamic-fee pallet target gas price set by block author.
     pub target_gas_price: u64,
+
+    /// Maximum fee history cache size.
+    pub fee_history_limit: u64,
 }

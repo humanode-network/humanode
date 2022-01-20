@@ -48,6 +48,7 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             max_past_logs: params.max_past_logs,
             max_stored_filters: params.max_stored_filters,
             target_gas_price: params.target_gas_price,
+            fee_history_limit: params.fee_history_limit,
         });
 
         Ok(Configuration {

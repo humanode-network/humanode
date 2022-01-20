@@ -1,6 +1,6 @@
 //! RPC subsystem instantiation logic.
 
-use std::sync::Arc;
+use std::{collections::BTreeMap, sync::Arc};
 
 use bioauth_flow::rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT};
 use fc_rpc::{
@@ -9,9 +9,9 @@ use fc_rpc::{
 };
 use fc_rpc::{
     EthBlockDataCache, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
-    SchemaV2Override, StorageOverride,
+    SchemaV2Override, SchemaV3Override, StorageOverride,
 };
-use fc_rpc_core::types::FilterPool;
+use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use humanode_runtime::{
     opaque::{Block, UncheckedExtrinsic},
     AccountId, Balance, Hash, Index, UnixMilliseconds,
@@ -19,7 +19,7 @@ use humanode_runtime::{
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
 use sc_client_api::{
-    backend::{AuxStore, Backend, StorageProvider},
+    backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
 };
 use sc_network::NetworkService;
@@ -29,7 +29,7 @@ use sc_transaction_pool_api::TransactionPool;
 use sp_api::{Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
-use std::collections::BTreeMap;
+use sp_runtime::traits::BlakeTwo256;
 
 /// RPC subsystem dependencies.
 pub struct Deps<C, P, VKE, A: ChainApi> {
@@ -57,8 +57,49 @@ pub struct Deps<C, P, VKE, A: ChainApi> {
     pub backend: Arc<fc_db::Backend<Block>>,
     /// Maximum number of logs in a query.
     pub max_past_logs: u32,
+    /// Maximum fee history cache size.
+    pub fee_history_limit: u64,
+    /// Fee history cache.
+    pub fee_history_cache: FeeHistoryCache,
     /// Subscription task executor instance.
     pub subscription_task_executor: Arc<sc_rpc::SubscriptionTaskExecutor>,
+    /// Ethereum data access overrides.
+    pub overrides: Arc<OverrideHandle<Block>>,
+    /// Cache for Ethereum block data.
+    pub block_data_cache: Arc<EthBlockDataCache<Block>>,
+}
+
+/// A helper function to handle overrides.
+pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
+where
+    C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+    C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
+    C: Send + Sync + 'static,
+    C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    BE: Backend<Block> + 'static,
+    BE::State: StateBackend<BlakeTwo256>,
+{
+    let mut overrides_map = BTreeMap::new();
+    overrides_map.insert(
+        EthereumStorageSchema::V1,
+        Box::new(SchemaV1Override::new(Arc::clone(&client)))
+            as Box<dyn StorageOverride<_> + Send + Sync>,
+    );
+    overrides_map.insert(
+        EthereumStorageSchema::V2,
+        Box::new(SchemaV2Override::new(Arc::clone(&client)))
+            as Box<dyn StorageOverride<_> + Send + Sync>,
+    );
+    overrides_map.insert(
+        EthereumStorageSchema::V3,
+        Box::new(SchemaV3Override::new(Arc::clone(&client)))
+            as Box<dyn StorageOverride<_> + Send + Sync>,
+    );
+
+    Arc::new(OverrideHandle {
+        schemas: overrides_map,
+        fallback: Box::new(RuntimeApiStorageOverride::new(Arc::clone(&client))),
+    })
 }
 
 /// Instantiate all RPC extensions.
@@ -100,7 +141,11 @@ where
         max_stored_filters,
         backend,
         max_past_logs,
+        fee_history_limit,
+        fee_history_cache,
         subscription_task_executor,
+        overrides,
+        block_data_cache,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -120,25 +165,6 @@ where
         Arc::clone(&client),
     )));
 
-    let mut overrides_map = BTreeMap::new();
-    overrides_map.insert(
-        EthereumStorageSchema::V1,
-        Box::new(SchemaV1Override::new(Arc::clone(&client)))
-            as Box<dyn StorageOverride<_> + Send + Sync>,
-    );
-    overrides_map.insert(
-        EthereumStorageSchema::V2,
-        Box::new(SchemaV2Override::new(Arc::clone(&client)))
-            as Box<dyn StorageOverride<_> + Send + Sync>,
-    );
-
-    let overrides = Arc::new(OverrideHandle {
-        schemas: overrides_map,
-        fallback: Box::new(RuntimeApiStorageOverride::new(Arc::clone(&client))),
-    });
-
-    let block_data_cache = Arc::new(EthBlockDataCache::new(50, 50));
-
     io.extend_with(EthApiServer::to_delegate(EthApi::new(
         Arc::clone(&client),
         Arc::clone(&pool),
@@ -151,6 +177,8 @@ where
         true,
         max_past_logs,
         Arc::clone(&block_data_cache),
+        fee_history_limit,
+        fee_history_cache,
     )));
 
     io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(Arc::clone(
@@ -181,7 +209,6 @@ where
             backend,
             filter_pool,
             max_stored_filters,
-            overrides,
             max_past_logs,
             block_data_cache,
         )));

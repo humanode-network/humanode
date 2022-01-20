@@ -4,7 +4,7 @@
 use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
-use fc_rpc_core::types::FilterPool;
+use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockchainEvents, ExecutorProvider};
@@ -292,6 +292,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let prometheus_registry = config.prometheus_registry().cloned();
     let target_gas_price = evm_config.target_gas_price;
     let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
+    let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
+    let fee_history_limit = evm_config.fee_history_limit;
+    let overrides = humanode_rpc::overrides_handle(Arc::clone(&client));
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -341,8 +344,16 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let max_stored_filters = evm_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
         let max_past_logs = evm_config.max_past_logs;
+        let fee_history_cache = Arc::clone(&fee_history_cache);
         let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
             task_manager.spawn_handle(),
+        ));
+        let overrides = Arc::clone(&overrides);
+        let block_data_cache = Arc::new(fc_rpc::EthBlockDataCache::new(
+            task_manager.spawn_handle(),
+            Arc::clone(&overrides),
+            50,
+            50,
         ));
 
         Box::new(move |deny_unsafe, _| {
@@ -359,7 +370,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 max_stored_filters,
                 backend: Arc::clone(&frontier_backend),
                 max_past_logs,
+                fee_history_limit,
+                fee_history_cache: Arc::clone(&fee_history_cache),
                 subscription_task_executor: Arc::clone(&subscription_task_executor),
+                overrides: Arc::clone(&overrides),
+                block_data_cache: Arc::clone(&block_data_cache),
             }))
         })
     };
@@ -458,6 +473,18 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             SyncStrategy::Normal,
         )
         .for_each(|()| futures::future::ready(())),
+    );
+
+    // Spawn Frontier FeeHistory cache maintenance task.
+    task_manager.spawn_essential_handle().spawn(
+        "frontier-fee-history",
+        Some("evm"),
+        EthTask::fee_history_task(
+            Arc::clone(&client),
+            Arc::clone(&overrides),
+            fee_history_cache,
+            fee_history_limit,
+        ),
     );
 
     task_manager.spawn_essential_handle().spawn(
@@ -588,7 +615,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 .submit_and_watch(
                     &sp_runtime::generic::BlockId::Hash(at),
                     sp_runtime::transaction_validity::TransactionSource::Local,
-                    ext.0.into(),
+                    ext.into(),
                 )
                 .await
                 .unwrap();
