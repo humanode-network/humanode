@@ -47,7 +47,7 @@ where
 
         let call = pallet_bioauth::Call::authenticate { req: authenticate };
 
-        let ext = Block::UncheckedExtrinsic::new_unsigned(call.into());
+        let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
 
         let at = self.client.info().best_hash;
 
