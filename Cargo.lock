@@ -468,16 +468,19 @@ dependencies = [
  "bioauth-consensus",
  "bioauth-flow-api",
  "futures 0.3.19",
+ "humanode-runtime",
  "jsonrpc-core",
  "jsonrpc-core-client",
  "jsonrpc-derive",
  "pallet-bioauth",
  "primitives-liveness-data",
  "robonode-client",
+ "sc-transaction-pool-api",
  "serde",
  "serde_json",
  "sp-api",
  "sp-blockchain",
+ "sp-runtime",
  "tokio",
  "tracing",
 ]
@@ -2156,12 +2159,10 @@ dependencies = [
 name = "humanode-rpc"
 version = "0.1.0"
 dependencies = [
- "async-trait",
  "bioauth-flow",
  "bioauth-flow-api",
  "humanode-runtime",
  "jsonrpc-core",
- "pallet-bioauth",
  "pallet-transaction-payment-rpc",
  "robonode-client",
  "sc-rpc-api",
@@ -2169,7 +2170,6 @@ dependencies = [
  "sp-api",
  "sp-block-builder",
  "sp-blockchain",
- "sp-runtime",
  "substrate-frame-rpc-system",
 ]
 

@@ -8,10 +8,8 @@ publish = false
 bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
-pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
-async-trait = "0.1"
 jsonrpc-core = "18"
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -19,5 +17,4 @@ sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "master" }
