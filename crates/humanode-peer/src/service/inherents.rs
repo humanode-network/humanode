@@ -4,22 +4,12 @@ use sp_core::U256;
 use std::time::Duration;
 
 /// Create inherent data providers.
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Creator {
-    /// Aura slot duration.
+    /// Consensus slot duration.
     pub raw_slot_duration: Duration,
     /// Ethereum gas target price.
     pub eth_target_gas_price: u64,
-}
-
-impl Creator {
-    /// Create a new [`Creator`].
-    pub fn new(raw_slot_duration: Duration, eth_target_gas_price: u64) -> Self {
-        Self {
-            raw_slot_duration,
-            eth_target_gas_price,
-        }
-    }
 }
 
 #[async_trait::async_trait]

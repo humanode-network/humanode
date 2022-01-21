@@ -188,14 +188,17 @@ pub fn new_partial(
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
     let eth_target_gas_price = evm_config.target_gas_price;
-    let inherent_data_providers = inherents::Creator::new(raw_slot_duration, eth_target_gas_price);
+    let inherent_data_providers_creator = inherents::Creator {
+        raw_slot_duration,
+        eth_target_gas_price,
+    };
 
     let import_queue =
         sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _, _>(ImportQueueParams {
             block_import: bioauth_consensus_block_import.clone(),
             justification_import: Some(Box::new(grandpa_block_import.clone())),
             client: Arc::clone(&client),
-            create_inherent_data_providers: inherent_data_providers.clone(),
+            create_inherent_data_providers: inherent_data_providers_creator.clone(),
             spawner: &task_manager.spawn_essential_handle(),
             can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(
                 client.executor().clone(),
@@ -219,7 +222,7 @@ pub fn new_partial(
             bioauth_consensus_block_import,
             slot_duration,
             raw_slot_duration,
-            inherent_data_providers,
+            inherent_data_providers_creator,
             frontier_backend,
             telemetry,
         ),
@@ -244,7 +247,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 bioauth_consensus_block_import,
                 slot_duration,
                 raw_slot_duration,
-                inherent_data_providers,
+                inherent_data_providers_creator,
                 frontier_backend,
                 mut telemetry,
             ),
@@ -389,7 +392,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             select_chain,
             block_import: bioauth_consensus_block_import,
             proposer_factory,
-            create_inherent_data_providers: inherent_data_providers,
+            create_inherent_data_providers: inherent_data_providers_creator,
             force_authoring,
             backoff_authoring_blocks,
             keystore: keystore_container.sync_keystore(),
