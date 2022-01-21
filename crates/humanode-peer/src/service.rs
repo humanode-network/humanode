@@ -3,7 +3,6 @@
 #![allow(clippy::type_complexity)]
 use std::{marker::PhantomData, sync::Arc, time::Duration};
 
-use bioauth_consensus::ValidatorKeyExtractor;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
@@ -295,21 +294,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
         let keystore = keystore_container.keystore();
         let validator_public_key =
-            crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref())
-                .await
-                .ok() // Ignore the error, we are already logging it elsewhere.
-                .flatten()
-                .map(Arc::new);
+            crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref()).await;
 
-        let validator_signer = validator_public_key.as_ref().map(|val| {
-            Arc::new(crate::validator_key::AppCryptoSigner::new(
-                Arc::clone(&keystore),
-                Arc::clone(val),
-            ))
-        });
-
-        // Using the extractor here because the public key above doesn't satisfy `Encode`.
-        let validator_public_key = match validator_key_extractor.extract_validator_key() {
+        let validator_public_key = match validator_public_key {
             Ok(Some(key)) => {
                 info!("Running bioauth flow for {}", key);
                 Some(Arc::new(key))
@@ -327,6 +314,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             }
         };
 
+        let validator_signer = validator_public_key.as_ref().map(|val| {
+            Arc::new(crate::validator_key::AppCryptoSigner::new(
+                Arc::clone(&keystore),
+                Arc::clone(val),
+            ))
+        });
+
         Box::new(move |deny_unsafe, _| {
             Ok(humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
@@ -335,7 +329,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 robonode_client: Arc::clone(&robonode_client),
                 bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
                 validator_signer: validator_signer.as_ref().map(Arc::clone),
-                validator_public_key: validator_public_key.as_ref().map(Arc::clone),
+                validator_public_key: validator_public_key.as_ref().map(|x| x.0.clone()),
             }))
         })
     };

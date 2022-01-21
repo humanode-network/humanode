@@ -142,7 +142,7 @@ impl<
     pub fn new(
         robonode_client: RobonodeClient,
         liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-        validator_public_key: Option<Arc<ValidatorPublicKey>>,
+        validator_public_key: Option<ValidatorPublicKey>,
         validator_signer: Option<Arc<ValidatorSigner>>,
         client: Arc<Client>,
         pool: Arc<TransactionPool>,
@@ -279,7 +279,7 @@ struct Inner<
     /// RPC extension builder that will be using this RPC.
     liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
     /// The local validator key.
-    validator_public_key: Option<Arc<ValidatorPublicKey>>,
+    validator_public_key: Option<ValidatorPublicKey>,
     /// The type that provides signing with the validator private key.
     validator_signer: Option<Arc<ValidatorSigner>>,
     /// The substrate client, provides access to the runtime APIs.
@@ -410,7 +410,7 @@ where
             .enroll(EnrollRequest {
                 liveness_data: opaque_liveness_data.as_ref(),
                 liveness_data_signature: signature.as_ref(),
-                public_key: public_key.as_ref().as_ref(),
+                public_key: public_key.as_ref(),
             })
             .await
             .map_err(|err| RpcError {

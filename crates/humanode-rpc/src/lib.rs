@@ -26,7 +26,7 @@ pub struct Deps<C, P, VK, VS> {
     /// The liveness data tx slot to use in the bioauth flow RPC.
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
     /// The current validator public key.
-    pub validator_public_key: Option<Arc<VK>>,
+    pub validator_public_key: Option<VK>,
     /// The type that provides signing with the validator private key.
     pub validator_signer: Option<Arc<VS>>,
 }
