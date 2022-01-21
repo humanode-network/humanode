@@ -2521,6 +2521,7 @@ dependencies = [
  "sp-consensus-aura",
  "sp-core",
  "sp-finality-grandpa",
+ "sp-inherents",
  "sp-keystore",
  "sp-panic-handler",
  "sp-runtime",

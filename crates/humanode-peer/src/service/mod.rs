@@ -15,7 +15,6 @@ use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, Ta
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus::SlotData;
 use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
-use sp_core::U256;
 use std::{
     collections::BTreeMap,
     marker::PhantomData,
@@ -27,6 +26,7 @@ use tracing::*;
 use crate::configuration::Configuration;
 
 pub mod frontier;
+pub mod inherents;
 
 /// Declare an instance of the native executor named `ExecutorDispatch`. Include the wasm binary as
 /// the equivalent wasm code.
@@ -105,6 +105,7 @@ pub fn new_partial(
             FullBioauth,
             SlotDuration,
             Duration,
+            inherents::Creator,
             Arc<FrontierBackend>,
             Option<Telemetry>,
         ),
@@ -187,26 +188,17 @@ pub fn new_partial(
     let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
     let raw_slot_duration = slot_duration.slot_duration();
     let eth_target_gas_price = evm_config.target_gas_price;
+    let inherent_data_providers_creator = inherents::Creator {
+        raw_slot_duration,
+        eth_target_gas_price,
+    };
 
     let import_queue =
         sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _, _>(ImportQueueParams {
             block_import: bioauth_consensus_block_import.clone(),
             justification_import: Some(Box::new(grandpa_block_import.clone())),
             client: Arc::clone(&client),
-            create_inherent_data_providers: move |_, ()| async move {
-                let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-
-                let slot =
-                    sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_duration(
-                        *timestamp,
-                        raw_slot_duration,
-                    );
-
-                let dynamic_fee =
-                    pallet_dynamic_fee::InherentDataProvider(U256::from(eth_target_gas_price));
-
-                Ok((timestamp, slot, dynamic_fee))
-            },
+            create_inherent_data_providers: inherent_data_providers_creator.clone(),
             spawner: &task_manager.spawn_essential_handle(),
             can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(
                 client.executor().clone(),
@@ -230,6 +222,7 @@ pub fn new_partial(
             bioauth_consensus_block_import,
             slot_duration,
             raw_slot_duration,
+            inherent_data_providers_creator,
             frontier_backend,
             telemetry,
         ),
@@ -254,6 +247,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 bioauth_consensus_block_import,
                 slot_duration,
                 raw_slot_duration,
+                inherent_data_providers_creator,
                 frontier_backend,
                 mut telemetry,
             ),
@@ -290,7 +284,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
     let prometheus_registry = config.prometheus_registry().cloned();
-    let eth_target_gas_price = evm_config.target_gas_price;
     let eth_filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
     let eth_fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
     let eth_fee_history_limit = evm_config.fee_history_limit;
@@ -399,20 +392,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             select_chain,
             block_import: bioauth_consensus_block_import,
             proposer_factory,
-            create_inherent_data_providers: move |_, ()| async move {
-                let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
-
-                let slot =
-                    sp_consensus_aura::inherents::InherentDataProvider::from_timestamp_and_duration(
-                        *timestamp,
-                        raw_slot_duration,
-                    );
-
-                let dynamic_fee =
-                    pallet_dynamic_fee::InherentDataProvider(U256::from(eth_target_gas_price));
-
-                Ok((timestamp, slot, dynamic_fee))
-            },
+            create_inherent_data_providers: inherent_data_providers_creator,
             force_authoring,
             backoff_authoring_blocks,
             keystore: keystore_container.sync_keystore(),
