@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use bioauth_flow::{
-    rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT},
+    rpc::{Bioauth, BioauthApi, LivenessDataTxSlot},
     Signer,
 };
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index, UnixMilliseconds};
@@ -14,7 +14,7 @@ use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
 /// RPC subsystem dependencies.
-pub struct Deps<C, P, VKE, VS> {
+pub struct Deps<C, P, VK, VS> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
@@ -25,15 +25,15 @@ pub struct Deps<C, P, VKE, VS> {
     pub robonode_client: Arc<robonode_client::Client>,
     /// The liveness data tx slot to use in the bioauth flow RPC.
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
-    /// Extracts the currently used validator key.
-    pub validator_key_extractor: VKE,
+    /// The current validator public key.
+    pub validator_public_key: Option<Arc<VK>>,
     /// The type that provides signing with the validator private key.
     pub validator_signer: Option<Arc<VS>>,
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, VKE, VS>(
-    deps: Deps<C, P, VKE, VS>,
+pub fn create<C, P, VK, VS>(
+    deps: Deps<C, P, VK, VS>,
 ) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
     C: ProvideRuntimeApi<Block>,
@@ -41,12 +41,10 @@ where
     C: Send + Sync + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-    C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
+    C::Api: bioauth_flow_api::BioauthFlowApi<Block, VK, UnixMilliseconds>,
     C::Api: BlockBuilder<Block>,
     P: TransactionPool<Block = Block> + 'static,
-    VKE: ValidatorKeyExtractorT + Send + Sync + 'static,
-    VKE::PublicKeyType: Encode + AsRef<[u8]> + Send + Sync,
-    VKE::Error: std::fmt::Debug,
+    VK: Encode + AsRef<[u8]> + Send + Sync + 'static,
     VS: Signer<Vec<u8>> + Send + Sync + 'static,
     <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
 {
@@ -60,7 +58,7 @@ where
         deny_unsafe,
         robonode_client,
         bioauth_flow_slot,
-        validator_key_extractor,
+        validator_public_key,
         validator_signer,
     } = deps;
 
@@ -77,7 +75,7 @@ where
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,
         bioauth_flow_slot,
-        validator_key_extractor,
+        validator_public_key,
         validator_signer,
         Arc::clone(&client),
         Arc::clone(&pool),

@@ -3,7 +3,6 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-pub use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
 use bioauth_flow_api::BioauthFlowApi;
 use futures::channel::oneshot;
 use futures::lock::BiLock;
@@ -96,7 +95,7 @@ pub fn new_liveness_data_tx_slot() -> (LivenessDataTxSlot, LivenessDataTxSlot) {
 /// The RPC implementation.
 pub struct Bioauth<
     RobonodeClient,
-    ValidatorKeyExtractor,
+    ValidatorPublicKey,
     ValidatorSigner,
     Client,
     Block,
@@ -110,7 +109,7 @@ pub struct Bioauth<
     inner: Arc<
         Inner<
             RobonodeClient,
-            ValidatorKeyExtractor,
+            ValidatorPublicKey,
             ValidatorSigner,
             Client,
             Block,
@@ -122,7 +121,7 @@ pub struct Bioauth<
 
 impl<
         RobonodeClient,
-        ValidatorKeyExtractor,
+        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         Block,
@@ -131,7 +130,7 @@ impl<
     >
     Bioauth<
         RobonodeClient,
-        ValidatorKeyExtractor,
+        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         Block,
@@ -143,7 +142,7 @@ impl<
     pub fn new(
         robonode_client: RobonodeClient,
         liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-        validator_key_extractor: ValidatorKeyExtractor,
+        validator_public_key: Option<Arc<ValidatorPublicKey>>,
         validator_signer: Option<Arc<ValidatorSigner>>,
         client: Arc<Client>,
         pool: Arc<TransactionPool>,
@@ -151,7 +150,7 @@ impl<
         let inner = Inner {
             robonode_client,
             liveness_data_tx_slot,
-            validator_key_extractor,
+            validator_public_key,
             validator_signer,
             client,
             pool,
@@ -171,7 +170,7 @@ impl<
             Arc<
                 Inner<
                     RobonodeClient,
-                    ValidatorKeyExtractor,
+                    ValidatorPublicKey,
                     ValidatorSigner,
                     Client,
                     Block,
@@ -190,7 +189,7 @@ impl<
 
 impl<
         RobonodeClient,
-        ValidatorKeyExtractor,
+        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         Block,
@@ -199,7 +198,7 @@ impl<
     > BioauthApi<Timestamp>
     for Bioauth<
         RobonodeClient,
-        ValidatorKeyExtractor,
+        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         Block,
@@ -208,8 +207,7 @@ impl<
     >
 where
     RobonodeClient: Send + Sync + 'static,
-    ValidatorKeyExtractor: Send + Sync + 'static,
-    ValidatorKeyExtractor::PublicKeyType: Send + Sync,
+    ValidatorPublicKey: Send + Sync + 'static,
     ValidatorSigner: Send + Sync + 'static,
     Client: Send + Sync + 'static,
     Block: Send + Sync + 'static,
@@ -217,16 +215,13 @@ where
     TransactionPool: Send + Sync + 'static,
 
     RobonodeClient: AsRef<robonode_client::Client>,
-    ValidatorKeyExtractor: ValidatorKeyExtractorT,
-    ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]>,
-    ValidatorKeyExtractor::Error: std::fmt::Debug,
+    ValidatorPublicKey: Encode + AsRef<[u8]>,
     ValidatorSigner: Signer<Vec<u8>>,
     <ValidatorSigner as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
-    Client::Api:
-        bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+    Client::Api: bioauth_flow_api::BioauthFlowApi<Block, ValidatorPublicKey, Timestamp>,
     Block: BlockT,
     <Block as BlockT>::Extrinsic: From<humanode_runtime::UncheckedExtrinsic>,
     Timestamp: Encode + Decode,
@@ -270,7 +265,7 @@ where
 /// See https://github.com/paritytech/jsonrpc/issues/580
 struct Inner<
     RobonodeClient,
-    ValidatorKeyExtractor,
+    ValidatorPublicKey,
     ValidatorSigner,
     Client,
     Block,
@@ -283,8 +278,8 @@ struct Inner<
     /// We need an [`Arc`] here to allow sharing the data from across multiple invocations of the
     /// RPC extension builder that will be using this RPC.
     liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-    /// Provider of the local validator key.
-    validator_key_extractor: ValidatorKeyExtractor,
+    /// The local validator key.
+    validator_public_key: Option<Arc<ValidatorPublicKey>>,
     /// The type that provides signing with the validator private key.
     validator_signer: Option<Arc<ValidatorSigner>>,
     /// The substrate client, provides access to the runtime APIs.
@@ -297,7 +292,7 @@ struct Inner<
 
 impl<
         RobonodeClient,
-        ValidatorKeyExtractor,
+        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         Block,
@@ -306,7 +301,7 @@ impl<
     >
     Inner<
         RobonodeClient,
-        ValidatorKeyExtractor,
+        ValidatorPublicKey,
         ValidatorSigner,
         Client,
         Block,
@@ -315,16 +310,13 @@ impl<
     >
 where
     RobonodeClient: AsRef<robonode_client::Client>,
-    ValidatorKeyExtractor: ValidatorKeyExtractorT,
-    ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]>,
-    ValidatorKeyExtractor::Error: std::fmt::Debug,
+    ValidatorPublicKey: Encode + AsRef<[u8]>,
     ValidatorSigner: Signer<Vec<u8>>,
     <ValidatorSigner as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
-    Client::Api:
-        bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+    Client::Api: bioauth_flow_api::BioauthFlowApi<Block, ValidatorPublicKey, Timestamp>,
     Block: BlockT,
     <Block as BlockT>::Extrinsic: From<humanode_runtime::UncheckedExtrinsic>,
     Timestamp: Encode + Decode,
@@ -381,8 +373,7 @@ where
 
     /// Obtain the status of the bioauth.
     async fn status(self: Arc<Self>) -> Result<BioauthStatus<Timestamp>> {
-        let own_key = self.validator_public_key()?;
-        let own_key = match own_key {
+        let own_key = match &self.validator_public_key {
             Some(v) => v,
             None => return Ok(BioauthStatus::Unknown),
         };
@@ -393,7 +384,7 @@ where
         let status = self
             .client
             .runtime_api()
-            .bioauth_status(&at, &own_key)
+            .bioauth_status(&at, own_key)
             .map_err(|err| RpcError {
                 code: ErrorCode::InternalError,
                 message: format!("Unable to get status from the runtime: {}", err),
@@ -409,7 +400,7 @@ where
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
-        let public_key = self.validator_public_key()?.ok_or(RpcError {
+        let public_key = self.validator_public_key.as_ref().ok_or(RpcError {
             code: ErrorCode::ServerError(1),
             message: "Validator public key not found".to_string(),
             data: None,
@@ -419,7 +410,7 @@ where
             .enroll(EnrollRequest {
                 liveness_data: opaque_liveness_data.as_ref(),
                 liveness_data_signature: signature.as_ref(),
-                public_key: public_key.as_ref(),
+                public_key: public_key.as_ref().as_ref(),
             })
             .await
             .map_err(|err| RpcError {
@@ -485,23 +476,6 @@ where
         info!("Bioauth flow - authenticate transaction complete");
 
         Ok(())
-    }
-
-    /// Extract the validator public key.
-    fn validator_public_key(&self) -> Result<Option<ValidatorKeyExtractor::PublicKeyType>> {
-        self.validator_key_extractor
-            .extract_validator_key()
-            .map_err(|error| {
-                tracing::error!(
-                    message = "Unable to extract own key at bioauth flow RPC",
-                    ?error
-                );
-                RpcError {
-                    code: ErrorCode::InternalError,
-                    message: "Unable to extract own key".into(),
-                    data: None,
-                }
-            })
     }
 
     /// Return the opaque liveness data and corresponding signature.
