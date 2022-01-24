@@ -23,6 +23,10 @@ pub struct RunCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
     #[structopt(flatten)]
     pub evm_params: params::EvmParams,
+
+    #[allow(missing_docs, clippy::missing_docs_in_private_items)]
+    #[structopt(flatten)]
+    pub evm_rpc_params: params::EvmRpcParams,
 }
 
 impl SubstrateCliConfigurationProvider for RunCmd {
@@ -44,5 +48,9 @@ impl CliConfigurationExt for RunCmd {
 
     fn evm_params(&self) -> Option<&params::EvmParams> {
         Some(&self.evm_params)
+    }
+
+    fn evm_rpc_params(&self) -> Option<&params::EvmRpcParams> {
+        Some(&self.evm_rpc_params)
     }
 }

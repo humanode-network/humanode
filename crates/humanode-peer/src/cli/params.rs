@@ -35,6 +35,14 @@ pub struct BioauthFlowParams {
 /// Shared CLI parameters used to configure evm.
 #[derive(Debug, StructOpt, Clone)]
 pub struct EvmParams {
+    /// The dynamic-fee pallet target gas price set by block author.
+    #[structopt(long, default_value = "1")]
+    pub target_gas_price: u64,
+}
+
+/// Shared CLI parameters used to configure evm-rpc.
+#[derive(Debug, StructOpt, Clone)]
+pub struct EvmRpcParams {
     /// Maximum number of logs to keep from the latest block;
     /// it is not possible to query logs older than this amount from the latest block in the past.
     #[structopt(long, default_value = "10000")]
@@ -43,10 +51,6 @@ pub struct EvmParams {
     /// Maximum number of stored filters.
     #[structopt(long, default_value = "500")]
     pub max_stored_filters: usize,
-
-    /// The dynamic-fee pallet target gas price set by block author.
-    #[structopt(long, default_value = "1")]
-    pub target_gas_price: u64,
 
     /// Maximum fee history cache size.
     #[structopt(long, default_value = "2048")]

@@ -256,7 +256,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
         bioauth_perform_enroll,
-        evm: evm_config,
+        evm_rpc: evm_rpc_config,
+        ..
     } = config;
 
     config
@@ -273,8 +274,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let bioauth_flow_config = bioauth_flow_config
         .ok_or_else(|| ServiceError::Other("bioauth flow config is not set".into()))?;
 
-    let evm_config =
-        evm_config.expect("already used during substrate partial components exctraction");
+    let evm_rpc_config =
+        evm_rpc_config.ok_or_else(|| ServiceError::Other("evm rpc config is not set".into()))?;
 
     let role = config.role.clone();
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
@@ -286,7 +287,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let prometheus_registry = config.prometheus_registry().cloned();
     let eth_filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
     let eth_fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
-    let eth_fee_history_limit = evm_config.fee_history_limit;
+    let eth_fee_history_limit = evm_rpc_config.fee_history_limit;
     let eth_overrides = humanode_rpc::overrides_handle(Arc::clone(&client));
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
@@ -334,9 +335,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let validator_key_extractor = Arc::clone(&validator_key_extractor);
         let network = Arc::clone(&network);
         let eth_filter_pool = eth_filter_pool.clone();
-        let eth_max_stored_filters = evm_config.max_stored_filters;
+        let eth_max_stored_filters = evm_rpc_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
-        let eth_max_past_logs = evm_config.max_past_logs;
+        let eth_max_past_logs = evm_rpc_config.max_past_logs;
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
         let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
             task_manager.spawn_handle(),

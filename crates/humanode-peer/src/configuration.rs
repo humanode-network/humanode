@@ -20,6 +20,9 @@ pub struct Configuration {
 
     /// EVM configuration,
     pub evm: Option<Evm>,
+
+    /// EVM RPC configuration,
+    pub evm_rpc: Option<EvmRpc>,
 }
 
 /// Bioauth flow configuration parameters.
@@ -53,15 +56,18 @@ impl BioauthFlow {
 
 /// EVM configuration parameters.
 pub struct Evm {
+    /// The dynamic-fee pallet target gas price set by block author.
+    pub target_gas_price: u64,
+}
+
+/// EVM RPC configuration parameters.
+pub struct EvmRpc {
     /// Maximum number of blocks to keep the log information available
     /// for querying via the RPC (from the latest block).
     pub max_past_logs: u32,
 
     /// Maximum number of stored filters.
     pub max_stored_filters: usize,
-
-    /// The dynamic-fee pallet target gas price set by block author.
-    pub target_gas_price: u64,
 
     /// Maximum fee history cache size.
     pub fee_history_limit: u64,

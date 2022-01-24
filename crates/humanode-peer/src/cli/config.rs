@@ -45,9 +45,12 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         });
 
         let evm = self.evm_params().map(|params| configuration::Evm {
+            target_gas_price: params.target_gas_price,
+        });
+
+        let evm_rpc = self.evm_rpc_params().map(|params| configuration::EvmRpc {
             max_past_logs: params.max_past_logs,
             max_stored_filters: params.max_stored_filters,
-            target_gas_price: params.target_gas_price,
             fee_history_limit: params.fee_history_limit,
         });
 
@@ -56,6 +59,7 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             bioauth_flow,
             bioauth_perform_enroll: self.bioauth_perform_enroll(),
             evm,
+            evm_rpc,
         })
     }
 
@@ -71,6 +75,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
 
     /// Provide the evm params, if available.
     fn evm_params(&self) -> Option<&params::EvmParams> {
+        None
+    }
+
+    /// Provide the evm rpc params, if available.
+    fn evm_rpc_params(&self) -> Option<&params::EvmRpcParams> {
         None
     }
 }
