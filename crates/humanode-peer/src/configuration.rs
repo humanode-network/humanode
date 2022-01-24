@@ -19,7 +19,7 @@ pub struct Configuration {
     pub bioauth_perform_enroll: bool,
 
     /// EVM configuration,
-    pub evm: Option<Evm>,
+    pub evm: Evm,
 
     /// EVM RPC configuration,
     pub evm_rpc: Option<EvmRpc>,

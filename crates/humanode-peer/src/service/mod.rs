@@ -118,10 +118,6 @@ pub fn new_partial(
         ..
     } = config;
 
-    let evm_config = evm_config
-        .as_ref()
-        .ok_or_else(|| ServiceError::Other("evm config is not set".into()))?;
-
     let telemetry = config
         .telemetry_endpoints
         .clone()
