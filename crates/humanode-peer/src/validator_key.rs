@@ -1,37 +1,29 @@
 //! The validator key integration logic.
 
-use std::{fmt::Display, marker::PhantomData, sync::Arc};
+use std::{fmt::Display, sync::Arc};
 
 use bioauth_flow::Signer;
 use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
 use sp_keystore::CryptoStore;
 
 /// The validator public key implementation using the app crypto public key.
+#[derive(Clone)]
 pub struct AppCryptoPublic<T>(pub T);
 
 /// The validator signer implementation using the keystore and app crypto public key.
-pub struct AppCryptoSigner<PK, PKR>
-where
-    PKR: AsRef<AppCryptoPublic<PK>>,
-{
+pub struct AppCryptoSigner<PK> {
     /// The keystore to use for signing.
     pub keystore: Arc<dyn CryptoStore>,
     /// The public key to provide the signature for.
-    pub public_key_ref: PKR,
-    /// The type of the public key behind the ref.
-    pub public_key_type: PhantomData<PK>,
+    pub public_key: AppCryptoPublic<PK>,
 }
 
-impl<PK, PKR> AppCryptoSigner<PK, PKR>
-where
-    PKR: AsRef<AppCryptoPublic<PK>>,
-{
+impl<PK> AppCryptoSigner<PK> {
     /// Create a new [`AppCryptoSigner`].
-    pub fn new(keystore: Arc<dyn CryptoStore>, public_key_ref: PKR) -> Self {
+    pub fn new(keystore: Arc<dyn CryptoStore>, public_key: AppCryptoPublic<PK>) -> Self {
         Self {
             keystore,
-            public_key_ref,
-            public_key_type: PhantomData,
+            public_key,
         }
     }
 }
@@ -48,10 +40,9 @@ pub enum SignerError {
 }
 
 #[async_trait::async_trait]
-impl<PK, PKR> Signer<Vec<u8>> for AppCryptoSigner<PK, PKR>
+impl<PK> Signer<Vec<u8>> for AppCryptoSigner<PK>
 where
     PK: AppPublic,
-    PKR: AsRef<AppCryptoPublic<PK>> + Sync + Send,
 {
     type Error = SignerError;
 
@@ -62,11 +53,7 @@ where
         let data = data.as_ref();
         let outcome = self
             .keystore
-            .sign_with(
-                PK::ID,
-                &self.public_key_ref.as_ref().0.to_public_crypto_pair(),
-                data,
-            )
+            .sign_with(PK::ID, &self.public_key.0.to_public_crypto_pair(), data)
             .await
             .map_err(SignerError::Keystore)?;
 

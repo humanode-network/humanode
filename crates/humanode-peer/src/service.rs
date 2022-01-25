@@ -317,7 +317,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let validator_signer = validator_public_key.as_ref().map(|val| {
             Arc::new(crate::validator_key::AppCryptoSigner::new(
                 Arc::clone(&keystore),
-                val,
+                val.clone(),
             ))
         });
 
@@ -447,7 +447,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             let validator_public_key = match validator_public_key {
                 Ok(Some(key)) => {
                     info!("Running bioauth flow for {}", key);
-                    Arc::new(key)
+                    key
                 }
                 Ok(None) => {
                     warn!("No validator key found, skipping bioauth");
@@ -463,7 +463,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             let signer = crate::validator_key::AppCryptoSigner::new(
                 Arc::clone(&keystore),
-                Arc::clone(&validator_public_key),
+                validator_public_key.clone(),
             );
 
             if bioauth_perform_enroll {
@@ -472,7 +472,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 render_qr_code("Bioauth flow - waiting for enroll");
 
                 loop {
-                    let result = flow.enroll(validator_public_key.as_ref(), &signer).await;
+                    let result = flow.enroll(&validator_public_key, &signer).await;
                     match result {
                         Ok(()) => break,
                         Err(error) => {
