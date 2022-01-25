@@ -46,8 +46,8 @@ impl CliConfigurationExt for RunCmd {
         self.bioauth_perform_enroll
     }
 
-    fn evm_params(&self) -> Option<&params::EvmParams> {
-        Some(&self.evm_params)
+    fn evm_params(&self) -> params::EvmParams {
+        self.evm_params
     }
 
     fn evm_rpc_params(&self) -> Option<&params::EvmRpcParams> {

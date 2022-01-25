@@ -33,7 +33,7 @@ pub struct BioauthFlowParams {
 }
 
 /// Shared CLI parameters used to configure evm.
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Debug, StructOpt, Clone, Copy, Default)]
 pub struct EvmParams {
     /// The dynamic-fee pallet target gas price set by block author.
     #[structopt(long, default_value = "1")]
