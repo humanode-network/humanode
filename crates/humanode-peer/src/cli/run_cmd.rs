@@ -53,4 +53,8 @@ impl CliConfigurationExt for RunCmd {
     fn evm_rpc_params(&self) -> Option<&params::EvmRpcParams> {
         Some(&self.evm_rpc_params)
     }
+
+    fn is_full_node_run(&self) -> bool {
+        true
+    }
 }

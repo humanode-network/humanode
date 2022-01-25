@@ -44,12 +44,15 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             }
         });
 
-        let evm = self
-            .evm_params()
-            .map(|params| configuration::Evm {
-                target_gas_price: params.target_gas_price,
-            })
-            .unwrap_or_default();
+        let evm = if self.is_full_node_run() {
+            self.evm_params()
+                .map(|params| configuration::Evm {
+                    target_gas_price: params.target_gas_price,
+                })
+                .expect("evm params should be present")
+        } else {
+            Default::default()
+        };
 
         let evm_rpc = self.evm_rpc_params().map(|params| configuration::EvmRpc {
             max_past_logs: params.max_past_logs,
@@ -84,6 +87,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
     /// Provide the evm rpc params, if available.
     fn evm_rpc_params(&self) -> Option<&params::EvmRpcParams> {
         None
+    }
+
+    /// Whether a full node run or not.
+    fn is_full_node_run(&self) -> bool {
+        false
     }
 }
 
