@@ -299,7 +299,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let validator_public_key = match validator_public_key {
             Ok(Some(key)) => {
                 info!("Running bioauth flow for {}", key);
-                Some(Arc::new(key))
+                Some(key)
             }
             Ok(None) => {
                 warn!("No validator key found, bioauth will be unavailable");
@@ -317,7 +317,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let validator_signer = validator_public_key.as_ref().map(|val| {
             Arc::new(crate::validator_key::AppCryptoSigner::new(
                 Arc::clone(&keystore),
-                Arc::clone(val),
+                val,
             ))
         });
 
