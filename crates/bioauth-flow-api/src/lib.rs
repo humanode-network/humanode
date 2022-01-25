@@ -28,5 +28,11 @@ sp_api::decl_runtime_apis! {
         ///
         /// This call is intended for use in the bioauth flow, and the `id` passed is likely.
         fn bioauth_status(id: &Id) -> BioauthStatus<Timestamp>;
+
+        /// Create an extrinsic for submitting auth ticket.
+        fn create_authenticate_extrinsic(
+            auth_ticket: Vec<u8>,
+            auth_ticket_signature: Vec<u8>
+        ) -> Block::Extrinsic;
     }
 }

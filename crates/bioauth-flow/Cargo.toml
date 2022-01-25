@@ -6,7 +6,6 @@ publish = false
 
 [dependencies]
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
-humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-data" }
 robonode-client = { version = "0.1", path = "../robonode-client" }

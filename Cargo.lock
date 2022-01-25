@@ -467,7 +467,6 @@ dependencies = [
  "async-trait",
  "bioauth-flow-api",
  "futures 0.3.19",
- "humanode-runtime",
  "jsonrpc-core",
  "jsonrpc-core-client",
  "jsonrpc-derive",

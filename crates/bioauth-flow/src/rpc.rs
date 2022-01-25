@@ -223,7 +223,6 @@ where
     Client: Send + Sync + 'static,
     Client::Api: bioauth_flow_api::BioauthFlowApi<Block, ValidatorPublicKey, Timestamp>,
     Block: BlockT,
-    <Block as BlockT>::Extrinsic: From<humanode_runtime::UncheckedExtrinsic>,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
@@ -318,7 +317,6 @@ where
     Client: Send + Sync + 'static,
     Client::Api: bioauth_flow_api::BioauthFlowApi<Block, ValidatorPublicKey, Timestamp>,
     Block: BlockT,
-    <Block as BlockT>::Extrinsic: From<humanode_runtime::UncheckedExtrinsic>,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
@@ -449,20 +447,25 @@ where
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
 
-        let authenticate = pallet_bioauth::Authenticate {
-            ticket: response.auth_ticket.into(),
-            ticket_signature: response.auth_ticket_signature.into(),
-        };
+        let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
-        let call = pallet_bioauth::Call::authenticate { req: authenticate };
-
-        let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
-
-        let at = self.client.info().best_hash;
+        let ext = self
+            .client
+            .runtime_api()
+            .create_authenticate_extrinsic(
+                &at,
+                response.auth_ticket.into(),
+                response.auth_ticket_signature.into(),
+            )
+            .map_err(|err| RpcError {
+                code: ErrorCode::ServerError(1),
+                message: format!("Error creating auth extrinsic: {}", err),
+                data: None,
+            })?;
 
         self.pool
             .submit_and_watch(
-                &sp_runtime::generic::BlockId::Hash(at),
+                &at,
                 sp_runtime::transaction_validity::TransactionSource::Local,
                 ext.into(),
             )
