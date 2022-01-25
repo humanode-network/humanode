@@ -467,7 +467,7 @@ where
             .submit_and_watch(
                 &at,
                 sp_runtime::transaction_validity::TransactionSource::Local,
-                ext.into(),
+                ext,
             )
             .await
             .map_err(|_| RpcError {

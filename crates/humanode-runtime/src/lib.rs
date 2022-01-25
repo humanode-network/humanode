@@ -585,7 +585,7 @@ impl_runtime_apis! {
         ) -> <Block as BlockT>::Extrinsic {
             let authenticate = pallet_bioauth::Authenticate {
                 ticket: auth_ticket.into(),
-                ticket_signature: auth_ticket_signature.into(),
+                ticket_signature: auth_ticket_signature,
             };
 
             let call = pallet_bioauth::Call::authenticate { req: authenticate };
