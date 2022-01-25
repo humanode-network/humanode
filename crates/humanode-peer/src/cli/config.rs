@@ -49,7 +49,7 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             .map(|params| configuration::Evm {
                 target_gas_price: params.target_gas_price,
             })
-            .expect("evm params should be present");
+            .unwrap_or_default();
 
         let evm_rpc = self.evm_rpc_params().map(|params| configuration::EvmRpc {
             max_past_logs: params.max_past_logs,

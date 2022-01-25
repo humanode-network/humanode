@@ -55,6 +55,7 @@ impl BioauthFlow {
 }
 
 /// EVM configuration parameters.
+#[derive(Default)]
 pub struct Evm {
     /// The dynamic-fee pallet target gas price set by block author.
     pub target_gas_price: u64,
