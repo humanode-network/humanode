@@ -328,7 +328,7 @@ where
             .get_facetec_device_sdk_params()
             .await
             .map_err(|err| RpcError {
-                code: ErrorCode::ServerError(1),
+                code: ErrorCode::InternalError,
                 message: format!("request to the robonode failed: {}", err),
                 data: None,
             })?;
@@ -343,7 +343,7 @@ where
             .get_facetec_session_token()
             .await
             .map_err(|err| RpcError {
-                code: ErrorCode::ServerError(1),
+                code: ErrorCode::InternalError,
                 message: format!("request to the robonode failed: {}", err),
                 data: None,
             })?;
@@ -399,7 +399,7 @@ where
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
         let public_key = self.validator_public_key.as_ref().ok_or(RpcError {
-            code: ErrorCode::ServerError(1),
+            code: ErrorCode::InternalError,
             message: "Validator public key not found".to_string(),
             data: None,
         })?;
@@ -412,7 +412,7 @@ where
             })
             .await
             .map_err(|err| RpcError {
-                code: ErrorCode::ServerError(1),
+                code: ErrorCode::InternalError,
                 message: format!("request to the robonode failed: {}", err),
                 data: None,
             })?;
@@ -438,7 +438,7 @@ where
             })
             .await
             .map_err(|err| RpcError {
-                code: ErrorCode::ServerError(1),
+                code: ErrorCode::InternalError,
                 message: format!("request to the robonode failed: {}", err),
                 data: None,
             })?;
@@ -458,7 +458,7 @@ where
                 response.auth_ticket_signature.into(),
             )
             .map_err(|err| RpcError {
-                code: ErrorCode::ServerError(1),
+                code: ErrorCode::InternalError,
                 message: format!("Error creating auth extrinsic: {}", err),
                 data: None,
             })?;
@@ -470,9 +470,9 @@ where
                 ext,
             )
             .await
-            .map_err(|_| RpcError {
-                code: ErrorCode::ServerError(1),
-                message: "Transaction failed".to_string(),
+            .map_err(|e| RpcError {
+                code: ErrorCode::InternalError,
+                message: format!("Transaction failed: {}", e),
                 data: None,
             })?;
 
@@ -496,7 +496,7 @@ where
             .sign(&opaque_liveness_data)
             .await
             .map_err(|err| RpcError {
-                code: ErrorCode::ServerError(1),
+                code: ErrorCode::InternalError,
                 message: format!("Signing failed: {}", err),
                 data: None,
             })?;
