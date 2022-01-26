@@ -1,20 +1,41 @@
 //! RPC subsystem instantiation logic.
 
-use std::sync::Arc;
+use std::{collections::BTreeMap, sync::Arc};
 
 use bioauth_flow::{
     rpc::{Bioauth, BioauthApi, LivenessDataTxSlot},
     Signer,
 };
-use humanode_runtime::{opaque::Block, AccountId, Balance, Index, UnixMilliseconds};
+use fc_rpc::{
+    EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi, EthPubSubApiServer,
+    HexEncodedIdProvider, NetApi, NetApiServer, Web3Api, Web3ApiServer,
+};
+use fc_rpc::{
+    EthBlockDataCache, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
+    SchemaV2Override, SchemaV3Override, StorageOverride,
+};
+use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
+use humanode_runtime::{
+    opaque::{Block, UncheckedExtrinsic},
+    AccountId, Balance, Hash, Index, UnixMilliseconds,
+};
+use jsonrpc_pubsub::manager::SubscriptionManager;
+use pallet_ethereum::EthereumStorageSchema;
+use sc_client_api::{
+    backend::{AuxStore, Backend, StateBackend, StorageProvider},
+    client::BlockchainEvents,
+};
+use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
+use sc_transaction_pool::{ChainApi, Pool};
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::{Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
+use sp_runtime::traits::BlakeTwo256;
 
 /// RPC subsystem dependencies.
-pub struct Deps<C, P, VK, VS> {
+pub struct Deps<C, P, VK, VS, A: ChainApi> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
@@ -29,24 +50,84 @@ pub struct Deps<C, P, VK, VS> {
     pub validator_public_key: Option<VK>,
     /// The type that provides signing with the validator private key.
     pub validator_signer: Option<Arc<VS>>,
+    /// Graph pool instance.
+    pub graph: Arc<Pool<A>>,
+    /// Network service
+    pub network: Arc<NetworkService<Block, Hash>>,
+    /// EthFilterApi pool.
+    pub eth_filter_pool: Option<FilterPool>,
+    /// Maximum number of stored filters.
+    pub eth_max_stored_filters: usize,
+    /// Backend.
+    pub eth_backend: Arc<fc_db::Backend<Block>>,
+    /// Maximum number of logs in a query.
+    pub eth_max_past_logs: u32,
+    /// Maximum fee history cache size.
+    pub eth_fee_history_limit: u64,
+    /// Fee history cache.
+    pub eth_fee_history_cache: FeeHistoryCache,
+    /// Subscription task executor instance.
+    pub subscription_task_executor: Arc<sc_rpc::SubscriptionTaskExecutor>,
+    /// Ethereum data access overrides.
+    pub eth_overrides: Arc<OverrideHandle<Block>>,
+    /// Cache for Ethereum block data.
+    pub eth_block_data_cache: Arc<EthBlockDataCache<Block>>,
+}
+
+/// A helper function to handle overrides.
+pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
+where
+    C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+    C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
+    C: Send + Sync + 'static,
+    C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    BE: Backend<Block> + 'static,
+    BE::State: StateBackend<BlakeTwo256>,
+{
+    let mut overrides_map = BTreeMap::new();
+    overrides_map.insert(
+        EthereumStorageSchema::V1,
+        Box::new(SchemaV1Override::new(Arc::clone(&client)))
+            as Box<dyn StorageOverride<_> + Send + Sync>,
+    );
+    overrides_map.insert(
+        EthereumStorageSchema::V2,
+        Box::new(SchemaV2Override::new(Arc::clone(&client)))
+            as Box<dyn StorageOverride<_> + Send + Sync>,
+    );
+    overrides_map.insert(
+        EthereumStorageSchema::V3,
+        Box::new(SchemaV3Override::new(Arc::clone(&client)))
+            as Box<dyn StorageOverride<_> + Send + Sync>,
+    );
+
+    Arc::new(OverrideHandle {
+        schemas: overrides_map,
+        fallback: Box::new(RuntimeApiStorageOverride::new(Arc::clone(&client))),
+    })
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, VK, VS>(
-    deps: Deps<C, P, VK, VS>,
+pub fn create<C, P, BE, VK, VS, A>(
+    deps: Deps<C, P, VK, VS, A>,
 ) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
-    C: ProvideRuntimeApi<Block>,
+    BE: Backend<Block> + 'static,
+    C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+    C: BlockchainEvents<Block>,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
     C: Send + Sync + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
     C::Api: bioauth_flow_api::BioauthFlowApi<Block, VK, UnixMilliseconds>,
     C::Api: BlockBuilder<Block>,
+    C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
     P: TransactionPool<Block = Block> + 'static,
     VK: Encode + AsRef<[u8]> + Send + Sync + 'static,
     VS: Signer<Vec<u8>> + Send + Sync + 'static,
     <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
+    A: ChainApi<Block = Block> + 'static,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
@@ -60,6 +141,17 @@ where
         bioauth_flow_slot,
         validator_public_key,
         validator_signer,
+        graph,
+        network,
+        eth_filter_pool,
+        eth_max_stored_filters,
+        eth_backend,
+        eth_max_past_logs,
+        eth_fee_history_limit,
+        eth_fee_history_cache,
+        subscription_task_executor,
+        eth_overrides,
+        eth_block_data_cache,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
@@ -80,6 +172,55 @@ where
         Arc::clone(&client),
         Arc::clone(&pool),
     )));
+
+    io.extend_with(EthApiServer::to_delegate(EthApi::new(
+        Arc::clone(&client),
+        Arc::clone(&pool),
+        graph,
+        primitives_frontier::RuntimeTransactionConverter::new(Arc::clone(&client)),
+        Arc::clone(&network),
+        Vec::new(),
+        Arc::clone(&eth_overrides),
+        Arc::clone(&eth_backend),
+        true,
+        eth_max_past_logs,
+        Arc::clone(&eth_block_data_cache),
+        eth_fee_history_limit,
+        eth_fee_history_cache,
+    )));
+
+    io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(Arc::clone(
+        &client,
+    ))));
+
+    io.extend_with(EthPubSubApiServer::to_delegate(EthPubSubApi::new(
+        pool,
+        Arc::clone(&client),
+        Arc::clone(&network),
+        SubscriptionManager::<HexEncodedIdProvider>::with_id_provider(
+            HexEncodedIdProvider::default(),
+            subscription_task_executor,
+        ),
+        Arc::clone(&eth_overrides),
+    )));
+
+    io.extend_with(NetApiServer::to_delegate(NetApi::new(
+        Arc::clone(&client),
+        Arc::clone(&network),
+        // Whether to format the `peer_count` response as Hex (default) or not.
+        true,
+    )));
+
+    if let Some(eth_filter_pool) = eth_filter_pool {
+        io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
+            client,
+            eth_backend,
+            eth_filter_pool,
+            eth_max_stored_filters,
+            eth_max_past_logs,
+            eth_block_data_cache,
+        )));
+    }
 
     io
 }

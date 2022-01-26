@@ -1,0 +1,17 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+
+list() {
+  cargo metadata --format-version 1 |
+    jq \
+      --arg src "git+https://github.com/paritytech/" \
+      '.packages | map(select(.source | tostring | startswith($src))) | map({ name: .name, version: .version, source: .source, id: .id })'
+}
+
+LIST="$(list)"
+
+if [[ "$LIST" != "[]" ]]; then
+  printf "Error: found some deps that point directly to the paritytech repos; we should only have deps that point to our forks:\n%s\n" "$LIST" >&2
+  exit 1
+fi
