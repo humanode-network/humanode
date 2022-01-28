@@ -2,7 +2,14 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
+if [[ $# -eq 0 ]] ; then
+    echo "Specify a project name"
+    exit 1
+fi
+
+PROJECT="$1"
+
 cargo metadata --format-version 1 |
   jq \
-    --arg src "git+https://github.com/humanode-network/substrate" \
+    --arg src "git+https://github.com/humanode-network/$PROJECT" \
     '.packages | map(select(.source | tostring | startswith($src))) | map({ name: .name, version: .version, source: .source, id: .id })'
