@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{pallet, traits::StorageVersion};
+use frame_support::traits::StorageVersion;
 
 pub use pallet::*;
 
@@ -22,7 +22,7 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
     clippy::missing_docs_in_private_items,
     clippy::unused_unit
 )]
-#[pallet]
+#[frame_support::pallet]
 pub mod pallet {
     use super::*;
     use frame_support::pallet_prelude::*;
@@ -32,7 +32,7 @@ pub mod pallet {
     #[pallet::storage_version(STORAGE_VERSION)]
     #[pallet::generate_store(pub(super) trait Store)]
     #[pallet::generate_storage_info]
-    pub struct Pallet<T>(PhantomData<T>);
+    pub struct Pallet<T>(_);
 
     /// Configuration trait of this pallet.
     #[pallet::config]
