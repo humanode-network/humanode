@@ -4589,6 +4589,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-ethereum-chain-id"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "mockall",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=substrate-1a30fa2#864ef8d7e97ede08c758394c5f9e2a57bbef7218"
