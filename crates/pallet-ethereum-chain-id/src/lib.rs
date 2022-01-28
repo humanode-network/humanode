@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::pallet;
+use frame_support::{pallet, traits::StorageVersion};
 
 pub use pallet::*;
 
@@ -11,6 +11,9 @@ mod mock;
 
 #[cfg(test)]
 mod tests;
+
+/// The current storage version.
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -21,11 +24,14 @@ mod tests;
 )]
 #[pallet]
 pub mod pallet {
-
+    use super::*;
     use frame_support::pallet_prelude::*;
 
     /// The Ethereum Chain Id Pallet
     #[pallet::pallet]
+    #[pallet::storage_version(STORAGE_VERSION)]
+    #[pallet::generate_store(pub(super) trait Store)]
+    #[pallet::generate_storage_info]
     pub struct Pallet<T>(PhantomData<T>);
 
     /// Configuration trait of this pallet.
