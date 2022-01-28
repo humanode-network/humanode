@@ -3,6 +3,7 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
+pub use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
 use bioauth_flow_api::BioauthFlowApi;
 use futures::channel::oneshot;
 use futures::lock::BiLock;
@@ -19,7 +20,7 @@ use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use tracing::*;
 
-use crate::{flow::LivenessDataProvider, Signer};
+use crate::{flow::LivenessDataProvider, Signer, SignerFactory};
 
 /// A result type that wraps.
 pub type Result<T> = std::result::Result<T, RpcError>;
@@ -95,8 +96,8 @@ pub fn new_liveness_data_tx_slot() -> (LivenessDataTxSlot, LivenessDataTxSlot) {
 /// The RPC implementation.
 pub struct Bioauth<
     RobonodeClient,
-    ValidatorPublicKey,
-    ValidatorSigner,
+    ValidatorKeyExtractor,
+    ValidatorSignerFactory,
     Client,
     Block,
     Timestamp,
@@ -109,8 +110,8 @@ pub struct Bioauth<
     inner: Arc<
         Inner<
             RobonodeClient,
-            ValidatorPublicKey,
-            ValidatorSigner,
+            ValidatorKeyExtractor,
+            ValidatorSignerFactory,
             Client,
             Block,
             Timestamp,
@@ -121,8 +122,8 @@ pub struct Bioauth<
 
 impl<
         RobonodeClient,
-        ValidatorPublicKey,
-        ValidatorSigner,
+        ValidatorKeyExtractor,
+        ValidatorSignerFactory,
         Client,
         Block,
         Timestamp,
@@ -130,8 +131,8 @@ impl<
     >
     Bioauth<
         RobonodeClient,
-        ValidatorPublicKey,
-        ValidatorSigner,
+        ValidatorKeyExtractor,
+        ValidatorSignerFactory,
         Client,
         Block,
         Timestamp,
@@ -142,16 +143,16 @@ impl<
     pub fn new(
         robonode_client: RobonodeClient,
         liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-        validator_public_key: Option<ValidatorPublicKey>,
-        validator_signer: Option<Arc<ValidatorSigner>>,
+        validator_key_extractor: Arc<ValidatorKeyExtractor>,
+        validator_signer_factory: Arc<ValidatorSignerFactory>,
         client: Arc<Client>,
         pool: Arc<TransactionPool>,
     ) -> Self {
         let inner = Inner {
             robonode_client,
             liveness_data_tx_slot,
-            validator_public_key,
-            validator_signer,
+            validator_key_extractor,
+            validator_signer_factory,
             client,
             pool,
             phantom_types: PhantomData,
@@ -170,8 +171,8 @@ impl<
             Arc<
                 Inner<
                     RobonodeClient,
-                    ValidatorPublicKey,
-                    ValidatorSigner,
+                    ValidatorKeyExtractor,
+                    ValidatorSignerFactory,
                     Client,
                     Block,
                     Timestamp,
@@ -189,8 +190,8 @@ impl<
 
 impl<
         RobonodeClient,
-        ValidatorPublicKey,
-        ValidatorSigner,
+        ValidatorKeyExtractor,
+        ValidatorSignerFactory,
         Client,
         Block,
         Timestamp,
@@ -198,8 +199,8 @@ impl<
     > BioauthApi<Timestamp>
     for Bioauth<
         RobonodeClient,
-        ValidatorPublicKey,
-        ValidatorSigner,
+        ValidatorKeyExtractor,
+        ValidatorSignerFactory,
         Client,
         Block,
         Timestamp,
@@ -207,21 +208,27 @@ impl<
     >
 where
     RobonodeClient: Send + Sync + 'static,
-    ValidatorPublicKey: Send + Sync + 'static,
-    ValidatorSigner: Send + Sync + 'static,
+    ValidatorKeyExtractor: Send + Sync + 'static,
+    ValidatorKeyExtractor::PublicKeyType: Send + Sync + 'static,
+    ValidatorSignerFactory: Send + Sync + 'static,
+    ValidatorSignerFactory::Signer: Send + Sync + 'static,
     Client: Send + Sync + 'static,
     Block: Send + Sync + 'static,
     Timestamp: Send + Sync + 'static,
     TransactionPool: Send + Sync + 'static,
 
     RobonodeClient: AsRef<robonode_client::Client>,
-    ValidatorPublicKey: Encode + AsRef<[u8]>,
-    ValidatorSigner: Signer<Vec<u8>>,
-    <ValidatorSigner as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
+    ValidatorKeyExtractor: ValidatorKeyExtractorT,
+    ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]>,
+    ValidatorKeyExtractor::Error: std::fmt::Debug,
+    ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
+    <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
+        std::error::Error + 'static,
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
-    Client::Api: bioauth_flow_api::BioauthFlowApi<Block, ValidatorPublicKey, Timestamp>,
+    Client::Api:
+        bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -264,8 +271,8 @@ where
 /// See https://github.com/paritytech/jsonrpc/issues/580
 struct Inner<
     RobonodeClient,
-    ValidatorPublicKey,
-    ValidatorSigner,
+    ValidatorKeyExtractor,
+    ValidatorSignerFactory,
     Client,
     Block,
     Timestamp,
@@ -278,9 +285,9 @@ struct Inner<
     /// RPC extension builder that will be using this RPC.
     liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
     /// The local validator key.
-    validator_public_key: Option<ValidatorPublicKey>,
+    validator_key_extractor: Arc<ValidatorKeyExtractor>,
     /// The type that provides signing with the validator private key.
-    validator_signer: Option<Arc<ValidatorSigner>>,
+    validator_signer_factory: Arc<ValidatorSignerFactory>,
     /// The substrate client, provides access to the runtime APIs.
     client: Arc<Client>,
     /// The transaction pool to use.
@@ -291,8 +298,8 @@ struct Inner<
 
 impl<
         RobonodeClient,
-        ValidatorPublicKey,
-        ValidatorSigner,
+        ValidatorKeyExtractor,
+        ValidatorSignerFactory,
         Client,
         Block,
         Timestamp,
@@ -300,8 +307,8 @@ impl<
     >
     Inner<
         RobonodeClient,
-        ValidatorPublicKey,
-        ValidatorSigner,
+        ValidatorKeyExtractor,
+        ValidatorSignerFactory,
         Client,
         Block,
         Timestamp,
@@ -309,13 +316,17 @@ impl<
     >
 where
     RobonodeClient: AsRef<robonode_client::Client>,
-    ValidatorPublicKey: Encode + AsRef<[u8]>,
-    ValidatorSigner: Signer<Vec<u8>>,
-    <ValidatorSigner as Signer<Vec<u8>>>::Error: std::error::Error + 'static,
+    ValidatorKeyExtractor: ValidatorKeyExtractorT,
+    ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]>,
+    ValidatorKeyExtractor::Error: std::fmt::Debug,
+    ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
+    <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
+        std::error::Error + 'static,
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
-    Client::Api: bioauth_flow_api::BioauthFlowApi<Block, ValidatorPublicKey, Timestamp>,
+    Client::Api:
+        bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -371,9 +382,9 @@ where
 
     /// Obtain the status of the bioauth.
     async fn status(self: Arc<Self>) -> Result<BioauthStatus<Timestamp>> {
-        let own_key = match &self.validator_public_key {
-            Some(v) => v,
-            None => return Ok(BioauthStatus::Unknown),
+        let own_key = match self.validator_public_key() {
+            Ok(v) => v,
+            Err(_) => return Ok(BioauthStatus::Unknown),
         };
 
         // Extract an id of the last imported block.
@@ -382,7 +393,7 @@ where
         let status = self
             .client
             .runtime_api()
-            .bioauth_status(&at, own_key)
+            .bioauth_status(&at, &own_key)
             .map_err(|err| RpcError {
                 code: ErrorCode::InternalError,
                 message: format!("Unable to get status from the runtime: {}", err),
@@ -398,11 +409,7 @@ where
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
-        let public_key = self.validator_public_key.as_ref().ok_or(RpcError {
-            code: ErrorCode::InternalError,
-            message: "Validator public key not found".to_string(),
-            data: None,
-        })?;
+        let public_key = self.validator_public_key()?;
         self.robonode_client
             .as_ref()
             .enroll(EnrollRequest {
@@ -481,18 +488,31 @@ where
         Ok(())
     }
 
+    /// Try to extract the validator key.
+    fn validator_public_key(&self) -> Result<ValidatorKeyExtractor::PublicKeyType> {
+        let key = self
+            .validator_key_extractor
+            .extract_validator_key()
+            .map_err(|e| RpcError {
+                code: ErrorCode::InternalError,
+                message: format!("Key extractor error: {:?}", e),
+                data: None,
+            })?;
+
+        key.ok_or(RpcError {
+            code: ErrorCode::InternalError,
+            message: "Validator key not found".to_string(),
+            data: None,
+        })
+    }
+
     /// Return the opaque liveness data and corresponding signature.
     async fn sign(&self, liveness_data: &LivenessData) -> Result<(OpaqueLivenessData, Vec<u8>)> {
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
+        let validator_key = self.validator_public_key()?;
+        let signer = self.validator_signer_factory.new_signer(validator_key);
 
-        let signature = self
-            .validator_signer
-            .as_ref()
-            .ok_or(RpcError {
-                code: ErrorCode::InternalError,
-                message: "Validator signer not found".into(),
-                data: None,
-            })?
+        let signature = signer
             .sign(&opaque_liveness_data)
             .await
             .map_err(|err| RpcError {

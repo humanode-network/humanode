@@ -477,6 +477,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "bioauth-consensus",
  "bioauth-flow-api",
  "futures 0.3.19",
  "jsonrpc-core",

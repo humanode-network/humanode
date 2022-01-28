@@ -17,3 +17,24 @@ pub trait Signer<S> {
     where
         D: AsRef<[u8]> + Send + 'a;
 }
+
+/// A factory that spits out [`Signer`]s.
+pub trait SignerFactory<S, K> {
+    /// The type of [`Signer`] this factory will create.
+    type Signer: Signer<S>;
+
+    /// Create a [`Signer`] using the provided public key.
+    fn new_signer(&self, key: K) -> Self::Signer;
+}
+
+impl<S, T, F, K> SignerFactory<T, K> for F
+where
+    F: Fn(K) -> S,
+    S: Signer<T>,
+{
+    type Signer = S;
+
+    fn new_signer(&self, key: K) -> Self::Signer {
+        self(key)
+    }
+}

@@ -3,8 +3,8 @@
 use std::{collections::BTreeMap, sync::Arc};
 
 use bioauth_flow::{
-    rpc::{Bioauth, BioauthApi, LivenessDataTxSlot},
-    Signer,
+    rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT},
+    Signer, SignerFactory,
 };
 use fc_rpc::{
     EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi, EthPubSubApiServer,
@@ -35,7 +35,7 @@ use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_runtime::traits::BlakeTwo256;
 
 /// RPC subsystem dependencies.
-pub struct Deps<C, P, VK, VS, A: ChainApi> {
+pub struct Deps<C, P, VKE, VSF, A: ChainApi> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
@@ -47,9 +47,9 @@ pub struct Deps<C, P, VK, VS, A: ChainApi> {
     /// The liveness data tx slot to use in the bioauth flow RPC.
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
     /// The current validator public key.
-    pub validator_public_key: Option<VK>,
+    pub validator_key_extractor: Arc<VKE>,
     /// The type that provides signing with the validator private key.
-    pub validator_signer: Option<Arc<VS>>,
+    pub validator_signer_factory: Arc<VSF>,
     /// Graph pool instance.
     pub graph: Arc<Pool<A>>,
     /// Network service
@@ -108,8 +108,8 @@ where
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, BE, VK, VS, A>(
-    deps: Deps<C, P, VK, VS, A>,
+pub fn create<C, P, BE, VKE, VSF, A>(
+    deps: Deps<C, P, VKE, VSF, A>,
 ) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
     BE: Backend<Block> + 'static,
@@ -119,14 +119,18 @@ where
     C: Send + Sync + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-    C::Api: bioauth_flow_api::BioauthFlowApi<Block, VK, UnixMilliseconds>,
+    C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
     C::Api: BlockBuilder<Block>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
     P: TransactionPool<Block = Block> + 'static,
-    VK: Encode + AsRef<[u8]> + Send + Sync + 'static,
-    VS: Signer<Vec<u8>> + Send + Sync + 'static,
-    <VS as Signer<Vec<u8>>>::Error: Send + Sync + std::error::Error + 'static,
+    VKE: ValidatorKeyExtractorT + Send + Sync + 'static,
+    VKE::PublicKeyType: Encode + AsRef<[u8]> + Send + Sync,
+    VKE::Error: std::fmt::Debug,
+    VSF: SignerFactory<Vec<u8>, VKE::PublicKeyType> + Send + Sync + 'static,
+    VSF::Signer: Send + Sync + 'static,
+    <<VSF as SignerFactory<Vec<u8>, VKE::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
+        std::error::Error + 'static,
     A: ChainApi<Block = Block> + 'static,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
@@ -139,8 +143,8 @@ where
         deny_unsafe,
         robonode_client,
         bioauth_flow_slot,
-        validator_public_key,
-        validator_signer,
+        validator_key_extractor,
+        validator_signer_factory,
         graph,
         network,
         eth_filter_pool,
@@ -167,8 +171,8 @@ where
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,
         bioauth_flow_slot,
-        validator_public_key,
-        validator_signer,
+        validator_key_extractor,
+        validator_signer_factory,
         Arc::clone(&client),
         Arc::clone(&pool),
     )));

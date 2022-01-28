@@ -331,36 +331,16 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
         let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
-
-        let keystore = keystore_container.keystore();
-        let validator_public_key =
-            crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref()).await;
-
-        let validator_public_key = match validator_public_key {
-            Ok(Some(key)) => {
-                info!("Running bioauth flow for {}", key);
-                Some(key)
-            }
-            Ok(None) => {
-                warn!("No validator key found, bioauth will be unavailable");
-                None
-            }
-            Err(err) => {
-                error!(
-                    "Keystore returned an error ({}), bioauth will be unavailable",
-                    err
-                );
-                None
-            }
+        let validator_key_extractor = Arc::clone(&validator_key_extractor);
+        let validator_signer_factory = {
+            let keystore = keystore_container.keystore();
+            Arc::new(move |key| {
+                crate::validator_key::AppCryptoSigner::new(
+                    Arc::clone(&keystore),
+                    crate::validator_key::AppCryptoPublic(key),
+                )
+            })
         };
-
-        let validator_signer = validator_public_key.as_ref().map(|val| {
-            Arc::new(crate::validator_key::AppCryptoSigner::new(
-                Arc::clone(&keystore),
-                val.clone(),
-            ))
-        });
-
         let network = Arc::clone(&network);
         let eth_filter_pool = eth_filter_pool.clone();
         let eth_max_stored_filters = evm_config.max_stored_filters;
@@ -385,8 +365,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 deny_unsafe,
                 robonode_client: Arc::clone(&robonode_client),
                 bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
-                validator_signer: validator_signer.as_ref().map(Arc::clone),
-                validator_public_key: validator_public_key.as_ref().map(|x| x.0.clone()),
+                validator_signer_factory: Arc::clone(&validator_signer_factory),
+                validator_key_extractor: Arc::clone(&validator_key_extractor),
                 graph: Arc::clone(pool.pool()),
                 network: Arc::clone(&network),
                 eth_filter_pool: eth_filter_pool.clone(),
