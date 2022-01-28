@@ -27,8 +27,9 @@ pub trait SignerFactory<S, K> {
     fn new_signer(&self, key: K) -> Self::Signer;
 }
 
-impl<S, T, F, K> SignerFactory<T, K> for F
+impl<S, T, F, K, P> SignerFactory<T, K> for P
 where
+    P: std::ops::Deref<Target = F>,
     F: Fn(K) -> S,
     S: Signer<T>,
 {

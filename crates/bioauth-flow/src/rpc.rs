@@ -143,8 +143,8 @@ impl<
     pub fn new(
         robonode_client: RobonodeClient,
         liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-        validator_key_extractor: Arc<ValidatorKeyExtractor>,
-        validator_signer_factory: Arc<ValidatorSignerFactory>,
+        validator_key_extractor: ValidatorKeyExtractor,
+        validator_signer_factory: ValidatorSignerFactory,
         client: Arc<Client>,
         pool: Arc<TransactionPool>,
     ) -> Self {
@@ -285,9 +285,9 @@ struct Inner<
     /// RPC extension builder that will be using this RPC.
     liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
     /// Provider of the local validator key.
-    validator_key_extractor: Arc<ValidatorKeyExtractor>,
+    validator_key_extractor: ValidatorKeyExtractor,
     /// The type that provides signing with the validator private key.
-    validator_signer_factory: Arc<ValidatorSignerFactory>,
+    validator_signer_factory: ValidatorSignerFactory,
     /// The substrate client, provides access to the runtime APIs.
     client: Arc<Client>,
     /// The transaction pool to use.
