@@ -46,9 +46,9 @@ pub struct Deps<C, P, VKE, VSF, A: ChainApi> {
     pub robonode_client: Arc<robonode_client::Client>,
     /// The liveness data tx slot to use in the bioauth flow RPC.
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
-    /// The current validator public key.
+    /// Extracts the currently used validator key.
     pub validator_key_extractor: Arc<VKE>,
-    /// The type that provides signing with the validator private key.
+    /// Provider of the type that provides signing with the validator private key.
     pub validator_signer_factory: Arc<VSF>,
     /// Graph pool instance.
     pub graph: Arc<Pool<A>>,

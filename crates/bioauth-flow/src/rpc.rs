@@ -284,7 +284,7 @@ struct Inner<
     /// We need an [`Arc`] here to allow sharing the data from across multiple invocations of the
     /// RPC extension builder that will be using this RPC.
     liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
-    /// The local validator key.
+    /// Provider of the local validator key.
     validator_key_extractor: Arc<ValidatorKeyExtractor>,
     /// The type that provides signing with the validator private key.
     validator_signer_factory: Arc<ValidatorSignerFactory>,
