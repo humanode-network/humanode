@@ -48,7 +48,7 @@ pub struct Deps<C, P, VKE, VSF, A: ChainApi> {
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
     /// Extracts the currently used validator key.
     pub validator_key_extractor: VKE,
-    /// Provider of the type that provides signing with the validator private key.
+    /// A factory for making signers by the validator public keys.
     pub validator_signer_factory: VSF,
     /// Graph pool instance.
     pub graph: Arc<Pool<A>>,
