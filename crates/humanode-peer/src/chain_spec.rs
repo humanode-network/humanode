@@ -2,9 +2,9 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, BioauthConfig, EVMConfig, EthereumConfig, GenesisConfig,
-    GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, UnixMilliseconds,
-    WASM_BINARY,
+    AccountId, AuraConfig, BalancesConfig, BioauthConfig, EVMConfig, EthereumChainIdConfig,
+    EthereumConfig, GenesisConfig, GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig,
+    SystemConfig, UnixMilliseconds, WASM_BINARY,
 };
 use pallet_bioauth::{AuthTicketNonce, Authentication};
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -214,6 +214,7 @@ fn testnet_genesis(
             consumed_auth_ticket_nonces,
             active_authentications,
         },
+        ethereum_chain_id: EthereumChainIdConfig { chain_id: 42 },
         evm: EVMConfig {
             accounts: {
                 let mut map = BTreeMap::new();
