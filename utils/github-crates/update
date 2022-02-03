@@ -1,0 +1,19 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+
+PROJECT="${1?Specify a github project to be updated}"
+
+PACKAGES="$(utils/github-crates/list "$PROJECT" | jq -r '.[] | "\(.name):\(.version)"')"
+
+ARGS=()
+for PACKAGE in $PACKAGES; do
+  ARGS+=(-p "$PACKAGE")
+done
+
+if (( ${#ARGS[@]} == 0 )); then
+  printf "There are no dependencies from: %s\n" "$PROJECT" >&2
+  exit 1
+fi
+
+cargo update "${ARGS[@]}"

@@ -2588,6 +2588,7 @@ dependencies = [
  "pallet-bioauth",
  "pallet-dynamic-fee",
  "pallet-ethereum",
+ "pallet-ethereum-chain-id",
  "pallet-evm",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
@@ -4589,6 +4590,19 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-ethereum-chain-id"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
 ]
 
 [[package]]

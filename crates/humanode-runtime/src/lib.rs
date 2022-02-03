@@ -47,7 +47,7 @@ use sp_version::RuntimeVersion;
 use codec::{Decode, Encode, MaxEncodedLen};
 pub use frame_support::{
     construct_runtime, parameter_types,
-    traits::{FindAuthor, KeyOwnerProofSystem, Randomness},
+    traits::{FindAuthor, Get, KeyOwnerProofSystem, Randomness},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         IdentityFee, Weight,
@@ -471,7 +471,6 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 }
 
 parameter_types! {
-    pub const ChainId: u64 = 42;
     pub BlockGasLimit: U256 = U256::from(u32::max_value());
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
 }
@@ -488,7 +487,7 @@ impl pallet_evm::Config for Runtime {
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = FrontierPrecompiles<Self>;
     type PrecompilesValue = PrecompilesValue;
-    type ChainId = ChainId;
+    type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
     type OnChargeTransaction = ();
     type FindAuthor = FindAuthorTruncated<Aura>;
@@ -530,6 +529,8 @@ impl pallet_base_fee::Config for Runtime {
     type IsActive = IsActive;
 }
 
+impl pallet_ethereum_chain_id::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -545,6 +546,7 @@ construct_runtime!(
         Aura: pallet_aura::{Pallet, Config<T>},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
+        EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
         Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
         Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin},
