@@ -382,9 +382,9 @@ where
 
     /// Obtain the status of the bioauth.
     async fn status(self: Arc<Self>) -> Result<BioauthStatus<Timestamp>> {
-        let own_key = match self.validator_public_key() {
-            Ok(v) => v,
-            Err(_) => return Ok(BioauthStatus::Unknown),
+        let own_key = match self.validator_public_key()? {
+            Some(v) => v,
+            None => return Ok(BioauthStatus::Unknown),
         };
 
         // Extract an id of the last imported block.
@@ -409,7 +409,11 @@ where
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
-        let public_key = self.validator_public_key()?;
+        let public_key = self.validator_public_key()?.ok_or(RpcError {
+            code: ErrorCode::InternalError,
+            message: "Validator key not available".to_string(),
+            data: None,
+        })?;
         self.robonode_client
             .as_ref()
             .enroll(EnrollRequest {
@@ -489,36 +493,47 @@ where
     }
 
     /// Try to extract the validator key.
-    fn validator_public_key(&self) -> Result<ValidatorKeyExtractor::PublicKeyType> {
-        let key = self
+    fn validator_public_key(&self) -> Result<Option<ValidatorKeyExtractor::PublicKeyType>> {
+         self
             .validator_key_extractor
             .extract_validator_key()
-            .map_err(|e| RpcError {
-                code: ErrorCode::InternalError,
-                message: format!("Key extractor error: {:?}", e),
-                data: None,
-            })?;
+            .map_err(|error| {
+                tracing::error!(
+                    message = "Unable to extract own key at bioauth flow RPC",
+                    ?error
+                );
+                RpcError {
+                    code: ErrorCode::InternalError,
+                    message: "Unable to extract own key".into(),
+                    data: None,
+                }
+            })
 
-        key.ok_or(RpcError {
-            code: ErrorCode::InternalError,
-            message: "Validator key not found".to_string(),
-            data: None,
-        })
     }
 
     /// Return the opaque liveness data and corresponding signature.
     async fn sign(&self, liveness_data: &LivenessData) -> Result<(OpaqueLivenessData, Vec<u8>)> {
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
-        let validator_key = self.validator_public_key()?;
+        let validator_key = self.validator_public_key()?.ok_or(RpcError {
+            code: ErrorCode::InternalError,
+            message: "Validator key not available".to_string(),
+            data: None,
+        })?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
         let signature = signer
             .sign(&opaque_liveness_data)
             .await
-            .map_err(|err| RpcError {
-                code: ErrorCode::InternalError,
-                message: format!("Signing failed: {}", err),
-                data: None,
+            .map_err(|error| {
+                tracing::error!(
+                    message = "Signing failed",
+                    ?error
+                );
+                RpcError {
+                    code: ErrorCode::InternalError,
+                    message: "Signing failed".to_string(),
+                    data: None,
+                }
             })?;
 
         Ok((opaque_liveness_data, signature))
