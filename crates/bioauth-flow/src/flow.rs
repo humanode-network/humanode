@@ -5,6 +5,8 @@ use std::{marker::PhantomData, ops::Deref};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
 
+use crate::Signer;
+
 /// Something that can provide us with the [`LivenessData`].
 /// Typically this would be implemented by a state-machine that powers the LDP, and interacts with
 /// the handheld device to establish a session and capture the FaceScan and the rest of
@@ -18,19 +20,6 @@ pub trait LivenessDataProvider {
     ///
     /// Takes `self` by `&mut` to allow internal state-machine to progress.
     async fn provide(&mut self) -> Result<LivenessData, Self::Error>;
-}
-
-/// Signer provides signatures for the data.
-#[async_trait::async_trait]
-pub trait Signer<S> {
-    /// Signature error.
-    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
-    type Error;
-
-    /// Sign the provided data and return the signature, or an error if the siging fails.
-    async fn sign<'a, D>(&self, data: D) -> Result<S, Self::Error>
-    where
-        D: AsRef<[u8]> + Send + 'a;
 }
 
 /// The necessary components for the bioauth flow.

@@ -332,6 +332,15 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let robonode_client = Arc::clone(&robonode_client);
         let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
         let validator_key_extractor = Arc::clone(&validator_key_extractor);
+        let validator_signer_factory = {
+            let keystore = keystore_container.keystore();
+            Arc::new(move |key| {
+                crate::validator_key::AppCryptoSigner::new(
+                    Arc::clone(&keystore),
+                    crate::validator_key::AppCryptoPublic(key),
+                )
+            })
+        };
         let network = Arc::clone(&network);
         let eth_filter_pool = eth_filter_pool.clone();
         let eth_max_stored_filters = evm_config.max_stored_filters;
@@ -356,6 +365,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 deny_unsafe,
                 robonode_client: Arc::clone(&robonode_client),
                 bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
+                validator_signer_factory: Arc::clone(&validator_signer_factory),
                 validator_key_extractor: Arc::clone(&validator_key_extractor),
                 graph: Arc::clone(pool.pool()),
                 network: Arc::clone(&network),
@@ -522,7 +532,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             let validator_public_key = match validator_public_key {
                 Ok(Some(key)) => {
                     info!("Running bioauth flow for {}", key);
-                    Arc::new(key)
+                    key
                 }
                 Ok(None) => {
                     warn!("No validator key found, skipping bioauth");
@@ -538,7 +548,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
             let signer = crate::validator_key::AppCryptoSigner::new(
                 Arc::clone(&keystore),
-                Arc::clone(&validator_public_key),
+                validator_public_key.clone(),
             );
 
             if bioauth_perform_enroll {
@@ -547,7 +557,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 render_qr_code("Bioauth flow - waiting for enroll");
 
                 loop {
-                    let result = flow.enroll(validator_public_key.as_ref(), &signer).await;
+                    let result = flow.enroll(&validator_public_key, &signer).await;
                     match result {
                         Ok(()) => break,
                         Err(error) => {
