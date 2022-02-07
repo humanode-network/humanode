@@ -2520,6 +2520,7 @@ dependencies = [
  "sp-application-crypto",
  "sp-consensus",
  "sp-consensus-aura",
+ "sp-consensus-babe",
  "sp-core",
  "sp-finality-grandpa",
  "sp-inherents",
@@ -2583,6 +2584,7 @@ dependencies = [
  "frontier-api",
  "hex-literal",
  "pallet-aura",
+ "pallet-babe",
  "pallet-balances",
  "pallet-base-fee",
  "pallet-bioauth",
@@ -2607,6 +2609,7 @@ dependencies = [
  "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",
+ "sp-consensus-babe",
  "sp-core",
  "sp-inherents",
  "sp-offchain",
@@ -4494,6 +4497,30 @@ dependencies = [
  "scale-info",
  "sp-authorship",
  "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-babe"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-authorship",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-application-crypto",
+ "sp-consensus-babe",
+ "sp-consensus-vrf",
+ "sp-io",
+ "sp-runtime",
+ "sp-session",
+ "sp-staking",
  "sp-std",
 ]
 
@@ -7212,6 +7239,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-consensus-babe"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
+dependencies = [
+ "async-trait",
+ "merlin",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-consensus",
+ "sp-consensus-slots",
+ "sp-consensus-vrf",
+ "sp-core",
+ "sp-inherents",
+ "sp-keystore",
+ "sp-runtime",
+ "sp-std",
+ "sp-timestamp",
+]
+
+[[package]]
 name = "sp-consensus-slots"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
@@ -7221,6 +7271,18 @@ dependencies = [
  "serde",
  "sp-arithmetic",
  "sp-runtime",
+]
+
+[[package]]
+name = "sp-consensus-vrf"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
+dependencies = [
+ "parity-scale-codec",
+ "schnorrkel",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

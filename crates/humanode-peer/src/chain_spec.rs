@@ -2,15 +2,16 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, BioauthConfig, EVMConfig, EthereumChainIdConfig,
-    EthereumConfig, GenesisConfig, GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig,
-    SystemConfig, UnixMilliseconds, WASM_BINARY,
+    AccountId, AuraConfig, BabeConfig, BalancesConfig, BioauthConfig, EVMConfig,
+    EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig, RobonodePublicKeyWrapper,
+    Signature, SudoConfig, SystemConfig, UnixMilliseconds, WASM_BINARY,
 };
 use pallet_bioauth::{AuthTicketNonce, Authentication};
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
@@ -198,6 +199,10 @@ fn testnet_genesis(
         },
         aura: AuraConfig {
             authorities: vec![],
+        },
+        babe: BabeConfig {
+            authorities: vec![],
+            epoch_config: Some(humanode_runtime::BABE_GENESIS_EPOCH_CONFIG),
         },
         grandpa: GrandpaConfig {
             authorities: initial_authorities
