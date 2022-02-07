@@ -17,7 +17,7 @@ use fc_rpc::{
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use humanode_runtime::{
     opaque::{Block, UncheckedExtrinsic},
-    AccountId, Balance, Hash, Index, UnixMilliseconds,
+    AccountId, Balance, BlockNumber, Hash, Index, UnixMilliseconds,
 };
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
@@ -25,6 +25,13 @@ use sc_client_api::{
     backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
 };
+use sc_consensus_babe::{Config, Epoch};
+use sc_consensus_babe_rpc::BabeRpcHandler;
+use sc_consensus_epochs::SharedEpochChanges;
+use sc_finality_grandpa::{
+    FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
+};
+use sc_finality_grandpa_rpc::GrandpaRpcHandler;
 use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool::{ChainApi, Pool};
@@ -32,10 +39,37 @@ use sc_transaction_pool_api::TransactionPool;
 use sp_api::{Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
+use sp_consensus::SelectChain;
+use sp_consensus_babe::BabeApi;
+use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
 
+/// Extra dependencies for BABE.
+pub struct BabeDeps {
+    /// BABE protocol config.
+    pub babe_config: Config,
+    /// BABE pending epoch changes.
+    pub shared_epoch_changes: SharedEpochChanges<Block, Epoch>,
+    /// The keystore that manages the keys of the node.
+    pub keystore: SyncCryptoStorePtr,
+}
+
+/// Extra dependencies for GRANDPA
+pub struct GrandpaDeps<BE> {
+    /// Voting round info.
+    pub shared_voter_state: SharedVoterState,
+    /// Authority set info.
+    pub shared_authority_set: SharedAuthoritySet<Hash, BlockNumber>,
+    /// Receives notifications about justification events from Grandpa.
+    pub justification_stream: GrandpaJustificationStream<Block>,
+    /// Executor to drive the subscription manager in the Grandpa RPC handler.
+    pub subscription_executor: sc_rpc::SubscriptionTaskExecutor,
+    /// Finality proof provider.
+    pub finality_provider: Arc<FinalityProofProvider<BE, Block>>,
+}
+
 /// RPC subsystem dependencies.
-pub struct Deps<C, P, VKE, VSF, A: ChainApi> {
+pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
@@ -54,6 +88,12 @@ pub struct Deps<C, P, VKE, VSF, A: ChainApi> {
     pub graph: Arc<Pool<A>>,
     /// Network service
     pub network: Arc<NetworkService<Block, Hash>>,
+    /// BABE specific dependencies.
+    pub babe: BabeDeps,
+    /// GRANDPA specific dependencies.
+    pub grandpa: GrandpaDeps<BE>,
+    /// The SelectChain Strategy
+    pub select_chain: SC,
     /// EthFilterApi pool.
     pub eth_filter_pool: Option<FilterPool>,
     /// Maximum number of stored filters.
@@ -108,8 +148,8 @@ where
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, BE, VKE, VSF, A>(
-    deps: Deps<C, P, VKE, VSF, A>,
+pub fn create<C, P, BE, VKE, VSF, A, SC>(
+    deps: Deps<C, P, BE, VKE, VSF, A, SC>,
 ) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
     BE: Backend<Block> + 'static,
@@ -120,6 +160,7 @@ where
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
     C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
+    C::Api: BabeApi<Block>,
     C::Api: BlockBuilder<Block>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
@@ -132,6 +173,7 @@ where
     <<VSF as SignerFactory<Vec<u8>, VKE::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
     A: ChainApi<Block = Block> + 'static,
+    SC: SelectChain<Block> + 'static,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
@@ -147,6 +189,9 @@ where
         validator_signer_factory,
         graph,
         network,
+        babe,
+        grandpa,
+        select_chain,
         eth_filter_pool,
         eth_max_stored_filters,
         eth_backend,
@@ -158,6 +203,19 @@ where
         eth_block_data_cache,
     } = deps;
 
+    let BabeDeps {
+        keystore,
+        babe_config,
+        shared_epoch_changes,
+    } = babe;
+    let GrandpaDeps {
+        shared_voter_state,
+        shared_authority_set,
+        justification_stream,
+        subscription_executor,
+        finality_provider,
+    } = grandpa;
+
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
         Arc::clone(&client),
         Arc::clone(&pool),
@@ -167,6 +225,26 @@ where
     io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
         Arc::clone(&client),
     )));
+
+    io.extend_with(sc_consensus_babe_rpc::BabeApi::to_delegate(
+        BabeRpcHandler::new(
+            Arc::clone(&client),
+            shared_epoch_changes,
+            keystore,
+            babe_config,
+            select_chain,
+            deny_unsafe,
+        ),
+    ));
+    io.extend_with(sc_finality_grandpa_rpc::GrandpaApi::to_delegate(
+        GrandpaRpcHandler::new(
+            shared_authority_set,
+            shared_voter_state,
+            justification_stream,
+            subscription_executor,
+            finality_provider,
+        ),
+    ));
 
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,
