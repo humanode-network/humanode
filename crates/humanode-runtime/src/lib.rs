@@ -23,7 +23,7 @@ use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{
     crypto::{KeyTypeId, Public},
     OpaqueMetadata, H160, H256, U256,
@@ -103,7 +103,7 @@ pub mod opaque {
 
     impl_opaque_keys! {
         pub struct SessionKeys {
-            pub aura: Aura,
+            pub babe: Babe,
             pub grandpa: Grandpa,
         }
     }
@@ -136,16 +136,11 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
         allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
     };
 
-/// This determines the average expected block time that we are targeting.
-/// Blocks will be produced at a minimum duration defined by `SLOT_DURATION`.
-/// `SLOT_DURATION` is picked up by `pallet_timestamp` which is in turn picked
-/// up by `pallet_aura` to implement `fn slot_duration()`.
-///
-/// Change this to adjust the block time.
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
+pub const MILLISECS_PER_BLOCK: u64 = 3000;
+pub const SECS_PER_BLOCK: u64 = MILLISECS_PER_BLOCK / 1000;
 
-// Time is measured by number of blocks.
-pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
+// These time units are defined in number of blocks.
+pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
 pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
 
@@ -328,12 +323,6 @@ impl pallet_babe::Config for Runtime {
     type MaxAuthorities = MaxAuthorities;
 }
 
-impl pallet_aura::Config for Runtime {
-    type AuthorityId = AuraId;
-    type DisabledValidators = ();
-    type MaxAuthorities = MaxAuthorities;
-}
-
 impl pallet_grandpa::Config for Runtime {
     type Event = Event;
     type Call = Call;
@@ -363,7 +352,7 @@ pub type UnixMilliseconds = u64;
 
 impl pallet_timestamp::Config for Runtime {
     type Moment = UnixMilliseconds;
-    type OnTimestampSet = Aura;
+    type OnTimestampSet = Babe;
     type MinimumPeriod = MinimumPeriod;
     type WeightInfo = ();
 }
@@ -407,14 +396,14 @@ pub enum PrimitiveAuthTicketConverterError {
     PublicKey(()),
 }
 
-impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<AuraId>>
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<BabeId>>
     for PrimitiveAuthTicketConverter
 {
     type Error = PrimitiveAuthTicketConverterError;
 
     fn try_convert(
         value: OpaqueAuthTicket,
-    ) -> Result<pallet_bioauth::AuthTicket<AuraId>, Self::Error> {
+    ) -> Result<pallet_bioauth::AuthTicket<BabeId>, Self::Error> {
         let primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce: nonce,
@@ -431,13 +420,13 @@ impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<Aur
     }
 }
 
-/// Updates the validators set in aura pallet via the session pallet API.
-pub struct AuraValidatorSetUpdater;
+/// Updates the validators set in babe pallet via the session pallet API.
+pub struct BabeValidatorSetUpdater;
 
-impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
-    fn update_validators_set<'a, I: Iterator<Item = &'a AuraId> + 'a>(validator_public_keys: I)
+impl pallet_bioauth::ValidatorSetUpdater<BabeId> for BabeValidatorSetUpdater {
+    fn update_validators_set<'a, I: Iterator<Item = &'a BabeId> + 'a>(validator_public_keys: I)
     where
-        AuraId: 'a,
+        BabeId: 'a,
     {
         let dummy = <Runtime as frame_system::Config>::AccountId::default();
 
@@ -448,21 +437,21 @@ impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
             .map(|public_key| (&dummy, public_key.clone()))
             .collect::<Vec<_>>();
 
-        <pallet_aura::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
+        <pallet_babe::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
             <Runtime as frame_system::Config>::AccountId,
         >>::on_new_session(true, session_validators.into_iter(), Vec::new().into_iter())
     }
 
-    fn init_validators_set<'a, I: Iterator<Item = &'a AuraId> + 'a>(validator_public_keys: I)
+    fn init_validators_set<'a, I: Iterator<Item = &'a BabeId> + 'a>(validator_public_keys: I)
     where
-        AuraId: 'a,
+        BabeId: 'a,
     {
         let dummy = <Runtime as frame_system::Config>::AccountId::default();
 
         let session_validators =
             validator_public_keys.map(|public_key| (&dummy, public_key.clone()));
 
-        <pallet_aura::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
+        <pallet_babe::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
             <Runtime as frame_system::Config>::AccountId,
         >>::on_genesis_session(session_validators)
     }
@@ -490,10 +479,10 @@ impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
     type RobonodeSignature = Vec<u8>;
-    type ValidatorPublicKey = AuraId;
+    type ValidatorPublicKey = BabeId;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
-    type ValidatorSetUpdater = AuraValidatorSetUpdater;
+    type ValidatorSetUpdater = BabeValidatorSetUpdater;
     type Moment = UnixMilliseconds;
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
@@ -503,7 +492,7 @@ impl pallet_bioauth::Config for Runtime {
     type MaxNonces = MaxNonces;
 }
 
-pub fn get_ethereum_address(authority_id: AuraId) -> H160 {
+pub fn get_ethereum_address(authority_id: BabeId) -> H160 {
     H160::from_slice(&authority_id.to_raw_vec()[4..24])
 }
 
@@ -514,7 +503,7 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
         I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
     {
         if let Some(author_index) = F::find_author(digests) {
-            let authority_id = Aura::authorities()[author_index as usize].clone();
+            let authority_id = Babe::authorities()[author_index as usize].0.clone();
             return Some(get_ethereum_address(authority_id));
         }
         None
@@ -541,7 +530,7 @@ impl pallet_evm::Config for Runtime {
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
     type OnChargeTransaction = ();
-    type FindAuthor = FindAuthorTruncated<Aura>;
+    type FindAuthor = FindAuthorTruncated<Babe>;
 }
 
 impl pallet_ethereum::Config for Runtime {
@@ -594,7 +583,6 @@ construct_runtime!(
         RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage},
         Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
         Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
-        Aura: pallet_aura::{Pallet, Config<T>},
         Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
@@ -744,26 +732,16 @@ impl_runtime_apis! {
         }
     }
 
-    impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
-        fn slot_duration() -> sp_consensus_aura::SlotDuration {
-            sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
-        }
-
-        fn authorities() -> Vec<AuraId> {
-            Aura::authorities().into_inner()
-        }
-    }
-
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
-        fn is_authorized(id: &AuraId) -> bool {
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
+        fn is_authorized(id: &BabeId) -> bool {
             Bioauth::active_authentications().into_inner()
                 .iter()
                 .any(|stored_public_key| &stored_public_key.public_key == id)
         }
     }
 
-    impl bioauth_flow_api::BioauthFlowApi<Block, AuraId, UnixMilliseconds> for Runtime {
-        fn bioauth_status(id: &AuraId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+    impl bioauth_flow_api::BioauthFlowApi<Block, BabeId, UnixMilliseconds> for Runtime {
+        fn bioauth_status(id: &BabeId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()
