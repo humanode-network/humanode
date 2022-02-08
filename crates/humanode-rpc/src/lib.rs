@@ -62,8 +62,6 @@ pub struct GrandpaDeps<BE> {
     pub shared_authority_set: SharedAuthoritySet<Hash, BlockNumber>,
     /// Receives notifications about justification events from Grandpa.
     pub justification_stream: GrandpaJustificationStream<Block>,
-    /// Executor to drive the subscription manager in the Grandpa RPC handler.
-    pub subscription_executor: sc_rpc::SubscriptionTaskExecutor,
     /// Finality proof provider.
     pub finality_provider: Arc<FinalityProofProvider<BE, Block>>,
 }
@@ -212,7 +210,6 @@ where
         shared_voter_state,
         shared_authority_set,
         justification_stream,
-        subscription_executor,
         finality_provider,
     } = grandpa;
 
@@ -241,7 +238,7 @@ where
             shared_authority_set,
             shared_voter_state,
             justification_stream,
-            subscription_executor,
+            Arc::clone(&subscription_task_executor),
             finality_provider,
         ),
     ));

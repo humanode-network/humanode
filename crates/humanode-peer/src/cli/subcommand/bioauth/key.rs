@@ -29,12 +29,11 @@ impl ListKeysCmd {
     /// Run the list command.
     pub async fn run(&self, keystore_container: KeystoreContainer) -> sc_cli::Result<()> {
         let keystore = keystore_container.keystore();
-        let keys =
-            crate::validator_key::AppCryptoPublic::<sp_consensus_aura::sr25519::AuthorityId>::list(
-                keystore.as_ref(),
-            )
-            .await
-            .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
+        let keys = crate::validator_key::AppCryptoPublic::<sp_consensus_babe::AuthorityId>::list(
+            keystore.as_ref(),
+        )
+        .await
+        .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
         for key in keys {
             println!("{}", &key);
         }

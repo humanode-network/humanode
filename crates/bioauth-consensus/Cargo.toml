@@ -17,6 +17,7 @@ sp-application-crypto = { git = "https://github.com/humanode-network/substrate",
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 thiserror = "1"
@@ -31,7 +32,8 @@ tokio = { version = "1", features = ["full"] }
 
 [features]
 default = []
-all = ["aura-integration", "keystore-integration", "api-integration"]
+all = ["babe-integration", "keystore-integration", "api-integration"]
 aura-integration = ["sp-consensus-aura", "sp-application-crypto"]
+babe-integration = ["sp-consensus-babe", "sp-application-crypto"]
 keystore-integration = ["sp-keystore", "sp-application-crypto"]
 api-integration = ["bioauth-consensus-api", "codec"]
