@@ -578,6 +578,20 @@ impl_runtime_apis! {
                 },
             }
         }
+
+        fn create_authenticate_extrinsic(
+            auth_ticket: Vec<u8>,
+            auth_ticket_signature: Vec<u8>
+        ) -> <Block as BlockT>::Extrinsic {
+            let authenticate = pallet_bioauth::Authenticate {
+                ticket: auth_ticket.into(),
+                ticket_signature: auth_ticket_signature,
+            };
+
+            let call = pallet_bioauth::Call::authenticate { req: authenticate };
+
+            <Block as BlockT>::Extrinsic::new_unsigned(call.into())
+        }
     }
 
     impl sp_session::SessionKeys<Block> for Runtime {
