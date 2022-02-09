@@ -345,31 +345,37 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             })
         };
         let network = Arc::clone(&network);
-        let justification_stream = grandpa_link.justification_stream();
-        let shared_authority_set = grandpa_link.shared_authority_set().clone();
+
+        let grandpa_justification_stream = grandpa_link.justification_stream();
+        let grandpa_shared_authority_set = grandpa_link.shared_authority_set().clone();
+        let grandpa_shared_voter_state = sc_finality_grandpa::SharedVoterState::empty();
+        let grandpa_finality_proof_provider =
+            sc_finality_grandpa::FinalityProofProvider::new_for_service(
+                Arc::clone(&backend),
+                Some(grandpa_shared_authority_set.clone()),
+            );
+
         let babe_config = babe_link.config().clone();
-        let shared_epoch_changes = babe_link.epoch_changes().clone();
+        let babe_shared_epoch_changes = babe_link.epoch_changes().clone();
+
         let keystore = keystore_container.sync_keystore();
-        let shared_voter_state = sc_finality_grandpa::SharedVoterState::empty();
-        let finality_proof_provider = sc_finality_grandpa::FinalityProofProvider::new_for_service(
-            Arc::clone(&backend),
-            Some(shared_authority_set.clone()),
-        );
         let select_chain = select_chain.clone();
+
         let eth_filter_pool = eth_filter_pool.clone();
         let eth_max_stored_filters = evm_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
-        let eth_max_past_logs = evm_config.max_past_logs;
-        let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
-        let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
-            task_manager.spawn_handle(),
-        ));
         let eth_overrides = Arc::clone(&eth_overrides);
         let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCache::new(
             task_manager.spawn_handle(),
             Arc::clone(&eth_overrides),
             50,
             50,
+        ));
+        let eth_max_past_logs = evm_config.max_past_logs;
+        let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
+
+        let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
+            task_manager.spawn_handle(),
         ));
 
         Box::new(move |deny_unsafe, _| {
@@ -385,14 +391,14 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 network: Arc::clone(&network),
                 babe: humanode_rpc::BabeDeps {
                     babe_config: babe_config.clone(),
-                    babe_shared_epoch_changes: shared_epoch_changes.clone(),
+                    babe_shared_epoch_changes: babe_shared_epoch_changes.clone(),
                     keystore: Arc::clone(&keystore),
                 },
                 grandpa: humanode_rpc::GrandpaDeps {
-                    grandpa_shared_voter_state: shared_voter_state.clone(),
-                    grandpa_shared_authority_set: shared_authority_set.clone(),
-                    grandpa_justification_stream: justification_stream.clone(),
-                    grandpa_finality_provider: Arc::clone(&finality_proof_provider),
+                    grandpa_shared_voter_state: grandpa_shared_voter_state.clone(),
+                    grandpa_shared_authority_set: grandpa_shared_authority_set.clone(),
+                    grandpa_justification_stream: grandpa_justification_stream.clone(),
+                    grandpa_finality_provider: Arc::clone(&grandpa_finality_proof_provider),
                 },
                 select_chain: select_chain.clone(),
                 evm: humanode_rpc::EVMDeps {
