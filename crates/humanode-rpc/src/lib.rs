@@ -49,21 +49,41 @@ pub struct BabeDeps {
     /// BABE protocol config.
     pub babe_config: Config,
     /// BABE pending epoch changes.
-    pub shared_epoch_changes: SharedEpochChanges<Block, Epoch>,
+    pub babe_shared_epoch_changes: SharedEpochChanges<Block, Epoch>,
     /// The keystore that manages the keys of the node.
     pub keystore: SyncCryptoStorePtr,
 }
 
-/// Extra dependencies for GRANDPA
+/// Extra dependencies for GRANDPA.
 pub struct GrandpaDeps<BE> {
     /// Voting round info.
-    pub shared_voter_state: SharedVoterState,
+    pub grandpa_shared_voter_state: SharedVoterState,
     /// Authority set info.
-    pub shared_authority_set: SharedAuthoritySet<Hash, BlockNumber>,
+    pub grandpa_shared_authority_set: SharedAuthoritySet<Hash, BlockNumber>,
     /// Receives notifications about justification events from Grandpa.
-    pub justification_stream: GrandpaJustificationStream<Block>,
+    pub grandpa_justification_stream: GrandpaJustificationStream<Block>,
     /// Finality proof provider.
-    pub finality_provider: Arc<FinalityProofProvider<BE, Block>>,
+    pub grandpa_finality_provider: Arc<FinalityProofProvider<BE, Block>>,
+}
+
+/// Extra EVM related dependencies.
+pub struct EVMDeps {
+    /// EthFilterApi pool.
+    pub eth_filter_pool: Option<FilterPool>,
+    /// Maximum number of stored filters.
+    pub eth_max_stored_filters: usize,
+    /// Backend.
+    pub eth_backend: Arc<fc_db::Backend<Block>>,
+    /// Maximum number of logs in a query.
+    pub eth_max_past_logs: u32,
+    /// Maximum fee history cache size.
+    pub eth_fee_history_limit: u64,
+    /// Fee history cache.
+    pub eth_fee_history_cache: FeeHistoryCache,
+    /// Ethereum data access overrides.
+    pub eth_overrides: Arc<OverrideHandle<Block>>,
+    /// Cache for Ethereum block data.
+    pub eth_block_data_cache: Arc<EthBlockDataCache<Block>>,
 }
 
 /// RPC subsystem dependencies.
@@ -92,24 +112,10 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub grandpa: GrandpaDeps<BE>,
     /// The SelectChain Strategy
     pub select_chain: SC,
-    /// EthFilterApi pool.
-    pub eth_filter_pool: Option<FilterPool>,
-    /// Maximum number of stored filters.
-    pub eth_max_stored_filters: usize,
-    /// Backend.
-    pub eth_backend: Arc<fc_db::Backend<Block>>,
-    /// Maximum number of logs in a query.
-    pub eth_max_past_logs: u32,
-    /// Maximum fee history cache size.
-    pub eth_fee_history_limit: u64,
-    /// Fee history cache.
-    pub eth_fee_history_cache: FeeHistoryCache,
+    /// EVM specific dependencies.
+    pub evm: EVMDeps,
     /// Subscription task executor instance.
     pub subscription_task_executor: Arc<sc_rpc::SubscriptionTaskExecutor>,
-    /// Ethereum data access overrides.
-    pub eth_overrides: Arc<OverrideHandle<Block>>,
-    /// Cache for Ethereum block data.
-    pub eth_block_data_cache: Arc<EthBlockDataCache<Block>>,
 }
 
 /// A helper function to handle overrides.
@@ -190,28 +196,33 @@ where
         babe,
         grandpa,
         select_chain,
+        evm,
+        subscription_task_executor,
+    } = deps;
+
+    let BabeDeps {
+        keystore,
+        babe_config,
+        babe_shared_epoch_changes,
+    } = babe;
+
+    let GrandpaDeps {
+        grandpa_shared_voter_state,
+        grandpa_shared_authority_set,
+        grandpa_justification_stream,
+        grandpa_finality_provider,
+    } = grandpa;
+
+    let EVMDeps {
         eth_filter_pool,
         eth_max_stored_filters,
         eth_backend,
         eth_max_past_logs,
         eth_fee_history_limit,
         eth_fee_history_cache,
-        subscription_task_executor,
         eth_overrides,
         eth_block_data_cache,
-    } = deps;
-
-    let BabeDeps {
-        keystore,
-        babe_config,
-        shared_epoch_changes,
-    } = babe;
-    let GrandpaDeps {
-        shared_voter_state,
-        shared_authority_set,
-        justification_stream,
-        finality_provider,
-    } = grandpa;
+    } = evm;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
         Arc::clone(&client),
@@ -226,7 +237,7 @@ where
     io.extend_with(sc_consensus_babe_rpc::BabeApi::to_delegate(
         BabeRpcHandler::new(
             Arc::clone(&client),
-            shared_epoch_changes,
+            babe_shared_epoch_changes,
             keystore,
             babe_config,
             select_chain,
@@ -235,11 +246,11 @@ where
     ));
     io.extend_with(sc_finality_grandpa_rpc::GrandpaApi::to_delegate(
         GrandpaRpcHandler::new(
-            shared_authority_set,
-            shared_voter_state,
-            justification_stream,
+            grandpa_shared_authority_set,
+            grandpa_shared_voter_state,
+            grandpa_justification_stream,
             Arc::clone(&subscription_task_executor),
-            finality_provider,
+            grandpa_finality_provider,
         ),
     ));
 
