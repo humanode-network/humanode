@@ -79,7 +79,7 @@ where
             .find_map(CompatibleDigestItem::as_babe_pre_digest)
             .ok_or(BabeBlockAuthorExtractorError::UnableToObtainSlot)?;
 
-        // Determine the author of a block.
+        // Determine the author of the block.
         let author = authorities
             .get(pre_digest.authority_index() as usize)
             .ok_or(BabeBlockAuthorExtractorError::UnableToObtainAuthor)?;
@@ -97,24 +97,29 @@ mod tests {
     use mockall::*;
     use node_primitives::{Block, Header};
     use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi};
+    use sp_consensus_babe::{
+        digests::{PreDigest, SecondaryPlainPreDigest},
+        AllowedSlots, AuthorityId, BabeEpochConfiguration, BabeGenesisConfiguration, Epoch,
+        EquivocationProof, OpaqueKeyOwnershipProof, Slot,
+    };
     use sp_runtime::{Digest, DigestItem};
     use std::sync::Arc;
 
     mock! {
         RuntimeApi {
-            fn configuration(&self) -> sp_consensus_babe::BabeGenesisConfiguration;
-            fn current_epoch_start(&self) -> sp_consensus_babe::Slot;
-            fn current_epoch(&self, _at: &sp_api::BlockId<Block>) -> Result<NativeOrEncoded<sp_consensus_babe::Epoch>, ApiError>;
-            fn next_epoch(&self) -> sp_consensus_babe::Epoch;
+            fn configuration(&self) -> BabeGenesisConfiguration;
+            fn current_epoch_start(&self) -> Slot;
+            fn current_epoch(&self, _at: &sp_api::BlockId<Block>) -> Result<NativeOrEncoded<Epoch>, ApiError>;
+            fn next_epoch(&self) -> Epoch;
             fn generate_key_ownership_proof(
                 &self,
-                _slot: sp_consensus_babe::Slot,
-                _authority_id: sp_consensus_babe::AuthorityId,
-            ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof>;
+                _slot: Slot,
+                _authority_id: AuthorityId,
+            ) -> Option<OpaqueKeyOwnershipProof>;
             fn submit_report_equivocation_unsigned_extrinsic(
                 &self,
-                _equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
-                _key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
+                _equivocation_proof: EquivocationProof<<Block as BlockT>::Header>,
+                _key_owner_proof: OpaqueKeyOwnershipProof,
             ) -> Option<()>;
 
         }
@@ -125,38 +130,38 @@ mod tests {
 
     sp_api::mock_impl_runtime_apis! {
         impl BabeApi<Block> for MockWrapperRuntimeApi {
-            fn configuration() -> sp_consensus_babe::BabeGenesisConfiguration {
+            fn configuration() -> BabeGenesisConfiguration {
                 self.0.configuration()
             }
 
-            fn current_epoch_start() -> sp_consensus_babe::Slot {
+            fn current_epoch_start() -> Slot {
                 self.0.current_epoch_start()
             }
 
             #[advanced]
             fn current_epoch(&self, at: &sp_api::BlockId<Block>) -> Result<
-                NativeOrEncoded<sp_consensus_babe::Epoch>,
+                NativeOrEncoded<Epoch>,
                 ApiError
             > {
                 self.0.current_epoch(at)
             }
 
-            fn next_epoch() -> sp_consensus_babe::Epoch {
+            fn next_epoch() -> Epoch {
                 self.0.next_epoch()
             }
 
             fn generate_key_ownership_proof(
                 &self,
-                slot: sp_consensus_babe::Slot,
-                authority_id: sp_consensus_babe::AuthorityId,
-            ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
+                slot: Slot,
+                authority_id: AuthorityId,
+            ) -> Option<OpaqueKeyOwnershipProof> {
                 self.0.generate_key_ownership_proof(slot, authority_id)
             }
 
             fn submit_report_equivocation_unsigned_extrinsic(
                 &self,
-                equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
-                key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
+                equivocation_proof: EquivocationProof<<Block as BlockT>::Header>,
+                key_owner_proof: OpaqueKeyOwnershipProof,
             ) -> Option<()> {
                 self.0.submit_report_equivocation_unsigned_extrinsic(equivocation_proof, key_owner_proof)
             }
@@ -180,13 +185,12 @@ mod tests {
     ) -> Header {
         let mut digest_items = vec![];
         if !empty_digest {
-            let slot = sp_consensus_babe::Slot::from(1);
-            let primary_pre_digest = sp_consensus_babe::digests::SecondaryPlainPreDigest {
+            let slot = Slot::from(1);
+            let pre_digest = SecondaryPlainPreDigest {
                 authority_index,
                 slot,
             };
-            let pre_digest =
-                sp_consensus_babe::digests::PreDigest::SecondaryPlain(primary_pre_digest);
+            let pre_digest = PreDigest::SecondaryPlain(pre_digest);
             let item = <DigestItem as CompatibleDigestItem>::babe_pre_digest(pre_digest);
             digest_items.push(item);
         }
@@ -200,19 +204,16 @@ mod tests {
         }
     }
 
-    fn prepare_epoch() -> sp_consensus_babe::Epoch {
-        sp_consensus_babe::Epoch {
+    fn prepare_epoch() -> Epoch {
+        Epoch {
             epoch_index: Default::default(),
             start_slot: Default::default(),
             duration: Default::default(),
-            authorities: vec![(
-                sp_consensus_babe::AuthorityId::default(),
-                Default::default(),
-            )],
+            authorities: vec![(AuthorityId::default(), Default::default())],
             randomness: Default::default(),
-            config: sp_consensus_babe::BabeEpochConfiguration {
+            config: BabeEpochConfiguration {
                 c: Default::default(),
-                allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
+                allowed_slots: AllowedSlots::PrimaryAndSecondaryPlainSlots,
             },
         }
     }
@@ -250,7 +251,7 @@ mod tests {
         // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
         drop(Arc::try_unwrap(client).unwrap());
 
-        assert_eq!(res.unwrap(), sp_consensus_babe::AuthorityId::default());
+        assert_eq!(res.unwrap(), AuthorityId::default());
     }
 
     /// This test verifies babe block author extractor failure when
