@@ -32,7 +32,7 @@ tokio = { version = "1", features = ["full"] }
 
 [features]
 default = []
-all = ["babe-integration", "keystore-integration", "api-integration"]
+all = ["aura-integration", "babe-integration", "keystore-integration", "api-integration"]
 aura-integration = ["sp-consensus-aura", "sp-application-crypto"]
 babe-integration = ["sp-consensus-babe", "sp-application-crypto"]
 keystore-integration = ["sp-keystore", "sp-application-crypto"]
