@@ -383,12 +383,14 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
                 deny_unsafe,
-                robonode_client: Arc::clone(&robonode_client),
-                bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
-                validator_signer_factory: Arc::clone(&validator_signer_factory),
-                validator_key_extractor: Arc::clone(&validator_key_extractor),
                 graph: Arc::clone(pool.pool()),
                 network: Arc::clone(&network),
+                bioauth: humanode_rpc::BioauthDeps {
+                    robonode_client: Arc::clone(&robonode_client),
+                    bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
+                    validator_signer_factory: Arc::clone(&validator_signer_factory),
+                    validator_key_extractor: Arc::clone(&validator_key_extractor),
+                },
                 babe: humanode_rpc::BabeDeps {
                     babe_config: babe_config.clone(),
                     babe_shared_epoch_changes: babe_shared_epoch_changes.clone(),

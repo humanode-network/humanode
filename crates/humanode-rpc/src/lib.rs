@@ -44,6 +44,18 @@ use sp_consensus_babe::BabeApi;
 use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
 
+/// Extra dependencies for Bioauth.
+pub struct BioauthDeps<VKE, VSF> {
+    /// An ready robonode API client to tunnel the calls to.
+    pub robonode_client: Arc<robonode_client::Client>,
+    /// The liveness data tx slot to use in the bioauth flow RPC.
+    pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
+    /// Extracts the currently used validator key.
+    pub validator_key_extractor: VKE,
+    /// A factory for making signers by the validator public keys.
+    pub validator_signer_factory: VSF,
+}
+
 /// Extra dependencies for BABE.
 pub struct BabeDeps {
     /// BABE protocol config.
@@ -94,18 +106,12 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub pool: Arc<P>,
     /// Whether to deny unsafe calls.
     pub deny_unsafe: DenyUnsafe,
-    /// An ready robonode API client to tunnel the calls to.
-    pub robonode_client: Arc<robonode_client::Client>,
-    /// The liveness data tx slot to use in the bioauth flow RPC.
-    pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
-    /// Extracts the currently used validator key.
-    pub validator_key_extractor: VKE,
-    /// A factory for making signers by the validator public keys.
-    pub validator_signer_factory: VSF,
     /// Graph pool instance.
     pub graph: Arc<Pool<A>>,
     /// Network service
     pub network: Arc<NetworkService<Block, Hash>>,
+    /// Bioauth specific dependencies.
+    pub bioauth: BioauthDeps<VKE, VSF>,
     /// BABE specific dependencies.
     pub babe: BabeDeps,
     /// GRANDPA specific dependencies.
@@ -187,18 +193,22 @@ where
         client,
         pool,
         deny_unsafe,
-        robonode_client,
-        bioauth_flow_slot,
-        validator_key_extractor,
-        validator_signer_factory,
         graph,
         network,
+        bioauth,
         babe,
         grandpa,
         select_chain,
         evm,
         subscription_task_executor,
     } = deps;
+
+    let BioauthDeps {
+        robonode_client,
+        bioauth_flow_slot,
+        validator_key_extractor,
+        validator_signer_factory,
+    } = bioauth;
 
     let BabeDeps {
         keystore,
