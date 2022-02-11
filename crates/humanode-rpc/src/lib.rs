@@ -254,6 +254,7 @@ where
             deny_unsafe,
         ),
     ));
+
     io.extend_with(sc_finality_grandpa_rpc::GrandpaApi::to_delegate(
         GrandpaRpcHandler::new(
             grandpa_shared_authority_set,
