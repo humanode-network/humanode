@@ -53,7 +53,7 @@ where
     AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
-/// Generate an Babe authority key.
+/// Generate consensus authority keys.
 pub fn authority_keys_from_seed(s: &str) -> (BabeId, GrandpaId) {
     (get_from_seed::<BabeId>(s), get_from_seed::<GrandpaId>(s))
 }
