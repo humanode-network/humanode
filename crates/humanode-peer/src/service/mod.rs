@@ -401,7 +401,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     grandpa_finality_provider: Arc::clone(&grandpa_finality_proof_provider),
                 },
                 select_chain: select_chain.clone(),
-                evm: humanode_rpc::EVMDeps {
+                evm: humanode_rpc::EvmDeps {
                     eth_filter_pool: eth_filter_pool.clone(),
                     eth_max_stored_filters,
                     eth_backend: Arc::clone(&frontier_backend),

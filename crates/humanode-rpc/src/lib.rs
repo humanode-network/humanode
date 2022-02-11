@@ -67,7 +67,7 @@ pub struct GrandpaDeps<BE> {
 }
 
 /// Extra EVM related dependencies.
-pub struct EVMDeps {
+pub struct EvmDeps {
     /// EthFilterApi pool.
     pub eth_filter_pool: Option<FilterPool>,
     /// Maximum number of stored filters.
@@ -113,7 +113,7 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     /// The SelectChain Strategy
     pub select_chain: SC,
     /// EVM specific dependencies.
-    pub evm: EVMDeps,
+    pub evm: EvmDeps,
     /// Subscription task executor instance.
     pub subscription_task_executor: Arc<sc_rpc::SubscriptionTaskExecutor>,
 }
@@ -213,7 +213,7 @@ where
         grandpa_finality_provider,
     } = grandpa;
 
-    let EVMDeps {
+    let EvmDeps {
         eth_filter_pool,
         eth_max_stored_filters,
         eth_backend,
