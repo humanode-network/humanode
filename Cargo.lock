@@ -2507,7 +2507,6 @@ dependencies = [
  "sc-client-api",
  "sc-consensus",
  "sc-consensus-babe",
- "sc-consensus-uncles",
  "sc-executor",
  "sc-finality-grandpa",
  "sc-network",
@@ -2529,7 +2528,6 @@ dependencies = [
  "sp-panic-handler",
  "sp-runtime",
  "sp-timestamp",
- "sp-transaction-storage-proof",
  "structopt",
  "thiserror",
  "tokio",
@@ -6209,17 +6207,6 @@ dependencies = [
  "sp-runtime",
  "sp-state-machine",
  "sp-timestamp",
- "thiserror",
-]
-
-[[package]]
-name = "sc-consensus-uncles"
-version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "sc-client-api",
- "sp-authorship",
- "sp-runtime",
  "thiserror",
 ]
 

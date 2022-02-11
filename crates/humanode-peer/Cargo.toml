@@ -42,7 +42,6 @@ sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "mast
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-consensus-uncles = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -63,7 +62,6 @@ sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = 
 sp-panic-handler = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-transaction-storage-proof = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 structopt = "0.3.8"
 thiserror = "1"
 tokio = { version = "1", features = ["full"] }
