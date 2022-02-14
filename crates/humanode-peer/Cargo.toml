@@ -31,6 +31,7 @@ frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate"
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.3"
+libsecp256k1 = "0.6"
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 qr2term = "0.2"
@@ -52,6 +53,7 @@ sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = { version = "1", features = ["derive"] }
+sha3 = "0.10"
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -64,6 +66,8 @@ sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 structopt = "0.3.8"
 thiserror = "1"
+tiny-bip39 = "0.8"
+tiny-hderive = "0.3.0"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 url = "2"

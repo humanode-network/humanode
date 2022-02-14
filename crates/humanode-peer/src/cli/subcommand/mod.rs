@@ -7,6 +7,7 @@ use structopt::StructOpt;
 use super::CliConfigurationExt;
 
 pub mod bioauth;
+pub mod ethereum;
 
 /// Humanode peer subcommands.
 #[derive(Debug, StructOpt)]
@@ -37,6 +38,9 @@ pub enum Subcommand {
 
     /// Biometric authentication related subcommands.
     Bioauth(bioauth::BioauthCmd),
+
+    /// Ethereum related subcommands.
+    Ethereum(ethereum::EthereumCmd),
 
     /// The custom benchmark subcommmand benchmarking runtime pallets.
     #[structopt(name = "benchmark", about = "Benchmark runtime pallets.")]
