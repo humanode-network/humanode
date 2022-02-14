@@ -138,7 +138,7 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
 
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.
-pub const MILLISECS_PER_BLOCK: u64 = 3000;
+pub const MILLISECS_PER_BLOCK: u64 = 6000;
 pub const SECS_PER_BLOCK: u64 = MILLISECS_PER_BLOCK / 1000;
 
 // These time units are defined in number of blocks.
