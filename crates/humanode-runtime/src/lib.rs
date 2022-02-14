@@ -307,14 +307,12 @@ impl pallet_babe::Config for Runtime {
 
     type KeyOwnerProofSystem = ();
 
-    type KeyOwnerProof = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-        KeyTypeId,
-        pallet_babe::AuthorityId,
-    )>>::Proof;
+    type KeyOwnerProof =
+        <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, BabeId)>>::Proof;
 
     type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
         KeyTypeId,
-        pallet_babe::AuthorityId,
+        BabeId,
     )>>::IdentificationTuple;
 
     type HandleEquivocation = ();
