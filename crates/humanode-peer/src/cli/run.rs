@@ -104,7 +104,8 @@ pub async fn run() -> sc_cli::Result<()> {
                 .async_run(|config| async move { cmd.run(config.bioauth_flow).await })
                 .await
         }
-        Some(Subcommand::Ethereum(ethereum::EthereumCmd::Key(cmd))) => cmd.run().await,
+        Some(Subcommand::Ethereum(ethereum::EthereumCmd::GenerateAccount(cmd))) => cmd.run().await,
+        Some(Subcommand::Ethereum(ethereum::EthereumCmd::InspectAccount(cmd))) => cmd.run().await,
         Some(Subcommand::Benchmark(cmd)) => {
             if cfg!(feature = "runtime-benchmarks") {
                 let runner = root.create_humanode_runner(cmd)?;
