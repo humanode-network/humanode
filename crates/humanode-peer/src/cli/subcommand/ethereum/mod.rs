@@ -14,3 +14,13 @@ pub enum EthereumCmd {
     /// Inspect a provided mnemonic.
     InspectAccount(inspect::InspectAccountCmd),
 }
+
+impl EthereumCmd {
+    /// Run the ethereum subcommands
+    pub async fn run(&self) -> sc_cli::Result<()> {
+        match self {
+            EthereumCmd::GenerateAccount(cmd) => cmd.run().await,
+            EthereumCmd::InspectAccount(cmd) => cmd.run().await,
+        }
+    }
+}

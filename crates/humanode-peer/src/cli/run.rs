@@ -5,7 +5,7 @@ use sc_service::PartialComponents;
 
 use crate::service;
 
-use super::{bioauth, ethereum, Root, Subcommand};
+use super::{bioauth, Root, Subcommand};
 
 /// Parse command line arguments and run the requested operation.
 pub async fn run() -> sc_cli::Result<()> {
@@ -104,8 +104,7 @@ pub async fn run() -> sc_cli::Result<()> {
                 .async_run(|config| async move { cmd.run(config.bioauth_flow).await })
                 .await
         }
-        Some(Subcommand::Ethereum(ethereum::EthereumCmd::GenerateAccount(cmd))) => cmd.run().await,
-        Some(Subcommand::Ethereum(ethereum::EthereumCmd::InspectAccount(cmd))) => cmd.run().await,
+        Some(Subcommand::Ethereum(cmd)) => cmd.run().await,
         Some(Subcommand::Benchmark(cmd)) => {
             if cfg!(feature = "runtime-benchmarks") {
                 let runner = root.create_humanode_runner(cmd)?;
