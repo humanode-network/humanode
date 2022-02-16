@@ -197,7 +197,10 @@ fn testnet_genesis(
                 .collect(),
         },
         babe: BabeConfig {
-            authorities: vec![],
+            authorities: initial_authorities
+                .iter()
+                .map(|x| (x.0.clone(), 1))
+                .collect(),
             epoch_config: Some(humanode_runtime::BABE_GENESIS_EPOCH_CONFIG),
         },
         grandpa: GrandpaConfig {
