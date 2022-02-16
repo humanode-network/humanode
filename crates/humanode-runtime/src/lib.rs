@@ -311,7 +311,7 @@ impl pallet_babe::EpochChangeTrigger for BioauthEpochChangeTrigger {
             let next_authorities = Bioauth::active_authentications()
                 .into_inner()
                 .iter()
-                .map(|authentication| (authentication.public_key.clone(), 0))
+                .map(|authentication| (authentication.public_key.clone(), 1))
                 .collect::<Vec<_>>();
 
             let bounded_next_authorities =
