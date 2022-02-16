@@ -52,7 +52,7 @@ pub use frame_support::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         IdentityFee, Weight,
     },
-    ConsensusEngineId, StorageValue,
+    ConsensusEngineId, StorageValue, WeakBoundedVec,
 };
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -299,10 +299,39 @@ parameter_types! {
     pub const MaxAuthorities: u32 = 512;
 }
 
+/// A struct signifying to BABE that it should perform epoch changes.
+pub struct BioauthEpochChangeTrigger;
+
+impl pallet_babe::EpochChangeTrigger for BioauthEpochChangeTrigger {
+    fn trigger<Runtime: frame_system::Config + pallet_babe::Config>(
+        now: <Runtime as frame_system::Config>::BlockNumber,
+    ) {
+        if pallet_babe::Pallet::<Runtime>::should_epoch_change(now) {
+            let authorities = pallet_babe::Pallet::<Runtime>::authorities();
+            let next_authorities = Bioauth::active_authentications()
+                .into_inner()
+                .iter()
+                .map(|authentication| (authentication.public_key.clone(), 0))
+                .collect::<Vec<_>>();
+
+            let bounded_next_authorities =
+                WeakBoundedVec::<_, <Runtime as pallet_babe::Config>::MaxAuthorities>::force_from(
+                    next_authorities,
+                    Some("runtime::bioauth_epoch_change_trigger"),
+                );
+
+            pallet_babe::Pallet::<Runtime>::enact_epoch_change(
+                authorities,
+                bounded_next_authorities,
+            );
+        }
+    }
+}
+
 impl pallet_babe::Config for Runtime {
     type EpochDuration = EpochDuration;
     type ExpectedBlockTime = ExpectedBlockTime;
-    type EpochChangeTrigger = pallet_babe::ExternalTrigger;
+    type EpochChangeTrigger = BioauthEpochChangeTrigger;
     type DisabledValidators = ();
 
     type KeyOwnerProofSystem = ();
@@ -418,43 +447,6 @@ impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<Bab
     }
 }
 
-/// Updates the validators set in babe pallet via the session pallet API.
-pub struct BabeValidatorSetUpdater;
-
-impl pallet_bioauth::ValidatorSetUpdater<BabeId> for BabeValidatorSetUpdater {
-    fn update_validators_set<'a, I: Iterator<Item = &'a BabeId> + 'a>(validator_public_keys: I)
-    where
-        BabeId: 'a,
-    {
-        let dummy = <Runtime as frame_system::Config>::AccountId::default();
-
-        // clippy is just too dumb here, but we need two iterators passed to `on_new_session` to be
-        // the same type. The easiest is to use Vec's iter for both.
-        #[allow(clippy::needless_collect)]
-        let session_validators = validator_public_keys
-            .map(|public_key| (&dummy, public_key.clone()))
-            .collect::<Vec<_>>();
-
-        <pallet_babe::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
-            <Runtime as frame_system::Config>::AccountId,
-        >>::on_new_session(true, session_validators.into_iter(), Vec::new().into_iter())
-    }
-
-    fn init_validators_set<'a, I: Iterator<Item = &'a BabeId> + 'a>(validator_public_keys: I)
-    where
-        BabeId: 'a,
-    {
-        let dummy = <Runtime as frame_system::Config>::AccountId::default();
-
-        let session_validators =
-            validator_public_keys.map(|public_key| (&dummy, public_key.clone()));
-
-        <pallet_babe::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
-            <Runtime as frame_system::Config>::AccountId,
-        >>::on_genesis_session(session_validators)
-    }
-}
-
 pub struct CurrentMoment;
 
 impl pallet_bioauth::CurrentMoment<UnixMilliseconds> for CurrentMoment {
@@ -480,7 +472,7 @@ impl pallet_bioauth::Config for Runtime {
     type ValidatorPublicKey = BabeId;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
-    type ValidatorSetUpdater = BabeValidatorSetUpdater;
+    type ValidatorSetUpdater = ();
     type Moment = UnixMilliseconds;
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;

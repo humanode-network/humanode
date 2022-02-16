@@ -70,6 +70,20 @@ pub trait ValidatorSetUpdater<T> {
         T: 'a;
 }
 
+impl<T> ValidatorSetUpdater<T> for () {
+    fn update_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(_validator_public_keys: I)
+    where
+        T: 'a,
+    {
+    }
+
+    fn init_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(_validator_public_keys: I)
+    where
+        T: 'a,
+    {
+    }
+}
+
 /// Provides the capability to get current moment.
 pub trait CurrentMoment<Moment> {
     /// Return current moment.
