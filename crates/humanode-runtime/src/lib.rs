@@ -307,7 +307,13 @@ impl pallet_babe::EpochChangeTrigger for BioauthEpochChangeTrigger {
         now: <Runtime as frame_system::Config>::BlockNumber,
     ) {
         if pallet_babe::Pallet::<Runtime>::should_epoch_change(now) {
-            let authorities = pallet_babe::Pallet::<Runtime>::authorities();
+            let authorities = pallet_babe::Pallet::<Runtime>::next_epoch().authorities;
+            let bounded_authorities =
+                WeakBoundedVec::<_, <Runtime as pallet_babe::Config>::MaxAuthorities>::force_from(
+                    authorities,
+                    Some("runtime::bioauth_epoch_change_trigger"),
+                );
+
             let next_authorities = Bioauth::active_authentications()
                 .into_inner()
                 .iter()
@@ -321,7 +327,7 @@ impl pallet_babe::EpochChangeTrigger for BioauthEpochChangeTrigger {
                 );
 
             pallet_babe::Pallet::<Runtime>::enact_epoch_change(
-                authorities,
+                bounded_authorities,
                 bounded_next_authorities,
             );
         }
