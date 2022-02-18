@@ -21,6 +21,11 @@ jsonrpc-pubsub = "18.0.0"
 pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus-babe-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus-epochs = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-finality-grandpa-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -29,5 +34,8 @@ sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "master" }

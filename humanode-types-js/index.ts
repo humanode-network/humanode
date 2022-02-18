@@ -8,11 +8,11 @@ export const humanodeDefinitions = {
     {
       minmax: [0],
       types: {
-        AuraId: "AccountId",
+        BabeId: "AccountId",
         RobonodePublicKey: "[u8; 32]",
         AuthTicketNonce: "Vec<u8>",
         Authentication: {
-          public_key: "AuraId",
+          public_key: "BabeId",
           expires_at: "BlockNumber"
         },
       },

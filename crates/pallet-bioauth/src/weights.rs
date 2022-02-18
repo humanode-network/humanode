@@ -31,7 +31,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
     // Storage: Bioauth ActiveAuthentications (r:1 w:1)
     // Storage: Timestamp Now (r:1 w:0)
     // Storage: Bioauth AuthenticationsExpireAfter (r:1 w:0)
-    // Storage: Aura Authorities (r:1 w:1)
+    // Storage: Authorities (r:1 w:1)
     fn authenticate() -> Weight {
         calculate_weight::<T>(10_000_u64, 6_u64, 3_u64)
     }
@@ -39,7 +39,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
     // Storage: Timestamp Now (r:1 w:0)
     // Storage: Bioauth ActiveAuthentications (r:1 w:0)
     // Storage: Bioauth ActiveAuthentications (r:0 w:1) if update_required
-    // Storage: Aura Authorities (r:1 w:1) if update_required
+    // Storage: Authorities (r:1 w:1) if update_required
     fn on_initialize(update_required: bool) -> Weight {
         if update_required {
             calculate_weight::<T>(10_000_u64, 3_u64, 2_u64)

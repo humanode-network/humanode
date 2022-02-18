@@ -2,7 +2,7 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, BioauthConfig, EVMConfig, EthereumChainIdConfig,
+    AccountId, BabeConfig, BalancesConfig, BioauthConfig, EVMConfig, EthereumChainIdConfig,
     EthereumConfig, GenesisConfig, GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig,
     SystemConfig, UnixMilliseconds, WASM_BINARY,
 };
@@ -10,7 +10,7 @@ use pallet_bioauth::{AuthTicketNonce, Authentication};
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
@@ -53,9 +53,9 @@ where
     AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
-/// Generate an Aura authority key.
-pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
-    (get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
+/// Generate consensus authority keys.
+pub fn authority_keys_from_seed(s: &str) -> (BabeId, GrandpaId) {
+    (get_from_seed::<BabeId>(s), get_from_seed::<GrandpaId>(s))
 }
 
 /// An expires at value that guarantees the authentication never expires.
@@ -176,12 +176,12 @@ pub fn development_config() -> Result<ChainSpec, String> {
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
-    initial_authorities: Vec<(AuraId, GrandpaId)>,
+    initial_authorities: Vec<(BabeId, GrandpaId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     robonode_public_key: RobonodePublicKeyWrapper,
     consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
-    active_authentications: Vec<Authentication<AuraId, UnixMilliseconds>>,
+    active_authentications: Vec<Authentication<BabeId, UnixMilliseconds>>,
 ) -> GenesisConfig {
     GenesisConfig {
         system: SystemConfig {
@@ -196,8 +196,12 @@ fn testnet_genesis(
                 .map(|k| (k, 1 << 60))
                 .collect(),
         },
-        aura: AuraConfig {
-            authorities: vec![],
+        babe: BabeConfig {
+            authorities: initial_authorities
+                .iter()
+                .map(|x| (x.0.clone(), 1))
+                .collect(),
+            epoch_config: Some(humanode_runtime::BABE_GENESIS_EPOCH_CONFIG),
         },
         grandpa: GrandpaConfig {
             authorities: initial_authorities

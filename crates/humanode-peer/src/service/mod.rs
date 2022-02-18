@@ -8,13 +8,12 @@ use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockchainEvents, ExecutorProvider};
-use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
+use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
-use sp_consensus::SlotData;
-use sp_consensus_aura::sr25519::{AuthorityId as AuraId, AuthorityPair as AuraPair};
+use sp_consensus_babe::AuthorityId as BabeId;
 use std::{
     collections::BTreeMap,
     marker::PhantomData,
@@ -60,16 +59,18 @@ type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 /// Full type for GrandpaBlockImport.
 type FullGrandpa =
     sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
+/// Full type for BabeBlockImport.
+type FullBabe = sc_consensus_babe::BabeBlockImport<Block, FullClient, FullGrandpa>;
 /// Full type for FrontierBlockImport.
-type FullFrontier = FrontierBlockImport<Block, FullGrandpa, FullClient>;
+type FullFrontier = FrontierBlockImport<Block, FullBabe, FullClient>;
 /// Full type for BioauthBlockImport.
 type FullBioauth = bioauth_consensus::BioauthBlockImport<
     FullBackend,
     Block,
     FullClient,
     FullFrontier,
-    bioauth_consensus::aura::BlockAuthorExtractor<Block, FullClient, AuraId>,
-    bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, AuraId>,
+    bioauth_consensus::babe::BlockAuthorExtractor<Block, FullClient>,
+    bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, BabeId>,
 >;
 /// Frontier backend type.
 type FrontierBackend = fc_db::Backend<Block>;
@@ -102,8 +103,8 @@ pub fn new_partial(
         (
             FullGrandpa,
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
+            sc_consensus_babe::BabeLink<Block>,
             FullBioauth,
-            SlotDuration,
             Duration,
             inherents::Creator,
             Arc<FrontierBackend>,
@@ -171,9 +172,15 @@ pub fn new_partial(
         telemetry.as_ref().map(|x| x.handle()),
     )?;
 
+    let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
+        sc_consensus_babe::Config::get_or_compute(&*client)?,
+        grandpa_block_import.clone(),
+        Arc::clone(&client),
+    )?;
+
     let frontier_backend = Arc::new(frontier::open_backend(config)?);
     let frontier_block_import = FrontierBlockImport::new(
-        grandpa_block_import.clone(),
+        babe_block_import,
         Arc::clone(&client),
         Arc::clone(&frontier_backend),
     );
@@ -181,33 +188,29 @@ pub fn new_partial(
     let bioauth_consensus_block_import = bioauth_consensus::BioauthBlockImport::new(
         Arc::clone(&client),
         frontier_block_import,
-        bioauth_consensus::aura::BlockAuthorExtractor::new(Arc::clone(&client)),
+        bioauth_consensus::babe::BlockAuthorExtractor::new(Arc::clone(&client)),
         bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
     );
 
-    let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
-    let raw_slot_duration = slot_duration.slot_duration();
+    let raw_slot_duration = babe_link.config().slot_duration();
     let eth_target_gas_price = evm_config.target_gas_price;
     let inherent_data_providers_creator = inherents::Creator {
         raw_slot_duration,
         eth_target_gas_price,
     };
 
-    let import_queue =
-        sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _, _>(ImportQueueParams {
-            block_import: bioauth_consensus_block_import.clone(),
-            justification_import: Some(Box::new(grandpa_block_import.clone())),
-            client: Arc::clone(&client),
-            create_inherent_data_providers: inherent_data_providers_creator.clone(),
-            spawner: &task_manager.spawn_essential_handle(),
-            can_author_with: sp_consensus::CanAuthorWithNativeVersion::new(
-                client.executor().clone(),
-            ),
-            registry: config.prometheus_registry(),
-            check_for_equivocation: Default::default(),
-            telemetry: telemetry.as_ref().map(|x| x.handle()),
-        })?;
-
+    let import_queue = sc_consensus_babe::import_queue(
+        babe_link.clone(),
+        bioauth_consensus_block_import.clone(),
+        Some(Box::new(grandpa_block_import.clone())),
+        Arc::clone(&client),
+        select_chain.clone(),
+        inherent_data_providers_creator.clone(),
+        &task_manager.spawn_essential_handle(),
+        config.prometheus_registry(),
+        sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
+        telemetry.as_ref().map(|x| x.handle()),
+    )?;
     Ok(PartialComponents {
         client,
         backend,
@@ -219,8 +222,8 @@ pub fn new_partial(
         other: (
             grandpa_block_import,
             grandpa_link,
+            babe_link,
             bioauth_consensus_block_import,
-            slot_duration,
             raw_slot_duration,
             inherent_data_providers_creator,
             frontier_backend,
@@ -244,8 +247,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             (
                 _grandpa_block_import,
                 grandpa_link,
+                babe_link,
                 bioauth_consensus_block_import,
-                slot_duration,
                 raw_slot_duration,
                 inherent_data_providers_creator,
                 frontier_backend,
@@ -342,14 +345,25 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             })
         };
         let network = Arc::clone(&network);
+
+        let grandpa_justification_stream = grandpa_link.justification_stream();
+        let grandpa_shared_authority_set = grandpa_link.shared_authority_set().clone();
+        let grandpa_shared_voter_state = sc_finality_grandpa::SharedVoterState::empty();
+        let grandpa_finality_proof_provider =
+            sc_finality_grandpa::FinalityProofProvider::new_for_service(
+                Arc::clone(&backend),
+                Some(grandpa_shared_authority_set.clone()),
+            );
+
+        let babe_config = babe_link.config().clone();
+        let babe_shared_epoch_changes = babe_link.epoch_changes().clone();
+
+        let keystore = keystore_container.sync_keystore();
+        let select_chain = select_chain.clone();
+
         let eth_filter_pool = eth_filter_pool.clone();
         let eth_max_stored_filters = evm_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
-        let eth_max_past_logs = evm_config.max_past_logs;
-        let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
-        let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
-            task_manager.spawn_handle(),
-        ));
         let eth_overrides = Arc::clone(&eth_overrides);
         let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCache::new(
             task_manager.spawn_handle(),
@@ -357,27 +371,49 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             50,
             50,
         ));
+        let eth_max_past_logs = evm_config.max_past_logs;
+        let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
+
+        let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
+            task_manager.spawn_handle(),
+        ));
 
         Box::new(move |deny_unsafe, _| {
             Ok(humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
                 deny_unsafe,
-                robonode_client: Arc::clone(&robonode_client),
-                bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
-                validator_signer_factory: Arc::clone(&validator_signer_factory),
-                validator_key_extractor: Arc::clone(&validator_key_extractor),
                 graph: Arc::clone(pool.pool()),
                 network: Arc::clone(&network),
-                eth_filter_pool: eth_filter_pool.clone(),
-                eth_max_stored_filters,
-                eth_backend: Arc::clone(&frontier_backend),
-                eth_max_past_logs,
-                eth_fee_history_limit,
-                eth_fee_history_cache: Arc::clone(&eth_fee_history_cache),
+                bioauth: humanode_rpc::BioauthDeps {
+                    robonode_client: Arc::clone(&robonode_client),
+                    bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
+                    validator_signer_factory: Arc::clone(&validator_signer_factory),
+                    validator_key_extractor: Arc::clone(&validator_key_extractor),
+                },
+                babe: humanode_rpc::BabeDeps {
+                    babe_config: babe_config.clone(),
+                    babe_shared_epoch_changes: babe_shared_epoch_changes.clone(),
+                    keystore: Arc::clone(&keystore),
+                },
+                grandpa: humanode_rpc::GrandpaDeps {
+                    grandpa_shared_voter_state: grandpa_shared_voter_state.clone(),
+                    grandpa_shared_authority_set: grandpa_shared_authority_set.clone(),
+                    grandpa_justification_stream: grandpa_justification_stream.clone(),
+                    grandpa_finality_provider: Arc::clone(&grandpa_finality_proof_provider),
+                },
+                select_chain: select_chain.clone(),
+                evm: humanode_rpc::EvmDeps {
+                    eth_filter_pool: eth_filter_pool.clone(),
+                    eth_max_stored_filters,
+                    eth_backend: Arc::clone(&frontier_backend),
+                    eth_max_past_logs,
+                    eth_fee_history_limit,
+                    eth_fee_history_cache: Arc::clone(&eth_fee_history_cache),
+                    eth_overrides: Arc::clone(&eth_overrides),
+                    eth_block_data_cache: Arc::clone(&eth_block_data_cache),
+                },
                 subscription_task_executor: Arc::clone(&subscription_task_executor),
-                eth_overrides: Arc::clone(&eth_overrides),
-                eth_block_data_cache: Arc::clone(&eth_block_data_cache),
             }))
         })
     };
@@ -395,31 +431,30 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry: telemetry.as_mut(),
     })?;
 
-    let aura = sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _, _, _>(
-        StartAuraParams {
-            slot_duration,
-            client: Arc::clone(&client),
-            select_chain,
-            block_import: bioauth_consensus_block_import,
-            proposer_factory,
-            create_inherent_data_providers: inherent_data_providers_creator,
-            force_authoring,
-            backoff_authoring_blocks,
-            keystore: keystore_container.sync_keystore(),
-            can_author_with,
-            sync_oracle: Arc::clone(&network),
-            justification_sync_link: Arc::clone(&network),
-            block_proposal_slot_portion: SlotProportion::new(2f32 / 3f32),
-            max_block_proposal_slot_portion: None,
-            telemetry: telemetry.as_ref().map(|x| x.handle()),
-        },
-    )?;
+    let babe_config = sc_consensus_babe::BabeParams {
+        keystore: keystore_container.sync_keystore(),
+        client: Arc::clone(&client),
+        select_chain,
+        env: proposer_factory,
+        block_import: bioauth_consensus_block_import,
+        sync_oracle: Arc::clone(&network),
+        justification_sync_link: Arc::clone(&network),
+        create_inherent_data_providers: inherent_data_providers_creator,
+        force_authoring,
+        backoff_authoring_blocks,
+        babe_link,
+        can_author_with,
+        block_proposal_slot_portion: SlotProportion::new(0.5),
+        max_block_proposal_slot_portion: None,
+        telemetry: telemetry.as_ref().map(|x| x.handle()),
+    };
 
-    // The AURA authoring task is considered essential, i.e. if it
-    // fails we take down the service with it.
-    task_manager
-        .spawn_essential_handle()
-        .spawn_blocking("aura", Some("block-authoring"), aura);
+    let babe = sc_consensus_babe::start_babe(babe_config)?;
+    task_manager.spawn_essential_handle().spawn_blocking(
+        "babe-proposer",
+        Some("block-authoring"),
+        babe,
+    );
 
     let grandpa_config = sc_finality_grandpa::Config {
         // FIXME #1578 make this available through chainspec.
@@ -526,7 +561,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
             let validator_public_key =
-                crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref())
+                crate::validator_key::AppCryptoPublic::<BabeId>::from_keystore(keystore.as_ref())
                     .await;
 
             let validator_public_key = match validator_public_key {

@@ -19,6 +19,9 @@ pub mod keystore;
 #[cfg(feature = "aura-integration")]
 pub mod aura;
 
+#[cfg(feature = "babe-integration")]
+pub mod babe;
+
 #[cfg(test)]
 mod mock;
 

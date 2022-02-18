@@ -23,7 +23,7 @@ use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{
     crypto::{KeyTypeId, Public},
     OpaqueMetadata, H160, H256, U256,
@@ -52,7 +52,7 @@ pub use frame_support::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         IdentityFee, Weight,
     },
-    ConsensusEngineId, StorageValue,
+    ConsensusEngineId, StorageValue, WeakBoundedVec,
 };
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -103,7 +103,7 @@ pub mod opaque {
 
     impl_opaque_keys! {
         pub struct SessionKeys {
-            pub aura: Aura,
+            pub babe: Babe,
             pub grandpa: Grandpa,
         }
     }
@@ -126,22 +126,33 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     transaction_version: 1,
 };
 
-/// This determines the average expected block time that we are targeting.
-/// Blocks will be produced at a minimum duration defined by `SLOT_DURATION`.
-/// `SLOT_DURATION` is picked up by `pallet_timestamp` which is in turn picked
-/// up by `pallet_aura` to implement `fn slot_duration()`.
-///
-/// Change this to adjust the block time.
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
+// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
+pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
+
+/// The BABE epoch configuration at genesis.
+pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
+    sp_consensus_babe::BabeEpochConfiguration {
+        c: PRIMARY_PROBABILITY,
+        allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
+    };
 
 // NOTE: Currently it is not possible to change the slot duration after the chain has started.
 //       Attempting to do so will brick block production.
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
+pub const MILLISECS_PER_BLOCK: u64 = 6000;
+pub const SECS_PER_BLOCK: u64 = MILLISECS_PER_BLOCK / 1000;
 
-// Time is measured by number of blocks.
-pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
+// These time units are defined in number of blocks.
+pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
 pub const HOURS: BlockNumber = MINUTES * 60;
 pub const DAYS: BlockNumber = HOURS * 24;
+
+pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
+pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+pub const EPOCH_DURATION_IN_SLOTS: u64 = {
+    const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
+
+    (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
+};
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -273,10 +284,76 @@ parameter_types! {
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
-impl pallet_aura::Config for Runtime {
-    type AuthorityId = AuraId;
+parameter_types! {
+    pub const SessionsPerEra: u64 = 6;
+    pub const BondingDuration: u64 = 24 * 28;
+    // NOTE: Currently it is not possible to change the epoch duration after the chain has started.
+    //       Attempting to do so will brick block production.
+    pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
+    pub const ExpectedBlockTime: u64 = MILLISECS_PER_BLOCK;
+    pub const ReportLongevity: u64 =
+        BondingDuration::get() as u64 * SessionsPerEra::get() as u64 * EpochDuration::get();
+}
+
+parameter_types! {
+    pub const MaxAuthorities: u32 = 512;
+}
+
+/// A struct signifying to BABE that it should perform epoch changes.
+pub struct BioauthEpochChangeTrigger;
+
+impl pallet_babe::EpochChangeTrigger for BioauthEpochChangeTrigger {
+    fn trigger<Runtime: frame_system::Config + pallet_babe::Config>(
+        now: <Runtime as frame_system::Config>::BlockNumber,
+    ) {
+        if pallet_babe::Pallet::<Runtime>::should_epoch_change(now) {
+            let authorities = pallet_babe::Pallet::<Runtime>::next_epoch().authorities;
+            let bounded_authorities =
+                WeakBoundedVec::<_, <Runtime as pallet_babe::Config>::MaxAuthorities>::force_from(
+                    authorities,
+                    Some("runtime::bioauth_epoch_change_trigger"),
+                );
+
+            let next_authorities = Bioauth::active_authentications()
+                .into_inner()
+                .iter()
+                .map(|authentication| (authentication.public_key.clone(), 1))
+                .collect::<Vec<_>>();
+
+            let bounded_next_authorities =
+                WeakBoundedVec::<_, <Runtime as pallet_babe::Config>::MaxAuthorities>::force_from(
+                    next_authorities,
+                    Some("runtime::bioauth_epoch_change_trigger"),
+                );
+
+            pallet_babe::Pallet::<Runtime>::enact_epoch_change(
+                bounded_authorities,
+                bounded_next_authorities,
+            );
+        }
+    }
+}
+
+impl pallet_babe::Config for Runtime {
+    type EpochDuration = EpochDuration;
+    type ExpectedBlockTime = ExpectedBlockTime;
+    type EpochChangeTrigger = BioauthEpochChangeTrigger;
     type DisabledValidators = ();
-    type MaxAuthorities = MaxAuthentications;
+
+    type KeyOwnerProofSystem = ();
+
+    type KeyOwnerProof =
+        <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, BabeId)>>::Proof;
+
+    type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
+        KeyTypeId,
+        BabeId,
+    )>>::IdentificationTuple;
+
+    type HandleEquivocation = ();
+
+    type WeightInfo = ();
+    type MaxAuthorities = MaxAuthorities;
 }
 
 impl pallet_grandpa::Config for Runtime {
@@ -308,7 +385,7 @@ pub type UnixMilliseconds = u64;
 
 impl pallet_timestamp::Config for Runtime {
     type Moment = UnixMilliseconds;
-    type OnTimestampSet = Aura;
+    type OnTimestampSet = Babe;
     type MinimumPeriod = MinimumPeriod;
     type WeightInfo = ();
 }
@@ -352,14 +429,14 @@ pub enum PrimitiveAuthTicketConverterError {
     PublicKey(()),
 }
 
-impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<AuraId>>
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<BabeId>>
     for PrimitiveAuthTicketConverter
 {
     type Error = PrimitiveAuthTicketConverterError;
 
     fn try_convert(
         value: OpaqueAuthTicket,
-    ) -> Result<pallet_bioauth::AuthTicket<AuraId>, Self::Error> {
+    ) -> Result<pallet_bioauth::AuthTicket<BabeId>, Self::Error> {
         let primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce: nonce,
@@ -373,43 +450,6 @@ impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<Aur
             .map_err(PrimitiveAuthTicketConverterError::PublicKey)?;
 
         Ok(AuthTicket { public_key, nonce })
-    }
-}
-
-/// Updates the validators set in aura pallet via the session pallet API.
-pub struct AuraValidatorSetUpdater;
-
-impl pallet_bioauth::ValidatorSetUpdater<AuraId> for AuraValidatorSetUpdater {
-    fn update_validators_set<'a, I: Iterator<Item = &'a AuraId> + 'a>(validator_public_keys: I)
-    where
-        AuraId: 'a,
-    {
-        let dummy = <Runtime as frame_system::Config>::AccountId::default();
-
-        // clippy is just too dumb here, but we need two iterators passed to `on_new_session` to be
-        // the same type. The easiest is to use Vec's iter for both.
-        #[allow(clippy::needless_collect)]
-        let session_validators = validator_public_keys
-            .map(|public_key| (&dummy, public_key.clone()))
-            .collect::<Vec<_>>();
-
-        <pallet_aura::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
-            <Runtime as frame_system::Config>::AccountId,
-        >>::on_new_session(true, session_validators.into_iter(), Vec::new().into_iter())
-    }
-
-    fn init_validators_set<'a, I: Iterator<Item = &'a AuraId> + 'a>(validator_public_keys: I)
-    where
-        AuraId: 'a,
-    {
-        let dummy = <Runtime as frame_system::Config>::AccountId::default();
-
-        let session_validators =
-            validator_public_keys.map(|public_key| (&dummy, public_key.clone()));
-
-        <pallet_aura::Pallet<Runtime> as frame_support::traits::OneSessionHandler<
-            <Runtime as frame_system::Config>::AccountId,
-        >>::on_genesis_session(session_validators)
     }
 }
 
@@ -435,10 +475,10 @@ impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
     type RobonodeSignature = Vec<u8>;
-    type ValidatorPublicKey = AuraId;
+    type ValidatorPublicKey = BabeId;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
-    type ValidatorSetUpdater = AuraValidatorSetUpdater;
+    type ValidatorSetUpdater = ();
     type Moment = UnixMilliseconds;
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
@@ -448,7 +488,7 @@ impl pallet_bioauth::Config for Runtime {
     type MaxNonces = MaxNonces;
 }
 
-pub fn get_ethereum_address(authority_id: AuraId) -> H160 {
+pub fn get_ethereum_address(authority_id: BabeId) -> H160 {
     H160::from_slice(&authority_id.to_raw_vec()[4..24])
 }
 
@@ -459,7 +499,7 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
         I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
     {
         if let Some(author_index) = F::find_author(digests) {
-            let authority_id = Aura::authorities()[author_index as usize].clone();
+            let authority_id = Babe::authorities()[author_index as usize].0.clone();
             return Some(get_ethereum_address(authority_id));
         }
         None
@@ -486,7 +526,7 @@ impl pallet_evm::Config for Runtime {
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
     type OnChargeTransaction = ();
-    type FindAuthor = FindAuthorTruncated<Aura>;
+    type FindAuthor = FindAuthorTruncated<Babe>;
 }
 
 impl pallet_ethereum::Config for Runtime {
@@ -539,7 +579,7 @@ construct_runtime!(
         RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage},
         Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
         Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
-        Aura: pallet_aura::{Pallet, Config<T>},
+        Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
         EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config},
@@ -688,26 +728,16 @@ impl_runtime_apis! {
         }
     }
 
-    impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
-        fn slot_duration() -> sp_consensus_aura::SlotDuration {
-            sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
-        }
-
-        fn authorities() -> Vec<AuraId> {
-            Aura::authorities().into_inner()
-        }
-    }
-
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, AuraId> for Runtime {
-        fn is_authorized(id: &AuraId) -> bool {
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
+        fn is_authorized(id: &BabeId) -> bool {
             Bioauth::active_authentications().into_inner()
                 .iter()
                 .any(|stored_public_key| &stored_public_key.public_key == id)
         }
     }
 
-    impl bioauth_flow_api::BioauthFlowApi<Block, AuraId, UnixMilliseconds> for Runtime {
-        fn bioauth_status(id: &AuraId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+    impl bioauth_flow_api::BioauthFlowApi<Block, BabeId, UnixMilliseconds> for Runtime {
+        fn bioauth_status(id: &BabeId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()
@@ -784,6 +814,51 @@ impl_runtime_apis! {
             // NOTE: this is the only implementation possible since we've
             // defined our key owner proof type as a bottom type (i.e. a type
             // with no values).
+            None
+        }
+    }
+
+
+    impl sp_consensus_babe::BabeApi<Block> for Runtime {
+        fn configuration() -> sp_consensus_babe::BabeGenesisConfiguration {
+            // The choice of `c` parameter (where `1 - c` represents the
+            // probability of a slot being empty), is done in accordance to the
+            // slot duration and expected target block time, for safely
+            // resisting network delays of maximum two seconds.
+            // <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
+            sp_consensus_babe::BabeGenesisConfiguration {
+                slot_duration: Babe::slot_duration(),
+                epoch_length: EpochDuration::get(),
+                c: BABE_GENESIS_EPOCH_CONFIG.c,
+                genesis_authorities: Babe::authorities().to_vec(),
+                randomness: Babe::randomness(),
+                allowed_slots: BABE_GENESIS_EPOCH_CONFIG.allowed_slots,
+            }
+        }
+
+        fn current_epoch_start() -> sp_consensus_babe::Slot {
+            Babe::current_epoch_start()
+        }
+
+        fn current_epoch() -> sp_consensus_babe::Epoch {
+            Babe::current_epoch()
+        }
+
+        fn next_epoch() -> sp_consensus_babe::Epoch {
+            Babe::next_epoch()
+        }
+
+        fn generate_key_ownership_proof(
+            _slot: sp_consensus_babe::Slot,
+            _authority_id: sp_consensus_babe::AuthorityId,
+        ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
+            None
+        }
+
+        fn submit_report_equivocation_unsigned_extrinsic(
+            _equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
+            _key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
+        ) -> Option<()> {
             None
         }
     }

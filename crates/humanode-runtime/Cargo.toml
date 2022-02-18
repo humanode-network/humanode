@@ -30,7 +30,7 @@ frame-system = { default-features = false, git = "https://github.com/humanode-ne
 frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 hex-literal = { version = "0.3", optional = true }
-pallet-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
@@ -51,7 +51,7 @@ scale-info = { version = "1.0", default-features = false, features = [
 serde = { version = "1", features = ["derive"], optional = true }
 sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-consensus-aura = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -84,11 +84,12 @@ std = [
   "frame-support/std",
   "frame-system/std",
   "frame-system-rpc-runtime-api/std",
-  "pallet-aura/std",
+  "pallet-babe/std",
   "pallet-bioauth/std",
   "pallet-balances/std",
   "pallet-base-fee/std",
   "pallet-ethereum/std",
+  "pallet-ethereum-chain-id/std",
   "pallet-evm/std",
   "pallet-evm-precompile-simple/std",
   "pallet-evm-precompile-sha3fips/std",
@@ -102,7 +103,7 @@ std = [
   "robonode-crypto/std",
   "sp-api/std",
   "sp-block-builder/std",
-  "sp-consensus-aura/std",
+  "sp-consensus-babe/std",
   "sp-core/std",
   "sp-inherents/std",
   "sp-offchain/std",
