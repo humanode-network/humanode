@@ -373,7 +373,7 @@ impl pallet_grandpa::Config for Runtime {
     type HandleEquivocation = ();
 
     type WeightInfo = ();
-    type MaxAuthorities = MaxAuthorities;
+    type MaxAuthorities = MaxAuthentications;
 }
 
 parameter_types! {
@@ -467,8 +467,8 @@ const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
-    pub const MaxAuthentications: u32 = 512;
-    pub const MaxNonces: u32 = 102400;
+    pub const MaxAuthentications: u32 = 20 * 1024;
+    pub const MaxNonces: u32 = MaxAuthentications::get() * 200;
 }
 
 impl pallet_bioauth::Config for Runtime {

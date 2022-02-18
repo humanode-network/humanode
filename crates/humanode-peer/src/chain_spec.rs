@@ -218,7 +218,7 @@ fn testnet_genesis(
             consumed_auth_ticket_nonces,
             active_authentications,
         },
-        ethereum_chain_id: EthereumChainIdConfig { chain_id: 42 },
+        ethereum_chain_id: EthereumChainIdConfig { chain_id: 5234 },
         evm: EVMConfig {
             accounts: {
                 let mut map = BTreeMap::new();

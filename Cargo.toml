@@ -2,6 +2,10 @@
 resolver = "2"
 members = ["crates/*"]
 
+[profile.release-lto]
+inherits = "release"
+lto = "thin"
+
 [patch."https://github.com/paritytech/substrate"]
 frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-support = { git = "https://github.com/humanode-network/substrate", branch = "master" }
