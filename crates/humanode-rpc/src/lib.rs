@@ -2,7 +2,10 @@
 
 use std::sync::Arc;
 
-use bioauth_flow::rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT};
+use bioauth_flow::{
+    rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT},
+    Signer, SignerFactory,
+};
 use humanode_runtime::{opaque::Block, AccountId, Balance, Index, UnixMilliseconds};
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
@@ -11,7 +14,7 @@ use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 
 /// RPC subsystem dependencies.
-pub struct Deps<C, P, VKE> {
+pub struct Deps<C, P, VKE, VSF> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
@@ -24,10 +27,14 @@ pub struct Deps<C, P, VKE> {
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
     /// Extracts the currently used validator key.
     pub validator_key_extractor: VKE,
+    /// A factory for making signers by the validator public keys.
+    pub validator_signer_factory: VSF,
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, VKE>(deps: Deps<C, P, VKE>) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
+pub fn create<C, P, VKE, VSF>(
+    deps: Deps<C, P, VKE, VSF>,
+) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
     C: ProvideRuntimeApi<Block>,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
@@ -36,10 +43,14 @@ where
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
     C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
     C::Api: BlockBuilder<Block>,
-    P: TransactionPool + 'static,
+    P: TransactionPool<Block = Block> + 'static,
     VKE: ValidatorKeyExtractorT + Send + Sync + 'static,
-    VKE::PublicKeyType: Encode,
+    VKE::PublicKeyType: Encode + AsRef<[u8]> + Send + Sync,
     VKE::Error: std::fmt::Debug,
+    VSF: SignerFactory<Vec<u8>, VKE::PublicKeyType> + Send + Sync + 'static,
+    VSF::Signer: Send + Sync + 'static,
+    <<VSF as SignerFactory<Vec<u8>, VKE::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
+        std::error::Error + 'static,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
@@ -52,11 +63,12 @@ where
         robonode_client,
         bioauth_flow_slot,
         validator_key_extractor,
+        validator_signer_factory,
     } = deps;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
         Arc::clone(&client),
-        pool,
+        Arc::clone(&pool),
         deny_unsafe,
     )));
 
@@ -68,7 +80,9 @@ where
         robonode_client,
         bioauth_flow_slot,
         validator_key_extractor,
+        validator_signer_factory,
         Arc::clone(&client),
+        Arc::clone(&pool),
     )));
 
     io
