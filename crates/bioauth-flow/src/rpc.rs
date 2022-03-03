@@ -31,6 +31,33 @@ pub type FutureResult<T> = jsonrpc_core::BoxFuture<Result<T>>;
 /// The parameters necessary to initialize the FaceTec Device SDK.
 type FacetecDeviceSdkParams = Map<String, Value>;
 
+/// The context provided alongside all rpc errors.
+#[derive(Debug, Serialize)]
+struct ErrorContext {
+    /// Indicates whether or not this error warrants a retry.
+    should_retry: bool,
+}
+
+impl ErrorContext {
+    /// Try to convert to a `Value`.
+    ///
+    /// If it fails, the error is logged and `None` is returned.  Result isn't used here because
+    /// option is easier to work with, and we are logically ignoring the error anyways. Error
+    /// context is non-critical, and shouldn't fail the entire request because of it.
+    fn into_value(self) -> Option<Value> {
+        // We could feasibly unwrap the value here without issue, however if some future
+        // change breaks it, there's not much sense in failing completely for something
+        // non-critical like error context (at the moment at least).
+        match serde_json::to_value(self) {
+            Ok(val) => Some(val),
+            Err(err) => {
+                error!("RPC error context failed to serialize: {:?}", err);
+                None
+            }
+        }
+    }
+}
+
 /// The bioauth status as used in the RPC.
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum BioauthStatus<Timestamp> {
@@ -341,7 +368,7 @@ where
             .map_err(|err| RpcError {
                 code: ErrorCode::InternalError,
                 message: format!("request to the robonode failed: {}", err),
-                data: None,
+                data: ErrorContext { should_retry: false }.into_value(),
             })?;
         Ok(res)
     }
@@ -356,7 +383,7 @@ where
             .map_err(|err| RpcError {
                 code: ErrorCode::InternalError,
                 message: format!("request to the robonode failed: {}", err),
-                data: None,
+                data: ErrorContext { should_retry: false }.into_value(),
             })?;
         Ok(res.session_token)
     }
@@ -370,12 +397,12 @@ where
         let tx = maybe_tx.ok_or_else(|| RpcError {
             code: ErrorCode::InternalError,
             message: "Flow is not engaged, unable to accept liveness data".into(),
-            data: None,
+            data: ErrorContext { should_retry: false }.into_value(),
         })?;
         tx.send(liveness_data).map_err(|_| RpcError {
             code: ErrorCode::InternalError,
             message: "Flow was aborted before the liveness data could be submitted".into(),
-            data: None,
+            data: ErrorContext { should_retry: false }.into_value(),
         })?;
         Ok(())
     }
@@ -397,7 +424,7 @@ where
             .map_err(|err| RpcError {
                 code: ErrorCode::InternalError,
                 message: format!("Unable to get status from the runtime: {}", err),
-                data: None,
+                data: ErrorContext { should_retry: false }.into_value(),
             })?;
 
         Ok(status.into())
@@ -412,7 +439,7 @@ where
         let public_key = self.validator_public_key()?.ok_or(RpcError {
             code: ErrorCode::InternalError,
             message: "Validator key not available".to_string(),
-            data: None,
+            data: ErrorContext { should_retry: false }.into_value(),
         })?;
         self.robonode_client
             .as_ref()
@@ -422,11 +449,21 @@ where
                 public_key: public_key.as_ref(),
             })
             .await
-            .map_err(|err| RpcError {
-                code: ErrorCode::InternalError,
-                message: format!("request to the robonode failed: {}", err),
-                data: None,
-            })?;
+            .map_err(|err| {
+                    let should_retry = matches!(
+                        err,
+                        robonode_client::Error::Call(
+                            robonode_client::EnrollError::FaceScanRejected
+                        )
+                    );
+
+                    RpcError {
+                        code: ErrorCode::InternalError,
+                        message: format!("request to the robonode failed: {}", err),
+                        data: ErrorContext { should_retry }.into_value(),
+                    }
+                }
+            )?;
 
         info!("Bioauth flow - enrolling complete");
 
@@ -448,11 +485,21 @@ where
                 liveness_data_signature: signature.as_ref(),
             })
             .await
-            .map_err(|err| RpcError {
-                code: ErrorCode::InternalError,
-                message: format!("request to the robonode failed: {}", err),
-                data: None,
-            })?;
+            .map_err(|err| {
+                    let should_retry = matches!(
+                        err,
+                        robonode_client::Error::Call(
+                            robonode_client::AuthenticateError::FaceScanRejected
+                        )
+                    );
+
+                    RpcError {
+                        code: ErrorCode::InternalError,
+                        message: format!("request to the robonode failed: {}", err),
+                        data: ErrorContext { should_retry }.into_value(),
+                    }
+                }
+            )?;
 
         info!("Bioauth flow - authentication complete");
 
@@ -471,7 +518,7 @@ where
             .map_err(|err| RpcError {
                 code: ErrorCode::InternalError,
                 message: format!("Error creating auth extrinsic: {}", err),
-                data: None,
+                data: ErrorContext { should_retry: false }.into_value(),
             })?;
 
         self.pool
@@ -484,7 +531,7 @@ where
             .map_err(|e| RpcError {
                 code: ErrorCode::InternalError,
                 message: format!("Transaction failed: {}", e),
-                data: None,
+                data: ErrorContext { should_retry: false }.into_value(),
             })?;
 
         info!("Bioauth flow - authenticate transaction complete");
@@ -505,7 +552,7 @@ where
                 RpcError {
                     code: ErrorCode::InternalError,
                     message: "Unable to extract own key".into(),
-                    data: None,
+                    data: ErrorContext { should_retry: false }.into_value(),
                 }
             })
 
@@ -517,7 +564,7 @@ where
         let validator_key = self.validator_public_key()?.ok_or(RpcError {
             code: ErrorCode::InternalError,
             message: "Validator key not available".to_string(),
-            data: None,
+            data: ErrorContext { should_retry: false }.into_value(),
         })?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
@@ -532,7 +579,7 @@ where
                 RpcError {
                     code: ErrorCode::InternalError,
                     message: "Signing failed".to_string(),
-                    data: None,
+                    data: ErrorContext { should_retry: false }.into_value(),
                 }
             })?;
 
