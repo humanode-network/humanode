@@ -1,7 +1,4 @@
-//! The runtime API for the bioauth flow.
-//!
-//! Intended for powering the bioauth flow UI with the up-to-date information regarding
-//! the bioauth state of the node from the chain.
+//! The runtime API for the bioauth id related logic.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
