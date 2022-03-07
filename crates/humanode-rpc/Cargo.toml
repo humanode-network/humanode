@@ -7,6 +7,7 @@ publish = false
 [dependencies]
 bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
+bioauth-id-api = { version = "0.1", path = "../bioauth-id-api" }
 frontier-api = { version = "0.1", path = "../frontier-api" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 primitives-frontier = { version = "0.1", path = "../primitives-frontier" }

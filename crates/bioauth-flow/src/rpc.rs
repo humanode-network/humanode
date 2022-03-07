@@ -5,6 +5,7 @@ use std::sync::Arc;
 
 pub use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
 use bioauth_flow_api::BioauthFlowApi;
+use bioauth_id_api::BioauthIdApi;
 use futures::channel::oneshot;
 use futures::lock::BiLock;
 use futures::FutureExt;
@@ -96,6 +97,7 @@ pub fn new_liveness_data_tx_slot() -> (LivenessDataTxSlot, LivenessDataTxSlot) {
 /// The RPC implementation.
 pub struct Bioauth<
     RobonodeClient,
+    BioauthId,
     ValidatorKeyExtractor,
     ValidatorSignerFactory,
     Client,
@@ -107,9 +109,11 @@ pub struct Bioauth<
     /// We have to wrap it with `Arc` because `jsonrpc-core` doesn't allow us to use `self` for
     /// the duration of the future; we `clone` the `Arc` to get the `'static` lifetime to
     /// a shared `Inner` instead.
+    #[allow(clippy::type_complexity)]
     inner: Arc<
         Inner<
             RobonodeClient,
+            BioauthId,
             ValidatorKeyExtractor,
             ValidatorSignerFactory,
             Client,
@@ -122,6 +126,7 @@ pub struct Bioauth<
 
 impl<
         RobonodeClient,
+        BioauthId,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -131,6 +136,7 @@ impl<
     >
     Bioauth<
         RobonodeClient,
+        BioauthId,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -171,6 +177,7 @@ impl<
             Arc<
                 Inner<
                     RobonodeClient,
+                    BioauthId,
                     ValidatorKeyExtractor,
                     ValidatorSignerFactory,
                     Client,
@@ -190,6 +197,7 @@ impl<
 
 impl<
         RobonodeClient,
+        BioauthId,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -199,6 +207,7 @@ impl<
     > BioauthApi<Timestamp>
     for Bioauth<
         RobonodeClient,
+        BioauthId,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -208,6 +217,7 @@ impl<
     >
 where
     RobonodeClient: Send + Sync + 'static,
+    BioauthId: Send + Sync + 'static,
     ValidatorKeyExtractor: Send + Sync + 'static,
     ValidatorKeyExtractor::PublicKeyType: Send + Sync + 'static,
     ValidatorSignerFactory: Send + Sync + 'static,
@@ -227,10 +237,12 @@ where
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
+    Client::Api: bioauth_id_api::BioauthIdApi<Block, ValidatorKeyExtractor::PublicKeyType, BioauthId>,
     Client::Api:
-        bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+        bioauth_flow_api::BioauthFlowApi<Block, BioauthId, Timestamp>,
     Block: BlockT,
     Timestamp: Encode + Decode,
+    BioauthId: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
     /// See [`Inner::get_facetec_device_sdk_params`].
@@ -271,6 +283,7 @@ where
 /// See https://github.com/paritytech/jsonrpc/issues/580
 struct Inner<
     RobonodeClient,
+    BioauthId,
     ValidatorKeyExtractor,
     ValidatorSignerFactory,
     Client,
@@ -293,11 +306,12 @@ struct Inner<
     /// The transaction pool to use.
     pool: Arc<TransactionPool>,
     /// The phantom types.
-    phantom_types: PhantomData<(Block, Timestamp)>,
+    phantom_types: PhantomData<(Block, Timestamp, BioauthId)>,
 }
 
 impl<
         RobonodeClient,
+        BioauthId,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -307,6 +321,7 @@ impl<
     >
     Inner<
         RobonodeClient,
+        BioauthId,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -325,10 +340,12 @@ where
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
+    Client::Api: bioauth_id_api::BioauthIdApi<Block, ValidatorKeyExtractor::PublicKeyType, BioauthId>,
     Client::Api:
-        bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+        bioauth_flow_api::BioauthFlowApi<Block, BioauthId, Timestamp>,
     Block: BlockT,
     Timestamp: Encode + Decode,
+    BioauthId: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
     /// Get the FaceTec Device SDK parameters to use at the device.
@@ -390,10 +407,19 @@ where
         // Extract an id of the last imported block.
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
+        let bioauth_id = self
+            .client
+            .runtime_api()
+            .extract_bioauth_id(&at, &own_key).map_err(|err| RpcError {
+                code: ErrorCode::InternalError,
+                message: format!("Unable to extract bioauth id from the runtime: {}", err),
+                data: None,
+            })?;
+
         let status = self
             .client
             .runtime_api()
-            .bioauth_status(&at, &own_key)
+            .bioauth_status(&at, &bioauth_id)
             .map_err(|err| RpcError {
                 code: ErrorCode::InternalError,
                 message: format!("Unable to get status from the runtime: {}", err),
