@@ -2589,6 +2589,7 @@ version = "0.1.0"
 dependencies = [
  "bioauth-consensus-api",
  "bioauth-flow-api",
+ "bioauth-id-api",
  "chrono",
  "fp-rpc",
  "fp-self-contained",

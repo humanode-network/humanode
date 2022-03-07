@@ -11,6 +11,7 @@ substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate"
 [dependencies]
 bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", default-features = false }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
+bioauth-id-api = { version = "0.1", path = "../bioauth-id-api", default-features = false }
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
@@ -78,6 +79,7 @@ runtime-benchmarks = [
 std = [
   "bioauth-consensus-api/std",
   "bioauth-flow-api/std",
+  "bioauth-id-api/std",
   "primitives-auth-ticket/std",
   "chrono/std",
   "codec/std",

@@ -780,6 +780,12 @@ impl_runtime_apis! {
         }
     }
 
+    impl bioauth_id_api::BioauthIdApi<Block, BabeId, AccountId> for Runtime {
+        fn extract_bioauth_id(id: &BabeId) -> AccountId {
+            <Signature as Verify>::Signer::from(sr25519::Public::from(id.clone())).into_account()
+        }
+    }
+
     impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
         fn is_authorized(id: &BabeId) -> bool {
             let account_id = <Signature as Verify>::Signer::from(sr25519::Public::from(id.clone())).into_account();
