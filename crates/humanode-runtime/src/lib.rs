@@ -18,6 +18,7 @@ use pallet_evm::{Account as EVMAccount, EnsureAddressTruncated, HashedAddressMap
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
+use pallet_session::historical as pallet_session_historical;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -28,12 +29,13 @@ use sp_core::{
     crypto::{KeyTypeId, Public},
     OpaqueMetadata, H160, H256, U256,
 };
-use sp_runtime::traits::{
-    AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify,
-};
+use sp_runtime::app_crypto::sr25519;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
-    traits::{Dispatchable, PostDispatchInfoOf},
+    traits::{
+        AccountIdLookup, BlakeTwo256, Block as BlockT, Dispatchable, IdentifyAccount, NumberFor,
+        OpaqueKeys, PostDispatchInfoOf, Verify,
+    },
     transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
     ApplyExtrinsicResult, MultiSignature,
 };
@@ -299,48 +301,13 @@ parameter_types! {
     pub const MaxAuthorities: u32 = 512;
 }
 
-/// A struct signifying to BABE that it should perform epoch changes.
-pub struct BioauthEpochChangeTrigger;
-
-impl pallet_babe::EpochChangeTrigger for BioauthEpochChangeTrigger {
-    fn trigger<Runtime: frame_system::Config + pallet_babe::Config>(
-        now: <Runtime as frame_system::Config>::BlockNumber,
-    ) {
-        if pallet_babe::Pallet::<Runtime>::should_epoch_change(now) {
-            let authorities = pallet_babe::Pallet::<Runtime>::next_epoch().authorities;
-            let bounded_authorities =
-                WeakBoundedVec::<_, <Runtime as pallet_babe::Config>::MaxAuthorities>::force_from(
-                    authorities,
-                    Some("runtime::bioauth_epoch_change_trigger"),
-                );
-
-            let next_authorities = Bioauth::active_authentications()
-                .into_inner()
-                .iter()
-                .map(|authentication| (authentication.public_key.clone(), 1))
-                .collect::<Vec<_>>();
-
-            let bounded_next_authorities =
-                WeakBoundedVec::<_, <Runtime as pallet_babe::Config>::MaxAuthorities>::force_from(
-                    next_authorities,
-                    Some("runtime::bioauth_epoch_change_trigger"),
-                );
-
-            pallet_babe::Pallet::<Runtime>::enact_epoch_change(
-                bounded_authorities,
-                bounded_next_authorities,
-            );
-        }
-    }
-}
-
 impl pallet_babe::Config for Runtime {
     type EpochDuration = EpochDuration;
     type ExpectedBlockTime = ExpectedBlockTime;
-    type EpochChangeTrigger = BioauthEpochChangeTrigger;
+    type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = ();
 
-    type KeyOwnerProofSystem = ();
+    type KeyOwnerProofSystem = Historical;
 
     type KeyOwnerProof =
         <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, BabeId)>>::Proof;
@@ -356,11 +323,94 @@ impl pallet_babe::Config for Runtime {
     type MaxAuthorities = MaxAuthorities;
 }
 
+pub struct BioauthSessionManager;
+
+impl
+    pallet_session::historical::SessionManager<
+        AccountId,
+        pallet_bioauth::Authentication<AccountId, UnixMilliseconds>,
+    > for BioauthSessionManager
+{
+    fn new_session(
+        _new_index: u32,
+    ) -> Option<
+        Vec<(
+            AccountId,
+            pallet_bioauth::Authentication<AccountId, UnixMilliseconds>,
+        )>,
+    > {
+        let next_authorities_data = Bioauth::active_authentications()
+            .into_inner()
+            .iter()
+            .map(|authentication| (authentication.public_key.clone(), authentication.clone()))
+            .collect::<Vec<_>>();
+
+        if next_authorities_data.is_empty() {
+            None
+        } else {
+            Some(next_authorities_data)
+        }
+    }
+
+    fn start_session(start_index: u32) {
+        <Self as pallet_session::SessionManager<_>>::start_session(start_index)
+    }
+
+    fn end_session(end_index: u32) {
+        <Self as pallet_session::SessionManager<_>>::end_session(end_index)
+    }
+}
+
+impl pallet_session::SessionManager<AccountId> for BioauthSessionManager {
+    fn new_session(_new_index: u32) -> Option<Vec<AccountId>> {
+        let next_authorities = Bioauth::active_authentications()
+            .into_inner()
+            .iter()
+            .map(|authentication| authentication.public_key.clone())
+            .collect::<Vec<_>>();
+
+        if next_authorities.is_empty() {
+            None
+        } else {
+            Some(next_authorities)
+        }
+    }
+
+    fn end_session(_end_index: u32) {}
+
+    fn start_session(_start_index: u32) {}
+}
+
+pub struct IdentityConverter;
+impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for IdentityConverter {
+    fn convert(account_id: AccountId) -> Option<AccountId> {
+        Some(account_id)
+    }
+}
+
+impl pallet_session::Config for Runtime {
+    type Event = Event;
+    type ValidatorId = AccountId;
+    type ValidatorIdOf = IdentityConverter;
+    type ShouldEndSession = Babe;
+    type NextSessionRotation = Babe;
+    type SessionManager =
+        pallet_session::historical::NoteHistoricalRoot<Self, BioauthSessionManager>;
+    type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+    type Keys = opaque::SessionKeys;
+    type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
+}
+
+impl pallet_session::historical::Config for Runtime {
+    type FullIdentification = pallet_bioauth::Authentication<AccountId, UnixMilliseconds>;
+    type FullIdentificationOf = ();
+}
+
 impl pallet_grandpa::Config for Runtime {
     type Event = Event;
     type Call = Call;
 
-    type KeyOwnerProofSystem = ();
+    type KeyOwnerProofSystem = Historical;
 
     type KeyOwnerProof =
         <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
@@ -429,14 +479,14 @@ pub enum PrimitiveAuthTicketConverterError {
     PublicKey(()),
 }
 
-impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<BabeId>>
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<AccountId>>
     for PrimitiveAuthTicketConverter
 {
     type Error = PrimitiveAuthTicketConverterError;
 
     fn try_convert(
         value: OpaqueAuthTicket,
-    ) -> Result<pallet_bioauth::AuthTicket<BabeId>, Self::Error> {
+    ) -> Result<pallet_bioauth::AuthTicket<AccountId>, Self::Error> {
         let primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce: nonce,
@@ -475,7 +525,7 @@ impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
     type RobonodeSignature = Vec<u8>;
-    type ValidatorPublicKey = BabeId;
+    type ValidatorPublicKey = AccountId;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = ();
@@ -582,6 +632,8 @@ construct_runtime!(
         Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
+        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
+        Historical: pallet_session_historical::{Pallet},
         EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
         Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
@@ -730,18 +782,20 @@ impl_runtime_apis! {
 
     impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
         fn is_authorized(id: &BabeId) -> bool {
+            let account_id = <Signature as Verify>::Signer::from(sr25519::Public::from(id.clone())).into_account();
             Bioauth::active_authentications().into_inner()
                 .iter()
-                .any(|stored_public_key| &stored_public_key.public_key == id)
+                .any(|stored_public_key| &stored_public_key.public_key == &account_id)
         }
     }
 
     impl bioauth_flow_api::BioauthFlowApi<Block, BabeId, UnixMilliseconds> for Runtime {
         fn bioauth_status(id: &BabeId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+            let account_id = <Signature as Verify>::Signer::from(sr25519::Public::from(id.clone())).into_account();
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()
-                .find(|stored_public_key| &stored_public_key.public_key == id);
+                .find(|stored_public_key| &stored_public_key.public_key == &account_id);
             match maybe_active_authentication {
                 None => bioauth_flow_api::BioauthStatus::Inactive,
                 Some(v) => bioauth_flow_api::BioauthStatus::Active {
@@ -798,23 +852,29 @@ impl_runtime_apis! {
         }
 
         fn submit_report_equivocation_unsigned_extrinsic(
-            _equivocation_proof: fg_primitives::EquivocationProof<
+            equivocation_proof: fg_primitives::EquivocationProof<
                 <Block as BlockT>::Hash,
                 NumberFor<Block>,
             >,
-            _key_owner_proof: fg_primitives::OpaqueKeyOwnershipProof,
+            key_owner_proof: fg_primitives::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
-            None
+            let key_owner_proof = key_owner_proof.decode()?;
+
+            Grandpa::submit_unsigned_equivocation_report(
+                equivocation_proof,
+                key_owner_proof,
+            )
         }
 
         fn generate_key_ownership_proof(
             _set_id: fg_primitives::SetId,
-            _authority_id: GrandpaId,
+            authority_id: GrandpaId,
         ) -> Option<fg_primitives::OpaqueKeyOwnershipProof> {
-            // NOTE: this is the only implementation possible since we've
-            // defined our key owner proof type as a bottom type (i.e. a type
-            // with no values).
-            None
+            use codec::Encode;
+
+            Historical::prove((fg_primitives::KEY_TYPE, authority_id))
+                .map(|p| p.encode())
+                .map(fg_primitives::OpaqueKeyOwnershipProof::new)
         }
     }
 
@@ -850,16 +910,25 @@ impl_runtime_apis! {
 
         fn generate_key_ownership_proof(
             _slot: sp_consensus_babe::Slot,
-            _authority_id: sp_consensus_babe::AuthorityId,
+            authority_id: sp_consensus_babe::AuthorityId,
         ) -> Option<sp_consensus_babe::OpaqueKeyOwnershipProof> {
-            None
+            use codec::Encode;
+
+            Historical::prove((sp_consensus_babe::KEY_TYPE, authority_id))
+                .map(|p| p.encode())
+                .map(sp_consensus_babe::OpaqueKeyOwnershipProof::new)
         }
 
         fn submit_report_equivocation_unsigned_extrinsic(
-            _equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
-            _key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
+            equivocation_proof: sp_consensus_babe::EquivocationProof<<Block as BlockT>::Header>,
+            key_owner_proof: sp_consensus_babe::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
-            None
+            let key_owner_proof = key_owner_proof.decode()?;
+
+            Babe::submit_unsigned_equivocation_report(
+                equivocation_proof,
+                key_owner_proof,
+            )
         }
     }
 

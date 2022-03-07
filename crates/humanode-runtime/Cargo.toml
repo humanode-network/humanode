@@ -41,6 +41,9 @@ pallet-evm-precompile-sha3fips = { default-features = false, git = "https://gith
 pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-session = { default-features = false, features = [
+  "historical",
+], git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -96,6 +99,7 @@ std = [
   "pallet-dynamic-fee/std",
   "pallet-grandpa/std",
   "pallet-randomness-collective-flip/std",
+  "pallet-session/std",
   "pallet-sudo/std",
   "pallet-timestamp/std",
   "pallet-transaction-payment/std",
