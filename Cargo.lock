@@ -443,6 +443,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "bioauth-consensus-api",
+ "bioauth-id-api",
  "futures 0.3.19",
  "mockall",
  "node-primitives",

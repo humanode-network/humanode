@@ -786,12 +786,11 @@ impl_runtime_apis! {
         }
     }
 
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
-        fn is_authorized(id: &BabeId) -> bool {
-            let account_id = <Signature as Verify>::Signer::from(sr25519::Public::from(id.clone())).into_account();
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, AccountId> for Runtime {
+        fn is_authorized(id: &AccountId) -> bool {
             Bioauth::active_authentications().into_inner()
                 .iter()
-                .any(|stored_public_key| &stored_public_key.public_key == &account_id)
+                .any(|stored_public_key| &stored_public_key.public_key == id)
         }
     }
 
