@@ -2,9 +2,9 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, BabeConfig, BalancesConfig, BioauthConfig, EVMConfig, EthereumChainIdConfig,
-    EthereumConfig, GenesisConfig, GrandpaConfig, RobonodePublicKeyWrapper, Signature, SudoConfig,
-    SystemConfig, UnixMilliseconds, WASM_BINARY,
+    opaque::SessionKeys, AccountId, BabeConfig, BalancesConfig, BioauthConfig, EVMConfig,
+    EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig, RobonodePublicKeyWrapper,
+    SessionConfig, Signature, SudoConfig, SystemConfig, UnixMilliseconds, WASM_BINARY,
 };
 use pallet_bioauth::{AuthTicketNonce, Authentication};
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -54,8 +54,13 @@ where
 }
 
 /// Generate consensus authority keys.
-pub fn authority_keys_from_seed(s: &str) -> (BabeId, GrandpaId) {
-    (get_from_seed::<BabeId>(s), get_from_seed::<GrandpaId>(s))
+pub fn authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, BabeId, GrandpaId) {
+    (
+        get_account_id_from_seed::<sr25519::Public>(&format!("{}//stash", seed)),
+        get_account_id_from_seed::<sr25519::Public>(seed),
+        get_from_seed::<BabeId>(seed),
+        get_from_seed::<GrandpaId>(seed),
+    )
 }
 
 /// An expires at value that guarantees the authentication never expires.
@@ -105,7 +110,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 robonode_public_key,
                 vec![],
                 vec![pallet_bioauth::Authentication {
-                    public_key: authority_keys_from_seed("Alice").0,
+                    public_key: authority_keys_from_seed("Alice").1,
                     expires_at: AUTHENTICATION_NEVER_EXPIRES,
                 }],
             )
@@ -155,7 +160,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 robonode_public_key,
                 vec![],
                 vec![pallet_bioauth::Authentication {
-                    public_key: authority_keys_from_seed("Alice").0,
+                    public_key: authority_keys_from_seed("Alice").1,
                     expires_at: AUTHENTICATION_NEVER_EXPIRES,
                 }],
             )
@@ -176,12 +181,12 @@ pub fn development_config() -> Result<ChainSpec, String> {
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
-    initial_authorities: Vec<(BabeId, GrandpaId)>,
+    initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     robonode_public_key: RobonodePublicKeyWrapper,
     consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
-    active_authentications: Vec<Authentication<BabeId, UnixMilliseconds>>,
+    active_authentications: Vec<Authentication<AccountId, UnixMilliseconds>>,
 ) -> GenesisConfig {
     GenesisConfig {
         system: SystemConfig {
@@ -196,18 +201,27 @@ fn testnet_genesis(
                 .map(|k| (k, 1 << 60))
                 .collect(),
         },
-        babe: BabeConfig {
-            authorities: initial_authorities
+        session: SessionConfig {
+            keys: initial_authorities
                 .iter()
-                .map(|x| (x.0.clone(), 1))
-                .collect(),
+                .map(|x| {
+                    (
+                        x.0.clone(),
+                        x.1.clone(),
+                        SessionKeys {
+                            babe: x.2.clone(),
+                            grandpa: x.3.clone(),
+                        },
+                    )
+                })
+                .collect::<Vec<_>>(),
+        },
+        babe: BabeConfig {
+            authorities: vec![],
             epoch_config: Some(humanode_runtime::BABE_GENESIS_EPOCH_CONFIG),
         },
         grandpa: GrandpaConfig {
-            authorities: initial_authorities
-                .iter()
-                .map(|x| (x.1.clone(), 1))
-                .collect(),
+            authorities: vec![],
         },
         sudo: SudoConfig {
             // Assign network admin rights.
