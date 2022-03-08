@@ -30,8 +30,8 @@ pub enum AuthorizationVerifierError {
     /// provided ValidatorId.
     #[error("unable to extract bioauth id based on provided validator id: {0}")]
     UnableToExtractBioauthId(sp_api::ApiError),
-    /// BioauthId has't been found based on provided validator id.
-    #[error("unable to obtaion the slot from the block header")]
+    /// BioauthId has't been found based on provided ValidatorId.
+    #[error("a corresponding bioauth id hasn't been found")]
     BioauthIdNotFound,
 }
 
@@ -83,7 +83,7 @@ where
         let bioauth_id = self
             .client
             .runtime_api()
-            .extract_bioauth_id(at, validator_id)
+            .find_bioauth_id(at, validator_id)
             .map_err(AuthorizationVerifierError::UnableToExtractBioauthId)?
             .ok_or(AuthorizationVerifierError::BioauthIdNotFound)?;
 
@@ -111,7 +111,7 @@ mod tests {
     mock! {
         RuntimeApi {
             fn is_authorized(&self, at: &sp_api::BlockId<Block>, id: &MockBioauthId) -> Result<NativeOrEncoded<bool>, ApiError>;
-            fn extract_bioauth_id(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<MockBioauthId>, ApiError>;
+            fn find_bioauth_id(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<MockBioauthId>, ApiError>;
         }
     }
 
@@ -129,8 +129,8 @@ mod tests {
 
         impl bioauth_id_api::BioauthIdApi<Block, MockPublicKeyType, MockBioauthId> for MockWrapperRuntimeApi {
             #[advanced]
-            fn extract_bioauth_id(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<MockBioauthId>, ApiError> {
-                self.0.extract_bioauth_id(at, id)
+            fn find_bioauth_id(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<MockBioauthId>, ApiError> {
+                self.0.find_bioauth_id(at, id)
             }
         }
     }
@@ -154,7 +154,7 @@ mod tests {
 
         let mut mock_runtime_api = MockRuntimeApi::new();
         mock_runtime_api
-            .expect_extract_bioauth_id()
+            .expect_find_bioauth_id()
             .returning(|_, _| Ok(NativeOrEncoded::from(())));
         mock_runtime_api
             .expect_is_authorized()
@@ -197,7 +197,7 @@ mod tests {
 
         let mut mock_runtime_api = MockRuntimeApi::new();
         mock_runtime_api
-            .expect_extract_bioauth_id()
+            .expect_find_bioauth_id()
             .returning(|_, _| Ok(NativeOrEncoded::from(())));
         mock_runtime_api
             .expect_is_authorized()
@@ -239,7 +239,7 @@ mod tests {
 
         let mut mock_runtime_api = MockRuntimeApi::new();
         mock_runtime_api
-            .expect_extract_bioauth_id()
+            .expect_find_bioauth_id()
             .returning(|_, _| Ok(NativeOrEncoded::from(())));
         mock_runtime_api.expect_is_authorized().returning(|_, _| {
             Err((Box::from("Test error") as Box<dyn std::error::Error + Send + Sync>).into())
@@ -290,11 +290,9 @@ mod tests {
         let mut mock_client = MockClient::new();
 
         let mut mock_runtime_api = MockRuntimeApi::new();
-        mock_runtime_api
-            .expect_extract_bioauth_id()
-            .returning(|_, _| {
-                Err((Box::from("Test error") as Box<dyn std::error::Error + Send + Sync>).into())
-            });
+        mock_runtime_api.expect_find_bioauth_id().returning(|_, _| {
+            Err((Box::from("Test error") as Box<dyn std::error::Error + Send + Sync>).into())
+        });
 
         let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
 

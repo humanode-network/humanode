@@ -781,7 +781,7 @@ impl_runtime_apis! {
     }
 
     impl bioauth_id_api::BioauthIdApi<Block, BabeId, AccountId> for Runtime {
-        fn extract_bioauth_id(id: &BabeId) -> Option<AccountId> {
+        fn find_bioauth_id(id: &BabeId) -> Option<AccountId> {
             Session::key_owner(BabeId::ID, id.as_slice())
         }
     }

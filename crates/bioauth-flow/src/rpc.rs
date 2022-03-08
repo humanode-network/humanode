@@ -410,7 +410,7 @@ where
         let bioauth_id = self
             .client
             .runtime_api()
-            .extract_bioauth_id(&at, &own_key).map_err(|err| RpcError {
+            .find_bioauth_id(&at, &own_key).map_err(|err| RpcError {
                 code: ErrorCode::InternalError,
                 message: format!("Unable to extract bioauth id from the runtime: {}", err),
                 data: None,
