@@ -39,7 +39,7 @@ struct ErrorContext {
 }
 
 impl ErrorContext {
-    /// Try to convert to a `Value`.
+    /// Try to convert to a [`Value`].
     ///
     /// If it fails, the error is logged and `None` is returned.  Result isn't used here because
     /// option is easier to work with, and we are logically ignoring the error anyways. Error
