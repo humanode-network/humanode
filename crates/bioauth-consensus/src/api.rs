@@ -111,7 +111,7 @@ mod tests {
     mock! {
         RuntimeApi {
             fn is_authorized(&self, at: &sp_api::BlockId<Block>, id: &MockBioauthId) -> Result<NativeOrEncoded<bool>, ApiError>;
-            fn find_bioauth_id(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<MockBioauthId>, ApiError>;
+            fn find_bioauth_id(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<Option<MockBioauthId>>, ApiError>;
         }
     }
 
@@ -129,7 +129,7 @@ mod tests {
 
         impl bioauth_id_api::BioauthIdApi<Block, MockPublicKeyType, MockBioauthId> for MockWrapperRuntimeApi {
             #[advanced]
-            fn find_bioauth_id(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<MockBioauthId>, ApiError> {
+            fn find_bioauth_id(&self, at: &sp_api::BlockId<Block>, id: &MockPublicKeyType) -> Result<NativeOrEncoded<Option<MockBioauthId>>, ApiError> {
                 self.0.find_bioauth_id(at, id)
             }
         }
@@ -146,7 +146,7 @@ mod tests {
         }
     }
 
-    /// This test verifies authorization success when a respective runtime_api calls (extract_bioauth_id, is_authorized)
+    /// This test verifies authorization success when a respective runtime_api calls (find_bioauth_id, is_authorized)
     /// succeed and the provided id is authorized.
     #[test]
     fn success() {
@@ -155,7 +155,7 @@ mod tests {
         let mut mock_runtime_api = MockRuntimeApi::new();
         mock_runtime_api
             .expect_find_bioauth_id()
-            .returning(|_, _| Ok(NativeOrEncoded::from(())));
+            .returning(|_, _| Ok(NativeOrEncoded::from(Some(()))));
         mock_runtime_api
             .expect_is_authorized()
             .returning(|_, _| Ok(NativeOrEncoded::from(true)));
@@ -189,7 +189,54 @@ mod tests {
         assert!(res.unwrap());
     }
 
-    /// This test verifies authorization failure when a respective runtime_api calls (extract_bioauth_id, is_authorized)
+    /// This test verifies authorization failure when a respective runtime_api call find_bioauth_id
+    /// succeeds, but the corresponding bioauth id hasn't beed found.
+    #[test]
+    fn error_bioauth_id_not_found() {
+        let mut mock_client = MockClient::new();
+
+        let mut mock_runtime_api = MockRuntimeApi::new();
+        mock_runtime_api
+            .expect_find_bioauth_id()
+            .returning(|_, _| Ok(NativeOrEncoded::from(None)));
+
+        let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
+
+        mock_client
+            .expect_runtime_api()
+            .returning(move || runtime_api.clone().into());
+
+        let client = Arc::new(mock_client);
+
+        let authorization_verifier: AuthorizationVerifier<
+            Block,
+            _,
+            MockPublicKeyType,
+            MockBioauthId,
+        > = AuthorizationVerifier::new(Arc::clone(&client));
+
+        let res = crate::AuthorizationVerifier::is_authorized(
+            &authorization_verifier,
+            &sp_api::BlockId::Number(0),
+            &MockPublicKeyType::default(),
+        );
+
+        // Drop the test object and all the mocks in it, effectively running the mock assertions.
+        drop(authorization_verifier);
+        // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
+        drop(Arc::try_unwrap(client).unwrap());
+
+        match res.unwrap_err() {
+            AuthorizationVerifierError::BioauthIdNotFound => {}
+            ref e => panic!(
+                "assertion failed: `{:?}` does not match `{}`",
+                e,
+                stringify!(AuthorizationVerifierError::BioauthIdNotFound)
+            ),
+        }
+    }
+
+    /// This test verifies authorization failure when a respective runtime_api calls (find_bioauth_id, is_authorized)
     /// succeed, but the provided id isn't authorized.
     #[test]
     fn error_id_not_bioauth_authorized() {
@@ -198,7 +245,7 @@ mod tests {
         let mut mock_runtime_api = MockRuntimeApi::new();
         mock_runtime_api
             .expect_find_bioauth_id()
-            .returning(|_, _| Ok(NativeOrEncoded::from(())));
+            .returning(|_, _| Ok(NativeOrEncoded::from(Some(()))));
         mock_runtime_api
             .expect_is_authorized()
             .returning(|_, _| Ok(NativeOrEncoded::from(false)));
@@ -240,7 +287,7 @@ mod tests {
         let mut mock_runtime_api = MockRuntimeApi::new();
         mock_runtime_api
             .expect_find_bioauth_id()
-            .returning(|_, _| Ok(NativeOrEncoded::from(())));
+            .returning(|_, _| Ok(NativeOrEncoded::from(Some(()))));
         mock_runtime_api.expect_is_authorized().returning(|_, _| {
             Err((Box::from("Test error") as Box<dyn std::error::Error + Send + Sync>).into())
         });
@@ -284,9 +331,9 @@ mod tests {
         }
     }
 
-    /// This test verifies authorization failure when a respective runtime_api call (extract_bioauth_id) fails.
+    /// This test verifies authorization failure when a respective runtime_api call (find_bioauth_id) fails.
     #[test]
-    fn runtime_extract_bioauth_id_error() {
+    fn runtime_find_bioauth_id_error() {
         let mut mock_client = MockClient::new();
 
         let mut mock_runtime_api = MockRuntimeApi::new();
