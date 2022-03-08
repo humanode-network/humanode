@@ -24,12 +24,12 @@ use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
+use sp_application_crypto::AppKey;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{
     crypto::{KeyTypeId, Public},
     OpaqueMetadata, H160, H256, U256,
 };
-use sp_runtime::app_crypto::sr25519;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
@@ -781,8 +781,8 @@ impl_runtime_apis! {
     }
 
     impl bioauth_id_api::BioauthIdApi<Block, BabeId, AccountId> for Runtime {
-        fn extract_bioauth_id(id: &BabeId) -> AccountId {
-            <Signature as Verify>::Signer::from(sr25519::Public::from(id.clone())).into_account()
+        fn extract_bioauth_id(id: &BabeId) -> Option<AccountId> {
+            Session::key_owner(BabeId::ID, id.as_slice())
         }
     }
 

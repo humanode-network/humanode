@@ -414,6 +414,10 @@ where
                 code: ErrorCode::InternalError,
                 message: format!("Unable to extract bioauth id from the runtime: {}", err),
                 data: None,
+            })?.ok_or(RpcError {
+                code: ErrorCode::InternalError,
+                message: "A corresponding bioauth id hasn't been found".to_string(),
+                data: None,
             })?;
 
         let status = self

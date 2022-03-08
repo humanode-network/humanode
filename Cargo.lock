@@ -2628,6 +2628,7 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-api",
+ "sp-application-crypto",
  "sp-block-builder",
  "sp-consensus-babe",
  "sp-core",

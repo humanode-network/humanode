@@ -54,6 +54,7 @@ scale-info = { version = "1.0", default-features = false, features = [
 ] }
 serde = { version = "1", features = ["derive"], optional = true }
 sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-application-crypto = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -107,6 +108,7 @@ std = [
   "pallet-transaction-payment/std",
   "pallet-transaction-payment-rpc-runtime-api/std",
   "robonode-crypto/std",
+  "sp-application-crypto/std",
   "sp-api/std",
   "sp-block-builder/std",
   "sp-consensus-babe/std",

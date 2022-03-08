@@ -30,6 +30,9 @@ pub enum AuthorizationVerifierError {
     /// provided ValidatorId.
     #[error("unable to extract bioauth id based on provided validator id: {0}")]
     UnableToExtractBioauthId(sp_api::ApiError),
+    /// BioauthId has't been found based on provided validator id.
+    #[error("unable to obtaion the slot from the block header")]
+    BioauthIdNotFound,
 }
 
 impl<Block: BlockT, Client, ValidatorId, BioauthId>
@@ -81,7 +84,8 @@ where
             .client
             .runtime_api()
             .extract_bioauth_id(at, validator_id)
-            .map_err(AuthorizationVerifierError::UnableToExtractBioauthId)?;
+            .map_err(AuthorizationVerifierError::UnableToExtractBioauthId)?
+            .ok_or(AuthorizationVerifierError::BioauthIdNotFound)?;
 
         let is_authorized = self
             .client
