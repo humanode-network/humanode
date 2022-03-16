@@ -376,8 +376,9 @@ impl pallet_session::SessionManager<AccountId> for BioauthSessionManager {
         }
     }
 
+    // This part of code is reachable but we leave it empty
+    // as we don't have any bioauth related logic code here.
     fn end_session(_end_index: u32) {}
-
     fn start_session(_start_index: u32) {}
 }
 
