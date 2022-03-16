@@ -345,11 +345,7 @@ impl
             .map(|authentication| (authentication.public_key.clone(), authentication.clone()))
             .collect::<Vec<_>>();
 
-        if next_authorities_data.is_empty() {
-            None
-        } else {
-            Some(next_authorities_data)
-        }
+        Some(next_authorities_data)
     }
 
     // This part of code is reachable but we leave it empty
