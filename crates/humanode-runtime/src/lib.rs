@@ -352,34 +352,25 @@ impl
         }
     }
 
-    fn start_session(start_index: u32) {
-        <Self as pallet_session::SessionManager<_>>::start_session(start_index)
-    }
-
-    fn end_session(end_index: u32) {
-        <Self as pallet_session::SessionManager<_>>::end_session(end_index)
-    }
-}
-
-impl pallet_session::SessionManager<AccountId> for BioauthSessionManager {
-    fn new_session(_new_index: u32) -> Option<Vec<AccountId>> {
-        let next_authorities = Bioauth::active_authentications()
-            .into_inner()
-            .iter()
-            .map(|authentication| authentication.public_key.clone())
-            .collect::<Vec<_>>();
-
-        if next_authorities.is_empty() {
-            None
-        } else {
-            Some(next_authorities)
-        }
-    }
-
     // This part of code is reachable but we leave it empty
     // as we don't have any bioauth related logic code here.
-    fn end_session(_end_index: u32) {}
     fn start_session(_start_index: u32) {}
+    fn end_session(_end_index: u32) {}
+}
+
+// In fact, the pallet_session::historical::SessionManager should not require the
+// pallet_session::SessionManager implementation - this is a substrate design error.
+// So, we implement it as unreachable.
+impl pallet_session::SessionManager<AccountId> for BioauthSessionManager {
+    fn new_session(_new_index: u32) -> Option<Vec<AccountId>> {
+        unreachable!()
+    }
+    fn end_session(_end_index: u32) {
+        unreachable!()
+    }
+    fn start_session(_start_index: u32) {
+        unreachable!()
+    }
 }
 
 pub struct IdentityValidatorIdOf;
