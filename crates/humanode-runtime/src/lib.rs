@@ -381,8 +381,8 @@ impl pallet_session::SessionManager<AccountId> for BioauthSessionManager {
     fn start_session(_start_index: u32) {}
 }
 
-pub struct IdentityConverter;
-impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for IdentityConverter {
+pub struct IdentityValidatorIdOf;
+impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for IdentityValidatorIdOf {
     fn convert(account_id: AccountId) -> Option<AccountId> {
         Some(account_id)
     }
@@ -391,7 +391,7 @@ impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for IdentityConve
 impl pallet_session::Config for Runtime {
     type Event = Event;
     type ValidatorId = AccountId;
-    type ValidatorIdOf = IdentityConverter;
+    type ValidatorIdOf = IdentityValidatorIdOf;
     type ShouldEndSession = Babe;
     type NextSessionRotation = Babe;
     type SessionManager =
