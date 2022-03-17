@@ -63,7 +63,7 @@ impl ErrorContext {
 #[derive(Debug, Clone, Copy)]
 enum ErrorCode {
     /// A request to robonode has failed.
-    RobonodeRequestError = 1,
+    RobonodeError = 1,
     /// A call to the runtime api has failed.
     RuntimeApiError,
     /// The auth transaction failed.
@@ -384,7 +384,7 @@ where
             .get_facetec_device_sdk_params()
             .await
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RobonodeRequestError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
                 message: format!("request to the robonode failed: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -399,7 +399,7 @@ where
             .get_facetec_session_token()
             .await
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RobonodeRequestError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
                 message: format!("request to the robonode failed: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -476,7 +476,7 @@ where
                 );
 
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::RobonodeRequestError as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
                     message: format!("request to the robonode failed: {}", err),
                     data: ErrorContext { should_retry }.into_value(),
                 }
@@ -511,7 +511,7 @@ where
                 );
 
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::RobonodeRequestError as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
                     message: format!("request to the robonode failed: {}", err),
                     data: ErrorContext { should_retry }.into_value(),
                 }
