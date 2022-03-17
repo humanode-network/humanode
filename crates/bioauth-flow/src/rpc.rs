@@ -62,18 +62,18 @@ impl ErrorContext {
 /// Custom rpc error codes.
 #[derive(Debug, Clone, Copy)]
 enum ErrorCode {
-    /// A request to robonode has failed.
-    RobonodeError = 1,
-    /// A call to the runtime api has failed.
-    RuntimeApiError,
-    /// The auth transaction failed.
-    TransactionError,
-    /// The validator key is not available, or extractor failed.
+    /// Signer has failed.
+    Signer = 1,
+    /// Request to robonode has failed.
+    Robonode,
+    /// Call to runtime api has failed.
+    RuntimeApi,
+    /// Auth transaction has failed.
+    Transaction,
+    /// Validator key is not available, or extractor has failed.
     MissingValidatorKey,
     /// Liveness data was not provided.
     MissingLivenessData,
-    /// Signer has failed.
-    SignerError,
 }
 
 /// The bioauth status as used in the RPC.
@@ -384,7 +384,7 @@ where
             .get_facetec_device_sdk_params()
             .await
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                 message: format!("request to the robonode failed: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -399,7 +399,7 @@ where
             .get_facetec_session_token()
             .await
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                 message: format!("request to the robonode failed: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -440,7 +440,7 @@ where
             .runtime_api()
             .bioauth_status(&at, &own_key)
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApiError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Unable to get status from the runtime: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -476,7 +476,7 @@ where
                 );
 
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                     message: format!("request to the robonode failed: {}", err),
                     data: ErrorContext { should_retry }.into_value(),
                 }
@@ -511,7 +511,7 @@ where
                 );
 
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                     message: format!("request to the robonode failed: {}", err),
                     data: ErrorContext { should_retry }.into_value(),
                 }
@@ -532,7 +532,7 @@ where
                 response.auth_ticket_signature.into(),
             )
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApiError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Error creating auth extrinsic: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -545,7 +545,7 @@ where
             )
             .await
             .map_err(|e| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::TransactionError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::Transaction as _),
                 message: format!("Transaction failed: {}", e),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -593,7 +593,7 @@ where
                     ?error
                 );
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::SignerError as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::Signer as _),
                     message: "Signing failed".to_string(),
                     data: ErrorContext { should_retry: false }.into_value(),
                 }
