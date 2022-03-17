@@ -33,6 +33,7 @@ type FacetecDeviceSdkParams = Map<String, Value>;
 
 /// The context provided alongside all rpc errors.
 #[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct ErrorContext {
     /// Indicates whether or not this error warrants a retry.
     should_retry: bool,
