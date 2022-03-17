@@ -6,11 +6,11 @@
 
 use codec::{Decode, Encode};
 pub use pallet::*;
-use sp_runtime::traits::{Convert, OpaqueKeys};
-use sp_std::prelude::*;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
+use sp_runtime::traits::{Convert, OpaqueKeys};
+use sp_std::prelude::*;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
