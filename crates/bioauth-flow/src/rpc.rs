@@ -66,6 +66,8 @@ enum ErrorCode {
     RobonodeRequestError = 1,
     /// A call to the runtime api has failed.
     RuntimeApiError,
+    /// The auth transaction failed.
+    TransactionError,
     /// The validator key is not available, or extractor failed.
     MissingValidatorKey,
     /// Liveness data was not provided.
@@ -543,7 +545,7 @@ where
             )
             .await
             .map_err(|e| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApiError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::TransactionError as _),
                 message: format!("Transaction failed: {}", e),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
