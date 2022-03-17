@@ -4582,18 +4582,12 @@ dependencies = [
 name = "pallet-bioauth-session"
 version = "0.1.0"
 dependencies = [
- "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall",
  "pallet-bioauth",
  "pallet-session",
  "parity-scale-codec",
  "scale-info",
- "serde",
- "sp-api",
- "sp-core",
- "sp-io",
  "sp-runtime",
  "sp-std",
 ]
