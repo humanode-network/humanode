@@ -323,52 +323,6 @@ impl pallet_babe::Config for Runtime {
     type MaxAuthorities = MaxAuthorities;
 }
 
-pub struct BioauthSessionManager;
-
-impl
-    pallet_session::historical::SessionManager<
-        AccountId,
-        pallet_bioauth::Authentication<AccountId, UnixMilliseconds>,
-    > for BioauthSessionManager
-{
-    fn new_session(
-        _new_index: u32,
-    ) -> Option<
-        Vec<(
-            AccountId,
-            pallet_bioauth::Authentication<AccountId, UnixMilliseconds>,
-        )>,
-    > {
-        let next_authorities_data = Bioauth::active_authentications()
-            .into_inner()
-            .iter()
-            .map(|authentication| (authentication.public_key.clone(), authentication.clone()))
-            .collect::<Vec<_>>();
-
-        Some(next_authorities_data)
-    }
-
-    // This part of code is reachable but we leave it empty
-    // as we don't have any bioauth related logic code here.
-    fn start_session(_start_index: u32) {}
-    fn end_session(_end_index: u32) {}
-}
-
-// In fact, the pallet_session::historical::SessionManager should not require the
-// pallet_session::SessionManager implementation - this is a substrate design error.
-// So, we implement it as unreachable.
-impl pallet_session::SessionManager<AccountId> for BioauthSessionManager {
-    fn new_session(_new_index: u32) -> Option<Vec<AccountId>> {
-        unreachable!()
-    }
-    fn end_session(_end_index: u32) {
-        unreachable!()
-    }
-    fn start_session(_start_index: u32) {
-        unreachable!()
-    }
-}
-
 pub struct IdentityValidatorIdOf;
 impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for IdentityValidatorIdOf {
     fn convert(account_id: AccountId) -> Option<AccountId> {
@@ -382,8 +336,7 @@ impl pallet_session::Config for Runtime {
     type ValidatorIdOf = IdentityValidatorIdOf;
     type ShouldEndSession = Babe;
     type NextSessionRotation = Babe;
-    type SessionManager =
-        pallet_session::historical::NoteHistoricalRoot<Self, BioauthSessionManager>;
+    type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, BioauthSession>;
     type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
     type Keys = opaque::SessionKeys;
     type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
@@ -526,6 +479,10 @@ impl pallet_bioauth::Config for Runtime {
     type MaxNonces = MaxNonces;
 }
 
+impl pallet_bioauth_session::Config for Runtime {
+    type ValidatorPublicKeyOf = IdentityValidatorIdOf;
+}
+
 pub fn get_ethereum_address(authority_id: BabeId) -> H160 {
     H160::from_slice(&authority_id.to_raw_vec()[4..24])
 }
@@ -622,6 +579,7 @@ construct_runtime!(
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
         Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
         Historical: pallet_session_historical::{Pallet},
+        BioauthSession: pallet_bioauth_session::{Pallet},
         EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
         Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},

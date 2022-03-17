@@ -14,6 +14,7 @@ bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-feat
 bioauth-id-api = { version = "0.1", path = "../bioauth-id-api", default-features = false }
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
+pallet-bioauth-session = { version = "0.1", path = "../pallet-bioauth-session", default-features = false }
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
@@ -92,6 +93,7 @@ std = [
   "frame-system-rpc-runtime-api/std",
   "pallet-babe/std",
   "pallet-bioauth/std",
+  "pallet-bioauth-session/std",
   "pallet-balances/std",
   "pallet-base-fee/std",
   "pallet-ethereum/std",
