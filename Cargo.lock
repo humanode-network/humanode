@@ -2505,6 +2505,7 @@ dependencies = [
  "indoc",
  "ngrok-api",
  "pallet-bioauth",
+ "pallet-bioauth-session",
  "pallet-dynamic-fee",
  "pallet-evm",
  "parity-scale-codec",
@@ -4588,6 +4589,7 @@ dependencies = [
  "pallet-session",
  "parity-scale-codec",
  "scale-info",
+ "serde",
  "sp-runtime",
  "sp-std",
 ]

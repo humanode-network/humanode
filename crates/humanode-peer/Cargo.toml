@@ -16,6 +16,7 @@ humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 ngrok-api = { version = "0.1", path = "../ngrok-api" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
+pallet-bioauth-session = { version = "0.1", path = "../pallet-bioauth-session" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
 anyhow = "1"
