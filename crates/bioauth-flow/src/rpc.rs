@@ -59,14 +59,21 @@ impl ErrorContext {
     }
 }
 
+/// Custom rpc error codes.
 #[derive(Debug, Clone, Copy)]
 enum ErrorCode {
-    RobonodeError = 1,
-    RuntimeApiError,
-    ValidatorKeyNotAvailableError,
-    ValidatorKeyExtractionError,
-    ProvideLivenessDataError,
-    SigningError,
+    /// A request to robonode has failed.
+    Robonode = 1,
+    /// A call to the runtime api has failed.
+    RuntimeApi,
+    /// The validator key is not available.
+    ValidatorKeyNotAvailable,
+    /// Validator key extraction has failed.
+    ValidatorKeyExtraction,
+    /// Could not receive liveness data.
+    ProvideLivenessData,
+    /// Signing has failed.
+    Signer,
 }
 
 /// The bioauth status as used in the RPC.
@@ -377,7 +384,7 @@ where
             .get_facetec_device_sdk_params()
             .await
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                 message: format!("request to the robonode failed: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -392,7 +399,7 @@ where
             .get_facetec_session_token()
             .await
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                 message: format!("request to the robonode failed: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -406,12 +413,12 @@ where
             maybe_tx_guard.take() // take the guarded option value and release the lock asap
         };
         let tx = maybe_tx.ok_or_else(|| RpcError {
-            code: RpcErrorCode::ServerError(ErrorCode::ProvideLivenessDataError as _),
+            code: RpcErrorCode::ServerError(ErrorCode::ProvideLivenessData as _),
             message: "Flow is not engaged, unable to accept liveness data".into(),
             data: ErrorContext { should_retry: false }.into_value(),
         })?;
         tx.send(liveness_data).map_err(|_| RpcError {
-            code: RpcErrorCode::ServerError(ErrorCode::ProvideLivenessDataError as _),
+            code: RpcErrorCode::ServerError(ErrorCode::ProvideLivenessData as _),
             message: "Flow was aborted before the liveness data could be submitted".into(),
             data: ErrorContext { should_retry: false }.into_value(),
         })?;
@@ -433,7 +440,7 @@ where
             .runtime_api()
             .bioauth_status(&at, &own_key)
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApiError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Unable to get status from the runtime: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -448,7 +455,7 @@ where
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
         let public_key = self.validator_public_key()?.ok_or(RpcError {
-            code: RpcErrorCode::ServerError(ErrorCode::ValidatorKeyNotAvailableError as _),
+            code: RpcErrorCode::ServerError(ErrorCode::ValidatorKeyNotAvailable as _),
             message: "Validator key not available".to_string(),
             data: ErrorContext { should_retry: false }.into_value(),
         })?;
@@ -469,7 +476,7 @@ where
                 );
 
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                     message: format!("request to the robonode failed: {}", err),
                     data: ErrorContext { should_retry }.into_value(),
                 }
@@ -504,7 +511,7 @@ where
                 );
 
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::RobonodeError as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                     message: format!("request to the robonode failed: {}", err),
                     data: ErrorContext { should_retry }.into_value(),
                 }
@@ -525,7 +532,7 @@ where
                 response.auth_ticket_signature.into(),
             )
             .map_err(|err| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApiError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Error creating auth extrinsic: {}", err),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -538,7 +545,7 @@ where
             )
             .await
             .map_err(|e| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApiError as _),
+                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Transaction failed: {}", e),
                 data: ErrorContext { should_retry: false }.into_value(),
             })?;
@@ -559,7 +566,7 @@ where
                     ?error
                 );
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::ValidatorKeyExtractionError as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::ValidatorKeyExtraction as _),
                     message: "Unable to extract own key".into(),
                     data: ErrorContext { should_retry: false }.into_value(),
                 }
@@ -571,7 +578,7 @@ where
     async fn sign(&self, liveness_data: &LivenessData) -> Result<(OpaqueLivenessData, Vec<u8>)> {
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
         let validator_key = self.validator_public_key()?.ok_or(RpcError {
-            code: RpcErrorCode::ServerError(ErrorCode::ValidatorKeyNotAvailableError as _),
+            code: RpcErrorCode::ServerError(ErrorCode::ValidatorKeyNotAvailable as _),
             message: "Validator key not available".to_string(),
             data: ErrorContext { should_retry: false }.into_value(),
         })?;
@@ -586,7 +593,7 @@ where
                     ?error
                 );
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::SigningError as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::Signer as _),
                     message: "Signing failed".to_string(),
                     data: ErrorContext { should_retry: false }.into_value(),
                 }
