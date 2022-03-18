@@ -31,11 +31,12 @@ pub type FutureResult<T> = jsonrpc_core::BoxFuture<Result<T>>;
 /// The parameters necessary to initialize the FaceTec Device SDK.
 type FacetecDeviceSdkParams = Map<String, Value>;
 
-/// The context provided alongside all rpc errors.
+/// Context that may be provided alongside rpc errors.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ErrorContext {
-    /// Indicates whether or not this error warrants a retry.
+    /// Indicates whether or not this error warrants a retry. Used for face scans calls, when there
+    /// was a problem with the scan data, and retrying may fix it.
     should_retry: bool,
 }
 
@@ -70,8 +71,10 @@ enum ErrorCode {
     RuntimeApi,
     /// Auth transaction has failed.
     Transaction,
-    /// Validator key is not available, or extractor has failed.
+    /// Validator key is not available.
     MissingValidatorKey,
+    /// Validator key extraction has failed.
+    ValidatorKeyExtraction,
     /// Liveness data was not provided.
     MissingLivenessData,
 }
@@ -386,7 +389,7 @@ where
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                 message: format!("request to the robonode failed: {}", err),
-                data: ErrorContext { should_retry: false }.into_value(),
+                data: None,
             })?;
         Ok(res)
     }
@@ -401,7 +404,7 @@ where
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                 message: format!("request to the robonode failed: {}", err),
-                data: ErrorContext { should_retry: false }.into_value(),
+                data: None,
             })?;
         Ok(res.session_token)
     }
@@ -442,7 +445,7 @@ where
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Unable to get status from the runtime: {}", err),
-                data: ErrorContext { should_retry: false }.into_value(),
+                data: None,
             })?;
 
         Ok(status.into())
@@ -566,7 +569,7 @@ where
                     ?error
                 );
                 RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::MissingValidatorKey as _),
+                    code: RpcErrorCode::ServerError(ErrorCode::ValidatorKeyExtraction as _),
                     message: "Unable to extract own key".into(),
                     data: ErrorContext { should_retry: false }.into_value(),
                 }
