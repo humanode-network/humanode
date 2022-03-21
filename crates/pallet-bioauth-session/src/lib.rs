@@ -52,11 +52,9 @@ impl<T: Config>
         let next_authorities_data = <pallet_bioauth::Pallet<T>>::active_authentications()
             .into_inner()
             .iter()
-            .map(|authentication| {
-                (
-                    T::ValidatorPublicKeyOf::convert(authentication.public_key.clone()).unwrap(),
-                    authentication.clone(),
-                )
+            .filter_map(|authentication| {
+                T::ValidatorPublicKeyOf::convert(authentication.public_key.clone())
+                    .map(|account_id| (account_id, authentication.clone()))
             })
             .collect::<Vec<_>>();
 
