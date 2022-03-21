@@ -54,9 +54,8 @@ where
 }
 
 /// Generate consensus authority keys.
-pub fn authority_keys_from_seed(seed: &str) -> (AccountId, AccountId, BabeId, GrandpaId) {
+pub fn authority_keys_from_seed(seed: &str) -> (AccountId, BabeId, GrandpaId) {
     (
-        get_account_id_from_seed::<sr25519::Public>(&format!("{}//stash", seed)),
         get_account_id_from_seed::<sr25519::Public>(seed),
         get_from_seed::<BabeId>(seed),
         get_from_seed::<GrandpaId>(seed),
@@ -110,7 +109,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 robonode_public_key,
                 vec![],
                 vec![pallet_bioauth::Authentication {
-                    public_key: authority_keys_from_seed("Alice").1,
+                    public_key: authority_keys_from_seed("Alice").0,
                     expires_at: AUTHENTICATION_NEVER_EXPIRES,
                 }],
             )
@@ -160,7 +159,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 robonode_public_key,
                 vec![],
                 vec![pallet_bioauth::Authentication {
-                    public_key: authority_keys_from_seed("Alice").1,
+                    public_key: authority_keys_from_seed("Alice").0,
                     expires_at: AUTHENTICATION_NEVER_EXPIRES,
                 }],
             )
@@ -181,7 +180,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
-    initial_authorities: Vec<(AccountId, AccountId, BabeId, GrandpaId)>,
+    initial_authorities: Vec<(AccountId, BabeId, GrandpaId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     robonode_public_key: RobonodePublicKeyWrapper,
@@ -207,10 +206,10 @@ fn testnet_genesis(
                 .map(|x| {
                     (
                         x.0.clone(),
-                        x.1.clone(),
+                        x.0.clone(),
                         SessionKeys {
-                            babe: x.2.clone(),
-                            grandpa: x.3.clone(),
+                            babe: x.1.clone(),
+                            grandpa: x.2.clone(),
                         },
                     )
                 })
