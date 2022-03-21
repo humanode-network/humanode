@@ -4589,7 +4589,6 @@ dependencies = [
  "pallet-session",
  "parity-scale-codec",
  "scale-info",
- "serde",
  "sp-runtime",
  "sp-std",
 ]

@@ -208,10 +208,10 @@ fn testnet_genesis(
                     (
                         x.0.clone(),
                         x.1.clone(),
-                        pallet_bioauth_session::BioauthSessionKeys(SessionKeys {
+                        SessionKeys {
                             babe: x.2.clone(),
                             grandpa: x.3.clone(),
-                        }),
+                        },
                     )
                 })
                 .collect::<Vec<_>>(),

@@ -337,8 +337,8 @@ impl pallet_session::Config for Runtime {
     type ShouldEndSession = Babe;
     type NextSessionRotation = Babe;
     type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, BioauthSession>;
-    type SessionHandler = <pallet_bioauth_session::BioauthSessionKeys<opaque::SessionKeys> as OpaqueKeys>::KeyTypeIdProviders;
-    type Keys = pallet_bioauth_session::BioauthSessionKeys<opaque::SessionKeys>;
+    type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
+    type Keys = opaque::SessionKeys;
     type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
 }
 

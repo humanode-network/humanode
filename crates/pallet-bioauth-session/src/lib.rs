@@ -4,12 +4,8 @@
 // Fix clippy for sp_api::decl_runtime_apis!
 #![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]
 
-use codec::{Decode, Encode};
 pub use pallet::*;
-use scale_info::TypeInfo;
-#[cfg(feature = "std")]
-use serde::{Deserialize, Serialize};
-use sp_runtime::traits::{Convert, OpaqueKeys};
+use sp_runtime::traits::Convert;
 use sp_std::prelude::*;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
@@ -87,30 +83,5 @@ impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
 
     fn start_session(_start_index: u32) {
         unreachable!()
-    }
-}
-
-/// A SessionKeys wrapper that includes bioauth related logic.
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-#[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
-pub struct BioauthSessionKeys<OKS: OpaqueKeys>(pub OKS);
-
-impl<OKS: OpaqueKeys> OpaqueKeys for BioauthSessionKeys<OKS> {
-    type KeyTypeIdProviders = <OKS as OpaqueKeys>::KeyTypeIdProviders;
-
-    fn key_ids() -> &'static [sp_runtime::KeyTypeId] {
-        <OKS as OpaqueKeys>::key_ids()
-    }
-
-    fn get_raw(&self, i: sp_runtime::KeyTypeId) -> &[u8] {
-        self.0.get_raw(i)
-    }
-
-    fn get<T: codec::Decode>(&self, i: sp_runtime::KeyTypeId) -> Option<T> {
-        T::decode(&mut self.get_raw(i)).ok()
-    }
-
-    fn ownership_proof_is_valid(&self, _proof: &[u8]) -> bool {
-        true
     }
 }
