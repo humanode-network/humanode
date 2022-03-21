@@ -6,7 +6,7 @@ use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
-use humanode_runtime::{self, opaque::Block, AccountId, RuntimeApi};
+use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockchainEvents, ExecutorProvider};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
@@ -70,7 +70,7 @@ type FullBioauth = bioauth_consensus::BioauthBlockImport<
     FullClient,
     FullFrontier,
     bioauth_consensus::babe::BlockAuthorExtractor<Block, FullClient>,
-    bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, BabeId, AccountId>,
+    bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, BabeId>,
 >;
 /// Frontier backend type.
 type FrontierBackend = fc_db::Backend<Block>;

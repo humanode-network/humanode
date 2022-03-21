@@ -726,26 +726,30 @@ impl_runtime_apis! {
         }
     }
 
-    impl bioauth_id_api::BioauthIdApi<Block, BabeId, AccountId> for Runtime {
-        fn find_bioauth_id(id: &BabeId) -> Option<AccountId> {
-            Session::key_owner(BabeId::ID, id.as_slice())
-        }
-    }
-
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, AccountId> for Runtime {
-        fn is_authorized(id: &AccountId) -> bool {
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
+        fn is_authorized(id: &BabeId) -> bool {
+            let id = if let Some(account_id) = Session::key_owner(BabeId::ID, id.as_slice()) {
+                account_id
+            } else {
+                return false;
+            };
             Bioauth::active_authentications().into_inner()
                 .iter()
-                .any(|stored_public_key| &stored_public_key.public_key == id)
+                .any(|stored_public_key| stored_public_key.public_key == id)
         }
     }
 
-    impl bioauth_flow_api::BioauthFlowApi<Block, AccountId, UnixMilliseconds> for Runtime {
-        fn bioauth_status(id: &AccountId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+    impl bioauth_flow_api::BioauthFlowApi<Block, BabeId, UnixMilliseconds> for Runtime {
+        fn bioauth_status(id: &BabeId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+            let id = if let Some(account_id) = Session::key_owner(BabeId::ID, id.as_slice()) {
+                account_id
+            } else {
+                return bioauth_flow_api::BioauthStatus::Inactive;
+            };
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()
-                .find(|stored_public_key| &stored_public_key.public_key == id);
+                .find(|stored_public_key| stored_public_key.public_key == id);
             match maybe_active_authentication {
                 None => bioauth_flow_api::BioauthStatus::Inactive,
                 Some(v) => bioauth_flow_api::BioauthStatus::Active {
