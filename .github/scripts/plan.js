@@ -51,7 +51,13 @@ const allModes = {
     cargoArgs: "-- --check",
     platformIndependent: true,
     cargoCacheKey: "code",
-  }
+  },
+  testBenchmark: {
+    name: "test benchmark",
+    cargoCommand: "test",
+    cargoArgs: "--features runtime-benchmarks",
+    cargoCacheKey: "test-benchmark",
+  },
 };
 
 // Figure out whether we want to run non-essential checks.

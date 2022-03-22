@@ -28,9 +28,6 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
-
 /// Verifier provides the verification of the data accompanied with the
 /// signature or proof data.
 /// A non-async (blocking) variant, for use at runtime.
