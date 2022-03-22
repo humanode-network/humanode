@@ -40,17 +40,12 @@ struct ErrorContext {
     should_retry: bool,
 }
 
-impl ErrorContext {
-    /// Try to convert to a [`Value`].
-    ///
-    /// If it fails, the error is logged and `None` is returned.  Result isn't used here because
-    /// option is easier to work with, and we are logically ignoring the error anyways. Error
-    /// context is non-critical, and shouldn't fail the entire request because of it.
-    fn into_value(self) -> Option<Value> {
+impl From<ErrorContext> for Option<Value> {
+    fn from(val: ErrorContext) -> Self {
         // We could feasibly unwrap the value here without issue, however if some future
         // change breaks it, there's not much sense in failing completely for something
         // non-critical like error context (for the moment at least).
-        match serde_json::to_value(self) {
+        match serde_json::to_value(val) {
             Ok(val) => Some(val),
             Err(err) => {
                 error!("RPC error context failed to serialize: {:?}", err);
@@ -418,12 +413,12 @@ where
         let tx = maybe_tx.ok_or_else(|| RpcError {
             code: RpcErrorCode::ServerError(ErrorCode::MissingLivenessData as _),
             message: "Flow is not engaged, unable to accept liveness data".into(),
-            data: ErrorContext { should_retry: false }.into_value(),
+            data: None,
         })?;
         tx.send(liveness_data).map_err(|_| RpcError {
             code: RpcErrorCode::ServerError(ErrorCode::MissingLivenessData as _),
             message: "Flow was aborted before the liveness data could be submitted".into(),
-            data: ErrorContext { should_retry: false }.into_value(),
+            data: None,
         })?;
         Ok(())
     }
@@ -460,7 +455,7 @@ where
         let public_key = self.validator_public_key()?.ok_or(RpcError {
             code: RpcErrorCode::ServerError(ErrorCode::MissingValidatorKey as _),
             message: "Validator key not available".to_string(),
-            data: ErrorContext { should_retry: false }.into_value(),
+            data: None,
         })?;
         self.robonode_client
             .as_ref()
@@ -481,7 +476,7 @@ where
                 RpcError {
                     code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                     message: format!("request to the robonode failed: {}", err),
-                    data: ErrorContext { should_retry }.into_value(),
+                    data: ErrorContext { should_retry }.into(),
                 }
             })?;
 
@@ -516,7 +511,7 @@ where
                 RpcError {
                     code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                     message: format!("request to the robonode failed: {}", err),
-                    data: ErrorContext { should_retry }.into_value(),
+                    data: ErrorContext { should_retry }.into(),
                 }
             })?;
 
@@ -537,7 +532,7 @@ where
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Error creating auth extrinsic: {}", err),
-                data: ErrorContext { should_retry: false }.into_value(),
+                data: None,
             })?;
 
         self.pool
@@ -550,7 +545,7 @@ where
             .map_err(|e| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::Transaction as _),
                 message: format!("Transaction failed: {}", e),
-                data: ErrorContext { should_retry: false }.into_value(),
+                data: None,
             })?;
 
         info!("Bioauth flow - authenticate transaction complete");
@@ -571,7 +566,7 @@ where
                 RpcError {
                     code: RpcErrorCode::ServerError(ErrorCode::ValidatorKeyExtraction as _),
                     message: "Unable to extract own key".into(),
-                    data: ErrorContext { should_retry: false }.into_value(),
+                    data: None,
                 }
             })
 
@@ -583,7 +578,7 @@ where
         let validator_key = self.validator_public_key()?.ok_or(RpcError {
             code: RpcErrorCode::ServerError(ErrorCode::MissingValidatorKey as _),
             message: "Validator key not available".to_string(),
-            data: ErrorContext { should_retry: false }.into_value(),
+            data: None,
         })?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
@@ -598,7 +593,7 @@ where
                 RpcError {
                     code: RpcErrorCode::ServerError(ErrorCode::Signer as _),
                     message: "Signing failed".to_string(),
-                    data: ErrorContext { should_retry: false }.into_value(),
+                    data: None,
                 }
             })?;
 
