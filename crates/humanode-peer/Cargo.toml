@@ -39,15 +39,15 @@ reqwest = "0.11"
 sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-chain-spec = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-chain-spec-derive = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "master", features = ["wasmtime"] }
+sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "master", features = ["wasmtime"] }
+sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master", features = ["wasmtime"] }
+sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-telemetry = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -74,4 +74,8 @@ indoc = "1.0"
 serde_json = "1"
 
 [features]
-runtime-benchmarks = ["humanode-runtime/runtime-benchmarks", "frame-benchmarking/runtime-benchmarks"]
+runtime-benchmarks = [
+  "humanode-runtime/runtime-benchmarks",
+  "frame-benchmarking/runtime-benchmarks",
+]
+wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]
