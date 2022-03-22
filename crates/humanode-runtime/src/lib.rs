@@ -342,9 +342,27 @@ impl pallet_session::Config for Runtime {
     type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
 }
 
+pub struct AuthenticationFullIdentificationOf;
+impl
+    sp_runtime::traits::Convert<
+        AccountId,
+        Option<pallet_bioauth::Authentication<AccountId, UnixMilliseconds>>,
+    > for AuthenticationFullIdentificationOf
+{
+    fn convert(
+        account_id: AccountId,
+    ) -> Option<pallet_bioauth::Authentication<AccountId, UnixMilliseconds>> {
+        let active_authentications = Bioauth::active_authentications().into_inner();
+        active_authentications
+            .iter()
+            .find(|authentication| authentication.public_key == account_id)
+            .cloned()
+    }
+}
+
 impl pallet_session::historical::Config for Runtime {
     type FullIdentification = pallet_bioauth::Authentication<AccountId, UnixMilliseconds>;
-    type FullIdentificationOf = ();
+    type FullIdentificationOf = AuthenticationFullIdentificationOf;
 }
 
 impl pallet_grandpa::Config for Runtime {
