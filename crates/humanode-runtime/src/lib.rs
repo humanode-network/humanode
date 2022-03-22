@@ -728,10 +728,9 @@ impl_runtime_apis! {
 
     impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
         fn is_authorized(id: &BabeId) -> bool {
-            let id = if let Some(account_id) = Session::key_owner(BabeId::ID, id.as_slice()) {
-                account_id
-            } else {
-                return false;
+            let id = match Session::key_owner(BabeId::ID, id.as_slice()) {
+                Some(account_id) => account_id,
+                None => return false,
             };
             Bioauth::active_authentications().into_inner()
                 .iter()
@@ -741,10 +740,9 @@ impl_runtime_apis! {
 
     impl bioauth_flow_api::BioauthFlowApi<Block, BabeId, UnixMilliseconds> for Runtime {
         fn bioauth_status(id: &BabeId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
-            let id = if let Some(account_id) = Session::key_owner(BabeId::ID, id.as_slice()) {
-                account_id
-            } else {
-                return bioauth_flow_api::BioauthStatus::Inactive;
+            let id = match Session::key_owner(BabeId::ID, id.as_slice()) {
+                Some(account_id) => account_id,
+                None => return bioauth_flow_api::BioauthStatus::Inactive,
             };
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
