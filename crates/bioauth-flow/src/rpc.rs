@@ -31,27 +31,14 @@ pub type FutureResult<T> = jsonrpc_core::BoxFuture<Result<T>>;
 /// The parameters necessary to initialize the FaceTec Device SDK.
 type FacetecDeviceSdkParams = Map<String, Value>;
 
-/// Context that may be provided alongside rpc errors.
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct ErrorContext {
-    /// Indicates whether or not this error warrants a retry. Used for face scans calls, when there
-    /// was a problem with the scan data, and retrying may fix it.
-    should_retry: bool,
-}
+/// The RPC error context we provide to trigger the face capture logic again,
+/// effectively requesting a retry of the same request with a new liveness data.
+#[derive(Debug)]
+struct ShouldRetry;
 
-impl From<ErrorContext> for Option<Value> {
-    fn from(val: ErrorContext) -> Self {
-        // We could feasibly unwrap the value here without issue, however if some future
-        // change breaks it, there's not much sense in failing completely for something
-        // non-critical like error context (for the moment at least).
-        match serde_json::to_value(val) {
-            Ok(val) => Some(val),
-            Err(err) => {
-                error!("RPC error context failed to serialize: {:?}", err);
-                None
-            }
-        }
+impl From<ShouldRetry> for Value {
+    fn from(_: ShouldRetry) -> Self {
+        serde_json::json!({ "shouldRetry": true })
     }
 }
 
@@ -466,17 +453,17 @@ where
             })
             .await
             .map_err(|err| {
-                let should_retry = matches!(
-                    err,
+                let data = match err {
                     robonode_client::Error::Call(
                         robonode_client::EnrollError::FaceScanRejected
-                    )
-                );
+                    ) => Some(ShouldRetry.into()),
+                    _ => None,
+                };
 
                 RpcError {
                     code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                     message: format!("request to the robonode failed: {}", err),
-                    data: ErrorContext { should_retry }.into(),
+                    data,
                 }
             })?;
 
@@ -501,17 +488,17 @@ where
             })
             .await
             .map_err(|err| {
-                let should_retry = matches!(
-                    err,
+                let data = match err {
                     robonode_client::Error::Call(
                         robonode_client::AuthenticateError::FaceScanRejected
-                    )
-                );
+                    ) => Some(ShouldRetry.into()),
+                    _ => None,
+                };
 
                 RpcError {
                     code: RpcErrorCode::ServerError(ErrorCode::Robonode as _),
                     message: format!("request to the robonode failed: {}", err),
-                    data: ErrorContext { should_retry }.into(),
+                    data,
                 }
             })?;
 
