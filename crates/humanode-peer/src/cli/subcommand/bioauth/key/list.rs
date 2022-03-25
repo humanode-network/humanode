@@ -6,13 +6,6 @@ use structopt::StructOpt;
 
 use crate::cli::CliConfigurationExt;
 
-/// Subcommands for the `bioauth key` command.
-#[derive(Debug, StructOpt)]
-pub enum KeyCmd {
-    /// List the bioauth keys.
-    List(ListKeysCmd),
-}
-
 /// The `bioauth key list` command.
 #[derive(Debug, StructOpt)]
 pub struct ListKeysCmd {
@@ -29,7 +22,7 @@ impl ListKeysCmd {
     /// Run the list command.
     pub async fn run(&self, keystore_container: KeystoreContainer) -> sc_cli::Result<()> {
         let keystore = keystore_container.keystore();
-        let keys = crate::validator_key::AppCryptoPublic::<sp_consensus_babe::AuthorityId>::list(
+        let keys = crate::validator_key::AppCryptoPublic::<bioauth_id::AuthorityId>::list(
             keystore.as_ref(),
         )
         .await
