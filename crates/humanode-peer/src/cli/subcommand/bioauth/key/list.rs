@@ -22,7 +22,7 @@ impl ListKeysCmd {
     /// Run the list command.
     pub async fn run(&self, keystore_container: KeystoreContainer) -> sc_cli::Result<()> {
         let keystore = keystore_container.keystore();
-        let keys = crate::validator_key::AppCryptoPublic::<bioauth_id::AuthorityId>::list(
+        let keys = crate::validator_key::AppCryptoPublic::<sp_consensus_babe::AuthorityId>::list(
             keystore.as_ref(),
         )
         .await

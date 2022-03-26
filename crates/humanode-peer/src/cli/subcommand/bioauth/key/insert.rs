@@ -38,12 +38,11 @@ impl InsertKeyCmd {
         let keystore = keystore_container.keystore();
 
         // We should verify that there is no bioauth key at the keystore.
-        let mut current_keys =
-            crate::validator_key::AppCryptoPublic::<bioauth_id::AuthorityId>::list(
-                keystore.as_ref(),
-            )
-            .await
-            .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
+        let mut current_keys = crate::validator_key::AppCryptoPublic::<
+            sp_consensus_babe::AuthorityId,
+        >::list(keystore.as_ref())
+        .await
+        .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
 
         if current_keys.next().is_some() {
             return Err(sc_cli::Error::Service(sc_service::Error::Other(
@@ -54,7 +53,11 @@ impl InsertKeyCmd {
         let pair = utils::pair_from_suri::<sp_core::sr25519::Pair>(self.suri.as_ref(), None)?;
         let public = pair.public().to_vec();
         keystore
-            .insert_unknown(bioauth_id::AuthorityId::ID, self.suri.as_ref(), &public[..])
+            .insert_unknown(
+                sp_consensus_babe::AuthorityId::ID,
+                self.suri.as_ref(),
+                &public[..],
+            )
             .await
             .map_err(|_| sc_cli::Error::KeyStoreOperation)?;
         Ok(())
