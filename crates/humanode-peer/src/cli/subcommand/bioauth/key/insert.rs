@@ -2,8 +2,10 @@
 
 use sc_cli::{utils, CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
-use sp_application_crypto::AppKey;
+use sp_application_crypto::{AppKey, AppPublic};
 use sp_core::Pair;
+use sp_keystore::CryptoStore;
+use std::sync::Arc;
 use structopt::StructOpt;
 
 use crate::cli::CliConfigurationExt;
@@ -27,9 +29,26 @@ pub struct InsertKeyCmd {
 /// An error that occured during key insert.
 #[derive(thiserror::Error, Debug)]
 pub enum InsertKeyError {
+    /// Something went wrong while extracting the list of bioauth keys.
+    #[error("Unable to extract keys list from keystore: {0}")]
+    UnableToExtractKeys(sp_keystore::Error),
     /// The bioauth key is already inserted error.
     #[error("The bioauth key is already inserted")]
     AlreadyInserted,
+}
+
+/// A helper function to verify that there is no bioauth key at the keystore yet.
+pub async fn does_bioauth_key_already_exist<PK: AppPublic>(
+    crypto_store: Arc<dyn CryptoStore>,
+) -> Result<(), InsertKeyError> {
+    let mut current_keys = crate::validator_key::AppCryptoPublic::<PK>::list(crypto_store.as_ref())
+        .await
+        .map_err(InsertKeyError::UnableToExtractKeys)?;
+
+    if current_keys.next().is_some() {
+        return Err(InsertKeyError::AlreadyInserted);
+    }
+    Ok(())
 }
 
 impl InsertKeyCmd {
@@ -37,18 +56,9 @@ impl InsertKeyCmd {
     pub async fn run(&self, keystore_container: KeystoreContainer) -> sc_cli::Result<()> {
         let keystore = keystore_container.keystore();
 
-        // We should verify that there is no bioauth key at the keystore.
-        let mut current_keys = crate::validator_key::AppCryptoPublic::<
-            sp_consensus_babe::AuthorityId,
-        >::list(keystore.as_ref())
-        .await
-        .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
-
-        if current_keys.next().is_some() {
-            return Err(sc_cli::Error::Service(sc_service::Error::Other(
-                InsertKeyError::AlreadyInserted.to_string(),
-            )));
-        }
+        does_bioauth_key_already_exist::<sp_consensus_babe::AuthorityId>(Arc::clone(&keystore))
+            .await
+            .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
 
         let pair = utils::pair_from_suri::<sp_core::sr25519::Pair>(self.suri.as_ref(), None)?;
         let public = pair.public().to_vec();
