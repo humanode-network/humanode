@@ -2,7 +2,7 @@
 
 use sc_cli::{utils, CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
-use sp_application_crypto::AppPublic;
+use sp_application_crypto::{AppKey, AppPublic};
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::Pair;
 use sp_keystore::CryptoStore;
@@ -39,7 +39,7 @@ pub enum InsertKeyError {
 }
 
 /// A helper function to verify that there is no bioauth key at the keystore yet.
-pub async fn does_bioauth_key_already_exist<PK: AppPublic>(
+pub async fn ensure_bioauth_key_absent<PK: AppPublic>(
     keystore: Arc<dyn CryptoStore>,
 ) -> Result<(), InsertKeyError> {
     let mut current_keys = crate::validator_key::AppCryptoPublic::<PK>::list(keystore.as_ref())
@@ -53,12 +53,12 @@ pub async fn does_bioauth_key_already_exist<PK: AppPublic>(
 }
 
 /// A helper function to insert bioauth key into the keystore.
-pub async fn insert_bioauth_key<P: Pair, PK: AppPublic>(
+pub async fn insert_bioauth_key<PK: AppPublic>(
     suri: &str,
     keystore: Arc<dyn CryptoStore>,
 ) -> sc_cli::Result<()> {
     // We don't use a password for keystore at the current moment. That's why None is passed.
-    let pair = utils::pair_from_suri::<P>(suri, None)?;
+    let pair = utils::pair_from_suri::<<PK as AppKey>::Pair>(suri, None)?;
     let public = pair.public().as_ref().to_vec();
     keystore
         .insert_unknown(PK::ID, suri, &public[..])
@@ -72,11 +72,11 @@ impl InsertKeyCmd {
     pub async fn run(&self, keystore_container: KeystoreContainer) -> sc_cli::Result<()> {
         let keystore = keystore_container.keystore();
 
-        does_bioauth_key_already_exist::<BabeId>(Arc::clone(&keystore))
+        ensure_bioauth_key_absent::<BabeId>(Arc::clone(&keystore))
             .await
             .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
 
-        insert_bioauth_key::<sp_core::sr25519::Pair, BabeId>(self.suri.as_ref(), keystore).await?;
+        insert_bioauth_key::<BabeId>(self.suri.as_ref(), keystore).await?;
         Ok(())
     }
 }
