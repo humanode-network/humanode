@@ -2,7 +2,7 @@
 
 use sc_cli::{utils, CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
-use sp_application_crypto::{AppKey, AppPublic};
+use sp_application_crypto::AppPublic;
 use sp_core::Pair;
 use sp_keystore::CryptoStore;
 use std::sync::Arc;
@@ -39,9 +39,9 @@ pub enum InsertKeyError {
 
 /// A helper function to verify that there is no bioauth key at the keystore yet.
 pub async fn does_bioauth_key_already_exist<PK: AppPublic>(
-    crypto_store: Arc<dyn CryptoStore>,
+    keystore: Arc<dyn CryptoStore>,
 ) -> Result<(), InsertKeyError> {
-    let mut current_keys = crate::validator_key::AppCryptoPublic::<PK>::list(crypto_store.as_ref())
+    let mut current_keys = crate::validator_key::AppCryptoPublic::<PK>::list(keystore.as_ref())
         .await
         .map_err(InsertKeyError::UnableToExtractKeys)?;
 
@@ -51,8 +51,23 @@ pub async fn does_bioauth_key_already_exist<PK: AppPublic>(
     Ok(())
 }
 
+/// A helper function to insert bioauth key into the keystore.
+pub async fn insert_bioauth_key<P: Pair, PK: AppPublic>(
+    suri: &str,
+    keystore: Arc<dyn CryptoStore>,
+) -> sc_cli::Result<()> {
+    // We don't use a password for keystore at the current moment. That's why None is passed.
+    let pair = utils::pair_from_suri::<P>(suri, None)?;
+    let public = pair.public().as_ref().to_vec();
+    keystore
+        .insert_unknown(PK::ID, suri, &public[..])
+        .await
+        .map_err(|_| sc_cli::Error::KeyStoreOperation)?;
+    Ok(())
+}
+
 impl InsertKeyCmd {
-    /// Run the list command.
+    /// Run the insert command.
     pub async fn run(&self, keystore_container: KeystoreContainer) -> sc_cli::Result<()> {
         let keystore = keystore_container.keystore();
 
@@ -60,16 +75,11 @@ impl InsertKeyCmd {
             .await
             .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
 
-        let pair = utils::pair_from_suri::<sp_core::sr25519::Pair>(self.suri.as_ref(), None)?;
-        let public = pair.public().to_vec();
-        keystore
-            .insert_unknown(
-                sp_consensus_babe::AuthorityId::ID,
-                self.suri.as_ref(),
-                &public[..],
-            )
-            .await
-            .map_err(|_| sc_cli::Error::KeyStoreOperation)?;
+        insert_bioauth_key::<sp_core::sr25519::Pair, sp_consensus_babe::AuthorityId>(
+            self.suri.as_ref(),
+            keystore,
+        )
+        .await?;
         Ok(())
     }
 }
