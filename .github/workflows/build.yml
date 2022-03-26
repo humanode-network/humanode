@@ -1,0 +1,127 @@
+name: build
+
+on:
+  push:
+    branches:
+      - '**'
+    tags:
+      - 'v*.*.*'
+  schedule:
+    - cron: '0 20 * * 0'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_INCREMENTAL: "0"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+
+  plan:
+    name: Plan the execution
+    runs-on: ubuntu-20.04
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Compute matrix
+        uses: ./.github/actions/plan
+        id: set-matrix
+        with:
+          plan-name: build
+      - name: Dump matrix context
+        env:
+          MATRIX_CONTEXT: ${{ toJson(steps.set-matrix.outputs.matrix) }}
+        run: echo "$MATRIX_CONTEXT"
+
+  build:
+    needs:
+      - plan
+    strategy:
+      matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
+      fail-fast: false
+    name: ${{ matrix.platform.name }} / ${{ matrix.mode.name }}
+    runs-on: ${{ matrix.platform.os }}
+    env: ${{ matrix.platform.env }}
+    timeout-minutes: 50
+    steps:
+
+      - name: Job config
+        run: printf "%s\n" "$MATRIX_CONTEXT"
+        env:
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        timeout-minutes: 5
+
+      - name: Cache rustup
+        uses: actions/cache@v2
+        with:
+          path: |
+            /usr/share/rust/.rustup
+          key: ${{ runner.os }}-rustup-${{ hashFiles('rust-toolchain.toml') }}
+
+      - name: Install rust toolchain
+        run: rustup show
+        timeout-minutes: 10
+
+      - name: Prepare the build environment
+        run: ${{ matrix.platform.buildEnvScript }}
+
+      - name: Set up Vistual Studio Command Prompt (Windows only)
+        uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+
+      - name: Print build environment info
+        run: |
+          set -x
+          cargo --version
+          cargo clippy --version
+          env
+
+      - name: Cache cargo
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ matrix.mode.cargoCacheKey }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+
+      - name: Run cargo ${{ matrix.mode.cargoCommand }}
+        uses: actions-rs/cargo@v1
+        with:
+          command: ${{ matrix.mode.cargoCommand }}
+          args: ${{ matrix.mode.cargoArgs }}
+
+      - name: Set the upload params
+        id: set-upload-params
+        run: |
+          EXECUTABLE_PATH="target/release/humanode-peer"
+          ARTIFACT_NAME="humanode-peer-$(uname -s)-$(uname -m)"
+
+          if [[ "${PATHEXT:-""}" != "" ]]; then
+            EXECUTABLE_PATH="${EXECUTABLE_PATH}.exe"
+            ARTIFACT_NAME="${ARTIFACT_NAME}.exe"
+          fi
+
+          printf '::set-output name=executable-path::%s\n' "$EXECUTABLE_PATH"
+          printf '::set-output name=artifact-name::%s\n' "$ARTIFACT_NAME"
+
+      - name: Upload build results
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.set-upload-params.outputs.artifact-name }}
+          path: ${{ steps.set-upload-params.outputs.executable-path }}
+          if-no-files-found: error
+          retention-days: 5
