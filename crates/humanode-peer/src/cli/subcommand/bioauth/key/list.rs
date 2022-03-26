@@ -6,13 +6,6 @@ use structopt::StructOpt;
 
 use crate::cli::CliConfigurationExt;
 
-/// Subcommands for the `bioauth key` command.
-#[derive(Debug, StructOpt)]
-pub enum KeyCmd {
-    /// List the bioauth keys.
-    List(ListKeysCmd),
-}
-
 /// The `bioauth key list` command.
 #[derive(Debug, StructOpt)]
 pub struct ListKeysCmd {
