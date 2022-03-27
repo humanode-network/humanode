@@ -108,11 +108,10 @@ jobs:
         id: set-upload-params
         run: |
           EXECUTABLE_PATH="target/release/humanode-peer"
-          ARTIFACT_NAME="humanode-peer-$(uname -s)-$(uname -m)"
+          ARTIFACT_NAME="humanode-peer-$(rustc -vV | sed -n 's|host: ||p')"
 
           if [[ "${PATHEXT:-""}" != "" ]]; then
             EXECUTABLE_PATH="${EXECUTABLE_PATH}.exe"
-            ARTIFACT_NAME="${ARTIFACT_NAME}.exe"
           fi
 
           printf '::set-output name=executable-path::%s\n' "$EXECUTABLE_PATH"
