@@ -1,9 +1,9 @@
 //! Bioauth key management subcommands.
 
+use humanode_runtime::BioauthId;
 use sc_cli::{utils, CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
 use sp_application_crypto::{AppKey, AppPublic, Pair};
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_keystore::CryptoStore;
 use std::sync::Arc;
 use structopt::StructOpt;
@@ -71,11 +71,11 @@ impl InsertKeyCmd {
     pub async fn run(&self, keystore_container: KeystoreContainer) -> sc_cli::Result<()> {
         let keystore = keystore_container.keystore();
 
-        ensure_bioauth_key_absent::<AuraId>(Arc::clone(&keystore))
+        ensure_bioauth_key_absent::<BioauthId>(Arc::clone(&keystore))
             .await
             .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
 
-        insert_bioauth_key::<AuraId>(self.suri.as_ref(), keystore).await?;
+        insert_bioauth_key::<BioauthId>(self.suri.as_ref(), keystore).await?;
         Ok(())
     }
 }
