@@ -49,6 +49,16 @@ impl AsRef<[u8]> for MockOpaqueAuthTicket {
     }
 }
 
+impl From<Vec<u8>> for MockOpaqueAuthTicket {
+    fn from(bytes: Vec<u8>) -> Self {
+        let mut public_key = [0u8; 32];
+        public_key.copy_from_slice(&bytes[1..33]);
+
+        let nonce = (&bytes[34..]).to_vec();
+        Self(AuthTicket { public_key, nonce })
+    }
+}
+
 pub struct MockAuthTicketConverter;
 
 impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAuthTicketConverter {
