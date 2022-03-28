@@ -128,7 +128,7 @@ jobs:
           key: ${{ runner.os }}-e2e-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - name: Set up polkadot tools
-        run: npm install -g @polkadot/api-cli
+        run: yarn install --frozen-lockfile
 
       - name: Build binaries
         run: cargo build --release
