@@ -3,7 +3,7 @@
 #![allow(clippy::type_complexity)]
 use std::{marker::PhantomData, sync::Arc, time::Duration};
 
-use humanode_runtime::{self, opaque::Block, RuntimeApi};
+use humanode_runtime::{self, opaque::Block, BioauthId, RuntimeApi};
 use sc_client_api::ExecutorProvider;
 use sc_consensus_aura::{ImportQueueParams, SlotDuration, SlotProportion, StartAuraParams};
 pub use sc_executor::NativeElseWasmExecutor;
@@ -421,8 +421,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
             let validator_public_key =
-                crate::validator_key::AppCryptoPublic::<AuraId>::from_keystore(keystore.as_ref())
-                    .await;
+                crate::validator_key::AppCryptoPublic::<BioauthId>::from_keystore(
+                    keystore.as_ref(),
+                )
+                .await;
 
             let validator_public_key = match validator_public_key {
                 Ok(Some(key)) => {

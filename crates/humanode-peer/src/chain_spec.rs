@@ -2,7 +2,7 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, BioauthConfig, GenesisConfig, GrandpaConfig,
+    AccountId, AuraConfig, BalancesConfig, BioauthConfig, BioauthId, GenesisConfig, GrandpaConfig,
     RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, UnixMilliseconds, WASM_BINARY,
 };
 use pallet_bioauth::{AuthTicketNonce, Authentication};
@@ -178,7 +178,7 @@ fn testnet_genesis(
     endowed_accounts: Vec<AccountId>,
     robonode_public_key: RobonodePublicKeyWrapper,
     consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
-    active_authentications: Vec<Authentication<AuraId, UnixMilliseconds>>,
+    active_authentications: Vec<Authentication<BioauthId, UnixMilliseconds>>,
 ) -> GenesisConfig {
     GenesisConfig {
         system: SystemConfig {
