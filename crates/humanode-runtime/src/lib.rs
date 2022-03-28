@@ -76,6 +76,9 @@ pub type Signature = MultiSignature;
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
+/// Bioauth indetifier used in the consensus protocol.
+pub type BioauthId = BabeId;
+
 /// Balance of an account.
 pub type Balance = u128;
 
@@ -429,14 +432,14 @@ pub enum PrimitiveAuthTicketConverterError {
     PublicKey(()),
 }
 
-impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<BabeId>>
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<BioauthId>>
     for PrimitiveAuthTicketConverter
 {
     type Error = PrimitiveAuthTicketConverterError;
 
     fn try_convert(
         value: OpaqueAuthTicket,
-    ) -> Result<pallet_bioauth::AuthTicket<BabeId>, Self::Error> {
+    ) -> Result<pallet_bioauth::AuthTicket<BioauthId>, Self::Error> {
         let primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce: nonce,
@@ -475,7 +478,7 @@ impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
     type RobonodeSignature = Vec<u8>;
-    type ValidatorPublicKey = BabeId;
+    type ValidatorPublicKey = BioauthId;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = ();
