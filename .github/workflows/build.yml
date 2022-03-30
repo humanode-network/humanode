@@ -1,9 +1,12 @@
-name: code
+name: build
 
 on:
   push:
+    tags:
+      - 'v*.*.*'
   schedule:
     - cron: '0 20 * * 0'
+  workflow_dispatch:
 
 defaults:
   run:
@@ -12,18 +15,11 @@ defaults:
 env:
   CARGO_INCREMENTAL: "0"
 
-jobs:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
 
-  cancel-previous:
-    name: Cancel redundant jobs
-    runs-on: ubuntu-20.04
-    timeout-minutes: 3
-    if: github.ref != 'refs/heads/master'
-    steps:
-      - uses: styfle/cancel-workflow-action@0.9.0
-        with:
-          access_token: ${{ github.token }}
-          all_but_latest: true # can cancel workflows scheduled later
+jobs:
 
   plan:
     name: Plan the execution
@@ -37,13 +33,13 @@ jobs:
         uses: ./.github/actions/plan
         id: set-matrix
         with:
-          plan-name: code
+          plan-name: build
       - name: Dump matrix context
         env:
           MATRIX_CONTEXT: ${{ toJson(steps.set-matrix.outputs.matrix) }}
         run: echo "$MATRIX_CONTEXT"
 
-  test:
+  build:
     needs:
       - plan
     strategy:
@@ -106,32 +102,23 @@ jobs:
           command: ${{ matrix.mode.cargoCommand }}
           args: ${{ matrix.mode.cargoArgs }}
 
-  e2e:
-    name: End-to-end tests
-    runs-on: ubuntu-20.04
-    timeout-minutes: 50
-    steps:
+      - name: Set the upload params
+        id: set-upload-params
+        run: |
+          EXECUTABLE_PATH="target/release/humanode-peer"
+          ARTIFACT_NAME="humanode-peer-$(rustc -vV | sed -n 's|host: ||p')"
 
-      - name: Checkout
-        uses: actions/checkout@v2
-        timeout-minutes: 5
+          if [[ "${PATHEXT:-""}" != "" ]]; then
+            EXECUTABLE_PATH="${EXECUTABLE_PATH}.exe"
+          fi
 
-      - name: Cache cargo
-        uses: actions/cache@v2
+          printf '::set-output name=executable-path::%s\n' "$EXECUTABLE_PATH"
+          printf '::set-output name=artifact-name::%s\n' "$ARTIFACT_NAME"
+
+      - name: Upload build results
+        uses: actions/upload-artifact@v3
         with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-e2e-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
-
-      - name: Set up polkadot tools
-        run: yarn install --frozen-lockfile
-
-      - name: Build binaries
-        run: cargo build --release
-
-      - name: Run e2e tests
-        run: utils/e2e-tests/run-tests "target/release/humanode-peer"
+          name: ${{ steps.set-upload-params.outputs.artifact-name }}
+          path: ${{ steps.set-upload-params.outputs.executable-path }}
+          if-no-files-found: error
+          retention-days: 5
