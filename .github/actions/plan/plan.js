@@ -28,7 +28,7 @@ const allPlatforms = {
   },
 };
 
-const allModes = {
+const codeModes = {
   clippy: {
     name: "clippy",
     cargoCommand: "clippy",
@@ -60,19 +60,25 @@ const allModes = {
   },
 };
 
-const code = () => {
-  // Figure out whether we want to run non-essential checks.
-  const essentialOnly = true; // hardcoding for now
+const buildModes = {
+  build: {
+    name: "build",
+    cargoCommand: "build",
+    cargoArgs: "--release",
+    cargoCacheKey: "release-build",
+  },
+}
 
+const code = () => {
   // Compute the effective list of platforms to use.
-  const effectivePlatforms = Object.values(allPlatforms).filter(platform => !essentialOnly || platform.essential);
+  const effectivePlatforms = Object.values(allPlatforms).filter(platform => platform.essential);
 
   // Compute the effective list of modes that should run for each of the platforms.
-  const effectiveModes = Object.values(allModes).filter(mode => !mode.platformIndependent);
+  const effectiveModes = Object.values(codeModes).filter(mode => !mode.platformIndependent);
 
   // Compute the effective list of modes that are platform indepedent and only
   // have to be run once.
-  const effectiveIndepModes = Object.values(allModes).filter(mode => mode.platformIndependent);
+  const effectiveIndepModes = Object.values(codeModes).filter(mode => mode.platformIndependent);
 
   // Compute the individual mixins for indep modes.
   const effectiveIncludes = effectiveIndepModes.map(mode => ({
@@ -89,12 +95,35 @@ const code = () => {
   };
 
   // Print the matrix, useful for local debugging.
-  console.log(JSON.stringify(matrix, null, '  '));
+  logMatrix(matrix);
 
   // Export the matrix so it's available to the Github Actions script.
   return matrix;
 }
 
+const build = () => {
+  // Compute the effective list of platforms to use.
+  const effectivePlatforms = Object.values(allPlatforms);
+
+  // Compute the effective list of modes that should run for each of the platforms.
+  const effectiveModes = Object.values(buildModes);
+
+  // Prepare the effective matrix.
+  const matrix = {
+    platform: effectivePlatforms,
+    mode: effectiveModes,
+  };
+
+  // Print the matrix, useful for local debugging.
+  logMatrix(matrix);
+
+  // Export the matrix so it's available to the Github Actions script.
+  return matrix;
+}
+
+const logMatrix = (matrix) => console.log(JSON.stringify(matrix, null, '  '));
+
 module.exports = {
   code,
+  build,
 }
