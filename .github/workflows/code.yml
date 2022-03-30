@@ -34,12 +34,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Compute matrix
-        uses: actions/github-script@v4
+        uses: ./.github/actions/plan
         id: set-matrix
         with:
-          script: |
-            const matrix = require('./.github/scripts/plan.js')
-            core.setOutput('matrix', matrix)
+          plan-name: code
       - name: Dump matrix context
         env:
           MATRIX_CONTEXT: ${{ toJson(steps.set-matrix.outputs.matrix) }}
@@ -130,7 +128,7 @@ jobs:
           key: ${{ runner.os }}-e2e-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - name: Set up polkadot tools
-        run: npm install -g @polkadot/api-cli
+        run: yarn install --frozen-lockfile
 
       - name: Build binaries
         run: cargo build --release
