@@ -35,9 +35,8 @@ fn assert_authticket_nonces_are_eq(
 
 benchmarks! {
     authenticate {
-        // TODO: Add loop
-        let i = 1;
-        let ticket_encoded = make_auth_ticket(i);
+        let i in 0..10;
+        let ticket_encoded = make_auth_ticket(i as u8);
         let ticket: T::OpaqueAuthTicket = ticket_encoded.into();
         let ticket_signature: T::RobonodeSignature = Vec::from("signature").into();
         let authenticate_req = Authenticate {
@@ -47,29 +46,26 @@ benchmarks! {
     }: _(RawOrigin::None, authenticate_req)
 
     verify {
-        /// Verify consumed auth_ticket nonces
+        // Verify consumed auth_ticket nonces
         let consumed_nonces = ConsumedAuthTicketNonces::<T>::get();
         assert_eq!(consumed_nonces.len(), 1);
-        for (i, consumed_nonce) in consumed_nonces.iter().enumerate() {
-            let expected_nonce: WeakBoundedVec<u8, AuthTicketNonceMaxBytes> = vec![110, 111, 110, 99, 101, (i + 1) as u8].try_into().unwrap(); /// "nonce{}"
-            assert_eq!(assert_authticket_nonces_are_eq(&consumed_nonce, &expected_nonce), true);
-        }
+        let expected_nonce: WeakBoundedVec<u8, AuthTicketNonceMaxBytes> = vec![110, 111, 110, 99, 101, i as u8].try_into().unwrap();
+        assert_eq!(assert_authticket_nonces_are_eq(&expected_nonce, &consumed_nonces[0]), true);
 
-        /// Verify active authentications
-        /// Skip the first authentication which belongs to Alice's dev account.
-        /// d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
+
+        // Verify active authentications
+        // Skip the first authentication which belongs to Alice's dev account.
+        // d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
         let active_authentications = ActiveAuthentications::<T>::get();
-        for (idx, active_auth) in active_authentications.iter().enumerate() {
-            if idx == 0 {
-                continue
-            }
-            let mut expected: Vec<u8> = vec![0u8; 32];
-            let prefix = vec![112, 107, 101, 121, idx as u8]; // "pkey{}"
-            &expected[..prefix.len()].copy_from_slice(&prefix);
+        assert_eq!(active_authentications.len(), 2);
 
-            let observed_pubkey: Vec<u8> = active_auth.public_key.encode();
-            assert_eq!(observed_pubkey, expected);
-        }
+        // Expected pubkey
+        let mut expected: Vec<u8> = vec![0u8; 32];
+        let prefix = vec![112, 107, 101, 121, 0]; // "pkey0"
+        &expected[..prefix.len()].copy_from_slice(&prefix);
+
+        let observed_pubkey: Vec<u8> = active_authentications[1].public_key.encode();
+        assert_eq!(observed_pubkey, observed_pubkey);
 
     }
 
