@@ -20,8 +20,15 @@ const allPlatforms = {
     },
   },
   macos: {
-    name: "macOS",
+    name: "macOS (amd64)",
     os: "macos-latest",
+    buildEnvScript: buildEnvScriptPath("macos.sh"),
+    essential: false,
+    env: {},
+  },
+  macos_aarch64: {
+    name: "macOS (aarch64)",
+    os: ["self-hosted", "macOS", "aarch64"],
     buildEnvScript: buildEnvScriptPath("macos.sh"),
     essential: false,
     env: {},
