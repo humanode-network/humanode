@@ -2,7 +2,7 @@
 
 use crate::{Pallet as Bioauth, *};
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
-use frame_support::WeakBoundedVec;
+use frame_support::{traits::Get, WeakBoundedVec};
 use frame_system::RawOrigin;
 use primitives_auth_ticket::AuthTicket;
 
@@ -35,7 +35,7 @@ fn assert_authticket_nonces_are_eq(
 
 benchmarks! {
     authenticate {
-        let i in 0..10;
+        let i in 0..T::MaxAuthentications::get();
         let ticket_encoded = make_auth_ticket(i as u8);
         let ticket: T::OpaqueAuthTicket = ticket_encoded.into();
         let ticket_signature: T::RobonodeSignature = Vec::from("signature").into();
