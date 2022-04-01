@@ -69,7 +69,7 @@ jobs:
         with:
           path: |
             /usr/share/rust/.rustup
-          key: ${{ runner.os }}-rustup-${{ hashFiles('rust-toolchain.toml') }}
+          key: ${{ matrix.platform.cacheKey }}-rustup-${{ hashFiles('rust-toolchain.toml') }}
 
       - name: Install rust toolchain
         run: rustup show
@@ -98,7 +98,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-cargo-${{ matrix.mode.cargoCacheKey }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          key: ${{ matrix.platform.cacheKey }}-cargo-${{ matrix.mode.cargoCacheKey }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - name: Run cargo ${{ matrix.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
@@ -125,7 +125,7 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-e2e-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          key: ${{ matrix.platform.cacheKey }}-e2e-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - name: Set up polkadot tools
         run: yarn install --frozen-lockfile
@@ -161,6 +161,6 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             target/
-          key: ${{ runner.os }}-check-utils-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          key: ${{ matrix.platform.cacheKey }}-check-utils-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - run: ${{ matrix.util.run }}
