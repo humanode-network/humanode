@@ -74,7 +74,9 @@ indoc = "1.0"
 serde_json = "1"
 
 [features]
+default = ["wasmtime"]
 runtime-benchmarks = [
+  "wasmtime",
   "humanode-runtime/runtime-benchmarks",
   "frame-benchmarking/runtime-benchmarks",
 ]
