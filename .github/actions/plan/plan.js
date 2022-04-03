@@ -8,7 +8,8 @@ const allPlatforms = {
     os: "ubuntu-20.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     essential: true,
-    env: {}
+    env: {},
+    cacheKey: "ubuntu-amd64",
   },
   windows: {
     name: "Windows",
@@ -18,13 +19,23 @@ const allPlatforms = {
     env: {
       CARGO_INCREMENTAL: "0"
     },
+    cacheKey: "windows-amd64",
   },
   macos: {
-    name: "macOS",
+    name: "macOS (amd64)",
     os: "macos-latest",
     buildEnvScript: buildEnvScriptPath("macos.sh"),
     essential: false,
     env: {},
+    cacheKey: "macos-amd64",
+  },
+  macos_aarch64: {
+    name: "macOS (aarch64)",
+    os: ["self-hosted", "macOS", "aarch64"],
+    buildEnvScript: buildEnvScriptPath("macos.sh"),
+    essential: false,
+    env: {},
+    cacheKey: "macos-aarch64",
   },
 };
 
