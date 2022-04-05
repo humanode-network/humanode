@@ -89,6 +89,15 @@ pub async fn run() -> sc_cli::Result<()> {
                 })
                 .await
         }
+        Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::Insert(cmd)))) => {
+            let runner = root.create_humanode_runner(cmd)?;
+            runner
+                .run_tasks(|config| async move {
+                    let (keystore_container, task_manager) = service::keystore_container(&config)?;
+                    Ok((cmd.run(keystore_container), task_manager))
+                })
+                .await
+        }
         Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::List(cmd)))) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner

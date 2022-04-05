@@ -2,9 +2,10 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    opaque::SessionKeys, AccountId, BabeConfig, BalancesConfig, BioauthConfig, EVMConfig,
-    EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig, RobonodePublicKeyWrapper,
-    SessionConfig, Signature, SudoConfig, SystemConfig, UnixMilliseconds, WASM_BINARY,
+    opaque::SessionKeys, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BioauthId,
+    EVMConfig, EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig,
+    RobonodePublicKeyWrapper, SessionConfig, Signature, SudoConfig, SystemConfig, UnixMilliseconds,
+    WASM_BINARY,
 };
 use pallet_bioauth::{AuthTicketNonce, Authentication};
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -109,7 +110,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                 robonode_public_key,
                 vec![],
                 vec![pallet_bioauth::Authentication {
-                    public_key: authority_keys_from_seed("Alice").0,
+                    public_key: authority_keys_from_seed("Alice").1,
                     expires_at: AUTHENTICATION_NEVER_EXPIRES,
                 }],
             )
@@ -159,7 +160,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                 robonode_public_key,
                 vec![],
                 vec![pallet_bioauth::Authentication {
-                    public_key: authority_keys_from_seed("Alice").0,
+                    public_key: authority_keys_from_seed("Alice").1,
                     expires_at: AUTHENTICATION_NEVER_EXPIRES,
                 }],
             )
@@ -185,7 +186,7 @@ fn testnet_genesis(
     endowed_accounts: Vec<AccountId>,
     robonode_public_key: RobonodePublicKeyWrapper,
     consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
-    active_authentications: Vec<Authentication<AccountId, UnixMilliseconds>>,
+    active_authentications: Vec<Authentication<BioauthId, UnixMilliseconds>>,
 ) -> GenesisConfig {
     GenesisConfig {
         system: SystemConfig {

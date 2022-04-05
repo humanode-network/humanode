@@ -78,6 +78,9 @@ pub type Signature = MultiSignature;
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
+/// Bioauth indetifier used in the consensus protocol.
+pub type BioauthId = BabeId;
+
 /// Balance of an account.
 pub type Balance = u128;
 
@@ -346,22 +349,25 @@ pub struct AuthenticationFullIdentificationOf;
 impl
     sp_runtime::traits::Convert<
         AccountId,
-        Option<pallet_bioauth::Authentication<AccountId, UnixMilliseconds>>,
+        Option<pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>>,
     > for AuthenticationFullIdentificationOf
 {
     fn convert(
         account_id: AccountId,
-    ) -> Option<pallet_bioauth::Authentication<AccountId, UnixMilliseconds>> {
+    ) -> Option<pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>> {
         let active_authentications = Bioauth::active_authentications().into_inner();
         active_authentications
             .iter()
-            .find(|authentication| authentication.public_key == account_id)
+            .find(|authentication| {
+                ValidatorPublicKeyOf::convert(authentication.public_key.clone()).unwrap_or_default()
+                    == account_id
+            })
             .cloned()
     }
 }
 
 impl pallet_session::historical::Config for Runtime {
-    type FullIdentification = pallet_bioauth::Authentication<AccountId, UnixMilliseconds>;
+    type FullIdentification = pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>;
     type FullIdentificationOf = AuthenticationFullIdentificationOf;
 }
 
@@ -438,14 +444,14 @@ pub enum PrimitiveAuthTicketConverterError {
     PublicKey(()),
 }
 
-impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<AccountId>>
+impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<BioauthId>>
     for PrimitiveAuthTicketConverter
 {
     type Error = PrimitiveAuthTicketConverterError;
 
     fn try_convert(
         value: OpaqueAuthTicket,
-    ) -> Result<pallet_bioauth::AuthTicket<AccountId>, Self::Error> {
+    ) -> Result<pallet_bioauth::AuthTicket<BioauthId>, Self::Error> {
         let primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce: nonce,
@@ -484,7 +490,7 @@ impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
     type RobonodeSignature = Vec<u8>;
-    type ValidatorPublicKey = AccountId;
+    type ValidatorPublicKey = BioauthId;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = ();
@@ -497,8 +503,15 @@ impl pallet_bioauth::Config for Runtime {
     type MaxNonces = MaxNonces;
 }
 
+pub struct ValidatorPublicKeyOf;
+impl sp_runtime::traits::Convert<BioauthId, Option<AccountId>> for ValidatorPublicKeyOf {
+    fn convert(bioauth_id: BioauthId) -> Option<AccountId> {
+        Session::key_owner(BioauthId::ID, bioauth_id.as_slice())
+    }
+}
+
 impl pallet_bioauth_session::Config for Runtime {
-    type ValidatorPublicKeyOf = IdentityValidatorIdOf;
+    type ValidatorPublicKeyOf = ValidatorPublicKeyOf;
 }
 
 pub fn get_ethereum_address(authority_id: BabeId) -> H160 {
@@ -744,28 +757,20 @@ impl_runtime_apis! {
         }
     }
 
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
-        fn is_authorized(id: &BabeId) -> bool {
-            let id = match Session::key_owner(BabeId::ID, id.as_slice()) {
-                Some(account_id) => account_id,
-                None => return false,
-            };
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, BioauthId> for Runtime {
+        fn is_authorized(id: &BioauthId) -> bool {
             Bioauth::active_authentications().into_inner()
                 .iter()
-                .any(|stored_public_key| stored_public_key.public_key == id)
+                .any(|stored_public_key| &stored_public_key.public_key == id)
         }
     }
 
-    impl bioauth_flow_api::BioauthFlowApi<Block, BabeId, UnixMilliseconds> for Runtime {
-        fn bioauth_status(id: &BabeId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
-            let id = match Session::key_owner(BabeId::ID, id.as_slice()) {
-                Some(account_id) => account_id,
-                None => return bioauth_flow_api::BioauthStatus::Inactive,
-            };
+    impl bioauth_flow_api::BioauthFlowApi<Block, BioauthId, UnixMilliseconds> for Runtime {
+        fn bioauth_status(id: &BioauthId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()
-                .find(|stored_public_key| stored_public_key.public_key == id);
+                .find(|stored_public_key| &stored_public_key.public_key == id);
             match maybe_active_authentication {
                 None => bioauth_flow_api::BioauthStatus::Inactive,
                 Some(v) => bioauth_flow_api::BioauthStatus::Active {
@@ -1057,6 +1062,27 @@ impl_runtime_apis! {
 
     #[cfg(feature = "runtime-benchmarks")]
     impl frame_benchmarking::Benchmark<Block> for Runtime {
+        fn benchmark_metadata(extra: bool) -> (
+            Vec<frame_benchmarking::BenchmarkList>,
+            Vec<frame_support::traits::StorageInfo>,
+        ) {
+            use frame_benchmarking::{list_benchmark, baseline, Benchmarking, BenchmarkList};
+            use frame_support::traits::StorageInfoTrait;
+            use frame_system_benchmarking::Pallet as SystemBench;
+            use baseline::Pallet as BaselineBench;
+
+            let mut list = Vec::<BenchmarkList>::new();
+
+            list_benchmark!(list, extra, frame_benchmarking, BaselineBench::<Runtime>);
+            list_benchmark!(list, extra, frame_system, SystemBench::<Runtime>);
+            list_benchmark!(list, extra, pallet_balances, Balances);
+            list_benchmark!(list, extra, pallet_timestamp, Timestamp);
+
+            let storage_info = AllPalletsWithSystem::storage_info();
+
+            (list, storage_info)
+        }
+
         fn dispatch_benchmark(
             config: frame_benchmarking::BenchmarkConfig
         ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
@@ -1092,6 +1118,7 @@ impl_runtime_apis! {
             add_benchmark!(params, batches, frame_benchmarking, BaselineBench::<Runtime>);
             add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
             add_benchmark!(params, batches, pallet_balances, Balances);
+            add_benchmark!(params, batches, pallet_timestamp, Timestamp);
 
             Ok(batches)
         }
