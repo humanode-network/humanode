@@ -78,8 +78,11 @@ pub type Signature = MultiSignature;
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
-/// Bioauth indetifier used in the consensus protocol.
-pub type BioauthId = BabeId;
+/// Bioauth indetifier used in the consensus part.
+pub type BioauthConsensusId = BabeId;
+
+/// Bioauth indetifier used outside the consensus part.
+pub type BioauthId = AccountId;
 
 /// Balance of an account.
 pub type Balance = u128;
@@ -358,10 +361,7 @@ impl
         let active_authentications = Bioauth::active_authentications().into_inner();
         active_authentications
             .iter()
-            .find(|authentication| {
-                ValidatorPublicKeyOf::convert(authentication.public_key.clone()).unwrap_or_default()
-                    == account_id
-            })
+            .find(|authentication| authentication.public_key == account_id)
             .cloned()
     }
 }
@@ -503,15 +503,8 @@ impl pallet_bioauth::Config for Runtime {
     type MaxNonces = MaxNonces;
 }
 
-pub struct ValidatorPublicKeyOf;
-impl sp_runtime::traits::Convert<BioauthId, Option<AccountId>> for ValidatorPublicKeyOf {
-    fn convert(bioauth_id: BioauthId) -> Option<AccountId> {
-        Session::key_owner(BioauthId::ID, bioauth_id.as_slice())
-    }
-}
-
 impl pallet_bioauth_session::Config for Runtime {
-    type ValidatorPublicKeyOf = ValidatorPublicKeyOf;
+    type ValidatorPublicKeyOf = IdentityValidatorIdOf;
 }
 
 pub fn get_ethereum_address(authority_id: BabeId) -> H160 {
@@ -757,20 +750,28 @@ impl_runtime_apis! {
         }
     }
 
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, BioauthId> for Runtime {
-        fn is_authorized(id: &BioauthId) -> bool {
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
+        fn is_authorized(id: &BabeId) -> bool {
+            let id = match Session::key_owner(BabeId::ID, id.as_slice()) {
+                Some(account_id) => account_id,
+                None => return false,
+            };
             Bioauth::active_authentications().into_inner()
                 .iter()
-                .any(|stored_public_key| &stored_public_key.public_key == id)
+                .any(|stored_public_key| stored_public_key.public_key == id)
         }
     }
 
-    impl bioauth_flow_api::BioauthFlowApi<Block, BioauthId, UnixMilliseconds> for Runtime {
-        fn bioauth_status(id: &BioauthId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+    impl bioauth_flow_api::BioauthFlowApi<Block, BabeId, UnixMilliseconds> for Runtime {
+        fn bioauth_status(id: &BabeId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+            let id = match Session::key_owner(BabeId::ID, id.as_slice()) {
+                Some(account_id) => account_id,
+                None => return bioauth_flow_api::BioauthStatus::Inactive,
+            };
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()
-                .find(|stored_public_key| &stored_public_key.public_key == id);
+                .find(|stored_public_key| stored_public_key.public_key == id);
             match maybe_active_authentication {
                 None => bioauth_flow_api::BioauthStatus::Inactive,
                 Some(v) => bioauth_flow_api::BioauthStatus::Active {
