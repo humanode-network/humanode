@@ -1,11 +1,9 @@
-//! Bioauth key generate subcommand.
+//! Bioauth key inspect subcommand logic.
 
+use super::BioauthPair;
 use bip39::{Language, Mnemonic};
 use sc_cli::{utils, OutputTypeFlag};
 use structopt::StructOpt;
-
-/// Bioauth key pair scheme type.
-pub type BioauthPair = sp_core::sr25519::Pair;
 
 /// The `bioauth key generate` command.
 #[derive(Debug, StructOpt)]
@@ -26,7 +24,9 @@ impl InspectKeyCmd {
             .map_err(|err| sc_cli::Error::Input(err.to_string()))?;
         let output = self.output_scheme.output_type;
 
-        // We don't use a password for keystore at the current moment. That's why None is passed.
+        // Password is None as we don't use it for keystore at the current moment.
+        // Network_override is None as we don't allow to override network type as
+        // the subcommand is used for Bioauth network explicitly.
         utils::print_from_uri::<BioauthPair>(mnemonic.phrase(), None, None, output);
 
         Ok(())

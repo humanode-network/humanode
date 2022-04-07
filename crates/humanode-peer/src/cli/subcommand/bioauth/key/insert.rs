@@ -1,6 +1,6 @@
-//! Bioauth key management subcommands.
+//! Bioauth key insert subcommand logic.
 
-use humanode_runtime::BioauthId;
+use super::BioauthId;
 use sc_cli::{utils, CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
 use sp_application_crypto::{AppKey, AppPublic};
