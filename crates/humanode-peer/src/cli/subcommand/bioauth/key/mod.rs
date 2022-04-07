@@ -4,6 +4,7 @@ use structopt::StructOpt;
 
 pub mod generate;
 pub mod insert;
+pub mod inspect;
 pub mod list;
 
 /// Subcommands for the `bioauth key` command.
@@ -11,6 +12,8 @@ pub mod list;
 pub enum KeyCmd {
     /// Generate the bioauth key.
     Generate(generate::GenerateKeyCmd),
+    /// Inspect the bioauth key.
+    Inspect(inspect::InspectKeyCmd),
     /// Insert the bioauth key.
     Insert(insert::InsertKeyCmd),
     /// List the bioauth keys.

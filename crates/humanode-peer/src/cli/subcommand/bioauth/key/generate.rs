@@ -1,9 +1,11 @@
-//! Bioauth key management subcommands.
+//! Bioauth key generate subcommand.
 
 use bip39::{Language, Mnemonic, MnemonicType};
 use sc_cli::{utils, OutputTypeFlag};
-use sp_core::sr25519;
 use structopt::StructOpt;
+
+/// Bioauth key pair scheme type.
+pub type BioauthPair = sp_core::sr25519::Pair;
 
 /// The `bioauth key generate` command.
 #[derive(Debug, StructOpt)]
@@ -38,7 +40,8 @@ impl GenerateKeyCmd {
         let output = self.output_scheme.output_type;
 
         // We don't use a password for keystore at the current moment. That's why None is passed.
-        utils::print_from_uri::<sr25519::Pair>(mnemonic.phrase(), None, None, output);
+        // We don't allow to override network type as the subcommand is for Bioauth network explicitly
+        utils::print_from_uri::<BioauthPair>(mnemonic.phrase(), None, None, output);
 
         Ok(())
     }

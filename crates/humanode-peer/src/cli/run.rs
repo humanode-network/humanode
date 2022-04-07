@@ -92,6 +92,9 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::Generate(
             cmd,
         )))) => cmd.run().await,
+        Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::Inspect(cmd)))) => {
+            cmd.run().await
+        }
         Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::Insert(cmd)))) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner
