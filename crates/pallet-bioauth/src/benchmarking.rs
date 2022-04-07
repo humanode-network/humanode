@@ -1,26 +1,15 @@
-#![cfg(feature = "runtime-benchmarks")]
-
 use crate::{Pallet as Bioauth, *};
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
 use frame_support::{traits::Get, WeakBoundedVec};
 use frame_system::RawOrigin;
-use primitives_auth_ticket::AuthTicket;
+use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 
-fn make_auth_ticket(id: u8) -> Vec<u8> {
-    // Create public key
-    let mut public_key: Vec<u8> = vec![0u8; 32];
-    let prefix = vec![112, 107, 101, 121, id]; // "pkey{}"
-    &public_key[..prefix.len()].copy_from_slice(&prefix);
-
-    // Create unique authentication_nonce
-    let authentication_nonce: Vec<u8> = vec![110, 111, 110, 99, 101, id]; // "nonce{}"
-
-    // Create Auth Ticket
-    let auth_ticket = AuthTicket {
-        public_key,
-        authentication_nonce,
-    };
-    auth_ticket.encode()
+fn make_pubkey(idx: u8) -> Vec<u8> {
+    let mut pkey = vec![0; 32];
+    let mut prefix: Vec<u8> = Vec::from("public_key");
+    prefix.push(idx); // Make it "public_key{}"
+    pkey[..prefix.len()].copy_from_slice(&prefix);
+    pkey
 }
 
 fn assert_authticket_nonces_are_eq(
@@ -34,14 +23,24 @@ fn assert_authticket_nonces_are_eq(
 }
 
 benchmarks! {
+    where_clause {
+        where T::OpaqueAuthTicket: From<OpaqueAuthTicket>, T::RobonodeSignature: From<Vec<u8>>
+    }
+
     authenticate {
         let i in 0..T::MaxAuthentications::get();
-        let ticket_encoded = make_auth_ticket(i as u8);
-        let ticket: T::OpaqueAuthTicket = ticket_encoded.into();
-        let ticket_signature: T::RobonodeSignature = Vec::from("signature").into();
+        let public_key = make_pubkey(i as u8);
+        let new_ticket = OpaqueAuthTicket::from(
+            &AuthTicket {
+                public_key,
+                authentication_nonce: Vec::from("nonce"),
+            }
+        );
+        let ticket: T::OpaqueAuthTicket = new_ticket.into();
+        //let ticket_signature: T::RobonodeSignature = Vec::from("signature").into();
         let authenticate_req = Authenticate {
             ticket,
-            ticket_signature,
+            ticket_signature: Vec::from("signature").into(),
         };
     }: _(RawOrigin::None, authenticate_req)
 
@@ -49,7 +48,7 @@ benchmarks! {
         // Verify consumed auth_ticket nonces
         let consumed_nonces = ConsumedAuthTicketNonces::<T>::get();
         assert_eq!(consumed_nonces.len(), 1);
-        let expected_nonce: WeakBoundedVec<u8, AuthTicketNonceMaxBytes> = vec![110, 111, 110, 99, 101, i as u8].try_into().unwrap();
+        let expected_nonce: WeakBoundedVec<u8, AuthTicketNonceMaxBytes> = Vec::from("nonce").try_into().unwrap();
         assert_eq!(assert_authticket_nonces_are_eq(&expected_nonce, &consumed_nonces[0]), true);
 
 
@@ -60,12 +59,9 @@ benchmarks! {
         assert_eq!(active_authentications.len(), 2);
 
         // Expected pubkey
-        let mut expected: Vec<u8> = vec![0u8; 32];
-        let prefix = vec![112, 107, 101, 121, 0]; // "pkey0"
-        &expected[..prefix.len()].copy_from_slice(&prefix);
-
+        let expected_pubkey = make_pubkey(0 as u8);
         let observed_pubkey: Vec<u8> = active_authentications[1].public_key.encode();
-        assert_eq!(observed_pubkey, observed_pubkey);
+        assert_eq!(observed_pubkey, expected_pubkey);
 
     }
 

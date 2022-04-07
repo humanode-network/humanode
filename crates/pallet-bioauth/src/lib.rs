@@ -20,6 +20,7 @@ use sp_std::fmt::Debug;
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 
+#[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 pub mod weights;
 
@@ -160,7 +161,7 @@ pub mod pallet {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
         /// The type of the robonode signature.
-        type RobonodeSignature: Member + Parameter + From<Vec<u8>>;
+        type RobonodeSignature: Member + Parameter;
 
         /// The public key of the robonode.
         type RobonodePublicKey: Member
@@ -178,7 +179,7 @@ pub mod pallet {
             + MaxEncodedLen;
 
         /// The opaque auth ticket type.
-        type OpaqueAuthTicket: Parameter + AsRef<[u8]> + Send + Sync + From<Vec<u8>>;
+        type OpaqueAuthTicket: Parameter + AsRef<[u8]> + Send + Sync;
 
         /// A converter from an opaque to a transparent auth ticket.
         type AuthTicketCoverter: TryConvert<
