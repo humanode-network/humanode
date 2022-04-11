@@ -8,5 +8,5 @@
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
-  "rust-analyzer.cargo.features": ["logic-integration-tests"]
+  "rust-analyzer.cargo.features": ["logic-integration-tests", "runtime-benchmarks"]
 }

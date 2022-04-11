@@ -4837,6 +4837,7 @@ dependencies = [
  "frame-system",
  "mockall",
  "parity-scale-codec",
+ "primitives-auth-ticket",
  "scale-info",
  "serde",
  "sp-api",
