@@ -750,9 +750,9 @@ impl_runtime_apis! {
         }
     }
 
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, BabeId> for Runtime {
-        fn is_authorized(id: &BabeId) -> bool {
-            let id = match Session::key_owner(BabeId::ID, id.as_slice()) {
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, BioauthConsensusId> for Runtime {
+        fn is_authorized(id: &BioauthConsensusId) -> bool {
+            let id = match Session::key_owner(BioauthConsensusId::ID, id.as_slice()) {
                 Some(account_id) => account_id,
                 None => return false,
             };
@@ -762,9 +762,9 @@ impl_runtime_apis! {
         }
     }
 
-    impl bioauth_flow_api::BioauthFlowApi<Block, BabeId, UnixMilliseconds> for Runtime {
-        fn bioauth_status(id: &BabeId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
-            let id = match Session::key_owner(BabeId::ID, id.as_slice()) {
+    impl bioauth_flow_api::BioauthFlowApi<Block, BioauthConsensusId, UnixMilliseconds> for Runtime {
+        fn bioauth_status(id: &BioauthConsensusId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+            let id = match Session::key_owner(BioauthConsensusId::ID, id.as_slice()) {
                 Some(account_id) => account_id,
                 None => return bioauth_flow_api::BioauthStatus::Inactive,
             };
