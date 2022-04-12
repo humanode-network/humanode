@@ -81,7 +81,7 @@ pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::Account
 /// Bioauth indetifier used in the consensus part.
 pub type BioauthConsensusId = BabeId;
 
-/// Bioauth indetifier used outside the consensus part.
+/// The bioauth identity of a human.
 pub type BioauthId = AccountId;
 
 /// Balance of an account.
