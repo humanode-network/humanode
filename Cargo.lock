@@ -2830,6 +2830,7 @@ dependencies = [
  "pallet-balances",
  "pallet-base-fee",
  "pallet-bioauth",
+ "pallet-bioauth-session",
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
@@ -2839,6 +2840,7 @@ dependencies = [
  "pallet-evm-precompile-simple",
  "pallet-grandpa",
  "pallet-randomness-collective-flip",
+ "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
@@ -2849,6 +2851,7 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-api",
+ "sp-application-crypto",
  "sp-block-builder",
  "sp-consensus-babe",
  "sp-core",
@@ -4842,6 +4845,20 @@ dependencies = [
  "sp-api",
  "sp-core",
  "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-bioauth-session"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-bioauth",
+ "pallet-session",
+ "parity-scale-codec",
+ "scale-info",
  "sp-runtime",
  "sp-std",
 ]
