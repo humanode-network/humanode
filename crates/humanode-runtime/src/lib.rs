@@ -78,7 +78,8 @@ pub type Signature = MultiSignature;
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
-/// Bioauth indetifier used in the consensus part.
+/// Consensus identity used to tie the consensus signatures to the bioauth identity
+/// via session pallet's key ownership logic.
 pub type BioauthConsensusId = BabeId;
 
 /// The bioauth identity of a human.
