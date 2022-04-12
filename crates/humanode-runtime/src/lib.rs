@@ -330,15 +330,15 @@ impl pallet_babe::Config for Runtime {
 }
 
 pub struct IdentityValidatorIdOf;
-impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for IdentityValidatorIdOf {
-    fn convert(account_id: AccountId) -> Option<AccountId> {
+impl sp_runtime::traits::Convert<AccountId, Option<BioauthId>> for IdentityValidatorIdOf {
+    fn convert(account_id: AccountId) -> Option<BioauthId> {
         Some(account_id)
     }
 }
 
 impl pallet_session::Config for Runtime {
     type Event = Event;
-    type ValidatorId = AccountId;
+    type ValidatorId = BioauthId;
     type ValidatorIdOf = IdentityValidatorIdOf;
     type ShouldEndSession = Babe;
     type NextSessionRotation = Babe;
