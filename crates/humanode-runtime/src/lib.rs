@@ -330,6 +330,8 @@ impl pallet_babe::Config for Runtime {
     type MaxAuthorities = MaxAuthorities;
 }
 
+/// A link between the [`AccountId`] as in what we use to sign extrinsics in the system
+/// to the [`BioauthId`] as in what we use to identify to the robonode and tie the biometrics to.
 pub struct IdentityValidatorIdOf;
 impl sp_runtime::traits::Convert<AccountId, Option<BioauthId>> for IdentityValidatorIdOf {
     fn convert(account_id: AccountId) -> Option<BioauthId> {
