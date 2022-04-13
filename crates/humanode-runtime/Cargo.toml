@@ -13,6 +13,7 @@ bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", de
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
+pallet-bioauth-session = { version = "0.1", path = "../pallet-bioauth-session", default-features = false }
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
@@ -41,6 +42,9 @@ pallet-evm-precompile-sha3fips = { default-features = false, git = "https://gith
 pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-session = { default-features = false, features = [
+  "historical",
+], git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -50,6 +54,7 @@ scale-info = { version = "1.0", default-features = false, features = [
 ] }
 serde = { version = "1", features = ["derive"], optional = true }
 sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-application-crypto = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -89,6 +94,7 @@ std = [
   "frame-system-rpc-runtime-api/std",
   "pallet-babe/std",
   "pallet-bioauth/std",
+  "pallet-bioauth-session/std",
   "pallet-balances/std",
   "pallet-base-fee/std",
   "pallet-ethereum/std",
@@ -99,11 +105,13 @@ std = [
   "pallet-dynamic-fee/std",
   "pallet-grandpa/std",
   "pallet-randomness-collective-flip/std",
+  "pallet-session/std",
   "pallet-sudo/std",
   "pallet-timestamp/std",
   "pallet-transaction-payment/std",
   "pallet-transaction-payment-rpc-runtime-api/std",
   "robonode-crypto/std",
+  "sp-application-crypto/std",
   "sp-api/std",
   "sp-block-builder/std",
   "sp-consensus-babe/std",

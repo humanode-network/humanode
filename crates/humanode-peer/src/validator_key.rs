@@ -117,11 +117,11 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use humanode_runtime::BioauthId;
+    use humanode_runtime::BioauthConsensusId;
 
     #[test]
     fn display() {
-        let key = AppCryptoPublic(BioauthId::default());
+        let key = AppCryptoPublic(BioauthConsensusId::default());
         assert_eq!(
             key.to_string(),
             "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -130,7 +130,7 @@ mod tests {
 
     #[test]
     fn display_does_not_match_raw_key() {
-        let key = BioauthId::default();
+        let key = BioauthConsensusId::default();
         assert_ne!(key.to_string(), AppCryptoPublic(key).to_string());
     }
 }
