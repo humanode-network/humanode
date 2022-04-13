@@ -210,43 +210,37 @@ async fn enroll_success() {
     assert!(res.body().is_empty());
 }
 
-/// This test verifies getting expected HTTP response
-/// during failer enrollment request with InvalidPublicKey error.
-#[tokio::test]
-async fn enroll_error_invalid_public_key() {
-    let input = op_enroll::Request {
-        public_key: b"key".to_vec(),
-        liveness_data: OpaqueLivenessData(b"data".to_vec()),
-    };
+trivial_tests! [
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InvalidPublicKey error.
+    {
+        test_name = enroll_error_invalid_public_key,
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InvalidPublicKey,
+        expected_status = StatusCode::BAD_REQUEST,
+        expected_code = "ENROLL_INVALID_PUBLIC_KEY",
+    },
 
-    do_error_and_verify_expected_behaviour!(
-        "/enroll",
-        input,
-        expect_enroll,
-        op_enroll::Error::InvalidPublicKey,
-        StatusCode::BAD_REQUEST,
-        "ENROLL_INVALID_PUBLIC_KEY"
-    );
-}
-
-/// This test verifies getting expected HTTP response
-/// during failer enrollment request with InvalidLivenessData error.
-#[tokio::test]
-async fn enroll_error_invalid_liveness_data() {
-    let input = op_enroll::Request {
-        public_key: b"key".to_vec(),
-        liveness_data: OpaqueLivenessData(b"data".to_vec()),
-    };
-
-    do_error_and_verify_expected_behaviour!(
-        "/enroll",
-        input,
-        expect_enroll,
-        op_enroll::Error::InvalidLivenessData(codec::Error::from("invalid_data",)),
-        StatusCode::BAD_REQUEST,
-        "ENROLL_INVALID_LIVENESS_DATA"
-    );
-}
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InvalidLivenessData error.
+    {
+        test_name = enroll_error_invalid_liveness_data,
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InvalidLivenessData(codec::Error::from("invalid_data")),
+        expected_status = StatusCode::BAD_REQUEST,
+        expected_code = "ENROLL_INVALID_LIVENESS_DATA",
+    },
+];
 
 /// This test verifies getting expected HTTP response
 /// during failer enrollment request with FaceScanRejected error.
