@@ -45,7 +45,7 @@ benchmarks! {
         let ticket_signature: T::RobonodeSignature = make_signature(i as u8).into();
 
         let authenticate_req = Authenticate {
-            ticket: auth_ticket_final,
+            ticket: opaque_auth_ticket,
             ticket_signature,
         };
 
