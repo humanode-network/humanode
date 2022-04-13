@@ -40,7 +40,7 @@ benchmarks! {
 
         let pkey = make_pubkey(i as u8);
         let auth_ticket = make_auth_ticket(pkey.to_vec().clone());
-        let auth_ticket_final: T::OpaqueAuthTicket = auth_ticket.into();
+        let opaque_auth_ticket: T::OpaqueAuthTicket = auth_ticket.into();
 
         let ticket_signature: T::RobonodeSignature = make_signature(i as u8).into();
 
