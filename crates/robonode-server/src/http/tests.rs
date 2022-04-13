@@ -60,6 +60,46 @@ macro_rules! do_error_and_verify_expected_behaviour {
     };
 }
 
+macro_rules! trivial_tests {
+    (
+        $(
+            $(#[$test_meta:meta])*
+            {
+                test_name = $test_name:ident,
+                path = $request:expr,
+                input = $input:expr,
+                mocked_call = $expect:ident,
+                injected_error = $mock_error:expr,
+                expected_status = $status_code:expr,
+                expected_code = $error_code:expr,
+            },
+        )*
+    ) => {
+        $(
+            $(#[$test_meta])*
+            #[tokio::test]
+            async fn $test_name() {
+                let mut mock_logic = MockLogic::new();
+                mock_logic.$expect().returning(|_| Err($mock_error));
+
+                let filter = root_with_error_handler(mock_logic);
+
+                let res = warp::test::request()
+                    .method("POST")
+                    .path($request)
+                    .json(&$input)
+                    .reply(&filter)
+                    .await;
+
+                let expected_body_response = expect_body_response($status_code, $error_code).await;
+
+                assert_eq!(res.status(), $status_code);
+                assert_eq!(res.body(), &expected_body_response);
+            }
+        )*
+    };
+}
+
 impl_LogicOp!(
     MockLogic,
     op_enroll::Request,
