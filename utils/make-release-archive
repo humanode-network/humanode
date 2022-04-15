@@ -1,0 +1,24 @@
+#!/bin/bash
+set -euo pipefail
+
+EXECUTABLE_NAME="${1?Pass the executable name as the first argument}"
+DEST_ARCHIVE="${2?Pass the path to create the archive at as the second argument}"
+
+if command -v grealpath &>/dev/null; then
+  REALPATH="grealpath"
+else
+  REALPATH="realpath"
+fi
+
+EXECUTABLE_NAME="$("$REALPATH" "$EXECUTABLE_NAME")"
+DEST_ARCHIVE="$("$REALPATH" "$DEST_ARCHIVE")"
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+ARCHIVE_DIR="target/release-archive"
+
+rm -rf "$ARCHIVE_DIR"
+mkdir -p "$ARCHIVE_DIR"
+
+cp "$EXECUTABLE_NAME" "$ARCHIVE_DIR"
+tar -czvf "$DEST_ARCHIVE" -C "$ARCHIVE_DIR" .
