@@ -10,7 +10,7 @@ pub mod list;
 /// Bioauth identifier used at the keystore.
 pub type BioauthId = humanode_runtime::BioauthId;
 /// Bioauth key pair scheme type used at the keystore.
-pub type BioauthPair = sp_core::sr25519::Pair;
+pub type BioauthPair = <<BioauthId as sp_application_crypto::CryptoType>::Pair as sp_application_crypto::AppPair>::Generic;
 
 /// Subcommands for the `bioauth key` command.
 #[derive(Debug, StructOpt)]
