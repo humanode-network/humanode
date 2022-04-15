@@ -2731,6 +2731,7 @@ dependencies = [
  "pallet-bioauth",
  "pallet-dynamic-fee",
  "pallet-evm",
+ "pallet-im-online",
  "parity-scale-codec",
  "qr2term",
  "reqwest",
@@ -2839,6 +2840,7 @@ dependencies = [
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
  "pallet-grandpa",
+ "pallet-im-online",
  "pallet-randomness-collective-flip",
  "pallet-session",
  "pallet-sudo",
@@ -5003,6 +5005,25 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-session",
+ "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-im-online"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-authorship",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
  "sp-staking",
  "sp-std",
 ]
