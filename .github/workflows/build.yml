@@ -80,13 +80,6 @@ jobs:
         uses: actions/checkout@v2
         timeout-minutes: 5
 
-      - name: Cache rustup
-        uses: actions/cache@v2
-        with:
-          path: |
-            /usr/share/rust/.rustup
-          key: ${{ matrix.platform.cacheKey }}-rustup-${{ hashFiles('rust-toolchain.toml') }}
-
       - name: Install rust toolchain
         run: rustup show
         timeout-minutes: 10
@@ -104,17 +97,6 @@ jobs:
           cargo --version
           cargo clippy --version
           env
-
-      - name: Cache cargo
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ matrix.platform.cacheKey }}-cargo-${{ matrix.mode.cargoCacheKey }}-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - name: Run cargo ${{ matrix.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
