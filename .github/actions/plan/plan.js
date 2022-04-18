@@ -10,6 +10,7 @@ const allPlatforms = {
     essential: true,
     env: {},
     cacheKey: "ubuntu-amd64",
+    isBroken: false,
   },
   windows: {
     name: "Windows",
@@ -20,6 +21,7 @@ const allPlatforms = {
       CARGO_INCREMENTAL: "0"
     },
     cacheKey: "windows-amd64",
+    isBroken: true,
   },
   macos: {
     name: "macOS (amd64)",
@@ -28,6 +30,7 @@ const allPlatforms = {
     essential: false,
     env: {},
     cacheKey: "macos-amd64",
+    isBroken: false,
   },
   macos_aarch64: {
     name: "macOS (aarch64)",
@@ -36,6 +39,7 @@ const allPlatforms = {
     essential: false,
     env: {},
     cacheKey: "macos-aarch64",
+    isBroken: false,
   },
 };
 
@@ -82,7 +86,7 @@ const buildModes = {
 
 const code = () => {
   // Compute the effective list of platforms to use.
-  const effectivePlatforms = Object.values(allPlatforms).filter(platform => platform.essential);
+  const effectivePlatforms = Object.values(allPlatforms).filter(platform => !platform.isBroken && platform.essential);
 
   // Compute the effective list of modes that should run for each of the platforms.
   const effectiveModes = Object.values(codeModes).filter(mode => !mode.platformIndependent);
@@ -114,7 +118,7 @@ const code = () => {
 
 const build = () => {
   // Compute the effective list of platforms to use.
-  const effectivePlatforms = Object.values(allPlatforms);
+  const effectivePlatforms = Object.values(allPlatforms).filter(platform => !platform.isBroken);
 
   // Compute the effective list of modes that should run for each of the platforms.
   const effectiveModes = Object.values(buildModes);
