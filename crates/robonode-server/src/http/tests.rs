@@ -149,12 +149,6 @@ fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk
     }
 }
 
-fn root_with_error_handler(
-    logic: MockLogic,
-) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone {
-    root(Arc::new(logic)).recover(rejection::handle)
-}
-
 async fn expect_error_body_response(
     status_code: StatusCode,
     error_code: &'static str,
@@ -162,6 +156,12 @@ async fn expect_error_body_response(
     let json = warp::reply::json(&rejection::ErrorResponse { error_code });
     let response = warp::reply::with_status(json, status_code).into_response();
     warp::hyper::body::to_bytes(response).await.unwrap()
+}
+
+fn root_with_error_handler(
+    logic: MockLogic,
+) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone {
+    root(Arc::new(logic)).recover(rejection::handle)
 }
 
 /// This test verifies getting expected HTTP response during succesfull enrollment.
@@ -215,7 +215,7 @@ async fn authenticate_success() {
     let expected_response = serde_json::to_string(&provide_authenticate_response()).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
+    assert_eq!(res.body(), expected_response.as_bytes());
 }
 
 /// This test verifies getting expected HTTP response during
@@ -241,7 +241,7 @@ async fn get_facetec_session_token_success() {
     let expected_response = serde_json::to_string(&provide_facetec_session_token()).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
+    assert_eq!(res.body(), expected_response.as_bytes());
 }
 
 /// This test verifies getting expected HTTP response during
@@ -268,7 +268,7 @@ async fn get_facetec_device_sdk_params_in_dev_mode() {
         serde_json::to_string(&provide_facetec_device_sdk_params_in_dev_mode()).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
+    assert_eq!(res.body(), expected_response.as_bytes());
 }
 
 /// This test verifies getting expected HTTP response during
@@ -295,7 +295,7 @@ async fn get_facetec_device_sdk_params_in_prod_mode() {
         serde_json::to_string(&provide_facetec_device_sdk_params_in_prod_mode()).unwrap();
 
     assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
+    assert_eq!(res.body(), expected_response.as_bytes());
 }
 
 /// This test verifies getting expected HTTP response during
@@ -325,7 +325,7 @@ async fn get_public_key() {
         .await;
 
     assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
+    assert_eq!(res.body(), expected_response.as_bytes());
 }
 
 trivial_tests! [
