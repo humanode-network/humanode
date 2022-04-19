@@ -39,7 +39,7 @@ macro_rules! impl_LogicOp {
     };
 }
 
-macro_rules! trivial_tests {
+macro_rules! trivial_error_tests {
     (
         $(
             $(#[$test_meta:meta])*
@@ -328,7 +328,7 @@ async fn get_public_key() {
     assert_eq!(res.body(), expected_response.as_bytes());
 }
 
-trivial_tests! [
+trivial_error_tests! [
     /// This test verifies getting expected HTTP response
     /// during failer enrollment request with InvalidPublicKey error.
     {
