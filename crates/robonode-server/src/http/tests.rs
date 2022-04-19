@@ -71,8 +71,6 @@ macro_rules! trivial_success_tests {
                     .reply(&filter)
                     .await;
 
-                // let mut expected_success_response = serde_json::to_string(&$mock_response()).unwrap();
-
                 assert_eq!(res.status(), $status_code);
                 assert_eq!(res.body(), &$expected_response);
             }
