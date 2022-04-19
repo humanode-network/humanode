@@ -49,7 +49,7 @@ macro_rules! trivial_error_tests {
                 path = $request:expr,
                 input = $input:expr,
                 mocked_call = $expect:ident,
-                injected_result = $mock_result:expr,
+                injected_error = $mock_error:expr,
                 expected_status = $status_code:expr,
                 expected_code = $error_code:expr,
             },
@@ -60,7 +60,7 @@ macro_rules! trivial_error_tests {
             #[tokio::test]
             async fn $test_name() {
                 let mut mock_logic = MockLogic::new();
-                mock_logic.$expect().returning(|_| $mock_result);
+                mock_logic.$expect().returning(|_| Err($mock_error));
 
                 let filter = root_with_error_handler(mock_logic);
 
@@ -71,10 +71,10 @@ macro_rules! trivial_error_tests {
                     .reply(&filter)
                     .await;
 
-                let expected_body_response = expect_error_body_response($status_code, $error_code).await;
+                let expected_error_body_response = expect_error_body_response($status_code, $error_code).await;
 
                 assert_eq!(res.status(), $status_code);
-                assert_eq!(res.body(), &expected_body_response);
+                assert_eq!(res.body(), &expected_error_body_response);
             }
         )*
     };
@@ -340,7 +340,7 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::InvalidPublicKey),
+        injected_error = op_enroll::Error::InvalidPublicKey,
         expected_status = StatusCode::BAD_REQUEST,
         expected_code = "ENROLL_INVALID_PUBLIC_KEY",
     },
@@ -356,7 +356,7 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::InvalidLivenessData(codec::Error::from("invalid_data"))),
+        injected_error = op_enroll::Error::InvalidLivenessData(codec::Error::from("invalid_data")),
         expected_status = StatusCode::BAD_REQUEST,
         expected_code = "ENROLL_INVALID_LIVENESS_DATA",
     },
@@ -372,7 +372,7 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::FaceScanRejected),
+        injected_error = op_enroll::Error::FaceScanRejected,
         expected_status = StatusCode::FORBIDDEN,
         expected_code = "ENROLL_FACE_SCAN_REJECTED",
     },
@@ -388,7 +388,7 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::PublicKeyAlreadyUsed),
+        injected_error = op_enroll::Error::PublicKeyAlreadyUsed,
         expected_status = StatusCode::CONFLICT,
         expected_code = "ENROLL_PUBLIC_KEY_ALREADY_USED",
     },
@@ -404,7 +404,7 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::PersonAlreadyEnrolled),
+        injected_error = op_enroll::Error::PersonAlreadyEnrolled,
         expected_status = StatusCode::CONFLICT,
         expected_code = "ENROLL_PERSON_ALREADY_ENROLLED",
     },
@@ -420,9 +420,9 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::InternalErrorEnrollment(facetec_api_client::Error::Server(ServerError {
+        injected_error = op_enroll::Error::InternalErrorEnrollment(facetec_api_client::Error::Server(ServerError {
             error_message: "error".to_owned()
-        }))),
+        })),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -438,7 +438,7 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::InternalErrorEnrollmentUnsuccessful),
+        injected_error = op_enroll::Error::InternalErrorEnrollmentUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -454,9 +454,9 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(ServerError {
+        injected_error = op_enroll::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(ServerError {
             error_message: "error".to_owned()
-        }))),
+        })),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -472,7 +472,7 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::InternalErrorDbSearchUnsuccessful),
+        injected_error = op_enroll::Error::InternalErrorDbSearchUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -488,9 +488,9 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::InternalErrorDbEnroll(facetec_api_client::Error::Server(ServerError {
+        injected_error = op_enroll::Error::InternalErrorDbEnroll(facetec_api_client::Error::Server(ServerError {
             error_message: "error".to_owned()
-        }))),
+        })),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -506,7 +506,7 @@ trivial_error_tests! [
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
         },
         mocked_call = expect_enroll,
-        injected_result = Err(op_enroll::Error::InternalErrorDbEnrollUnsuccessful),
+        injected_error = op_enroll::Error::InternalErrorDbEnrollUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -522,7 +522,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InvalidLivenessData(codec::Error::from("invalid_data"))),
+        injected_error = op_authenticate::Error::InvalidLivenessData(codec::Error::from("invalid_data")),
         expected_status = StatusCode::BAD_REQUEST,
         expected_code = "AUTHENTICATE_INVALID_LIVENESS_DATA",
     },
@@ -538,7 +538,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::FaceScanRejected),
+        injected_error = op_authenticate::Error::FaceScanRejected,
         expected_status = StatusCode::FORBIDDEN,
         expected_code = "AUTHENTICATE_FACE_SCAN_REJECTED",
     },
@@ -554,7 +554,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::PersonNotFound),
+        injected_error = op_authenticate::Error::PersonNotFound,
         expected_status = StatusCode::NOT_FOUND,
         expected_code = "AUTHENTICATE_PERSON_NOT_FOUND",
     },
@@ -570,7 +570,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::SignatureInvalid),
+        injected_error = op_authenticate::Error::SignatureInvalid,
         expected_status = StatusCode::FORBIDDEN,
         expected_code = "AUTHENTICATE_SIGNATURE_INVALID",
     },
@@ -586,11 +586,11 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InternalErrorEnrollment(facetec_api_client::Error::Server(
+        injected_error = op_authenticate::Error::InternalErrorEnrollment(facetec_api_client::Error::Server(
             ServerError {
                 error_message: "error".to_owned()
             }
-        ))),
+        )),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -606,7 +606,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InternalErrorEnrollmentUnsuccessful),
+        injected_error = op_authenticate::Error::InternalErrorEnrollmentUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -622,11 +622,11 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(
+        injected_error = op_authenticate::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(
             ServerError {
                 error_message: "error".to_owned()
             }
-        ))),
+        )),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -642,7 +642,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InternalErrorDbSearchUnsuccessful),
+        injected_error = op_authenticate::Error::InternalErrorDbSearchUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -658,7 +658,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch),
+        injected_error = op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -674,7 +674,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InternalErrorInvalidPublicKeyHex),
+        injected_error = op_authenticate::Error::InternalErrorInvalidPublicKeyHex,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -690,7 +690,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InternalErrorInvalidPublicKey),
+        injected_error = op_authenticate::Error::InternalErrorInvalidPublicKey,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -706,7 +706,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InternalErrorSignatureVerificationFailed),
+        injected_error = op_authenticate::Error::InternalErrorSignatureVerificationFailed,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -722,7 +722,7 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_result = Err(op_authenticate::Error::InternalErrorAuthTicketSigningFailed),
+        injected_error = op_authenticate::Error::InternalErrorAuthTicketSigningFailed,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
@@ -735,7 +735,7 @@ trivial_error_tests! [
         path = "/facetec-session-token",
         input = op_get_facetec_session_token::Request,
         mocked_call = expect_get_facetec_session_token,
-        injected_result = Err(op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful),
+        injected_error = op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
     },
