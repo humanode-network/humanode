@@ -49,7 +49,7 @@ macro_rules! trivial_success_tests {
                 path = $request:expr,
                 input = $input:expr,
                 mocked_call = $expect:ident,
-                injected_response = $mock_response:ident,
+                injected_response = $mock_response:expr,
                 expected_status = $status_code:expr,
                 expected_response = $expected_response:expr,
             },
@@ -60,7 +60,7 @@ macro_rules! trivial_success_tests {
             #[tokio::test]
             async fn $test_name() {
                 let mut mock_logic = MockLogic::new();
-                mock_logic.$expect().returning(|_| Ok($mock_response()));
+                mock_logic.$expect().returning(|_| Ok($mock_response));
 
                 let filter = root_with_error_handler(mock_logic);
 
@@ -72,7 +72,10 @@ macro_rules! trivial_success_tests {
                     .await;
 
                 assert_eq!(res.status(), $status_code);
-                assert_eq!(res.body(), &$expected_response);
+                assert_eq!(
+                    serde_json::from_slice::<serde_json::Value>(res.body()).unwrap_or_default(),
+                    $expected_response
+                );
             }
         )*
     };
@@ -159,45 +162,6 @@ impl_Logic!(
     get_public_key
 );
 
-fn provide_enroll_response() -> op_enroll::Response {
-    op_enroll::Response
-}
-
-fn provide_authenticate_response() -> op_authenticate::Response {
-    op_authenticate::Response {
-        auth_ticket: OpaqueAuthTicket(b"ticket".to_vec()),
-        auth_ticket_signature: b"signature".to_vec(),
-    }
-}
-
-fn provide_facetec_session_token() -> op_get_facetec_session_token::Response {
-    op_get_facetec_session_token::Response {
-        session_token: "token".to_owned(),
-    }
-}
-
-fn provide_facetec_device_sdk_params_in_dev_mode() -> op_get_facetec_device_sdk_params::Response {
-    op_get_facetec_device_sdk_params::Response {
-        public_face_map_encryption_key: "key".to_owned(),
-        device_key_identifier: "id".to_owned(),
-        production_key: None,
-    }
-}
-
-fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk_params::Response {
-    op_get_facetec_device_sdk_params::Response {
-        public_face_map_encryption_key: "key".to_owned(),
-        device_key_identifier: "id".to_owned(),
-        production_key: Some("ProdKey".to_owned()),
-    }
-}
-
-fn provide_public_key() -> op_get_public_key::Response {
-    op_get_public_key::Response {
-        public_key: b"test_public_key".to_vec(),
-    }
-}
-
 async fn expect_error_body_response(
     status_code: StatusCode,
     error_code: &'static str,
@@ -225,9 +189,9 @@ trivial_success_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
-        injected_response = provide_enroll_response,
+        injected_response = op_enroll::Response,
         expected_status = StatusCode::CREATED,
-        expected_response = "",
+        expected_response = serde_json::Value::default(),
     },
 
     /// This test verifies getting expected HTTP response during succesfull authentication request.
@@ -240,9 +204,15 @@ trivial_success_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_response = provide_authenticate_response,
+        injected_response = op_authenticate::Response {
+            auth_ticket: OpaqueAuthTicket(b"ticket".to_vec()),
+            auth_ticket_signature: b"signature".to_vec(),
+        },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::to_string(&provide_authenticate_response()).unwrap(),
+        expected_response = serde_json::json!({
+            "authTicket": b"ticket".to_vec(),
+            "authTicketSignature": b"signature".to_vec(),
+        }),
     },
 
     /// This test verifies getting expected HTTP response during
@@ -253,9 +223,13 @@ trivial_success_tests! [
         path = "/facetec-session-token",
         input = op_get_facetec_session_token::Request,
         mocked_call = expect_get_facetec_session_token,
-        injected_response = provide_facetec_session_token,
+        injected_response = op_get_facetec_session_token::Response {
+            session_token: "token".to_owned(),
+        },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::to_string(&provide_facetec_session_token()).unwrap(),
+        expected_response = serde_json::json!({
+            "sessionToken": "token",
+        }),
     },
 
     /// This test verifies getting expected HTTP response during
@@ -266,9 +240,17 @@ trivial_success_tests! [
         path = "/facetec-device-sdk-params",
         input = op_get_facetec_device_sdk_params::Request,
         mocked_call = expect_get_facetec_device_sdk_params,
-        injected_response = provide_facetec_device_sdk_params_in_prod_mode,
+        injected_response = op_get_facetec_device_sdk_params::Response {
+            public_face_map_encryption_key: "key".to_owned(),
+            device_key_identifier: "id".to_owned(),
+            production_key: Some("ProdKey".to_owned()),
+        },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::to_string(&provide_facetec_device_sdk_params_in_prod_mode()).unwrap(),
+        expected_response = serde_json::json!({
+            "publicFaceMapEncryptionKey": "key",
+            "deviceKeyIdentifier": "id",
+            "productionKey": "ProdKey",
+        }),
     },
 
     /// This test verifies getting expected HTTP response during
@@ -279,9 +261,16 @@ trivial_success_tests! [
         path = "/facetec-device-sdk-params",
         input = op_get_facetec_device_sdk_params::Request,
         mocked_call = expect_get_facetec_device_sdk_params,
-        injected_response = provide_facetec_device_sdk_params_in_dev_mode,
+        injected_response = op_get_facetec_device_sdk_params::Response {
+            public_face_map_encryption_key: "key".to_owned(),
+            device_key_identifier: "id".to_owned(),
+            production_key: None,
+        },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::to_string(&provide_facetec_device_sdk_params_in_dev_mode()).unwrap(),
+        expected_response = serde_json::json!({
+            "publicFaceMapEncryptionKey": "key",
+            "deviceKeyIdentifier": "id",
+        }),
     },
 
     /// This test verifies getting expected HTTP response during
@@ -292,9 +281,13 @@ trivial_success_tests! [
         path = "/public-key",
         input = op_get_public_key::Request,
         mocked_call = expect_get_public_key,
-        injected_response = provide_public_key,
+        injected_response = op_get_public_key::Response {
+            public_key: b"test_public_key".to_vec(),
+        },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::to_string(&provide_public_key()).unwrap(),
+        expected_response = serde_json::json!({
+            "publicKey": b"test_public_key".to_vec(),
+        }),
     },
 ];
 
