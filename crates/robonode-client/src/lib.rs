@@ -1,17 +1,14 @@
 //! Client API for the Humanode's Bioauth Robonode.
 
-#![warn(
-    missing_docs,
-    clippy::missing_docs_in_private_items,
-    clippy::clone_on_ref_ptr
-)]
-
 use thiserror::Error;
 
 mod authenticate;
 mod enroll;
+mod error_response;
 mod get_facetec_device_sdk_params;
 mod get_facetec_session_token;
+#[cfg(test)]
+mod test_utils;
 
 pub use authenticate::*;
 pub use enroll::*;

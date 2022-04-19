@@ -1,10 +1,5 @@
 //! Cryptographic primitives used by the robonode.
 
-#![warn(
-    missing_docs,
-    clippy::missing_docs_in_private_items,
-    clippy::clone_on_ref_ptr
-)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub use ed25519_dalek::{self, Signer, Verifier};

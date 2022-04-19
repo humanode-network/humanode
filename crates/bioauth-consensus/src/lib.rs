@@ -1,11 +1,5 @@
 //! A consensus layer of the bioauth.
 
-#![warn(
-    missing_docs,
-    clippy::missing_docs_in_private_items,
-    clippy::clone_on_ref_ptr
-)]
-
 use futures::{future, lock::Mutex, FutureExt};
 use sc_client_api::backend::Backend;
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
@@ -24,6 +18,9 @@ pub mod keystore;
 
 #[cfg(feature = "aura-integration")]
 pub mod aura;
+
+#[cfg(feature = "babe-integration")]
+pub mod babe;
 
 #[cfg(test)]
 mod mock;

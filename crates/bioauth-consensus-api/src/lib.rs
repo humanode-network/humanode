@@ -1,10 +1,5 @@
 //! The runtime API for the bioauth consensus.
 
-#![warn(
-    missing_docs,
-    clippy::missing_docs_in_private_items,
-    clippy::clone_on_ref_ptr
-)]
 #![cfg_attr(not(feature = "std"), no_std)]
 // `decl_runtime_apis` macro has issues.
 #![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]

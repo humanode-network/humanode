@@ -1,11 +1,5 @@
 //! Main entrypoint for the Humanode's Bioauth Robonode server.
 
-#![warn(
-    missing_docs,
-    clippy::missing_docs_in_private_items,
-    clippy::clone_on_ref_ptr
-)]
-
 use std::env::VarError;
 
 use tracing::info;
@@ -38,7 +32,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         production_key: facetec_production_key,
     };
 
-    let execution_id = uuid::Uuid::new_v4().to_string();
+    let execution_id = uuid::Uuid::new_v4();
 
     let root_filter = robonode_server::init(
         execution_id,

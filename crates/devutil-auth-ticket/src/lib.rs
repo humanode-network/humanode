@@ -1,19 +1,29 @@
+//! Auth Ticket development utilities.
+
 pub use hex::{decode, encode};
 pub use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 
 use robonode_crypto::{ed25519_dalek::Signer, Keypair};
 
+/// The input required to generate an auth ticket.
 pub struct Input {
+    /// The robonode keypair to use for authticket reponse signing.
     pub robonode_keypair: Vec<u8>,
+    /// The auth ticket to sign.
     pub auth_ticket: AuthTicket,
 }
 
+/// The output produced from this utility.
 pub struct Output {
+    /// The opaque auth ticket blob.
     pub auth_ticket: Vec<u8>,
+    /// The robonode signature.
     pub robonode_signature: Vec<u8>,
+    /// The public key from the robonode keypair.
     pub robonode_public_key: Vec<u8>,
 }
 
+/// Run the auth ticket devutil logic, producing an output for a given input.
 pub fn make(input: Input) -> Result<Output, anyhow::Error> {
     let Input {
         auth_ticket,

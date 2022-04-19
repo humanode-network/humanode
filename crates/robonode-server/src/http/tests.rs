@@ -222,6 +222,7 @@ trivial_success_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_response = provide_enroll_response,
@@ -307,11 +308,29 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InvalidPublicKey,
         expected_status = StatusCode::BAD_REQUEST,
         expected_code = "ENROLL_INVALID_PUBLIC_KEY",
+    },
+
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with SignatureInvalid error.
+    {
+        test_name = enroll_error_invalid_signature,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::SignatureInvalid,
+        expected_status = StatusCode::BAD_REQUEST,
+        expected_code = "ENROLL_SIGNATURE_INVALID",
     },
 
     /// This test verifies getting expected HTTP response
@@ -323,6 +342,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InvalidLivenessData(codec::Error::from("invalid_data")),
@@ -339,6 +359,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::FaceScanRejected,
@@ -355,6 +376,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::PublicKeyAlreadyUsed,
@@ -371,6 +393,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::PersonAlreadyEnrolled,
@@ -387,6 +410,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InternalErrorEnrollment(facetec_api_client::Error::Server(ServerError {
@@ -405,6 +429,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InternalErrorEnrollmentUnsuccessful,
@@ -421,6 +446,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(ServerError {
@@ -439,6 +465,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InternalErrorDbSearchUnsuccessful,
@@ -455,6 +482,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InternalErrorDbEnroll(facetec_api_client::Error::Server(ServerError {
@@ -473,6 +501,7 @@ trivial_error_tests! [
         input = op_enroll::Request {
             public_key: b"key".to_vec(),
             liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InternalErrorDbEnrollUnsuccessful,

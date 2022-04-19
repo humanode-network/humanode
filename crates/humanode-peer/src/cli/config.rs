@@ -44,10 +44,18 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             }
         });
 
+        let evm = self.evm_params().map(|params| configuration::Evm {
+            max_past_logs: params.max_past_logs,
+            max_stored_filters: params.max_stored_filters,
+            target_gas_price: params.target_gas_price,
+            fee_history_limit: params.fee_history_limit,
+        });
+
         Ok(Configuration {
             substrate,
             bioauth_flow,
             bioauth_perform_enroll: self.bioauth_perform_enroll(),
+            evm,
         })
     }
 
@@ -59,6 +67,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
     /// Whether to perform the bioauth enroll before the authentication or not.
     fn bioauth_perform_enroll(&self) -> bool {
         false
+    }
+
+    /// Provide the evm params, if available.
+    fn evm_params(&self) -> Option<&params::EvmParams> {
+        None
     }
 }
 

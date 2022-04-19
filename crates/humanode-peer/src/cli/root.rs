@@ -37,7 +37,7 @@ impl SubstrateCli for Root {
     }
 
     fn support_url() -> String {
-        "https://github.com/humanode-network/humanode/issues/new".into()
+        "https://link.humanode.io/bug-report".into()
     }
 
     fn copyright_start_year() -> i32 {
@@ -67,8 +67,11 @@ impl Root {
         &self,
         command: &T,
     ) -> sc_cli::Result<Runner<Self>> {
-        let init_provider = command.substrate_cli_configuration();
-        sc_cli::CliConfiguration::init::<Self>(init_provider)?;
+        // Run the init routines here; we might consider moving some of these upper in the stack.
+        super::init::set_panic_handler::<Self>();
+        super::init::init_logger(command)?;
+        super::init::raise_fd_limit();
+
         Runner::new(self, command)
     }
 }

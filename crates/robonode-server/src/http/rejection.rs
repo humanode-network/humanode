@@ -7,7 +7,7 @@ use super::error;
 
 /// Error response shape that we can return for the error body.
 #[derive(Debug, Serialize)]
-#[serde(rename = "camelCase")]
+#[serde(rename_all = "camelCase")]
 pub(super) struct ErrorResponse {
     /// The machine-readable error code describing the error condition.
     pub error_code: &'static str,
@@ -23,4 +23,19 @@ pub async fn handle(err: warp::reject::Rejection) -> Result<impl Reply, std::con
 
     let json = warp::reply::json(&ErrorResponse { error_code });
     Ok(warp::reply::with_status(json, status_code))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn serializes_properly() {
+        let body = serde_json::to_string(&ErrorResponse {
+            error_code: "MY_ERR_CODE",
+        })
+        .unwrap();
+
+        assert_eq!(body, r#"{"errorCode":"MY_ERR_CODE"}"#);
+    }
 }

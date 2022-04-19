@@ -2,19 +2,23 @@
 
 use hex_literal::hex;
 use humanode_runtime::{
-    AccountId, AuraConfig, BalancesConfig, BioauthConfig, GenesisConfig, GrandpaConfig,
-    RobonodePublicKeyWrapper, Signature, SudoConfig, SystemConfig, UnixMilliseconds, WASM_BINARY,
+    opaque::SessionKeys, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BioauthId,
+    EVMConfig, EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig,
+    RobonodePublicKeyWrapper, SessionConfig, Signature, SudoConfig, SystemConfig, UnixMilliseconds,
+    WASM_BINARY,
 };
 use pallet_bioauth::{AuthTicketNonce, Authentication};
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_consensus_babe::AuthorityId as BabeId;
+use sp_core::{H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
     app_crypto::{sr25519, Pair, Public},
     traits::{IdentifyAccount, Verify},
 };
+use std::{collections::BTreeMap, str::FromStr};
 
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
@@ -50,9 +54,13 @@ where
     AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
-/// Generate an Aura authority key.
-pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
-    (get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
+/// Generate consensus authority keys.
+pub fn authority_keys_from_seed(seed: &str) -> (AccountId, BabeId, GrandpaId) {
+    (
+        get_account_id_from_seed::<sr25519::Public>(seed),
+        get_from_seed::<BabeId>(seed),
+        get_from_seed::<GrandpaId>(seed),
+    )
 }
 
 /// An expires at value that guarantees the authentication never expires.
@@ -173,18 +181,17 @@ pub fn development_config() -> Result<ChainSpec, String> {
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
-    initial_authorities: Vec<(AuraId, GrandpaId)>,
+    initial_authorities: Vec<(AccountId, BabeId, GrandpaId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     robonode_public_key: RobonodePublicKeyWrapper,
     consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
-    active_authentications: Vec<Authentication<AuraId, UnixMilliseconds>>,
+    active_authentications: Vec<Authentication<BioauthId, UnixMilliseconds>>,
 ) -> GenesisConfig {
     GenesisConfig {
         system: SystemConfig {
             // Add Wasm runtime to storage.
             code: wasm_binary.to_vec(),
-            changes_trie_config: Default::default(),
         },
         balances: BalancesConfig {
             // Configure endowed accounts with initial balance of 1 << 60.
@@ -194,14 +201,27 @@ fn testnet_genesis(
                 .map(|k| (k, 1 << 60))
                 .collect(),
         },
-        aura: AuraConfig {
+        session: SessionConfig {
+            keys: initial_authorities
+                .iter()
+                .map(|x| {
+                    (
+                        x.0.clone(),
+                        x.0.clone(),
+                        SessionKeys {
+                            babe: x.1.clone(),
+                            grandpa: x.2.clone(),
+                        },
+                    )
+                })
+                .collect::<Vec<_>>(),
+        },
+        babe: BabeConfig {
             authorities: vec![],
+            epoch_config: Some(humanode_runtime::BABE_GENESIS_EPOCH_CONFIG),
         },
         grandpa: GrandpaConfig {
-            authorities: initial_authorities
-                .iter()
-                .map(|x| (x.1.clone(), 1))
-                .collect(),
+            authorities: vec![],
         },
         sudo: SudoConfig {
             // Assign network admin rights.
@@ -212,6 +232,49 @@ fn testnet_genesis(
             consumed_auth_ticket_nonces,
             active_authentications,
         },
+        ethereum_chain_id: EthereumChainIdConfig { chain_id: 5234 },
+        evm: EVMConfig {
+            accounts: {
+                let mut map = BTreeMap::new();
+                map.insert(
+                    // H160 address of Alice dev account
+                    // Derived from SS58 (42 prefix) address
+                    // SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+                    // hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
+                    // Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
+                    H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
+                        .expect("internal H160 is valid; qed"),
+                    pallet_evm::GenesisAccount {
+                        balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+                            .expect("internal U256 is valid; qed"),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
+                map.insert(
+                    // H160 address of Gerald dev account
+                    // Public address: 0x6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b
+                    // Private key: 0x99b3c12287537e38c90a9219d4cb074a89a16e9cdb20bf85728ebd97c343e342
+                    // A proper private key should be used to allow testing EVM as Ethereum developer
+                    // For example, use it at Metamask, Remix, Truffle configuration, etc
+                    // We don't have a good converter between Substrate and Ethereum private keys for now.
+                    H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
+                        .expect("internal H160 is valid; qed"),
+                    pallet_evm::GenesisAccount {
+                        balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+                            .expect("internal U256 is valid; qed"),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
+                map
+            },
+        },
+        ethereum: EthereumConfig {},
+        dynamic_fee: Default::default(),
+        base_fee: Default::default(),
     }
 }
 

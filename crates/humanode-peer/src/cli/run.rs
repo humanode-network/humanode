@@ -89,6 +89,21 @@ pub async fn run() -> sc_cli::Result<()> {
                 })
                 .await
         }
+        Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::Generate(
+            cmd,
+        )))) => cmd.run().await,
+        Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::Inspect(cmd)))) => {
+            cmd.run().await
+        }
+        Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::Insert(cmd)))) => {
+            let runner = root.create_humanode_runner(cmd)?;
+            runner
+                .run_tasks(|config| async move {
+                    let (keystore_container, task_manager) = service::keystore_container(&config)?;
+                    Ok((cmd.run(keystore_container), task_manager))
+                })
+                .await
+        }
         Some(Subcommand::Bioauth(bioauth::BioauthCmd::Key(bioauth::key::KeyCmd::List(cmd)))) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner
@@ -123,13 +138,9 @@ pub async fn run() -> sc_cli::Result<()> {
             sc_cli::print_node_infos::<Root>(&runner.config().substrate);
             runner
                 .run_node(|config| async move {
-                    match config.substrate.role {
-                        sc_cli::Role::Light => Err(sc_service::Error::Other(
-                            "light client is not supported yet".into(),
-                        )),
-                        _ => service::new_full(config).await,
-                    }
-                    .map_err(sc_cli::Error::Service)
+                    service::new_full(config)
+                        .await
+                        .map_err(sc_cli::Error::Service)
                 })
                 .await
         }
