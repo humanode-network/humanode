@@ -25,7 +25,7 @@ mock! {
     }
 }
 
-macro_rules! impl_LogicOp {
+macro_rules! impl_Logic {
     ($name:ty, $request:ty, $response:ty, $error:ty, $call: ident) => {
         #[async_trait::async_trait]
         impl LogicOp<$request> for $name {
@@ -121,7 +121,7 @@ macro_rules! trivial_error_tests {
     };
 }
 
-impl_LogicOp!(
+impl_Logic!(
     MockLogic,
     op_enroll::Request,
     op_enroll::Response,
@@ -129,7 +129,7 @@ impl_LogicOp!(
     enroll
 );
 
-impl_LogicOp!(
+impl_Logic!(
     MockLogic,
     op_authenticate::Request,
     op_authenticate::Response,
@@ -137,7 +137,7 @@ impl_LogicOp!(
     authenticate
 );
 
-impl_LogicOp!(
+impl_Logic!(
     MockLogic,
     op_get_facetec_session_token::Request,
     op_get_facetec_session_token::Response,
@@ -145,7 +145,7 @@ impl_LogicOp!(
     get_facetec_session_token
 );
 
-impl_LogicOp!(
+impl_Logic!(
     MockLogic,
     op_get_facetec_device_sdk_params::Request,
     op_get_facetec_device_sdk_params::Response,
@@ -153,7 +153,7 @@ impl_LogicOp!(
     get_facetec_device_sdk_params
 );
 
-impl_LogicOp!(
+impl_Logic!(
     MockLogic,
     op_get_public_key::Request,
     op_get_public_key::Response,
