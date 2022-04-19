@@ -39,6 +39,47 @@ macro_rules! impl_LogicOp {
     };
 }
 
+macro_rules! trivial_success_tests {
+    (
+        $(
+            $(#[$test_meta:meta])*
+            {
+                test_name = $test_name:ident,
+                method = $method:expr,
+                path = $request:expr,
+                input = $input:expr,
+                mocked_call = $expect:ident,
+                injected_response = $mock_response:ident,
+                expected_status = $status_code:expr,
+                expected_response = $expected_response:expr,
+            },
+        )*
+    ) => {
+        $(
+            $(#[$test_meta])*
+            #[tokio::test]
+            async fn $test_name() {
+                let mut mock_logic = MockLogic::new();
+                mock_logic.$expect().returning(|_| Ok($mock_response()));
+
+                let filter = root_with_error_handler(mock_logic);
+
+                let res = warp::test::request()
+                    .method($method)
+                    .path($request)
+                    .json(&$input)
+                    .reply(&filter)
+                    .await;
+
+                // let mut expected_success_response = serde_json::to_string(&$mock_response()).unwrap();
+
+                assert_eq!(res.status(), $status_code);
+                assert_eq!(res.body(), &$expected_response);
+            }
+        )*
+    };
+}
+
 macro_rules! trivial_error_tests {
     (
         $(
@@ -120,6 +161,10 @@ impl_LogicOp!(
     get_public_key
 );
 
+fn provide_enroll_response() -> op_enroll::Response {
+    op_enroll::Response
+}
+
 fn provide_authenticate_response() -> op_authenticate::Response {
     op_authenticate::Response {
         auth_ticket: OpaqueAuthTicket(b"ticket".to_vec()),
@@ -149,6 +194,12 @@ fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk
     }
 }
 
+fn provide_public_key() -> op_get_public_key::Response {
+    op_get_public_key::Response {
+        public_key: b"test_public_key".to_vec(),
+    }
+}
+
 async fn expect_error_body_response(
     status_code: StatusCode,
     error_code: &'static str,
@@ -164,169 +215,89 @@ fn root_with_error_handler(
     root(Arc::new(logic)).recover(rejection::handle)
 }
 
-/// This test verifies getting expected HTTP response during succesfull enrollment.
-#[tokio::test]
-async fn enroll_success() {
-    let input = op_enroll::Request {
-        public_key: b"key".to_vec(),
-        liveness_data: OpaqueLivenessData(b"data".to_vec()),
-    };
+trivial_success_tests! [
+    /// This test verifies getting expected HTTP response during succesfull enrollment.
+    {
+        test_name = enroll_success,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+        },
+        mocked_call = expect_enroll,
+        injected_response = provide_enroll_response,
+        expected_status = StatusCode::CREATED,
+        expected_response = "",
+    },
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_enroll()
-        .returning(|_| Ok(op_enroll::Response));
+    /// This test verifies getting expected HTTP response during succesfull authentication request.
+    {
+        test_name = authenticate_success,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_response = provide_authenticate_response,
+        expected_status = StatusCode::OK,
+        expected_response = serde_json::to_string(&provide_authenticate_response()).unwrap(),
+    },
 
-    let filter = root_with_error_handler(mock_logic);
+    /// This test verifies getting expected HTTP response during
+    /// succesfull get_facetec_session_token request.
+    {
+        test_name = get_facetec_session_token_success,
+        method = "GET",
+        path = "/facetec-session-token",
+        input = op_get_facetec_session_token::Request,
+        mocked_call = expect_get_facetec_session_token,
+        injected_response = provide_facetec_session_token,
+        expected_status = StatusCode::OK,
+        expected_response = serde_json::to_string(&provide_facetec_session_token()).unwrap(),
+    },
 
-    let res = warp::test::request()
-        .method("POST")
-        .path("/enroll")
-        .json(&input)
-        .reply(&filter)
-        .await;
+    /// This test verifies getting expected HTTP response during
+    /// get_facetec_device_sdk_params request in Prod mode.
+    {
+        test_name = get_facetec_device_sdk_params_in_prod_mode,
+        method = "GET",
+        path = "/facetec-device-sdk-params",
+        input = op_get_facetec_device_sdk_params::Request,
+        mocked_call = expect_get_facetec_device_sdk_params,
+        injected_response = provide_facetec_device_sdk_params_in_prod_mode,
+        expected_status = StatusCode::OK,
+        expected_response = serde_json::to_string(&provide_facetec_device_sdk_params_in_prod_mode()).unwrap(),
+    },
 
-    assert_eq!(res.status(), StatusCode::CREATED);
-    assert!(res.body().is_empty());
-}
+    /// This test verifies getting expected HTTP response during
+    /// get_facetec_device_sdk_params request in Dev mode.
+    {
+        test_name = get_facetec_device_sdk_params_in_dev_mode,
+        method = "GET",
+        path = "/facetec-device-sdk-params",
+        input = op_get_facetec_device_sdk_params::Request,
+        mocked_call = expect_get_facetec_device_sdk_params,
+        injected_response = provide_facetec_device_sdk_params_in_dev_mode,
+        expected_status = StatusCode::OK,
+        expected_response = serde_json::to_string(&provide_facetec_device_sdk_params_in_dev_mode()).unwrap(),
+    },
 
-/// This test verifies getting expected HTTP response during succesfull authentication request.
-#[tokio::test]
-async fn authenticate_success() {
-    let input = op_authenticate::Request {
-        liveness_data: OpaqueLivenessData(b"data".to_vec()),
-        liveness_data_signature: b"signature".to_vec(),
-    };
-
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_authenticate()
-        .returning(|_| Ok(provide_authenticate_response()));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/authenticate")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_response = serde_json::to_string(&provide_authenticate_response()).unwrap();
-
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body(), expected_response.as_bytes());
-}
-
-/// This test verifies getting expected HTTP response during
-/// succesfull get_facetec_session_token request.
-#[tokio::test]
-async fn get_facetec_session_token_success() {
-    let input = op_get_facetec_session_token::Request;
-
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_get_facetec_session_token()
-        .returning(|_| Ok(provide_facetec_session_token()));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("GET")
-        .path("/facetec-session-token")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_response = serde_json::to_string(&provide_facetec_session_token()).unwrap();
-
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body(), expected_response.as_bytes());
-}
-
-/// This test verifies getting expected HTTP response during
-/// get_facetec_device_sdk_params request in Dev mode.
-#[tokio::test]
-async fn get_facetec_device_sdk_params_in_dev_mode() {
-    let input = op_get_facetec_device_sdk_params::Request;
-
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_get_facetec_device_sdk_params()
-        .returning(|_| Ok(provide_facetec_device_sdk_params_in_dev_mode()));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("GET")
-        .path("/facetec-device-sdk-params")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_response =
-        serde_json::to_string(&provide_facetec_device_sdk_params_in_dev_mode()).unwrap();
-
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body(), expected_response.as_bytes());
-}
-
-/// This test verifies getting expected HTTP response during
-/// get_facetec_device_sdk_params request in Prod mode.
-#[tokio::test]
-async fn get_facetec_device_sdk_params_in_prod_mode() {
-    let input = op_get_facetec_device_sdk_params::Request;
-
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_get_facetec_device_sdk_params()
-        .returning(|_| Ok(provide_facetec_device_sdk_params_in_prod_mode()));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("GET")
-        .path("/facetec-device-sdk-params")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_response =
-        serde_json::to_string(&provide_facetec_device_sdk_params_in_prod_mode()).unwrap();
-
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body(), expected_response.as_bytes());
-}
-
-/// This test verifies getting expected HTTP response during
-/// get_public_key request.
-#[tokio::test]
-async fn get_public_key() {
-    let input = op_get_public_key::Request;
-
-    let sample_response = op_get_public_key::Response {
-        public_key: b"test_public_key".to_vec(),
-    };
-    let expected_response = serde_json::to_string(&sample_response).unwrap();
-
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_get_public_key()
-        .once()
-        .returning(move |_| Ok(sample_response.clone()));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("GET")
-        .path("/public-key")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body(), expected_response.as_bytes());
-}
+    /// This test verifies getting expected HTTP response during
+    /// get_public_key request.
+    {
+        test_name = get_public_key,
+        method = "GET",
+        path = "/public-key",
+        input = op_get_public_key::Request,
+        mocked_call = expect_get_public_key,
+        injected_response = provide_public_key,
+        expected_status = StatusCode::OK,
+        expected_response = serde_json::to_string(&provide_public_key()).unwrap(),
+    },
+];
 
 trivial_error_tests! [
     /// This test verifies getting expected HTTP response
