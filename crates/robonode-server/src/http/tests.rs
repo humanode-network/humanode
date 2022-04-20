@@ -191,7 +191,7 @@ trivial_success_tests! [
         mocked_call = expect_enroll,
         injected_response = op_enroll::Response,
         expected_status = StatusCode::CREATED,
-        expected_response = serde_json::Value::default(),
+        expected_response = serde_json::json!(null),
     },
 
     /// This test verifies getting expected HTTP response during succesfull authentication request.
