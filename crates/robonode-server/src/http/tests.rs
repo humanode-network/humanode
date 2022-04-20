@@ -39,6 +39,20 @@ macro_rules! impl_Logic {
     };
 }
 
+macro_rules! assert_success_response {
+    ($response:expr, $expected_response:expr) => {
+        match $expected_response {
+            SuccessResponse::Empty => assert!($response.is_empty()),
+            SuccessResponse::Json(body) => {
+                assert_eq!(
+                    body,
+                    serde_json::from_slice::<serde_json::Value>($response).unwrap()
+                )
+            }
+        }
+    };
+}
+
 macro_rules! trivial_success_tests {
     (
         $(
@@ -72,10 +86,7 @@ macro_rules! trivial_success_tests {
                     .await;
 
                 assert_eq!(res.status(), $status_code);
-                assert_eq!(
-                    serde_json::from_slice::<serde_json::Value>(res.body()).unwrap_or_default(),
-                    $expected_response
-                );
+                assert_success_response!(res.body(), $expected_response);
             }
         )*
     };
@@ -177,6 +188,13 @@ fn root_with_error_handler(
     root(Arc::new(logic)).recover(rejection::handle)
 }
 
+#[derive(Debug)]
+/// Possible success responses endpoint options.
+enum SuccessResponse {
+    Empty,
+    Json(serde_json::Value),
+}
+
 trivial_success_tests! [
     /// This test verifies getting expected HTTP response during succesfull enrollment.
     {
@@ -191,7 +209,7 @@ trivial_success_tests! [
         mocked_call = expect_enroll,
         injected_response = op_enroll::Response,
         expected_status = StatusCode::CREATED,
-        expected_response = serde_json::json!(null),
+        expected_response = SuccessResponse::Empty,
     },
 
     /// This test verifies getting expected HTTP response during succesfull authentication request.
@@ -209,10 +227,10 @@ trivial_success_tests! [
             auth_ticket_signature: b"signature".to_vec(),
         },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::json!({
+        expected_response = SuccessResponse::Json(serde_json::json!({
             "authTicket": b"ticket".to_vec(),
             "authTicketSignature": b"signature".to_vec(),
-        }),
+        })),
     },
 
     /// This test verifies getting expected HTTP response during
@@ -227,9 +245,9 @@ trivial_success_tests! [
             session_token: "token".to_owned(),
         },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::json!({
+        expected_response = SuccessResponse::Json(serde_json::json!({
             "sessionToken": "token",
-        }),
+        })),
     },
 
     /// This test verifies getting expected HTTP response during
@@ -246,11 +264,11 @@ trivial_success_tests! [
             production_key: Some("ProdKey".to_owned()),
         },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::json!({
+        expected_response = SuccessResponse::Json(serde_json::json!({
             "publicFaceMapEncryptionKey": "key",
             "deviceKeyIdentifier": "id",
             "productionKey": "ProdKey",
-        }),
+        })),
     },
 
     /// This test verifies getting expected HTTP response during
@@ -267,10 +285,10 @@ trivial_success_tests! [
             production_key: None,
         },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::json!({
+        expected_response = SuccessResponse::Json(serde_json::json!({
             "publicFaceMapEncryptionKey": "key",
             "deviceKeyIdentifier": "id",
-        }),
+        })),
     },
 
     /// This test verifies getting expected HTTP response during
@@ -285,9 +303,9 @@ trivial_success_tests! [
             public_key: b"test_public_key".to_vec(),
         },
         expected_status = StatusCode::OK,
-        expected_response = serde_json::json!({
+        expected_response = SuccessResponse::Json(serde_json::json!({
             "publicKey": b"test_public_key".to_vec(),
-        }),
+        })),
     },
 ];
 
