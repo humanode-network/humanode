@@ -54,6 +54,7 @@ sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 structopt = "0.3.8"
 thiserror = "1"
+tiny-bip39 = "0.8"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 url = "2"

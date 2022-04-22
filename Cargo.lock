@@ -2165,6 +2165,7 @@ dependencies = [
  "sp-timestamp",
  "structopt",
  "thiserror",
+ "tiny-bip39",
  "tokio",
  "tracing",
  "url 2.2.2",
