@@ -7,10 +7,10 @@ pub mod insert;
 pub mod inspect;
 pub mod list;
 
-/// Bioauth identifier used at the keystore.
-pub type BioauthId = keystore_bioauth_account_id::KeystoreBioauthAccountId;
-/// Bioauth key pair scheme type used at the keystore.
-pub type BioauthPair = <<BioauthId as sp_application_crypto::CryptoType>::Pair as sp_application_crypto::AppPair>::Generic;
+/// Keystore bioauth identifier used at the keystore.
+pub type KeystoreBioauthId = keystore_bioauth_account_id::KeystoreBioauthAccountId;
+/// Keystore bioauth key pair scheme type used at the keystore.
+pub type KeystoreBioauthPair = <<KeystoreBioauthId as sp_application_crypto::CryptoType>::Pair as sp_application_crypto::AppPair>::Generic;
 
 /// Subcommands for the `bioauth key` command.
 #[derive(Debug, StructOpt)]

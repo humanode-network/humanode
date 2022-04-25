@@ -1,6 +1,6 @@
 //! Bioauth key inspect subcommand logic.
 
-use super::BioauthPair;
+use super::KeystoreBioauthPair;
 use bip39::{Language, Mnemonic};
 use sc_cli::{utils, OutputTypeFlag};
 use structopt::StructOpt;
@@ -27,7 +27,7 @@ impl InspectKeyCmd {
         // Password is None as we don't use it for keystore at the current moment.
         // Network_override is None as we don't allow to override network type as
         // the subcommand is used for Bioauth network explicitly.
-        utils::print_from_uri::<BioauthPair>(mnemonic.phrase(), None, None, output);
+        utils::print_from_uri::<KeystoreBioauthPair>(mnemonic.phrase(), None, None, output);
 
         Ok(())
     }

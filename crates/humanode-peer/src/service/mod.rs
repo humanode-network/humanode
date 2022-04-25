@@ -22,7 +22,7 @@ use std::{
 };
 use tracing::*;
 
-use crate::{cli::bioauth::key::BioauthId, configuration::Configuration};
+use crate::{cli::bioauth::key::KeystoreBioauthId, configuration::Configuration};
 
 pub mod frontier;
 pub mod inherents;
@@ -336,7 +336,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
         let bioauth_validator_key_extractor =
             Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
-                BioauthId,
+                KeystoreBioauthId,
             >::new(keystore_container.sync_keystore()));
         let bioauth_validator_signer_factory = {
             let keystore = keystore_container.keystore();
@@ -564,7 +564,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
             let validator_public_key =
-                crate::validator_key::AppCryptoPublic::<BioauthId>::from_keystore(
+                crate::validator_key::AppCryptoPublic::<KeystoreBioauthId>::from_keystore(
                     keystore.as_ref(),
                 )
                 .await;
