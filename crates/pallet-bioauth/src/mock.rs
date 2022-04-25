@@ -5,6 +5,7 @@ use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::parameter_types;
 use frame_system as system;
 use mockall::{mock, predicate};
+use primitives_auth_ticket::{AuthTicket as RobonodeAuthTicket, OpaqueAuthTicket};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -49,16 +50,16 @@ impl AsRef<[u8]> for MockOpaqueAuthTicket {
     }
 }
 
-impl From<Vec<u8>> for MockOpaqueAuthTicket {
-    fn from(bytes: Vec<u8>) -> Self {
-        let mut public_key = [0u8; 32];
-        public_key.copy_from_slice(&bytes[1..33]);
-
-        let nonce = (&bytes[34..]).to_vec();
-        Self(AuthTicket { public_key, nonce })
+impl From<OpaqueAuthTicket> for MockOpaqueAuthTicket {
+    fn from(opaque_auth_ticket: OpaqueAuthTicket) -> MockOpaqueAuthTicket {
+        let auth_ticket: RobonodeAuthTicket = (&opaque_auth_ticket).try_into().unwrap();
+        let public_key: [u8; 32] = auth_ticket.public_key.try_into().unwrap();
+        MockOpaqueAuthTicket(AuthTicket {
+            public_key,
+            nonce: auth_ticket.authentication_nonce,
+        })
     }
 }
-
 pub struct MockAuthTicketConverter;
 
 impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAuthTicketConverter {
