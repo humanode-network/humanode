@@ -526,7 +526,7 @@ fn signed_ext_check_bioauth_tx_deny_invalid_signature() {
 
         assert_eq!(
             CheckBioauthTx::<Test>(PhantomData).validate(&1, &call, &info, 1),
-            InvalidTransaction::Custom(b's').into()
+            InvalidTransaction::BadProof.into()
         );
     })
 }
@@ -560,7 +560,7 @@ fn signed_ext_check_bioauth_tx_denies_conlicting_nonce() {
 
         assert_eq!(
             CheckBioauthTx::<Test>(PhantomData).validate(&1, &call, &info, 1),
-            InvalidTransaction::Custom(b'c').into()
+            InvalidTransaction::Stale.into()
         );
     })
 }
@@ -594,7 +594,7 @@ fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
 
         assert_eq!(
             CheckBioauthTx::<Test>(PhantomData).validate(&1, &call, &info, 1),
-            InvalidTransaction::Custom(b'c').into()
+            InvalidTransaction::Future.into()
         );
     })
 }
