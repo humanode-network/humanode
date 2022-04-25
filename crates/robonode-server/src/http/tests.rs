@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use facetec_api_client::ServerError;
 use mockall::predicate::*;
 use mockall::*;
 use primitives_auth_ticket::OpaqueAuthTicket;
@@ -24,7 +25,7 @@ mock! {
     }
 }
 
-macro_rules! impl_LogicOp {
+macro_rules! impl_Logic {
     ($name:ty, $request:ty, $response:ty, $error:ty, $call: ident) => {
         #[async_trait::async_trait]
         impl LogicOp<$request> for $name {
@@ -38,7 +39,101 @@ macro_rules! impl_LogicOp {
     };
 }
 
-impl_LogicOp!(
+macro_rules! assert_success_response {
+    ($response:expr, $expected_response:expr) => {
+        match $expected_response {
+            SuccessResponse::Empty => assert!($response.is_empty()),
+            SuccessResponse::Json(body) => {
+                assert_eq!(
+                    body,
+                    serde_json::from_slice::<serde_json::Value>($response).unwrap()
+                )
+            }
+        }
+    };
+}
+
+macro_rules! trivial_success_tests {
+    (
+        $(
+            $(#[$test_meta:meta])*
+            {
+                test_name = $test_name:ident,
+                method = $method:expr,
+                path = $request:expr,
+                input = $input:expr,
+                mocked_call = $expect:ident,
+                injected_response = $mock_response:expr,
+                expected_status = $status_code:expr,
+                expected_response = $expected_response:expr,
+            },
+        )*
+    ) => {
+        $(
+            $(#[$test_meta])*
+            #[tokio::test]
+            async fn $test_name() {
+                let mut mock_logic = MockLogic::new();
+                mock_logic.$expect().returning(|_| Ok($mock_response));
+
+                let filter = root_with_error_handler(mock_logic);
+
+                let res = warp::test::request()
+                    .method($method)
+                    .path($request)
+                    .json(&$input)
+                    .reply(&filter)
+                    .await;
+
+                assert_eq!(res.status(), $status_code);
+                assert_success_response!(res.body(), $expected_response);
+            }
+        )*
+    };
+}
+
+macro_rules! trivial_error_tests {
+    (
+        $(
+            $(#[$test_meta:meta])*
+            {
+                test_name = $test_name:ident,
+                method = $method:expr,
+                path = $request:expr,
+                input = $input:expr,
+                mocked_call = $expect:ident,
+                injected_error = $mock_error:expr,
+                expected_status = $status_code:expr,
+                expected_code = $error_code:expr,
+            },
+        )*
+    ) => {
+        $(
+            $(#[$test_meta])*
+            #[tokio::test]
+            async fn $test_name() {
+                let mut mock_logic = MockLogic::new();
+                mock_logic.$expect().returning(|_| Err($mock_error));
+
+                let filter = root_with_error_handler(mock_logic);
+
+                let res = warp::test::request()
+                    .method($method)
+                    .path($request)
+                    .json(&$input)
+                    .reply(&filter)
+                    .await;
+
+                let expected_error_body_response = expect_error_body_response($status_code, $error_code).await;
+
+                assert_eq!(res.status(), $status_code);
+                assert_eq!(res.body(), &expected_error_body_response);
+            }
+        )*
+    };
+}
+
+impl_Logic!(
     MockLogic,
     op_enroll::Request,
     op_enroll::Response,
@@ -46,7 +141,7 @@ impl_LogicOp!(
     enroll
 );
 
-impl_LogicOp!(
+impl_Logic!(
     MockLogic,
     op_authenticate::Request,
     op_authenticate::Response,
@@ -54,7 +149,7 @@ impl_LogicOp!(
     authenticate
 );
 
-impl_LogicOp!(
+impl_Logic!(
     MockLogic,
     op_get_facetec_session_token::Request,
     op_get_facetec_session_token::Response,
@@ -62,7 +157,7 @@ impl_LogicOp!(
     get_facetec_session_token
 );
 
-impl_LogicOp!(
+impl_Logic!(
     MockLogic,
     op_get_facetec_device_sdk_params::Request,
     op_get_facetec_device_sdk_params::Response,
@@ -70,7 +165,7 @@ impl_LogicOp!(
     get_facetec_device_sdk_params
 );
 
-impl_LogicOp!(
+impl_Logic!(
     MockLogic,
     op_get_public_key::Request,
     op_get_public_key::Response,
@@ -78,42 +173,7 @@ impl_LogicOp!(
     get_public_key
 );
 
-fn provide_authenticate_response() -> op_authenticate::Response {
-    op_authenticate::Response {
-        auth_ticket: OpaqueAuthTicket(b"ticket".to_vec()),
-        auth_ticket_signature: b"signature".to_vec(),
-    }
-}
-
-fn provide_facetec_session_token() -> op_get_facetec_session_token::Response {
-    op_get_facetec_session_token::Response {
-        session_token: "token".to_owned(),
-    }
-}
-
-fn provide_facetec_device_sdk_params_in_dev_mode() -> op_get_facetec_device_sdk_params::Response {
-    op_get_facetec_device_sdk_params::Response {
-        public_face_map_encryption_key: "key".to_owned(),
-        device_key_identifier: "id".to_owned(),
-        production_key: None,
-    }
-}
-
-fn provide_facetec_device_sdk_params_in_prod_mode() -> op_get_facetec_device_sdk_params::Response {
-    op_get_facetec_device_sdk_params::Response {
-        public_face_map_encryption_key: "key".to_owned(),
-        device_key_identifier: "id".to_owned(),
-        production_key: Some("ProdKey".to_owned()),
-    }
-}
-
-fn root_with_error_handler(
-    logic: MockLogic,
-) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone {
-    root(Arc::new(logic)).recover(rejection::handle)
-}
-
-async fn expect_body_response(
+async fn expect_error_body_response(
     status_code: StatusCode,
     error_code: &'static str,
 ) -> warp::hyper::body::Bytes {
@@ -122,270 +182,570 @@ async fn expect_body_response(
     warp::hyper::body::to_bytes(response).await.unwrap()
 }
 
-#[tokio::test]
-async fn it_works_enroll() {
-    let input = op_enroll::Request {
-        public_key: b"key".to_vec(),
-        liveness_data: OpaqueLivenessData(b"data".to_vec()),
-        liveness_data_signature: b"signature".to_vec(),
-    };
-
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_enroll()
-        .returning(|_| Ok(op_enroll::Response));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/enroll")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    assert_eq!(res.status(), StatusCode::CREATED);
-    assert!(res.body().is_empty());
+fn root_with_error_handler(
+    logic: MockLogic,
+) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone {
+    root(Arc::new(logic)).recover(rejection::handle)
 }
 
-#[tokio::test]
-async fn it_denies_enroll_with_invalid_public_key() {
-    let input = op_enroll::Request {
-        public_key: b"key".to_vec(),
-        liveness_data: OpaqueLivenessData(b"data".to_vec()),
-        liveness_data_signature: b"signature".to_vec(),
-    };
-
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_enroll()
-        .returning(|_| Err(op_enroll::Error::InvalidPublicKey));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("POST")
-        .path("/enroll")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_body_response =
-        expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_INVALID_PUBLIC_KEY").await;
-
-    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
-    assert_eq!(res.body(), &expected_body_response);
+/// Possible response variants we can expect in trivial success tests.
+#[derive(Debug)]
+enum SuccessResponse {
+    Empty,
+    Json(serde_json::Value),
 }
 
-#[tokio::test]
-async fn it_denies_enroll_with_invalid_signature() {
-    let input = op_enroll::Request {
-        public_key: b"key".to_vec(),
-        liveness_data: OpaqueLivenessData(b"data".to_vec()),
-        liveness_data_signature: b"signature".to_vec(),
-    };
+trivial_success_tests! [
+    /// This test verifies getting expected HTTP response during succesfull enrollment.
+    {
+        test_name = enroll_success,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_response = op_enroll::Response,
+        expected_status = StatusCode::CREATED,
+        expected_response = SuccessResponse::Empty,
+    },
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_enroll()
-        .returning(|_| Err(op_enroll::Error::SignatureInvalid));
+    /// This test verifies getting expected HTTP response during succesfull authentication request.
+    {
+        test_name = authenticate_success,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_response = op_authenticate::Response {
+            auth_ticket: OpaqueAuthTicket(b"ticket".to_vec()),
+            auth_ticket_signature: b"signature".to_vec(),
+        },
+        expected_status = StatusCode::OK,
+        expected_response = SuccessResponse::Json(serde_json::json!({
+            "authTicket": b"ticket".to_vec(),
+            "authTicketSignature": b"signature".to_vec(),
+        })),
+    },
 
-    let filter = root_with_error_handler(mock_logic);
+    /// This test verifies getting expected HTTP response during
+    /// succesfull get_facetec_session_token request.
+    {
+        test_name = get_facetec_session_token_success,
+        method = "GET",
+        path = "/facetec-session-token",
+        input = op_get_facetec_session_token::Request,
+        mocked_call = expect_get_facetec_session_token,
+        injected_response = op_get_facetec_session_token::Response {
+            session_token: "token".to_owned(),
+        },
+        expected_status = StatusCode::OK,
+        expected_response = SuccessResponse::Json(serde_json::json!({
+            "sessionToken": "token",
+        })),
+    },
 
-    let res = warp::test::request()
-        .method("POST")
-        .path("/enroll")
-        .json(&input)
-        .reply(&filter)
-        .await;
+    /// This test verifies getting expected HTTP response during
+    /// get_facetec_device_sdk_params request in Prod mode.
+    {
+        test_name = get_facetec_device_sdk_params_in_prod_mode,
+        method = "GET",
+        path = "/facetec-device-sdk-params",
+        input = op_get_facetec_device_sdk_params::Request,
+        mocked_call = expect_get_facetec_device_sdk_params,
+        injected_response = op_get_facetec_device_sdk_params::Response {
+            public_face_map_encryption_key: "key".to_owned(),
+            device_key_identifier: "id".to_owned(),
+            production_key: Some("ProdKey".to_owned()),
+        },
+        expected_status = StatusCode::OK,
+        expected_response = SuccessResponse::Json(serde_json::json!({
+            "publicFaceMapEncryptionKey": "key",
+            "deviceKeyIdentifier": "id",
+            "productionKey": "ProdKey",
+        })),
+    },
 
-    let expected_body_response =
-        expect_body_response(StatusCode::BAD_REQUEST, "ENROLL_SIGNATURE_INVALID").await;
+    /// This test verifies getting expected HTTP response during
+    /// get_facetec_device_sdk_params request in Dev mode.
+    {
+        test_name = get_facetec_device_sdk_params_in_dev_mode,
+        method = "GET",
+        path = "/facetec-device-sdk-params",
+        input = op_get_facetec_device_sdk_params::Request,
+        mocked_call = expect_get_facetec_device_sdk_params,
+        injected_response = op_get_facetec_device_sdk_params::Response {
+            public_face_map_encryption_key: "key".to_owned(),
+            device_key_identifier: "id".to_owned(),
+            production_key: None,
+        },
+        expected_status = StatusCode::OK,
+        expected_response = SuccessResponse::Json(serde_json::json!({
+            "publicFaceMapEncryptionKey": "key",
+            "deviceKeyIdentifier": "id",
+        })),
+    },
 
-    assert_eq!(res.status(), StatusCode::BAD_REQUEST);
-    assert_eq!(res.body(), &expected_body_response);
-}
+    /// This test verifies getting expected HTTP response during
+    /// get_public_key request.
+    {
+        test_name = get_public_key,
+        method = "GET",
+        path = "/public-key",
+        input = op_get_public_key::Request,
+        mocked_call = expect_get_public_key,
+        injected_response = op_get_public_key::Response {
+            public_key: b"test_public_key".to_vec(),
+        },
+        expected_status = StatusCode::OK,
+        expected_response = SuccessResponse::Json(serde_json::json!({
+            "publicKey": b"test_public_key".to_vec(),
+        })),
+    },
+];
 
-#[tokio::test]
-async fn it_works_authenticate() {
-    let input = op_authenticate::Request {
-        liveness_data: OpaqueLivenessData(b"data".to_vec()),
-        liveness_data_signature: b"signature".to_vec(),
-    };
+trivial_error_tests! [
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InvalidPublicKey error.
+    {
+        test_name = enroll_error_invalid_public_key,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InvalidPublicKey,
+        expected_status = StatusCode::BAD_REQUEST,
+        expected_code = "ENROLL_INVALID_PUBLIC_KEY",
+    },
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_authenticate()
-        .returning(|_| Ok(provide_authenticate_response()));
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with SignatureInvalid error.
+    {
+        test_name = enroll_error_invalid_signature,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::SignatureInvalid,
+        expected_status = StatusCode::BAD_REQUEST,
+        expected_code = "ENROLL_SIGNATURE_INVALID",
+    },
 
-    let filter = root_with_error_handler(mock_logic);
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InvalidLivenessData error.
+    {
+        test_name = enroll_error_invalid_liveness_data,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InvalidLivenessData(codec::Error::from("invalid_data")),
+        expected_status = StatusCode::BAD_REQUEST,
+        expected_code = "ENROLL_INVALID_LIVENESS_DATA",
+    },
 
-    let res = warp::test::request()
-        .method("POST")
-        .path("/authenticate")
-        .json(&input)
-        .reply(&filter)
-        .await;
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with FaceScanRejected error.
+    {
+        test_name = enroll_error_face_scan_rejected,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::FaceScanRejected,
+        expected_status = StatusCode::FORBIDDEN,
+        expected_code = "ENROLL_FACE_SCAN_REJECTED",
+    },
 
-    let expected_response = serde_json::to_string(&provide_authenticate_response()).unwrap();
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with PublicKeyAlreadyUsed error.
+    {
+        test_name = enroll_error_public_key_already_used,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::PublicKeyAlreadyUsed,
+        expected_status = StatusCode::CONFLICT,
+        expected_code = "ENROLL_PUBLIC_KEY_ALREADY_USED",
+    },
 
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
-}
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with PersonAlreadyEnrolled error.
+    {
+        test_name = enroll_error_person_already_enrolled,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::PersonAlreadyEnrolled,
+        expected_status = StatusCode::CONFLICT,
+        expected_code = "ENROLL_PERSON_ALREADY_ENROLLED",
+    },
 
-#[tokio::test]
-async fn it_denies_authenticate() {
-    let input = op_authenticate::Request {
-        liveness_data: OpaqueLivenessData(b"data".to_vec()),
-        liveness_data_signature: b"signature".to_vec(),
-    };
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InternalErrorEnrollment error.
+    {
+        test_name = enroll_error_internal_enrollment,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InternalErrorEnrollment(facetec_api_client::Error::Server(ServerError {
+            error_message: "error".to_owned()
+        })),
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_authenticate()
-        .returning(|_| Err(op_authenticate::Error::InternalErrorDbSearchUnsuccessful));
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InternalErrorEnrollmentUnsuccessful error.
+    {
+        test_name = enroll_error_internal_enrollment_unsuccessful,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InternalErrorEnrollmentUnsuccessful,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    let filter = root_with_error_handler(mock_logic);
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InternalErrorDbSearch error.
+    {
+        test_name = enroll_error_internal_db_search,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(ServerError {
+            error_message: "error".to_owned()
+        })),
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    let res = warp::test::request()
-        .method("POST")
-        .path("/authenticate")
-        .json(&input)
-        .reply(&filter)
-        .await;
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InternalErrorDbSearchUnsuccessful error.
+    {
+        test_name = enroll_error_internal_db_search_unsuccessful,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InternalErrorDbSearchUnsuccessful,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    let expected_body_response =
-        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "LOGIC_INTERNAL_ERROR").await;
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InternalErrorDbEnroll error.
+    {
+        test_name = enroll_error_internal_db_enroll,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InternalErrorDbEnroll(facetec_api_client::Error::Server(ServerError {
+            error_message: "error".to_owned()
+        })),
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(res.body(), &expected_body_response);
-}
+    /// This test verifies getting expected HTTP response
+    /// during failer enrollment request with InternalErrorDbEnrollUnsuccessful error.
+    {
+        test_name = enroll_error_internal_db_enroll_unsuccessful,
+        method = "POST",
+        path = "/enroll",
+        input = op_enroll::Request {
+            public_key: b"key".to_vec(),
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_enroll,
+        injected_error = op_enroll::Error::InternalErrorDbEnrollUnsuccessful,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-#[tokio::test]
-async fn it_works_get_facetec_session_token() {
-    let input = op_get_facetec_session_token::Request;
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InvalidLivenessData error.
+    {
+        test_name = authenticate_error_invalid_liveness_data,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InvalidLivenessData(codec::Error::from("invalid_data")),
+        expected_status = StatusCode::BAD_REQUEST,
+        expected_code = "AUTHENTICATE_INVALID_LIVENESS_DATA",
+    },
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_get_facetec_session_token()
-        .returning(|_| Ok(provide_facetec_session_token()));
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with FaceScanRejected error.
+    {
+        test_name = authenticate_error_face_scan_rejected,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::FaceScanRejected,
+        expected_status = StatusCode::FORBIDDEN,
+        expected_code = "AUTHENTICATE_FACE_SCAN_REJECTED",
+    },
 
-    let filter = root_with_error_handler(mock_logic);
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with PersonNotFound error.
+    {
+        test_name = authenticate_error_person_not_found,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::PersonNotFound,
+        expected_status = StatusCode::NOT_FOUND,
+        expected_code = "AUTHENTICATE_PERSON_NOT_FOUND",
+    },
 
-    let res = warp::test::request()
-        .method("GET")
-        .path("/facetec-session-token")
-        .json(&input)
-        .reply(&filter)
-        .await;
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with SignatureInvalid error.
+    {
+        test_name = authenticate_error_signature_invalid,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::SignatureInvalid,
+        expected_status = StatusCode::FORBIDDEN,
+        expected_code = "AUTHENTICATE_SIGNATURE_INVALID",
+    },
 
-    let expected_response = serde_json::to_string(&provide_facetec_session_token()).unwrap();
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InternalErrorEnrollment error.
+    {
+        test_name = authenticate_error_internall_enrollment,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InternalErrorEnrollment(facetec_api_client::Error::Server(
+            ServerError {
+                error_message: "error".to_owned()
+            }
+        )),
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
-}
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InternalErrorEnrollmentUnsuccessful error.
+    {
+        test_name = authenticate_error_internall_enrollment_unsuccessful,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InternalErrorEnrollmentUnsuccessful,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-#[tokio::test]
-async fn it_denies_get_facetec_session_token() {
-    let input = op_get_facetec_session_token::Request;
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InternalErrorDbSearch error.
+    {
+        test_name = authenticate_error_internall_db_search,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(
+            ServerError {
+                error_message: "error".to_owned()
+            }
+        )),
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_get_facetec_session_token()
-        .returning(|_| {
-            Err(op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful)
-        });
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InternalErrorDbSearchUnsuccessful error.
+    {
+        test_name = authenticate_error_internall_db_search_unsuccessful,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InternalErrorDbSearchUnsuccessful,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    let filter = root_with_error_handler(mock_logic);
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InternalErrorDbSearchMatchLevelMismatch error.
+    {
+        test_name = authenticate_error_internall_db_search_match_level_mismatch,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    let res = warp::test::request()
-        .method("GET")
-        .path("/facetec-session-token")
-        .json(&input)
-        .reply(&filter)
-        .await;
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InternalErrorInvalidPublicKeyHex error.
+    {
+        test_name = authenticate_error_internall_invalid_public_key_hex,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InternalErrorInvalidPublicKeyHex,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    let expected_body_response =
-        expect_body_response(StatusCode::INTERNAL_SERVER_ERROR, "LOGIC_INTERNAL_ERROR").await;
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InternalErrorInvalidPublicKey error.
+    {
+        test_name = authenticate_error_internall_invalid_public_key,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InternalErrorInvalidPublicKey,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    assert_eq!(res.status(), StatusCode::INTERNAL_SERVER_ERROR);
-    assert_eq!(res.body(), &expected_body_response);
-}
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InternalErrorSignatureVerificationFailed error.
+    {
+        test_name = authenticate_error_internall_signature_verification_failed,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InternalErrorSignatureVerificationFailed,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-#[tokio::test]
-async fn it_works_get_facetec_device_sdk_params_in_dev_mode() {
-    let input = op_get_facetec_device_sdk_params::Request;
+    /// This test verifies getting expected HTTP response
+    /// during failer authentication request with InternalErrorAuthTicketSigningFailed error.
+    {
+        test_name = authenticate_error_internal_auth_ticket_signing_failed,
+        method = "POST",
+        path = "/authenticate",
+        input = op_authenticate::Request {
+            liveness_data: OpaqueLivenessData(b"data".to_vec()),
+            liveness_data_signature: b"signature".to_vec(),
+        },
+        mocked_call = expect_authenticate,
+        injected_error = op_authenticate::Error::InternalErrorAuthTicketSigningFailed,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
 
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_get_facetec_device_sdk_params()
-        .returning(|_| Ok(provide_facetec_device_sdk_params_in_dev_mode()));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("GET")
-        .path("/facetec-device-sdk-params")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_response =
-        serde_json::to_string(&provide_facetec_device_sdk_params_in_dev_mode()).unwrap();
-
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
-}
-
-#[tokio::test]
-async fn it_works_get_facetec_device_sdk_params_in_prod_mode() {
-    let input = op_get_facetec_device_sdk_params::Request;
-
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_get_facetec_device_sdk_params()
-        .returning(|_| Ok(provide_facetec_device_sdk_params_in_prod_mode()));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("GET")
-        .path("/facetec-device-sdk-params")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    let expected_response =
-        serde_json::to_string(&provide_facetec_device_sdk_params_in_prod_mode()).unwrap();
-
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
-}
-
-#[tokio::test]
-async fn it_works_get_public_key() {
-    let input = op_get_public_key::Request;
-
-    let sample_response = op_get_public_key::Response {
-        public_key: b"test_public_key".to_vec(),
-    };
-    let expected_response = serde_json::to_string(&sample_response).unwrap();
-
-    let mut mock_logic = MockLogic::new();
-    mock_logic
-        .expect_get_public_key()
-        .once()
-        .returning(move |_| Ok(sample_response.clone()));
-
-    let filter = root_with_error_handler(mock_logic);
-
-    let res = warp::test::request()
-        .method("GET")
-        .path("/public-key")
-        .json(&input)
-        .reply(&filter)
-        .await;
-
-    assert_eq!(res.status(), StatusCode::OK);
-    assert_eq!(res.body().as_ref(), expected_response.as_bytes());
-}
+    /// This test verifies getting expected HTTP response during
+    /// failer get_facetec_session_token request with internal error.
+    {
+        test_name = get_facetec_session_token_error_internal,
+        method = "GET",
+        path = "/facetec-session-token",
+        input = op_get_facetec_session_token::Request,
+        mocked_call = expect_get_facetec_session_token,
+        injected_error = op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful,
+        expected_status = StatusCode::INTERNAL_SERVER_ERROR,
+        expected_code = "LOGIC_INTERNAL_ERROR",
+    },
+];
