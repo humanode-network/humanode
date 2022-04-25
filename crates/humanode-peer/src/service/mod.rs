@@ -22,7 +22,7 @@ use std::{
 };
 use tracing::*;
 
-use crate::{cli::bioauth::key::KeystoreBioauthId, configuration::Configuration};
+use crate::configuration::Configuration;
 
 pub mod frontier;
 pub mod inherents;
@@ -48,6 +48,8 @@ impl sc_executor::NativeExecutionDispatch for ExecutorDispatch {
     }
 }
 
+/// Keystore bioauth identifier used at the keystore.
+pub type KeystoreBioauthId = keystore_bioauth_account_id::KeystoreBioauthAccountId;
 /// Executor type.
 type Executor = NativeElseWasmExecutor<ExecutorDispatch>;
 /// Full node client type.

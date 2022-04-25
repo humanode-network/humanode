@@ -1,5 +1,6 @@
 //! Bioauth key management subcommands.
 
+use crate::service::KeystoreBioauthId;
 use structopt::StructOpt;
 
 pub mod generate;
@@ -7,8 +8,6 @@ pub mod insert;
 pub mod inspect;
 pub mod list;
 
-/// Keystore bioauth identifier used at the keystore.
-pub type KeystoreBioauthId = keystore_bioauth_account_id::KeystoreBioauthAccountId;
 /// Keystore bioauth key pair scheme type used at the keystore.
 pub type KeystoreBioauthPair = <<KeystoreBioauthId as sp_application_crypto::CryptoType>::Pair as sp_application_crypto::AppPair>::Generic;
 
