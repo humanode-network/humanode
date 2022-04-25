@@ -8,7 +8,7 @@ pub mod inspect;
 pub mod list;
 
 /// Bioauth identifier used at the keystore.
-pub type BioauthId = keystore_account_id::KeystoreAccountId;
+pub type BioauthId = keystore_bioauth_account_id::KeystoreBioauthAccountId;
 /// Bioauth key pair scheme type used at the keystore.
 pub type BioauthPair = <<BioauthId as sp_application_crypto::CryptoType>::Pair as sp_application_crypto::AppPair>::Generic;
 

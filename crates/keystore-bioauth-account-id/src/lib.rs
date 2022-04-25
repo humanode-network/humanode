@@ -10,4 +10,4 @@ mod app {
 }
 
 /// AccountId key type identifier.
-pub type KeystoreAccountId = app::Public;
+pub type KeystoreBioauthAccountId = app::Public;

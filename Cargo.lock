@@ -2727,7 +2727,7 @@ dependencies = [
  "humanode-rpc",
  "humanode-runtime",
  "indoc",
- "keystore-account-id",
+ "keystore-bioauth-account-id",
  "ngrok-api",
  "pallet-bioauth",
  "pallet-dynamic-fee",
@@ -2828,7 +2828,7 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frontier-api",
  "hex-literal",
- "keystore-account-id",
+ "keystore-bioauth-account-id",
  "pallet-babe",
  "pallet-balances",
  "pallet-base-fee",
@@ -3310,7 +3310,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "keystore-account-id"
+name = "keystore-bioauth-account-id"
 version = "0.1.0"
 dependencies = [
  "parity-scale-codec",

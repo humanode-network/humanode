@@ -11,7 +11,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use fp_rpc::TransactionStatus;
-use keystore_account_id::KeystoreAccountId;
+use keystore_bioauth_account_id::KeystoreBioauthAccountId;
 use pallet_bioauth::AuthTicket;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::FeeCalculator;
@@ -766,8 +766,8 @@ impl_runtime_apis! {
         }
     }
 
-    impl bioauth_flow_api::BioauthFlowApi<Block, KeystoreAccountId, UnixMilliseconds> for Runtime {
-        fn bioauth_status(id: &KeystoreAccountId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+    impl bioauth_flow_api::BioauthFlowApi<Block, KeystoreBioauthAccountId, UnixMilliseconds> for Runtime {
+        fn bioauth_status(id: &KeystoreBioauthAccountId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
             let id = AccountId::try_from(id.as_slice()).unwrap();
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
