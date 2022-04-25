@@ -6116,6 +6116,7 @@ dependencies = [
  "facetec-api-client",
  "hex",
  "mockall",
+ "parity-scale-codec",
  "primitives-auth-ticket",
  "primitives-liveness-data",
  "reqwest",
