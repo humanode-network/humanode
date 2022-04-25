@@ -188,8 +188,8 @@ fn root_with_error_handler(
     root(Arc::new(logic)).recover(rejection::handle)
 }
 
+/// Possible response variants we can expect in trivial success tests.
 #[derive(Debug)]
-/// Possible success responses endpoint options.
 enum SuccessResponse {
     Empty,
     Json(serde_json::Value),
