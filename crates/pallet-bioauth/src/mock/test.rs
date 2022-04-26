@@ -76,7 +76,7 @@ impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAu
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct MockVerifier;
 
-impl super::Verifier<Vec<u8>> for MockVerifier {
+impl crate::Verifier<Vec<u8>> for MockVerifier {
     type Error = Infallible;
 
     fn verify<'a, D>(&self, _data: D, signature: Vec<u8>) -> Result<bool, Self::Error>
@@ -104,7 +104,7 @@ thread_local! {
     pub static MOCK_VALIDATOR_SET_UPDATER: RefCell<MockValidatorSetUpdater> = RefCell::new(MockValidatorSetUpdater::new());
 }
 
-impl super::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater {
+impl crate::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater {
     fn update_validators_set<'a, I: Iterator<Item = &'a ValidatorPublicKey> + 'a>(
         validator_public_keys: I,
     ) where
@@ -145,7 +145,7 @@ thread_local! {
     pub static MOCK_CURRENT_MOMENT_PROVIDER: RefCell<MockCurrentMomentProvider> = RefCell::new(MockCurrentMomentProvider::new());
 }
 
-impl super::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
+impl crate::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
     fn now() -> UnixMilliseconds {
         MOCK_CURRENT_MOMENT_PROVIDER.with(|val| val.borrow().now())
     }
