@@ -1,0 +1,25 @@
+name: 'Plan'
+description: 'Plan the execution and output a build matrix'
+inputs:
+  plan-name:
+    description: 'What plan to use'
+    required: true
+outputs:
+  matrix:
+    description: 'The build matrix generated from planning'
+    value: ${{ steps.set-matrix.outputs.matrix }}
+runs:
+  using: "composite"
+  steps:
+    - name: Compute matrix
+      uses: actions/github-script@v4
+      id: set-matrix
+      env:
+        PLAN_NAME: ${{ inputs.plan-name }}
+        ACTION_PATH: ${{ github.action_path }}
+      with:
+        script: |
+          const planners = require(`${process.env.ACTION_PATH}/plan.js`);
+          const planner = planners[process.env.PLAN_NAME];
+          const matrix = planner();
+          core.setOutput('matrix', matrix);

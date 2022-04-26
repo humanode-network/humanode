@@ -28,9 +28,6 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
-
 /// Verifier provides the verification of the data accompanied with the
 /// signature or proof data.
 /// A non-async (blocking) variant, for use at runtime.
@@ -68,6 +65,20 @@ pub trait ValidatorSetUpdater<T> {
     fn init_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(validator_public_keys: I)
     where
         T: 'a;
+}
+
+impl<T> ValidatorSetUpdater<T> for () {
+    fn update_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(_validator_public_keys: I)
+    where
+        T: 'a,
+    {
+    }
+
+    fn init_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(_validator_public_keys: I)
+    where
+        T: 'a,
+    {
+    }
 }
 
 /// Provides the capability to get current moment.

@@ -17,7 +17,7 @@ use fc_rpc::{
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use humanode_runtime::{
     opaque::{Block, UncheckedExtrinsic},
-    AccountId, Balance, Hash, Index, UnixMilliseconds,
+    AccountId, Balance, BlockNumber, Hash, Index, UnixMilliseconds,
 };
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
@@ -25,6 +25,13 @@ use sc_client_api::{
     backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
 };
+use sc_consensus_babe::{Config, Epoch};
+use sc_consensus_babe_rpc::BabeRpcHandler;
+use sc_consensus_epochs::SharedEpochChanges;
+use sc_finality_grandpa::{
+    FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
+};
+use sc_finality_grandpa_rpc::GrandpaRpcHandler;
 use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool::{ChainApi, Pool};
@@ -32,28 +39,47 @@ use sc_transaction_pool_api::TransactionPool;
 use sp_api::{Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
+use sp_consensus::SelectChain;
+use sp_consensus_babe::BabeApi;
+use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
 
-/// RPC subsystem dependencies.
-pub struct Deps<C, P, VKE, VSF, A: ChainApi> {
-    /// The client instance to use.
-    pub client: Arc<C>,
-    /// Transaction pool instance.
-    pub pool: Arc<P>,
-    /// Whether to deny unsafe calls.
-    pub deny_unsafe: DenyUnsafe,
+/// Extra dependencies for Bioauth.
+pub struct BioauthDeps<VKE, VSF> {
     /// An ready robonode API client to tunnel the calls to.
     pub robonode_client: Arc<robonode_client::Client>,
     /// The liveness data tx slot to use in the bioauth flow RPC.
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
-    /// Extracts the currently used validator key.
-    pub validator_key_extractor: VKE,
-    /// A factory for making signers by the validator public keys.
-    pub validator_signer_factory: VSF,
-    /// Graph pool instance.
-    pub graph: Arc<Pool<A>>,
-    /// Network service
-    pub network: Arc<NetworkService<Block, Hash>>,
+    /// Extracts the currently used bioauth validator key.
+    pub bioauth_validator_key_extractor: VKE,
+    /// A factory for making signers by the bioauth validator public keys.
+    pub bioauth_validator_signer_factory: VSF,
+}
+
+/// Extra dependencies for BABE.
+pub struct BabeDeps {
+    /// BABE protocol config.
+    pub babe_config: Config,
+    /// BABE pending epoch changes.
+    pub babe_shared_epoch_changes: SharedEpochChanges<Block, Epoch>,
+    /// The keystore that manages the keys of the node.
+    pub keystore: SyncCryptoStorePtr,
+}
+
+/// Extra dependencies for GRANDPA.
+pub struct GrandpaDeps<BE> {
+    /// Voting round info.
+    pub grandpa_shared_voter_state: SharedVoterState,
+    /// Authority set info.
+    pub grandpa_shared_authority_set: SharedAuthoritySet<Hash, BlockNumber>,
+    /// Receives notifications about justification events from Grandpa.
+    pub grandpa_justification_stream: GrandpaJustificationStream<Block>,
+    /// Finality proof provider.
+    pub grandpa_finality_provider: Arc<FinalityProofProvider<BE, Block>>,
+}
+
+/// Extra EVM related dependencies.
+pub struct EvmDeps {
     /// EthFilterApi pool.
     pub eth_filter_pool: Option<FilterPool>,
     /// Maximum number of stored filters.
@@ -66,12 +92,36 @@ pub struct Deps<C, P, VKE, VSF, A: ChainApi> {
     pub eth_fee_history_limit: u64,
     /// Fee history cache.
     pub eth_fee_history_cache: FeeHistoryCache,
-    /// Subscription task executor instance.
-    pub subscription_task_executor: Arc<sc_rpc::SubscriptionTaskExecutor>,
     /// Ethereum data access overrides.
     pub eth_overrides: Arc<OverrideHandle<Block>>,
     /// Cache for Ethereum block data.
     pub eth_block_data_cache: Arc<EthBlockDataCache<Block>>,
+}
+
+/// RPC subsystem dependencies.
+pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
+    /// The client instance to use.
+    pub client: Arc<C>,
+    /// Transaction pool instance.
+    pub pool: Arc<P>,
+    /// Whether to deny unsafe calls.
+    pub deny_unsafe: DenyUnsafe,
+    /// Graph pool instance.
+    pub graph: Arc<Pool<A>>,
+    /// Network service
+    pub network: Arc<NetworkService<Block, Hash>>,
+    /// Bioauth specific dependencies.
+    pub bioauth: BioauthDeps<VKE, VSF>,
+    /// BABE specific dependencies.
+    pub babe: BabeDeps,
+    /// GRANDPA specific dependencies.
+    pub grandpa: GrandpaDeps<BE>,
+    /// The SelectChain Strategy
+    pub select_chain: SC,
+    /// EVM specific dependencies.
+    pub evm: EvmDeps,
+    /// Subscription task executor instance.
+    pub subscription_task_executor: Arc<sc_rpc::SubscriptionTaskExecutor>,
 }
 
 /// A helper function to handle overrides.
@@ -108,8 +158,8 @@ where
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, BE, VKE, VSF, A>(
-    deps: Deps<C, P, VKE, VSF, A>,
+pub fn create<C, P, BE, VKE, VSF, A, SC>(
+    deps: Deps<C, P, BE, VKE, VSF, A, SC>,
 ) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
 where
     BE: Backend<Block> + 'static,
@@ -120,6 +170,7 @@ where
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
     C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
+    C::Api: BabeApi<Block>,
     C::Api: BlockBuilder<Block>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
@@ -132,6 +183,7 @@ where
     <<VSF as SignerFactory<Vec<u8>, VKE::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
     A: ChainApi<Block = Block> + 'static,
+    SC: SelectChain<Block> + 'static,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
     use substrate_frame_rpc_system::{FullSystem, SystemApi};
@@ -141,22 +193,46 @@ where
         client,
         pool,
         deny_unsafe,
-        robonode_client,
-        bioauth_flow_slot,
-        validator_key_extractor,
-        validator_signer_factory,
         graph,
         network,
+        bioauth,
+        babe,
+        grandpa,
+        select_chain,
+        evm,
+        subscription_task_executor,
+    } = deps;
+
+    let BioauthDeps {
+        robonode_client,
+        bioauth_flow_slot,
+        bioauth_validator_key_extractor,
+        bioauth_validator_signer_factory,
+    } = bioauth;
+
+    let BabeDeps {
+        keystore,
+        babe_config,
+        babe_shared_epoch_changes,
+    } = babe;
+
+    let GrandpaDeps {
+        grandpa_shared_voter_state,
+        grandpa_shared_authority_set,
+        grandpa_justification_stream,
+        grandpa_finality_provider,
+    } = grandpa;
+
+    let EvmDeps {
         eth_filter_pool,
         eth_max_stored_filters,
         eth_backend,
         eth_max_past_logs,
         eth_fee_history_limit,
         eth_fee_history_cache,
-        subscription_task_executor,
         eth_overrides,
         eth_block_data_cache,
-    } = deps;
+    } = evm;
 
     io.extend_with(SystemApi::to_delegate(FullSystem::new(
         Arc::clone(&client),
@@ -168,11 +244,32 @@ where
         Arc::clone(&client),
     )));
 
+    io.extend_with(sc_consensus_babe_rpc::BabeApi::to_delegate(
+        BabeRpcHandler::new(
+            Arc::clone(&client),
+            babe_shared_epoch_changes,
+            keystore,
+            babe_config,
+            select_chain,
+            deny_unsafe,
+        ),
+    ));
+
+    io.extend_with(sc_finality_grandpa_rpc::GrandpaApi::to_delegate(
+        GrandpaRpcHandler::new(
+            grandpa_shared_authority_set,
+            grandpa_shared_voter_state,
+            grandpa_justification_stream,
+            Arc::clone(&subscription_task_executor),
+            grandpa_finality_provider,
+        ),
+    ));
+
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,
         bioauth_flow_slot,
-        validator_key_extractor,
-        validator_signer_factory,
+        bioauth_validator_key_extractor,
+        bioauth_validator_signer_factory,
         Arc::clone(&client),
         Arc::clone(&pool),
     )));
