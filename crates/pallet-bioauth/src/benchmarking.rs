@@ -68,5 +68,5 @@ benchmarks! {
 
     }
 
-    impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_test_ext(), crate::mock::benchmarking::Test);
+    impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_benchmark_ext(), crate::mock::benchmarking::Benchmark);
 }

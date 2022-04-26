@@ -13,8 +13,8 @@ use sp_runtime::{
     BuildStorage,
 };
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-type Block = frame_system::mocking::MockBlock<Test>;
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Benchmark>;
+type Block = frame_system::mocking::MockBlock<Benchmark>;
 
 /// A timestamp: milliseconds since the unix epoch.
 pub type UnixMilliseconds = u64;
@@ -24,7 +24,7 @@ pub type BlockNumber = u64;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
-    pub enum Test where
+    pub enum Benchmark where
         Block = Block,
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
@@ -123,7 +123,7 @@ parameter_types! {
     pub const SS58Prefix: u8 = 42;
 }
 
-impl system::Config for Test {
+impl system::Config for Benchmark {
     type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
     type BlockLength = ();
@@ -174,7 +174,7 @@ impl core::fmt::Display for DisplayMoment {
     }
 }
 
-impl pallet_bioauth::Config for Test {
+impl pallet_bioauth::Config for Benchmark {
     type Event = Event;
     type RobonodePublicKey = MockVerifier;
     type RobonodeSignature = Vec<u8>;
@@ -186,23 +186,25 @@ impl pallet_bioauth::Config for Test {
     type DisplayMoment = DisplayMoment;
     type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
-    type WeightInfo = weights::SubstrateWeight<Test>;
+    type WeightInfo = weights::SubstrateWeight<Benchmark>;
     type MaxAuthentications = MaxAuthentications;
     type MaxNonces = MaxNonces;
 }
 
-/// Build test externalities from the default genesis.
-pub fn new_test_ext() -> sp_io::TestExternalities {
+/// Build benchmark externalities from the default genesis.
+pub fn new_benchmark_ext() -> sp_io::TestExternalities {
     // Build externalities with default genesis.
-    let externalities = new_test_ext_with(Default::default());
+    let externalities = new_benchmark_ext_with(Default::default());
 
     // Return ready-to-use externalities.
     externalities
 }
 
-/// Build test externalities from the custom genesis.
+/// Build benchmark externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
-pub fn new_test_ext_with(config: pallet_bioauth::GenesisConfig<Test>) -> sp_io::TestExternalities {
+pub fn new_benchmark_ext_with(
+    config: pallet_bioauth::GenesisConfig<Benchmark>,
+) -> sp_io::TestExternalities {
     // Build genesis.
     let config = GenesisConfig {
         bioauth: config,
