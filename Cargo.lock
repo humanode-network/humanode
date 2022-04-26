@@ -2727,6 +2727,7 @@ dependencies = [
  "humanode-rpc",
  "humanode-runtime",
  "indoc",
+ "keystore-bioauth-account-id",
  "ngrok-api",
  "pallet-bioauth",
  "pallet-dynamic-fee",
@@ -2827,6 +2828,7 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frontier-api",
  "hex-literal",
+ "keystore-bioauth-account-id",
  "pallet-babe",
  "pallet-balances",
  "pallet-base-fee",
@@ -3305,6 +3307,15 @@ checksum = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
 dependencies = [
  "winapi 0.2.8",
  "winapi-build",
+]
+
+[[package]]
+name = "keystore-bioauth-account-id"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-application-crypto",
 ]
 
 [[package]]
@@ -5674,9 +5685,9 @@ dependencies = [
 
 [[package]]
 name = "psm"
-version = "0.1.18"
+version = "0.1.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "871372391786ccec00d3c5d3d6608905b3d4db263639cfe075d3b60a736d115a"
+checksum = "6eca0fa5dd7c4c96e184cec588f0b1db1ee3165e678db21c09793105acb17e6f"
 dependencies = [
  "cc",
 ]

@@ -14,6 +14,7 @@ bioauth-consensus = { version = "0.1", path = "../bioauth-consensus", features =
 bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
+keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id" }
 ngrok-api = { version = "0.1", path = "../ngrok-api" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
