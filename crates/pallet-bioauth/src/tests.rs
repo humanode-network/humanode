@@ -1,6 +1,6 @@
 use std::ops::Div;
 
-use crate::{self as pallet_bioauth, mock::test::*, *};
+use crate::{self as pallet_bioauth, mock::testing::*, *};
 use frame_support::{
     assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, WeakBoundedVec,
 };
