@@ -48,16 +48,24 @@ impl From<ShouldRetry> for Value {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct TransactionPoolErrorDetails {
+    /// The error kind.
     kind: TransactionPoolErrorKind,
+    /// The message from the inner transaction pool error.
     inner_error: String,
 }
 
+/// The error kinds that we expose in the RPC that originate from the transaction pool.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 enum TransactionPoolErrorKind {
+    /// Auth ticket signature was not valid.
     AuthTicketSignatureInvalid,
+    /// We were unable to parse the auth ticket (although its signature was supposed to be
+    /// validated by now).
     UnableToParseAuthTicket,
+    /// The nonce was already seen by the system.
     NonceAlreadyUsed,
+    /// The aactive authentication issued by this ticket is still on.
     AlreadyAuthenticated,
 }
 
