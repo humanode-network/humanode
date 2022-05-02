@@ -50,10 +50,10 @@ pub struct BioauthDeps<VKE, VSF> {
     pub robonode_client: Arc<robonode_client::Client>,
     /// The liveness data tx slot to use in the bioauth flow RPC.
     pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
-    /// Extracts the currently used validator key.
-    pub validator_key_extractor: VKE,
-    /// A factory for making signers by the validator public keys.
-    pub validator_signer_factory: VSF,
+    /// Extracts the currently used bioauth validator key.
+    pub bioauth_validator_key_extractor: VKE,
+    /// A factory for making signers by the bioauth validator public keys.
+    pub bioauth_validator_signer_factory: VSF,
 }
 
 /// Extra dependencies for BABE.
@@ -206,8 +206,8 @@ where
     let BioauthDeps {
         robonode_client,
         bioauth_flow_slot,
-        validator_key_extractor,
-        validator_signer_factory,
+        bioauth_validator_key_extractor,
+        bioauth_validator_signer_factory,
     } = bioauth;
 
     let BabeDeps {
@@ -268,8 +268,8 @@ where
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,
         bioauth_flow_slot,
-        validator_key_extractor,
-        validator_signer_factory,
+        bioauth_validator_key_extractor,
+        bioauth_validator_signer_factory,
         Arc::clone(&client),
         Arc::clone(&pool),
     )));

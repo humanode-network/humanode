@@ -6,7 +6,7 @@ use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
-use humanode_runtime::{self, opaque::Block, BioauthConsensusId, RuntimeApi};
+use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockchainEvents, ExecutorProvider};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
@@ -48,6 +48,8 @@ impl sc_executor::NativeExecutionDispatch for ExecutorDispatch {
     }
 }
 
+/// Keystore bioauth identifier used at the keystore.
+pub type KeystoreBioauthId = keystore_bioauth_account_id::KeystoreBioauthAccountId;
 /// Executor type.
 type Executor = NativeElseWasmExecutor<ExecutorDispatch>;
 /// Full node client type.
@@ -334,8 +336,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
         let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
-        let validator_key_extractor = Arc::clone(&validator_key_extractor);
-        let validator_signer_factory = {
+        let bioauth_validator_key_extractor =
+            Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
+                KeystoreBioauthId,
+            >::new(keystore_container.sync_keystore()));
+        let bioauth_validator_signer_factory = {
             let keystore = keystore_container.keystore();
             Arc::new(move |key| {
                 crate::validator_key::AppCryptoSigner::new(
@@ -388,8 +393,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 bioauth: humanode_rpc::BioauthDeps {
                     robonode_client: Arc::clone(&robonode_client),
                     bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
-                    validator_signer_factory: Arc::clone(&validator_signer_factory),
-                    validator_key_extractor: Arc::clone(&validator_key_extractor),
+                    bioauth_validator_signer_factory: Arc::clone(&bioauth_validator_signer_factory),
+                    bioauth_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
                 },
                 babe: humanode_rpc::BabeDeps {
                     babe_config: babe_config.clone(),
@@ -561,7 +566,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let transaction_pool = Arc::clone(&transaction_pool);
         Box::pin(async move {
             let validator_public_key =
-                crate::validator_key::AppCryptoPublic::<BioauthConsensusId>::from_keystore(
+                crate::validator_key::AppCryptoPublic::<KeystoreBioauthId>::from_keystore(
                     keystore.as_ref(),
                 )
                 .await;
