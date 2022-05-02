@@ -131,6 +131,14 @@ pub struct Authentication<PublicKey, Moment> {
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
+/// Custom invalid transaction error codes.
+#[repr(u8)]
+pub enum CustomInvalidTransactionCodes {
+    /// We were unable to parse the auth ticket.
+    /// This happens after the signature has already been verified.
+    UnableToParseAuthTicket = b't',
+}
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(
@@ -316,35 +324,10 @@ pub mod pallet {
         PublicKeyAlreadyUsed,
     }
 
-    pub enum AuthenticationAttemptValidationError<'a, T: Config> {
+    #[derive(Debug)]
+    enum AuthenticationAttemptValidationError {
         NonceConflict,
-        AlreadyAuthenticated(&'a Authentication<T::ValidatorPublicKey, T::Moment>),
-    }
-
-    impl<'a, T: Config> From<AuthenticationAttemptValidationError<'a, T>> for Error<T> {
-        fn from(err: AuthenticationAttemptValidationError<'a, T>) -> Self {
-            match err {
-                AuthenticationAttemptValidationError::NonceConflict => Self::NonceAlreadyUsed,
-                AuthenticationAttemptValidationError::AlreadyAuthenticated(_) => {
-                    Self::PublicKeyAlreadyUsed
-                }
-            }
-        }
-    }
-
-    impl<'a, T: Config> core::fmt::Display for AuthenticationAttemptValidationError<'a, T> {
-        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-            match self {
-                Self::NonceConflict => write!(f, "nonce has already been used"),
-                Self::AlreadyAuthenticated(authentication) => {
-                    write!(
-                        f,
-                        "previous authentication exists and is valid till {}",
-                        T::DisplayMoment::from(authentication.expires_at)
-                    )
-                }
-            }
-        }
+        AlreadyAuthenticated,
     }
 
     /// Validate the incloming authentication attempt, checking the auth ticket data against
@@ -353,7 +336,7 @@ pub mod pallet {
         consumed_auth_ticket_nonces: &'a [BoundedAuthTicketNonce],
         active_authentications: &'a [Authentication<T::ValidatorPublicKey, T::Moment>],
         auth_ticket: &AuthTicket<T::ValidatorPublicKey>,
-    ) -> Result<(), AuthenticationAttemptValidationError<'a, T>> {
+    ) -> Result<(), AuthenticationAttemptValidationError> {
         for consumed_auth_ticket_nonce in consumed_auth_ticket_nonces.iter() {
             if consumed_auth_ticket_nonce == &auth_ticket.nonce {
                 return Err(AuthenticationAttemptValidationError::NonceConflict);
@@ -361,9 +344,7 @@ pub mod pallet {
         }
         for active_authentication in active_authentications.iter() {
             if active_authentication.public_key == auth_ticket.public_key {
-                return Err(AuthenticationAttemptValidationError::AlreadyAuthenticated(
-                    active_authentication,
-                ));
+                return Err(AuthenticationAttemptValidationError::AlreadyAuthenticated);
             }
         }
 
@@ -382,7 +363,16 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_none(origin)?;
 
-            let auth_ticket = Self::extract_auth_ticket_checked(req)?;
+            let auth_ticket =
+                Self::extract_auth_ticket_checked(req).map_err(|error| match error {
+                    AuthTicketExtractionError::UnableToValidateSignature => {
+                        Error::<T>::UnableToValidateAuthTicketSignature
+                    }
+                    AuthTicketExtractionError::SignatureInvalid => {
+                        Error::<T>::AuthTicketSignatureInvalid
+                    }
+                    AuthTicketExtractionError::UnableToParse => Error::<T>::UnableToParseAuthTicket,
+                })?;
             let public_key = auth_ticket.public_key.clone();
 
             // Update storage.
@@ -394,7 +384,15 @@ pub mod pallet {
                                 consumed_auth_ticket_nonces,
                                 active_authentications,
                                 &auth_ticket,
-                            )?;
+                            )
+                            .map_err(|err| match err {
+                                AuthenticationAttemptValidationError::NonceConflict => {
+                                    Error::NonceAlreadyUsed
+                                }
+                                AuthenticationAttemptValidationError::AlreadyAuthenticated => {
+                                    Error::PublicKeyAlreadyUsed
+                                }
+                            })?;
 
                             // Update internal state.
                             let current_moment = T::CurrentMoment::now();
@@ -474,22 +472,29 @@ pub mod pallet {
         }
     }
 
+    #[derive(Debug)]
+    enum AuthTicketExtractionError {
+        UnableToValidateSignature,
+        SignatureInvalid,
+        UnableToParse,
+    }
+
     impl<T: Config> Pallet<T> {
-        pub fn extract_auth_ticket_checked(
+        fn extract_auth_ticket_checked(
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
-        ) -> Result<AuthTicket<T::ValidatorPublicKey>, Error<T>> {
+        ) -> Result<AuthTicket<T::ValidatorPublicKey>, AuthTicketExtractionError> {
             let robonode_public_key = RobonodePublicKey::<T>::get();
 
             let signature_valid = robonode_public_key
                 .verify(&req.ticket, req.ticket_signature)
-                .map_err(|_| Error::<T>::UnableToValidateAuthTicketSignature)?;
+                .map_err(|_| AuthTicketExtractionError::UnableToValidateSignature)?;
 
             if !signature_valid {
-                return Err(Error::<T>::AuthTicketSignatureInvalid);
+                return Err(AuthTicketExtractionError::SignatureInvalid);
             }
 
             let auth_ticket = <T::AuthTicketCoverter as TryConvert<_, _>>::try_convert(req.ticket)
-                .map_err(|_| Error::<T>::UnableToParseAuthTicket)?;
+                .map_err(|_| AuthTicketExtractionError::UnableToParse)?;
 
             Ok(auth_ticket)
         }
@@ -508,8 +513,16 @@ pub mod pallet {
             let auth_ticket =
                 Self::extract_auth_ticket_checked(transaction.clone()).map_err(|error| {
                     error!(message = "Auth Ticket could not be extracted", ?error);
-                    // Use custom code 's' for "signature" error.
-                    TransactionValidityError::Invalid(InvalidTransaction::Custom(b's'))
+                    // Use bad proof error code, as the extraction.
+                    TransactionValidityError::Invalid(match error {
+                        AuthTicketExtractionError::UnableToValidateSignature
+                        | AuthTicketExtractionError::SignatureInvalid => {
+                            InvalidTransaction::BadProof
+                        }
+                        AuthTicketExtractionError::UnableToParse => InvalidTransaction::Custom(
+                            CustomInvalidTransactionCodes::UnableToParseAuthTicket as u8,
+                        ),
+                    })
                 })?;
 
             let consumed_auth_ticket_nonces = ConsumedAuthTicketNonces::<T>::get();
@@ -521,10 +534,25 @@ pub mod pallet {
                 &auth_ticket,
             )
             .map_err(|err| {
-                error!(message = "Authentication attemption failed", error = %err);
+                error!(message = "Authentication attemption failed", error = ?err);
 
-                // Use custom code 'c' for "conflict" error.
-                TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
+                TransactionValidityError::Invalid(match err {
+                    AuthenticationAttemptValidationError::NonceConflict => {
+                        // The transaction renders nonce conflict if we have already seen this nonce
+                        // before, so in practice, we will most likely observe this with auth ticket
+                        // replays. We can sort of say the auth ticket is stale if it has already
+                        // been consumed.
+                        InvalidTransaction::Stale
+                    }
+                    AuthenticationAttemptValidationError::AlreadyAuthenticated => {
+                        // Technically, we can't know if the transaction is from the future, but we
+                        // know for sure it's not a replay, since the nonce didn't conflict;
+                        // The way it usually observed to happen is when someone authenticates
+                        // again while already having an active authentication - so this means this
+                        // transaction would've been valid if sent in the future.
+                        InvalidTransaction::Future
+                    }
+                })
             })?;
 
             // We must use non-default [`TransactionValidity`] here.

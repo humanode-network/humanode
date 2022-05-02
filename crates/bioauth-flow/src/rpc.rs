@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
+use sp_runtime::transaction_validity::InvalidTransaction;
 use tracing::*;
 
 use crate::{flow::LivenessDataProvider, Signer, SignerFactory};
@@ -42,23 +43,55 @@ impl From<ShouldRetry> for Value {
     }
 }
 
+/// The RPC error context we provide to trigger the face capture logic again,
+/// effectively requesting a retry of the same request with a new liveness data.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct TransactionPoolErrorDetails {
+    /// The error kind.
+    kind: TransactionPoolErrorKind,
+    /// The message from the inner transaction pool error.
+    inner_error: String,
+}
+
+/// The error kinds that we expose in the RPC that originate from the transaction pool.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+enum TransactionPoolErrorKind {
+    /// Auth ticket signature was not valid.
+    AuthTicketSignatureInvalid,
+    /// We were unable to parse the auth ticket (although its signature was supposed to be
+    /// validated by now).
+    UnableToParseAuthTicket,
+    /// The nonce was already seen by the system.
+    NonceAlreadyUsed,
+    /// The aactive authentication issued by this ticket is still on.
+    AlreadyAuthenticated,
+}
+
+impl From<TransactionPoolErrorDetails> for Value {
+    fn from(val: TransactionPoolErrorDetails) -> Self {
+        serde_json::json!({ "transactionPoolErrorDetails": val })
+    }
+}
+
 /// Custom rpc error codes.
 #[derive(Debug, Clone, Copy)]
 enum ErrorCode {
     /// Signer has failed.
-    Signer = 1,
+    Signer = 100,
     /// Request to robonode has failed.
-    Robonode,
+    Robonode = 200,
     /// Call to runtime api has failed.
-    RuntimeApi,
-    /// Auth transaction has failed.
-    Transaction,
+    RuntimeApi = 300,
+    /// Authenticate transaction has failed.
+    Transaction = 400,
     /// Validator key is not available.
-    MissingValidatorKey,
+    MissingValidatorKey = 500,
     /// Validator key extraction has failed.
-    ValidatorKeyExtraction,
+    ValidatorKeyExtraction = 600,
     /// Liveness data was not provided.
-    MissingLivenessData,
+    MissingLivenessData = 700,
 }
 
 /// The bioauth status as used in the RPC.
@@ -529,11 +562,7 @@ where
                 ext,
             )
             .await
-            .map_err(|e| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::Transaction as _),
-                message: format!("Transaction failed: {}", e),
-                data: None,
-            })?;
+            .map_err(map_txpool_error)?;
 
         info!("Bioauth flow - authenticate transaction complete");
 
@@ -617,5 +646,70 @@ impl LivenessDataProvider for Provider {
         }
 
         Ok(rx.await?)
+    }
+}
+
+/// Convert a transaction pool error into a human-readable
+fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(err: T) -> RpcError {
+    let code = RpcErrorCode::ServerError(ErrorCode::Transaction as _);
+
+    let err = match err.into_pool_error() {
+        Ok(err) => err,
+        Err(err) => {
+            // This is not a Transaction Pool API Error, but it may be a kind of wrapper type
+            // error (i.e. Transaction Pool Error, without the API bit).
+            return RpcError {
+                code,
+                message: format!("Transaction failed: {}", err),
+                data: None,
+            };
+        }
+    };
+
+    use sc_transaction_pool_api::error::Error;
+    let (kind, message) = match err {
+        // Provide some custom-tweaked error messages for a few select cases:
+        Error::InvalidTransaction(InvalidTransaction::BadProof) => (
+            TransactionPoolErrorKind::AuthTicketSignatureInvalid,
+            "Invalid auth ticket signature",
+        ),
+        Error::InvalidTransaction(InvalidTransaction::Custom(custom_code))
+            if custom_code
+                == (pallet_bioauth::CustomInvalidTransactionCodes::UnableToParseAuthTicket
+                    as u8) =>
+        {
+            (
+                TransactionPoolErrorKind::UnableToParseAuthTicket,
+                "Unable to parse a validly signed auth ticket",
+            )
+        }
+        Error::InvalidTransaction(InvalidTransaction::Stale) => (
+            TransactionPoolErrorKind::NonceAlreadyUsed,
+            "The auth ticket you provided has already been used",
+        ),
+        Error::InvalidTransaction(InvalidTransaction::Future) => (
+            TransactionPoolErrorKind::AlreadyAuthenticated,
+            "Active authentication exists currently, and you can't authenticate again yet",
+        ),
+        // For the rest cases, fallback to the native error rendering.
+        err => {
+            return RpcError {
+                code,
+                message: format!("Transaction failed: {}", err),
+                data: None,
+            }
+        }
+    };
+
+    RpcError {
+        code,
+        message: message.to_string(),
+        data: Some(
+            TransactionPoolErrorDetails {
+                inner_error: err.to_string(),
+                kind,
+            }
+            .into(),
+        ),
     }
 }
