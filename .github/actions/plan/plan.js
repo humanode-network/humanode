@@ -73,6 +73,12 @@ const codeModes = {
     cargoArgs: "--features runtime-benchmarks",
     cargoCacheKey: "test-benchmark",
   },
+  runBenchmark: {
+    name: "run benchmark",
+    cargoCommand: "run",
+    cargoArgs: "--features runtime-benchmarks benchmark --chain dev --execution wasm --wasm-execution compiled --pallet pallet_bioauth --extrinsic '*' --steps 1 --repeat 1",
+    cargoCacheKey: "run-benchmark",
+  },
 };
 
 const buildModes = {
