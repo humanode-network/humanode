@@ -49,6 +49,8 @@ benchmarks! {
             ticket_signature,
         };
 
+        let active_authentications_before = ActiveAuthentications::<T>::get().len();
+
     }: _(RawOrigin::None, authenticate_req)
 
     verify {
@@ -58,12 +60,14 @@ benchmarks! {
         let expected_nonce: WeakBoundedVec<u8, AuthTicketNonceMaxBytes> = Vec::from("nonce").try_into().unwrap();
         assert!(&expected_nonce == &consumed_nonces[0]);
 
-        let active_authentications = ActiveAuthentications::<T>::get();
-        assert_eq!(active_authentications.len(), 1);
+        // According the fact that benhcmarking can be used for different chain specifications
+        // we just need to properly compare the size of active authentications before and after running benchmarks.
+        let active_authentications_after = ActiveAuthentications::<T>::get();
+        assert_eq!(active_authentications_after.len() - active_authentications_before, 1);
 
         // Expected pubkey
         let expected_pubkey = make_pubkey(0 as u8);
-        let observed_pubkey: Vec<u8> = active_authentications[0].public_key.encode();
+        let observed_pubkey: Vec<u8> = active_authentications_after[0].public_key.encode();
         assert_eq!(observed_pubkey, expected_pubkey);
 
     }
