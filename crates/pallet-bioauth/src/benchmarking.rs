@@ -1,5 +1,5 @@
-use crate::{Pallet as Bioauth, *};
-use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
+use crate::*;
+use frame_benchmarking::benchmarks;
 use frame_support::{traits::Get, WeakBoundedVec};
 use frame_system::RawOrigin;
 use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
@@ -58,18 +58,15 @@ benchmarks! {
         let expected_nonce: WeakBoundedVec<u8, AuthTicketNonceMaxBytes> = Vec::from("nonce").try_into().unwrap();
         assert!(&expected_nonce == &consumed_nonces[0]);
 
-        // Verify active authentications
-        // Skip the first authentication which belongs to Alice's dev account.
-        // d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
         let active_authentications = ActiveAuthentications::<T>::get();
-        assert_eq!(active_authentications.len(), 2);
+        assert_eq!(active_authentications.len(), 1);
 
         // Expected pubkey
         let expected_pubkey = make_pubkey(0 as u8);
-        let observed_pubkey: Vec<u8> = active_authentications[1].public_key.encode();
+        let observed_pubkey: Vec<u8> = active_authentications[0].public_key.encode();
         assert_eq!(observed_pubkey, expected_pubkey);
 
     }
 
-    impl_benchmark_test_suite!(Pallet, crate::mock::new_test_ext(), crate::mock::Test);
+    impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_benchmark_ext(), crate::mock::benchmarking::Benchmark);
 }
