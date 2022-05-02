@@ -614,6 +614,13 @@ pub mod pallet {
 #[scale_info(skip_type_params(T))]
 pub struct CheckBioauthTx<T: Config + Send + Sync>(PhantomData<T>);
 
+impl<T: Config + Send + Sync> CheckBioauthTx<T> {
+    /// Creates new `SignedExtension` to check bioauth extrinsic.
+    pub fn new() -> Self {
+        Self(sp_std::marker::PhantomData)
+    }
+}
+
 /// Debug impl for the `CheckBioauthTx` struct.
 impl<T: Config + Send + Sync> Debug for CheckBioauthTx<T> {
     #[cfg(feature = "std")]
