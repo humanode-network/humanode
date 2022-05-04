@@ -178,6 +178,60 @@ pub fn development_config() -> Result<ChainSpec, String> {
     ))
 }
 
+/// Config for benchmarking
+pub fn benchmark_config() -> Result<ChainSpec, String> {
+    let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
+
+    // Keypair is taken from the first entry of
+    let robonode_public_key = RobonodePublicKeyWrapper::from_bytes(
+        &hex!("d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a")[..],
+    )
+    .map_err(|err| format!("{:?}", err))?;
+
+    log::info!("Benchmark Public key used: {:?}", robonode_public_key);
+
+    Ok(ChainSpec::from_genesis(
+        // Name
+        "Benchmark",
+        // ID
+        "benchmark",
+        ChainType::Development,
+        move || {
+            testnet_genesis(
+                wasm_binary,
+                // Initial PoA authorities
+                vec![authority_keys_from_seed("Alice")],
+                // Sudo account
+                get_account_id_from_seed::<sr25519::Public>("Alice"),
+                // Pre-funded accounts
+                vec![
+                    get_account_id_from_seed::<sr25519::Public>("Alice"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob"),
+                    get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+                    get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+                ],
+                robonode_public_key,
+                // TODO: Implement mechanism to populate nonces. Configurable via cli option.
+                vec![],
+                vec![pallet_bioauth::Authentication {
+                    public_key: authority_keys_from_seed("Alice").0,
+                    expires_at: AUTHENTICATION_NEVER_EXPIRES,
+                }],
+            )
+        },
+        // Bootnodes
+        vec![],
+        // Telemetry
+        None,
+        // Protocol ID
+        None,
+        // Properties
+        None,
+        // Extensions
+        Extensions::default(),
+    ))
+}
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],

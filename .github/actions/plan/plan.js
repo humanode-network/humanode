@@ -70,13 +70,13 @@ const codeModes = {
   testBenchmark: {
     name: "test benchmark",
     cargoCommand: "test",
-    cargoArgs: "--features runtime-benchmarks",
+    cargoArgs: "--features runtime-benchmarks --chain benchmark",
     cargoCacheKey: "test-benchmark",
   },
   runBenchmark: {
     name: "run benchmark",
     cargoCommand: "run",
-    cargoArgs: "--features runtime-benchmarks benchmark --chain dev --execution wasm --wasm-execution compiled --pallet '*' --extrinsic '*' --steps 1 --repeat 1",
+    cargoArgs: "--features runtime-benchmarks benchmark --chain benchmark --execution wasm --wasm-execution compiled --pallet '*' --extrinsic '*' --steps 1 --repeat 1",
     cargoCacheKey: "run-benchmark",
   },
 };
