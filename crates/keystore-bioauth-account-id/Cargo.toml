@@ -7,7 +7,7 @@ publish = false
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
-sp-application-crypto = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-application-crypto = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
 
 [features]
 default = ["std"]

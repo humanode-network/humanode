@@ -6,19 +6,20 @@ publish = false
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys", optional = true }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+pallet-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 serde = { version = "1", features = ["derive"], optional = true }
-sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
 
 [dev-dependencies]
 mockall = "0.10"
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
 
 [features]
 default = ["std"]

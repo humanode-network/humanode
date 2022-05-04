@@ -490,11 +490,19 @@ parameter_types! {
     pub const MaxNonces: u32 = MaxAuthentications::get() * 200;
 }
 
+pub struct IdentityConverter;
+impl sp_runtime::traits::Convert<BioauthId, BioauthId> for IdentityConverter {
+    fn convert(id: BioauthId) -> BioauthId {
+        id
+    }
+}
+
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
     type RobonodeSignature = Vec<u8>;
     type ValidatorPublicKey = BioauthId;
+    type Converter = IdentityConverter;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
     type AuthTicketCoverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = ();
@@ -783,14 +791,15 @@ impl_runtime_apis! {
 
         fn create_authenticate_extrinsic(
             auth_ticket: Vec<u8>,
-            auth_ticket_signature: Vec<u8>
+            auth_ticket_signature: Vec<u8>,
+            session_keys: Vec<u8>,
         ) -> <Block as BlockT>::Extrinsic {
             let authenticate = pallet_bioauth::Authenticate {
                 ticket: auth_ticket.into(),
                 ticket_signature: auth_ticket_signature,
             };
 
-            let call = pallet_bioauth::Call::authenticate { req: authenticate };
+            let call = pallet_bioauth::Call::authenticate { req: authenticate, session_keys };
 
             <Block as BlockT>::Extrinsic::new_unsigned(call.into())
         }

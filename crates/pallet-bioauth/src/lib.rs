@@ -13,7 +13,7 @@ use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
-    traits::{DispatchInfoOf, Dispatchable, SignedExtension},
+    traits::{Convert, DispatchInfoOf, Dispatchable, SignedExtension},
     transaction_validity::{TransactionValidity, TransactionValidityError},
 };
 use sp_std::fmt::Debug;
@@ -162,7 +162,7 @@ pub mod pallet {
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
-    pub trait Config: frame_system::Config {
+    pub trait Config: frame_system::Config + pallet_session::Config {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
@@ -183,6 +183,8 @@ pub mod pallet {
             + MaybeSerializeDeserialize
             + MaybeHash
             + MaxEncodedLen;
+
+        type Converter: Convert<Self::ValidatorPublicKey, Self::ValidatorId>;
 
         /// The opaque auth ticket type.
         type OpaqueAuthTicket: Parameter + AsRef<[u8]> + Send + Sync;
@@ -356,10 +358,11 @@ pub mod pallet {
     /// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(T::WeightInfo::authenticate())]
+        #[pallet::weight(<T as pallet::Config>::WeightInfo::authenticate())]
         pub fn authenticate(
             origin: OriginFor<T>,
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
+            session_keys: Vec<u8>,
         ) -> DispatchResult {
             ensure_none(origin)?;
 
@@ -425,6 +428,13 @@ pub mod pallet {
                                     Some("bioauth::authentication::authentications"),
                                 );
 
+                            let keys = <T as pallet_session::Config>::Keys::decode(
+                                &mut session_keys.as_slice(),
+                            )
+                            .unwrap();
+                            let who = T::Converter::convert(public_key.clone());
+                            let _result = pallet_session::Pallet::<T>::inner_set_keys(&who, keys);
+
                             // Issue an update to the external validators set.
                             Self::issue_validators_set_update(active_authentications.as_slice());
 
@@ -468,7 +478,7 @@ pub mod pallet {
                 <ActiveAuthentications<T>>::put(bounded_active_authentications);
             }
 
-            T::WeightInfo::on_initialize(update_required)
+            <T as pallet::Config>::WeightInfo::on_initialize(update_required)
         }
     }
 
@@ -501,7 +511,10 @@ pub mod pallet {
 
         pub fn check_tx(call: &Call<T>) -> TransactionValidity {
             let transaction = match call {
-                Call::authenticate { req: transaction } => transaction,
+                Call::authenticate {
+                    req: transaction,
+                    session_keys: _session_keys,
+                } => transaction,
                 // Deny all unknown transactions.
                 _ => {
                     // The only supported transaction by this pallet is `authenticate`, so anything

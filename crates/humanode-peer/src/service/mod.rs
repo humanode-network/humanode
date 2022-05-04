@@ -641,7 +641,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 ticket: authenticate_response.auth_ticket.into(),
                 ticket_signature: authenticate_response.auth_ticket_signature.into(),
             };
-            let call = pallet_bioauth::Call::authenticate { req: authenticate };
+            let call = pallet_bioauth::Call::authenticate {
+                req: authenticate,
+                session_keys: vec![],
+            };
 
             let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
 

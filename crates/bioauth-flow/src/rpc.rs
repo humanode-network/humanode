@@ -19,6 +19,7 @@ use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_runtime::transaction_validity::InvalidTransaction;
+use sp_session::SessionKeys;
 use tracing::*;
 
 use crate::{flow::LivenessDataProvider, Signer, SignerFactory};
@@ -292,6 +293,7 @@ where
     Client: Send + Sync + 'static,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+    Client::Api: SessionKeys<Block>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -390,6 +392,7 @@ where
     Client: Send + Sync + 'static,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+    Client::Api: SessionKeys<Block>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -541,6 +544,15 @@ where
 
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
+        let session_keys = self
+            .client.runtime_api()
+            .generate_session_keys(&at, None)
+            .map_err(|err| RpcError {
+                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
+                message: format!("Error generating session keys: {}", err),
+                data: None,
+            })?;
+
         let ext = self
             .client
             .runtime_api()
@@ -548,6 +560,7 @@ where
                 &at,
                 response.auth_ticket.into(),
                 response.auth_ticket_signature.into(),
+                session_keys,
             )
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),

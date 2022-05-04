@@ -6,14 +6,14 @@ publish = false
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 
 [dev-dependencies]
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
 
 [features]
 default = ["std"]

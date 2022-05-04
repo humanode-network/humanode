@@ -8,12 +8,12 @@ publish = false
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
 
 [features]
 default = ["std"]

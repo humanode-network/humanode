@@ -19,23 +19,24 @@ fp-rpc = { default-features = false, git = "https://github.com/humanode-network/
 jsonrpc-core = "18"
 jsonrpc-pubsub = "18.0.0"
 pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-consensus-babe-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-consensus-epochs = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-finality-grandpa-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-consensus-babe-rpc = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-consensus-epochs = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-finality-grandpa-rpc = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-network = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+sp-session = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }
+substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "pub-set-keys" }

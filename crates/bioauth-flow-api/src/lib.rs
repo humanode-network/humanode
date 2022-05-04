@@ -32,7 +32,8 @@ sp_api::decl_runtime_apis! {
         /// Create an extrinsic for submitting auth ticket.
         fn create_authenticate_extrinsic(
             auth_ticket: Vec<u8>,
-            auth_ticket_signature: Vec<u8>
+            auth_ticket_signature: Vec<u8>,
+            session_keys: Vec<u8>,
         ) -> Block::Extrinsic;
     }
 }
