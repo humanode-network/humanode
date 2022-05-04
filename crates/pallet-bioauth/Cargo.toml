@@ -11,6 +11,8 @@ codec = { package = "parity-scale-codec", version = "2", default-features = fals
 frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+hex-literal = "0.3"
+robonode-crypto= { version = "0.1", path = "../robonode-crypto", default-features = false }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 serde = { version = "1", features = ["derive"], optional = true }
 sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }

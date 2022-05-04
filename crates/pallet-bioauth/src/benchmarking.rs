@@ -1,8 +1,11 @@
-use crate::*;
-use frame_benchmarking::benchmarks;
+use crate::{Pallet as Bioauth, *};
+use codec::alloc::string::ToString;
+use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
 use frame_support::{traits::Get, WeakBoundedVec};
 use frame_system::RawOrigin;
+use hex_literal::hex;
 use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
+use robonode_crypto::{Keypair, Signer};
 
 fn make_pubkey(idx: u8) -> Vec<u8> {
     let mut s = Vec::from("public_key");
@@ -18,10 +21,11 @@ fn make_auth_ticket(public_key: Vec<u8>) -> OpaqueAuthTicket {
     })
 }
 
-fn make_signature(idx: u8) -> Vec<u8> {
-    let mut s = Vec::from("signature");
-    s.push(idx);
-    bounded(s, 64)
+fn sign_auth_ticket(robonode_pubkey: &Keypair, auth_ticket: Vec<u8>) -> Vec<u8> {
+    let ticket_signature = robonode_pubkey
+        .try_sign(&auth_ticket[1..].as_ref())
+        .unwrap();
+    ticket_signature.to_bytes().to_vec()
 }
 
 fn bounded(prefix: Vec<u8>, size: usize) -> Vec<u8> {
@@ -37,15 +41,20 @@ benchmarks! {
 
     authenticate {
         let i in 0..T::MaxAuthentications::get();
+        let robonode_keypair = Keypair::from_bytes(
+            hex!("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a").as_ref()
+        ).unwrap();
 
+        // Generate public key for an authentication
         let pkey = make_pubkey(i as u8);
         let auth_ticket = make_auth_ticket(pkey.to_vec().clone());
-        let opaque_auth_ticket: T::OpaqueAuthTicket = auth_ticket.into();
 
-        let ticket_signature: T::RobonodeSignature = make_signature(i as u8).into();
+        let ticket: T::OpaqueAuthTicket = auth_ticket.into();
+        let ticket_signature_bytes_vec = sign_auth_ticket(&robonode_keypair, ticket.encode());
+        let ticket_signature: T::RobonodeSignature = ticket_signature_bytes_vec.into();
 
         let authenticate_req = Authenticate {
-            ticket: opaque_auth_ticket,
+            ticket,
             ticket_signature,
         };
 
@@ -66,7 +75,7 @@ benchmarks! {
         assert_eq!(active_authentications_after.len() - active_authentications_before, 1);
 
         // Expected pubkey
-        let expected_pubkey = make_pubkey(0 as u8);
+        let expected_pubkey = make_pubkey(i as u8);
         let observed_pubkey: Vec<u8> = active_authentications_after[0].public_key.encode();
         assert_eq!(observed_pubkey, expected_pubkey);
 
