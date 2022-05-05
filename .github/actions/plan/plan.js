@@ -70,7 +70,7 @@ const codeModes = {
   testBenchmark: {
     name: "test benchmark",
     cargoCommand: "test",
-    cargoArgs: "--features runtime-benchmarks --chain benchmark",
+    cargoArgs: "--features runtime-benchmarks",
     cargoCacheKey: "test-benchmark",
   },
   runBenchmark: {
