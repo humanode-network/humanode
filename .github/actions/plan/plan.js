@@ -103,11 +103,13 @@ const code = () => {
   }))
 
   // Prepare the effective matrix.
-  const matrix = {
-    platform: effectivePlatforms,
-    mode: effectiveModes,
-    include: effectiveIncludes,
-  };
+  const matrix = provideMatrix(
+    {
+      platform: effectivePlatforms,
+      mode: effectiveModes,
+    },
+    effectiveIncludes,
+  );
 
   // Print the matrix, useful for local debugging.
   logMatrix(matrix);
@@ -124,10 +126,13 @@ const build = () => {
   const effectiveModes = Object.values(buildModes);
 
   // Prepare the effective matrix.
-  const matrix = {
-    platform: effectivePlatforms,
-    mode: effectiveModes,
-  };
+  const matrix = provideMatrix(
+    {
+      platform: effectivePlatforms,
+      mode: effectiveModes,
+    },
+    []
+  );
 
   // Print the matrix, useful for local debugging.
   logMatrix(matrix);
@@ -135,6 +140,15 @@ const build = () => {
   // Export the matrix so it's available to the Github Actions script.
   return matrix;
 }
+
+const evalMatrix = (dimensions, includes) => {
+  const evalNext = (allVariants, key, values) => allVariants.flatMap((variant) => values.map(value => ({...variant, [key]: value })))
+  const dimensionKeys = Object.keys(dimensions)
+  const evaluated = dimensionKeys.reduce((allVariants, dimensionKey) => evalNext(allVariants, dimensionKey, dimensions[dimensionKey]), [{}])
+  return [...evaluated, ...includes]
+}
+
+const provideMatrix = (dimensions, includes) => ({ plan: evalMatrix(dimensions, includes) })
 
 const logMatrix = (matrix) => console.log(JSON.stringify(matrix, null, '  '));
 
