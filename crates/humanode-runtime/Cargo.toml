@@ -18,6 +18,7 @@ pallet-bioauth-session = { version = "0.1", path = "../pallet-bioauth-session", 
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
+rotate-keys-api = { version = "0.1", path = "../rotate-keys-api", default-features = false }
 
 chrono = { version = "0.4.19", default-features = false }
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = [
@@ -112,6 +113,7 @@ std = [
   "pallet-transaction-payment/std",
   "pallet-transaction-payment-rpc-runtime-api/std",
   "robonode-crypto/std",
+  "rotate-keys-api/std",
   "sp-application-crypto/std",
   "sp-api/std",
   "sp-block-builder/std",

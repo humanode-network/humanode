@@ -821,6 +821,18 @@ impl_runtime_apis! {
         }
     }
 
+    impl rotate_keys_api::RotateKeysApi<Block> for Runtime {
+        fn rotate_session_keys() {
+            let session_keys = opaque::SessionKeys::generate(None);
+            let keys = <Runtime as pallet_session::Config>::Keys::decode(&mut session_keys.as_slice()).unwrap();
+            let session_call = pallet_session::Call::set_keys::<Runtime> { keys, proof: vec![] };
+            let _result = frame_system::offchain::Signer::<Runtime, KeystoreBioauthAccountId>::any_account()
+                .send_signed_transaction(|_| {
+                    session_call.clone().into()
+                });
+        }
+    }
+
     impl bioauth_flow_api::BioauthFlowApi<Block, KeystoreBioauthAccountId, UnixMilliseconds> for Runtime {
         fn bioauth_status(id: &KeystoreBioauthAccountId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
             let id = AccountId::try_from(id.as_slice()).expect("key types must've always had matching size");
