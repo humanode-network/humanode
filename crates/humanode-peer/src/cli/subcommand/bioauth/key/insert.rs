@@ -1,6 +1,6 @@
 //! Bioauth key insert subcommand logic.
 
-use super::BioauthConsensusId;
+use super::KeystoreBioauthId;
 use sc_cli::{utils, CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
 use sp_application_crypto::{AppKey, AppPublic};
@@ -72,11 +72,11 @@ impl InsertKeyCmd {
     pub async fn run(&self, keystore_container: KeystoreContainer) -> sc_cli::Result<()> {
         let keystore = keystore_container.keystore();
 
-        ensure_bioauth_key_absent::<BioauthConsensusId>(Arc::clone(&keystore))
+        ensure_bioauth_key_absent::<KeystoreBioauthId>(Arc::clone(&keystore))
             .await
             .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
 
-        insert_bioauth_key::<BioauthConsensusId>(self.suri.as_ref(), keystore).await?;
+        insert_bioauth_key::<KeystoreBioauthId>(self.suri.as_ref(), keystore).await?;
         Ok(())
     }
 }
