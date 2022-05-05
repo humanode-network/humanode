@@ -45,7 +45,7 @@ impl SubstrateCli for Root {
     }
 
     fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
-        k(match id {
+        Ok(match id {
             "dev" => Box::new(chain_spec::development_config()?),
             "" | "local" => Box::new(chain_spec::local_testnet_config()?),
             "benchmark" => Box::new(chain_spec::benchmark_config()?),

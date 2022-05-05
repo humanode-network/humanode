@@ -188,8 +188,6 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
     )
     .map_err(|err| format!("{:?}", err))?;
 
-    log::info!("Benchmark Public key used: {:?}", robonode_public_key);
-
     Ok(ChainSpec::from_genesis(
         // Name
         "Benchmark",
