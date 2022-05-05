@@ -11,6 +11,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use fp_rpc::TransactionStatus;
+use frame_system::offchain::SendSignedTransaction;
 use keystore_bioauth_account_id::KeystoreBioauthAccountId;
 use pallet_bioauth::AuthTicket;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
