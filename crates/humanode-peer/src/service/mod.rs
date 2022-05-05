@@ -463,7 +463,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     );
 
     let grandpa_config = sc_finality_grandpa::Config {
-        // FIXME #1578 make this available through chainspec.
+        // See substrate#1578: make this available through chainspec.
         // Ref: https://github.com/paritytech/substrate/issues/1578
         gossip_duration: Duration::from_millis(333),
         justification_period: 512,
