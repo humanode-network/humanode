@@ -67,6 +67,13 @@ const codeModes = {
     platformIndependent: true,
     cargoCacheKey: "code",
   },
+  docs: {
+    name: "doc",
+    cargoCommand: "doc",
+    cargoArgs: "--workspace --document-private-items",
+    platformIndependent: true,
+    cargoCacheKey: "doc",
+  },
   testBenchmark: {
     name: "test benchmark",
     cargoCommand: "test",
