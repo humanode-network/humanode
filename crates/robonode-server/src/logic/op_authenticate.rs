@@ -208,7 +208,7 @@ fn make_tmp_external_database_ref_id(execution_id: uuid::Uuid, sequence_value: u
 }
 
 /// Make an authentication nonce.
-// TODO: we don't want to expose our internal sequence number, so this value should
+// TODO(#306): we don't want to expose our internal sequence number, so this value should
 // be hashed, or obfuscated by other means.
 fn make_authentication_nonce(execution_id: uuid::Uuid, sequence_value: u64) -> Vec<u8> {
     let mut data = Vec::from(&execution_id.as_bytes()[..]);
