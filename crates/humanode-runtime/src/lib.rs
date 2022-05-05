@@ -1,6 +1,6 @@
 //! The substrate runtime for the Humanode network.
 
-// TODO: switch back to warn
+// TODO(#66): switch back to warn
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
