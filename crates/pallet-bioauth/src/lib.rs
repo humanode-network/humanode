@@ -556,10 +556,6 @@ pub mod pallet {
 
             // We must use non-default [`TransactionValidity`] here.
             ValidTransaction::with_tag_prefix("bioauth")
-                // Apparently tags are required for the tx pool to build a chain of transactions;
-                // in our case, we the structure of the [`StoredAuthTickets`] is supposed to be
-                // unordered, and act like a CRDT.
-                // TODO: ensure we have the unordered (CRDT) semantics for the [`authenticate`] txs.
                 .and_provides(auth_ticket)
                 .priority(50)
                 .longevity(1)
