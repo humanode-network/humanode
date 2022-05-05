@@ -278,11 +278,9 @@ impl pallet_bioauth::Verifier<Vec<u8>> for RobonodePublicKeyWrapper {
             .try_into()
             .map_err(|_| RobonodePublicKeyWrapperError::UnableToParseSignature)?;
 
-        if let Err(err) = actual_key.verify(data.as_ref(), &signature) {
-            return Err(RobonodePublicKeyWrapperError::UnableToValidateSignature(
-                err,
-            ));
-        }
+        actual_key
+            .verify(data.as_ref(), &signature)
+            .map_err(RobonodePublicKeyWrapperError::UnableToValidateSignature)?;
 
         Ok(true)
     }
