@@ -10,6 +10,7 @@ bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-data" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
+rotate-keys-api = { version = "0.1", path = "../rotate-keys-api" }
 
 anyhow = "1"
 async-trait = "0.1"

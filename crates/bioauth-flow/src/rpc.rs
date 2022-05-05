@@ -13,6 +13,7 @@ use jsonrpc_core::ErrorCode as RpcErrorCode;
 use jsonrpc_derive::rpc;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
+use rotate_keys_api::RotateKeysApi;
 use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -292,6 +293,7 @@ where
     Client: Send + Sync + 'static,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+    Client::Api: RotateKeysApi<Block>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -390,6 +392,7 @@ where
     Client: Send + Sync + 'static,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
+    Client::Api: RotateKeysApi<Block>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -540,6 +543,13 @@ where
         info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
 
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
+
+        self.client.runtime_api().rotate_session_keys(&at)
+            .map_err(|err| RpcError {
+                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
+                message: format!("Error rotating session keys: {}", err),
+                data: None,
+            })?;
 
         let ext = self
             .client

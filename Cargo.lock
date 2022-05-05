@@ -517,6 +517,7 @@ dependencies = [
  "pallet-bioauth",
  "primitives-liveness-data",
  "robonode-client",
+ "rotate-keys-api",
  "sc-transaction-pool-api",
  "serde",
  "serde_json",
