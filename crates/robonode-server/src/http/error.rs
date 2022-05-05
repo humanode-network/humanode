@@ -1,10 +1,11 @@
 //! Error handling logic.
 
+use warp::hyper::StatusCode;
+
 use crate::logic::{
     op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
     op_get_public_key,
 };
-use warp::hyper::StatusCode;
 
 /// A logic error.
 #[derive(Debug, Clone)]

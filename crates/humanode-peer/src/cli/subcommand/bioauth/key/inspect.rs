@@ -1,9 +1,10 @@
 //! Bioauth key inspect subcommand logic.
 
-use super::KeystoreBioauthPair;
 use bip39::{Language, Mnemonic};
 use sc_cli::{utils, OutputTypeFlag};
 use structopt::StructOpt;
+
+use super::KeystoreBioauthPair;
 
 /// The `bioauth key generate` command.
 #[derive(Debug, StructOpt)]

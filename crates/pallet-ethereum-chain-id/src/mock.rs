@@ -1,4 +1,3 @@
-use crate::{self as pallet_ethereum_chain_id};
 use frame_support::parameter_types;
 use frame_system as system;
 use sp_core::H256;
@@ -7,6 +6,8 @@ use sp_runtime::{
     traits::{BlakeTwo256, IdentityLookup},
     BuildStorage,
 };
+
+use crate::{self as pallet_ethereum_chain_id};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;

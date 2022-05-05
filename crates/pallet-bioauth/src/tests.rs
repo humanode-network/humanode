@@ -1,10 +1,11 @@
 use std::ops::Div;
 
-use crate::{self as pallet_bioauth, mock::*, *};
 use frame_support::{
     assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, WeakBoundedVec,
 };
 use mockall::predicate;
+
+use crate::{self as pallet_bioauth, mock::*, *};
 
 /// An exact value of January 1st 2021 in UNIX time milliseconds.
 const JANUARY_1_2021: UnixMilliseconds = 1609459200 * 1000;

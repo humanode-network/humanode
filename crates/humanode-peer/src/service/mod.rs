@@ -1,6 +1,13 @@
 //! Initializing, bootstrapping and launching the node from a provided configuration.
 
 #![allow(clippy::type_complexity)]
+use std::{
+    collections::BTreeMap,
+    marker::PhantomData,
+    sync::{Arc, Mutex},
+    time::Duration,
+};
+
 use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
@@ -14,12 +21,6 @@ use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_consensus_babe::AuthorityId as BabeId;
-use std::{
-    collections::BTreeMap,
-    marker::PhantomData,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
 use tracing::*;
 
 use crate::configuration::Configuration;

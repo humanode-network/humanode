@@ -2,9 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::OpaqueBase64DataRef;
-
 use super::Client;
+use crate::OpaqueBase64DataRef;
 
 impl<RBEI> Client<RBEI>
 where
@@ -93,9 +92,8 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{tests::test_client, ResponseBodyError, ServerError};
-
     use super::*;
+    use crate::{tests::test_client, ResponseBodyError, ServerError};
 
     #[test]
     fn request_serialization() {

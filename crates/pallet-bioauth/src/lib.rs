@@ -148,10 +148,6 @@ pub enum CustomInvalidTransactionCodes {
 )]
 #[frame_support::pallet]
 pub mod pallet {
-    use super::*;
-
-    use crate::weights::WeightInfo;
-
     use codec::MaxEncodedLen;
     use frame_support::{
         dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
@@ -159,6 +155,9 @@ pub mod pallet {
     };
     use frame_system::pallet_prelude::*;
     use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
+
+    use super::*;
+    use crate::weights::WeightInfo;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]

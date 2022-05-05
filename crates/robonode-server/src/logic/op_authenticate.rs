@@ -3,13 +3,11 @@
 use facetec_api_client as ft;
 use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
+use serde::{Deserialize, Serialize};
 use tracing::{error, trace};
 
-use serde::{Deserialize, Serialize};
-
-use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
-
 use super::{common::*, Logic, LogicOp, Signer, Verifier};
+use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
 /// The request of the authenticate operation.
 #[derive(Debug, Deserialize, Serialize)]

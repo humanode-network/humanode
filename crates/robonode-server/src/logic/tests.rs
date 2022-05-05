@@ -7,9 +7,8 @@ use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use tokio::sync::{Mutex, MutexGuard};
 use tracing::{info, trace};
 
-use crate::{logic::common::DB_GROUP_NAME, sequence::Sequence};
-
 use super::{Locked, Logic, LogicOp};
+use crate::{logic::common::DB_GROUP_NAME, sequence::Sequence};
 
 struct TestSigner;
 
