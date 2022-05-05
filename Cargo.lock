@@ -6251,6 +6251,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "rotate-keys-api"
+version = "0.1.0"
+dependencies = [
+ "sp-api",
+]
+
+[[package]]
 name = "rpassword"
 version = "5.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
