@@ -76,7 +76,7 @@ benchmarks! {
 
         // Expected pubkey
         let expected_pubkey = make_pubkey(i as u8);
-        let observed_pubkey: Vec<u8> = active_authentications_after[0].public_key.encode();
+        let observed_pubkey: Vec<u8> = active_authentications_after[active_authentications_before as usize].public_key.encode();
         assert_eq!(observed_pubkey, expected_pubkey);
 
     }
