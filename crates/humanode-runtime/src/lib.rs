@@ -821,8 +821,8 @@ impl_runtime_apis! {
         }
     }
 
-    impl rotate_keys_api::RotateKeysApi<Block, KeystoreBioauthAccountId> for Runtime {
-        fn rotate_session_keys(id: &KeystoreBioauthAccountId, session_keys: Vec<u8>) -> <Block as BlockT>::Extrinsic {
+    impl signed_extrinsic_api::SignedExtrinsicApi<Block, KeystoreBioauthAccountId> for Runtime {
+        fn create_signed_set_keys_extrinsic(id: &KeystoreBioauthAccountId, session_keys: Vec<u8>) -> <Block as BlockT>::Extrinsic {
             let account_id = AccountId::try_from(id.as_slice()).expect("key types must've always had matching size");
             let public_id = <KeystoreBioauthAccountId as frame_system::offchain::AppCrypto<
                     <Runtime as frame_system::offchain::SigningTypes>::Public,

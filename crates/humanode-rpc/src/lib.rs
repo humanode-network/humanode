@@ -21,7 +21,6 @@ use humanode_runtime::{
 };
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
-use rotate_keys_api::RotateKeysApi;
 use sc_client_api::{
     backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
@@ -37,6 +36,7 @@ use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool::{ChainApi, Pool};
 use sc_transaction_pool_api::TransactionPool;
+use signed_extrinsic_api::SignedExtrinsicApi;
 use sp_api::{Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
@@ -175,7 +175,7 @@ where
     C::Api: BabeApi<Block>,
     C::Api: BlockBuilder<Block>,
     C::Api: SessionKeys<Block>,
-    C::Api: RotateKeysApi<Block, VKE::PublicKeyType>,
+    C::Api: SignedExtrinsicApi<Block, VKE::PublicKeyType>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
     P: TransactionPool<Block = Block> + 'static,

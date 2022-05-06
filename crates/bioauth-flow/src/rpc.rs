@@ -13,10 +13,10 @@ use jsonrpc_core::ErrorCode as RpcErrorCode;
 use jsonrpc_derive::rpc;
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
-use rotate_keys_api::RotateKeysApi;
 use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
+use signed_extrinsic_api::SignedExtrinsicApi;
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_runtime::transaction_validity::InvalidTransaction;
@@ -295,7 +295,7 @@ where
     Client::Api: SessionKeys<Block>,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
-    Client::Api: RotateKeysApi<Block, ValidatorKeyExtractor::PublicKeyType>,
+    Client::Api: SignedExtrinsicApi<Block, ValidatorKeyExtractor::PublicKeyType>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -395,7 +395,7 @@ where
     Client::Api: SessionKeys<Block>,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
-    Client::Api: RotateKeysApi<Block, ValidatorKeyExtractor::PublicKeyType>,
+    Client::Api: SignedExtrinsicApi<Block, ValidatorKeyExtractor::PublicKeyType>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -562,7 +562,8 @@ where
                 data: None,
             })?;
 
-        let signed_set_keys_extrinsic = self.client.runtime_api().rotate_session_keys(&at, &validator_key, session_keys)
+        let _signed_set_keys_extrinsic = self.client.runtime_api()
+            .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys)
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Error rotating session keys: {}", err),

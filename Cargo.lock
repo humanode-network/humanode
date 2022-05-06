@@ -517,10 +517,10 @@ dependencies = [
  "pallet-bioauth",
  "primitives-liveness-data",
  "robonode-client",
- "rotate-keys-api",
  "sc-transaction-pool-api",
  "serde",
  "serde_json",
+ "signed-extrinsic-api",
  "sp-api",
  "sp-blockchain",
  "sp-runtime",
@@ -2835,7 +2835,6 @@ dependencies = [
  "pallet-transaction-payment-rpc",
  "primitives-frontier",
  "robonode-client",
- "rotate-keys-api",
  "sc-client-api",
  "sc-consensus-babe",
  "sc-consensus-babe-rpc",
@@ -2847,6 +2846,7 @@ dependencies = [
  "sc-rpc-api",
  "sc-transaction-pool",
  "sc-transaction-pool-api",
+ "signed-extrinsic-api",
  "sp-api",
  "sp-block-builder",
  "sp-blockchain",
@@ -2898,9 +2898,9 @@ dependencies = [
  "parity-scale-codec",
  "primitives-auth-ticket",
  "robonode-crypto",
- "rotate-keys-api",
  "scale-info",
  "serde",
+ "signed-extrinsic-api",
  "sp-api",
  "sp-application-crypto",
  "sp-block-builder",
@@ -6259,15 +6259,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rotate-keys-api"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "sp-api",
- "sp-std",
-]
-
-[[package]]
 name = "rpassword"
 version = "5.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7613,6 +7604,15 @@ name = "signature"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f054c6c1a6e95179d6f23ed974060dcefb2d9388bb7256900badad682c499de4"
+
+[[package]]
+name = "signed-extrinsic-api"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "sp-api",
+ "sp-std",
+]
 
 [[package]]
 name = "simba"
