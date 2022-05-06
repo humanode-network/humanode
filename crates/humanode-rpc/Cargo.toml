@@ -39,4 +39,5 @@ sp-consensus = { git = "https://github.com/humanode-network/substrate", branch =
 sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-session = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "master" }

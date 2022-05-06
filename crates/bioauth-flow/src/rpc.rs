@@ -20,6 +20,7 @@ use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_runtime::transaction_validity::InvalidTransaction;
+use sp_session::SessionKeys;
 use tracing::*;
 
 use crate::{flow::LivenessDataProvider, Signer, SignerFactory};
@@ -291,6 +292,7 @@ where
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
+    Client::Api: SessionKeys<Block>,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
     Client::Api: RotateKeysApi<Block>,
@@ -390,6 +392,7 @@ where
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
+    Client::Api: SessionKeys<Block>,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
     Client::Api: RotateKeysApi<Block>,
@@ -544,7 +547,16 @@ where
 
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
-        self.client.runtime_api().rotate_session_keys(&at)
+        let session_keys = self
+            .client.runtime_api()
+            .generate_session_keys(&at, None)
+            .map_err(|err| RpcError {
+                code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
+                message: format!("Error generating session keys: {}", err),
+                data: None,
+            })?;
+
+        self.client.runtime_api().rotate_session_keys(&at, session_keys)
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Error rotating session keys: {}", err),
