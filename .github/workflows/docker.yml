@@ -67,7 +67,7 @@ jobs:
             target/docker/*/*/cargo/registry/cache/
             target/docker/*/*/cargo/git/db/
             target/docker/*/*/target/
-          key: ${{ matrix.platform.cacheKey }}-docker-cargo-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          key: docker-cargo-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - name: Build the code and docker image
         run: docker/build.sh
