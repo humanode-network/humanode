@@ -6262,6 +6262,7 @@ dependencies = [
 name = "rotate-keys-api"
 version = "0.1.0"
 dependencies = [
+ "parity-scale-codec",
  "sp-api",
  "sp-std",
 ]

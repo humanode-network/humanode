@@ -175,7 +175,7 @@ where
     C::Api: BabeApi<Block>,
     C::Api: BlockBuilder<Block>,
     C::Api: SessionKeys<Block>,
-    C::Api: RotateKeysApi<Block>,
+    C::Api: RotateKeysApi<Block, VKE::PublicKeyType>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
     P: TransactionPool<Block = Block> + 'static,

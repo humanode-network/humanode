@@ -11,7 +11,6 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use fp_rpc::TransactionStatus;
-use frame_system::offchain::SendSignedTransaction;
 use keystore_bioauth_account_id::KeystoreBioauthAccountId;
 use pallet_bioauth::AuthTicket;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
@@ -822,14 +821,22 @@ impl_runtime_apis! {
         }
     }
 
-    impl rotate_keys_api::RotateKeysApi<Block> for Runtime {
-        fn rotate_session_keys(session_keys: Vec<u8>) {
+    impl rotate_keys_api::RotateKeysApi<Block, KeystoreBioauthAccountId> for Runtime {
+        fn rotate_session_keys(id: &KeystoreBioauthAccountId, session_keys: Vec<u8>) {
+            let account_id = AccountId::try_from(id.as_slice()).expect("key types must've always had matching size");
+            let public_id = <KeystoreBioauthAccountId as frame_system::offchain::AppCrypto<
+                    <Runtime as frame_system::offchain::SigningTypes>::Public,
+                    <Runtime as frame_system::offchain::SigningTypes>::Signature
+                >>::GenericPublic::from(id.clone());
+
             let keys = <Runtime as pallet_session::Config>::Keys::decode(&mut session_keys.as_slice()).unwrap();
             let session_call = pallet_session::Call::set_keys::<Runtime> { keys, proof: vec![] };
-            let _result = frame_system::offchain::Signer::<Runtime, KeystoreBioauthAccountId>::any_account()
-                .send_signed_transaction(|_| {
-                    session_call.clone().into()
-                });
+            let (call, signature) = <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<KeystoreBioauthAccountId>(
+                session_call.into(),
+                public_id.into(),
+                account_id.clone(),
+                System::account_nonce(account_id),
+            ).unwrap();
         }
     }
 

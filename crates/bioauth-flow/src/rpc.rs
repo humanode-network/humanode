@@ -295,7 +295,7 @@ where
     Client::Api: SessionKeys<Block>,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
-    Client::Api: RotateKeysApi<Block>,
+    Client::Api: RotateKeysApi<Block, ValidatorKeyExtractor::PublicKeyType>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -395,7 +395,7 @@ where
     Client::Api: SessionKeys<Block>,
     Client::Api:
         bioauth_flow_api::BioauthFlowApi<Block, ValidatorKeyExtractor::PublicKeyType, Timestamp>,
-    Client::Api: RotateKeysApi<Block>,
+    Client::Api: RotateKeysApi<Block, ValidatorKeyExtractor::PublicKeyType>,
     Block: BlockT,
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -545,6 +545,12 @@ where
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
 
+        let validator_key = self.validator_public_key()?.ok_or(RpcError {
+            code: RpcErrorCode::ServerError(ErrorCode::MissingValidatorKey as _),
+            message: "Validator key not available".to_string(),
+            data: None,
+        })?;
+
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
         let session_keys = self
@@ -556,7 +562,7 @@ where
                 data: None,
             })?;
 
-        self.client.runtime_api().rotate_session_keys(&at, session_keys)
+        self.client.runtime_api().rotate_session_keys(&at, &validator_key, session_keys)
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Error rotating session keys: {}", err),
