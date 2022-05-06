@@ -15,7 +15,7 @@ pub struct ApiVersionsCmd {
 }
 
 impl ApiVersionsCmd {
-    /// Run the api-verisons command.
+    /// Run the api-versions command.
     pub async fn run(&self) -> sc_cli::Result<()> {
         let current_api_versions = version::API_VERSIONS;
         let json = json!(current_api_versions);
