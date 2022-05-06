@@ -65,9 +65,9 @@ jobs:
     strategy:
       matrix: ${{ fromJson(needs.plan.outputs.matrix) }}
       fail-fast: false
-    name: ${{ matrix.platform.name }} / ${{ matrix.mode.name }}
-    runs-on: ${{ matrix.platform.os }}
-    env: ${{ matrix.platform.env }}
+    name: ${{ matrix.plan.platform.name }} / ${{ matrix.plan.mode.name }}
+    runs-on: ${{ matrix.plan.platform.os }}
+    env: ${{ matrix.plan.platform.env }}
     timeout-minutes: 50
     steps:
 
@@ -85,7 +85,7 @@ jobs:
         timeout-minutes: 10
 
       - name: Prepare the build environment
-        run: ${{ matrix.platform.buildEnvScript }}
+        run: ${{ matrix.plan.platform.buildEnvScript }}
 
       - name: Set up Vistual Studio Command Prompt (Windows only)
         uses: ilammy/msvc-dev-cmd@v1
@@ -98,11 +98,11 @@ jobs:
           cargo clippy --version
           env
 
-      - name: Run cargo ${{ matrix.mode.cargoCommand }}
+      - name: Run cargo ${{ matrix.plan.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
         with:
-          command: ${{ matrix.mode.cargoCommand }}
-          args: ${{ matrix.mode.cargoArgs }}
+          command: ${{ matrix.plan.mode.cargoCommand }}
+          args: ${{ matrix.plan.mode.cargoArgs }}
 
       - name: Set the upload params
         id: set-upload-params
