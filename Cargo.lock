@@ -2834,6 +2834,7 @@ dependencies = [
  "pallet-transaction-payment-rpc",
  "primitives-frontier",
  "robonode-client",
+ "rotate-keys-api",
  "sc-client-api",
  "sc-consensus-babe",
  "sc-consensus-babe-rpc",

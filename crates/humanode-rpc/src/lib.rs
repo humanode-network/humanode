@@ -21,6 +21,7 @@ use humanode_runtime::{
 };
 use jsonrpc_pubsub::manager::SubscriptionManager;
 use pallet_ethereum::EthereumStorageSchema;
+use rotate_keys_api::RotateKeysApi;
 use sc_client_api::{
     backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
@@ -172,6 +173,7 @@ where
     C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
     C::Api: BabeApi<Block>,
     C::Api: BlockBuilder<Block>,
+    C::Api: RotateKeysApi<Block>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
     P: TransactionPool<Block = Block> + 'static,
