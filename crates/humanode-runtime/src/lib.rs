@@ -822,7 +822,7 @@ impl_runtime_apis! {
     }
 
     impl rotate_keys_api::RotateKeysApi<Block, KeystoreBioauthAccountId> for Runtime {
-        fn rotate_session_keys(id: &KeystoreBioauthAccountId, session_keys: Vec<u8>) {
+        fn rotate_session_keys(id: &KeystoreBioauthAccountId, session_keys: Vec<u8>) -> <Block as BlockT>::Extrinsic {
             let account_id = AccountId::try_from(id.as_slice()).expect("key types must've always had matching size");
             let public_id = <KeystoreBioauthAccountId as frame_system::offchain::AppCrypto<
                     <Runtime as frame_system::offchain::SigningTypes>::Public,
@@ -831,12 +831,14 @@ impl_runtime_apis! {
 
             let keys = <Runtime as pallet_session::Config>::Keys::decode(&mut session_keys.as_slice()).unwrap();
             let session_call = pallet_session::Call::set_keys::<Runtime> { keys, proof: vec![] };
-            let (call, signature) = <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<KeystoreBioauthAccountId>(
+            let (call, (address, signature, extra)) = <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<KeystoreBioauthAccountId>(
                 session_call.into(),
                 public_id.into(),
                 account_id.clone(),
                 System::account_nonce(account_id),
             ).unwrap();
+
+            <Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra)
         }
     }
 

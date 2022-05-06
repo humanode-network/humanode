@@ -562,7 +562,7 @@ where
                 data: None,
             })?;
 
-        self.client.runtime_api().rotate_session_keys(&at, &validator_key, session_keys)
+        let signed_set_keys_extrinsic = self.client.runtime_api().rotate_session_keys(&at, &validator_key, session_keys)
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Error rotating session keys: {}", err),

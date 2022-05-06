@@ -10,6 +10,6 @@ sp_api::decl_runtime_apis! {
     pub trait RotateKeysApi<Id: Encode> {
 
         /// Rotate session keys.
-        fn rotate_session_keys(id: &Id, session_keys: Vec<u8>);
+        fn rotate_session_keys(id: &Id, session_keys: Vec<u8>) -> Block::Extrinsic;
     }
 }
