@@ -176,8 +176,8 @@ pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
 pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
 
 // Constants conditions.
-static_assertions::const_assert_eq!(MAX_KEYS, MAX_AUTHENTICATIONS);
-static_assertions::const_assert_eq!(MAX_PEER_IN_HEARTBEATS, 3 * MAX_AUTHENTICATIONS);
+static_assertions::const_assert!(MAX_KEYS >= MAX_AUTHENTICATIONS);
+static_assertions::const_assert!(MAX_PEER_IN_HEARTBEATS >= 3 * MAX_AUTHENTICATIONS);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
