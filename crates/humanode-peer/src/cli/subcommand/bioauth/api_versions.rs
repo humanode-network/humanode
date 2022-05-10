@@ -6,7 +6,7 @@ use structopt::StructOpt;
 
 use crate::{cli::CliConfigurationExt, version};
 
-/// The `bioauth api-verisons` command.
+/// The `bioauth api-versions` command.
 #[derive(Debug, StructOpt)]
 pub struct ApiVersionsCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
