@@ -55,6 +55,7 @@ sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 sha3 = "0.10"
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -76,7 +77,6 @@ url = "2"
 
 [dev-dependencies]
 indoc = "1.0"
-serde_json = "1"
 
 [features]
 default = ["wasmtime"]
