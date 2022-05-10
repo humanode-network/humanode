@@ -31,6 +31,7 @@ use pallet_evm::{Account as EVMAccount, EnsureAddressTruncated, HashedAddressMap
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
+use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_session::historical as pallet_session_historical;
 pub use pallet_timestamp::Call as TimestampCall;
 use pallet_transaction_payment::CurrencyAdapter;
@@ -53,7 +54,9 @@ use sp_runtime::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, Dispatchable, IdentifyAccount, NumberFor,
         OpaqueKeys, PostDispatchInfoOf, Verify,
     },
-    transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
+    transaction_validity::{
+        TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
+    },
     ApplyExtrinsicResult, MultiSignature,
 };
 pub use sp_runtime::{Perbill, Permill};
@@ -114,6 +117,7 @@ pub mod opaque {
         pub struct SessionKeys {
             pub babe: Babe,
             pub grandpa: Grandpa,
+            pub im_online: ImOnline,
         }
     }
 }
@@ -162,6 +166,19 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 
     (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 };
+
+// Consensus related constants.
+pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
+
+// ImOnline related constants.
+// TODO(#311): set proper values
+pub const MAX_KEYS: u32 = 20 * 1024;
+pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
+pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
+
+// Constants conditions.
+static_assertions::const_assert!(MAX_KEYS >= MAX_AUTHENTICATIONS);
+static_assertions::const_assert!(MAX_PEER_IN_HEARTBEATS >= 3 * MAX_AUTHENTICATIONS);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -485,7 +502,7 @@ const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
-    pub const MaxAuthentications: u32 = 20 * 1024;
+    pub const MaxAuthentications: u32 = MAX_AUTHENTICATIONS;
     pub const MaxNonces: u32 = MaxAuthentications::get() * 200;
 }
 
@@ -508,6 +525,34 @@ impl pallet_bioauth::Config for Runtime {
 
 impl pallet_bioauth_session::Config for Runtime {
     type ValidatorPublicKeyOf = IdentityValidatorIdOf;
+}
+
+parameter_types! {
+    pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+    pub const MaxKeys: u32 = MAX_KEYS;
+    pub const MaxPeerInHeartbeats: u32 = MAX_PEER_IN_HEARTBEATS;
+    pub const MaxPeerDataEncodingSize: u32 = MAX_PEER_DATA_ENCODING_SIZE;
+}
+
+impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
+where
+    Call: From<C>,
+{
+    type Extrinsic = UncheckedExtrinsic;
+    type OverarchingCall = Call;
+}
+
+impl pallet_im_online::Config for Runtime {
+    type AuthorityId = ImOnlineId;
+    type Event = Event;
+    type NextSessionRotation = Babe;
+    type ValidatorSet = Historical;
+    type ReportUnresponsiveness = ();
+    type UnsignedPriority = ImOnlineUnsignedPriority;
+    type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
+    type MaxKeys = MaxKeys;
+    type MaxPeerInHeartbeats = MaxPeerInHeartbeats;
+    type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
 }
 
 pub fn get_ethereum_address(authority_id: BabeId) -> H160 {
@@ -614,6 +659,7 @@ construct_runtime!(
         EVM: pallet_evm::{Pallet, Config, Call, Storage, Event<T>},
         DynamicFee: pallet_dynamic_fee::{Pallet, Call, Storage, Config, Inherent},
         BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event},
+        ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
     }
 );
 
