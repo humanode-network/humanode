@@ -21,7 +21,7 @@ use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 
 #[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
+pub mod benchmarking;
 pub mod weights;
 
 #[cfg(test)]

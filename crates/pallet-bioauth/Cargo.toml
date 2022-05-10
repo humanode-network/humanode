@@ -5,9 +5,6 @@ edition = "2021"
 publish = false
 
 [dependencies]
-primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false, optional = true }
-robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false, optional = true }
-
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = ["derive"] }
 frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -38,5 +35,5 @@ std = [
   "sp-std/std",
   "sp-runtime/std",
 ]
-runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks", "primitives-auth-ticket", "robonode-crypto"]
+runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
 try-runtime = ["frame-support/try-runtime"]

@@ -164,6 +164,9 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
     (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 };
 
+#[cfg(feature = "runtime-benchmarks")]
+const ROBONODE_KEYPAIR: [u8; 64] = hex_literal::hex!("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a");
+
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
@@ -509,6 +512,37 @@ impl pallet_bioauth::Config for Runtime {
 
 impl pallet_bioauth_session::Config for Runtime {
     type ValidatorPublicKeyOf = IdentityValidatorIdOf;
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_bioauth::benchmarking::AuthTicketSigner for Runtime {
+    fn sign(auth_ticket: &[u8]) -> Vec<u8> {
+        use robonode_crypto::{Signature, Signer};
+        let robonode_keypair =
+            robonode_crypto::Keypair::from_bytes(ROBONODE_KEYPAIR.as_ref()).unwrap();
+        robonode_keypair
+            .try_sign(auth_ticket)
+            .unwrap_or(Signature::from_bytes(&[0; 64]).unwrap())
+            .to_bytes()
+            .to_vec()
+    }
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
+    fn build(idx: u8) -> Vec<u8> {
+        // Build pubkey with custom suffix
+        let mut public_key = vec![0; 32];
+        public_key[31] = idx;
+
+        let authentication_nonce = Vec::from("nonce");
+
+        let opaque_auth_ticket = OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
+            public_key,
+            authentication_nonce,
+        });
+        opaque_auth_ticket.0
+    }
 }
 
 pub fn get_ethereum_address(authority_id: BabeId) -> H160 {
