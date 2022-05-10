@@ -1,3 +1,5 @@
+use std::{collections::HashMap, sync::Arc, time::Duration};
+
 use futures::future;
 use mockall::predicate::*;
 use mockall::*;
@@ -7,7 +9,6 @@ use sp_api::{ApiRef, ProvideRuntimeApi, TransactionFor};
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
 use sp_consensus::{Environment, Error as ConsensusError};
 use sp_runtime::{traits::Block as BlockT, Digest};
-use std::{collections::HashMap, sync::Arc, time::Duration};
 
 type MockPublicKeyType = ();
 type MockRuntimeApi = ();

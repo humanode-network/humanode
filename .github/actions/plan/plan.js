@@ -10,6 +10,7 @@ const allPlatforms = {
     essential: true,
     env: {},
     cacheKey: "ubuntu-amd64",
+    isBroken: false,
   },
   windows: {
     name: "Windows",
@@ -20,6 +21,7 @@ const allPlatforms = {
       CARGO_INCREMENTAL: "0"
     },
     cacheKey: "windows-amd64",
+    isBroken: true,
   },
   macos: {
     name: "macOS (amd64)",
@@ -28,6 +30,7 @@ const allPlatforms = {
     essential: false,
     env: {},
     cacheKey: "macos-amd64",
+    isBroken: false,
   },
   macos_aarch64: {
     name: "macOS (aarch64)",
@@ -36,6 +39,7 @@ const allPlatforms = {
     essential: false,
     env: {},
     cacheKey: "macos-aarch64",
+    isBroken: false,
   },
 };
 
@@ -82,7 +86,7 @@ const buildModes = {
 
 const code = () => {
   // Compute the effective list of platforms to use.
-  const effectivePlatforms = Object.values(allPlatforms).filter(platform => platform.essential);
+  const effectivePlatforms = Object.values(allPlatforms).filter(platform => !platform.isBroken && platform.essential);
 
   // Compute the effective list of modes that should run for each of the platforms.
   const effectiveModes = Object.values(codeModes).filter(mode => !mode.platformIndependent);
@@ -99,11 +103,13 @@ const code = () => {
   }))
 
   // Prepare the effective matrix.
-  const matrix = {
-    platform: effectivePlatforms,
-    mode: effectiveModes,
-    include: effectiveIncludes,
-  };
+  const matrix = provideMatrix(
+    {
+      platform: effectivePlatforms,
+      mode: effectiveModes,
+    },
+    effectiveIncludes,
+  );
 
   // Print the matrix, useful for local debugging.
   logMatrix(matrix);
@@ -114,16 +120,19 @@ const code = () => {
 
 const build = () => {
   // Compute the effective list of platforms to use.
-  const effectivePlatforms = Object.values(allPlatforms);
+  const effectivePlatforms = Object.values(allPlatforms).filter(platform => !platform.isBroken);
 
   // Compute the effective list of modes that should run for each of the platforms.
   const effectiveModes = Object.values(buildModes);
 
   // Prepare the effective matrix.
-  const matrix = {
-    platform: effectivePlatforms,
-    mode: effectiveModes,
-  };
+  const matrix = provideMatrix(
+    {
+      platform: effectivePlatforms,
+      mode: effectiveModes,
+    },
+    []
+  );
 
   // Print the matrix, useful for local debugging.
   logMatrix(matrix);
@@ -131,6 +140,15 @@ const build = () => {
   // Export the matrix so it's available to the Github Actions script.
   return matrix;
 }
+
+const evalMatrix = (dimensions, includes) => {
+  const evalNext = (allVariants, key, values) => allVariants.flatMap((variant) => values.map(value => ({...variant, [key]: value })))
+  const dimensionKeys = Object.keys(dimensions)
+  const evaluated = dimensionKeys.reduce((allVariants, dimensionKey) => evalNext(allVariants, dimensionKey, dimensions[dimensionKey]), [{}])
+  return [...evaluated, ...includes]
+}
+
+const provideMatrix = (dimensions, includes) => ({ plan: evalMatrix(dimensions, includes) })
 
 const logMatrix = (matrix) => console.log(JSON.stringify(matrix, null, '  '));
 

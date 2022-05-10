@@ -1,10 +1,10 @@
-//! Bioauth key management subcommands.
+//! Bioauth key list subcommand logic.
 
-use humanode_runtime::BioauthConsensusId;
 use sc_cli::{CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
 use structopt::StructOpt;
 
+use super::KeystoreBioauthId;
 use crate::cli::CliConfigurationExt;
 
 /// The `bioauth key list` command.
@@ -24,7 +24,7 @@ impl ListKeysCmd {
     pub async fn run(&self, keystore_container: KeystoreContainer) -> sc_cli::Result<()> {
         let keystore = keystore_container.keystore();
         let keys =
-            crate::validator_key::AppCryptoPublic::<BioauthConsensusId>::list(keystore.as_ref())
+            crate::validator_key::AppCryptoPublic::<KeystoreBioauthId>::list(keystore.as_ref())
                 .await
                 .map_err(|err| sc_cli::Error::Service(sc_service::Error::Other(err.to_string())))?;
         for key in keys {

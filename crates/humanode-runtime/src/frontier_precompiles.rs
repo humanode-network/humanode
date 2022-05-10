@@ -1,10 +1,9 @@
 use pallet_evm::{Context, Precompile, PrecompileResult, PrecompileSet};
-use sp_core::H160;
-use sp_std::marker::PhantomData;
-
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
+use sp_core::H160;
+use sp_std::marker::PhantomData;
 
 pub struct FrontierPrecompiles<R>(PhantomData<R>);
 

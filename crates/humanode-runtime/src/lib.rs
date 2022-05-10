@@ -1,6 +1,6 @@
 //! The substrate runtime for the Humanode network.
 
-// TODO: switch back to warn
+// TODO(#66): switch back to warn
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -10,7 +10,20 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+// A few exports that help ease life for downstream crates.
+use codec::{Decode, Encode, MaxEncodedLen};
 use fp_rpc::TransactionStatus;
+pub use frame_support::{
+    construct_runtime, parameter_types,
+    traits::{FindAuthor, Get, KeyOwnerProofSystem, Randomness},
+    weights::{
+        constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
+        IdentityFee, Weight,
+    },
+    ConsensusEngineId, StorageValue, WeakBoundedVec,
+};
+use keystore_bioauth_account_id::KeystoreBioauthAccountId;
+pub use pallet_balances::Call as BalancesCall;
 use pallet_bioauth::AuthTicket;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::FeeCalculator;
@@ -20,6 +33,8 @@ use pallet_grandpa::{
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_session::historical as pallet_session_historical;
+pub use pallet_timestamp::Call as TimestampCall;
+use pallet_transaction_payment::CurrencyAdapter;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -31,6 +46,8 @@ use sp_core::{
     crypto::{KeyTypeId, Public},
     OpaqueMetadata, H160, H256, U256,
 };
+#[cfg(any(feature = "std", test))]
+pub use sp_runtime::BuildStorage;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
@@ -42,29 +59,12 @@ use sp_runtime::{
     },
     ApplyExtrinsicResult, MultiSignature,
 };
+pub use sp_runtime::{Perbill, Permill};
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-
-// A few exports that help ease life for downstream crates.
-use codec::{Decode, Encode, MaxEncodedLen};
-pub use frame_support::{
-    construct_runtime, parameter_types,
-    traits::{FindAuthor, Get, KeyOwnerProofSystem, Randomness},
-    weights::{
-        constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-        IdentityFee, Weight,
-    },
-    ConsensusEngineId, StorageValue, WeakBoundedVec,
-};
-pub use pallet_balances::Call as BalancesCall;
-pub use pallet_timestamp::Call as TimestampCall;
-use pallet_transaction_payment::CurrencyAdapter;
-#[cfg(any(feature = "std", test))]
-pub use sp_runtime::BuildStorage;
-pub use sp_runtime::{Perbill, Permill};
 
 mod frontier_precompiles;
 use frontier_precompiles::FrontierPrecompiles;
@@ -102,9 +102,9 @@ pub type Hash = sp_core::H256;
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
 /// to even the core data structures.
 pub mod opaque {
-    use super::*;
-
     pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
+
+    use super::*;
 
     /// Opaque block header type.
     pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
@@ -810,12 +810,9 @@ impl_runtime_apis! {
         }
     }
 
-    impl bioauth_flow_api::BioauthFlowApi<Block, BioauthConsensusId, UnixMilliseconds> for Runtime {
-        fn bioauth_status(id: &BioauthConsensusId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
-            let id = match Session::key_owner(BioauthConsensusId::ID, id.as_slice()) {
-                Some(account_id) => account_id,
-                None => return bioauth_flow_api::BioauthStatus::Inactive,
-            };
+    impl bioauth_flow_api::BioauthFlowApi<Block, KeystoreBioauthAccountId, UnixMilliseconds> for Runtime {
+        fn bioauth_status(id: &KeystoreBioauthAccountId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
+            let id = AccountId::try_from(id.as_slice()).expect("key types must've always had matching size");
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()

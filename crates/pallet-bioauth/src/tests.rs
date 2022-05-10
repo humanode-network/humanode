@@ -1,10 +1,11 @@
 use std::ops::Div;
 
-use crate::{self as pallet_bioauth, mock::*, *};
 use frame_support::{
     assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, WeakBoundedVec,
 };
 use mockall::predicate;
+
+use crate::{self as pallet_bioauth, mock::*, *};
 
 /// An exact value of January 1st 2021 in UNIX time milliseconds.
 const JANUARY_1_2021: UnixMilliseconds = 1609459200 * 1000;
@@ -526,7 +527,7 @@ fn signed_ext_check_bioauth_tx_deny_invalid_signature() {
 
         assert_eq!(
             CheckBioauthTx::<Test>(PhantomData).validate(&1, &call, &info, 1),
-            InvalidTransaction::Custom(b's').into()
+            InvalidTransaction::BadProof.into()
         );
     })
 }
@@ -560,7 +561,7 @@ fn signed_ext_check_bioauth_tx_denies_conlicting_nonce() {
 
         assert_eq!(
             CheckBioauthTx::<Test>(PhantomData).validate(&1, &call, &info, 1),
-            InvalidTransaction::Custom(b'c').into()
+            InvalidTransaction::Stale.into()
         );
     })
 }
@@ -594,7 +595,7 @@ fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
 
         assert_eq!(
             CheckBioauthTx::<Test>(PhantomData).validate(&1, &call, &info, 1),
-            InvalidTransaction::Custom(b'c').into()
+            InvalidTransaction::Future.into()
         );
     })
 }

@@ -1,9 +1,10 @@
 //! API integration.
 
+use std::{marker::PhantomData, sync::Arc};
+
 use bioauth_consensus_api::BioauthConsensusApi;
 use sp_api::{BlockId, ProvideRuntimeApi};
 use sp_runtime::traits::Block as BlockT;
-use std::{marker::PhantomData, sync::Arc};
 
 /// Provides an authorization verifier on top of bioauth consensus API.
 #[derive(Debug)]
@@ -73,12 +74,14 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::sync::Arc;
+
     use mockall::predicate::*;
     use mockall::*;
     use node_primitives::Block;
     use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi};
-    use std::sync::Arc;
+
+    use super::*;
 
     type MockPublicKeyType = ();
 

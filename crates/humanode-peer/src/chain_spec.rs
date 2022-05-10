@@ -1,5 +1,7 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
+use std::{collections::BTreeMap, str::FromStr};
+
 use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BioauthId,
@@ -19,7 +21,6 @@ use sp_runtime::{
     app_crypto::{sr25519, Pair, Public},
     traits::{IdentifyAccount, Verify},
 };
-use std::{collections::BTreeMap, str::FromStr};
 
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;

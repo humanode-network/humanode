@@ -5,9 +5,8 @@ use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use serde::{Deserialize, Serialize};
 use tracing::{error, trace};
 
-use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
-
 use super::{common::*, Logic, LogicOp, Signer, Verifier};
+use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
 /// The request for the enroll operation.
 #[derive(Debug, Deserialize, Serialize)]

@@ -2,6 +2,7 @@
 
 use structopt::StructOpt;
 
+pub mod api_versions;
 pub mod authurl;
 pub mod key;
 
@@ -12,4 +13,6 @@ pub enum BioauthCmd {
     Key(key::KeyCmd),
     /// Web App URL with bound RPC URL.
     AuthUrl(authurl::AuthUrlCmd),
+    /// API versions print.
+    ApiVersions(api_versions::ApiVersionsCmd),
 }
