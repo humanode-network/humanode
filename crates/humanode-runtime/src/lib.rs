@@ -305,10 +305,6 @@ parameter_types! {
         BondingDuration::get() as u64 * SessionsPerEra::get() as u64 * EpochDuration::get();
 }
 
-parameter_types! {
-    pub const MaxAuthorities: u32 = 512;
-}
-
 impl pallet_babe::Config for Runtime {
     type EpochDuration = EpochDuration;
     type ExpectedBlockTime = ExpectedBlockTime;
@@ -328,7 +324,7 @@ impl pallet_babe::Config for Runtime {
     type HandleEquivocation = ();
 
     type WeightInfo = ();
-    type MaxAuthorities = MaxAuthorities;
+    type MaxAuthorities = MaxAuthentications;
 }
 
 /// A link between the [`AccountId`] as in what we use to sign extrinsics in the system
