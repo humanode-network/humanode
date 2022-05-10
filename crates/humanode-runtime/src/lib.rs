@@ -167,6 +167,18 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
     (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 };
 
+// Consensus related constants.
+pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
+
+// ImOnline related constants.
+pub const MAX_KEYS: u32 = 20 * 1024;
+pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
+pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
+
+// Constants conditions.
+static_assertions::const_assert_eq!(MAX_KEYS, MAX_AUTHENTICATIONS);
+static_assertions::const_assert_eq!(MAX_PEER_IN_HEARTBEATS, 3 * MAX_AUTHENTICATIONS);
+
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
@@ -489,7 +501,7 @@ const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
-    pub const MaxAuthentications: u32 = 20 * 1024;
+    pub const MaxAuthentications: u32 = MAX_AUTHENTICATIONS;
     pub const MaxNonces: u32 = MaxAuthentications::get() * 200;
 }
 
@@ -516,9 +528,9 @@ impl pallet_bioauth_session::Config for Runtime {
 
 parameter_types! {
     pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
-    pub const MaxKeys: u32 = 10_000;
-    pub const MaxPeerInHeartbeats: u32 = 10_000;
-    pub const MaxPeerDataEncodingSize: u32 = 1_000;
+    pub const MaxKeys: u32 = MAX_KEYS;
+    pub const MaxPeerInHeartbeats: u32 = MAX_PEER_IN_HEARTBEATS;
+    pub const MaxPeerDataEncodingSize: u32 = MAX_PEER_DATA_ENCODING_SIZE;
 }
 
 impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
