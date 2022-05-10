@@ -18,9 +18,10 @@ pub type SecretKey = ed25519_dalek::SecretKey;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use hex_literal::hex;
     use rand::rngs::OsRng;
+
+    use super::*;
 
     // Test vectors.
     // See: https://ed25519.cr.yp.to/python/sign.py

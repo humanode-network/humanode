@@ -3,7 +3,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::traits::StorageVersion;
-
 pub use pallet::*;
 
 #[cfg(test)]
@@ -24,8 +23,9 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 )]
 #[frame_support::pallet]
 pub mod pallet {
-    use super::*;
     use frame_support::pallet_prelude::*;
+
+    use super::*;
 
     /// The Ethereum Chain Id Pallet
     #[pallet::pallet]

@@ -116,8 +116,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use humanode_runtime::BioauthConsensusId;
+
+    use super::*;
 
     #[test]
     fn display() {

@@ -1,7 +1,8 @@
 //! DisplayMoment implementation to display timestamp.
 
-use crate::UnixMilliseconds;
 use chrono::{TimeZone, Utc};
+
+use crate::UnixMilliseconds;
 
 /// Provides a functionality to extract and display timestamp properly.
 pub struct DisplayMoment(UnixMilliseconds);

@@ -2,9 +2,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::OpaqueBase64DataRef;
-
 use super::Client;
+use crate::OpaqueBase64DataRef;
 
 impl<RBEI> Client<RBEI>
 where
@@ -56,7 +55,7 @@ pub struct FaceScanResponse {
     /// The the information about the security checks over the FaceScan data.
     pub face_scan_security_checks: FaceScanSecurityChecks,
     /// Something to do with the retry screen of the FaceTec Device SDK.
-    /// TODO: find more info on this parameter.
+    /// TODO(#307): find more info on this parameter.
     pub retry_screen_enum_int: i64,
     /// The age group enum id that the input FaceScan was classified to.
     pub age_estimate_group_enum_int: i64,
@@ -93,9 +92,8 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{tests::test_client, ResponseBodyError, ServerError};
-
     use super::*;
+    use crate::{tests::test_client, ResponseBodyError, ServerError};
 
     #[test]
     fn request_serialization() {
