@@ -21,7 +21,7 @@ impl ApiVersionsCmd {
         let json = json!(current_api_versions);
         println!(
             "{}",
-            serde_json::to_string_pretty(&json).expect("Json pretty print failed")
+            serde_json::to_string_pretty(&json).expect("JSON pretty print failed")
         );
         Ok(())
     }
