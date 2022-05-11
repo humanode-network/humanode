@@ -36,6 +36,7 @@ hex-literal = "0.3"
 libsecp256k1 = "0.6"
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 qr2term = "0.2"
 reqwest = "0.11"
 sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -55,6 +56,7 @@ sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
 sha3 = "0.10"
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -76,7 +78,6 @@ url = "2"
 
 [dev-dependencies]
 indoc = "1.0"
-serde_json = "1"
 
 [features]
 default = ["wasmtime"]

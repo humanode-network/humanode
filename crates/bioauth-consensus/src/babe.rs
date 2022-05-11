@@ -1,9 +1,10 @@
 //! Babe consensus integration.
 
+use std::{marker::PhantomData, sync::Arc};
+
 use sp_api::{BlockId, ProvideRuntimeApi};
 use sp_consensus_babe::{digests::CompatibleDigestItem, BabeApi};
 use sp_runtime::traits::{Block as BlockT, Header};
-use std::{marker::PhantomData, sync::Arc};
 
 /// Encapsulates block author extraction logic for babe consensus.
 #[derive(Debug)]
@@ -92,7 +93,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::sync::Arc;
+
     use mockall::predicate::*;
     use mockall::*;
     use node_primitives::{Block, Header};
@@ -103,7 +105,8 @@ mod tests {
         EquivocationProof, OpaqueKeyOwnershipProof, Slot,
     };
     use sp_runtime::{Digest, DigestItem};
-    use std::sync::Arc;
+
+    use super::*;
 
     mock! {
         RuntimeApi {

@@ -1,10 +1,11 @@
 //! Frontier related primitives.
 
+use std::{marker::PhantomData, sync::Arc};
+
 use frontier_api::TransactionConverterApi;
 use sp_api::ProvideRuntimeApi;
 use sp_blockchain::HeaderBackend;
 use sp_runtime::traits::Block as BlockT;
-use std::{marker::PhantomData, sync::Arc};
 
 /// Ethereum transaction converter to an extrinsic.
 pub struct RuntimeTransactionConverter<Block: BlockT, Client> {

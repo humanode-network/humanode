@@ -1,13 +1,16 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
+use std::{collections::BTreeMap, str::FromStr};
+
 use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BioauthId,
-    EVMConfig, EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig,
+    EVMConfig, EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig, ImOnlineConfig,
     RobonodePublicKeyWrapper, SessionConfig, Signature, SudoConfig, SystemConfig, UnixMilliseconds,
     WASM_BINARY,
 };
 use pallet_bioauth::{AuthTicketNonce, Authentication};
+use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
@@ -18,7 +21,6 @@ use sp_runtime::{
     app_crypto::{sr25519, Pair, Public},
     traits::{IdentifyAccount, Verify},
 };
-use std::{collections::BTreeMap, str::FromStr};
 
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
@@ -55,11 +57,12 @@ where
 }
 
 /// Generate consensus authority keys.
-pub fn authority_keys_from_seed(seed: &str) -> (AccountId, BabeId, GrandpaId) {
+pub fn authority_keys_from_seed(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) {
     (
         get_account_id_from_seed::<sr25519::Public>(seed),
         get_from_seed::<BabeId>(seed),
         get_from_seed::<GrandpaId>(seed),
+        get_from_seed::<ImOnlineId>(seed),
     )
 }
 
@@ -233,7 +236,7 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
-    initial_authorities: Vec<(AccountId, BabeId, GrandpaId)>,
+    initial_authorities: Vec<(AccountId, BabeId, GrandpaId, ImOnlineId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     robonode_public_key: RobonodePublicKeyWrapper,
@@ -263,6 +266,7 @@ fn testnet_genesis(
                         SessionKeys {
                             babe: x.1.clone(),
                             grandpa: x.2.clone(),
+                            im_online: x.3.clone(),
                         },
                     )
                 })
@@ -275,6 +279,7 @@ fn testnet_genesis(
         grandpa: GrandpaConfig {
             authorities: vec![],
         },
+        im_online: ImOnlineConfig { keys: vec![] },
         sudo: SudoConfig {
             // Assign network admin rights.
             key: root_key,

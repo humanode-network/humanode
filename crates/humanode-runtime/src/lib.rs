@@ -1,6 +1,6 @@
 //! The substrate runtime for the Humanode network.
 
-// TODO: switch back to warn
+// TODO(#66): switch back to warn
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -10,8 +10,20 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+// A few exports that help ease life for downstream crates.
+use codec::{Decode, Encode, MaxEncodedLen};
 use fp_rpc::TransactionStatus;
+pub use frame_support::{
+    construct_runtime, parameter_types,
+    traits::{FindAuthor, Get, KeyOwnerProofSystem, Randomness},
+    weights::{
+        constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
+        IdentityFee, Weight,
+    },
+    ConsensusEngineId, StorageValue, WeakBoundedVec,
+};
 use keystore_bioauth_account_id::KeystoreBioauthAccountId;
+pub use pallet_balances::Call as BalancesCall;
 use pallet_bioauth::AuthTicket;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::FeeCalculator;
@@ -19,7 +31,10 @@ use pallet_evm::{Account as EVMAccount, EnsureAddressTruncated, HashedAddressMap
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
+use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_session::historical as pallet_session_historical;
+pub use pallet_timestamp::Call as TimestampCall;
+use pallet_transaction_payment::CurrencyAdapter;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -31,38 +46,25 @@ use sp_core::{
     crypto::{KeyTypeId, Public},
     OpaqueMetadata, H160, H256, U256,
 };
+#[cfg(any(feature = "std", test))]
+pub use sp_runtime::BuildStorage;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, Dispatchable, IdentifyAccount, NumberFor,
         OpaqueKeys, PostDispatchInfoOf, Verify,
     },
-    transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
+    transaction_validity::{
+        TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
+    },
     ApplyExtrinsicResult, MultiSignature,
 };
+pub use sp_runtime::{Perbill, Permill};
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
-
-// A few exports that help ease life for downstream crates.
-use codec::{Decode, Encode, MaxEncodedLen};
-pub use frame_support::{
-    construct_runtime, parameter_types,
-    traits::{FindAuthor, Get, KeyOwnerProofSystem, Randomness},
-    weights::{
-        constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-        IdentityFee, Weight,
-    },
-    ConsensusEngineId, StorageValue, WeakBoundedVec,
-};
-pub use pallet_balances::Call as BalancesCall;
-pub use pallet_timestamp::Call as TimestampCall;
-use pallet_transaction_payment::CurrencyAdapter;
-#[cfg(any(feature = "std", test))]
-pub use sp_runtime::BuildStorage;
-pub use sp_runtime::{Perbill, Permill};
 
 mod frontier_precompiles;
 use frontier_precompiles::FrontierPrecompiles;
@@ -100,9 +102,9 @@ pub type Hash = sp_core::H256;
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
 /// to even the core data structures.
 pub mod opaque {
-    use super::*;
-
     pub use sp_runtime::OpaqueExtrinsic as UncheckedExtrinsic;
+
+    use super::*;
 
     /// Opaque block header type.
     pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
@@ -115,6 +117,7 @@ pub mod opaque {
         pub struct SessionKeys {
             pub babe: Babe,
             pub grandpa: Grandpa,
+            pub im_online: ImOnline,
         }
     }
 }
@@ -167,6 +170,19 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 #[cfg(feature = "runtime-benchmarks")]
 const ROBONODE_KEYPAIR: [u8; 64] = hex_literal::hex!("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a");
 
+// Consensus related constants.
+pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
+
+// ImOnline related constants.
+// TODO(#311): set proper values
+pub const MAX_KEYS: u32 = 20 * 1024;
+pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
+pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
+
+// Constants conditions.
+static_assertions::const_assert!(MAX_KEYS >= MAX_AUTHENTICATIONS);
+static_assertions::const_assert!(MAX_PEER_IN_HEARTBEATS >= 3 * MAX_AUTHENTICATIONS);
+
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
@@ -190,7 +206,6 @@ parameter_types! {
 }
 
 // Configure FRAME pallets to include in runtime.
-
 impl frame_system::Config for Runtime {
     /// The basic call filter to use in dispatchable.
     type BaseCallFilter = frame_support::traits::Everything;
@@ -489,7 +504,7 @@ const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
-    pub const MaxAuthentications: u32 = 20 * 1024;
+    pub const MaxAuthentications: u32 = MAX_AUTHENTICATIONS;
     pub const MaxNonces: u32 = MaxAuthentications::get() * 200;
 }
 
@@ -537,6 +552,34 @@ impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
         });
         opaque_auth_ticket.0
     }
+}
+
+parameter_types! {
+    pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+    pub const MaxKeys: u32 = MAX_KEYS;
+    pub const MaxPeerInHeartbeats: u32 = MAX_PEER_IN_HEARTBEATS;
+    pub const MaxPeerDataEncodingSize: u32 = MAX_PEER_DATA_ENCODING_SIZE;
+}
+
+impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
+where
+    Call: From<C>,
+{
+    type Extrinsic = UncheckedExtrinsic;
+    type OverarchingCall = Call;
+}
+
+impl pallet_im_online::Config for Runtime {
+    type AuthorityId = ImOnlineId;
+    type Event = Event;
+    type NextSessionRotation = Babe;
+    type ValidatorSet = Historical;
+    type ReportUnresponsiveness = ();
+    type UnsignedPriority = ImOnlineUnsignedPriority;
+    type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
+    type MaxKeys = MaxKeys;
+    type MaxPeerInHeartbeats = MaxPeerInHeartbeats;
+    type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
 }
 
 pub fn get_ethereum_address(authority_id: BabeId) -> H160 {
@@ -643,6 +686,7 @@ construct_runtime!(
         EVM: pallet_evm::{Pallet, Config, Call, Storage, Event<T>},
         DynamicFee: pallet_dynamic_fee::{Pallet, Call, Storage, Config, Inherent},
         BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event},
+        ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
     }
 );
 

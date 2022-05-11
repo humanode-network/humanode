@@ -1,6 +1,5 @@
 use std::cell::RefCell;
 
-use crate::{self as pallet_bioauth, weights, AuthTicket, TryConvert};
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::parameter_types;
 use frame_system as system;
@@ -15,6 +14,8 @@ use sp_runtime::{
     traits::{BlakeTwo256, IdentityLookup},
     BuildStorage,
 };
+
+use crate::{self as pallet_bioauth, weights, AuthTicket, TryConvert};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;

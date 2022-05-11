@@ -38,9 +38,8 @@ mod tests {
         Mock, MockServer, ResponseTemplate,
     };
 
-    use crate::{tests::test_client, ResponseBodyError};
-
     use super::*;
+    use crate::{tests::test_client, ResponseBodyError};
 
     #[test]
     fn response_deserialization() {

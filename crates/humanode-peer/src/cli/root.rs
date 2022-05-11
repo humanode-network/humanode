@@ -3,9 +3,8 @@
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use structopt::StructOpt;
 
-use crate::chain_spec;
-
 use super::{CliConfigurationExt, Runner, Subcommand};
+use crate::chain_spec;
 
 /// The root of the CLI commands hierarchy.
 #[derive(Debug, StructOpt)]

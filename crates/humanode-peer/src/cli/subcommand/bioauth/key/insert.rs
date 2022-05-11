@@ -1,14 +1,15 @@
 //! Bioauth key insert subcommand logic.
 
-use super::KeystoreBioauthId;
+use std::sync::Arc;
+
 use sc_cli::{utils, CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
 use sp_application_crypto::{AppKey, AppPublic};
 use sp_core::Pair;
 use sp_keystore::CryptoStore;
-use std::sync::Arc;
 use structopt::StructOpt;
 
+use super::KeystoreBioauthId;
 use crate::cli::CliConfigurationExt;
 
 /// The `bioauth key insert` command.

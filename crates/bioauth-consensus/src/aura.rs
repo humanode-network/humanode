@@ -1,9 +1,10 @@
 //! Aura consensus integration.
 
+use std::{marker::PhantomData, sync::Arc};
+
 use sp_api::{BlockId, ProvideRuntimeApi};
 use sp_consensus_aura::{digests::CompatibleDigestItem, AuraApi};
 use sp_runtime::traits::{Block as BlockT, Header};
-use std::{marker::PhantomData, sync::Arc};
 
 /// Encapsulates block author extraction logic for aura consensus.
 #[derive(Debug)]
@@ -95,13 +96,15 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use std::sync::Arc;
+
     use mockall::predicate::*;
     use mockall::*;
     use node_primitives::{Block, Header};
     use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi};
     use sp_runtime::{Digest, DigestItem};
-    use std::sync::Arc;
+
+    use super::*;
 
     type MockAuraAuthorityId = sp_consensus_aura::sr25519::AuthorityId;
 

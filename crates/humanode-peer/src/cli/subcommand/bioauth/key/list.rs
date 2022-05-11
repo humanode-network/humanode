@@ -1,10 +1,10 @@
 //! Bioauth key list subcommand logic.
 
-use super::KeystoreBioauthId;
 use sc_cli::{CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
 use structopt::StructOpt;
 
+use super::KeystoreBioauthId;
 use crate::cli::CliConfigurationExt;
 
 /// The `bioauth key list` command.
