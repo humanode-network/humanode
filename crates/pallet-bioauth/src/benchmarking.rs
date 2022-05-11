@@ -1,17 +1,34 @@
-use crate::{Pallet as Bioauth, *};
-use codec::alloc::string::ToString;
+//! Benchmark for pallet-bioauth extrinsics
+
+use crate::*;
 use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
 use frame_support::{traits::Get, WeakBoundedVec};
 use frame_system::RawOrigin;
 
-/// Enables construction of AuthTicket with customized public key
+/// Enables construction of AuthTicket deterministically
 pub trait AuthTicketBuilder {
-    fn build(idx: u8) -> Vec<u8>;
+    /// Make `AuthTicket` with predetermined 32 bytes public key and nonce.
+    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Vec<u8>;
 }
 
 /// Enables generation of signature with robonode private key provided at runtime.
 pub trait AuthTicketSigner {
+    /// Signs `AuthTicket` bytearray provided and returns digitial signature in bytearray.
     fn sign(auth_ticket: &[u8]) -> Vec<u8>;
+}
+
+fn make_pubkey(idx: u32) -> Vec<u8> {
+    let idx_in_bytes = idx.to_le_bytes();
+    let mut pubkey = vec![0; 32];
+    let _ = &pubkey[0..idx_in_bytes.len()].copy_from_slice(&idx_in_bytes);
+    pubkey
+}
+
+fn make_nonce(prefix: &str, idx: u32) -> Vec<u8> {
+    let mut nonce = Vec::from(prefix);
+    let idx_in_u8 = idx.to_le_bytes();
+    nonce.extend(idx_in_u8);
+    nonce
 }
 
 benchmarks! {
@@ -24,8 +41,9 @@ benchmarks! {
     authenticate {
         let i in 0..T::MaxAuthentications::get();
 
-        // Generate public key for an authentication
-        let auth_ticket = T::build(i as u8);
+        let pubkey = make_pubkey(i);
+        let nonce = make_nonce("nonce", i);
+        let auth_ticket = T::build(pubkey, nonce);
         let ticket_signature_bytes_vec = T::sign(auth_ticket.as_ref());
         let ticket: T::OpaqueAuthTicket = auth_ticket.into();
         let ticket_signature: T::RobonodeSignature = ticket_signature_bytes_vec.into();
@@ -43,7 +61,9 @@ benchmarks! {
         // Verify consumed auth_ticket nonces
         let consumed_nonces = ConsumedAuthTicketNonces::<T>::get();
         assert_eq!(consumed_nonces.len(), 1);
-        let expected_nonce: WeakBoundedVec<u8, AuthTicketNonceMaxBytes> = Vec::from("nonce").try_into().unwrap();
+
+        let nonce = make_nonce("nonce", i);
+        let expected_nonce: WeakBoundedVec<u8, AuthTicketNonceMaxBytes> = nonce.try_into().unwrap();
         assert!(&expected_nonce == &consumed_nonces[0]);
 
         // According the fact that benhcmarking can be used for different chain specifications
@@ -51,9 +71,8 @@ benchmarks! {
         let active_authentications_after = ActiveAuthentications::<T>::get();
         assert_eq!(active_authentications_after.len() - active_authentications_before, 1);
 
-        // Expected pubkey
-        let mut expected_pubkey = vec![0; 32];
-        expected_pubkey[31] = i as u8;
+        // Verify public key
+        let expected_pubkey = make_pubkey(i);
         let observed_pubkey: Vec<u8> = active_authentications_after[active_authentications_before as usize].public_key.encode();
         assert_eq!(observed_pubkey, expected_pubkey);
 

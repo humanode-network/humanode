@@ -530,13 +530,7 @@ impl pallet_bioauth::benchmarking::AuthTicketSigner for Runtime {
 
 #[cfg(feature = "runtime-benchmarks")]
 impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
-    fn build(idx: u8) -> Vec<u8> {
-        // Build pubkey with custom suffix
-        let mut public_key = vec![0; 32];
-        public_key[31] = idx;
-
-        let authentication_nonce = Vec::from("nonce");
-
+    fn build(public_key: Vec<u8>, authentication_nonce: Vec<u8>) -> Vec<u8> {
         let opaque_auth_ticket = OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce,
