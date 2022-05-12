@@ -37,9 +37,8 @@ pub struct Response {
 mod tests {
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
 
-    use crate::{tests::test_client, ResponseBodyError, ServerError};
-
     use super::*;
+    use crate::{tests::test_client, ResponseBodyError, ServerError};
 
     #[test]
     fn request_serialization() {

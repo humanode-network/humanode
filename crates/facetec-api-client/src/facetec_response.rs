@@ -1,7 +1,8 @@
 //! Generic Facetec response deserializer.
 
-use crate::ServerError;
 use serde::{Deserialize, Deserializer};
+
+use crate::ServerError;
 
 /// The generic response.
 #[derive(Debug)]

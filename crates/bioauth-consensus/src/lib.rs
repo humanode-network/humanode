@@ -1,5 +1,7 @@
 //! A consensus layer of the bioauth.
 
+use std::{collections::HashMap, marker::PhantomData, sync::Arc};
+
 use futures::{future, lock::Mutex, FutureExt};
 use sc_client_api::backend::Backend;
 use sc_consensus::{BlockCheckParams, BlockImport, BlockImportParams, ImportResult};
@@ -7,7 +9,6 @@ use sp_api::{HeaderT, ProvideRuntimeApi, TransactionFor};
 use sp_blockchain::{well_known_cache_keys, HeaderBackend};
 use sp_consensus::{Environment, Error as ConsensusError};
 use sp_runtime::traits::Block as BlockT;
-use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use thiserror::Error;
 
 #[cfg(feature = "api-integration")]

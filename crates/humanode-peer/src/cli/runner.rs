@@ -6,9 +6,8 @@ use futures::Future;
 use sc_cli::{Error as CliError, Result, SubstrateCli};
 use sc_service::{Error as ServiceError, TaskManager};
 
-use crate::configuration::Configuration;
-
 use super::{CliConfigurationExt, Root};
+use crate::configuration::Configuration;
 
 /// Run a future until it completes or a signal is recevied.
 async fn with_signal<F, E>(future: F) -> std::result::Result<(), E>

@@ -1,8 +1,9 @@
 //! The Frontier related stuff.
 
-use super::Block;
 use sc_cli::SubstrateCli;
 use sc_service::BasePath;
+
+use super::Block;
 
 /// Create frontier dir.
 pub fn database_dir(config: &sc_service::Configuration) -> std::path::PathBuf {

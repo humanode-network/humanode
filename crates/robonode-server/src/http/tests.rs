@@ -26,7 +26,7 @@ mock! {
 }
 
 macro_rules! impl_Logic {
-    ($name:ty, $request:ty, $response:ty, $error:ty, $call: ident) => {
+    ($name:ty, $request:ty, $response:ty, $error:ty, $call:ident) => {
         #[async_trait::async_trait]
         impl LogicOp<$request> for $name {
             type Response = $response;

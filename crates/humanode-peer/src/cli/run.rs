@@ -3,9 +3,8 @@
 use humanode_runtime::Block;
 use sc_service::PartialComponents;
 
-use crate::service;
-
 use super::{bioauth, Root, Subcommand};
+use crate::service;
 
 /// Parse command line arguments and run the requested operation.
 pub async fn run() -> sc_cli::Result<()> {

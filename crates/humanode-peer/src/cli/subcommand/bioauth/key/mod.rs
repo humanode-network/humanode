@@ -1,7 +1,8 @@
 //! Bioauth key management subcommands.
 
-use crate::service::KeystoreBioauthId;
 use structopt::StructOpt;
+
+use crate::service::KeystoreBioauthId;
 
 pub mod generate;
 pub mod insert;

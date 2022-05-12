@@ -2,7 +2,6 @@
 
 pub use hex::{decode, encode};
 pub use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
-
 use robonode_crypto::{ed25519_dalek::Signer, Keypair};
 
 /// The input required to generate an auth ticket.

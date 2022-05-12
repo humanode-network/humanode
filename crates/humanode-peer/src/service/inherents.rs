@@ -1,7 +1,8 @@
 //! Inherent data providers creator used at Babe import_queue and start_babe.
 
-use sp_core::U256;
 use std::time::Duration;
+
+use sp_core::U256;
 
 /// Create inherent data providers.
 #[derive(Debug, Clone)]

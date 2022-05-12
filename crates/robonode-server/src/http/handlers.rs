@@ -1,16 +1,16 @@
 //! Handlers, the HTTP transport coupling for the internal logic.
 
-use serde::Serialize;
 use std::sync::Arc;
+
+use serde::Serialize;
 use warp::hyper::StatusCode;
 use warp::Reply;
 
+use super::error;
 use crate::logic::{
     op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
     op_get_public_key, LogicOp,
 };
-
-use super::error;
 
 /// Enroll operation HTTP transport coupling.
 pub async fn enroll<L>(

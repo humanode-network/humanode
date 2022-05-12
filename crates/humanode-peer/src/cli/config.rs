@@ -2,13 +2,12 @@
 
 use sc_chain_spec::get_extension;
 
+use super::{params, BioauthFlowParams};
 use crate::{
     chain_spec::Extensions,
     configuration::{self, Configuration},
     rpc_url::RpcUrl,
 };
-
-use super::{params, BioauthFlowParams};
 
 /// An extension to the [`sc_cli::CliConfiguration`] to enable us to pass custom params.
 pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {

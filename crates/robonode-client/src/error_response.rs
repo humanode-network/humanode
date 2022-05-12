@@ -20,9 +20,8 @@ impl TryFrom<String> for ErrorResponse {
 
 #[cfg(test)]
 pub mod tests {
-    use crate::test_utils::mkerr;
-
     use super::*;
+    use crate::test_utils::mkerr;
 
     #[test]
     fn decodes() {
