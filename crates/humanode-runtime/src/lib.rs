@@ -170,6 +170,7 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 // Consensus related constants.
 pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
 pub const MAX_AUTHORITIES: u32 = MAX_AUTHENTICATIONS;
+pub const MAX_NONCES: u32 = 2000 * MAX_AUTHENTICATIONS;
 
 // ImOnline related constants.
 // TODO(#311): set proper values
@@ -504,7 +505,7 @@ const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
     pub const MaxAuthentications: u32 = MAX_AUTHENTICATIONS;
-    pub const MaxNonces: u32 = MaxAuthentications::get() * 200;
+    pub const MaxNonces: u32 = MAX_NONCES;
 }
 
 impl pallet_bioauth::Config for Runtime {
