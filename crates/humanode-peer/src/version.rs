@@ -11,4 +11,4 @@ pub struct ApiVersions {
 }
 
 /// The Current API versions.
-pub const API_VERSIONS: ApiVersions = ApiVersions { bioauth_flow: 1 };
+pub const API_VERSIONS: ApiVersions = ApiVersions { bioauth_flow: 2 };
