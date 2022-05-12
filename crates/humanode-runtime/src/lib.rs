@@ -169,6 +169,7 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 
 // Consensus related constants.
 pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
+pub const MAX_AUTHORITIES: u32 = MAX_AUTHENTICATIONS;
 
 // ImOnline related constants.
 // TODO(#311): set proper values
@@ -321,6 +322,10 @@ parameter_types! {
         BondingDuration::get() as u64 * SessionsPerEra::get() as u64 * EpochDuration::get();
 }
 
+parameter_types! {
+    pub const MaxAuthorities: u32 = MAX_AUTHORITIES;
+}
+
 impl pallet_babe::Config for Runtime {
     type EpochDuration = EpochDuration;
     type ExpectedBlockTime = ExpectedBlockTime;
@@ -340,7 +345,7 @@ impl pallet_babe::Config for Runtime {
     type HandleEquivocation = ();
 
     type WeightInfo = ();
-    type MaxAuthorities = MaxAuthentications;
+    type MaxAuthorities = MaxAuthorities;
 }
 
 /// A link between the [`AccountId`] as in what we use to sign extrinsics in the system
@@ -404,7 +409,7 @@ impl pallet_grandpa::Config for Runtime {
     type HandleEquivocation = ();
 
     type WeightInfo = ();
-    type MaxAuthorities = MaxAuthentications;
+    type MaxAuthorities = MaxAuthorities;
 }
 
 parameter_types! {
