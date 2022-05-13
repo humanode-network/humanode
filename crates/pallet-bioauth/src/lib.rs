@@ -303,7 +303,7 @@ pub mod pallet {
     pub enum Event<T: Config> {
         // Event documentation should end with an array that provides descriptive names for event
         // parameters.
-        /// New authentication was added to the state. [stored_auth_ticket]
+        /// New authentication was added to the state. [validator_public_key]
         NewAuthentication(T::ValidatorPublicKey),
     }
 
