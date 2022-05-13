@@ -324,6 +324,15 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             warp_sync: Some(warp_sync),
         })?;
 
+    if config.offchain_worker.enabled {
+        sc_service::build_offchain_workers(
+            &config,
+            task_manager.spawn_handle(),
+            Arc::clone(&client),
+            Arc::clone(&network),
+        );
+    }
+
     let robonode_client = Arc::new(robonode_client::Client {
         base_url: bioauth_flow_config.robonode_url.clone(),
         reqwest: reqwest::Client::new(),
