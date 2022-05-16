@@ -24,6 +24,8 @@ pub type FutureResult<T> = jsonrpc_core::BoxFuture<Result<T>>;
 /// Custom rpc error codes.
 #[derive(Debug, Clone, Copy)]
 enum ErrorCode {
+    /// Invalid provided data.
+    InvalidData = 200,
     /// Call to runtime api has failed.
     RuntimeApi = 300,
     /// Set_keys transaction has failed.
@@ -159,13 +161,18 @@ where
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Error rotating session keys: {}", err),
                 data: None,
+            })?
+            .ok_or(RpcError {
+                code: RpcErrorCode::ServerError(ErrorCode::InvalidData as _),
+                message: "Invalid provided data".to_owned(),
+                data: None,
             })?;
 
         self.pool
             .submit_and_watch(
                 &at,
                 sp_runtime::transaction_validity::TransactionSource::Local,
-                signed_set_keys_extrinsic.unwrap(),
+                signed_set_keys_extrinsic,
             )
             .await
             .map_err(|e| RpcError {
