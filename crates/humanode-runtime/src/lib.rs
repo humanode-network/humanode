@@ -862,7 +862,7 @@ impl_runtime_apis! {
 
     impl author_ext_api::AuthorExtApi<Block, KeystoreBioauthAccountId> for Runtime {
         fn create_signed_set_keys_extrinsic(id: &KeystoreBioauthAccountId, session_keys: Vec<u8>) -> Option<<Block as BlockT>::Extrinsic> {
-            let account_id = AccountId::try_from(id.as_slice()).expect("key types must've always had matching size");
+            let account_id = AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
             let public_id = <KeystoreBioauthAccountId as frame_system::offchain::AppCrypto<
                     <Runtime as frame_system::offchain::SigningTypes>::Public,
                     <Runtime as frame_system::offchain::SigningTypes>::Signature
