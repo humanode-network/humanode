@@ -371,6 +371,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "author-ext"
+version = "0.1.0"
+dependencies = [
+ "bioauth-consensus",
+ "futures 0.3.19",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "sc-transaction-pool-api",
+ "signed-extrinsic-api",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+ "tracing",
+]
+
+[[package]]
 name = "auto_impl"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7618,6 +7635,15 @@ name = "signature"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f054c6c1a6e95179d6f23ed974060dcefb2d9388bb7256900badad682c499de4"
+
+[[package]]
+name = "signed-extrinsic-api"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "sp-api",
+ "sp-std",
+]
 
 [[package]]
 name = "simba"

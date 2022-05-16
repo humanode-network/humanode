@@ -1,0 +1,19 @@
+[package]
+name = "author-ext"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+bioauth-consensus = { version = "0.1", path = "../bioauth-consensus" }
+signed-extrinsic-api = { version = "0.1", path = "../signed-extrinsic-api", default-features = false }
+
+futures = { version = "0.3", features = ["compat", "bilock", "unstable"] }
+jsonrpc-core = "18"
+jsonrpc-core-client = "18"
+jsonrpc-derive = "18"
+sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+tracing = "0.1"
