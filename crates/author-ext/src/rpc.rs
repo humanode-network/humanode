@@ -37,7 +37,7 @@ enum ErrorCode {
 #[rpc]
 pub trait AuthorExtApi {
     /// Set_keys with provided session keys data.
-    #[rpc(name = "author_ext_set_keys")]
+    #[rpc(name = "author_ext_setKeys")]
     fn set_keys(&self, session_keys: Vec<u8>) -> FutureResult<()>;
 }
 
