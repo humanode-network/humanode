@@ -24,8 +24,6 @@ pub type FutureResult<T> = jsonrpc_core::BoxFuture<Result<T>>;
 /// Custom rpc error codes.
 #[derive(Debug, Clone, Copy)]
 enum ErrorCode {
-    /// Invalid provided data.
-    InvalidData = 200,
     /// Call to runtime api has failed.
     RuntimeApi = 300,
     /// Set_keys transaction has failed.
@@ -159,13 +157,24 @@ where
             .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
-                message: format!("Error creating set keys signed extrinsic: {}", err),
+                message: format!("Runtime error: {}", err),
                 data: None,
             })?
-            .ok_or(RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::InvalidData as _),
-                message: "Invalid provided data".to_owned(),
-                data: None,
+            .map_err(|err| match err {
+                author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecodingError => {
+                    RpcError {
+                        code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
+                        message: "Error during session keys decoding".to_owned(),
+                        data: None,
+                    }
+                }
+                author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreationError => {
+                    RpcError {
+                        code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
+                        message: "Error during creating set keys signed extrinsic".to_owned(),
+                        data: None,
+                    }
+                }
             })?;
 
         self.pool
