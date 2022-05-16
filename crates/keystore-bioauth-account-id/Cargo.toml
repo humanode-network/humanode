@@ -6,9 +6,19 @@ publish = false
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 sp-application-crypto = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [features]
 default = ["std"]
-std = ["codec/std", "scale-info/std", "sp-application-crypto/std"]
+std = [
+  "codec/std",
+  "frame-system/std",
+  "scale-info/std",
+  "sp-application-crypto/std",
+  "sp-core/std",
+  "sp-runtime/std"
+]
