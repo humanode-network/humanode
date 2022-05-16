@@ -212,7 +212,6 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 robonode_public_key,
-                // TODO: Implement mechanism to populate nonces. Configurable via cli option.
                 vec![],
                 vec![pallet_bioauth::Authentication {
                     public_key: authority_keys_from_seed("Alice").0,
