@@ -9,7 +9,7 @@ use futures::FutureExt;
 use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode as RpcErrorCode;
 use jsonrpc_derive::rpc;
-use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
+use sc_transaction_pool_api::{error::IntoPoolError, TransactionPool as TransactionPoolT};
 use sp_api::{BlockT, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_core::Bytes;
@@ -184,10 +184,17 @@ where
                 signed_set_keys_extrinsic,
             )
             .await
-            .map_err(|e| RpcError {
-                code: RpcErrorCode::ServerError(ErrorCode::Transaction as _),
-                message: format!("Transaction failed: {}", e),
-                data: None,
+            .map_err(|e| match e.into_pool_error() {
+                Ok(err) => RpcError {
+                    code: RpcErrorCode::ServerError(ErrorCode::Transaction as _),
+                    message: format!("Transaction pool error: {}", err),
+                    data: None,
+                },
+                Err(err) => RpcError {
+                    code: RpcErrorCode::ServerError(ErrorCode::Transaction as _),
+                    message: format!("Transaction failed: {}", err),
+                    data: None,
+                },
             })?;
 
         info!("Author extension - setting keys transaction complete");
