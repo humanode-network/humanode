@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
-pub use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
+use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
 use futures::FutureExt;
 use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode as RpcErrorCode;
