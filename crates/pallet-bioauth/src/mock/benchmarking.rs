@@ -1,8 +1,6 @@
-use crate::{self as pallet_bioauth, weights, AuthTicket, TryConvert};
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::parameter_types;
 use frame_system as system;
-use primitives_auth_ticket::{AuthTicket as RobonodeAuthTicket, OpaqueAuthTicket};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -12,6 +10,8 @@ use sp_runtime::{
     traits::{BlakeTwo256, IdentityLookup},
     BuildStorage,
 };
+
+use crate::{self as pallet_bioauth, weights, AuthTicket, TryConvert};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Benchmark>;
 type Block = frame_system::mocking::MockBlock<Benchmark>;
@@ -47,16 +47,12 @@ impl AsRef<[u8]> for MockOpaqueAuthTicket {
     }
 }
 
-impl From<OpaqueAuthTicket> for MockOpaqueAuthTicket {
-    fn from(opaque_auth_ticket: OpaqueAuthTicket) -> MockOpaqueAuthTicket {
-        let auth_ticket: RobonodeAuthTicket = (&opaque_auth_ticket).try_into().unwrap();
-        let public_key: [u8; 32] = auth_ticket.public_key.try_into().unwrap();
-        MockOpaqueAuthTicket(AuthTicket {
-            public_key,
-            nonce: auth_ticket.authentication_nonce,
-        })
+impl From<Vec<u8>> for MockOpaqueAuthTicket {
+    fn from(bytes: Vec<u8>) -> Self {
+        Self::decode(&mut bytes.as_ref()).unwrap()
     }
 }
+
 pub struct MockAuthTicketConverter;
 
 impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAuthTicketConverter {
@@ -189,6 +185,25 @@ impl pallet_bioauth::Config for Benchmark {
     type WeightInfo = weights::SubstrateWeight<Benchmark>;
     type MaxAuthentications = MaxAuthentications;
     type MaxNonces = MaxNonces;
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+impl crate::benchmarking::AuthTicketSigner for Benchmark {
+    fn sign(_ticket: &[u8]) -> Vec<u8> {
+        vec![0; 64]
+    }
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+impl crate::benchmarking::AuthTicketBuilder for Benchmark {
+    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Vec<u8> {
+        let public_key_fixed_size: [u8; 32] = public_key.try_into().unwrap();
+        let opaque_auth_ticket = AuthTicket {
+            public_key: public_key_fixed_size,
+            nonce,
+        };
+        opaque_auth_ticket.encode()
+    }
 }
 
 /// Build benchmark externalities from the default genesis.

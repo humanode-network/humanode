@@ -1,9 +1,10 @@
 //! Benchmark for pallet-bioauth extrinsics
 
-use crate::*;
-use frame_benchmarking::{benchmarks, impl_benchmark_test_suite, whitelisted_caller};
-use frame_support::{traits::Get, WeakBoundedVec};
+use frame_benchmarking::benchmarks;
+use frame_support::traits::Get;
 use frame_system::RawOrigin;
+
+use crate::*;
 
 /// Enables construction of AuthTicket deterministically
 pub trait AuthTicketBuilder {
@@ -58,13 +59,11 @@ benchmarks! {
     }: _(RawOrigin::None, authenticate_req)
 
     verify {
-        // Verify consumed auth_ticket nonces
+        // Verify nonce
         let consumed_nonces = ConsumedAuthTicketNonces::<T>::get();
-        assert_eq!(consumed_nonces.len(), 1);
-
-        let nonce = make_nonce("nonce", i);
-        let expected_nonce: WeakBoundedVec<u8, AuthTicketNonceMaxBytes> = nonce.try_into().unwrap();
-        assert!(&expected_nonce == &consumed_nonces[0]);
+        let consumed_nonce: &Vec<u8> = consumed_nonces[0].as_ref();
+        let expected_nonce = make_nonce("nonce", i);
+        assert_eq!(consumed_nonce, &expected_nonce);
 
         // According the fact that benhcmarking can be used for different chain specifications
         // we just need to properly compare the size of active authentications before and after running benchmarks.

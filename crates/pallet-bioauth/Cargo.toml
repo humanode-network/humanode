@@ -18,8 +18,6 @@ sp-std = { default-features = false, git = "https://github.com/humanode-network/
 
 [dev-dependencies]
 mockall = "0.10"
-primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
-robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
