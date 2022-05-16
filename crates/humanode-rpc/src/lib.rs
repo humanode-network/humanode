@@ -2,7 +2,8 @@
 
 use std::{collections::BTreeMap, sync::Arc};
 
-use author_ext::rpc::{AuthorExt, AuthorExtApi};
+use author_ext_api::AuthorExtApi;
+use author_ext_rpc::{AuthorExt, AuthorExtRpcApi};
 use bioauth_flow::{
     rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT},
     Signer, SignerFactory,
@@ -37,7 +38,6 @@ use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool::{ChainApi, Pool};
 use sc_transaction_pool_api::TransactionPool;
-use signed_extrinsic_api::SignedExtrinsicApi;
 use sp_api::{Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
@@ -182,7 +182,7 @@ where
     C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
     C::Api: BabeApi<Block>,
     C::Api: BlockBuilder<Block>,
-    C::Api: SignedExtrinsicApi<Block, VKE::PublicKeyType>,
+    C::Api: AuthorExtApi<Block, VKE::PublicKeyType>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
     P: TransactionPool<Block = Block> + 'static,
@@ -281,7 +281,7 @@ where
         ),
     ));
 
-    io.extend_with(AuthorExtApi::to_delegate(AuthorExt::new(
+    io.extend_with(AuthorExtRpcApi::to_delegate(AuthorExt::new(
         author_validator_key_extractor,
         Arc::clone(&client),
         Arc::clone(&pool),

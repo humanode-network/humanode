@@ -3,13 +3,13 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
+use author_ext_api::AuthorExtApi;
 pub use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
 use futures::FutureExt;
 use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode as RpcErrorCode;
 use jsonrpc_derive::rpc;
 use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
-use signed_extrinsic_api::SignedExtrinsicApi;
 use sp_api::{BlockT, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_core::Bytes;
@@ -38,7 +38,7 @@ enum ErrorCode {
 
 /// The API exposed via JSON-RPC.
 #[rpc]
-pub trait AuthorExtApi {
+pub trait AuthorExtRpcApi {
     /// Set_keys with provided session keys data.
     #[rpc(name = "author_ext_setKeys")]
     fn set_keys(&self, session_keys: Bytes) -> FutureResult<()>;
@@ -87,7 +87,7 @@ impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
     }
 }
 
-impl<ValidatorKeyExtractor, Client, Block, TransactionPool> AuthorExtApi
+impl<ValidatorKeyExtractor, Client, Block, TransactionPool> AuthorExtRpcApi
     for AuthorExt<ValidatorKeyExtractor, Client, Block, TransactionPool>
 where
     Client: Send + Sync + 'static,
@@ -102,7 +102,7 @@ where
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
-    Client::Api: SignedExtrinsicApi<Block, ValidatorKeyExtractor::PublicKeyType>,
+    Client::Api: AuthorExtApi<Block, ValidatorKeyExtractor::PublicKeyType>,
     Block: BlockT,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
@@ -137,7 +137,7 @@ where
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
     Client: Send + Sync + 'static,
-    Client::Api: SignedExtrinsicApi<Block, ValidatorKeyExtractor::PublicKeyType>,
+    Client::Api: AuthorExtApi<Block, ValidatorKeyExtractor::PublicKeyType>,
     Block: BlockT,
     TransactionPool: TransactionPoolT<Block = Block>,
 {

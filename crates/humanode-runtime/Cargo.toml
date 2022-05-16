@@ -9,6 +9,7 @@ publish = false
 substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [dependencies]
+author-ext-api = { version = "0.1", path = "../author-ext-api", default-features = false }
 bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", default-features = false }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
@@ -18,7 +19,6 @@ pallet-bioauth-session = { version = "0.1", path = "../pallet-bioauth-session", 
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
-signed-extrinsic-api = { version = "0.1", path = "../signed-extrinsic-api", default-features = false }
 
 chrono = { version = "0.4.19", default-features = false }
 codec = { package = "parity-scale-codec", version = "2", default-features = false, features = [
@@ -84,6 +84,7 @@ runtime-benchmarks = [
   "sp-runtime/runtime-benchmarks",
 ]
 std = [
+  "author-ext-api/std",
   "bioauth-consensus-api/std",
   "bioauth-flow-api/std",
   "keystore-bioauth-account-id/std",
@@ -116,7 +117,6 @@ std = [
   "pallet-transaction-payment/std",
   "pallet-transaction-payment-rpc-runtime-api/std",
   "robonode-crypto/std",
-  "signed-extrinsic-api/std",
   "sp-application-crypto/std",
   "sp-api/std",
   "sp-block-builder/std",

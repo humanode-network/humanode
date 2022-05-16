@@ -371,16 +371,25 @@ dependencies = [
 ]
 
 [[package]]
-name = "author-ext"
+name = "author-ext-api"
 version = "0.1.0"
 dependencies = [
+ "parity-scale-codec",
+ "sp-api",
+ "sp-std",
+]
+
+[[package]]
+name = "author-ext-rpc"
+version = "0.1.0"
+dependencies = [
+ "author-ext-api",
  "bioauth-consensus",
  "futures 0.3.19",
  "jsonrpc-core",
  "jsonrpc-core-client",
  "jsonrpc-derive",
  "sc-transaction-pool-api",
- "signed-extrinsic-api",
  "sp-api",
  "sp-blockchain",
  "sp-core",
@@ -2838,7 +2847,8 @@ dependencies = [
 name = "humanode-rpc"
 version = "0.1.0"
 dependencies = [
- "author-ext",
+ "author-ext-api",
+ "author-ext-rpc",
  "bioauth-flow",
  "bioauth-flow-api",
  "fc-db",
@@ -2864,7 +2874,6 @@ dependencies = [
  "sc-rpc-api",
  "sc-transaction-pool",
  "sc-transaction-pool-api",
- "signed-extrinsic-api",
  "sp-api",
  "sp-block-builder",
  "sp-blockchain",
@@ -2879,6 +2888,7 @@ dependencies = [
 name = "humanode-runtime"
 version = "0.1.0"
 dependencies = [
+ "author-ext-api",
  "bioauth-consensus-api",
  "bioauth-flow-api",
  "chrono",
@@ -2918,7 +2928,6 @@ dependencies = [
  "robonode-crypto",
  "scale-info",
  "serde",
- "signed-extrinsic-api",
  "sp-api",
  "sp-application-crypto",
  "sp-block-builder",
@@ -7642,15 +7651,6 @@ name = "signature"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f054c6c1a6e95179d6f23ed974060dcefb2d9388bb7256900badad682c499de4"
-
-[[package]]
-name = "signed-extrinsic-api"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "sp-api",
- "sp-std",
-]
 
 [[package]]
 name = "simba"

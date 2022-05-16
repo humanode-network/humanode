@@ -5,14 +5,14 @@ edition = "2021"
 publish = false
 
 [dependencies]
-author-ext = { version = "0.1", path = "../author-ext" }
+author-ext-api = { version = "0.1", path = "../author-ext-api" }
+author-ext-rpc = { version = "0.1", path = "../author-ext-rpc" }
 bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
 frontier-api = { version = "0.1", path = "../frontier-api" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 primitives-frontier = { version = "0.1", path = "../primitives-frontier" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
-signed-extrinsic-api = { version = "0.1", path = "../signed-extrinsic-api" }
 
 fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
 fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }

@@ -1,5 +1,5 @@
 [package]
-name = "signed-extrinsic-api"
+name = "author-ext-api"
 version = "0.1.0"
 edition = "2021"
 publish = false
