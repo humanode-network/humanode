@@ -159,7 +159,7 @@ where
             .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
-                message: format!("Error rotating session keys: {}", err),
+                message: format!("Error creating set keys signed extrinsic: {}", err),
                 data: None,
             })?
             .ok_or(RpcError {
