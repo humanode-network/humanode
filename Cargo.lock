@@ -383,6 +383,7 @@ dependencies = [
  "signed-extrinsic-api",
  "sp-api",
  "sp-blockchain",
+ "sp-core",
  "sp-runtime",
  "tracing",
 ]

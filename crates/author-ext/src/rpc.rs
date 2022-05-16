@@ -12,6 +12,7 @@ use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
 use signed_extrinsic_api::SignedExtrinsicApi;
 use sp_api::{BlockT, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
+use sp_core::Bytes;
 use tracing::*;
 
 /// A result type that wraps.
@@ -38,7 +39,7 @@ enum ErrorCode {
 pub trait AuthorExtApi {
     /// Set_keys with provided session keys data.
     #[rpc(name = "author_ext_setKeys")]
-    fn set_keys(&self, session_keys: Vec<u8>) -> FutureResult<()>;
+    fn set_keys(&self, session_keys: Bytes) -> FutureResult<()>;
 }
 
 /// The RPC implementation.
@@ -104,7 +105,7 @@ where
     TransactionPool: TransactionPoolT<Block = Block>,
 {
     /// See [`Inner::set_keys`].
-    fn set_keys(&self, session_keys: Vec<u8>) -> FutureResult<()> {
+    fn set_keys(&self, session_keys: Bytes) -> FutureResult<()> {
         self.with_inner_clone(move |inner| inner.set_keys(session_keys))
     }
 }
@@ -139,7 +140,7 @@ where
     TransactionPool: TransactionPoolT<Block = Block>,
 {
     /// Submit set_keys transaction to chain with provided session keys data.
-    async fn set_keys(self: Arc<Self>, session_keys: Vec<u8>) -> Result<()> {
+    async fn set_keys(self: Arc<Self>, session_keys: Bytes) -> Result<()> {
         info!("Author extension - setting keys in progress");
 
         let validator_key = self.validator_public_key()?.ok_or(RpcError {
@@ -153,7 +154,7 @@ where
         let signed_set_keys_extrinsic = self
             .client
             .runtime_api()
-            .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys)
+            .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
             .map_err(|err| RpcError {
                 code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
                 message: format!("Error rotating session keys: {}", err),
