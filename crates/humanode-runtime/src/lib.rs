@@ -861,23 +861,23 @@ impl_runtime_apis! {
     }
 
     impl signed_extrinsic_api::SignedExtrinsicApi<Block, KeystoreBioauthAccountId> for Runtime {
-        fn create_signed_set_keys_extrinsic(id: &KeystoreBioauthAccountId, session_keys: Vec<u8>) -> <Block as BlockT>::Extrinsic {
+        fn create_signed_set_keys_extrinsic(id: &KeystoreBioauthAccountId, session_keys: Vec<u8>) -> Option<<Block as BlockT>::Extrinsic> {
             let account_id = AccountId::try_from(id.as_slice()).expect("key types must've always had matching size");
             let public_id = <KeystoreBioauthAccountId as frame_system::offchain::AppCrypto<
                     <Runtime as frame_system::offchain::SigningTypes>::Public,
                     <Runtime as frame_system::offchain::SigningTypes>::Signature
                 >>::GenericPublic::from(id.clone());
 
-            let keys = <Runtime as pallet_session::Config>::Keys::decode(&mut session_keys.as_slice()).unwrap();
+            let keys = <Runtime as pallet_session::Config>::Keys::decode(&mut session_keys.as_slice()).ok()?;
             let session_call = pallet_session::Call::set_keys::<Runtime> { keys, proof: vec![] };
             let (call, (address, signature, extra)) = <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<KeystoreBioauthAccountId>(
                 session_call.into(),
                 public_id.into(),
                 account_id.clone(),
                 System::account_nonce(account_id),
-            ).unwrap();
+            )?;
 
-            <Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra)
+            Some(<Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra))
         }
     }
 

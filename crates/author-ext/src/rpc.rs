@@ -165,7 +165,7 @@ where
             .submit_and_watch(
                 &at,
                 sp_runtime::transaction_validity::TransactionSource::Local,
-                signed_set_keys_extrinsic,
+                signed_set_keys_extrinsic.unwrap(),
             )
             .await
             .map_err(|e| RpcError {
