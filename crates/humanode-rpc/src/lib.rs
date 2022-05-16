@@ -2,6 +2,7 @@
 
 use std::{collections::BTreeMap, sync::Arc};
 
+use author_ext::rpc::{AuthorExt, AuthorExtApi};
 use bioauth_flow::{
     rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT},
     Signer, SignerFactory,
@@ -36,6 +37,7 @@ use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool::{ChainApi, Pool};
 use sc_transaction_pool_api::TransactionPool;
+use signed_extrinsic_api::SignedExtrinsicApi;
 use sp_api::{Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
@@ -43,6 +45,12 @@ use sp_consensus::SelectChain;
 use sp_consensus_babe::BabeApi;
 use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
+
+/// Extra dependencies for AuthorExt.
+pub struct AuthorExtDeps<VKE> {
+    /// Extracts the currently used author validator key.
+    pub author_validator_key_extractor: VKE,
+}
 
 /// Extra dependencies for Bioauth.
 pub struct BioauthDeps<VKE, VSF> {
@@ -110,6 +118,8 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub graph: Arc<Pool<A>>,
     /// Network service
     pub network: Arc<NetworkService<Block, Hash>>,
+    /// AuthorExt specific dependencies.
+    pub author_ext: AuthorExtDeps<VKE>,
     /// Bioauth specific dependencies.
     pub bioauth: BioauthDeps<VKE, VSF>,
     /// BABE specific dependencies.
@@ -172,6 +182,7 @@ where
     C::Api: bioauth_flow_api::BioauthFlowApi<Block, VKE::PublicKeyType, UnixMilliseconds>,
     C::Api: BabeApi<Block>,
     C::Api: BlockBuilder<Block>,
+    C::Api: SignedExtrinsicApi<Block, VKE::PublicKeyType>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
     P: TransactionPool<Block = Block> + 'static,
@@ -195,6 +206,7 @@ where
         deny_unsafe,
         graph,
         network,
+        author_ext,
         bioauth,
         babe,
         grandpa,
@@ -202,6 +214,10 @@ where
         evm,
         subscription_task_executor,
     } = deps;
+
+    let AuthorExtDeps {
+        author_validator_key_extractor,
+    } = author_ext;
 
     let BioauthDeps {
         robonode_client,
@@ -264,6 +280,12 @@ where
             grandpa_finality_provider,
         ),
     ));
+
+    io.extend_with(AuthorExtApi::to_delegate(AuthorExt::new(
+        author_validator_key_extractor,
+        Arc::clone(&client),
+        Arc::clone(&pool),
+    )));
 
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,

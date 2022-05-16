@@ -2837,6 +2837,7 @@ dependencies = [
 name = "humanode-rpc"
 version = "0.1.0"
 dependencies = [
+ "author-ext",
  "bioauth-flow",
  "bioauth-flow-api",
  "fc-db",
@@ -2862,6 +2863,7 @@ dependencies = [
  "sc-rpc-api",
  "sc-transaction-pool",
  "sc-transaction-pool-api",
+ "signed-extrinsic-api",
  "sp-api",
  "sp-block-builder",
  "sp-blockchain",
