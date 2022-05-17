@@ -171,7 +171,7 @@ where
                 author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreationError => {
                     RpcError {
                         code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
-                        message: "Error during creating set keys signed extrinsic".to_owned(),
+                        message: "Error during the creation of the signed set keys extrinsic".to_owned(),
                         data: None,
                     }
                 }
