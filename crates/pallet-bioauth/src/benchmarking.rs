@@ -6,7 +6,7 @@ use frame_system::RawOrigin;
 
 use crate::*;
 
-/// Enables construction of AuthTicket deterministically
+/// Enables construction of AuthTicket deterministically.
 pub trait AuthTicketBuilder {
     /// Make `AuthTicket` with predetermined 32 bytes public key and nonce.
     fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Vec<u8>;
