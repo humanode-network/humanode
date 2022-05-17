@@ -184,17 +184,16 @@ where
                 signed_set_keys_extrinsic,
             )
             .await
-            .map_err(|e| match e.into_pool_error() {
-                Ok(err) => RpcError {
+            .map_err(|e| {
+                let message = e.into_pool_error().map_or_else(
+                    |err| format!("Transaction pool error: {}", err),
+                    |err| format!("Unexpected transaction pool error: {}", err),
+                );
+                RpcError {
                     code: RpcErrorCode::ServerError(ErrorCode::Transaction as _),
-                    message: format!("Transaction pool error: {}", err),
+                    message,
                     data: None,
-                },
-                Err(err) => RpcError {
-                    code: RpcErrorCode::ServerError(ErrorCode::Transaction as _),
-                    message: format!("Transaction failed: {}", err),
-                    data: None,
-                },
+                }
             })?;
 
         info!("Author extension - setting keys transaction complete");
