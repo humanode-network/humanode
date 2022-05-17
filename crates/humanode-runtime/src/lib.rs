@@ -11,7 +11,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 // A few exports that help ease life for downstream crates.
-use codec::{Decode, Encode, MaxEncodedLen};
+use codec::{alloc::string::ToString, Decode, Encode, MaxEncodedLen};
 use fp_rpc::TransactionStatus;
 pub use frame_support::{
     construct_runtime, parameter_types,
@@ -857,6 +857,33 @@ impl_runtime_apis! {
             Bioauth::active_authentications().into_inner()
                 .iter()
                 .any(|stored_public_key| stored_public_key.public_key == id)
+        }
+    }
+
+    impl author_ext_api::AuthorExtApi<Block, KeystoreBioauthAccountId> for Runtime {
+        fn create_signed_set_keys_extrinsic(
+            id: &KeystoreBioauthAccountId,
+            session_keys: Vec<u8>
+        ) -> Result<<Block as BlockT>::Extrinsic, author_ext_api::CreateSignedSetKeysExtrinsicError> {
+            let account_id =
+                AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
+            let public_id = <KeystoreBioauthAccountId as frame_system::offchain::AppCrypto<
+                    <Runtime as frame_system::offchain::SigningTypes>::Public,
+                    <Runtime as frame_system::offchain::SigningTypes>::Signature
+                >>::GenericPublic::from(id.clone());
+
+            let keys = <Runtime as pallet_session::Config>::Keys::decode(&mut session_keys.as_slice())
+                .map_err(|err| author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err.to_string()))?;
+            let session_call = pallet_session::Call::set_keys::<Runtime> { keys, proof: vec![] };
+            let (call, (address, signature, extra)) =
+                <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<KeystoreBioauthAccountId>(
+                    session_call.into(),
+                    public_id.into(),
+                    account_id.clone(),
+                    System::account_nonce(account_id),
+                ).ok_or(author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation)?;
+
+            Ok(<Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra))
         }
     }
 

@@ -371,6 +371,34 @@ dependencies = [
 ]
 
 [[package]]
+name = "author-ext-api"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-std",
+]
+
+[[package]]
+name = "author-ext-rpc"
+version = "0.1.0"
+dependencies = [
+ "author-ext-api",
+ "bioauth-consensus",
+ "futures 0.3.19",
+ "jsonrpc-core",
+ "jsonrpc-core-client",
+ "jsonrpc-derive",
+ "sc-transaction-pool-api",
+ "sp-api",
+ "sp-blockchain",
+ "sp-core",
+ "sp-runtime",
+ "tracing",
+]
+
+[[package]]
 name = "auto_impl"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2820,6 +2848,8 @@ dependencies = [
 name = "humanode-rpc"
 version = "0.1.0"
 dependencies = [
+ "author-ext-api",
+ "author-ext-rpc",
  "bioauth-flow",
  "bioauth-flow-api",
  "fc-db",
@@ -2859,6 +2889,7 @@ dependencies = [
 name = "humanode-runtime"
 version = "0.1.0"
 dependencies = [
+ "author-ext-api",
  "bioauth-consensus-api",
  "bioauth-flow-api",
  "chrono",
@@ -3359,9 +3390,12 @@ dependencies = [
 name = "keystore-bioauth-account-id"
 version = "0.1.0"
 dependencies = [
+ "frame-system",
  "parity-scale-codec",
  "scale-info",
  "sp-application-crypto",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]

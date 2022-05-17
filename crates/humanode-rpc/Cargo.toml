@@ -5,6 +5,8 @@ edition = "2021"
 publish = false
 
 [dependencies]
+author-ext-api = { version = "0.1", path = "../author-ext-api" }
+author-ext-rpc = { version = "0.1", path = "../author-ext-rpc" }
 bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
 frontier-api = { version = "0.1", path = "../frontier-api" }
