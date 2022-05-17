@@ -16,7 +16,7 @@ pub enum CreateSignedSetKeysExtrinsicError {
 }
 
 sp_api::decl_runtime_apis! {
-    /// Runtime API for the signed extrinsics creation.
+    /// Runtime API for the author extension logic.
     pub trait AuthorExtApi<Id: Encode> {
         /// Create signed set_keys extrinsic.
         fn create_signed_set_keys_extrinsic(id: &Id, session_keys: Vec<u8>) -> Result<Block::Extrinsic, CreateSignedSetKeysExtrinsicError>;
