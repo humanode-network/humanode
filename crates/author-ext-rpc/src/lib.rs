@@ -208,7 +208,7 @@ where
             .extract_validator_key()
             .map_err(|error| {
                 tracing::error!(
-                    message = "Unable to extract own key at bioauth flow RPC",
+                    message = "Unable to extract own key at author extension RPC",
                     ?error
                 );
                 RpcError {
