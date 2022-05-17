@@ -1,4 +1,4 @@
-//! Benchmark for pallet-bioauth extrinsics
+//! Benchmark for pallet-bioauth extrinsics.
 
 use frame_benchmarking::benchmarks;
 use frame_support::traits::Get;
