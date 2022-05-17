@@ -161,17 +161,18 @@ where
                 data: None,
             })?
             .map_err(|err| match err {
-                author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecodingError => {
+                author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => {
                     RpcError {
                         code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
-                        message: "Error during session keys decoding".to_owned(),
+                        message: format!("Error during session keys decoding: {}", err),
                         data: None,
                     }
                 }
-                author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreationError => {
+                author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation => {
                     RpcError {
                         code: RpcErrorCode::ServerError(ErrorCode::RuntimeApi as _),
-                        message: "Error during the creation of the signed set keys extrinsic".to_owned(),
+                        message: "Error during the creation of the signed set keys extrinsic"
+                            .to_owned(),
                         data: None,
                     }
                 }

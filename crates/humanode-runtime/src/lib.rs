@@ -11,7 +11,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 // A few exports that help ease life for downstream crates.
-use codec::{Decode, Encode, MaxEncodedLen};
+use codec::{alloc::string::ToString, Decode, Encode, MaxEncodedLen};
 use fp_rpc::TransactionStatus;
 pub use frame_support::{
     construct_runtime, parameter_types,
@@ -873,7 +873,7 @@ impl_runtime_apis! {
                 >>::GenericPublic::from(id.clone());
 
             let keys = <Runtime as pallet_session::Config>::Keys::decode(&mut session_keys.as_slice())
-                .map_err(|_| author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecodingError)?;
+                .map_err(|err| author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err.to_string()))?;
             let session_call = pallet_session::Call::set_keys::<Runtime> { keys, proof: vec![] };
             let (call, (address, signature, extra)) =
                 <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<KeystoreBioauthAccountId>(
@@ -881,7 +881,7 @@ impl_runtime_apis! {
                     public_id.into(),
                     account_id.clone(),
                     System::account_nonce(account_id),
-                ).ok_or(author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreationError)?;
+                ).ok_or(author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation)?;
 
             Ok(<Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra))
         }
