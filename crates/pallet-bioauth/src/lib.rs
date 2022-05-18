@@ -139,6 +139,34 @@ pub enum CustomInvalidTransactionCodes {
     UnableToParseAuthTicket = b't',
 }
 
+pub trait BeforeAuthHook<AuthTicket> {
+    type Data;
+
+    fn hook(auth_ticket: AuthTicket) -> Result<Self::Data, sp_runtime::DispatchError>;
+}
+
+impl<T> BeforeAuthHook<T> for () {
+    type Data = ();
+
+    fn hook(auth_ticket: T) -> Result<Self::Data, sp_runtime::DispatchError> {
+        Ok(())
+    }
+}
+
+pub trait AfterAuthHook<T> {
+    type Data;
+
+    fn hook(data: Self::Data) -> Result<(), sp_runtime::DispatchError>;
+}
+
+impl<T> AfterAuthHook<T> for () {
+    type Data = ();
+
+    fn hook(data: Self::Data) -> Result<(), sp_runtime::DispatchError> {
+        Ok(())
+    }
+}
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(
@@ -150,11 +178,10 @@ pub enum CustomInvalidTransactionCodes {
 pub mod pallet {
     use codec::MaxEncodedLen;
     use frame_support::{
-        dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
-        WeakBoundedVec,
+        pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery, WeakBoundedVec,
     };
     use frame_system::pallet_prelude::*;
-    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
+    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit, DispatchError};
 
     use super::*;
     use crate::weights::WeightInfo;
@@ -220,6 +247,12 @@ pub mod pallet {
 
         /// The maximum number of nonces.
         type MaxNonces: Get<u32>;
+
+        /// Before authentication hook.
+        type BeforeAuthHook: BeforeAuthHook<AuthTicket<Self::ValidatorPublicKey>>;
+
+        /// After authentication hook.
+        type AfterAuthHook: AfterAuthHook<AuthTicket<Self::ValidatorPublicKey>, Data = <Self::BeforeAuthHook as BeforeAuthHook<AuthTicket<Self::ValidatorPublicKey>>>::Data>;
     }
 
     #[pallet::pallet]
@@ -350,9 +383,11 @@ pub mod pallet {
         Ok(())
     }
 
-    /// Dispatchable functions allows users to interact with the pallet and invoke state changes.
+    /// Dispatchable functions allow users to interact with the pallet and invoke state changes.
     /// These functions materialize as "extrinsics", which are often compared to transactions.
-    /// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+    /// Dispatchable functions must be annotated with a weight and must return
+    /// a [`frame_support::dispatch::DispatchResult`] or
+    /// or [`frame_support::dispatch::DispatchResultWithPostInfo`].
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(T::WeightInfo::authenticate())]
@@ -372,12 +407,15 @@ pub mod pallet {
                     }
                     AuthTicketExtractionError::UnableToParse => Error::<T>::UnableToParseAuthTicket,
                 })?;
+
+            let hook_data = <T as Config>::BeforeAuthHook::hook(auth_ticket.clone())?;
+
             let public_key = auth_ticket.public_key.clone();
 
             // Update storage.
-            <ConsumedAuthTicketNonces<T>>::try_mutate::<_, Error<T>, _>(
+            <ConsumedAuthTicketNonces<T>>::try_mutate::<_, DispatchError, _>(
                 move |consumed_auth_ticket_nonces| {
-                    <ActiveAuthentications<T>>::try_mutate::<_, Error<T>, _>(
+                    <ActiveAuthentications<T>>::try_mutate::<_, DispatchError, _>(
                         move |active_authentications| {
                             validate_authentication_attempt::<T>(
                                 consumed_auth_ticket_nonces,
@@ -386,10 +424,10 @@ pub mod pallet {
                             )
                             .map_err(|err| match err {
                                 AuthenticationAttemptValidationError::NonceConflict => {
-                                    Error::NonceAlreadyUsed
+                                    Error::<T>::NonceAlreadyUsed
                                 }
                                 AuthenticationAttemptValidationError::AlreadyAuthenticated => {
-                                    Error::PublicKeyAlreadyUsed
+                                    Error::<T>::PublicKeyAlreadyUsed
                                 }
                             })?;
 
@@ -427,6 +465,8 @@ pub mod pallet {
                             // Issue an update to the external validators set.
                             Self::issue_validators_set_update(active_authentications.as_slice());
 
+                            <T as Config>::AfterAuthHook::hook(hook_data)?;
+
                             // Emit an event.
                             Self::deposit_event(Event::NewAuthentication(public_key));
                             Ok(())
@@ -435,6 +475,7 @@ pub mod pallet {
                     Ok(())
                 },
             )?;
+
             Ok(())
         }
     }
