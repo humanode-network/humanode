@@ -51,8 +51,8 @@ pub use sp_runtime::BuildStorage;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
-        AccountIdLookup, BlakeTwo256, Block as BlockT, Dispatchable, IdentifyAccount, NumberFor,
-        OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
+        AccountIdLookup, BlakeTwo256, Block as BlockT, Dispatchable, IdentifyAccount,
+        IdentityLookup, NumberFor, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -508,6 +508,14 @@ parameter_types! {
     pub const MaxNonces: u32 = MAX_NONCES;
 }
 
+struct GenKeys;
+
+impl Get<opaque::SessionKeys> for GenKeys {
+    fn get() -> opaque::SessionKeys {
+        opaque::SessionKeys::generate(None)
+    }
+}
+
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
     type RobonodePublicKey = RobonodePublicKeyWrapper;
@@ -523,6 +531,8 @@ impl pallet_bioauth::Config for Runtime {
     type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
     type MaxAuthentications = MaxAuthentications;
     type MaxNonces = MaxNonces;
+    type GenerateSessionKeys = GenKeys;
+    type LookupAccountIdForSession = IdentityLookup<AccountId>;
 }
 
 impl pallet_bioauth_session::Config for Runtime {

@@ -150,18 +150,21 @@ pub enum CustomInvalidTransactionCodes {
 pub mod pallet {
     use codec::MaxEncodedLen;
     use frame_support::{
-        dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
+        error::LookupError, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
         WeakBoundedVec,
     };
     use frame_system::pallet_prelude::*;
-    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
+    use sp_runtime::{
+        app_crypto::MaybeHash,
+        traits::{AtLeast32Bit, StaticLookup},
+    };
 
     use super::*;
     use crate::weights::WeightInfo;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
-    pub trait Config: frame_system::Config {
+    pub trait Config: frame_system::Config + pallet_session::Config {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
@@ -220,6 +223,15 @@ pub mod pallet {
 
         /// The maximum number of nonces.
         type MaxNonces: Get<u32>;
+
+        /// A hook that allows generating session keys.
+        type GenerateSessionKeys: Get<<Self as pallet_session::Config>::Keys>;
+
+        /// TODO: must be somewhere else, not here!
+        type LookupAccountIdForSession: StaticLookup<
+            Source = Self::ValidatorPublicKey,
+            Target = <Self as frame_system::Config>::AccountId,
+        >;
     }
 
     #[pallet::pallet]
@@ -355,11 +367,11 @@ pub mod pallet {
     /// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(T::WeightInfo::authenticate())]
+        #[pallet::weight(<T as Config>::WeightInfo::authenticate())]
         pub fn authenticate(
             origin: OriginFor<T>,
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
-        ) -> DispatchResult {
+        ) -> DispatchResultWithPostInfo {
             ensure_none(origin)?;
 
             let auth_ticket =
@@ -373,6 +385,7 @@ pub mod pallet {
                     AuthTicketExtractionError::UnableToParse => Error::<T>::UnableToParseAuthTicket,
                 })?;
             let public_key = auth_ticket.public_key.clone();
+            let public_key_for_who = public_key.clone();
 
             // Update storage.
             <ConsumedAuthTicketNonces<T>>::try_mutate::<_, Error<T>, _>(
@@ -435,7 +448,25 @@ pub mod pallet {
                     Ok(())
                 },
             )?;
-            Ok(())
+
+            let lookup_result =
+                <T as Config>::LookupAccountIdForSession::lookup(public_key_for_who);
+            match lookup_result {
+                Ok(who) => {
+                    let keys = <T as Config>::GenerateSessionKeys::get();
+
+                    let call = pallet_session::Call::set_keys::<T> {
+                        keys,
+                        proof: vec![],
+                    };
+
+                    frame_support::dispatch::UnfilteredDispatchable::dispatch_bypass_filter(
+                        call,
+                        frame_system::RawOrigin::Signed(who).into(),
+                    )
+                }
+                Err(LookupError) => Ok(Default::default()),
+            }
         }
     }
 
@@ -467,7 +498,7 @@ pub mod pallet {
                 <ActiveAuthentications<T>>::put(bounded_active_authentications);
             }
 
-            T::WeightInfo::on_initialize(update_required)
+            <T as Config>::WeightInfo::on_initialize(update_required)
         }
     }
 

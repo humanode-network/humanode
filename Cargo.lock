@@ -4985,6 +4985,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "mockall",
+ "pallet-session",
  "parity-scale-codec",
  "scale-info",
  "serde",
