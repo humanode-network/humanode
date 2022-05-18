@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: '0 20 * * 0'
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+
 defaults:
   run:
     shell: bash
@@ -13,17 +17,6 @@ env:
   CARGO_INCREMENTAL: "0"
 
 jobs:
-
-  cancel-previous:
-    name: Cancel redundant jobs
-    runs-on: ubuntu-20.04
-    timeout-minutes: 3
-    if: github.ref != 'refs/heads/master'
-    steps:
-      - uses: styfle/cancel-workflow-action@0.9.0
-        with:
-          access_token: ${{ github.token }}
-          all_but_latest: true # can cancel workflows scheduled later
 
   plan:
     name: Plan the execution
