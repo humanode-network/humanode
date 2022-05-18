@@ -185,7 +185,9 @@ pub fn development_config() -> Result<ChainSpec, String> {
 pub fn benchmark_config() -> Result<ChainSpec, String> {
     let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
-    // Keypair is taken from the first entry of https://ed25519.cr.yp.to/python/sign.input
+    // Public key is taken from the first entry of https://ed25519.cr.yp.to/python/sign.input
+    // Must be compatible with secret key provided in AuthTicketSigner trait implemented for
+    // Runtime in crates/humanode-runtime/src/lib.rs.
     let robonode_public_key = RobonodePublicKeyWrapper::from_bytes(
         &hex!("d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a")[..],
     )
