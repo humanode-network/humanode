@@ -324,6 +324,15 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             warp_sync: Some(warp_sync),
         })?;
 
+    if config.offchain_worker.enabled {
+        sc_service::build_offchain_workers(
+            &config,
+            task_manager.spawn_handle(),
+            Arc::clone(&client),
+            Arc::clone(&network),
+        );
+    }
+
     let robonode_client = Arc::new(robonode_client::Client {
         base_url: bioauth_flow_config.robonode_url.clone(),
         reqwest: reqwest::Client::new(),
@@ -391,6 +400,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 deny_unsafe,
                 graph: Arc::clone(pool.pool()),
                 network: Arc::clone(&network),
+                author_ext: humanode_rpc::AuthorExtDeps {
+                    author_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
+                },
                 bioauth: humanode_rpc::BioauthDeps {
                     robonode_client: Arc::clone(&robonode_client),
                     bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),

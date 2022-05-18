@@ -303,7 +303,7 @@ pub mod pallet {
     pub enum Event<T: Config> {
         // Event documentation should end with an array that provides descriptive names for event
         // parameters.
-        /// New authentication was added to the state. [stored_auth_ticket]
+        /// New authentication was added to the state. [validator_public_key]
         NewAuthentication(T::ValidatorPublicKey),
     }
 
@@ -608,6 +608,13 @@ pub mod pallet {
 #[derive(Encode, Decode, Clone, Eq, PartialEq, Default, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 pub struct CheckBioauthTx<T: Config + Send + Sync>(PhantomData<T>);
+
+impl<T: Config + Send + Sync> CheckBioauthTx<T> {
+    /// Creates new `SignedExtension` to check bioauth extrinsic.
+    pub fn new() -> Self {
+        Self(sp_std::marker::PhantomData)
+    }
+}
 
 /// Debug impl for the `CheckBioauthTx` struct.
 impl<T: Config + Send + Sync> Debug for CheckBioauthTx<T> {

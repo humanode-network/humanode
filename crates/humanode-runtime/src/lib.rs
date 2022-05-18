@@ -11,7 +11,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 // A few exports that help ease life for downstream crates.
-use codec::{Decode, Encode, MaxEncodedLen};
+use codec::{alloc::string::ToString, Decode, Encode, MaxEncodedLen};
 use fp_rpc::TransactionStatus;
 pub use frame_support::{
     construct_runtime, parameter_types,
@@ -52,12 +52,12 @@ use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, Dispatchable, IdentifyAccount, NumberFor,
-        OpaqueKeys, PostDispatchInfoOf, Verify,
+        OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
     },
-    ApplyExtrinsicResult, MultiSignature,
+    ApplyExtrinsicResult, MultiSignature, SaturatedConversion,
 };
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::marker::PhantomData;
@@ -169,6 +169,8 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 
 // Consensus related constants.
 pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
+pub const MAX_AUTHORITIES: u32 = MAX_AUTHENTICATIONS;
+pub const MAX_NONCES: u32 = 2000 * MAX_AUTHENTICATIONS;
 
 // ImOnline related constants.
 // TODO(#311): set proper values
@@ -322,7 +324,7 @@ parameter_types! {
 }
 
 parameter_types! {
-    pub const MaxAuthorities: u32 = 512;
+    pub const MaxAuthorities: u32 = MAX_AUTHORITIES;
 }
 
 impl pallet_babe::Config for Runtime {
@@ -408,7 +410,7 @@ impl pallet_grandpa::Config for Runtime {
     type HandleEquivocation = ();
 
     type WeightInfo = ();
-    type MaxAuthorities = MaxAuthentications;
+    type MaxAuthorities = MaxAuthorities;
 }
 
 parameter_types! {
@@ -503,7 +505,7 @@ const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 parameter_types! {
     pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
     pub const MaxAuthentications: u32 = MAX_AUTHENTICATIONS;
-    pub const MaxNonces: u32 = MaxAuthentications::get() * 200;
+    pub const MaxNonces: u32 = MAX_NONCES;
 }
 
 impl pallet_bioauth::Config for Runtime {
@@ -532,14 +534,6 @@ parameter_types! {
     pub const MaxKeys: u32 = MAX_KEYS;
     pub const MaxPeerInHeartbeats: u32 = MAX_PEER_IN_HEARTBEATS;
     pub const MaxPeerDataEncodingSize: u32 = MAX_PEER_DATA_ENCODING_SIZE;
-}
-
-impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
-where
-    Call: From<C>,
-{
-    type Extrinsic = UncheckedExtrinsic;
-    type OverarchingCall = Call;
 }
 
 impl pallet_im_online::Config for Runtime {
@@ -683,6 +677,8 @@ pub type SignedExtra = (
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
     fp_self_contained::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+/// The payload being signed in transactions.
+pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
@@ -692,6 +688,59 @@ pub type Executive = frame_executive::Executive<
     Runtime,
     AllPalletsWithSystem,
 >;
+
+impl frame_system::offchain::CreateSignedTransaction<Call> for Runtime {
+    fn create_transaction<C: frame_system::offchain::AppCrypto<Self::Public, Self::Signature>>(
+        call: Call,
+        public: <Signature as sp_runtime::traits::Verify>::Signer,
+        account: AccountId,
+        nonce: Index,
+    ) -> Option<(
+        Call,
+        <UncheckedExtrinsic as sp_runtime::traits::Extrinsic>::SignaturePayload,
+    )> {
+        let tip = 0;
+        // take the biggest period possible.
+        let period = BlockHashCount::get()
+            .checked_next_power_of_two()
+            .map(|c| c / 2)
+            .unwrap_or(2) as u64;
+        let current_block = System::block_number()
+            .saturated_into::<u64>()
+            // The `System::block_number` is initialized with `n+1`,
+            // so the actual block number is `n`.
+            .saturating_sub(1);
+        let era = sp_runtime::generic::Era::mortal(period, current_block);
+        let extra = (
+            frame_system::CheckSpecVersion::<Runtime>::new(),
+            frame_system::CheckTxVersion::<Runtime>::new(),
+            frame_system::CheckGenesis::<Runtime>::new(),
+            frame_system::CheckEra::<Runtime>::from(era),
+            frame_system::CheckNonce::<Runtime>::from(nonce),
+            frame_system::CheckWeight::<Runtime>::new(),
+            pallet_bioauth::CheckBioauthTx::<Runtime>::new(),
+            pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
+        );
+        let raw_payload = SignedPayload::new(call, extra).ok()?;
+        let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;
+        let address = AccountIdLookup::unlookup(account);
+        let (call, extra, _) = raw_payload.deconstruct();
+        Some((call, (address, signature, extra)))
+    }
+}
+
+impl frame_system::offchain::SigningTypes for Runtime {
+    type Public = <Signature as sp_runtime::traits::Verify>::Signer;
+    type Signature = Signature;
+}
+
+impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
+where
+    Call: From<C>,
+{
+    type Extrinsic = UncheckedExtrinsic;
+    type OverarchingCall = Call;
+}
 
 impl fp_self_contained::SelfContainedCall for Call {
     type SignedInfo = H160;
@@ -808,6 +857,33 @@ impl_runtime_apis! {
             Bioauth::active_authentications().into_inner()
                 .iter()
                 .any(|stored_public_key| stored_public_key.public_key == id)
+        }
+    }
+
+    impl author_ext_api::AuthorExtApi<Block, KeystoreBioauthAccountId> for Runtime {
+        fn create_signed_set_keys_extrinsic(
+            id: &KeystoreBioauthAccountId,
+            session_keys: Vec<u8>
+        ) -> Result<<Block as BlockT>::Extrinsic, author_ext_api::CreateSignedSetKeysExtrinsicError> {
+            let account_id =
+                AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
+            let public_id = <KeystoreBioauthAccountId as frame_system::offchain::AppCrypto<
+                    <Runtime as frame_system::offchain::SigningTypes>::Public,
+                    <Runtime as frame_system::offchain::SigningTypes>::Signature
+                >>::GenericPublic::from(id.clone());
+
+            let keys = <Runtime as pallet_session::Config>::Keys::decode(&mut session_keys.as_slice())
+                .map_err(|err| author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err.to_string()))?;
+            let session_call = pallet_session::Call::set_keys::<Runtime> { keys, proof: vec![] };
+            let (call, (address, signature, extra)) =
+                <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<KeystoreBioauthAccountId>(
+                    session_call.into(),
+                    public_id.into(),
+                    account_id.clone(),
+                    System::account_nonce(account_id),
+                ).ok_or(author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation)?;
+
+            Ok(<Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra))
         }
     }
 
