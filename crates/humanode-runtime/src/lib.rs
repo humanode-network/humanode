@@ -528,7 +528,7 @@ impl pallet_bioauth_session::Config for Runtime {
 }
 
 #[cfg(feature = "runtime-benchmarks")]
-pub fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto::Keypair {
+fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto::Keypair {
     // Derive Public Key component
     let robonode_secret_key =
         robonode_crypto::SecretKey::from_bytes(secret_key_bytes.as_ref()).unwrap();
