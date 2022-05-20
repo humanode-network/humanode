@@ -222,6 +222,8 @@ impl pallet_bioauth::Config for Test {
     type WeightInfo = weights::SubstrateWeight<Test>;
     type MaxAuthentications = MaxAuthentications;
     type MaxNonces = MaxNonces;
+    type BeforeAuthHook = ();
+    type AfterAuthHook = ();
 }
 
 /// Build test externalities from the default genesis.
