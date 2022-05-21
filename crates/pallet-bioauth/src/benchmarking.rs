@@ -28,7 +28,7 @@ fn make_pubkey(idx: u32) -> Vec<u8> {
 fn make_nonce(prefix: &str, idx: u32) -> Vec<u8> {
     let mut nonce = Vec::from(prefix);
     let idx_in_bytes = idx.to_le_bytes();
-    nonce.extend(idx_in_u8);
+    nonce.extend(idx_in_bytes);
     nonce
 }
 
