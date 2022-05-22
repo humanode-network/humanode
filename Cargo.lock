@@ -531,7 +531,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "bioauth-flow"
+name = "bioauth-flow-api"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-std",
+]
+
+[[package]]
+name = "bioauth-flow-rpc"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -553,16 +563,6 @@ dependencies = [
  "sp-runtime",
  "tokio",
  "tracing",
-]
-
-[[package]]
-name = "bioauth-flow-api"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
- "sp-api",
- "sp-std",
 ]
 
 [[package]]
@@ -2780,7 +2780,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bioauth-consensus",
- "bioauth-flow",
+ "bioauth-flow-rpc",
  "fc-consensus",
  "fc-db",
  "fc-mapping-sync",
@@ -2850,8 +2850,8 @@ version = "0.1.0"
 dependencies = [
  "author-ext-api",
  "author-ext-rpc",
- "bioauth-flow",
  "bioauth-flow-api",
+ "bioauth-flow-rpc",
  "fc-db",
  "fc-rpc",
  "fc-rpc-core",
