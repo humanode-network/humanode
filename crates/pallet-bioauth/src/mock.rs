@@ -148,6 +148,51 @@ where
     MOCK_CURRENT_MOMENT_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
 }
 
+mock! {
+    pub BeforeAuthHookProvider {
+        pub fn hook(&self, authentication: &super::Authentication<ValidatorPublicKey, UnixMilliseconds>) -> Result<(), sp_runtime::DispatchError>;
+    }
+}
+mock! {
+    pub AfterAuthHookProvider {
+        pub fn hook(&self, before_hook_data: ());
+    }
+}
+
+thread_local! {
+    pub static MOCK_BEFORE_AUTH_HOOK_PROVIDER: RefCell<MockBeforeAuthHookProvider> = RefCell::new(MockBeforeAuthHookProvider::new());
+    pub static MOCK_AFTER_AUTH_HOOK_PROVIDER: RefCell<MockAfterAuthHookProvider> = RefCell::new(MockAfterAuthHookProvider::new());
+}
+
+impl super::BeforeAuthHook<ValidatorPublicKey, UnixMilliseconds> for MockBeforeAuthHookProvider {
+    type Data = ();
+
+    fn hook(
+        authentication: &super::Authentication<ValidatorPublicKey, UnixMilliseconds>,
+    ) -> Result<Self::Data, sp_runtime::DispatchError> {
+        MOCK_BEFORE_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(authentication))
+    }
+}
+impl super::AfterAuthHook<()> for MockAfterAuthHookProvider {
+    fn hook(before_hook_data: ()) {
+        MOCK_AFTER_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(before_hook_data))
+    }
+}
+
+pub fn with_mock_before_auth_hook_provider<F, R>(f: F) -> R
+where
+    F: FnOnce(&mut MockBeforeAuthHookProvider) -> R,
+{
+    MOCK_BEFORE_AUTH_HOOK_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
+}
+
+pub fn with_mock_after_auth_hook_provider<F, R>(f: F) -> R
+where
+    F: FnOnce(&mut MockAfterAuthHookProvider) -> R,
+{
+    MOCK_AFTER_AUTH_HOOK_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
+}
+
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
@@ -222,6 +267,8 @@ impl pallet_bioauth::Config for Test {
     type WeightInfo = weights::SubstrateWeight<Test>;
     type MaxAuthentications = MaxAuthentications;
     type MaxNonces = MaxNonces;
+    type BeforeAuthHook = MockBeforeAuthHookProvider;
+    type AfterAuthHook = MockAfterAuthHookProvider;
 }
 
 /// Build test externalities from the default genesis.

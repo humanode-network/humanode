@@ -139,6 +139,44 @@ pub enum CustomInvalidTransactionCodes {
     UnableToParseAuthTicket = b't',
 }
 
+/// A hook that runs before the bioauth.
+/// You can abort the bioauth here (if needed) by returning an error from the hook.
+///
+/// This hook runs when we have already verified the auth ticket.
+pub trait BeforeAuthHook<PublicKey, Moment> {
+    /// The data that this hook want to keep around.
+    /// The [`AfterAuthHook`] can later use them.
+    type Data;
+
+    /// The hook to run.
+    fn hook(
+        authentication: &Authentication<PublicKey, Moment>,
+    ) -> Result<Self::Data, sp_runtime::DispatchError>;
+}
+
+impl<PublicKey, Moment> BeforeAuthHook<PublicKey, Moment> for () {
+    type Data = ();
+
+    fn hook(
+        _authentication: &Authentication<PublicKey, Moment>,
+    ) -> Result<Self::Data, sp_runtime::DispatchError> {
+        Ok(())
+    }
+}
+
+/// A hook that runs after the bioauth.
+///
+/// Can't abort the bioauth, as it executes after bioauth has already happened.
+pub trait AfterAuthHook<BeforeHookData> {
+    /// The hook to run.
+    /// Takes the data returned by the [`BeforeAuthHook`] as an argument.
+    fn hook(before_hook_data: BeforeHookData);
+}
+
+impl<BeforeHookData> AfterAuthHook<BeforeHookData> for () {
+    fn hook(_before_hook_data: BeforeHookData) {}
+}
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(
@@ -150,11 +188,10 @@ pub enum CustomInvalidTransactionCodes {
 pub mod pallet {
     use codec::MaxEncodedLen;
     use frame_support::{
-        dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
-        WeakBoundedVec,
+        pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery, WeakBoundedVec,
     };
     use frame_system::pallet_prelude::*;
-    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
+    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit, DispatchError};
 
     use super::*;
     use crate::weights::WeightInfo;
@@ -220,6 +257,14 @@ pub mod pallet {
 
         /// The maximum number of nonces.
         type MaxNonces: Get<u32>;
+
+        /// Before authentication hook.
+        type BeforeAuthHook: BeforeAuthHook<Self::ValidatorPublicKey, Self::Moment>;
+
+        /// After authentication hook.
+        type AfterAuthHook: AfterAuthHook<
+            <Self::BeforeAuthHook as BeforeAuthHook<Self::ValidatorPublicKey, Self::Moment>>::Data,
+        >;
     }
 
     #[pallet::pallet]
@@ -350,9 +395,11 @@ pub mod pallet {
         Ok(())
     }
 
-    /// Dispatchable functions allows users to interact with the pallet and invoke state changes.
+    /// Dispatchable functions allow users to interact with the pallet and invoke state changes.
     /// These functions materialize as "extrinsics", which are often compared to transactions.
-    /// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+    /// Dispatchable functions must be annotated with a weight and must return
+    /// a [`frame_support::dispatch::DispatchResult`] or
+    /// or [`frame_support::dispatch::DispatchResultWithPostInfo`].
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(T::WeightInfo::authenticate())]
@@ -375,9 +422,9 @@ pub mod pallet {
             let public_key = auth_ticket.public_key.clone();
 
             // Update storage.
-            <ConsumedAuthTicketNonces<T>>::try_mutate::<_, Error<T>, _>(
+            <ConsumedAuthTicketNonces<T>>::try_mutate::<_, DispatchError, _>(
                 move |consumed_auth_ticket_nonces| {
-                    <ActiveAuthentications<T>>::try_mutate::<_, Error<T>, _>(
+                    <ActiveAuthentications<T>>::try_mutate::<_, DispatchError, _>(
                         move |active_authentications| {
                             validate_authentication_attempt::<T>(
                                 consumed_auth_ticket_nonces,
@@ -386,10 +433,10 @@ pub mod pallet {
                             )
                             .map_err(|err| match err {
                                 AuthenticationAttemptValidationError::NonceConflict => {
-                                    Error::NonceAlreadyUsed
+                                    Error::<T>::NonceAlreadyUsed
                                 }
                                 AuthenticationAttemptValidationError::AlreadyAuthenticated => {
-                                    Error::PublicKeyAlreadyUsed
+                                    Error::<T>::PublicKeyAlreadyUsed
                                 }
                             })?;
 
@@ -413,10 +460,16 @@ pub mod pallet {
 
                             let mut updated_active_authentications =
                                 active_authentications.clone().into_inner();
-                            updated_active_authentications.push(Authentication {
+                            let authentication = Authentication {
                                 public_key: public_key.clone(),
                                 expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
-                            });
+                            };
+
+                            // Run the before hook, abort if needed.
+                            let before_hook_data =
+                                <T as Config>::BeforeAuthHook::hook(&authentication)?;
+
+                            updated_active_authentications.push(authentication);
 
                             *active_authentications =
                                 WeakBoundedVec::<_, T::MaxAuthentications>::force_from(
@@ -426,6 +479,9 @@ pub mod pallet {
 
                             // Issue an update to the external validators set.
                             Self::issue_validators_set_update(active_authentications.as_slice());
+
+                            // Run the after hook.
+                            <T as Config>::AfterAuthHook::hook(before_hook_data);
 
                             // Emit an event.
                             Self::deposit_event(Event::NewAuthentication(public_key));
