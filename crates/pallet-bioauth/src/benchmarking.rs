@@ -55,17 +55,16 @@ benchmarks! {
         };
 
         let active_authentications_before = ActiveAuthentications::<T>::get().len();
+        let consumed_nonces_before = ConsumedAuthTicketNonces::<T>::get();
 
     }: _(RawOrigin::None, authenticate_req)
 
     verify {
-        // Verify nonce
-        let consumed_nonces = ConsumedAuthTicketNonces::<T>::get();
-        let consumed_nonce: &Vec<u8> = consumed_nonces[0].as_ref();
-        let expected_nonce = make_nonce("nonce", i);
-        assert_eq!(consumed_nonce, &expected_nonce);
+        // Verify nonce count
+        let consumed_nonces_after = ConsumedAuthTicketNonces::<T>::get();
+        assert_eq!(consumed_nonces_after.len() - consumed_nonces_before.len(), 1);
 
-        // According the fact that benhcmarking can be used for different chain specifications
+        // Bsed on the fact that benhcmarking can be used for different chain specifications,
         // we just need to properly compare the size of active authentications before and after running benchmarks.
         let active_authentications_after = ActiveAuthentications::<T>::get();
         assert_eq!(active_authentications_after.len() - active_authentications_before, 1);
