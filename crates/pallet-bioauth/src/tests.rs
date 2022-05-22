@@ -559,7 +559,7 @@ fn authentication_with_conlicting_nonce_after_expiration() {
 
 /// This test prevents authentication call with conflicting public keys.
 #[test]
-fn authentication_with_concurrent_conlicting_public_keys() {
+fn authentication_with_concurrent_conflicting_public_keys() {
     new_test_ext().execute_with(|| {
         // Prepare the test precondition.
         let expires_at = CHAIN_START + 2 * SLOT_DURATION;
