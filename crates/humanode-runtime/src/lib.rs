@@ -364,7 +364,7 @@ impl pallet_session::Config for Runtime {
     type ValidatorIdOf = IdentityValidatorIdOf;
     type ShouldEndSession = Babe;
     type NextSessionRotation = Babe;
-    type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, BioauthSession>;
+    type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, HumanodeSession>;
     type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
     type Keys = opaque::SessionKeys;
     type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
@@ -527,7 +527,7 @@ impl pallet_bioauth::Config for Runtime {
     type AfterAuthHook = ();
 }
 
-impl pallet_bioauth_session::Config for Runtime {
+impl pallet_humanode_session::Config for Runtime {
     type ValidatorPublicKeyOf = IdentityValidatorIdOf;
 }
 
@@ -647,7 +647,7 @@ construct_runtime!(
         TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
         Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
         Historical: pallet_session_historical::{Pallet},
-        BioauthSession: pallet_bioauth_session::{Pallet},
+        HumanodeSession: pallet_humanode_session::{Pallet},
         EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config},
         Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
         Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
