@@ -523,6 +523,8 @@ impl pallet_bioauth::Config for Runtime {
     type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
     type MaxAuthentications = MaxAuthentications;
     type MaxNonces = MaxNonces;
+    type BeforeAuthHook = ();
+    type AfterAuthHook = ();
 }
 
 impl pallet_humanode_session::Config for Runtime {

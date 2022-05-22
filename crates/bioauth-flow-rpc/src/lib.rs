@@ -1,4 +1,8 @@
-//! RPC interface for the bioauth flow.
+//! The bioauth flow RPC implementation.
+//!
+//! It is the logic of communication between the humanode (aka humanode-peer),
+//! the app on the handheld device that performs the biometric capture,
+//! and the robonode server that issues auth tickets.
 
 use std::marker::PhantomData;
 use std::sync::Arc;
@@ -21,7 +25,40 @@ use sp_blockchain::HeaderBackend;
 use sp_runtime::transaction_validity::InvalidTransaction;
 use tracing::*;
 
-use crate::{flow::LivenessDataProvider, Signer, SignerFactory};
+/// Signer provides signatures for the data.
+#[async_trait::async_trait]
+pub trait Signer<S> {
+    /// Signature error.
+    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
+    type Error;
+
+    /// Sign the provided data and return the signature, or an error if the signing fails.
+    async fn sign<'a, D>(&self, data: D) -> std::result::Result<S, Self::Error>
+    where
+        D: AsRef<[u8]> + Send + 'a;
+}
+
+/// A factory that spits out [`Signer`]s.
+pub trait SignerFactory<S, K> {
+    /// The type of [`Signer`] this factory will create.
+    type Signer: Signer<S>;
+
+    /// Create a [`Signer`] using the provided public key.
+    fn new_signer(&self, key: K) -> Self::Signer;
+}
+
+impl<S, T, F, K, P> SignerFactory<T, K> for P
+where
+    P: std::ops::Deref<Target = F>,
+    F: Fn(K) -> S,
+    S: Signer<T>,
+{
+    type Signer = S;
+
+    fn new_signer(&self, key: K) -> Self::Signer {
+        self(key)
+    }
+}
 
 /// A result type that wraps.
 pub type Result<T> = std::result::Result<T, RpcError>;
@@ -90,8 +127,6 @@ enum ErrorCode {
     MissingValidatorKey = 500,
     /// Validator key extraction has failed.
     ValidatorKeyExtraction = 600,
-    /// Liveness data was not provided.
-    MissingLivenessData = 700,
 }
 
 /// The bioauth status as used in the RPC.
@@ -128,10 +163,6 @@ pub trait BioauthApi<Timestamp> {
     /// Get a FaceTec Session Token.
     #[rpc(name = "bioauth_getFacetecSessionToken")]
     fn get_facetec_session_token(&self) -> FutureResult<String>;
-
-    /// Provide the liveness data for the currently running enrollemnt or authentication process.
-    #[rpc(name = "bioauth_provideLivenessData")]
-    fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()>;
 
     /// Get the current bioauth status.
     #[rpc(name = "bioauth_status")]
@@ -205,7 +236,6 @@ impl<
     /// Create a new [`Bioauth`] API implementation.
     pub fn new(
         robonode_client: RobonodeClient,
-        liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
         validator_key_extractor: ValidatorKeyExtractor,
         validator_signer_factory: ValidatorSignerFactory,
         client: Arc<Client>,
@@ -213,7 +243,6 @@ impl<
     ) -> Self {
         let inner = Inner {
             robonode_client,
-            liveness_data_tx_slot,
             validator_key_extractor,
             validator_signer_factory,
             client,
@@ -306,11 +335,6 @@ where
         self.with_inner_clone(move |inner| inner.get_facetec_session_token())
     }
 
-    /// See [`Inner::provide_liveness_data`].
-    fn provide_liveness_data(&self, liveness_data: LivenessData) -> FutureResult<()> {
-        self.with_inner_clone(move |inner| inner.provide_liveness_data(liveness_data))
-    }
-
     /// See [`Inner::status`].
     fn status(&self) -> FutureResult<BioauthStatus<Timestamp>> {
         self.with_inner_clone(move |inner| inner.status())
@@ -343,10 +367,6 @@ struct Inner<
 > {
     /// The robonode client, used for fetching the FaceTec Session Token.
     robonode_client: RobonodeClient,
-    /// The liveness data provider sink.
-    /// We need an [`Arc`] here to allow sharing the data from across multiple invocations of the
-    /// RPC extension builder that will be using this RPC.
-    liveness_data_tx_slot: Arc<LivenessDataTxSlot>,
     /// Provider of the local validator key.
     validator_key_extractor: ValidatorKeyExtractor,
     /// The type that provides signing with the validator private key.
@@ -422,25 +442,6 @@ where
                 data: None,
             })?;
         Ok(res.session_token)
-    }
-
-    /// Collect the liveness data and provide to the consumer.
-    async fn provide_liveness_data(self: Arc<Self>, liveness_data: LivenessData) -> Result<()> {
-        let maybe_tx = {
-            let mut maybe_tx_guard = self.liveness_data_tx_slot.lock().await;
-            maybe_tx_guard.take() // take the guarded option value and release the lock asap
-        };
-        let tx = maybe_tx.ok_or_else(|| RpcError {
-            code: RpcErrorCode::ServerError(ErrorCode::MissingLivenessData as _),
-            message: "Flow is not engaged, unable to accept liveness data".into(),
-            data: None,
-        })?;
-        tx.send(liveness_data).map_err(|_| RpcError {
-            code: RpcErrorCode::ServerError(ErrorCode::MissingLivenessData as _),
-            message: "Flow was aborted before the liveness data could be submitted".into(),
-            data: None,
-        })?;
-        Ok(())
     }
 
     /// Obtain the status of the bioauth.
@@ -614,38 +615,6 @@ where
             })?;
 
         Ok((opaque_liveness_data, signature))
-    }
-}
-
-/// Provider implements a [`LivenessDataProvider`].
-pub struct Provider {
-    /// The shared liveness data sender slot, that we can swap with our ephemernal
-    /// channel upon a liveness data reuqest.
-    liveness_data_tx_slot: LivenessDataTxSlot,
-}
-
-impl Provider {
-    /// Construct a new [`Provider`].
-    pub fn new(liveness_data_tx_slot: LivenessDataTxSlot) -> Self {
-        Self {
-            liveness_data_tx_slot,
-        }
-    }
-}
-
-#[async_trait::async_trait]
-impl LivenessDataProvider for Provider {
-    type Error = oneshot::Canceled;
-
-    async fn provide(&mut self) -> std::result::Result<LivenessData, Self::Error> {
-        let (tx, rx) = oneshot::channel();
-
-        {
-            let mut maybe_tx_guard = self.liveness_data_tx_slot.lock().await;
-            let _ = maybe_tx_guard.insert(tx); // insert a new sender value and free the lock asap
-        }
-
-        Ok(rx.await?)
     }
 }
 
