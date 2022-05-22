@@ -364,8 +364,7 @@ impl pallet_session::Config for Runtime {
     type ValidatorIdOf = IdentityValidatorIdOf;
     type ShouldEndSession = Babe;
     type NextSessionRotation = Babe;
-    type SessionManager =
-        pallet_session::historical::NoteHistoricalRoot<Self, HumanodeSession>;
+    type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, HumanodeSession>;
     type SessionHandler = <opaque::SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
     type Keys = opaque::SessionKeys;
     type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
