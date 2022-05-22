@@ -5,7 +5,7 @@ use std::{collections::BTreeMap, sync::Arc};
 use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtRpcApi};
 use bioauth_flow::{
-    rpc::{Bioauth, BioauthApi, LivenessDataTxSlot, ValidatorKeyExtractorT},
+    rpc::{Bioauth, BioauthApi, ValidatorKeyExtractorT},
     Signer, SignerFactory,
 };
 use fc_rpc::{
@@ -56,8 +56,6 @@ pub struct AuthorExtDeps<VKE> {
 pub struct BioauthDeps<VKE, VSF> {
     /// An ready robonode API client to tunnel the calls to.
     pub robonode_client: Arc<robonode_client::Client>,
-    /// The liveness data tx slot to use in the bioauth flow RPC.
-    pub bioauth_flow_slot: Arc<LivenessDataTxSlot>,
     /// Extracts the currently used bioauth validator key.
     pub bioauth_validator_key_extractor: VKE,
     /// A factory for making signers by the bioauth validator public keys.
@@ -221,7 +219,6 @@ where
 
     let BioauthDeps {
         robonode_client,
-        bioauth_flow_slot,
         bioauth_validator_key_extractor,
         bioauth_validator_signer_factory,
     } = bioauth;
@@ -289,7 +286,6 @@ where
 
     io.extend_with(BioauthApi::to_delegate(Bioauth::new(
         robonode_client,
-        bioauth_flow_slot,
         bioauth_validator_key_extractor,
         bioauth_validator_signer_factory,
         Arc::clone(&client),

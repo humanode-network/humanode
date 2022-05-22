@@ -3,7 +3,6 @@
 #![allow(clippy::type_complexity)]
 use std::{
     collections::BTreeMap,
-    marker::PhantomData,
     sync::{Arc, Mutex},
     time::Duration,
 };
@@ -261,7 +260,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let Configuration {
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
-        bioauth_perform_enroll,
         evm: evm_config,
     } = config;
 
@@ -338,14 +336,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         reqwest: reqwest::Client::new(),
     });
 
-    let (bioauth_flow_rpc_slot, bioauth_flow_provider_slot) =
-        bioauth_flow::rpc::new_liveness_data_tx_slot();
-
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
-        let bioauth_flow_rpc_slot = Arc::new(bioauth_flow_rpc_slot);
         let bioauth_validator_key_extractor =
             Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
                 KeystoreBioauthId,
@@ -405,7 +399,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 },
                 bioauth: humanode_rpc::BioauthDeps {
                     robonode_client: Arc::clone(&robonode_client),
-                    bioauth_flow_slot: Arc::clone(&bioauth_flow_rpc_slot),
                     bioauth_validator_signer_factory: Arc::clone(&bioauth_validator_signer_factory),
                     bioauth_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
                 },
@@ -553,199 +546,17 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     network_starter.start_network();
 
-    let mut flow = bioauth_flow::flow::Flow {
-        liveness_data_provider: bioauth_flow::rpc::Provider::new(bioauth_flow_provider_slot),
-        robonode_client,
-        validator_public_key_type: PhantomData,
-        validator_signer_type: PhantomData,
-    };
-
     let webapp_qrcode = bioauth_flow_config
         .qrcode_params()
         .await
         .and_then(|(webapp_url, rpc_url)| crate::qrcode::WebApp::new(webapp_url, &rpc_url));
 
-    let render_qr_code = move |prompt: &str| match &webapp_qrcode {
+    match &webapp_qrcode {
         Ok(ref qrcode) => qrcode.print(),
         Err(ref err) => {
             error!("Bioauth flow - unable to display QR Code: {}", err);
-            info!(message = prompt);
         }
     };
-
-    let bioauth_flow_future = {
-        let client = Arc::clone(&client);
-        let keystore = keystore_container.keystore();
-        let transaction_pool = Arc::clone(&transaction_pool);
-        Box::pin(async move {
-            let validator_public_key =
-                crate::validator_key::AppCryptoPublic::<KeystoreBioauthId>::from_keystore(
-                    keystore.as_ref(),
-                )
-                .await;
-
-            let validator_public_key = match validator_public_key {
-                Ok(Some(key)) => {
-                    info!("Running bioauth flow for {}", key);
-                    key
-                }
-                Ok(None) => {
-                    warn!("No validator key found, skipping bioauth");
-                    return;
-                }
-                Err(err) => {
-                    error!("Keystore returned an error ({}), skipping bioauth", err);
-                    return;
-                }
-            };
-
-            info!("Bioauth flow starting up");
-
-            let signer = crate::validator_key::AppCryptoSigner::new(
-                Arc::clone(&keystore),
-                validator_public_key.clone(),
-            );
-
-            if bioauth_perform_enroll {
-                info!("Bioauth flow - enrolling in progress");
-
-                render_qr_code("Bioauth flow - waiting for enroll");
-
-                loop {
-                    let result = flow.enroll(&validator_public_key, &signer).await;
-                    match result {
-                        Ok(()) => break,
-                        Err(error) => {
-                            let (error, retry) = handle_bioauth_error(&error);
-                            error!(message = "Bioauth flow - enrollment failure", %error, ?retry);
-                            if !retry {
-                                panic!("{}", error);
-                            }
-                        }
-                    };
-                }
-
-                info!("Bioauth flow - enrolling complete");
-            }
-
-            info!("Bioauth flow - authentication in progress");
-
-            render_qr_code("Bioauth flow - waiting for authentication");
-
-            let authenticate_response = loop {
-                let result = flow.authenticate(&signer).await;
-                match result {
-                    Ok(v) => break v,
-                    Err(error) => {
-                        let (error, retry) = handle_bioauth_error(&error);
-                        error!(message = "Bioauth flow - authentication failure", %error, ?retry);
-                        if !retry {
-                            panic!("{}", error);
-                        }
-                    }
-                };
-            };
-
-            info!("Bioauth flow - authentication complete");
-
-            info!(message = "We've obtained an auth ticket", auth_ticket = ?authenticate_response.auth_ticket);
-
-            let authenticate = pallet_bioauth::Authenticate {
-                ticket: authenticate_response.auth_ticket.into(),
-                ticket_signature: authenticate_response.auth_ticket_signature.into(),
-            };
-            let call = pallet_bioauth::Call::authenticate { req: authenticate };
-
-            let ext = humanode_runtime::UncheckedExtrinsic::new_unsigned(call.into());
-
-            let at = client.chain_info().best_hash;
-            transaction_pool
-                .pool()
-                .submit_and_watch(
-                    &sp_runtime::generic::BlockId::Hash(at),
-                    sp_runtime::transaction_validity::TransactionSource::Local,
-                    ext.into(),
-                )
-                .await
-                .unwrap();
-        })
-    };
-
-    task_manager.spawn_handle().spawn_blocking(
-        "bioauth-flow",
-        Some("bioauth"),
-        bioauth_flow_future,
-    );
 
     Ok(task_manager)
-}
-
-/// Handle the bioauth error in a user-friendly way.
-fn handle_bioauth_error(error: &anyhow::Error) -> (String, bool) {
-    use robonode_client::{AuthenticateError, EnrollError, Error};
-
-    let face_scan_rejected_message = "the face scan was rejected, this is likely caused by a failed liveness check, so please try again; changing lighting conditions or using a different phone can help";
-
-    if let Some(error) = error.downcast_ref::<Error<EnrollError>>() {
-        match error {
-            Error::Call(EnrollError::PersonAlreadyEnrolled) => {
-                ("you have already enrolled".to_owned(), false)
-            }
-            Error::Call(EnrollError::PublicKeyAlreadyUsed) => (
-                "the validator key you supplied was already used".to_owned(),
-                false,
-            ),
-            Error::Call(EnrollError::FaceScanRejected) => {
-                (face_scan_rejected_message.to_owned(), true)
-            }
-            Error::Call(EnrollError::InvalidLivenessData) => {
-                ("the provided liveness data was invalid".to_owned(), true)
-            }
-            Error::Call(EnrollError::InvalidPublicKey) => {
-                ("the public key was invalid".to_owned(), false)
-            }
-            Error::Call(EnrollError::LogicInternal) => {
-                ("an internal logic error has occured".to_owned(), true)
-            }
-            Error::Call(EnrollError::UnknownCode(error_code)) => (
-                format!(
-                    "an unknown error code received from the server: {}",
-                    error_code
-                ),
-                false,
-            ),
-            Error::Call(EnrollError::Unknown(err)) => (err.clone(), true),
-            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
-        }
-    } else if let Some(error) = error.downcast_ref::<Error<AuthenticateError>>() {
-        match error {
-            Error::Call(AuthenticateError::InvalidLivenessData) => {
-                ("the provided liveness data was invalid".to_owned(), true)
-            }
-            Error::Call(AuthenticateError::PersonNotFound) => (
-                "we were unable to find you in the system; have you already enrolled?".to_owned(),
-                true,
-            ),
-            Error::Call(AuthenticateError::FaceScanRejected) => {
-                (face_scan_rejected_message.to_owned(), true)
-            }
-            Error::Call(AuthenticateError::SignatureInvalid) => {
-                ("the validator key used for authentication does not match the one used during enroll; you have likely used a different mnemonic, but you have to use the same one, otherwise you will be unable to authenticate; you have saved the mnemonic somewhere as requested, right? ;) if you've lost your menmonic you will be unable to continue.".to_owned(), true)
-            }
-            Error::Call(AuthenticateError::LogicInternal) => {
-                ("an internal logic error has occured".to_owned(), true)
-            }
-            Error::Call(AuthenticateError::UnknownCode(error_code)) => (
-                format!(
-                    "an unknown error code received from the server: {}",
-                    error_code
-                ),
-                false,
-            ),
-            Error::Call(AuthenticateError::Unknown(err)) => (err.clone(), true),
-            Error::Reqwest(err) => (err.to_string(), err.is_timeout()),
-        }
-    } else {
-        (error.to_string(), false)
-    }
 }
