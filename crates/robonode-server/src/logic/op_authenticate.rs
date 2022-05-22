@@ -3,13 +3,11 @@
 use facetec_api_client as ft;
 use primitives_auth_ticket::{AuthTicket, OpaqueAuthTicket};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
+use serde::{Deserialize, Serialize};
 use tracing::{error, trace};
 
-use serde::{Deserialize, Serialize};
-
-use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
-
 use super::{common::*, Logic, LogicOp, Signer, Verifier};
+use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
 /// The request of the authenticate operation.
 #[derive(Debug, Deserialize, Serialize)]
@@ -210,7 +208,7 @@ fn make_tmp_external_database_ref_id(execution_id: uuid::Uuid, sequence_value: u
 }
 
 /// Make an authentication nonce.
-// TODO: we don't want to expose our internal sequence number, so this value should
+// TODO(#306): we don't want to expose our internal sequence number, so this value should
 // be hashed, or obfuscated by other means.
 fn make_authentication_nonce(execution_id: uuid::Uuid, sequence_value: u64) -> Vec<u8> {
     let mut data = Vec::from(&execution_id.as_bytes()[..]);

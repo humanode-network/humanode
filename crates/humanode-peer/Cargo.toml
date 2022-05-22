@@ -8,10 +8,13 @@ publish = false
 default-run = "humanode-peer"
 
 [dependencies]
-bioauth-consensus = { version = "0.1", path = "../bioauth-consensus", features = ["all"] }
-bioauth-flow = { version = "0.1", path = "../bioauth-flow" }
+bioauth-consensus = { version = "0.1", path = "../bioauth-consensus", features = [
+  "all",
+] }
+bioauth-flow-rpc = { version = "0.1", path = "../bioauth-flow-rpc" }
 humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
+keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id" }
 ngrok-api = { version = "0.1", path = "../ngrok-api" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
@@ -19,9 +22,21 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 anyhow = "1"
 async-trait = "0.1"
 codec = { package = "parity-scale-codec", version = "2.0.0" }
+fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+fdlimit = "0.2"
+frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 futures = "0.3"
+hex = "0.4.3"
 hex-literal = "0.3"
+libsecp256k1 = "0.6"
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 qr2term = "0.2"
 reqwest = "0.11"
 sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -30,29 +45,45 @@ sc-chain-spec-derive = { git = "https://github.com/humanode-network/substrate", 
 sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sc-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-network = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-service = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-telemetry = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+sha3 = "0.10"
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-consensus-aura = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-panic-handler = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 structopt = "0.3.8"
 thiserror = "1"
+tiny-bip39 = "0.8"
+tiny-hderive = "0.3.0"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 url = "2"
 
 [dev-dependencies]
 indoc = "1.0"
-serde_json = "1"
+
+[features]
+default = ["wasmtime"]
+runtime-benchmarks = [
+  "wasmtime",
+  "humanode-runtime/runtime-benchmarks",
+  "frame-benchmarking/runtime-benchmarks",
+]
+wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]

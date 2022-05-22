@@ -28,9 +28,6 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
-
 /// Verifier provides the verification of the data accompanied with the
 /// signature or proof data.
 /// A non-async (blocking) variant, for use at runtime.
@@ -68,6 +65,20 @@ pub trait ValidatorSetUpdater<T> {
     fn init_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(validator_public_keys: I)
     where
         T: 'a;
+}
+
+impl<T> ValidatorSetUpdater<T> for () {
+    fn update_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(_validator_public_keys: I)
+    where
+        T: 'a,
+    {
+    }
+
+    fn init_validators_set<'a, I: Iterator<Item = &'a T> + 'a>(_validator_public_keys: I)
+    where
+        T: 'a,
+    {
+    }
 }
 
 /// Provides the capability to get current moment.
@@ -120,6 +131,52 @@ pub struct Authentication<PublicKey, Moment> {
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
+/// Custom invalid transaction error codes.
+#[repr(u8)]
+pub enum CustomInvalidTransactionCodes {
+    /// We were unable to parse the auth ticket.
+    /// This happens after the signature has already been verified.
+    UnableToParseAuthTicket = b't',
+}
+
+/// A hook that runs before the bioauth.
+/// You can abort the bioauth here (if needed) by returning an error from the hook.
+///
+/// This hook runs when we have already verified the auth ticket.
+pub trait BeforeAuthHook<PublicKey, Moment> {
+    /// The data that this hook want to keep around.
+    /// The [`AfterAuthHook`] can later use them.
+    type Data;
+
+    /// The hook to run.
+    fn hook(
+        authentication: &Authentication<PublicKey, Moment>,
+    ) -> Result<Self::Data, sp_runtime::DispatchError>;
+}
+
+impl<PublicKey, Moment> BeforeAuthHook<PublicKey, Moment> for () {
+    type Data = ();
+
+    fn hook(
+        _authentication: &Authentication<PublicKey, Moment>,
+    ) -> Result<Self::Data, sp_runtime::DispatchError> {
+        Ok(())
+    }
+}
+
+/// A hook that runs after the bioauth.
+///
+/// Can't abort the bioauth, as it executes after bioauth has already happened.
+pub trait AfterAuthHook<BeforeHookData> {
+    /// The hook to run.
+    /// Takes the data returned by the [`BeforeAuthHook`] as an argument.
+    fn hook(before_hook_data: BeforeHookData);
+}
+
+impl<BeforeHookData> AfterAuthHook<BeforeHookData> for () {
+    fn hook(_before_hook_data: BeforeHookData) {}
+}
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(
@@ -129,17 +186,15 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 )]
 #[frame_support::pallet]
 pub mod pallet {
-    use super::*;
-
-    use crate::weights::WeightInfo;
-
     use codec::MaxEncodedLen;
     use frame_support::{
-        dispatch::DispatchResult, pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery,
-        WeakBoundedVec,
+        pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery, WeakBoundedVec,
     };
     use frame_system::pallet_prelude::*;
-    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit};
+    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit, DispatchError};
+
+    use super::*;
+    use crate::weights::WeightInfo;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
@@ -202,6 +257,14 @@ pub mod pallet {
 
         /// The maximum number of nonces.
         type MaxNonces: Get<u32>;
+
+        /// Before authentication hook.
+        type BeforeAuthHook: BeforeAuthHook<Self::ValidatorPublicKey, Self::Moment>;
+
+        /// After authentication hook.
+        type AfterAuthHook: AfterAuthHook<
+            <Self::BeforeAuthHook as BeforeAuthHook<Self::ValidatorPublicKey, Self::Moment>>::Data,
+        >;
     }
 
     #[pallet::pallet]
@@ -285,7 +348,7 @@ pub mod pallet {
     pub enum Event<T: Config> {
         // Event documentation should end with an array that provides descriptive names for event
         // parameters.
-        /// New authentication was added to the state. [stored_auth_ticket]
+        /// New authentication was added to the state. [validator_public_key]
         NewAuthentication(T::ValidatorPublicKey),
     }
 
@@ -305,35 +368,10 @@ pub mod pallet {
         PublicKeyAlreadyUsed,
     }
 
-    pub enum AuthenticationAttemptValidationError<'a, T: Config> {
+    #[derive(Debug)]
+    enum AuthenticationAttemptValidationError {
         NonceConflict,
-        AlreadyAuthenticated(&'a Authentication<T::ValidatorPublicKey, T::Moment>),
-    }
-
-    impl<'a, T: Config> From<AuthenticationAttemptValidationError<'a, T>> for Error<T> {
-        fn from(err: AuthenticationAttemptValidationError<'a, T>) -> Self {
-            match err {
-                AuthenticationAttemptValidationError::NonceConflict => Self::NonceAlreadyUsed,
-                AuthenticationAttemptValidationError::AlreadyAuthenticated(_) => {
-                    Self::PublicKeyAlreadyUsed
-                }
-            }
-        }
-    }
-
-    impl<'a, T: Config> core::fmt::Display for AuthenticationAttemptValidationError<'a, T> {
-        fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-            match self {
-                Self::NonceConflict => write!(f, "nonce has already been used"),
-                Self::AlreadyAuthenticated(authentication) => {
-                    write!(
-                        f,
-                        "previous authentication exists and is valid till {}",
-                        T::DisplayMoment::from(authentication.expires_at)
-                    )
-                }
-            }
-        }
+        AlreadyAuthenticated,
     }
 
     /// Validate the incloming authentication attempt, checking the auth ticket data against
@@ -342,7 +380,7 @@ pub mod pallet {
         consumed_auth_ticket_nonces: &'a [BoundedAuthTicketNonce],
         active_authentications: &'a [Authentication<T::ValidatorPublicKey, T::Moment>],
         auth_ticket: &AuthTicket<T::ValidatorPublicKey>,
-    ) -> Result<(), AuthenticationAttemptValidationError<'a, T>> {
+    ) -> Result<(), AuthenticationAttemptValidationError> {
         for consumed_auth_ticket_nonce in consumed_auth_ticket_nonces.iter() {
             if consumed_auth_ticket_nonce == &auth_ticket.nonce {
                 return Err(AuthenticationAttemptValidationError::NonceConflict);
@@ -350,18 +388,18 @@ pub mod pallet {
         }
         for active_authentication in active_authentications.iter() {
             if active_authentication.public_key == auth_ticket.public_key {
-                return Err(AuthenticationAttemptValidationError::AlreadyAuthenticated(
-                    active_authentication,
-                ));
+                return Err(AuthenticationAttemptValidationError::AlreadyAuthenticated);
             }
         }
 
         Ok(())
     }
 
-    /// Dispatchable functions allows users to interact with the pallet and invoke state changes.
+    /// Dispatchable functions allow users to interact with the pallet and invoke state changes.
     /// These functions materialize as "extrinsics", which are often compared to transactions.
-    /// Dispatchable functions must be annotated with a weight and must return a DispatchResult.
+    /// Dispatchable functions must be annotated with a weight and must return
+    /// a [`frame_support::dispatch::DispatchResult`] or
+    /// or [`frame_support::dispatch::DispatchResultWithPostInfo`].
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(T::WeightInfo::authenticate())]
@@ -371,19 +409,36 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_none(origin)?;
 
-            let auth_ticket = Self::extract_auth_ticket_checked(req)?;
+            let auth_ticket =
+                Self::extract_auth_ticket_checked(req).map_err(|error| match error {
+                    AuthTicketExtractionError::UnableToValidateSignature => {
+                        Error::<T>::UnableToValidateAuthTicketSignature
+                    }
+                    AuthTicketExtractionError::SignatureInvalid => {
+                        Error::<T>::AuthTicketSignatureInvalid
+                    }
+                    AuthTicketExtractionError::UnableToParse => Error::<T>::UnableToParseAuthTicket,
+                })?;
             let public_key = auth_ticket.public_key.clone();
 
             // Update storage.
-            <ConsumedAuthTicketNonces<T>>::try_mutate::<_, Error<T>, _>(
+            <ConsumedAuthTicketNonces<T>>::try_mutate::<_, DispatchError, _>(
                 move |consumed_auth_ticket_nonces| {
-                    <ActiveAuthentications<T>>::try_mutate::<_, Error<T>, _>(
+                    <ActiveAuthentications<T>>::try_mutate::<_, DispatchError, _>(
                         move |active_authentications| {
                             validate_authentication_attempt::<T>(
                                 consumed_auth_ticket_nonces,
                                 active_authentications,
                                 &auth_ticket,
-                            )?;
+                            )
+                            .map_err(|err| match err {
+                                AuthenticationAttemptValidationError::NonceConflict => {
+                                    Error::<T>::NonceAlreadyUsed
+                                }
+                                AuthenticationAttemptValidationError::AlreadyAuthenticated => {
+                                    Error::<T>::PublicKeyAlreadyUsed
+                                }
+                            })?;
 
                             // Update internal state.
                             let current_moment = T::CurrentMoment::now();
@@ -405,10 +460,16 @@ pub mod pallet {
 
                             let mut updated_active_authentications =
                                 active_authentications.clone().into_inner();
-                            updated_active_authentications.push(Authentication {
+                            let authentication = Authentication {
                                 public_key: public_key.clone(),
                                 expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
-                            });
+                            };
+
+                            // Run the before hook, abort if needed.
+                            let before_hook_data =
+                                <T as Config>::BeforeAuthHook::hook(&authentication)?;
+
+                            updated_active_authentications.push(authentication);
 
                             *active_authentications =
                                 WeakBoundedVec::<_, T::MaxAuthentications>::force_from(
@@ -418,6 +479,9 @@ pub mod pallet {
 
                             // Issue an update to the external validators set.
                             Self::issue_validators_set_update(active_authentications.as_slice());
+
+                            // Run the after hook.
+                            <T as Config>::AfterAuthHook::hook(before_hook_data);
 
                             // Emit an event.
                             Self::deposit_event(Event::NewAuthentication(public_key));
@@ -463,22 +527,29 @@ pub mod pallet {
         }
     }
 
+    #[derive(Debug)]
+    enum AuthTicketExtractionError {
+        UnableToValidateSignature,
+        SignatureInvalid,
+        UnableToParse,
+    }
+
     impl<T: Config> Pallet<T> {
-        pub fn extract_auth_ticket_checked(
+        fn extract_auth_ticket_checked(
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
-        ) -> Result<AuthTicket<T::ValidatorPublicKey>, Error<T>> {
+        ) -> Result<AuthTicket<T::ValidatorPublicKey>, AuthTicketExtractionError> {
             let robonode_public_key = RobonodePublicKey::<T>::get();
 
             let signature_valid = robonode_public_key
                 .verify(&req.ticket, req.ticket_signature)
-                .map_err(|_| Error::<T>::UnableToValidateAuthTicketSignature)?;
+                .map_err(|_| AuthTicketExtractionError::UnableToValidateSignature)?;
 
             if !signature_valid {
-                return Err(Error::<T>::AuthTicketSignatureInvalid);
+                return Err(AuthTicketExtractionError::SignatureInvalid);
             }
 
             let auth_ticket = <T::AuthTicketCoverter as TryConvert<_, _>>::try_convert(req.ticket)
-                .map_err(|_| Error::<T>::UnableToParseAuthTicket)?;
+                .map_err(|_| AuthTicketExtractionError::UnableToParse)?;
 
             Ok(auth_ticket)
         }
@@ -497,8 +568,16 @@ pub mod pallet {
             let auth_ticket =
                 Self::extract_auth_ticket_checked(transaction.clone()).map_err(|error| {
                     error!(message = "Auth Ticket could not be extracted", ?error);
-                    // Use custom code 's' for "signature" error.
-                    TransactionValidityError::Invalid(InvalidTransaction::Custom(b's'))
+                    // Use bad proof error code, as the extraction.
+                    TransactionValidityError::Invalid(match error {
+                        AuthTicketExtractionError::UnableToValidateSignature
+                        | AuthTicketExtractionError::SignatureInvalid => {
+                            InvalidTransaction::BadProof
+                        }
+                        AuthTicketExtractionError::UnableToParse => InvalidTransaction::Custom(
+                            CustomInvalidTransactionCodes::UnableToParseAuthTicket as u8,
+                        ),
+                    })
                 })?;
 
             let consumed_auth_ticket_nonces = ConsumedAuthTicketNonces::<T>::get();
@@ -510,18 +589,29 @@ pub mod pallet {
                 &auth_ticket,
             )
             .map_err(|err| {
-                error!(message = "Authentication attemption failed", error = %err);
+                error!(message = "Authentication attemption failed", error = ?err);
 
-                // Use custom code 'c' for "conflict" error.
-                TransactionValidityError::Invalid(InvalidTransaction::Custom(b'c'))
+                TransactionValidityError::Invalid(match err {
+                    AuthenticationAttemptValidationError::NonceConflict => {
+                        // The transaction renders nonce conflict if we have already seen this nonce
+                        // before, so in practice, we will most likely observe this with auth ticket
+                        // replays. We can sort of say the auth ticket is stale if it has already
+                        // been consumed.
+                        InvalidTransaction::Stale
+                    }
+                    AuthenticationAttemptValidationError::AlreadyAuthenticated => {
+                        // Technically, we can't know if the transaction is from the future, but we
+                        // know for sure it's not a replay, since the nonce didn't conflict;
+                        // The way it usually observed to happen is when someone authenticates
+                        // again while already having an active authentication - so this means this
+                        // transaction would've been valid if sent in the future.
+                        InvalidTransaction::Future
+                    }
+                })
             })?;
 
             // We must use non-default [`TransactionValidity`] here.
             ValidTransaction::with_tag_prefix("bioauth")
-                // Apparently tags are required for the tx pool to build a chain of transactions;
-                // in our case, we the structure of the [`StoredAuthTickets`] is supposed to be
-                // unordered, and act like a CRDT.
-                // TODO: ensure we have the unordered (CRDT) semantics for the [`authenticate`] txs.
                 .and_provides(auth_ticket)
                 .priority(50)
                 .longevity(1)
@@ -574,6 +664,13 @@ pub mod pallet {
 #[derive(Encode, Decode, Clone, Eq, PartialEq, Default, TypeInfo)]
 #[scale_info(skip_type_params(T))]
 pub struct CheckBioauthTx<T: Config + Send + Sync>(PhantomData<T>);
+
+impl<T: Config + Send + Sync> CheckBioauthTx<T> {
+    /// Creates new `SignedExtension` to check bioauth extrinsic.
+    pub fn new() -> Self {
+        Self(sp_std::marker::PhantomData)
+    }
+}
 
 /// Debug impl for the `CheckBioauthTx` struct.
 impl<T: Config + Send + Sync> Debug for CheckBioauthTx<T> {

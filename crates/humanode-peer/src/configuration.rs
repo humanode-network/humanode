@@ -15,8 +15,8 @@ pub struct Configuration {
     /// always required.
     pub bioauth_flow: Option<BioauthFlow>,
 
-    /// Whether to perform the bioauth enroll before the authentication or not.
-    pub bioauth_perform_enroll: bool,
+    /// EVM configuration,
+    pub evm: Option<Evm>,
 }
 
 /// Bioauth flow configuration parameters.
@@ -46,4 +46,20 @@ impl BioauthFlow {
         let rpc_url = self.rpc_url_resolver.resolve(&self.rpc_url).await?;
         Ok((webapp_url, rpc_url))
     }
+}
+
+/// EVM configuration parameters.
+pub struct Evm {
+    /// Maximum number of blocks to keep the log information available
+    /// for querying via the RPC (from the latest block).
+    pub max_past_logs: u32,
+
+    /// Maximum number of stored filters.
+    pub max_stored_filters: usize,
+
+    /// The dynamic-fee pallet target gas price set by block author.
+    pub target_gas_price: u64,
+
+    /// Maximum fee history cache size.
+    pub fee_history_limit: u64,
 }

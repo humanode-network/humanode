@@ -1,37 +1,29 @@
 //! The validator key integration logic.
 
-use std::{fmt::Display, marker::PhantomData, sync::Arc};
+use std::{fmt::Display, sync::Arc};
 
-use bioauth_flow::flow::Signer;
+use bioauth_flow_rpc::Signer;
 use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
 use sp_keystore::CryptoStore;
 
 /// The validator public key implementation using the app crypto public key.
+#[derive(Clone)]
 pub struct AppCryptoPublic<T>(pub T);
 
 /// The validator signer implementation using the keystore and app crypto public key.
-pub struct AppCryptoSigner<PK, PKR>
-where
-    PKR: AsRef<AppCryptoPublic<PK>>,
-{
+pub struct AppCryptoSigner<PK> {
     /// The keystore to use for signing.
     pub keystore: Arc<dyn CryptoStore>,
     /// The public key to provide the signature for.
-    pub public_key_ref: PKR,
-    /// The type of the public key behind the ref.
-    pub public_key_type: PhantomData<PK>,
+    pub public_key: AppCryptoPublic<PK>,
 }
 
-impl<PK, PKR> AppCryptoSigner<PK, PKR>
-where
-    PKR: AsRef<AppCryptoPublic<PK>>,
-{
+impl<PK> AppCryptoSigner<PK> {
     /// Create a new [`AppCryptoSigner`].
-    pub fn new(keystore: Arc<dyn CryptoStore>, public_key_ref: PKR) -> Self {
+    pub fn new(keystore: Arc<dyn CryptoStore>, public_key: AppCryptoPublic<PK>) -> Self {
         Self {
             keystore,
-            public_key_ref,
-            public_key_type: PhantomData,
+            public_key,
         }
     }
 }
@@ -48,10 +40,9 @@ pub enum SignerError {
 }
 
 #[async_trait::async_trait]
-impl<PK, PKR> Signer<Vec<u8>> for AppCryptoSigner<PK, PKR>
+impl<PK> Signer<Vec<u8>> for AppCryptoSigner<PK>
 where
     PK: AppPublic,
-    PKR: AsRef<AppCryptoPublic<PK>> + Sync + Send,
 {
     type Error = SignerError;
 
@@ -62,11 +53,7 @@ where
         let data = data.as_ref();
         let outcome = self
             .keystore
-            .sign_with(
-                PK::ID,
-                &self.public_key_ref.as_ref().0.to_public_crypto_pair(),
-                data,
-            )
+            .sign_with(PK::ID, &self.public_key.0.to_public_crypto_pair(), data)
             .await
             .map_err(SignerError::Keystore)?;
 
@@ -87,19 +74,6 @@ impl<T> AppCryptoPublic<T>
 where
     T: AppPublic,
 {
-    /// Fetch the public key from the keystore.
-    pub async fn from_keystore(
-        keystore: &dyn CryptoStore,
-    ) -> Result<Option<Self>, sp_keystore::Error> {
-        let mut list = Self::list(keystore).await?;
-        let first = list.next();
-        assert!(
-            list.next().is_none(),
-            "The list of public keys is larger than 1; please report this"
-        );
-        Ok(first)
-    }
-
     /// List all public keys in the keystore.
     pub async fn list(
         keystore: &dyn CryptoStore,
@@ -123,27 +97,28 @@ where
     T: AppPublic,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        use sp_application_crypto::Ss58Codec;
-        write!(f, "{}", self.0.to_ss58check())
+        write!(f, "0x{}", hex::encode(&self.0))
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use humanode_runtime::BioauthConsensusId;
+
     use super::*;
 
     #[test]
     fn display() {
-        let key = AppCryptoPublic(sp_consensus_aura::sr25519::AuthorityId::default());
+        let key = AppCryptoPublic(BioauthConsensusId::default());
         assert_eq!(
             key.to_string(),
-            "5C4hrfjw9DjXZTzV3MwzrrAr9P1MJhSrvWGWqi1eSuyUpnhM"
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
         );
     }
 
     #[test]
-    fn display_matches_raw_key() {
-        let key = sp_consensus_aura::sr25519::AuthorityId::default();
-        assert_eq!(key.to_string(), AppCryptoPublic(key).to_string());
+    fn display_does_not_match_raw_key() {
+        let key = BioauthConsensusId::default();
+        assert_ne!(key.to_string(), AppCryptoPublic(key).to_string());
     }
 }

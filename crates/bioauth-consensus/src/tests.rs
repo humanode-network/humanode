@@ -1,10 +1,11 @@
+use std::sync::Arc;
+
 use futures::future;
 use node_primitives::{Block, Header};
 use sc_consensus::{BlockImport, BlockImportParams, ImportResult};
 use sp_api::TransactionFor;
 use sp_consensus::{BlockOrigin, Environment};
 use sp_runtime::Digest;
-use std::sync::Arc;
 
 use crate::mock::*;
 use crate::{BioauthBlockImport, BioauthBlockImportError, BioauthProposer, BioauthProposerError};

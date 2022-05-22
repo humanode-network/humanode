@@ -4,5 +4,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # Run all e2e tests.
 for TESTFILE in utils/e2e-tests/tests/*.sh; do
-    "$TESTFILE" "$@"
+  printf "=> Running test %s\n" "$TESTFILE" >&2
+  "$TESTFILE" "$@"
+  printf "=> Test %s passed\n" "$TESTFILE" >&2
 done

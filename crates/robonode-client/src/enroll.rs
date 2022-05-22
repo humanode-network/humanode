@@ -88,9 +88,8 @@ mod tests {
     use assert_matches::assert_matches;
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
 
-    use crate::test_utils::mkerr;
-
     use super::*;
+    use crate::test_utils::mkerr;
 
     #[test]
     fn request_serialization() {
