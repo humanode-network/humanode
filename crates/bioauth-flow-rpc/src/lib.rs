@@ -1,6 +1,8 @@
-//! The bioauth flow RPC implementation, aka the logic for communication between the humanode
-//! (aka humanode-peer), the app on the handheld device that perform that biometric capture,
-//! and the robonode server that's responsible for authenticating against the bioauth system.
+//! The bioauth flow RPC implementation.
+//!
+//! It is the logic of communication between the humanode (aka humanode-peer),
+//! the app on the handheld device that performs the biometric capture,
+//! and the robonode server that issues auth tickets.
 
 use std::marker::PhantomData;
 use std::sync::Arc;
