@@ -2916,7 +2916,7 @@ dependencies = [
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
  "pallet-grandpa",
- "pallet-humanode-session-manager",
+ "pallet-humanode-session",
  "pallet-im-online",
  "pallet-randomness-collective-flip",
  "pallet-session",
@@ -5140,7 +5140,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-humanode-session-manager"
+name = "pallet-humanode-session"
 version = "0.1.0"
 dependencies = [
  "frame-support",
