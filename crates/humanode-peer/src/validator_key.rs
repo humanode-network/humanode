@@ -2,7 +2,7 @@
 
 use std::{fmt::Display, sync::Arc};
 
-use bioauth_flow::Signer;
+use bioauth_flow_rpc::Signer;
 use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
 use sp_keystore::CryptoStore;
 
@@ -74,19 +74,6 @@ impl<T> AppCryptoPublic<T>
 where
     T: AppPublic,
 {
-    /// Fetch the public key from the keystore.
-    pub async fn from_keystore(
-        keystore: &dyn CryptoStore,
-    ) -> Result<Option<Self>, sp_keystore::Error> {
-        let mut list = Self::list(keystore).await?;
-        let first = list.next();
-        assert!(
-            list.next().is_none(),
-            "The list of public keys is larger than 1; please report this"
-        );
-        Ok(first)
-    }
-
     /// List all public keys in the keystore.
     pub async fn list(
         keystore: &dyn CryptoStore,
