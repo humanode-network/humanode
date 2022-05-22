@@ -1,7 +1,7 @@
 use std::ops::Div;
 
 use frame_support::{
-    assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, WeakBoundedVec,
+    assert_err, assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, WeakBoundedVec,
 };
 use mockall::predicate;
 
@@ -598,6 +598,53 @@ fn authentication_with_concurrent_conflicting_public_keys() {
             Bioauth::authenticate(Origin::none(), input),
             Error::<Test>::PublicKeyAlreadyUsed,
         );
+    });
+}
+
+/// This test verifies that before auth hook can deny the authentication
+/// and the resulting state is proper.
+#[test]
+fn authentication_denied_by_before_hook() {
+    new_test_ext().execute_with(|| {
+        // Prepare test input.
+        let input = make_input(bounded(b"qwe"), b"rty", b"should_be_valid");
+        let current_moment = CHAIN_START + 2 * SLOT_DURATION;
+        let expires_at = current_moment + AUTHENTICATIONS_EXPIRE_AFTER;
+
+        // Set up mock expectations.
+        with_mock_validator_set_updater(|mock| {
+            mock.expect_update_validators_set().never();
+        });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().once().with().return_const(current_moment);
+        });
+        with_mock_before_auth_hook_provider(|mock| {
+            mock.expect_hook()
+                .once()
+                .withf(move |authentication| {
+                    authentication
+                        == &Authentication {
+                            public_key: bounded(b"qwe"),
+                            expires_at,
+                        }
+                })
+                .return_const(Err(sp_runtime::DispatchError::CannotLookup));
+        });
+        with_mock_after_auth_hook_provider(|mock| {
+            mock.expect_hook().never();
+        });
+
+        // Ensure that authentication call is denied.
+        assert_err!(
+            Bioauth::authenticate(Origin::none(), input),
+            sp_runtime::DispatchError::CannotLookup
+        );
+
+        // Ensure that the state of ActiveAuthentications has not been updated.
+        assert_eq!(Bioauth::active_authentications(), vec![]);
+
+        // Ensure that the state of ConsumedAuthTicketNonces has not been updated.
+        assert_eq!(Bioauth::consumed_auth_ticket_nonces(), vec![]);
     });
 }
 
