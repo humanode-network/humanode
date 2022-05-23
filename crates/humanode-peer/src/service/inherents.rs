@@ -28,10 +28,11 @@ impl sp_inherents::CreateInherentDataProviders<super::Block, ()> for Creator {
     ) -> Result<Self::InherentDataProviders, Box<dyn std::error::Error + Send + Sync>> {
         let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
-        let slot = sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
-            *timestamp,
-            self.raw_slot_duration,
-        );
+        let slot =
+            sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+                *timestamp,
+                self.raw_slot_duration,
+            );
 
         let dynamic_fee =
             pallet_dynamic_fee::InherentDataProvider(U256::from(self.eth_target_gas_price));
