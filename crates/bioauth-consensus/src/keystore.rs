@@ -19,6 +19,9 @@ pub enum ValidatorKeyExtractorError {
     /// Something went wrong during the keystore interop.
     #[error("keystore error: {0}")]
     Keystore(sp_keystore::Error),
+    /// The key was corrupted at the keystore.
+    #[error("сorrupted public key - invalid size")]
+    CorruptedKey,
 }
 
 impl<Id> ValidatorKeyExtractor<Id> {
@@ -64,6 +67,13 @@ where
             "We expect there to be no more than one key of a certain type and purpose, please report this"
         );
 
-        Ok(first_key.map(|bytes| Id::from_slice(&bytes)))
+        let key = match first_key {
+            Some(bytes) => {
+                Some(Id::from_slice(&bytes).map_err(|_| ValidatorKeyExtractorError::CorruptedKey)?)
+            }
+            None => None,
+        };
+
+        Ok(key)
     }
 }

@@ -230,7 +230,7 @@ fn testnet_genesis(
         im_online: ImOnlineConfig { keys: vec![] },
         sudo: SudoConfig {
             // Assign network admin rights.
-            key: root_key,
+            key: Some(root_key),
         },
         bioauth: BioauthConfig {
             robonode_public_key,
