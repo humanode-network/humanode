@@ -84,7 +84,11 @@ pub async fn run() -> sc_cli::Result<()> {
                         backend,
                         ..
                     } = service::new_partial(&config)?;
-                    Ok((cmd.run(client, backend), task_manager))
+                    let aux_revert = Box::new(|client, _, blocks| {
+                        sc_finality_grandpa::revert(client, blocks)?;
+                        Ok(())
+                    });
+                    Ok((cmd.run(client, backend, Some(aux_revert)), task_manager))
                 })
                 .await
         }

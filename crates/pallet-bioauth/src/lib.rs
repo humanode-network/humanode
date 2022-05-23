@@ -699,6 +699,16 @@ where
         Ok(())
     }
 
+    fn pre_dispatch(
+        self,
+        who: &T::AccountId,
+        call: &T::Call,
+        info: &DispatchInfoOf<T::Call>,
+        len: usize,
+    ) -> Result<Self::Pre, TransactionValidityError> {
+        self.validate(who, call, info, len).map(|_| ())
+    }
+
     fn validate(
         &self,
         who: &Self::AccountId,
