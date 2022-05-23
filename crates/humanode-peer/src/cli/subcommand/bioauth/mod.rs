@@ -1,13 +1,11 @@
 //! Bioauth subcommands and related common utilities.
 
-use structopt::StructOpt;
-
 pub mod api_versions;
 pub mod authurl;
 pub mod key;
 
 /// Subcommands for the `bioauth` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Subcommand)]
 pub enum BioauthCmd {
     /// Bioauth key utilities.
     Key(key::KeyCmd),

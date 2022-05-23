@@ -2,19 +2,18 @@
 
 use bip39::{Language, Mnemonic};
 use sc_cli::{utils, OutputTypeFlag};
-use structopt::StructOpt;
 
 use super::KeystoreBioauthPair;
 
 /// The `bioauth key generate` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct InspectKeyCmd {
     /// The secret key uri (mnemonic).
-    #[structopt(long, short = "m")]
+    #[clap(long, short = 'm')]
     suri: String,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub output_scheme: OutputTypeFlag,
 }
 

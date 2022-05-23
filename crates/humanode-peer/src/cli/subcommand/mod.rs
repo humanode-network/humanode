@@ -2,15 +2,13 @@
 //! The `substrate` built-in commands are embedded as-is, additional commands are introduced as
 //! nested `mod`s in this `mod`.
 
-use structopt::StructOpt;
-
 use super::CliConfigurationExt;
 
 pub mod bioauth;
 pub mod ethereum;
 
 /// Humanode peer subcommands.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
     /// Key management cli utilities
     Key(sc_cli::KeySubcommand),
@@ -43,7 +41,7 @@ pub enum Subcommand {
     Ethereum(ethereum::EthereumCmd),
 
     /// The custom benchmark subcommmand benchmarking runtime pallets.
-    #[structopt(name = "benchmark", about = "Benchmark runtime pallets.")]
+    #[clap(name = "benchmark", about = "Benchmark runtime pallets.")]
     Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 }
 

@@ -1,19 +1,18 @@
 //! Ethereum inspect subcommand.
 
 use bip39::{Language, Mnemonic};
-use structopt::StructOpt;
 
 use super::utils::extract_and_print_keys;
 
 /// The `ethereum inspect` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct InspectAccountCmd {
     /// Specify the mnemonic.
-    #[structopt(long, short = "m")]
+    #[clap(long, short = 'm')]
     mnemonic: String,
 
     /// The account index to use in the derivation path.
-    #[structopt(long = "account-index", short = "a")]
+    #[clap(long = "account-index", short = 'a')]
     account_index: Option<u32>,
 }
 

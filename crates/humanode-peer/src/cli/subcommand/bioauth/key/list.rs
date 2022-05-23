@@ -2,20 +2,19 @@
 
 use sc_cli::{CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
-use structopt::StructOpt;
 
 use super::KeystoreBioauthId;
 use crate::cli::CliConfigurationExt;
 
 /// The `bioauth key list` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct ListKeysCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub shared_params: SharedParams,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub keystore_params: KeystoreParams,
 }
 
