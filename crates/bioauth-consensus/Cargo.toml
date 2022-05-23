@@ -8,7 +8,7 @@ publish = false
 bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", optional = true }
 
 async-trait = "0.1.42"
-codec = { package = "parity-scale-codec", version = "2", default-features = false, optional = true }
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, optional = true }
 futures = "0.3"
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "master" }
