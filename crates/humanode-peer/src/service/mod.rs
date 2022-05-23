@@ -387,11 +387,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let eth_max_stored_filters = evm_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
         let eth_overrides = Arc::clone(&eth_overrides);
-        let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCache::new(
+        let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
             task_manager.spawn_handle(),
             Arc::clone(&eth_overrides),
             50,
             50,
+            config.prometheus_registry().cloned(),
         ));
         let eth_max_past_logs = evm_config.max_past_logs;
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
@@ -520,6 +521,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             Arc::clone(&client),
             backend,
             Arc::clone(&frontier_backend),
+            // retry_times: usize,
+            3,
+            // sync_from: <Block::Header as HeaderT>::Number,
+            0,
             SyncStrategy::Normal,
         )
         .for_each(|()| futures::future::ready(())),
