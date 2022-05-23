@@ -1,7 +1,8 @@
 use std::ops::Div;
 
 use frame_support::{
-    assert_err, assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, WeakBoundedVec,
+    assert_err, assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*,
+    traits::DefensiveSaturating, WeakBoundedVec,
 };
 use mockall::predicate;
 
@@ -30,7 +31,7 @@ fn make_input(
 fn block_to_process_moment(moment: UnixMilliseconds) -> BlockNumber {
     let total_work_time = moment.checked_sub(CHAIN_START).unwrap();
     total_work_time
-        .saturating_add(SLOT_DURATION - 1)
+        .defensive_saturating_add(SLOT_DURATION - 1)
         .div(SLOT_DURATION)
 }
 
