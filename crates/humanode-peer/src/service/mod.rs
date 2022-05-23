@@ -265,10 +265,21 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         evm: evm_config,
     } = config;
 
+    let grandpa_protocol_name = sc_finality_grandpa::protocol_standard_name(
+        &client
+            .block_hash(0)
+            .ok()
+            .flatten()
+            .expect("Genesis block exists; qed"),
+        &config.chain_spec,
+    );
+
     config
         .network
         .extra_sets
-        .push(sc_finality_grandpa::grandpa_peers_set_config());
+        .push(sc_finality_grandpa::grandpa_peers_set_config(
+            grandpa_protocol_name.clone(),
+        ));
 
     let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
         Arc::clone(&backend),
@@ -479,6 +490,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         keystore,
         local_role: role,
         telemetry: None,
+        protocol_name: grandpa_protocol_name,
     };
 
     if enable_grandpa {
