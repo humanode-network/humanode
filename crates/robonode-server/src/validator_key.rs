@@ -1,6 +1,6 @@
 //! The validator key integration logic.
 
-use sp_core::crypto::{CryptoType, Pair, Public};
+use sp_core::crypto::{ByteArray, CryptoType, Pair};
 
 use crate::logic;
 
