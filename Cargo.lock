@@ -1850,7 +1850,7 @@ dependencies = [
  "parity-db",
  "parity-scale-codec",
  "parking_lot 0.12.0",
- "sc-client-db 0.10.0-dev (git+https://github.com/paritytech/substrate?rev=6913e07)",
+ "sc-client-db",
  "sp-core",
  "sp-database",
  "sp-runtime",
@@ -2183,7 +2183,7 @@ dependencies = [
  "sc-block-builder",
  "sc-cli",
  "sc-client-api",
- "sc-client-db 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-client-db",
  "sc-executor",
  "sc-service",
  "sc-sysinfo",
@@ -2198,9 +2198,9 @@ dependencies = [
  "sp-inherents",
  "sp-keystore",
  "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-storage",
- "sp-trie 6.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
  "tempfile",
  "thiserror",
  "thousands",
@@ -2251,14 +2251,14 @@ dependencies = [
  "scale-info",
  "serde",
  "smallvec",
- "sp-arithmetic 5.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-arithmetic",
  "sp-core",
  "sp-core-hashing-proc-macro",
  "sp-inherents",
  "sp-io",
  "sp-runtime",
  "sp-staking",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-std",
  "sp-tracing",
  "tt-call",
@@ -2928,7 +2928,7 @@ dependencies = [
  "sp-finality-grandpa",
  "sp-inherents",
  "sp-keystore",
- "sp-panic-handler 4.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-panic-handler",
  "sp-runtime",
  "sp-timestamp",
  "structopt",
@@ -5052,9 +5052,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.11.0"
+version = "1.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7b10983b38c53aebdf33f542c6275b0f58a238129d00c4ae0e6fb59738d783ca"
+checksum = "7709cef83f0c1f58f666e746a08b21e0085f7440fa6a29cc194d68aac97a4225"
 
 [[package]]
 name = "opaque-debug"
@@ -5417,7 +5417,7 @@ dependencies = [
  "sp-session",
  "sp-staking",
  "sp-std",
- "sp-trie 6.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
 ]
 
 [[package]]
@@ -6756,7 +6756,7 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
 ]
 
 [[package]]
@@ -6805,7 +6805,7 @@ dependencies = [
  "regex",
  "rpassword",
  "sc-client-api",
- "sc-client-db 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-client-db",
  "sc-keystore",
  "sc-network",
  "sc-service",
@@ -6818,7 +6818,7 @@ dependencies = [
  "sp-core",
  "sp-keyring",
  "sp-keystore",
- "sp-panic-handler 4.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-panic-handler",
  "sp-runtime",
  "sp-version",
  "thiserror",
@@ -6848,9 +6848,9 @@ dependencies = [
  "sp-externalities",
  "sp-keystore",
  "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-storage",
- "sp-trie 6.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
  "substrate-prometheus-endpoint",
 ]
 
@@ -6869,37 +6869,14 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.12.0",
  "sc-client-api",
- "sc-state-db 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
- "sp-arithmetic 5.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-state-db",
+ "sp-arithmetic",
  "sp-blockchain",
  "sp-core",
  "sp-database",
  "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
- "sp-trie 6.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
-]
-
-[[package]]
-name = "sc-client-db"
-version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=6913e07#6913e07f07baf8fb2d7f066175b3f39cce969b43"
-dependencies = [
- "hash-db",
- "kvdb",
- "kvdb-memorydb",
- "linked-hash-map",
- "log",
- "parity-scale-codec",
- "parking_lot 0.12.0",
- "sc-client-api",
- "sc-state-db 0.10.0-dev (git+https://github.com/paritytech/substrate?rev=6913e07)",
- "sp-arithmetic 5.0.0 (git+https://github.com/paritytech/substrate?rev=6913e07)",
- "sp-blockchain",
- "sp-core",
- "sp-database",
- "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/paritytech/substrate?rev=6913e07)",
- "sp-trie 6.0.0 (git+https://github.com/paritytech/substrate?rev=6913e07)",
+ "sp-state-machine",
+ "sp-trie",
 ]
 
 [[package]]
@@ -6921,7 +6898,7 @@ dependencies = [
  "sp-consensus",
  "sp-core",
  "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "substrate-prometheus-endpoint",
  "thiserror",
 ]
@@ -7017,14 +6994,14 @@ dependencies = [
  "sc-client-api",
  "sc-consensus",
  "sc-telemetry",
- "sp-arithmetic 5.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-slots",
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-timestamp",
  "thiserror",
 ]
@@ -7046,10 +7023,10 @@ dependencies = [
  "sp-core-hashing-proc-macro",
  "sp-externalities",
  "sp-io",
- "sp-panic-handler 4.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-panic-handler",
  "sp-runtime-interface",
  "sp-tasks",
- "sp-trie 6.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
  "sp-version",
  "sp-wasm-interface",
  "tracing",
@@ -7135,7 +7112,7 @@ dependencies = [
  "serde_json",
  "sp-api",
  "sp-application-crypto",
- "sp-arithmetic 5.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
  "sp-core",
@@ -7238,7 +7215,7 @@ dependencies = [
  "serde",
  "serde_json",
  "smallvec",
- "sp-arithmetic 5.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
  "sp-core",
@@ -7321,7 +7298,7 @@ dependencies = [
  "sc-network-common",
  "sc-peerset",
  "smallvec",
- "sp-arithmetic 5.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
  "sp-core",
@@ -7467,7 +7444,7 @@ dependencies = [
  "sc-block-builder",
  "sc-chain-spec",
  "sc-client-api",
- "sc-client-db 0.10.0-dev (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sc-client-db",
  "sc-consensus",
  "sc-executor",
  "sc-informant",
@@ -7496,12 +7473,12 @@ dependencies = [
  "sp-keystore",
  "sp-runtime",
  "sp-session",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-storage",
  "sp-tracing",
  "sp-transaction-pool",
  "sp-transaction-storage-proof",
- "sp-trie 6.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
  "sp-version",
  "substrate-prometheus-endpoint",
  "tempfile",
@@ -7515,20 +7492,6 @@ dependencies = [
 name = "sc-state-db"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#6913e07f07baf8fb2d7f066175b3f39cce969b43"
-dependencies = [
- "log",
- "parity-scale-codec",
- "parity-util-mem",
- "parity-util-mem-derive",
- "parking_lot 0.12.0",
- "sc-client-api",
- "sp-core",
-]
-
-[[package]]
-name = "sc-state-db"
-version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate?rev=6913e07#6913e07f07baf8fb2d7f066175b3f39cce969b43"
 dependencies = [
  "log",
  "parity-scale-codec",
@@ -8138,7 +8101,7 @@ dependencies = [
  "sp-api-proc-macro",
  "sp-core",
  "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-std",
  "sp-version",
  "thiserror",
@@ -8185,21 +8148,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-arithmetic"
-version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate?rev=6913e07#6913e07f07baf8fb2d7f066175b3f39cce969b43"
-dependencies = [
- "integer-sqrt",
- "num-traits",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-debug-derive 4.0.0 (git+https://github.com/paritytech/substrate?rev=6913e07)",
- "sp-std",
- "static_assertions",
-]
-
-[[package]]
 name = "sp-authorship"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#6913e07f07baf8fb2d7f066175b3f39cce969b43"
@@ -8237,7 +8185,7 @@ dependencies = [
  "sp-consensus",
  "sp-database",
  "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "thiserror",
 ]
 
@@ -8254,7 +8202,7 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-std",
  "sp-version",
  "thiserror",
@@ -8309,7 +8257,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-arithmetic 5.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-arithmetic",
  "sp-runtime",
  "sp-std",
  "sp-timestamp",
@@ -8487,10 +8435,10 @@ dependencies = [
  "sp-externalities",
  "sp-keystore",
  "sp-runtime-interface",
- "sp-state-machine 0.12.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-state-machine",
  "sp-std",
  "sp-tracing",
- "sp-trie 6.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
  "sp-wasm-interface",
  "tracing",
  "tracing-core",
@@ -8554,16 +8502,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-panic-handler"
-version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate?rev=6913e07#6913e07f07baf8fb2d7f066175b3f39cce969b43"
-dependencies = [
- "backtrace",
- "lazy_static",
- "regex",
-]
-
-[[package]]
 name = "sp-rpc"
 version = "6.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#6913e07f07baf8fb2d7f066175b3f39cce969b43"
@@ -8589,7 +8527,7 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-application-crypto",
- "sp-arithmetic 5.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-arithmetic",
  "sp-core",
  "sp-io",
  "sp-std",
@@ -8686,31 +8624,9 @@ dependencies = [
  "smallvec",
  "sp-core",
  "sp-externalities",
- "sp-panic-handler 4.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-panic-handler",
  "sp-std",
- "sp-trie 6.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
- "thiserror",
- "tracing",
- "trie-root",
-]
-
-[[package]]
-name = "sp-state-machine"
-version = "0.12.0"
-source = "git+https://github.com/paritytech/substrate?rev=6913e07#6913e07f07baf8fb2d7f066175b3f39cce969b43"
-dependencies = [
- "hash-db",
- "log",
- "num-traits",
- "parity-scale-codec",
- "parking_lot 0.12.0",
- "rand 0.7.3",
- "smallvec",
- "sp-core",
- "sp-externalities",
- "sp-panic-handler 4.0.0 (git+https://github.com/paritytech/substrate?rev=6913e07)",
- "sp-std",
- "sp-trie 6.0.0 (git+https://github.com/paritytech/substrate?rev=6913e07)",
+ "sp-trie",
  "thiserror",
  "tracing",
  "trie-root",
@@ -8797,29 +8713,13 @@ dependencies = [
  "sp-inherents",
  "sp-runtime",
  "sp-std",
- "sp-trie 6.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-trie",
 ]
 
 [[package]]
 name = "sp-trie"
 version = "6.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#6913e07f07baf8fb2d7f066175b3f39cce969b43"
-dependencies = [
- "hash-db",
- "memory-db",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-std",
- "thiserror",
- "trie-db",
- "trie-root",
-]
-
-[[package]]
-name = "sp-trie"
-version = "6.0.0"
-source = "git+https://github.com/paritytech/substrate?rev=6913e07#6913e07f07baf8fb2d7f066175b3f39cce969b43"
 dependencies = [
  "hash-db",
  "memory-db",
@@ -9104,9 +9004,9 @@ checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
 
 [[package]]
 name = "target-lexicon"
-version = "0.12.3"
+version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d7fa7e55043acb85fca6b3c01485a2eeb6b69c5d21002e273c79e465f43b7ac1"
+checksum = "c02424087780c9b71cc96799eaeddff35af2bc513278cda5c99fc1f5d026d3c1"
 
 [[package]]
 name = "tempfile"
