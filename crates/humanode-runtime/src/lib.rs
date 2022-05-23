@@ -137,6 +137,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
+    state_version: 1,
 };
 
 // 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
@@ -640,24 +641,24 @@ construct_runtime!(
         NodeBlock = opaque::Block,
         UncheckedExtrinsic = UncheckedExtrinsic
     {
-        System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-        RandomnessCollectiveFlip: pallet_randomness_collective_flip::{Pallet, Storage},
-        Timestamp: pallet_timestamp::{Pallet, Call, Storage, Inherent},
-        Bioauth: pallet_bioauth::{Pallet, Config<T>, Call, Storage, Event<T>, ValidateUnsigned},
-        Babe: pallet_babe::{Pallet, Call, Storage, Config, ValidateUnsigned},
-        Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-        TransactionPayment: pallet_transaction_payment::{Pallet, Storage},
-        Session: pallet_session::{Pallet, Call, Storage, Event, Config<T>},
-        Historical: pallet_session_historical::{Pallet},
-        HumanodeSession: pallet_humanode_session::{Pallet},
-        EthereumChainId: pallet_ethereum_chain_id::{Pallet, Storage, Config},
-        Sudo: pallet_sudo::{Pallet, Call, Config<T>, Storage, Event<T>},
-        Grandpa: pallet_grandpa::{Pallet, Call, Storage, Config, Event},
-        Ethereum: pallet_ethereum::{Pallet, Call, Storage, Event, Config, Origin},
-        EVM: pallet_evm::{Pallet, Config, Call, Storage, Event<T>},
-        DynamicFee: pallet_dynamic_fee::{Pallet, Call, Storage, Config, Inherent},
-        BaseFee: pallet_base_fee::{Pallet, Call, Storage, Config<T>, Event},
-        ImOnline: pallet_im_online::{Pallet, Call, Storage, Event<T>, ValidateUnsigned, Config<T>},
+        System: frame_system,
+        RandomnessCollectiveFlip: pallet_randomness_collective_flip,
+        Timestamp: pallet_timestamp,
+        Bioauth: pallet_bioauth,
+        Babe: pallet_babe,
+        Balances: pallet_balances,
+        TransactionPayment: pallet_transaction_payment,
+        Session: pallet_session,
+        Historical: pallet_session_historical,
+        HumanodeSession: pallet_humanode_session,
+        EthereumChainId: pallet_ethereum_chain_id,
+        Sudo: pallet_sudo,
+        Grandpa: pallet_grandpa,
+        Ethereum: pallet_ethereum,
+        EVM: pallet_evm,
+        DynamicFee: pallet_dynamic_fee,
+        BaseFee: pallet_base_fee,
+        ImOnline: pallet_im_online,
     }
 );
 

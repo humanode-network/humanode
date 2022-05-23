@@ -124,6 +124,8 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         None,
         // Protocol ID
         None,
+        // Fork
+        None,
         // Properties
         None,
         // Extensions
@@ -173,6 +175,8 @@ pub fn development_config() -> Result<ChainSpec, String> {
         // Telemetry
         None,
         // Protocol ID
+        None,
+        // Fork
         None,
         // Properties
         None,
