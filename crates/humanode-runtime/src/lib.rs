@@ -764,9 +764,14 @@ impl fp_self_contained::SelfContainedCall for Call {
         }
     }
 
-    fn validate_self_contained(&self, info: &Self::SignedInfo) -> Option<TransactionValidity> {
+    fn validate_self_contained(
+        &self,
+        info: &Self::SignedInfo,
+        dispatch_info: &DispatchInfoOf<Call>,
+        len: usize,
+    ) -> Option<TransactionValidity> {
         match self {
-            Call::Ethereum(call) => call.validate_self_contained(info),
+            Call::Ethereum(call) => call.validate_self_contained(info, dispatch_info, len),
             _ => None,
         }
     }
@@ -1088,6 +1093,7 @@ impl_runtime_apis! {
                 <Runtime as pallet_evm::Config>::config().clone()
             };
 
+            let is_transactional = false;
             <Runtime as pallet_evm::Config>::Runner::call(
                 from,
                 to,
@@ -1098,6 +1104,7 @@ impl_runtime_apis! {
                 max_priority_fee_per_gas,
                 nonce,
                 access_list.unwrap_or_default(),
+                is_transactional,
                 &config,
             ).map_err(|err| err.into())
         }
@@ -1121,6 +1128,7 @@ impl_runtime_apis! {
                 <Runtime as pallet_evm::Config>::config().clone()
             };
 
+            let is_transactional = false;
             <Runtime as pallet_evm::Config>::Runner::create(
                 from,
                 data,
@@ -1130,6 +1138,7 @@ impl_runtime_apis! {
                 max_priority_fee_per_gas,
                 nonce,
                 access_list.unwrap_or_default(),
+                is_transactional,
                 &config,
             ).map_err(|err| err.into())
         }

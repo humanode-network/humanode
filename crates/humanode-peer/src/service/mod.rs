@@ -448,7 +448,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         keystore: keystore_container.sync_keystore(),
         task_manager: &mut task_manager,
         transaction_pool: Arc::clone(&transaction_pool),
-        rpc_extensions_builder,
+        rpc_builder: rpc_extensions_builder,
         backend: Arc::clone(&backend),
         system_rpc_tx,
         config,
