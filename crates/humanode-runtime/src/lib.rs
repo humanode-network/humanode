@@ -43,7 +43,7 @@ use sp_api::impl_runtime_apis;
 use sp_application_crypto::AppKey;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{
-    crypto::{KeyTypeId, Public},
+    crypto::{ByteArray, KeyTypeId},
     OpaqueMetadata, H160, H256, U256,
 };
 #[cfg(any(feature = "std", test))]
@@ -51,8 +51,8 @@ pub use sp_runtime::BuildStorage;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
-        AccountIdLookup, BlakeTwo256, Block as BlockT, Dispatchable, IdentifyAccount, NumberFor,
-        OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
+        AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
+        IdentifyAccount, NumberFor, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -597,7 +597,7 @@ impl pallet_evm::Config for Runtime {
 
 impl pallet_ethereum::Config for Runtime {
     type Event = Event;
-    type StateRoot = pallet_ethereum::IntermediateStateRoot;
+    type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 }
 
 frame_support::parameter_types! {
@@ -610,6 +610,7 @@ impl pallet_dynamic_fee::Config for Runtime {
 
 frame_support::parameter_types! {
     pub IsActive: bool = true;
+    pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
 }
 
 pub struct BaseFeeThreshold;
@@ -629,6 +630,7 @@ impl pallet_base_fee::Config for Runtime {
     type Event = Event;
     type Threshold = BaseFeeThreshold;
     type IsActive = IsActive;
+    type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 }
 
 impl pallet_ethereum_chain_id::Config for Runtime {}
@@ -1052,11 +1054,13 @@ impl_runtime_apis! {
         }
 
         fn account_basic(address: H160) -> EVMAccount {
-            EVM::account_basic(&address)
+            let (account, _) = EVM::account_basic(&address);
+            account
         }
 
         fn gas_price() -> U256 {
-            <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price()
+            let (gas_price, _) = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price();
+            gas_price
         }
 
         fn account_code_at(address: H160) -> Vec<u8> {
@@ -1106,7 +1110,7 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 &config,
-            ).map_err(|err| err.into())
+            ).map_err(|err| err.error.into())
         }
 
         fn create(
@@ -1140,7 +1144,7 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 &config,
-            ).map_err(|err| err.into())
+            ).map_err(|err| err.error.into())
         }
 
         fn current_transaction_statuses() -> Option<Vec<TransactionStatus>> {
