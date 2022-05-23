@@ -15,7 +15,7 @@ use codec::{alloc::string::ToString, Decode, Encode, MaxEncodedLen};
 use fp_rpc::TransactionStatus;
 pub use frame_support::{
     construct_runtime, parameter_types,
-    traits::{FindAuthor, Get, KeyOwnerProofSystem, Randomness},
+    traits::{ConstU32, FindAuthor, Get, KeyOwnerProofSystem, Randomness},
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         IdentityFee, Weight,
@@ -257,7 +257,7 @@ impl frame_system::Config for Runtime {
     /// The set code logic, just the default since we're not a parachain.
     type OnSetCode = ();
     /// The maximum number of consumers allowed on a single account.
-    type MaxConsumers = frame_support::traits::ConstU32<16>;
+    type MaxConsumers = ConstU32<16>;
 }
 
 /// The wrapper for the robonode public key, that enables ssotring it in the state.
