@@ -85,6 +85,7 @@ pub fn keystore_container(
         config.substrate.wasm_method,
         config.substrate.default_heap_pages,
         config.substrate.max_runtime_instances,
+        config.substrate.runtime_cache_size,
     );
 
     let (_client, _backend, keystore_container, task_manager) =
@@ -140,6 +141,7 @@ pub fn new_partial(
         config.wasm_method,
         config.default_heap_pages,
         config.max_runtime_instances,
+        config.runtime_cache_size,
     );
 
     let (client, backend, keystore_container, task_manager) =
