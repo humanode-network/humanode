@@ -6,31 +6,31 @@ use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtRpcApi};
 use bioauth_flow_rpc::{Bioauth, BioauthApi, Signer, SignerFactory, ValidatorKeyExtractorT};
 use fc_rpc::{
-    EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi, EthPubSubApiServer,
-    HexEncodedIdProvider, NetApi, NetApiServer, Web3Api, Web3ApiServer,
+    Eth, EthApiServer, EthFilter, EthFilterApiServer, EthPubSub, EthPubSubApiServer,
+    HexEncodedIdProvider, Net, NetApiServer, Web3ApiServer,
 };
 use fc_rpc::{
-    EthBlockDataCache, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
-    SchemaV2Override, SchemaV3Override, StorageOverride,
+    EthBlockDataCacheTask, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
+    SchemaV2Override, SchemaV3Override, StorageOverride, Web3,
 };
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
+use fp_storage::EthereumStorageSchema;
 use humanode_runtime::{
     opaque::{Block, UncheckedExtrinsic},
     AccountId, Balance, BlockNumber, Hash, Index, UnixMilliseconds,
 };
-use jsonrpc_pubsub::manager::SubscriptionManager;
-use pallet_ethereum::EthereumStorageSchema;
+use jsonrpsee::RpcModule;
 use sc_client_api::{
     backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
 };
 use sc_consensus_babe::{Config, Epoch};
-use sc_consensus_babe_rpc::BabeRpcHandler;
+use sc_consensus_babe_rpc::{BabeApiServer, BabeRpc};
 use sc_consensus_epochs::SharedEpochChanges;
 use sc_finality_grandpa::{
     FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
 };
-use sc_finality_grandpa_rpc::GrandpaRpcHandler;
+use sc_finality_grandpa_rpc::{GrandpaApiServer, GrandpaRpc};
 use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool::{ChainApi, Pool};
@@ -98,7 +98,7 @@ pub struct EvmDeps {
     /// Ethereum data access overrides.
     pub eth_overrides: Arc<OverrideHandle<Block>>,
     /// Cache for Ethereum block data.
-    pub eth_block_data_cache: Arc<EthBlockDataCache<Block>>,
+    pub eth_block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
 }
 
 /// RPC subsystem dependencies.
@@ -136,6 +136,7 @@ where
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
     C: Send + Sync + 'static,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+    C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
     BE: Backend<Block> + 'static,
     BE::State: StateBackend<BlakeTwo256>,
 {
@@ -165,7 +166,7 @@ where
 /// Instantiate all RPC extensions.
 pub fn create<C, P, BE, VKE, VSF, A, SC>(
     deps: Deps<C, P, BE, VKE, VSF, A, SC>,
-) -> jsonrpc_core::IoHandler<sc_rpc_api::Metadata>
+) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
     BE: Backend<Block> + 'static,
     C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
@@ -179,7 +180,7 @@ where
     C::Api: BlockBuilder<Block>,
     C::Api: AuthorExtApi<Block, VKE::PublicKeyType>,
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
-    C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
+    C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
     P: TransactionPool<Block = Block> + 'static,
     VKE: ValidatorKeyExtractorT + Send + Sync + 'static,
     VKE::PublicKeyType: Encode + AsRef<[u8]> + Send + Sync,
@@ -191,10 +192,11 @@ where
     A: ChainApi<Block = Block> + 'static,
     SC: SelectChain<Block> + 'static,
 {
-    use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApi};
-    use substrate_frame_rpc_system::{FullSystem, SystemApi};
+    use pallet_transaction_payment_rpc::{TransactionPaymentApiServer, TransactionPaymentRpc};
+    use substrate_frame_rpc_system::{SystemApiServer, SystemRpc};
 
-    let mut io = jsonrpc_core::IoHandler::default();
+    let mut io = RpcModule::new(());
+
     let Deps {
         client,
         pool,
@@ -244,99 +246,102 @@ where
         eth_block_data_cache,
     } = evm;
 
-    io.extend_with(SystemApi::to_delegate(FullSystem::new(
-        Arc::clone(&client),
-        Arc::clone(&pool),
-        deny_unsafe,
-    )));
+    io.merge(SystemRpc::new(Arc::clone(&client), Arc::clone(&pool), deny_unsafe).into_rpc())?;
 
-    io.extend_with(TransactionPaymentApi::to_delegate(TransactionPayment::new(
-        Arc::clone(&client),
-    )));
+    io.merge(TransactionPaymentRpc::new(Arc::clone(&client)).into_rpc())?;
 
-    io.extend_with(sc_consensus_babe_rpc::BabeApi::to_delegate(
-        BabeRpcHandler::new(
+    io.merge(
+        BabeRpc::new(
             Arc::clone(&client),
             babe_shared_epoch_changes,
             keystore,
             babe_config,
             select_chain,
             deny_unsafe,
-        ),
-    ));
+        )
+        .into_rpc(),
+    )?;
 
-    io.extend_with(sc_finality_grandpa_rpc::GrandpaApi::to_delegate(
-        GrandpaRpcHandler::new(
+    io.merge(
+        GrandpaRpc::new(
+            Arc::clone(&subscription_task_executor),
             grandpa_shared_authority_set,
             grandpa_shared_voter_state,
             grandpa_justification_stream,
-            Arc::clone(&subscription_task_executor),
             grandpa_finality_provider,
-        ),
-    ));
+        )
+        .into_rpc(),
+    )?;
 
-    io.extend_with(AuthorExtRpcApi::to_delegate(AuthorExt::new(
-        author_validator_key_extractor,
-        Arc::clone(&client),
-        Arc::clone(&pool),
-    )));
+    // io.extend_with(AuthorExtRpcApi::to_delegate(AuthorExt::new(
+    //     author_validator_key_extractor,
+    //     Arc::clone(&client),
+    //     Arc::clone(&pool),
+    // )));
 
-    io.extend_with(BioauthApi::to_delegate(Bioauth::new(
-        robonode_client,
-        bioauth_validator_key_extractor,
-        bioauth_validator_signer_factory,
-        Arc::clone(&client),
-        Arc::clone(&pool),
-    )));
+    // io.extend_with(BioauthApi::to_delegate(Bioauth::new(
+    //     robonode_client,
+    //     bioauth_validator_key_extractor,
+    //     bioauth_validator_signer_factory,
+    //     Arc::clone(&client),
+    //     Arc::clone(&pool),
+    // )));
 
-    io.extend_with(EthApiServer::to_delegate(EthApi::new(
-        Arc::clone(&client),
-        Arc::clone(&pool),
-        graph,
-        primitives_frontier::RuntimeTransactionConverter::new(Arc::clone(&client)),
-        Arc::clone(&network),
-        Vec::new(),
-        Arc::clone(&eth_overrides),
-        Arc::clone(&eth_backend),
-        true,
-        eth_max_past_logs,
-        Arc::clone(&eth_block_data_cache),
-        eth_fee_history_limit,
-        eth_fee_history_cache,
-    )));
+    io.merge(
+        Eth::new(
+            Arc::clone(&client),
+            Arc::clone(&pool),
+            graph,
+            Some(humanode_runtime::TransactionConverter),
+            Arc::clone(&network),
+            Vec::new(),
+            Arc::clone(&eth_overrides),
+            Arc::clone(&eth_backend),
+            // Is authority.
+            true,
+            Arc::clone(&eth_block_data_cache),
+            eth_fee_history_cache,
+            eth_fee_history_limit,
+        )
+        .into_rpc(),
+    )?;
 
-    io.extend_with(Web3ApiServer::to_delegate(Web3Api::new(Arc::clone(
-        &client,
-    ))));
+    io.merge(Web3::new(Arc::clone(&client)).into_rpc())?;
 
-    io.extend_with(EthPubSubApiServer::to_delegate(EthPubSubApi::new(
-        pool,
-        Arc::clone(&client),
-        Arc::clone(&network),
-        SubscriptionManager::<HexEncodedIdProvider>::with_id_provider(
-            HexEncodedIdProvider::default(),
-            subscription_task_executor,
-        ),
-        Arc::clone(&eth_overrides),
-    )));
+    io.merge(
+        EthPubSub::new(
+            Arc::clone(&pool),
+            Arc::clone(&client),
+            Arc::clone(&network),
+            Arc::clone(&subscription_task_executor),
+            Arc::clone(&eth_overrides),
+        )
+        .into_rpc(),
+    )?;
 
-    io.extend_with(NetApiServer::to_delegate(NetApi::new(
-        Arc::clone(&client),
-        Arc::clone(&network),
-        // Whether to format the `peer_count` response as Hex (default) or not.
-        true,
-    )));
+    io.merge(
+        Net::new(
+            Arc::clone(&client),
+            Arc::clone(&network),
+            // Whether to format the `peer_count` response as Hex (default) or not.
+            true,
+        )
+        .into_rpc(),
+    )?;
 
     if let Some(eth_filter_pool) = eth_filter_pool {
-        io.extend_with(EthFilterApiServer::to_delegate(EthFilterApi::new(
-            client,
-            eth_backend,
-            eth_filter_pool,
-            eth_max_stored_filters,
-            eth_max_past_logs,
-            eth_block_data_cache,
-        )));
+        io.merge(
+            EthFilter::new(
+                client,
+                eth_backend,
+                eth_filter_pool,
+                eth_max_stored_filters,
+                eth_max_past_logs,
+                eth_block_data_cache,
+            )
+            .into_rpc(),
+        )?;
     }
 
-    io
+    Ok(io)
 }

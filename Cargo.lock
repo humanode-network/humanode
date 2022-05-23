@@ -1824,7 +1824,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "async-trait",
  "fc-db",
@@ -1843,7 +1843,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "fp-storage",
  "kvdb-rocksdb",
@@ -1859,7 +1859,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "fc-db",
  "fp-consensus",
@@ -1876,7 +1876,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -1887,8 +1887,8 @@ dependencies = [
  "fp-storage",
  "futures 0.3.21",
  "hex",
- "jsonrpsee 0.12.0",
- "jsonrpsee-types 0.12.0",
+ "jsonrpsee",
+ "jsonrpsee-types",
  "libsecp256k1 0.7.0",
  "log",
  "lru",
@@ -1917,11 +1917,11 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "ethereum",
  "ethereum-types",
- "jsonrpsee 0.12.0",
+ "jsonrpsee",
  "rlp",
  "rustc-hex",
  "serde",
@@ -2055,7 +2055,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -2067,7 +2067,7 @@ dependencies = [
 [[package]]
 name = "fp-dynamic-fee"
 version = "1.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "async-trait",
  "sp-core",
@@ -2077,7 +2077,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "evm",
  "frame-support",
@@ -2090,7 +2090,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2107,7 +2107,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "ethereum",
  "frame-support",
@@ -2123,7 +2123,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "parity-scale-codec",
 ]
@@ -2952,10 +2952,10 @@ dependencies = [
  "fc-rpc",
  "fc-rpc-core",
  "fp-rpc",
+ "fp-storage",
  "frontier-api",
  "humanode-runtime",
- "jsonrpsee 0.13.1",
- "pallet-ethereum",
+ "jsonrpsee",
  "pallet-transaction-payment-rpc",
  "primitives-frontier",
  "robonode-client",
@@ -3366,54 +3366,15 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad6f9ff3481f3069c92474b697c104502f7e9191d29b34bfa38ae9a19415f1cd"
-dependencies = [
- "jsonrpsee-core 0.12.0",
- "jsonrpsee-http-server 0.12.0",
- "jsonrpsee-proc-macros 0.12.0",
- "jsonrpsee-types 0.12.0",
- "jsonrpsee-ws-server 0.12.0",
- "tracing",
-]
-
-[[package]]
-name = "jsonrpsee"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1f2ab5a60e558e74ea93bcf5164ebc47939a7fff8938fa9b5233bbc63e16061"
 dependencies = [
- "jsonrpsee-core 0.13.1",
- "jsonrpsee-http-server 0.13.1",
- "jsonrpsee-proc-macros 0.13.1",
- "jsonrpsee-types 0.13.1",
- "jsonrpsee-ws-server 0.13.1",
- "tracing",
-]
-
-[[package]]
-name = "jsonrpsee-core"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e1d26ab3868749d6f716345a5fbd3334a100c0709fe464bd9189ee9d78adcde"
-dependencies = [
- "anyhow",
- "arrayvec 0.7.2",
- "async-trait",
- "beef",
- "futures-channel",
- "futures-util",
- "hyper",
- "jsonrpsee-types 0.12.0",
- "parking_lot 0.12.0",
- "rand 0.8.5",
- "rustc-hash",
- "serde",
- "serde_json",
- "soketto",
- "thiserror",
- "tokio",
+ "jsonrpsee-core",
+ "jsonrpsee-http-server",
+ "jsonrpsee-proc-macros",
+ "jsonrpsee-types",
+ "jsonrpsee-ws-server",
  "tracing",
 ]
 
@@ -3430,7 +3391,7 @@ dependencies = [
  "futures-channel",
  "futures-util",
  "hyper",
- "jsonrpsee-types 0.13.1",
+ "jsonrpsee-types",
  "parking_lot 0.12.0",
  "rand 0.8.5",
  "rustc-hash",
@@ -3444,25 +3405,6 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee-http-server"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee87f19a7a01a55248fc4b4861d822331c4fd60151d99e7ac9c6771999132671"
-dependencies = [
- "futures-channel",
- "futures-util",
- "globset",
- "hyper",
- "jsonrpsee-core 0.12.0",
- "jsonrpsee-types 0.12.0",
- "lazy_static",
- "serde_json",
- "tokio",
- "tracing",
- "unicase",
-]
-
-[[package]]
-name = "jsonrpsee-http-server"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7178f16eabd7154c094e24d295b9ee355ec1e5f24c328759c56255ff7bbd4548"
@@ -3471,25 +3413,13 @@ dependencies = [
  "futures-util",
  "globset",
  "hyper",
- "jsonrpsee-core 0.13.1",
- "jsonrpsee-types 0.13.1",
+ "jsonrpsee-core",
+ "jsonrpsee-types",
  "lazy_static",
  "serde_json",
  "tokio",
  "tracing",
  "unicase",
-]
-
-[[package]]
-name = "jsonrpsee-proc-macros"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b75da57d54817577801c2f7a1b638610819dfd86f0470c21a2af81b06eb41ba6"
-dependencies = [
- "proc-macro-crate 1.1.3",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]
@@ -3502,20 +3432,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
-]
-
-[[package]]
-name = "jsonrpsee-types"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f5fe5a629443d17a30ff564881ba68881a710fd7eb02a538087b0bc51cb4962c"
-dependencies = [
- "anyhow",
- "beef",
- "serde",
- "serde_json",
- "thiserror",
- "tracing",
 ]
 
 [[package]]
@@ -3534,31 +3450,14 @@ dependencies = [
 
 [[package]]
 name = "jsonrpsee-ws-server"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "179fe584af5c0145f922c581770d073c661a514ae6cdfa5b1a0bce41fdfdf646"
-dependencies = [
- "futures-channel",
- "futures-util",
- "jsonrpsee-core 0.12.0",
- "jsonrpsee-types 0.12.0",
- "serde_json",
- "soketto",
- "tokio",
- "tokio-util 0.7.2",
- "tracing",
-]
-
-[[package]]
-name = "jsonrpsee-ws-server"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dfb6c21556c551582b56e4e8e6e6249b0bbdb69bb7fa39efe9b9a6b54af9f206"
 dependencies = [
  "futures-channel",
  "futures-util",
- "jsonrpsee-core 0.13.1",
- "jsonrpsee-types 0.13.1",
+ "jsonrpsee-core",
+ "jsonrpsee-types",
  "serde_json",
  "soketto",
  "tokio",
@@ -5185,7 +5084,7 @@ dependencies = [
 [[package]]
 name = "pallet-base-fee"
 version = "1.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -5218,7 +5117,7 @@ dependencies = [
 [[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "async-trait",
  "fp-dynamic-fee",
@@ -5237,7 +5136,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -5278,7 +5177,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "evm",
  "fp-evm",
@@ -5304,7 +5203,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "fp-evm",
  "num",
@@ -5313,7 +5212,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "fp-evm",
  "tiny-keccak",
@@ -5322,7 +5221,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#edc420dbece8b506390675c6a47573129626562f"
+source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -5474,7 +5373,7 @@ name = "pallet-transaction-payment-rpc"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#6913e07f07baf8fb2d7f066175b3f39cce969b43"
 dependencies = [
- "jsonrpsee 0.13.1",
+ "jsonrpsee",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
  "sp-api",
@@ -6952,7 +6851,7 @@ version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#6913e07f07baf8fb2d7f066175b3f39cce969b43"
 dependencies = [
  "futures 0.3.21",
- "jsonrpsee 0.13.1",
+ "jsonrpsee",
  "sc-consensus-babe",
  "sc-consensus-epochs",
  "sc-rpc-api",
@@ -7130,7 +7029,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=master#6913e0
 dependencies = [
  "finality-grandpa",
  "futures 0.3.21",
- "jsonrpsee 0.13.1",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "sc-client-api",
@@ -7364,7 +7263,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=master#6913e0
 dependencies = [
  "futures 0.3.21",
  "hash-db",
- "jsonrpsee 0.13.1",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.0",
@@ -7393,7 +7292,7 @@ version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#6913e07f07baf8fb2d7f066175b3f39cce969b43"
 dependencies = [
  "futures 0.3.21",
- "jsonrpsee 0.13.1",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.0",
@@ -7416,7 +7315,7 @@ version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#6913e07f07baf8fb2d7f066175b3f39cce969b43"
 dependencies = [
  "futures 0.3.21",
- "jsonrpsee 0.13.1",
+ "jsonrpsee",
  "log",
  "serde_json",
  "substrate-prometheus-endpoint",
@@ -7434,7 +7333,7 @@ dependencies = [
  "futures 0.3.21",
  "futures-timer",
  "hash-db",
- "jsonrpsee 0.13.1",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "parity-util-mem",
@@ -8897,7 +8796,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=master#6913e0
 dependencies = [
  "frame-system-rpc-runtime-api",
  "futures 0.3.21",
- "jsonrpsee 0.13.1",
+ "jsonrpsee",
  "log",
  "parity-scale-codec",
  "sc-client-api",

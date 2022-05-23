@@ -18,8 +18,8 @@ fc-db = { default-features = false, git = "https://github.com/humanode-network/f
 fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
 fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
 fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
-jsonrpsee = { version = "0.13.0", features = ["server"] }
-pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fp-storage = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+jsonrpsee = { version = "0.13.0", features = ["server", "macros"] }
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
