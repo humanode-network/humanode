@@ -104,12 +104,16 @@ where
 #[cfg(test)]
 mod tests {
     use humanode_runtime::BioauthConsensusId;
+    use sp_core::Decode;
 
     use super::*;
 
     #[test]
     fn display() {
-        let key = AppCryptoPublic(BioauthConsensusId::default());
+        let zero_id =
+            BioauthConsensusId::decode(&mut sp_runtime::traits::TrailingZeroInput::zeroes())
+                .unwrap();
+        let key = AppCryptoPublic(zero_id);
         assert_eq!(
             key.to_string(),
             "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -118,7 +122,9 @@ mod tests {
 
     #[test]
     fn display_does_not_match_raw_key() {
-        let key = BioauthConsensusId::default();
-        assert_ne!(key.to_string(), AppCryptoPublic(key).to_string());
+        let zero_id =
+            BioauthConsensusId::decode(&mut sp_runtime::traits::TrailingZeroInput::zeroes())
+                .unwrap();
+        assert_ne!(zero_id.to_string(), AppCryptoPublic(zero_id).to_string());
     }
 }
