@@ -11,6 +11,7 @@ pub mod ethereum;
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
     /// Key management cli utilities
+    #[clap(subcommand)]
     Key(sc_cli::KeySubcommand),
 
     /// Build a chain specification.
@@ -35,13 +36,16 @@ pub enum Subcommand {
     Revert(sc_cli::RevertCmd),
 
     /// Biometric authentication related subcommands.
+    #[clap(subcommand)]
     Bioauth(bioauth::BioauthCmd),
 
     /// Ethereum related subcommands.
+    #[clap(subcommand)]
     Ethereum(ethereum::EthereumCmd),
 
     /// The custom benchmark subcommmand benchmarking runtime pallets.
     #[clap(name = "benchmark", about = "Benchmark runtime pallets.")]
+    #[clap(subcommand)]
     Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 }
 
