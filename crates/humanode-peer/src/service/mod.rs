@@ -435,7 +435,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     eth_block_data_cache: Arc::clone(&eth_block_data_cache),
                 },
                 subscription_task_executor,
-            }))
+            })?)
         })
     };
 
