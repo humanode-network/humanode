@@ -102,11 +102,16 @@ mod tests {
     use mockall::*;
     use node_primitives::{Block, Header};
     use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi};
+    use sp_application_crypto::UncheckedFrom;
     use sp_runtime::{Digest, DigestItem};
 
     use super::*;
 
     type MockAuraAuthorityId = sp_consensus_aura::sr25519::AuthorityId;
+
+    fn dummy_id() -> MockAuraAuthorityId {
+        MockAuraAuthorityId::unchecked_from([1; 32])
+    }
 
     mock! {
         RuntimeApi {
@@ -173,7 +178,7 @@ mod tests {
         let mut mock_runtime_api = MockRuntimeApi::new();
         mock_runtime_api
             .expect_authorities()
-            .returning(|_| Ok(NativeOrEncoded::from(vec![MockAuraAuthorityId::default()])));
+            .returning(|_| Ok(NativeOrEncoded::from(vec![dummy_id()])));
 
         let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
 
@@ -197,7 +202,7 @@ mod tests {
         // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
         drop(Arc::try_unwrap(client).unwrap());
 
-        assert_eq!(res.unwrap(), MockAuraAuthorityId::default());
+        assert_eq!(res.unwrap(), dummy_id());
     }
 
     /// This test verifies aura block author extractor failure when a respective runtime_api call (authorities)
@@ -209,7 +214,7 @@ mod tests {
         let mut mock_runtime_api = MockRuntimeApi::new();
         mock_runtime_api
             .expect_authorities()
-            .returning(|_| Ok(NativeOrEncoded::from(vec![MockAuraAuthorityId::default()])));
+            .returning(|_| Ok(NativeOrEncoded::from(vec![dummy_id()])));
 
         let runtime_api = MockWrapperRuntimeApi(Arc::new(mock_runtime_api));
 

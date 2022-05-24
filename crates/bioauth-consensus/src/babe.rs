@@ -99,6 +99,7 @@ mod tests {
     use mockall::*;
     use node_primitives::{Block, Header};
     use sp_api::{ApiError, ApiRef, NativeOrEncoded, ProvideRuntimeApi};
+    use sp_application_crypto::UncheckedFrom;
     use sp_consensus_babe::{
         digests::{PreDigest, SecondaryPlainPreDigest},
         AllowedSlots, AuthorityId, BabeEpochConfiguration, BabeGenesisConfiguration, Epoch,
@@ -107,6 +108,10 @@ mod tests {
     use sp_runtime::{Digest, DigestItem};
 
     use super::*;
+
+    fn dummy_id() -> AuthorityId {
+        AuthorityId::unchecked_from([1; 32])
+    }
 
     mock! {
         RuntimeApi {
@@ -212,7 +217,7 @@ mod tests {
             epoch_index: Default::default(),
             start_slot: Default::default(),
             duration: Default::default(),
-            authorities: vec![(AuthorityId::default(), Default::default())],
+            authorities: vec![(dummy_id(), Default::default())],
             randomness: Default::default(),
             config: BabeEpochConfiguration {
                 c: Default::default(),
@@ -254,7 +259,7 @@ mod tests {
         // Unwrap the client from the Arc and drop it, ensuring it's mock assertions run too.
         drop(Arc::try_unwrap(client).unwrap());
 
-        assert_eq!(res.unwrap(), AuthorityId::default());
+        assert_eq!(res.unwrap(), dummy_id());
     }
 
     /// This test verifies babe block author extractor failure when
