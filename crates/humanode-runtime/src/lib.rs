@@ -891,7 +891,8 @@ impl_runtime_apis! {
 
     impl bioauth_flow_api::BioauthFlowApi<Block, KeystoreBioauthAccountId, UnixMilliseconds> for Runtime {
         fn bioauth_status(id: &KeystoreBioauthAccountId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
-            let id = AccountId::try_from(id.as_slice()).expect("key types must've always had matching size");
+            let id =
+                AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()
