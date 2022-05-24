@@ -156,7 +156,6 @@ pub async fn run() -> sc_cli::Result<()> {
 
                         cmd.run(config.substrate, client, db, storage)
                     }
-                    // TODO. Support the rest BenchmarkCmd subcommands.
                     _ => {
                         Err("Currently we don't support the rest BenchmarkCmd subcommands.".into())
                     }
