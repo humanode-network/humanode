@@ -344,14 +344,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
-        let bioauth_validator_key_extractor =
-            Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
-                KeystoreBioauthId,
-                _,
-            >::new(
-                keystore_container.sync_keystore(),
-                bioauth_consensus::keystore::OneOfOneSelector,
-            ));
+        let bioauth_validator_key_extractor = Arc::clone(&validator_key_extractor);
         let bioauth_validator_signer_factory = {
             let keystore = keystore_container.keystore();
             Arc::new(move |key| {
