@@ -7,10 +7,8 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-pub use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
+use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
 use bioauth_flow_api::BioauthFlowApi;
-use futures::channel::oneshot;
-use futures::lock::BiLock;
 use futures::FutureExt;
 use jsonrpc_core::Error as RpcError;
 use jsonrpc_core::ErrorCode as RpcErrorCode;
@@ -175,16 +173,6 @@ pub trait BioauthApi<Timestamp> {
     /// Authenticate with provided liveness data.
     #[rpc(name = "bioauth_authenticate")]
     fn authenticate(&self, liveness_data: LivenessData) -> FutureResult<()>;
-}
-
-/// The shared [`LivenessData`] sender slot, that we can swap with our ephemernal
-/// channel upon a liveness data request.
-pub type LivenessDataTxSlot = BiLock<Option<oneshot::Sender<LivenessData>>>;
-
-/// Create an linked pair of an empty [`LivenessDataTxSlot`]s.
-/// To be used in the initialization process.
-pub fn new_liveness_data_tx_slot() -> (LivenessDataTxSlot, LivenessDataTxSlot) {
-    BiLock::new(None)
 }
 
 /// The RPC implementation.
