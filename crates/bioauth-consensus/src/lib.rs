@@ -23,6 +23,9 @@ pub mod aura;
 #[cfg(feature = "babe-integration")]
 pub mod babe;
 
+#[cfg(feature = "flow-integration")]
+pub mod flow;
+
 #[cfg(test)]
 mod mock;
 

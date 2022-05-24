@@ -6,6 +6,7 @@ publish = false
 
 [dependencies]
 bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", optional = true }
+bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", optional = true }
 
 async-trait = "0.1.42"
 codec = { package = "parity-scale-codec", version = "2", default-features = false, optional = true }
@@ -32,8 +33,15 @@ tokio = { version = "1", features = ["full"] }
 
 [features]
 default = []
-all = ["aura-integration", "babe-integration", "keystore-integration", "api-integration"]
+all = [
+  "aura-integration",
+  "babe-integration",
+  "keystore-integration",
+  "api-integration",
+  "flow-integration",
+]
 aura-integration = ["sp-consensus-aura", "sp-application-crypto"]
 babe-integration = ["sp-consensus-babe", "sp-application-crypto"]
 keystore-integration = ["sp-keystore", "sp-application-crypto"]
 api-integration = ["bioauth-consensus-api", "codec"]
+flow-integration = ["bioauth-flow-api", "codec"]
