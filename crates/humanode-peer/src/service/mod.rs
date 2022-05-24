@@ -12,7 +12,7 @@ use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
-use humanode_runtime::{self, opaque::Block, BioauthConsensusId, RuntimeApi};
+use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockchainEvents, ExecutorProvider};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
@@ -302,7 +302,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     );
 
     let validator_key_extractor = Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
-        BioauthConsensusId,
+        KeystoreBioauthId,
         _,
     >::new(
         keystore_container.sync_keystore(),
