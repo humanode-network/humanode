@@ -2,7 +2,7 @@
 
 use std::{marker::PhantomData, sync::Arc};
 
-use bioauth_consensus_api::BioauthConsensusApi;
+use bioauth_consensus_api::{BioauthConsensusApi, BioauthConsensusSessionApi};
 use sp_api::{BlockId, ProvideRuntimeApi};
 use sp_runtime::traits::Block as BlockT;
 
@@ -38,6 +38,28 @@ where
         id: &Id,
     ) -> Result<bool, sp_api::ApiError> {
         client.runtime_api().is_authorized(at, id)
+    }
+}
+
+/// [`Session`] performs the check via
+/// the [`BioauthConsensusSessionApi::is_authorized_through_session_key`] call.
+pub struct Session;
+
+impl<Block, Client, Id> RuntimeApiChecker<Block, Client, Id> for Session
+where
+    Block: BlockT,
+    Client: ProvideRuntimeApi<Block>,
+    Client::Api: BioauthConsensusSessionApi<Block, Id>,
+    Id: codec::Encode,
+{
+    fn is_authorized(
+        client: &Client,
+        at: &BlockId<Block>,
+        id: &Id,
+    ) -> Result<bool, sp_api::ApiError> {
+        client
+            .runtime_api()
+            .is_authorized_through_session_key(at, id)
     }
 }
 
@@ -83,7 +105,6 @@ impl<Block: BlockT, Client, Id, Checker> crate::AuthorizationVerifier
     for AuthorizationVerifier<Block, Client, Id, Checker>
 where
     Client: ProvideRuntimeApi<Block>,
-    Client::Api: BioauthConsensusApi<Block, Id>,
     Id: codec::Encode,
     Checker: RuntimeApiChecker<Block, Client, Id>,
 {
