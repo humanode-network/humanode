@@ -104,11 +104,9 @@ pub fn new_partial(
         sc_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
-            FullGrandpa,
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
             FullBioauth,
-            sp_consensus_babe::SlotDuration,
             inherents::Creator,
             Arc<FrontierBackend>,
             Option<Telemetry>,
@@ -206,7 +204,7 @@ pub fn new_partial(
     let import_queue = sc_consensus_babe::import_queue(
         babe_link.clone(),
         bioauth_consensus_block_import.clone(),
-        Some(Box::new(grandpa_block_import.clone())),
+        Some(Box::new(grandpa_block_import)),
         Arc::clone(&client),
         select_chain.clone(),
         inherent_data_providers_creator.clone(),
@@ -224,11 +222,9 @@ pub fn new_partial(
         select_chain,
         transaction_pool,
         other: (
-            grandpa_block_import,
             grandpa_link,
             babe_link,
             bioauth_consensus_block_import,
-            raw_slot_duration,
             inherent_data_providers_creator,
             frontier_backend,
             telemetry,
@@ -249,11 +245,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         transaction_pool,
         other:
             (
-                _grandpa_block_import,
                 grandpa_link,
                 babe_link,
                 bioauth_consensus_block_import,
-                raw_slot_duration,
                 inherent_data_providers_creator,
                 frontier_backend,
                 mut telemetry,
