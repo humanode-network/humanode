@@ -149,7 +149,7 @@ where
 
 mock! {
     pub BeforeAuthHookProvider {
-        pub fn hook(&self, authentication: &super::Authentication<ValidatorPublicKey, UnixMilliseconds>) -> Result<(), sp_runtime::DispatchError>;
+        pub fn hook(&self, authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>) -> Result<(), sp_runtime::DispatchError>;
     }
 }
 mock! {
@@ -163,16 +163,16 @@ thread_local! {
     pub static MOCK_AFTER_AUTH_HOOK_PROVIDER: RefCell<MockAfterAuthHookProvider> = RefCell::new(MockAfterAuthHookProvider::new());
 }
 
-impl super::BeforeAuthHook<ValidatorPublicKey, UnixMilliseconds> for MockBeforeAuthHookProvider {
+impl crate::BeforeAuthHook<ValidatorPublicKey, UnixMilliseconds> for MockBeforeAuthHookProvider {
     type Data = ();
 
     fn hook(
-        authentication: &super::Authentication<ValidatorPublicKey, UnixMilliseconds>,
+        authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>,
     ) -> Result<Self::Data, sp_runtime::DispatchError> {
         MOCK_BEFORE_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(authentication))
     }
 }
-impl super::AfterAuthHook<()> for MockAfterAuthHookProvider {
+impl crate::AfterAuthHook<()> for MockAfterAuthHookProvider {
     fn hook(before_hook_data: ()) {
         MOCK_AFTER_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(before_hook_data))
     }

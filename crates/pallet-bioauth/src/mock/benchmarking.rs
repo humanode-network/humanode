@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::parameter_types;
 use frame_system as system;
@@ -114,6 +116,41 @@ impl crate::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
     }
 }
 
+thread_local! {
+    pub static MOCK_BEFORE_AUTH_HOOK_PROVIDER: RefCell<MockBeforeAuthHookProvider> = RefCell::new(MockBeforeAuthHookProvider{});
+    pub static MOCK_AFTER_AUTH_HOOK_PROVIDER: RefCell<MockAfterAuthHookProvider> = RefCell::new(MockAfterAuthHookProvider{});
+}
+
+pub struct MockBeforeAuthHookProvider;
+
+impl MockBeforeAuthHookProvider {
+    pub fn hook(&self, authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>) -> Result<(), sp_runtime::DispatchError> {
+        Ok(())
+    }
+}
+
+impl crate::BeforeAuthHook<ValidatorPublicKey, UnixMilliseconds> for MockBeforeAuthHookProvider {
+    type Data = ();
+
+    fn hook(
+        authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>,
+    ) -> Result<Self::Data, sp_runtime::DispatchError> {
+        MOCK_BEFORE_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(authentication))
+    }
+}
+
+pub struct MockAfterAuthHookProvider;
+
+impl MockAfterAuthHookProvider {
+    pub fn hook(&self, before_hook_data: ()) {}
+}
+
+impl crate::AfterAuthHook<()> for MockAfterAuthHookProvider {
+    fn hook(before_hook_data: ()) {
+        MOCK_AFTER_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(before_hook_data))
+    }
+}
+
 parameter_types! {
     pub const BlockHashCount: u64 = 250;
     pub const SS58Prefix: u8 = 42;
@@ -185,6 +222,8 @@ impl pallet_bioauth::Config for Benchmark {
     type WeightInfo = weights::SubstrateWeight<Benchmark>;
     type MaxAuthentications = MaxAuthentications;
     type MaxNonces = MaxNonces;
+    type BeforeAuthHook = MockBeforeAuthHookProvider;
+    type AfterAuthHook = MockAfterAuthHookProvider;
 }
 
 #[cfg(feature = "runtime-benchmarks")]
