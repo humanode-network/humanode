@@ -126,7 +126,7 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     /// EVM specific dependencies.
     pub evm: EvmDeps,
     /// Subscription task executor instance.
-    pub subscription_task_executor: Arc<sc_rpc::SubscriptionTaskExecutor>,
+    pub subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
 }
 
 /// A helper function to handle overrides.

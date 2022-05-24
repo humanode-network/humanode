@@ -397,11 +397,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let eth_max_past_logs = evm_config.max_past_logs;
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
 
-        let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
-            task_manager.spawn_handle(),
-        ));
-
-        Box::new(move |deny_unsafe, _| {
+        Box::new(move |deny_unsafe, subscription_task_executor| {
             Ok(humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
@@ -438,7 +434,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     eth_overrides: Arc::clone(&eth_overrides),
                     eth_block_data_cache: Arc::clone(&eth_block_data_cache),
                 },
-                subscription_task_executor: Arc::clone(&subscription_task_executor),
+                subscription_task_executor,
             }))
         })
     };
