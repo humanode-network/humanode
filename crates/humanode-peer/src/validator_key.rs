@@ -82,7 +82,10 @@ where
         let filtered = crypto_type_public_pairs.into_iter().filter_map(
             |CryptoTypePublicPair(crypto_type, public_key)| {
                 if crypto_type == T::CRYPTO_ID {
-                    Some(Self(T::from_slice(&public_key)))
+                    match T::from_slice(&public_key) {
+                        Ok(id) => Some(Self(id)),
+                        Err(_) => None,
+                    }
                 } else {
                     None
                 }
