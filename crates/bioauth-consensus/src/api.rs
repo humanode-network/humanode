@@ -185,7 +185,7 @@ mod tests {
 
         let client = Arc::new(mock_client);
 
-        let authorization_verifier: AuthorizationVerifier<Block, _, MockPublicKeyType> =
+        let authorization_verifier: AuthorizationVerifier<Block, _, MockPublicKeyType, Direct> =
             AuthorizationVerifier::new(Arc::clone(&client));
 
         let res = crate::AuthorizationVerifier::is_authorized(
@@ -221,7 +221,7 @@ mod tests {
 
         let client = Arc::new(mock_client);
 
-        let authorization_verifier: AuthorizationVerifier<Block, _, MockPublicKeyType> =
+        let authorization_verifier: AuthorizationVerifier<Block, _, MockPublicKeyType, Direct> =
             AuthorizationVerifier::new(Arc::clone(&client));
 
         let res = crate::AuthorizationVerifier::is_authorized(
@@ -256,7 +256,7 @@ mod tests {
 
         let client = Arc::new(mock_client);
 
-        let authorization_verifier: AuthorizationVerifier<Block, _, MockPublicKeyType> =
+        let authorization_verifier: AuthorizationVerifier<Block, _, MockPublicKeyType, Direct> =
             AuthorizationVerifier::new(Arc::clone(&client));
 
         let res = crate::AuthorizationVerifier::is_authorized(
@@ -271,7 +271,7 @@ mod tests {
         drop(Arc::try_unwrap(client).unwrap());
 
         match res.unwrap_err() {
-            AuthorizationVerifierError::UnableToExtractAuthorizedIds(e)
+            AuthorizationVerifierError::UnableToCheckAuthorization(e)
                 if e.to_string() == "Test error" => {}
             ref e => panic!(
                 "assertion failed: `{:?}` does not match `{}`",
