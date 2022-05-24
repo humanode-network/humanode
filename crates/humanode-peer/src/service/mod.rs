@@ -108,7 +108,7 @@ pub fn new_partial(
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
             FullBioauth,
-            Duration,
+            sp_consensus_babe::SlotDuration,
             inherents::Creator,
             Arc<FrontierBackend>,
             Option<Telemetry>,
@@ -517,7 +517,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         Some("evm"),
         MappingSyncWorker::new(
             client.import_notification_stream(),
-            raw_slot_duration,
+            Duration::from_millis(humanode_runtime::SLOT_DURATION),
             Arc::clone(&client),
             backend,
             Arc::clone(&frontier_backend),

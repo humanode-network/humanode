@@ -1,14 +1,12 @@
 //! Inherent data providers creator used at Babe import_queue and start_babe.
 
-use std::time::Duration;
-
 use sp_core::U256;
 
 /// Create inherent data providers.
 #[derive(Debug, Clone)]
 pub struct Creator {
     /// Consensus slot duration.
-    pub raw_slot_duration: Duration,
+    pub raw_slot_duration: sp_consensus_babe::SlotDuration,
     /// Ethereum gas target price.
     pub eth_target_gas_price: u64,
 }
