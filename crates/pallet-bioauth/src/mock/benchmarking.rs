@@ -124,7 +124,10 @@ thread_local! {
 pub struct MockBeforeAuthHookProvider;
 
 impl MockBeforeAuthHookProvider {
-    pub fn hook(&self, authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>) -> Result<(), sp_runtime::DispatchError> {
+    pub fn hook(
+        &self,
+        authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>,
+    ) -> Result<(), sp_runtime::DispatchError> {
         Ok(())
     }
 }
