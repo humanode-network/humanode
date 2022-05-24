@@ -312,7 +312,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let proposer_factory = bioauth_consensus::BioauthProposer::new(
         proposer_factory,
         Arc::clone(&validator_key_extractor),
-        bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
+        bioauth_consensus::flow::AuthorizationVerifier::new(Arc::clone(&client)),
     );
 
     let (network, system_rpc_tx, network_starter) =
