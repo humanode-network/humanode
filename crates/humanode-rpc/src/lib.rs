@@ -3,7 +3,7 @@
 use std::{collections::BTreeMap, sync::Arc};
 
 use author_ext_api::AuthorExtApi;
-use author_ext_rpc::{AuthorExt, AuthorExtRpcApi};
+use author_ext_rpc::{AuthorExt, AuthorExtRpcApiServer};
 use bioauth_flow_rpc::{Bioauth, BioauthApi, Signer, SignerFactory, ValidatorKeyExtractorT};
 use fc_rpc::{
     Eth, EthApiServer, EthFilter, EthFilterApiServer, EthPubSub, EthPubSubApiServer,
@@ -273,11 +273,14 @@ where
         .into_rpc(),
     )?;
 
-    // io.extend_with(AuthorExtRpcApi::to_delegate(AuthorExt::new(
-    //     author_validator_key_extractor,
-    //     Arc::clone(&client),
-    //     Arc::clone(&pool),
-    // )));
+    io.merge(
+        AuthorExt::new(
+            author_validator_key_extractor,
+            Arc::clone(&client),
+            Arc::clone(&pool),
+        )
+        .into_rpc(),
+    )?;
 
     // io.extend_with(BioauthApi::to_delegate(Bioauth::new(
     //     robonode_client,
