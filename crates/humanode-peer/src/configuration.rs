@@ -15,9 +15,6 @@ pub struct Configuration {
     /// always required.
     pub bioauth_flow: Option<BioauthFlow>,
 
-    /// Whether to perform the bioauth enroll before the authentication or not.
-    pub bioauth_perform_enroll: bool,
-
     /// EVM configuration,
     pub evm: Option<Evm>,
 }

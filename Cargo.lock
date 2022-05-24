@@ -531,7 +531,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "bioauth-flow"
+name = "bioauth-flow-api"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-std",
+]
+
+[[package]]
+name = "bioauth-flow-rpc"
 version = "0.1.0"
 dependencies = [
  "anyhow",
@@ -553,16 +563,6 @@ dependencies = [
  "sp-runtime",
  "tokio",
  "tracing",
-]
-
-[[package]]
-name = "bioauth-flow-api"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "scale-info",
- "sp-api",
- "sp-std",
 ]
 
 [[package]]
@@ -2780,7 +2780,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bioauth-consensus",
- "bioauth-flow",
+ "bioauth-flow-rpc",
  "fc-consensus",
  "fc-db",
  "fc-mapping-sync",
@@ -2850,8 +2850,8 @@ version = "0.1.0"
 dependencies = [
  "author-ext-api",
  "author-ext-rpc",
- "bioauth-flow",
  "bioauth-flow-api",
+ "bioauth-flow-rpc",
  "fc-db",
  "fc-rpc",
  "fc-rpc-core",
@@ -2908,7 +2908,6 @@ dependencies = [
  "pallet-balances",
  "pallet-base-fee",
  "pallet-bioauth",
- "pallet-bioauth-session",
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
@@ -2917,6 +2916,7 @@ dependencies = [
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
  "pallet-grandpa",
+ "pallet-humanode-session",
  "pallet-im-online",
  "pallet-randomness-collective-flip",
  "pallet-session",
@@ -4997,20 +4997,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-bioauth-session"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-bioauth",
- "pallet-session",
- "parity-scale-codec",
- "scale-info",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=substrate-1a30fa2#864ef8d7e97ede08c758394c5f9e2a57bbef7218"
@@ -5151,6 +5137,20 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-humanode-session"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-bioauth",
+ "pallet-session",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
  "sp-std",
 ]
 
