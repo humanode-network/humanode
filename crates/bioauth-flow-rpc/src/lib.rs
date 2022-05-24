@@ -7,7 +7,7 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-pub use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
+use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
 use bioauth_flow_api::BioauthFlowApi;
 use futures::channel::oneshot;
 use futures::lock::BiLock;
