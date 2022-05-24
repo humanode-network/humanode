@@ -1,5 +1,6 @@
 //! The main entrypoint.
 
+use frame_benchmarking_cli::*;
 use humanode_runtime::Block;
 use sc_service::PartialComponents;
 
@@ -125,18 +126,44 @@ pub async fn run() -> sc_cli::Result<()> {
         }
         Some(Subcommand::Ethereum(cmd)) => cmd.run().await,
         Some(Subcommand::Benchmark(cmd)) => {
-            if cfg!(feature = "runtime-benchmarks") {
-                let runner = root.create_humanode_runner(cmd)?;
-                runner.sync_run(|config| {
-                    cmd.run::<Block, service::ExecutorDispatch>(config.substrate)
-                })
-            } else {
-                Err(
-                    "Benchmarking wasn't enabled when building the node. You can enable it with \
-                     `--features runtime-benchmarks`."
-                        .into(),
-                )
-            }
+            let runner = root.create_humanode_runner(cmd)?;
+
+            runner.sync_run(|config| {
+                // This switch needs to be in the client, since the client decides
+                // which sub-commands it wants to support.
+                match cmd {
+                    BenchmarkCmd::Pallet(cmd) => {
+                        if !cfg!(feature = "runtime-benchmarks") {
+                            return Err(
+                                "Runtime benchmarking wasn't enabled when building the node. \
+							You can enable it with `--features runtime-benchmarks`."
+                                    .into(),
+                            );
+                        }
+
+                        cmd.run::<Block, service::ExecutorDispatch>(config.substrate)
+                    }
+                    BenchmarkCmd::Block(cmd) => {
+                        let PartialComponents { client, .. } = service::new_partial(&config)?;
+                        cmd.run(client)
+                    }
+                    BenchmarkCmd::Storage(cmd) => {
+                        let PartialComponents {
+                            client, backend, ..
+                        } = service::new_partial(&config)?;
+                        let db = backend.expose_db();
+                        let storage = backend.expose_storage();
+
+                        cmd.run(config.substrate, client, db, storage)
+                    }
+                    // TODO. Support the rest BenchmarkCmd subcommands.
+                    _ => {
+                        return Err(
+                            "Currently we don't support the rest BenchmarkCmd subcommands.".into(),
+                        );
+                    }
+                }
+            })
         }
         None => {
             let runner = root.create_humanode_runner(&root.run)?;
