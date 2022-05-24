@@ -12,7 +12,7 @@ use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
-use humanode_runtime::{self, opaque::Block, BioauthConsensusId, RuntimeApi};
+use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockchainEvents, ExecutorProvider};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
@@ -306,15 +306,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry.as_ref().map(|x| x.handle()),
     );
 
-    let consensus_validator_key_extractor =
-        Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
-            BioauthConsensusId,
-            _,
-        >::new(
-            keystore_container.sync_keystore(),
-            bioauth_consensus::keystore::OneOfOneSelector,
-        ));
-
     let account_validator_key_extractor =
         Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
             KeystoreBioauthId,
@@ -326,12 +317,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let proposer_factory = bioauth_consensus::BioauthProposer::new(
         proposer_factory,
-        Arc::clone(&consensus_validator_key_extractor),
+        Arc::clone(&account_validator_key_extractor),
         bioauth_consensus::api::AuthorizationVerifier::<
             _,
             _,
             _,
-            bioauth_consensus::api::Session,
+            bioauth_consensus::api::Direct,
         >::new(Arc::clone(&client)),
     );
 
