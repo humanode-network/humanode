@@ -2086,7 +2086,7 @@ dependencies = [
  "parity-util-mem",
  "scale-info",
  "serde",
- "sp-debug-derive 4.0.0 (git+https://github.com/paritytech/substrate?rev=6913e07)",
+ "sp-debug-derive",
  "sp-io",
  "sp-runtime",
 ]
@@ -7918,7 +7918,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-debug-derive 4.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-debug-derive",
  "sp-std",
  "static_assertions",
 ]
@@ -8085,7 +8085,7 @@ dependencies = [
  "secrecy",
  "serde",
  "sp-core-hashing",
- "sp-debug-derive 4.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-debug-derive",
  "sp-externalities",
  "sp-runtime-interface",
  "sp-std",
@@ -8136,16 +8136,6 @@ dependencies = [
 name = "sp-debug-derive"
 version = "4.0.0"
 source = "git+https://github.com/humanode-network/substrate?branch=master#6913e07f07baf8fb2d7f066175b3f39cce969b43"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
-]
-
-[[package]]
-name = "sp-debug-derive"
-version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate?rev=6913e07#6913e07f07baf8fb2d7f066175b3f39cce969b43"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -8422,7 +8412,7 @@ dependencies = [
  "parity-scale-codec",
  "ref-cast",
  "serde",
- "sp-debug-derive 4.0.0 (git+https://github.com/humanode-network/substrate?branch=master)",
+ "sp-debug-derive",
  "sp-std",
 ]
 
