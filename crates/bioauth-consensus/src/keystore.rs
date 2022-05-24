@@ -6,36 +6,43 @@ use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
 use sp_keystore::SyncCryptoStorePtr;
 
 /// Encapsulates validator public key extraction logic.
-pub struct ValidatorKeyExtractor<Id> {
+pub struct ValidatorKeyExtractor<Id, Selector> {
     /// Keystore to extract author.
     keystore: SyncCryptoStorePtr,
+    /// The validator key selector.
+    selector: Selector,
     /// The identity type.
     _phantom_id: PhantomData<Id>,
 }
 
 /// An error that can occur at validator public key extraction logic.
 #[derive(Debug, thiserror::Error)]
-pub enum ValidatorKeyExtractorError {
+pub enum ValidatorKeyExtractorError<SelectorError> {
     /// Something went wrong during the keystore interop.
     #[error("keystore error: {0}")]
     Keystore(sp_keystore::Error),
+    /// Something went wrong when selecting the key.
+    #[error("key selection error: {0}")]
+    Selector(SelectorError),
 }
 
-impl<Id> ValidatorKeyExtractor<Id> {
+impl<Id, Selector> ValidatorKeyExtractor<Id, Selector> {
     /// Create a new [`ValidatorKeyExtractor`].
-    pub fn new(keystore: SyncCryptoStorePtr) -> Self {
+    pub fn new(keystore: SyncCryptoStorePtr, selector: Selector) -> Self {
         Self {
             keystore,
+            selector,
             _phantom_id: PhantomData,
         }
     }
 }
 
-impl<Id> crate::ValidatorKeyExtractor for ValidatorKeyExtractor<Id>
+impl<Id, Selector> crate::ValidatorKeyExtractor for ValidatorKeyExtractor<Id, Selector>
 where
     Id: AppPublic,
+    Selector: crate::ValidatorKeySelector<Id>,
 {
-    type Error = ValidatorKeyExtractorError;
+    type Error = ValidatorKeyExtractorError<Selector::Error>;
     type PublicKeyType = Id;
 
     fn extract_validator_key(&self) -> Result<Option<Self::PublicKeyType>, Self::Error> {
@@ -46,7 +53,7 @@ where
         })
         .map_err(ValidatorKeyExtractorError::Keystore)?;
 
-        let mut matching_crypto_public_keys = crypto_type_public_pairs.into_iter().filter_map(
+        let matching_crypto_public_keys = crypto_type_public_pairs.into_iter().filter_map(
             |CryptoTypePublicPair(crypto_type_id, public_key)| {
                 if crypto_type_id == Id::CRYPTO_ID {
                     Some(public_key)
@@ -56,14 +63,37 @@ where
             },
         );
 
-        let first_key = matching_crypto_public_keys.next();
+        let matching_keys = matching_crypto_public_keys.map(|bytes| Id::from_slice(&bytes));
 
-        // If there is more than one - we'll need to handle it somehow.
-        assert!(
-            matching_crypto_public_keys.next().is_none(),
-            "We expect there to be no more than one key of a certain type and purpose, please report this"
-        );
+        let key = self
+            .selector
+            .select_key(matching_keys)
+            .map_err(ValidatorKeyExtractorError::Selector)?;
 
-        Ok(first_key.map(|bytes| Id::from_slice(&bytes)))
+        Ok(key)
+    }
+}
+
+/// Selects one key out of one.
+#[derive(Debug)]
+pub struct OneOfOneSelector;
+
+/// Multiple keys were found.
+#[derive(Debug, thiserror::Error)]
+#[error("We expect there to be no more than one key of a certain type and purpose")]
+pub struct MultipleKeysError;
+
+impl<Id> crate::ValidatorKeySelector<Id> for OneOfOneSelector {
+    type Error = MultipleKeysError;
+
+    fn select_key<T: Iterator<Item = Id>>(&self, mut keys: T) -> Result<Option<Id>, Self::Error> {
+        let first_key = keys.next();
+
+        // If there is more than one - return an error.
+        if keys.next().is_some() {
+            return Err(MultipleKeysError);
+        }
+
+        Ok(first_key)
     }
 }

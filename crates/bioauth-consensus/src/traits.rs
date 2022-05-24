@@ -59,3 +59,12 @@ impl<T: ValidatorKeyExtractor> ValidatorKeyExtractor for std::sync::Arc<T> {
         self.as_ref().extract_validator_key()
     }
 }
+
+/// Selects the validator key from the keys available.
+pub trait ValidatorKeySelector<Key> {
+    /// An error that renders key selection impossible.
+    type Error;
+
+    /// Select one key from the list of the keys.
+    fn select_key<T: Iterator<Item = Key>>(&self, keys: T) -> Result<Option<Key>, Self::Error>;
+}
