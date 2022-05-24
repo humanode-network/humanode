@@ -13,10 +13,7 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 
 anyhow = "1"
 async-trait = "0.1"
-futures = { version = "0.3", features = ["compat", "bilock", "unstable"] }
-jsonrpc-core = "18"
-jsonrpc-core-client = "18"
-jsonrpc-derive = "18"
+jsonrpsee = { version = "0.13.0", features = ["server", "macros"] }
 sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde = "1"
 serde_json = "1"

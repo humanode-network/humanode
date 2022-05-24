@@ -8,7 +8,6 @@ publish = false
 author-ext-api = { version = "0.1", path = "../author-ext-api" }
 bioauth-consensus = { version = "0.1", path = "../bioauth-consensus" }
 
-futures = { version = "0.3", features = ["compat", "bilock", "unstable"] }
 jsonrpsee = { version = "0.13.0", features = ["server", "macros"] }
 sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }

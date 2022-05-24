@@ -16,8 +16,7 @@ use fc_rpc::{
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use fp_storage::EthereumStorageSchema;
 use humanode_runtime::{
-    opaque::{Block, UncheckedExtrinsic},
-    AccountId, Balance, BlockNumber, Hash, Index, UnixMilliseconds,
+    opaque::Block, AccountId, Balance, BlockNumber, Hash, Index, UnixMilliseconds,
 };
 use jsonrpsee::RpcModule;
 use sc_client_api::{
