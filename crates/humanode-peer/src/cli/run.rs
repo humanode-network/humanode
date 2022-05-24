@@ -158,9 +158,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     }
                     // TODO. Support the rest BenchmarkCmd subcommands.
                     _ => {
-                        return Err(
-                            "Currently we don't support the rest BenchmarkCmd subcommands.".into(),
-                        );
+                        Err("Currently we don't support the rest BenchmarkCmd subcommands.".into())
                     }
                 }
             })
