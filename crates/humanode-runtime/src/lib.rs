@@ -894,8 +894,18 @@ impl_runtime_apis! {
         }
     }
 
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, BioauthConsensusId> for Runtime {
-        fn is_authorized(id: &BioauthConsensusId) -> bool {
+    impl bioauth_consensus_api::BioauthConsensusApi<Block, KeystoreBioauthAccountId> for Runtime {
+        fn is_authorized(id: &KeystoreBioauthAccountId) -> bool {
+            let id =
+                AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
+            Bioauth::active_authentications().into_inner()
+                .iter()
+                .any(|stored_public_key| stored_public_key.public_key == id)
+        }
+    }
+
+    impl bioauth_consensus_api::BioauthConsensusSessionApi<Block, BioauthConsensusId> for Runtime {
+        fn is_authorized_through_session_key(id: &BioauthConsensusId) -> bool {
             let id = match Session::key_owner(BioauthConsensusId::ID, id.as_slice()) {
                 Some(account_id) => account_id,
                 None => return false,

@@ -76,7 +76,7 @@ type FullBioauth = bioauth_consensus::BioauthBlockImport<
         Block,
         FullClient,
         BabeId,
-        bioauth_consensus::api::Direct,
+        bioauth_consensus::api::Session,
     >,
 >;
 /// Frontier backend type.
@@ -306,22 +306,32 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry.as_ref().map(|x| x.handle()),
     );
 
-    let validator_key_extractor = Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
-        BioauthConsensusId,
-        _,
-    >::new(
-        keystore_container.sync_keystore(),
-        bioauth_consensus::keystore::OneOfOneSelector,
-    ));
+    let consensus_validator_key_extractor =
+        Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
+            BioauthConsensusId,
+            _,
+        >::new(
+            keystore_container.sync_keystore(),
+            bioauth_consensus::keystore::OneOfOneSelector,
+        ));
+
+    let account_validator_key_extractor =
+        Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
+            KeystoreBioauthId,
+            _,
+        >::new(
+            keystore_container.sync_keystore(),
+            bioauth_consensus::keystore::OneOfOneSelector,
+        ));
 
     let proposer_factory = bioauth_consensus::BioauthProposer::new(
         proposer_factory,
-        Arc::clone(&validator_key_extractor),
+        Arc::clone(&consensus_validator_key_extractor),
         bioauth_consensus::api::AuthorizationVerifier::<
             _,
             _,
             _,
-            bioauth_consensus::api::Direct,
+            bioauth_consensus::api::Session,
         >::new(Arc::clone(&client)),
     );
 
@@ -354,14 +364,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
-        let bioauth_validator_key_extractor =
-            Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
-                KeystoreBioauthId,
-                _,
-            >::new(
-                keystore_container.sync_keystore(),
-                bioauth_consensus::keystore::OneOfOneSelector,
-            ));
+        let bioauth_validator_key_extractor = Arc::clone(&account_validator_key_extractor);
         let bioauth_validator_signer_factory = {
             let keystore = keystore_container.keystore();
             Arc::new(move |key| {
