@@ -4,14 +4,11 @@ use std::{collections::BTreeMap, sync::Arc};
 
 use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtRpcApiServer};
-use bioauth_flow_rpc::{Bioauth, BioauthApi, Signer, SignerFactory, ValidatorKeyExtractorT};
+use bioauth_flow_rpc::{Bioauth, BioauthApiServer, Signer, SignerFactory, ValidatorKeyExtractorT};
 use fc_rpc::{
-    Eth, EthApiServer, EthFilter, EthFilterApiServer, EthPubSub, EthPubSubApiServer,
-    HexEncodedIdProvider, Net, NetApiServer, Web3ApiServer,
-};
-use fc_rpc::{
-    EthBlockDataCacheTask, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
-    SchemaV2Override, SchemaV3Override, StorageOverride, Web3,
+    Eth, EthApiServer, EthBlockDataCacheTask, EthFilter, EthFilterApiServer, EthPubSub,
+    EthPubSubApiServer, Net, NetApiServer, OverrideHandle, RuntimeApiStorageOverride,
+    SchemaV1Override, SchemaV2Override, SchemaV3Override, StorageOverride, Web3, Web3ApiServer,
 };
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use fp_storage::EthereumStorageSchema;
@@ -281,13 +278,16 @@ where
         .into_rpc(),
     )?;
 
-    // io.extend_with(BioauthApi::to_delegate(Bioauth::new(
-    //     robonode_client,
-    //     bioauth_validator_key_extractor,
-    //     bioauth_validator_signer_factory,
-    //     Arc::clone(&client),
-    //     Arc::clone(&pool),
-    // )));
+    io.merge(
+        Bioauth::new(
+            robonode_client,
+            bioauth_validator_key_extractor,
+            bioauth_validator_signer_factory,
+            Arc::clone(&client),
+            Arc::clone(&pool),
+        )
+        .into_rpc(),
+    )?;
 
     io.merge(
         Eth::new(
