@@ -531,6 +531,50 @@ impl pallet_humanode_session::Config for Runtime {
     type ValidatorPublicKeyOf = IdentityValidatorIdOf;
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto::Keypair {
+    // Derive Public Key component.
+    let robonode_secret_key =
+        robonode_crypto::SecretKey::from_bytes(secret_key_bytes.as_ref()).unwrap();
+    let robonode_public_key: robonode_crypto::PublicKey = (&robonode_secret_key).into();
+
+    // Constructs bytes of Secret Key and Public Key.
+    let mut keypair_bytes = [0; 64];
+    let _ = &keypair_bytes[..32].copy_from_slice(robonode_secret_key.as_bytes());
+    let _ = &keypair_bytes[32..].copy_from_slice(robonode_public_key.as_bytes());
+
+    robonode_crypto::Keypair::from_bytes(keypair_bytes.as_ref()).unwrap()
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_bioauth::benchmarking::AuthTicketSigner for Runtime {
+    fn sign(auth_ticket: &[u8]) -> Vec<u8> {
+        use robonode_crypto::{Signature, Signer};
+        // This secret key is taken from the first entry in https://ed25519.cr.yp.to/python/sign.input.
+        // Must be compatible with public key provided in benchmark_config() function in
+        // crates/humanode-peer/src/chain_spec.rs
+        const ROBONODE_SECRET_KEY: [u8; 32] =
+            hex_literal::hex!("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60");
+        let robonode_keypair = derive_keypair_from_secret_key(ROBONODE_SECRET_KEY);
+        robonode_keypair
+            .try_sign(auth_ticket)
+            .unwrap_or(Signature::from_bytes(&[0; 64]).unwrap())
+            .to_bytes()
+            .to_vec()
+    }
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
+    fn build(public_key: Vec<u8>, authentication_nonce: Vec<u8>) -> Vec<u8> {
+        let opaque_auth_ticket = OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
+            public_key,
+            authentication_nonce,
+        });
+        opaque_auth_ticket.0
+    }
+}
+
 parameter_types! {
     pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
     pub const MaxKeys: u32 = MAX_KEYS;
@@ -1203,6 +1247,7 @@ impl_runtime_apis! {
             list_benchmark!(list, extra, frame_system, SystemBench::<Runtime>);
             list_benchmark!(list, extra, pallet_balances, Balances);
             list_benchmark!(list, extra, pallet_timestamp, Timestamp);
+            list_benchmark!(list, extra, pallet_bioauth, Bioauth);
 
             let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -1245,6 +1290,7 @@ impl_runtime_apis! {
             add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
             add_benchmark!(params, batches, pallet_balances, Balances);
             add_benchmark!(params, batches, pallet_timestamp, Timestamp);
+            add_benchmark!(params, batches, pallet_bioauth, Bioauth);
 
             Ok(batches)
         }

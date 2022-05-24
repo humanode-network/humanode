@@ -3,7 +3,6 @@ use std::cell::RefCell;
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::parameter_types;
 use frame_system as system;
-use mockall::{mock, predicate};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -16,8 +15,8 @@ use sp_runtime::{
 
 use crate::{self as pallet_bioauth, weights, AuthTicket, TryConvert};
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-type Block = frame_system::mocking::MockBlock<Test>;
+type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Benchmark>;
+type Block = frame_system::mocking::MockBlock<Benchmark>;
 
 /// A timestamp: milliseconds since the unix epoch.
 pub type UnixMilliseconds = u64;
@@ -27,7 +26,7 @@ pub type BlockNumber = u64;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
-    pub enum Test where
+    pub enum Benchmark where
         Block = Block,
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
@@ -50,6 +49,12 @@ impl AsRef<[u8]> for MockOpaqueAuthTicket {
     }
 }
 
+impl From<Vec<u8>> for MockOpaqueAuthTicket {
+    fn from(bytes: Vec<u8>) -> Self {
+        Self::decode(&mut bytes.as_ref()).unwrap()
+    }
+}
+
 pub struct MockAuthTicketConverter;
 
 impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAuthTicketConverter {
@@ -66,14 +71,14 @@ impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAu
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct MockVerifier;
 
-impl super::Verifier<Vec<u8>> for MockVerifier {
+impl crate::Verifier<Vec<u8>> for MockVerifier {
     type Error = Infallible;
 
-    fn verify<'a, D>(&self, _data: D, signature: Vec<u8>) -> Result<bool, Self::Error>
+    fn verify<'a, D>(&self, _data: D, _signature: Vec<u8>) -> Result<bool, Self::Error>
     where
         D: AsRef<[u8]> + Send + 'a,
     {
-        Ok(signature.starts_with(b"should_be_valid"))
+        Ok(true)
     }
 }
 
@@ -83,114 +88,70 @@ impl MaxEncodedLen for MockVerifier {
     }
 }
 
-mock! {
-    pub ValidatorSetUpdater {
-        pub fn update_validators_set(&self, validator_public_keys: Vec<ValidatorPublicKey>);
-        pub fn init_validators_set(&self, validator_public_keys: Vec<ValidatorPublicKey>);
-    }
-}
+pub struct MockValidatorSetUpdater;
 
-thread_local! {
-    pub static MOCK_VALIDATOR_SET_UPDATER: RefCell<MockValidatorSetUpdater> = RefCell::new(MockValidatorSetUpdater::new());
-}
-
-impl super::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater {
+impl crate::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater {
     fn update_validators_set<'a, I: Iterator<Item = &'a ValidatorPublicKey> + 'a>(
-        validator_public_keys: I,
+        _validator_public_keys: I,
     ) where
         ValidatorPublicKey: 'a,
     {
-        MOCK_VALIDATOR_SET_UPDATER.with(|val| {
-            val.borrow_mut()
-                .update_validators_set(validator_public_keys.cloned().collect())
-        });
+        ()
     }
 
     fn init_validators_set<'a, I: Iterator<Item = &'a ValidatorPublicKey> + 'a>(
-        validator_public_keys: I,
+        _validator_public_keys: I,
     ) where
         ValidatorPublicKey: 'a,
     {
-        MOCK_VALIDATOR_SET_UPDATER.with(|val| {
-            val.borrow_mut()
-                .init_validators_set(validator_public_keys.cloned().collect())
-        });
+        ()
     }
 }
 
-pub fn with_mock_validator_set_updater<F, R>(f: F) -> R
-where
-    F: FnOnce(&mut MockValidatorSetUpdater) -> R,
-{
-    MOCK_VALIDATOR_SET_UPDATER.with(|var| f(&mut *var.borrow_mut()))
-}
+pub struct MockCurrentMomentProvider;
 
-mock! {
-    pub CurrentMomentProvider {
-        pub fn now(&self) -> UnixMilliseconds;
-    }
-}
-
-thread_local! {
-    pub static MOCK_CURRENT_MOMENT_PROVIDER: RefCell<MockCurrentMomentProvider> = RefCell::new(MockCurrentMomentProvider::new());
-}
-
-impl super::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
+impl crate::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
     fn now() -> UnixMilliseconds {
-        MOCK_CURRENT_MOMENT_PROVIDER.with(|val| val.borrow().now())
-    }
-}
-
-pub fn with_mock_current_moment_provider<F, R>(f: F) -> R
-where
-    F: FnOnce(&mut MockCurrentMomentProvider) -> R,
-{
-    MOCK_CURRENT_MOMENT_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
-}
-
-mock! {
-    pub BeforeAuthHookProvider {
-        pub fn hook(&self, authentication: &super::Authentication<ValidatorPublicKey, UnixMilliseconds>) -> Result<(), sp_runtime::DispatchError>;
-    }
-}
-mock! {
-    pub AfterAuthHookProvider {
-        pub fn hook(&self, before_hook_data: ());
+        UnixMilliseconds::default()
     }
 }
 
 thread_local! {
-    pub static MOCK_BEFORE_AUTH_HOOK_PROVIDER: RefCell<MockBeforeAuthHookProvider> = RefCell::new(MockBeforeAuthHookProvider::new());
-    pub static MOCK_AFTER_AUTH_HOOK_PROVIDER: RefCell<MockAfterAuthHookProvider> = RefCell::new(MockAfterAuthHookProvider::new());
+    pub static MOCK_BEFORE_AUTH_HOOK_PROVIDER: RefCell<MockBeforeAuthHookProvider> = RefCell::new(MockBeforeAuthHookProvider{});
+    pub static MOCK_AFTER_AUTH_HOOK_PROVIDER: RefCell<MockAfterAuthHookProvider> = RefCell::new(MockAfterAuthHookProvider{});
 }
 
-impl super::BeforeAuthHook<ValidatorPublicKey, UnixMilliseconds> for MockBeforeAuthHookProvider {
+pub struct MockBeforeAuthHookProvider;
+
+impl MockBeforeAuthHookProvider {
+    pub fn hook(
+        &self,
+        authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>,
+    ) -> Result<(), sp_runtime::DispatchError> {
+        Ok(())
+    }
+}
+
+impl crate::BeforeAuthHook<ValidatorPublicKey, UnixMilliseconds> for MockBeforeAuthHookProvider {
     type Data = ();
 
     fn hook(
-        authentication: &super::Authentication<ValidatorPublicKey, UnixMilliseconds>,
+        authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>,
     ) -> Result<Self::Data, sp_runtime::DispatchError> {
         MOCK_BEFORE_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(authentication))
     }
 }
-impl super::AfterAuthHook<()> for MockAfterAuthHookProvider {
+
+pub struct MockAfterAuthHookProvider;
+
+impl MockAfterAuthHookProvider {
+    pub fn hook(&self, before_hook_data: ()) {}
+}
+
+impl crate::AfterAuthHook<()> for MockAfterAuthHookProvider {
     fn hook(before_hook_data: ()) {
         MOCK_AFTER_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(before_hook_data))
     }
-}
-
-pub fn with_mock_before_auth_hook_provider<F, R>(f: F) -> R
-where
-    F: FnOnce(&mut MockBeforeAuthHookProvider) -> R,
-{
-    MOCK_BEFORE_AUTH_HOOK_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
-}
-
-pub fn with_mock_after_auth_hook_provider<F, R>(f: F) -> R
-where
-    F: FnOnce(&mut MockAfterAuthHookProvider) -> R,
-{
-    MOCK_AFTER_AUTH_HOOK_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
 }
 
 parameter_types! {
@@ -198,7 +159,7 @@ parameter_types! {
     pub const SS58Prefix: u8 = 42;
 }
 
-impl system::Config for Test {
+impl system::Config for Benchmark {
     type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
     type BlockLength = ();
@@ -223,9 +184,6 @@ impl system::Config for Test {
     type SS58Prefix = SS58Prefix;
     type OnSetCode = ();
 }
-
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 
 const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
 const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
@@ -252,7 +210,7 @@ impl core::fmt::Display for DisplayMoment {
     }
 }
 
-impl pallet_bioauth::Config for Test {
+impl pallet_bioauth::Config for Benchmark {
     type Event = Event;
     type RobonodePublicKey = MockVerifier;
     type RobonodeSignature = Vec<u8>;
@@ -264,37 +222,46 @@ impl pallet_bioauth::Config for Test {
     type DisplayMoment = DisplayMoment;
     type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
-    type WeightInfo = weights::SubstrateWeight<Test>;
+    type WeightInfo = weights::SubstrateWeight<Benchmark>;
     type MaxAuthentications = MaxAuthentications;
     type MaxNonces = MaxNonces;
     type BeforeAuthHook = MockBeforeAuthHookProvider;
     type AfterAuthHook = MockAfterAuthHookProvider;
 }
 
-/// Build test externalities from the default genesis.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-    // Add mock validator set updater expectation for the genesis validators set init.
-    with_mock_validator_set_updater(|mock| {
-        mock.expect_init_validators_set()
-            .with(predicate::eq(vec![]))
-            .return_const(());
-    });
+#[cfg(feature = "runtime-benchmarks")]
+impl crate::benchmarking::AuthTicketSigner for Benchmark {
+    fn sign(_ticket: &[u8]) -> Vec<u8> {
+        vec![0; 64]
+    }
+}
 
+#[cfg(feature = "runtime-benchmarks")]
+impl crate::benchmarking::AuthTicketBuilder for Benchmark {
+    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Vec<u8> {
+        let public_key_fixed_size: [u8; 32] = public_key.try_into().unwrap();
+        let opaque_auth_ticket = AuthTicket {
+            public_key: public_key_fixed_size,
+            nonce,
+        };
+        opaque_auth_ticket.encode()
+    }
+}
+
+/// Build benchmark externalities from the default genesis.
+pub fn new_benchmark_ext() -> sp_io::TestExternalities {
     // Build externalities with default genesis.
-    let externalities = new_test_ext_with(Default::default());
-
-    // Assert the genesis validators set init.
-    with_mock_validator_set_updater(|mock| {
-        mock.checkpoint();
-    });
+    let externalities = new_benchmark_ext_with(Default::default());
 
     // Return ready-to-use externalities.
     externalities
 }
 
-/// Build test externalities from the custom genesis.
+/// Build benchmark externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
-pub fn new_test_ext_with(config: pallet_bioauth::GenesisConfig<Test>) -> sp_io::TestExternalities {
+pub fn new_benchmark_ext_with(
+    config: pallet_bioauth::GenesisConfig<Benchmark>,
+) -> sp_io::TestExternalities {
     // Build genesis.
     let config = GenesisConfig {
         bioauth: config,

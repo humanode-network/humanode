@@ -4985,6 +4985,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "hex-literal",
  "mockall",
  "parity-scale-codec",
  "scale-info",

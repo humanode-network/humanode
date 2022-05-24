@@ -20,6 +20,8 @@ use sp_std::fmt::Debug;
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 
+#[cfg(feature = "runtime-benchmarks")]
+pub mod benchmarking;
 pub mod weights;
 
 #[cfg(test)]
