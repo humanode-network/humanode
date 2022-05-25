@@ -107,7 +107,7 @@ impl From<TransactionPoolErrorDetails> for Value {
 
 /// Custom rpc error codes.
 #[derive(Debug, Clone, Copy)]
-enum BioauthErrorCode {
+enum ApiErrorCode {
     /// Signer has failed.
     Signer = 100,
     /// Request to robonode has failed.
@@ -267,7 +267,7 @@ where
                     ?error
                 );
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(BioauthErrorCode::ValidatorKeyExtraction as _).code(),
+                    ErrorCode::ServerError(ApiErrorCode::ValidatorKeyExtraction as _).code(),
                     "Unable to extract own key".to_owned(),
                     None::<()>,
                 )))
@@ -279,7 +279,7 @@ where
         let validator_key =
             self.validator_public_key()?
                 .ok_or_else(|| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(BioauthErrorCode::MissingValidatorKey as _).code(),
+                    ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
                     "Validator key not available".to_owned(),
                     None::<()>,
                 ))))?;
@@ -288,7 +288,7 @@ where
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {
             tracing::error!(message = "Signing failed", ?error);
             JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(BioauthErrorCode::Signer as _).code(),
+                ErrorCode::ServerError(ApiErrorCode::Signer as _).code(),
                 "Signing failed".to_owned(),
                 None::<()>,
             )))
@@ -351,7 +351,7 @@ where
             .get_facetec_device_sdk_params()
             .await
             .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(BioauthErrorCode::Robonode as _).code(),
+                ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
                 format!("Request to the robonode failed: {}", err),
                 None::<()>,
             ))))?;
@@ -365,7 +365,7 @@ where
             .get_facetec_session_token()
             .await
             .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(BioauthErrorCode::Robonode as _).code(),
+                ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
                 format!("Request to the robonode failed: {}", err),
                 None::<()>,
             ))))?;
@@ -386,7 +386,7 @@ where
             .runtime_api()
             .bioauth_status(&at, &own_key)
             .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(BioauthErrorCode::RuntimeApi as _).code(),
+                ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
                 format!("Unable to get status from the runtime: {}", err),
                 None::<()>,
             ))))?;
@@ -400,7 +400,7 @@ where
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
         let public_key = self.validator_public_key()?.ok_or_else(|| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-            ErrorCode::ServerError(BioauthErrorCode::MissingValidatorKey as _).code(),
+            ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
             "Validator key not available".to_string(),
             None::<()>,
         ))))?;
@@ -421,7 +421,7 @@ where
                 };
 
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(BioauthErrorCode::Robonode as _).code(),
+                    ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
                     format!("Request to the robonode failed: {}", err),
                     data,
                 )))
@@ -454,7 +454,7 @@ where
                 };
 
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(BioauthErrorCode::Robonode as _).code(),
+                    ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
                     format!("Request to the robonode failed: {}", err),
                     data,
                 )))
@@ -475,7 +475,7 @@ where
                 response.auth_ticket_signature.into(),
             )
             .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(BioauthErrorCode::RuntimeApi as _).code(),
+                    ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
                     format!("Error creating auth extrinsic: {}", err),
                     None::<()>,
                 ))))?;
@@ -497,7 +497,7 @@ where
 
 /// Convert a transaction pool error into a human-readable
 fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(err: T) -> JsonRpseeError {
-    let code = ErrorCode::ServerError(BioauthErrorCode::Transaction as _);
+    let code = ErrorCode::ServerError(ApiErrorCode::Transaction as _);
 
     let err = match err.into_pool_error() {
         Ok(err) => err,
