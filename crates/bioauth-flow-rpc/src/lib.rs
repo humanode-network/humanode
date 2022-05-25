@@ -148,7 +148,7 @@ impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
-pub trait BioauthApi<Timestamp> {
+pub trait Bioauth<Timestamp> {
     /// Get the configuration required for the Device SDK.
     #[method(name = "bioauth_getFacetecDeviceSdkParams")]
     async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams>;
@@ -307,7 +307,7 @@ impl<
         Block,
         Timestamp,
         TransactionPool,
-    > BioauthApiServer<Timestamp>
+    > BioauthServer<Timestamp>
     for Bioauth<
         RobonodeClient,
         ValidatorKeyExtractor,
