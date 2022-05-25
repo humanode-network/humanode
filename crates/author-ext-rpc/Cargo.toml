@@ -6,7 +6,7 @@ publish = false
 
 [dependencies]
 author-ext-api = { version = "0.1", path = "../author-ext-api" }
-bioauth-consensus = { version = "0.1", path = "../bioauth-consensus" }
+bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
 
 futures = { version = "0.3", features = ["compat", "bilock", "unstable"] }
 jsonrpc-core = "18"

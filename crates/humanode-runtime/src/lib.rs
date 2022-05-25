@@ -40,7 +40,6 @@ use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
-use sp_application_crypto::AppKey;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{
     crypto::{KeyTypeId, Public},
@@ -891,28 +890,6 @@ impl_runtime_apis! {
     impl sp_offchain::OffchainWorkerApi<Block> for Runtime {
         fn offchain_worker(header: &<Block as BlockT>::Header) {
             Executive::offchain_worker(header)
-        }
-    }
-
-    impl bioauth_consensus_api::BioauthConsensusApi<Block, KeystoreBioauthAccountId> for Runtime {
-        fn is_authorized(id: &KeystoreBioauthAccountId) -> bool {
-            let id =
-                AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
-            Bioauth::active_authentications().into_inner()
-                .iter()
-                .any(|stored_public_key| stored_public_key.public_key == id)
-        }
-    }
-
-    impl bioauth_consensus_api::BioauthConsensusSessionApi<Block, BioauthConsensusId> for Runtime {
-        fn is_authorized_through_session_key(id: &BioauthConsensusId) -> bool {
-            let id = match Session::key_owner(BioauthConsensusId::ID, id.as_slice()) {
-                Some(account_id) => account_id,
-                None => return false,
-            };
-            Bioauth::active_authentications().into_inner()
-                .iter()
-                .any(|stored_public_key| stored_public_key.public_key == id)
         }
     }
 
