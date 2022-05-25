@@ -18,7 +18,7 @@ use tracing::*;
 
 /// Custom rpc error codes.
 #[derive(Debug, Clone, Copy)]
-enum AuthorErrorCode {
+enum ApiErrorCode {
     /// Call to runtime api has failed.
     RuntimeApi = 300,
     /// Set_keys transaction has failed.
@@ -83,7 +83,7 @@ where
                     ?error
                 );
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(AuthorErrorCode::ValidatorKeyExtraction as _).code(),
+                    ErrorCode::ServerError(ApiErrorCode::ValidatorKeyExtraction as _).code(),
                     "Unable to extract own key".to_owned(),
                     None::<()>,
                 )))
@@ -116,7 +116,7 @@ where
 
         let validator_key = self.validator_public_key()?.ok_or_else(|| {
             JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(AuthorErrorCode::MissingValidatorKey as _).code(),
+                ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
                 "Validator key not available".to_owned(),
                 None::<()>,
             )))
@@ -130,7 +130,7 @@ where
             .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
             .map_err(|err| {
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(AuthorErrorCode::RuntimeApi as _).code(),
+                    ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
                     format!("Runtime error: {}", err),
                     None::<()>,
                 )))
@@ -138,14 +138,14 @@ where
             .map_err(|err| match err {
                 author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => {
                     JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                        ErrorCode::ServerError(AuthorErrorCode::RuntimeApi as _).code(),
+                        ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
                         format!("Error during session keys decoding: {}", err),
                         None::<()>,
                     )))
                 }
                 author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation => {
                     JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                        ErrorCode::ServerError(AuthorErrorCode::RuntimeApi as _).code(),
+                        ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
                         "Error during the creation of the signed set keys extrinsic".to_owned(),
                         None::<()>,
                     )))
@@ -165,7 +165,7 @@ where
                     |err| format!("Unexpected transaction pool error: {}", err),
                 );
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(AuthorErrorCode::Transaction as _).code(),
+                    ErrorCode::ServerError(ApiErrorCode::Transaction as _).code(),
                     message,
                     None::<()>,
                 )))
