@@ -2917,6 +2917,7 @@ version = "0.1.0"
 dependencies = [
  "author-ext-api",
  "author-ext-rpc",
+ "bioauth-consensus",
  "bioauth-flow-api",
  "bioauth-flow-rpc",
  "fc-db",
@@ -4995,6 +4996,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "hex-literal",
  "mockall",
  "parity-scale-codec",
  "scale-info",

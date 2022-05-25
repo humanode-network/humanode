@@ -5,7 +5,7 @@ use frame_support::{
 };
 use mockall::predicate;
 
-use crate::{self as pallet_bioauth, mock::*, *};
+use crate::{self as pallet_bioauth, mock::testing::*, *};
 
 /// An exact value of January 1st 2021 in UNIX time milliseconds.
 const JANUARY_1_2021: UnixMilliseconds = 1609459200 * 1000;

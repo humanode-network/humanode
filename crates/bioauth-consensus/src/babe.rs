@@ -17,7 +17,7 @@ pub struct BlockAuthorExtractor<Block: BlockT, Client> {
 
 /// An error that can occur during block author extraction with the babe consensus.
 #[derive(Debug, thiserror::Error)]
-pub enum BabeBlockAuthorExtractorError {
+pub enum BlockAuthorExtractorError {
     /// Unable to extract babe current epoch from the chain state via the runtime.
     #[error("unable to extract babe current epoch: {0}")]
     UnableToExtractCurrentEpoch(sp_api::ApiError),
@@ -53,7 +53,7 @@ where
     Client: ProvideRuntimeApi<Block>,
     Client::Api: BabeApi<Block>,
 {
-    type Error = BabeBlockAuthorExtractorError;
+    type Error = BlockAuthorExtractorError;
     type Block = Block;
     type PublicKeyType = sp_consensus_babe::AuthorityId;
 
@@ -67,7 +67,7 @@ where
             .client
             .runtime_api()
             .current_epoch(at)
-            .map_err(BabeBlockAuthorExtractorError::UnableToExtractCurrentEpoch)?;
+            .map_err(BlockAuthorExtractorError::UnableToExtractCurrentEpoch)?;
 
         // Get authorities list.
         let authorities = current_epoch.authorities;
@@ -78,12 +78,12 @@ where
             .logs()
             .iter()
             .find_map(CompatibleDigestItem::as_babe_pre_digest)
-            .ok_or(BabeBlockAuthorExtractorError::UnableToObtainSlot)?;
+            .ok_or(BlockAuthorExtractorError::UnableToObtainSlot)?;
 
         // Determine the author of the block.
         let author = authorities
             .get(pre_digest.authority_index() as usize)
-            .ok_or(BabeBlockAuthorExtractorError::UnableToObtainAuthor)?;
+            .ok_or(BlockAuthorExtractorError::UnableToObtainAuthor)?;
 
         let author_public_key = author.0.clone();
 
@@ -296,12 +296,12 @@ mod tests {
         drop(Arc::try_unwrap(client).unwrap());
 
         match res.unwrap_err() {
-            BabeBlockAuthorExtractorError::UnableToExtractCurrentEpoch(e)
+            BlockAuthorExtractorError::UnableToExtractCurrentEpoch(e)
                 if e.to_string() == "Test error" => {}
             ref e => panic!(
                 "assertion failed: `{:?}` does not match `{}`",
                 e,
-                stringify!(BabeBlockAuthorExtractorError::UnableToExtractCurrentEpoch(
+                stringify!(BlockAuthorExtractorError::UnableToExtractCurrentEpoch(
                     "Test error"
                 ))
             ),
@@ -342,11 +342,11 @@ mod tests {
         drop(Arc::try_unwrap(client).unwrap());
 
         match res.unwrap_err() {
-            BabeBlockAuthorExtractorError::UnableToObtainSlot => {}
+            BlockAuthorExtractorError::UnableToObtainSlot => {}
             ref e => panic!(
                 "assertion failed: `{:?}` does not match `{}`",
                 e,
-                stringify!(BabeBlockAuthorExtractorError::UnableToObtainSlot)
+                stringify!(BlockAuthorExtractorError::UnableToObtainSlot)
             ),
         }
     }
@@ -385,11 +385,11 @@ mod tests {
         drop(Arc::try_unwrap(client).unwrap());
 
         match res.unwrap_err() {
-            BabeBlockAuthorExtractorError::UnableToObtainAuthor => {}
+            BlockAuthorExtractorError::UnableToObtainAuthor => {}
             ref e => panic!(
                 "assertion failed: `{:?}` does not match `{}`",
                 e,
-                stringify!(BabeBlockAuthorExtractorError::UnableToObtainAuthor)
+                stringify!(BlockAuthorExtractorError::UnableToObtainAuthor)
             ),
         }
     }

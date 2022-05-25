@@ -4,7 +4,8 @@ use std::{collections::BTreeMap, sync::Arc};
 
 use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtServer};
-use bioauth_flow_rpc::{Bioauth, BioauthServer, Signer, SignerFactory, ValidatorKeyExtractorT};
+use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
+use bioauth_flow_rpc::{Bioauth, BioauthServer, Signer, SignerFactory};
 use fc_rpc::{
     Eth, EthApiServer, EthBlockDataCacheTask, EthFilter, EthFilterApiServer, EthPubSub,
     EthPubSubApiServer, Net, NetApiServer, OverrideHandle, RuntimeApiStorageOverride,

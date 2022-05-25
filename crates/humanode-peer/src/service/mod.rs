@@ -72,7 +72,12 @@ type FullBioauth = bioauth_consensus::BioauthBlockImport<
     FullClient,
     FullFrontier,
     bioauth_consensus::babe::BlockAuthorExtractor<Block, FullClient>,
-    bioauth_consensus::api::AuthorizationVerifier<Block, FullClient, BabeId>,
+    bioauth_consensus::api::AuthorizationVerifier<
+        Block,
+        FullClient,
+        BabeId,
+        bioauth_consensus::api::Session,
+    >,
 >;
 /// Frontier backend type.
 type FrontierBackend = fc_db::Backend<Block>;
@@ -308,14 +313,24 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry.as_ref().map(|x| x.handle()),
     );
 
-    let validator_key_extractor = Arc::new(
-        bioauth_consensus::keystore::ValidatorKeyExtractor::new(keystore_container.sync_keystore()),
-    );
+    let account_validator_key_extractor =
+        Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
+            KeystoreBioauthId,
+            _,
+        >::new(
+            keystore_container.sync_keystore(),
+            bioauth_consensus::keystore::OneOfOneSelector,
+        ));
 
     let proposer_factory = bioauth_consensus::BioauthProposer::new(
         proposer_factory,
-        Arc::clone(&validator_key_extractor),
-        bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
+        Arc::clone(&account_validator_key_extractor),
+        bioauth_consensus::api::AuthorizationVerifier::<
+            _,
+            _,
+            _,
+            bioauth_consensus::api::Direct,
+        >::new(Arc::clone(&client)),
     );
 
     let (network, system_rpc_tx, network_starter) =
@@ -347,10 +362,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
-        let bioauth_validator_key_extractor =
-            Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
-                KeystoreBioauthId,
-            >::new(keystore_container.sync_keystore()));
+        let bioauth_validator_key_extractor = Arc::clone(&account_validator_key_extractor);
         let bioauth_validator_signer_factory = {
             let keystore = keystore_container.keystore();
             Arc::new(move |key| {
@@ -432,6 +444,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             })?)
         })
     };
+
+    {
+        let keystore = keystore_container.sync_keystore();
+        init_dev_bioauth_keystore_keys(keystore.as_ref(), config.dev_key_seed.as_deref())
+            .map_err(|err| sc_service::Error::Other(err.to_string()))?;
+    }
 
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network: Arc::clone(&network),
@@ -568,4 +586,26 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     };
 
     Ok(task_manager)
+}
+
+/// Initialize the keystore with the [`KeystoreBioauthId`] key from the dev seed.
+///
+/// This is analogous to [`sp_session::generate_initial_session_keys`] which
+/// executes as part of [`sc_service::spawn_tasks`] - but for the [`KeystoreBioauthId`], which
+/// is not a part of the session keys set, so it wont be populated that way.
+///
+/// We need [`KeystoreBioauthId`] for the block production though, so we initialize it manually.
+fn init_dev_bioauth_keystore_keys<Keystore: sp_keystore::SyncCryptoStore + ?Sized>(
+    keystore: &Keystore,
+    seed: Option<&str>,
+) -> Result<(), sp_keystore::Error> {
+    if let Some(seed) = seed {
+        use sp_application_crypto::AppKey;
+        let _public = sp_keystore::SyncCryptoStore::sr25519_generate_new(
+            keystore,
+            KeystoreBioauthId::ID,
+            Some(seed),
+        )?;
+    }
+    Ok(())
 }

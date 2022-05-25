@@ -19,7 +19,7 @@ pub struct BlockAuthorExtractor<Block: BlockT, Client, AuraAuthorityId> {
 
 /// An error that can occur during block author extraction with the aura consensus.
 #[derive(Debug, thiserror::Error)]
-pub enum AuraBlockAuthorExtractorError {
+pub enum BlockAuthorExtractorError {
     /// Unable to extract aura authorities from the chain state via the runtime.
     #[error("unable to extract aura authorities: {0}")]
     UnableToExtractAuthorities(sp_api::ApiError),
@@ -58,7 +58,7 @@ where
     Client::Api: AuraApi<Block, AuraAuthorityId>,
     AuraAuthorityId: codec::Codec + Clone,
 {
-    type Error = AuraBlockAuthorExtractorError;
+    type Error = BlockAuthorExtractorError;
     type Block = Block;
     type PublicKeyType = AuraAuthorityId;
 
@@ -72,7 +72,7 @@ where
             .client
             .runtime_api()
             .authorities(at)
-            .map_err(AuraBlockAuthorExtractorError::UnableToExtractAuthorities)?;
+            .map_err(BlockAuthorExtractorError::UnableToExtractAuthorities)?;
 
         // Extract the slot of a block.
         let slot = block_header
@@ -80,7 +80,7 @@ where
             .logs()
             .iter()
             .find_map(CompatibleDigestItem::<()>::as_aura_pre_digest)
-            .ok_or(AuraBlockAuthorExtractorError::UnableToObtainSlot)?;
+            .ok_or(BlockAuthorExtractorError::UnableToObtainSlot)?;
 
         // Author index in aura is current slot number mod authories.
         let author_index = *slot % authorities.len() as u64;
@@ -239,11 +239,11 @@ mod tests {
         drop(Arc::try_unwrap(client).unwrap());
 
         match res.unwrap_err() {
-            AuraBlockAuthorExtractorError::UnableToObtainSlot => {}
+            BlockAuthorExtractorError::UnableToObtainSlot => {}
             ref e => panic!(
                 "assertion failed: `{:?}` does not match `{}`",
                 e,
-                stringify!(AuraBlockAuthorExtractorError::UnableToObtainSlot)
+                stringify!(BlockAuthorExtractorError::UnableToObtainSlot)
             ),
         }
     }
@@ -282,12 +282,12 @@ mod tests {
         drop(Arc::try_unwrap(client).unwrap());
 
         match res.unwrap_err() {
-            AuraBlockAuthorExtractorError::UnableToExtractAuthorities(e)
+            BlockAuthorExtractorError::UnableToExtractAuthorities(e)
                 if e.to_string() == "Test error" => {}
             ref e => panic!(
                 "assertion failed: `{:?}` does not match `{}`",
                 e,
-                stringify!(AuraBlockAuthorExtractorError::UnableToExtractAuthorities(
+                stringify!(BlockAuthorExtractorError::UnableToExtractAuthorities(
                     "Test error"
                 ))
             ),

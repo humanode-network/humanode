@@ -49,7 +49,6 @@ impl AsRef<[u8]> for MockOpaqueAuthTicket {
         panic!("should be unused in tests")
     }
 }
-
 pub struct MockAuthTicketConverter;
 
 impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAuthTicketConverter {
@@ -66,7 +65,7 @@ impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAu
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct MockVerifier;
 
-impl super::Verifier<Vec<u8>> for MockVerifier {
+impl crate::Verifier<Vec<u8>> for MockVerifier {
     type Error = Infallible;
 
     fn verify<'a, D>(&self, _data: D, signature: Vec<u8>) -> Result<bool, Self::Error>
@@ -94,7 +93,7 @@ thread_local! {
     pub static MOCK_VALIDATOR_SET_UPDATER: RefCell<MockValidatorSetUpdater> = RefCell::new(MockValidatorSetUpdater::new());
 }
 
-impl super::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater {
+impl crate::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater {
     fn update_validators_set<'a, I: Iterator<Item = &'a ValidatorPublicKey> + 'a>(
         validator_public_keys: I,
     ) where
@@ -135,7 +134,7 @@ thread_local! {
     pub static MOCK_CURRENT_MOMENT_PROVIDER: RefCell<MockCurrentMomentProvider> = RefCell::new(MockCurrentMomentProvider::new());
 }
 
-impl super::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
+impl crate::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
     fn now() -> UnixMilliseconds {
         MOCK_CURRENT_MOMENT_PROVIDER.with(|val| val.borrow().now())
     }
@@ -150,7 +149,7 @@ where
 
 mock! {
     pub BeforeAuthHookProvider {
-        pub fn hook(&self, authentication: &super::Authentication<ValidatorPublicKey, UnixMilliseconds>) -> Result<(), sp_runtime::DispatchError>;
+        pub fn hook(&self, authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>) -> Result<(), sp_runtime::DispatchError>;
     }
 }
 mock! {
@@ -164,16 +163,16 @@ thread_local! {
     pub static MOCK_AFTER_AUTH_HOOK_PROVIDER: RefCell<MockAfterAuthHookProvider> = RefCell::new(MockAfterAuthHookProvider::new());
 }
 
-impl super::BeforeAuthHook<ValidatorPublicKey, UnixMilliseconds> for MockBeforeAuthHookProvider {
+impl crate::BeforeAuthHook<ValidatorPublicKey, UnixMilliseconds> for MockBeforeAuthHookProvider {
     type Data = ();
 
     fn hook(
-        authentication: &super::Authentication<ValidatorPublicKey, UnixMilliseconds>,
+        authentication: &crate::Authentication<ValidatorPublicKey, UnixMilliseconds>,
     ) -> Result<Self::Data, sp_runtime::DispatchError> {
         MOCK_BEFORE_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(authentication))
     }
 }
-impl super::AfterAuthHook<()> for MockAfterAuthHookProvider {
+impl crate::AfterAuthHook<()> for MockAfterAuthHookProvider {
     fn hook(before_hook_data: ()) {
         MOCK_AFTER_AUTH_HOOK_PROVIDER.with(|val| val.borrow().hook(before_hook_data))
     }
