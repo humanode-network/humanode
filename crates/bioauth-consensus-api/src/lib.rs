@@ -13,4 +13,11 @@ sp_api::decl_runtime_apis! {
         /// Determine whether an id is bioauth-authorized at the current block.
         fn is_authorized(id: &Id) -> bool;
     }
+
+    /// Runtime API for the bioauth consensus with session key.
+    pub trait BioauthConsensusSessionApi<Id: Encode> {
+        /// Determine whether an [`Id`] is bioauth-authorized at the current block through
+        /// a session key ownership.
+        fn is_authorized_through_session_key(id: &Id) -> bool;
+    }
 }
