@@ -31,7 +31,7 @@ enum ApiErrorCode {
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
-pub trait AuthorExtRpcApi {
+pub trait AuthorExt {
     /// Set_keys with provided session keys data.
     #[method(name = "authorExt_setKeys")]
     async fn set_keys(&self, session_keys: Bytes) -> RpcResult<()>;
@@ -92,7 +92,7 @@ where
 }
 
 #[async_trait]
-impl<ValidatorKeyExtractor, Client, Block, TransactionPool> AuthorExtRpcApiServer
+impl<ValidatorKeyExtractor, Client, Block, TransactionPool> AuthorExtServer
     for AuthorExt<ValidatorKeyExtractor, Client, Block, TransactionPool>
 where
     Client: Send + Sync + 'static,
