@@ -10,7 +10,6 @@ substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate"
 
 [dependencies]
 author-ext-api = { version = "0.1", path = "../author-ext-api", default-features = false }
-bioauth-consensus-api = { version = "0.1", path = "../bioauth-consensus-api", default-features = false }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id", default-features = false }
@@ -86,7 +85,6 @@ runtime-benchmarks = [
 ]
 std = [
   "author-ext-api/std",
-  "bioauth-consensus-api/std",
   "bioauth-flow-api/std",
   "keystore-bioauth-account-id/std",
   "primitives-auth-ticket/std",

@@ -4,7 +4,7 @@ use std::marker::PhantomData;
 use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
-use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
+use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use jsonrpsee::{
     core::{async_trait, Error as JsonRpseeError, RpcResult},
     proc_macros::rpc,
@@ -70,24 +70,22 @@ impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
 impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
     AuthorExt<ValidatorKeyExtractor, Client, Block, TransactionPool>
 where
-    ValidatorKeyExtractor: ValidatorKeyExtractorT,
+    ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
 {
     /// Try to extract the validator key.
     fn validator_public_key(&self) -> RpcResult<Option<ValidatorKeyExtractor::PublicKeyType>> {
-        self.validator_key_extractor
-            .extract_validator_key()
-            .map_err(|error| {
-                tracing::error!(
-                    message = "Unable to extract own key at author extension RPC",
-                    ?error
-                );
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::ValidatorKeyExtraction as _).code(),
-                    "Unable to extract own key".to_owned(),
-                    None::<()>,
-                )))
-            })
+        self.validator_key_extractor.extract_key().map_err(|error| {
+            tracing::error!(
+                message = "Unable to extract own key at author extension RPC",
+                ?error
+            );
+            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
+                ErrorCode::ServerError(ApiErrorCode::ValidatorKeyExtraction as _).code(),
+                "Unable to extract own key".to_owned(),
+                None::<()>,
+            )))
+        })
     }
 }
 
@@ -101,7 +99,7 @@ where
     ValidatorKeyExtractor: Send + Sync + 'static,
     ValidatorKeyExtractor::PublicKeyType: Send + Sync + 'static,
 
-    ValidatorKeyExtractor: ValidatorKeyExtractorT,
+    ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]>,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
     Client: HeaderBackend<Block>,

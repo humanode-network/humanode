@@ -19,7 +19,6 @@ pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
-use sp_consensus_babe::AuthorityId as BabeId;
 use tracing::*;
 
 use crate::configuration::Configuration;
@@ -65,20 +64,8 @@ type FullGrandpa =
 type FullBabe = sc_consensus_babe::BabeBlockImport<Block, FullClient, FullGrandpa>;
 /// Full type for FrontierBlockImport.
 type FullFrontier = FrontierBlockImport<Block, FullBabe, FullClient>;
-/// Full type for BioauthBlockImport.
-type FullBioauth = bioauth_consensus::BioauthBlockImport<
-    FullBackend,
-    Block,
-    FullClient,
-    FullFrontier,
-    bioauth_consensus::babe::BlockAuthorExtractor<Block, FullClient>,
-    bioauth_consensus::api::AuthorizationVerifier<
-        Block,
-        FullClient,
-        BabeId,
-        bioauth_consensus::api::Session,
-    >,
->;
+/// Whatever we currently use as the block import.
+type EffectiveFullBlockImport = FullFrontier;
 /// Frontier backend type.
 type FrontierBackend = fc_db::Backend<Block>;
 
@@ -111,7 +98,7 @@ pub fn new_partial(
         (
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
-            FullBioauth,
+            EffectiveFullBlockImport,
             inherents::Creator,
             Arc<FrontierBackend>,
             Option<Telemetry>,
@@ -192,13 +179,6 @@ pub fn new_partial(
         Arc::clone(&frontier_backend),
     );
 
-    let bioauth_consensus_block_import = bioauth_consensus::BioauthBlockImport::new(
-        Arc::clone(&client),
-        frontier_block_import,
-        bioauth_consensus::babe::BlockAuthorExtractor::new(Arc::clone(&client)),
-        bioauth_consensus::api::AuthorizationVerifier::new(Arc::clone(&client)),
-    );
-
     let raw_slot_duration = babe_link.config().slot_duration();
     let eth_target_gas_price = evm_config.target_gas_price;
     let inherent_data_providers_creator = inherents::Creator {
@@ -208,7 +188,7 @@ pub fn new_partial(
 
     let import_queue = sc_consensus_babe::import_queue(
         babe_link.clone(),
-        bioauth_consensus_block_import.clone(),
+        frontier_block_import.clone(),
         Some(Box::new(grandpa_block_import)),
         Arc::clone(&client),
         select_chain.clone(),
@@ -229,7 +209,7 @@ pub fn new_partial(
         other: (
             grandpa_link,
             babe_link,
-            bioauth_consensus_block_import,
+            frontier_block_import,
             inherent_data_providers_creator,
             frontier_backend,
             telemetry,
@@ -252,7 +232,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             (
                 grandpa_link,
                 babe_link,
-                bioauth_consensus_block_import,
+                block_import,
                 inherent_data_providers_creator,
                 frontier_backend,
                 mut telemetry,
@@ -314,24 +294,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     );
 
     let account_validator_key_extractor =
-        Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
-            KeystoreBioauthId,
-            _,
-        >::new(
+        Arc::new(bioauth_keys::KeyExtractor::<KeystoreBioauthId, _>::new(
             keystore_container.sync_keystore(),
-            bioauth_consensus::keystore::OneOfOneSelector,
+            bioauth_keys::OneOfOneSelector,
         ));
-
-    let proposer_factory = bioauth_consensus::BioauthProposer::new(
-        proposer_factory,
-        Arc::clone(&account_validator_key_extractor),
-        bioauth_consensus::api::AuthorizationVerifier::<
-            _,
-            _,
-            _,
-            bioauth_consensus::api::Direct,
-        >::new(Arc::clone(&client)),
-    );
 
     let (network, system_rpc_tx, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
@@ -469,7 +435,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         client: Arc::clone(&client),
         select_chain,
         env: proposer_factory,
-        block_import: bioauth_consensus_block_import,
+        block_import,
         sync_oracle: Arc::clone(&network),
         justification_sync_link: Arc::clone(&network),
         create_inherent_data_providers: inherent_data_providers_creator,

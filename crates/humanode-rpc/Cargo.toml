@@ -7,9 +7,9 @@ publish = false
 [dependencies]
 author-ext-api = { version = "0.1", path = "../author-ext-api" }
 author-ext-rpc = { version = "0.1", path = "../author-ext-rpc" }
-bioauth-consensus = { version = "0.1", path = "../bioauth-consensus" }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
 bioauth-flow-rpc = { version = "0.1", path = "../bioauth-flow-rpc" }
+bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
 frontier-api = { version = "0.1", path = "../frontier-api" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 primitives-frontier = { version = "0.1", path = "../primitives-frontier" }

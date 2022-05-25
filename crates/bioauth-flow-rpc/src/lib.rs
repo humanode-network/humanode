@@ -7,8 +7,8 @@
 use std::marker::PhantomData;
 use std::sync::Arc;
 
-use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
 use bioauth_flow_api::BioauthFlowApi;
+use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use jsonrpsee::{
     core::{Error as JsonRpseeError, RpcResult},
     proc_macros::rpc,
@@ -251,7 +251,7 @@ impl<
         TransactionPool,
     >
 where
-    ValidatorKeyExtractor: ValidatorKeyExtractorT,
+    ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
     ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
     <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
@@ -260,7 +260,7 @@ where
     /// Try to extract the validator key.
     fn validator_public_key(&self) -> RpcResult<Option<ValidatorKeyExtractor::PublicKeyType>> {
         self.validator_key_extractor
-            .extract_validator_key()
+            .extract_key()
             .map_err(|error| {
                 tracing::error!(
                     message = "Unable to extract own key at bioauth flow RPC",
@@ -329,7 +329,7 @@ where
     TransactionPool: Send + Sync + 'static,
 
     RobonodeClient: AsRef<robonode_client::Client>,
-    ValidatorKeyExtractor: ValidatorKeyExtractorT,
+    ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]>,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
     ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
