@@ -287,12 +287,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     );
 
     let account_validator_key_extractor =
-        Arc::new(bioauth_consensus::keystore::ValidatorKeyExtractor::<
-            KeystoreBioauthId,
-            _,
-        >::new(
+        Arc::new(bioauth_keys::KeyExtractor::<KeystoreBioauthId, _>::new(
             keystore_container.sync_keystore(),
-            bioauth_consensus::keystore::OneOfOneSelector,
+            bioauth_keys::OneOfOneSelector,
         ));
 
     let (network, system_rpc_tx, network_starter) =

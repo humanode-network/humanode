@@ -385,7 +385,7 @@ name = "author-ext-rpc"
 version = "0.1.0"
 dependencies = [
  "author-ext-api",
- "bioauth-consensus",
+ "bioauth-keys",
  "futures 0.3.19",
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -496,41 +496,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bioauth-consensus"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "bioauth-consensus-api",
- "futures 0.3.19",
- "mockall",
- "node-primitives",
- "parity-scale-codec",
- "sc-client-api",
- "sc-consensus",
- "sc-service",
- "sp-api",
- "sp-application-crypto",
- "sp-blockchain",
- "sp-consensus",
- "sp-consensus-aura",
- "sp-consensus-babe",
- "sp-inherents",
- "sp-keystore",
- "sp-runtime",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "bioauth-consensus-api"
-version = "0.1.0"
-dependencies = [
- "parity-scale-codec",
- "sp-api",
- "sp-std",
-]
-
-[[package]]
 name = "bioauth-flow-api"
 version = "0.1.0"
 dependencies = [
@@ -546,8 +511,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "bioauth-consensus",
  "bioauth-flow-api",
+ "bioauth-keys",
  "futures 0.3.19",
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -563,6 +528,15 @@ dependencies = [
  "sp-runtime",
  "tokio",
  "tracing",
+]
+
+[[package]]
+name = "bioauth-keys"
+version = "0.1.0"
+dependencies = [
+ "sp-application-crypto",
+ "sp-keystore",
+ "thiserror",
 ]
 
 [[package]]
@@ -2779,8 +2753,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
- "bioauth-consensus",
  "bioauth-flow-rpc",
+ "bioauth-keys",
  "fc-consensus",
  "fc-db",
  "fc-mapping-sync",
@@ -2850,9 +2824,9 @@ version = "0.1.0"
 dependencies = [
  "author-ext-api",
  "author-ext-rpc",
- "bioauth-consensus",
  "bioauth-flow-api",
  "bioauth-flow-rpc",
+ "bioauth-keys",
  "fc-db",
  "fc-rpc",
  "fc-rpc-core",
@@ -2891,7 +2865,6 @@ name = "humanode-runtime"
 version = "0.1.0"
 dependencies = [
  "author-ext-api",
- "bioauth-consensus-api",
  "bioauth-flow-api",
  "chrono",
  "fp-rpc",
@@ -4641,19 +4614,6 @@ dependencies = [
  "serde_json",
  "thiserror",
  "url 2.2.2",
-]
-
-[[package]]
-name = "node-primitives"
-version = "2.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-application-crypto",
- "sp-core",
- "sp-runtime",
 ]
 
 [[package]]
@@ -7856,24 +7816,6 @@ dependencies = [
  "sp-std",
  "sp-version",
  "thiserror",
-]
-
-[[package]]
-name = "sp-consensus-aura"
-version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=master#1a30fa202e00dfeac07cb648e1f557ce938d5f1a"
-dependencies = [
- "async-trait",
- "parity-scale-codec",
- "scale-info",
- "sp-api",
- "sp-application-crypto",
- "sp-consensus",
- "sp-consensus-slots",
- "sp-inherents",
- "sp-runtime",
- "sp-std",
- "sp-timestamp",
 ]
 
 [[package]]

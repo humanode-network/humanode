@@ -4,8 +4,8 @@ use std::{collections::BTreeMap, sync::Arc};
 
 use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtRpcApi};
-use bioauth_consensus::ValidatorKeyExtractor as ValidatorKeyExtractorT;
 use bioauth_flow_rpc::{Bioauth, BioauthApi, Signer, SignerFactory};
+use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use fc_rpc::{
     EthApi, EthApiServer, EthFilterApi, EthFilterApiServer, EthPubSubApi, EthPubSubApiServer,
     HexEncodedIdProvider, NetApi, NetApiServer, Web3Api, Web3ApiServer,
@@ -182,7 +182,7 @@ where
     C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
     C::Api: frontier_api::TransactionConverterApi<Block, UncheckedExtrinsic>,
     P: TransactionPool<Block = Block> + 'static,
-    VKE: ValidatorKeyExtractorT + Send + Sync + 'static,
+    VKE: KeyExtractorT + Send + Sync + 'static,
     VKE::PublicKeyType: Encode + AsRef<[u8]> + Send + Sync,
     VKE::Error: std::fmt::Debug,
     VSF: SignerFactory<Vec<u8>, VKE::PublicKeyType> + Send + Sync + 'static,

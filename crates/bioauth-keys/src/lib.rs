@@ -1,12 +1,23 @@
-//! Keystore integration.
+//! The bioauth keys utils.
 
 use std::marker::PhantomData;
 
 use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
 use sp_keystore::SyncCryptoStorePtr;
 
-/// Encapsulates validator public key extraction logic.
-pub struct ValidatorKeyExtractor<Id, Selector> {
+pub mod traits;
+
+/// Selects a particular key from the list of the keys available.
+pub trait KeySelector<Key> {
+    /// An error that renders key selection impossible.
+    type Error;
+
+    /// Select one key from the list of the keys.
+    fn select_key<T: Iterator<Item = Key>>(&self, keys: T) -> Result<Option<Key>, Self::Error>;
+}
+
+/// Extracts a public key of a certain type from the keystore.
+pub struct KeyExtractor<Id, Selector> {
     /// Keystore to extract author.
     keystore: SyncCryptoStorePtr,
     /// The validator key selector.
@@ -15,9 +26,9 @@ pub struct ValidatorKeyExtractor<Id, Selector> {
     _phantom_id: PhantomData<Id>,
 }
 
-/// An error that can occur at validator public key extraction logic.
+/// An error that can occur at public key extraction logic.
 #[derive(Debug, thiserror::Error)]
-pub enum ValidatorKeyExtractorError<SelectorError> {
+pub enum KeyExtractorError<SelectorError> {
     /// Something went wrong during the keystore interop.
     #[error("keystore error: {0}")]
     Keystore(sp_keystore::Error),
@@ -26,8 +37,8 @@ pub enum ValidatorKeyExtractorError<SelectorError> {
     Selector(SelectorError),
 }
 
-impl<Id, Selector> ValidatorKeyExtractor<Id, Selector> {
-    /// Create a new [`ValidatorKeyExtractor`].
+impl<Id, Selector> KeyExtractor<Id, Selector> {
+    /// Create a new [`KeyExtractor`].
     pub fn new(keystore: SyncCryptoStorePtr, selector: Selector) -> Self {
         Self {
             keystore,
@@ -37,21 +48,19 @@ impl<Id, Selector> ValidatorKeyExtractor<Id, Selector> {
     }
 }
 
-impl<Id, Selector> crate::ValidatorKeyExtractor for ValidatorKeyExtractor<Id, Selector>
+impl<Id, Selector> traits::KeyExtractor for KeyExtractor<Id, Selector>
 where
     Id: AppPublic,
-    Selector: crate::ValidatorKeySelector<Id>,
+    Selector: KeySelector<Id>,
 {
-    type Error = ValidatorKeyExtractorError<Selector::Error>;
+    type Error = KeyExtractorError<Selector::Error>;
     type PublicKeyType = Id;
 
-    fn extract_validator_key(&self) -> Result<Option<Self::PublicKeyType>, Self::Error> {
+    fn extract_key(&self) -> Result<Option<Self::PublicKeyType>, Self::Error> {
         let keystore_ref = self.keystore.as_ref();
 
-        let crypto_type_public_pairs = tokio::task::block_in_place(move || {
-            sp_keystore::SyncCryptoStore::keys(keystore_ref, Id::ID)
-        })
-        .map_err(ValidatorKeyExtractorError::Keystore)?;
+        let crypto_type_public_pairs = sp_keystore::SyncCryptoStore::keys(keystore_ref, Id::ID)
+            .map_err(KeyExtractorError::Keystore)?;
 
         let matching_crypto_public_keys = crypto_type_public_pairs.into_iter().filter_map(
             |CryptoTypePublicPair(crypto_type_id, public_key)| {
@@ -68,7 +77,7 @@ where
         let key = self
             .selector
             .select_key(matching_keys)
-            .map_err(ValidatorKeyExtractorError::Selector)?;
+            .map_err(KeyExtractorError::Selector)?;
 
         Ok(key)
     }
@@ -83,7 +92,7 @@ pub struct OneOfOneSelector;
 #[error("We expect there to be no more than one key of a certain type and purpose")]
 pub struct MultipleKeysError;
 
-impl<Id> crate::ValidatorKeySelector<Id> for OneOfOneSelector {
+impl<Id> KeySelector<Id> for OneOfOneSelector {
     type Error = MultipleKeysError;
 
     fn select_key<T: Iterator<Item = Id>>(&self, mut keys: T) -> Result<Option<Id>, Self::Error> {

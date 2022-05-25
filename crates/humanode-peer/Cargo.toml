@@ -8,10 +8,8 @@ publish = false
 default-run = "humanode-peer"
 
 [dependencies]
-bioauth-consensus = { version = "0.1", path = "../bioauth-consensus", features = [
-  "all",
-] }
 bioauth-flow-rpc = { version = "0.1", path = "../bioauth-flow-rpc" }
+bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
 humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id" }
