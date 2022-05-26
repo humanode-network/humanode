@@ -64,6 +64,7 @@ sp-inherents = { default-features = false, git = "https://github.com/humanode-ne
 sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-staking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -125,6 +126,7 @@ std = [
   "sp-offchain/std",
   "sp-runtime/std",
   "sp-session/std",
+  "sp-staking/std",
   "sp-std/std",
   "sp-transaction-pool/std",
   "sp-version/std",

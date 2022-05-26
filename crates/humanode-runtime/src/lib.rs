@@ -584,12 +584,45 @@ parameter_types! {
     pub const MaxPeerDataEncodingSize: u32 = MAX_PEER_DATA_ENCODING_SIZE;
 }
 
+pub struct ImOnlineSlasher;
+
+impl
+    sp_staking::offence::ReportOffence<
+        AccountId,
+        pallet_im_online::IdentificationTuple<Runtime>,
+        pallet_im_online::UnresponsivenessOffence<pallet_im_online::IdentificationTuple<Runtime>>,
+    > for ImOnlineSlasher
+{
+    fn report_offence(
+        _reporters: Vec<AccountId>,
+        offence: pallet_im_online::UnresponsivenessOffence<
+            pallet_im_online::IdentificationTuple<Runtime>,
+        >,
+    ) -> Result<(), sp_staking::offence::OffenceError> {
+        for offender in offence.offenders {
+            Bioauth::deauthenticate(&offender.0);
+        }
+        Ok(())
+    }
+
+    fn is_known_offence(
+        _offenders: &[pallet_im_online::IdentificationTuple<Runtime>],
+        _time_slot: &<pallet_im_online::UnresponsivenessOffence<
+            pallet_im_online::IdentificationTuple<Runtime>,
+        > as sp_staking::offence::Offence<
+            pallet_im_online::IdentificationTuple<Runtime>,
+        >>::TimeSlot,
+    ) -> bool {
+        unreachable!("ImOnline will never call `is_known_offence`")
+    }
+}
+
 impl pallet_im_online::Config for Runtime {
     type AuthorityId = ImOnlineId;
     type Event = Event;
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
-    type ReportUnresponsiveness = ();
+    type ReportUnresponsiveness = ImOnlineSlasher;
     type UnsignedPriority = ImOnlineUnsignedPriority;
     type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
     type MaxKeys = MaxKeys;

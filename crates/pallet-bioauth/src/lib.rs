@@ -396,6 +396,29 @@ pub mod pallet {
         Ok(())
     }
 
+    /// Public API the pallet exposes to the runtime.
+    impl<T: Config> Pallet<T> {
+        pub fn is_authenticated(public_key: &<T as Config>::ValidatorPublicKey) -> bool {
+            ActiveAuthentications::<T>::get()
+                .iter()
+                .any(|authentication| &authentication.public_key == public_key)
+        }
+
+        pub fn deauthenticate(public_key: &<T as Config>::ValidatorPublicKey) -> bool {
+            ActiveAuthentications::<T>::mutate(|active_authentications| {
+                let mut removed = false;
+                active_authentications.retain(|authentication| {
+                    if &authentication.public_key == public_key {
+                        removed = true;
+                        return false;
+                    }
+                    true
+                });
+                removed
+            })
+        }
+    }
+
     /// Dispatchable functions allow users to interact with the pallet and invoke state changes.
     /// These functions materialize as "extrinsics", which are often compared to transactions.
     /// Dispatchable functions must be annotated with a weight and must return
