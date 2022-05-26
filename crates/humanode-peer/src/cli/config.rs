@@ -94,13 +94,22 @@ fn rpc_url_from_params(params: &BioauthFlowParams, rpc_port: Option<u16>) -> Rpc
         return RpcUrl::Unset;
     }
     if params.rpc_url_ngrok_detect {
+        let mut scheme_override = None;
+        if !params.rpc_url_ngrok_scheme_override.is_empty() {
+            scheme_override = Some(params.rpc_url_ngrok_scheme_override.clone());
+        }
         return RpcUrl::DetectFromNgrok {
             tunnel_name: params.rpc_url_ngrok_detect_from.clone(),
+            scheme_override,
         };
     }
 
     if let Some(rpc_endpoint_port) = rpc_port {
-        return RpcUrl::LocalhostWithPort { rpc_endpoint_port };
+        let scheme = params.rpc_url_scheme.as_deref().unwrap_or("ws").into();
+        return RpcUrl::LocalhostWithPort {
+            rpc_endpoint_port,
+            scheme,
+        };
     }
 
     RpcUrl::Unset
