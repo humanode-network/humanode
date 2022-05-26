@@ -1,14 +1,12 @@
 //! Inherent data providers creator used at Babe import_queue and start_babe.
 
-use std::time::Duration;
-
 use sp_core::U256;
 
 /// Create inherent data providers.
 #[derive(Debug, Clone)]
 pub struct Creator {
     /// Consensus slot duration.
-    pub raw_slot_duration: Duration,
+    pub raw_slot_duration: sp_consensus_babe::SlotDuration,
     /// Ethereum gas target price.
     pub eth_target_gas_price: u64,
 }
@@ -28,10 +26,11 @@ impl sp_inherents::CreateInherentDataProviders<super::Block, ()> for Creator {
     ) -> Result<Self::InherentDataProviders, Box<dyn std::error::Error + Send + Sync>> {
         let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
-        let slot = sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_duration(
-            *timestamp,
-            self.raw_slot_duration,
-        );
+        let slot =
+            sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+                *timestamp,
+                self.raw_slot_duration,
+            );
 
         let dynamic_fee =
             pallet_dynamic_fee::InherentDataProvider(U256::from(self.eth_target_gas_price));

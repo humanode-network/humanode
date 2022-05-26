@@ -143,6 +143,7 @@ impl system::Config for Benchmark {
     type SystemWeightInfo = ();
     type SS58Prefix = SS58Prefix;
     type OnSetCode = ();
+    type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
 const TIMESTAMP_SECOND: UnixMilliseconds = 1000;

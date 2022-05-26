@@ -2,19 +2,18 @@
 
 use bip39::{Language, Mnemonic, MnemonicType};
 use sc_cli::{utils, OutputTypeFlag};
-use structopt::StructOpt;
 
 use super::KeystoreBioauthPair;
 
 /// The `bioauth key generate` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct GenerateKeyCmd {
     /// The number of words in the phrase to generate. One of 12 (default), 15, 18, 21 and 24.
-    #[structopt(long)]
+    #[clap(long)]
     words: Option<usize>,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub output_scheme: OutputTypeFlag,
 }
 

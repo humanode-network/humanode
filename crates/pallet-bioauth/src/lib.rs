@@ -272,7 +272,6 @@ pub mod pallet {
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
     #[pallet::generate_store(pub(super) trait Store)]
-    #[pallet::generate_storage_info]
     pub struct Pallet<T>(_);
 
     /// The public key of the robonode.
@@ -700,6 +699,16 @@ where
 
     fn additional_signed(&self) -> sp_std::result::Result<(), TransactionValidityError> {
         Ok(())
+    }
+
+    fn pre_dispatch(
+        self,
+        who: &T::AccountId,
+        call: &T::Call,
+        info: &DispatchInfoOf<T::Call>,
+        len: usize,
+    ) -> Result<Self::Pre, TransactionValidityError> {
+        self.validate(who, call, info, len).map(|_| ())
     }
 
     fn validate(

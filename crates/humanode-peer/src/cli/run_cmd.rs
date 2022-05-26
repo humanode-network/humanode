@@ -1,23 +1,21 @@
 //! The "default" command implementation, used when no subcommands are provided.
 
-use structopt::StructOpt;
-
 use super::{params, CliConfigurationExt, SubstrateCliConfigurationProvider};
 
 /// The `run` command used to run a node.
 /// Expands the [`sc_cli::RunCmd`] with Humanode options.
-#[derive(Debug, StructOpt, Clone)]
+#[derive(Debug, clap::Parser, Clone)]
 pub struct RunCmd {
     /// The base command.
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub base: sc_cli::RunCmd,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub bioauth_flow_params: params::BioauthFlowParams,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub evm_params: params::EvmParams,
 }
 

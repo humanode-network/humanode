@@ -1,20 +1,19 @@
 //! Commands hierarchy root.
 
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
-use structopt::StructOpt;
 
 use super::{CliConfigurationExt, Runner, Subcommand};
 use crate::chain_spec;
 
 /// The root of the CLI commands hierarchy.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct Root {
     /// Additional subcommands.
-    #[structopt(subcommand)]
+    #[clap(subcommand)]
     pub subcommand: Option<Subcommand>,
 
     /// The `run` command used to run a node.
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub run: super::RunCmd,
 }
 

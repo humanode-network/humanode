@@ -1,7 +1,5 @@
 //! Bioauth key management subcommands.
 
-use structopt::StructOpt;
-
 use crate::service::KeystoreBioauthId;
 
 pub mod generate;
@@ -13,7 +11,7 @@ pub mod list;
 pub type KeystoreBioauthPair = <<KeystoreBioauthId as sp_application_crypto::CryptoType>::Pair as sp_application_crypto::AppPair>::Generic;
 
 /// Subcommands for the `bioauth key` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Subcommand)]
 pub enum KeyCmd {
     /// Generate the bioauth key.
     Generate(generate::GenerateKeyCmd),

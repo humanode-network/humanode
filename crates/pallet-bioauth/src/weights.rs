@@ -1,6 +1,6 @@
 //! Weights definition for pallet-bioauth.
 
-use frame_support::{traits::Get, weights::Weight};
+use frame_support::{traits::DefensiveSaturating, traits::Get, weights::Weight};
 use sp_std::marker::PhantomData;
 
 /// Weight functions needed for pallet-bioauth.
@@ -18,8 +18,8 @@ pub fn calculate_weight<T: frame_system::Config>(
     writes: Weight,
 ) -> Weight {
     start_weight
-        .saturating_add(T::DbWeight::get().reads(reads))
-        .saturating_add(T::DbWeight::get().writes(writes))
+        .defensive_saturating_add(T::DbWeight::get().reads(reads))
+        .defensive_saturating_add(T::DbWeight::get().writes(writes))
 }
 
 /// Weights for pallet-bioauth using the Humanode Substrate-based node and recommended hardware.

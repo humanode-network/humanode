@@ -20,11 +20,11 @@ primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", 
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 
 chrono = { version = "0.4.19", default-features = false }
-codec = { package = "parity-scale-codec", version = "2", default-features = false, features = [
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
   "derive",
 ] }
-fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
 frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -34,13 +34,13 @@ frame-system-rpc-runtime-api = { default-features = false, git = "https://github
 hex-literal = { version = "0.3", optional = true }
 pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -51,7 +51,7 @@ pallet-sudo = { default-features = false, git = "https://github.com/humanode-net
 pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-scale-info = { version = "1.0", default-features = false, features = [
+scale-info = { version = "2.1.1", default-features = false, features = [
   "derive",
 ] }
 serde = { version = "1", features = ["derive"], optional = true }

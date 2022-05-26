@@ -124,6 +124,8 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         None,
         // Protocol ID
         None,
+        // Fork
+        None,
         // Properties
         None,
         // Extensions
@@ -173,6 +175,8 @@ pub fn development_config() -> Result<ChainSpec, String> {
         // Telemetry
         None,
         // Protocol ID
+        None,
+        // Fork
         None,
         // Properties
         None,
@@ -226,6 +230,8 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
         // Telemetry
         None,
         // Protocol ID
+        None,
+        // Fork
         None,
         // Properties
         None,
@@ -283,7 +289,7 @@ fn testnet_genesis(
         im_online: ImOnlineConfig { keys: vec![] },
         sudo: SudoConfig {
             // Assign network admin rights.
-            key: root_key,
+            key: Some(root_key),
         },
         bioauth: BioauthConfig {
             robonode_public_key,
@@ -300,7 +306,7 @@ fn testnet_genesis(
                     // Private key: 0xddf0d48720b5478d0bb9775c7033f2774ca871b862d5d9ab630cc8916a8724fe
                     H160::from_str("531feaf89b50b35d559e4c34c9d34b8e1aeee10c")
                         .expect("internal H160 is valid; qed"),
-                    pallet_evm::GenesisAccount {
+                    fp_evm::GenesisAccount {
                         balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
                             .expect("internal U256 is valid; qed"),
                         code: Default::default(),
@@ -314,7 +320,7 @@ fn testnet_genesis(
                     // Private key: 0x99b3c12287537e38c90a9219d4cb074a89a16e9cdb20bf85728ebd97c343e342
                     H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
                         .expect("internal H160 is valid; qed"),
-                    pallet_evm::GenesisAccount {
+                    fp_evm::GenesisAccount {
                         balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
                             .expect("internal U256 is valid; qed"),
                         code: Default::default(),
@@ -328,6 +334,7 @@ fn testnet_genesis(
         ethereum: EthereumConfig {},
         dynamic_fee: Default::default(),
         base_fee: Default::default(),
+        transaction_payment: Default::default(),
     }
 }
 

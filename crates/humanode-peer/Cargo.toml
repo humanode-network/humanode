@@ -19,21 +19,22 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 
 anyhow = "1"
 async-trait = "0.1"
-codec = { package = "parity-scale-codec", version = "2.0.0" }
-fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+clap = { version = "3.1.6", features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "3.0.0" }
+fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
 fdlimit = "0.2"
+fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
 frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.3"
 libsecp256k1 = "0.6"
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 qr2term = "0.2"
 reqwest = "0.11"
@@ -66,7 +67,6 @@ sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = 
 sp-panic-handler = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-structopt = "0.3.8"
 thiserror = "1"
 tiny-bip39 = "0.8"
 tiny-hderive = "0.3.0"
