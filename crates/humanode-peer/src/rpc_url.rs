@@ -22,8 +22,9 @@ pub enum RpcUrl {
     DetectFromNgrok {
         /// The tunnel name to get the public URL from.
         tunnel_name: String,
-        /// The scheme to use instead of the one in public URL.
-        scheme_override: Option<String>,
+        /// The WebSocket port to match against, and switch protocol to WebSocket if the tunnel
+        /// address has this port.
+        ws_rpc_endpoint_port: Option<u16>,
     },
 }
 
@@ -59,9 +60,9 @@ impl RpcUrlResolver {
             } => Ok(format!("{}://localhost:{}", scheme, rpc_endpoint_port).into()),
             RpcUrl::DetectFromNgrok {
                 tunnel_name,
-                scheme_override,
+                ws_rpc_endpoint_port,
             } => Ok(self
-                .detect_from_ngrok(&*tunnel_name, scheme_override.as_deref())
+                .detect_from_ngrok(&*tunnel_name, *ws_rpc_endpoint_port)
                 .await?
                 .into()),
         }
@@ -73,7 +74,7 @@ impl RpcUrlResolver {
     async fn detect_from_ngrok(
         &self,
         tunnel_name: &str,
-        scheme_override: Option<&str>,
+        ws_rpc_endpoint_port: Option<u16>,
     ) -> Result<String, String> {
         let mut attempts_left = 10;
         let res = loop {
@@ -95,8 +96,14 @@ impl RpcUrlResolver {
             }
         };
         let mut public_url = res.public_url;
-        if let Some(scheme_override) = scheme_override {
-            public_url = public_url.replacen("https", scheme_override, 1);
+        if let Some(ws_rpc_endpoint_port) = ws_rpc_endpoint_port {
+            if res
+                .config
+                .addr
+                .ends_with(&format!(":{}", ws_rpc_endpoint_port))
+            {
+                public_url = public_url.replacen("https", "wss", 1);
+            }
         }
         Ok(public_url)
     }

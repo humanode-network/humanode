@@ -99,13 +99,14 @@ fn rpc_url_from_params(
         return RpcUrl::Unset;
     }
     if params.rpc_url_ngrok_detect {
-        let scheme_override = match params.rpc_url_scheme_preference {
-            RpcUrlSchemePreference::NoPreference | RpcUrlSchemePreference::Ws => Some("wss".into()),
+        let ws_rpc_endpoint_port = match params.rpc_url_scheme_preference {
+            // If there's no preference - try switching to WebSocket if it's available.
+            RpcUrlSchemePreference::NoPreference | RpcUrlSchemePreference::Ws => rpc_ws_port,
             RpcUrlSchemePreference::Http => None,
         };
         return RpcUrl::DetectFromNgrok {
             tunnel_name: params.rpc_url_ngrok_detect_from.clone(),
-            scheme_override,
+            ws_rpc_endpoint_port,
         };
     }
 
