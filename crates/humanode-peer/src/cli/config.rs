@@ -2,7 +2,7 @@
 
 use sc_chain_spec::get_extension;
 
-use super::{params, BioauthFlowParams};
+use super::{params, BioauthFlowParams, RpcUrlSchemePreference};
 use crate::{
     chain_spec::Extensions,
     configuration::{self, Configuration},
@@ -28,8 +28,9 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             .unwrap_or_default();
 
         let bioauth_flow = self.bioauth_params().map(|params| {
-            let rpc_port = substrate.rpc_http.map(|v| v.port());
-            let rpc_url = rpc_url_from_params(params, rpc_port);
+            let rpc_http_port = substrate.rpc_http.map(|v| v.port());
+            let rpc_ws_port = substrate.rpc_ws.map(|v| v.port());
+            let rpc_url = rpc_url_from_params(params, rpc_http_port, rpc_ws_port);
 
             configuration::BioauthFlow {
                 rpc_url_resolver: Default::default(),
@@ -86,7 +87,11 @@ impl<T: sc_cli::CliConfiguration> SubstrateCliConfigurationProvider for T {
 }
 
 /// Construct an RPC URL from the bioauth flow params and an RPC endpoint port.
-fn rpc_url_from_params(params: &BioauthFlowParams, rpc_port: Option<u16>) -> RpcUrl {
+fn rpc_url_from_params(
+    params: &BioauthFlowParams,
+    rpc_http_port: Option<u16>,
+    rpc_ws_port: Option<u16>,
+) -> RpcUrl {
     if let Some(val) = &params.rpc_url {
         return RpcUrl::Set(val.clone());
     }
@@ -94,23 +99,36 @@ fn rpc_url_from_params(params: &BioauthFlowParams, rpc_port: Option<u16>) -> Rpc
         return RpcUrl::Unset;
     }
     if params.rpc_url_ngrok_detect {
-        let mut scheme_override = None;
-        if !params.rpc_url_ngrok_scheme_override.is_empty() {
-            scheme_override = Some(params.rpc_url_ngrok_scheme_override.clone());
-        }
+        let scheme_override = match params.rpc_url_scheme_preference {
+            RpcUrlSchemePreference::NoPreference | RpcUrlSchemePreference::Ws => Some("wss".into()),
+            RpcUrlSchemePreference::Http => None,
+        };
         return RpcUrl::DetectFromNgrok {
             tunnel_name: params.rpc_url_ngrok_detect_from.clone(),
             scheme_override,
         };
     }
 
-    if let Some(rpc_endpoint_port) = rpc_port {
-        let scheme = params.rpc_url_scheme.as_deref().unwrap_or("ws").into();
-        return RpcUrl::LocalhostWithPort {
-            rpc_endpoint_port,
-            scheme,
-        };
+    match (
+        &params.rpc_url_scheme_preference,
+        rpc_http_port,
+        rpc_ws_port,
+    ) {
+        // Try WebSocket first if the user has no preference.
+        (RpcUrlSchemePreference::Ws | RpcUrlSchemePreference::NoPreference, _, Some(port)) => {
+            RpcUrl::LocalhostWithPort {
+                rpc_endpoint_port: port,
+                scheme: "ws".into(),
+            }
+        }
+        // Try HTTP second if the user has no preference.
+        (RpcUrlSchemePreference::Http | RpcUrlSchemePreference::NoPreference, Some(port), _) => {
+            RpcUrl::LocalhostWithPort {
+                rpc_endpoint_port: port,
+                scheme: "http".into(),
+            }
+        }
+        // If everything fails - fallback to unset.
+        _ => RpcUrl::Unset,
     }
-
-    RpcUrl::Unset
 }
