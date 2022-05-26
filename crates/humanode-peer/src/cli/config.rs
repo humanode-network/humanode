@@ -119,14 +119,14 @@ fn rpc_url_from_params(
         (RpcUrlSchemePreference::Ws | RpcUrlSchemePreference::NoPreference, _, Some(port)) => {
             RpcUrl::LocalhostWithPort {
                 rpc_endpoint_port: port,
-                scheme: "ws".into(),
+                scheme: "ws",
             }
         }
         // Try HTTP second if the user has no preference.
         (RpcUrlSchemePreference::Http | RpcUrlSchemePreference::NoPreference, Some(port), _) => {
             RpcUrl::LocalhostWithPort {
                 rpc_endpoint_port: port,
-                scheme: "http".into(),
+                scheme: "http",
             }
         }
         // If everything fails - fallback to unset.

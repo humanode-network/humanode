@@ -16,7 +16,7 @@ pub enum RpcUrl {
         /// The port of the RPC endpoint our peer binds the socket to.
         rpc_endpoint_port: u16,
         /// The scheme to use for the RPC URL.
-        scheme: String,
+        scheme: &'static str,
     },
     /// Detect the RPC URL from ngrok.
     DetectFromNgrok {
