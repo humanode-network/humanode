@@ -22,7 +22,7 @@ uuid = { version = "0.8", features = ["v4"] }
 warp = "0.3"
 
 [dev-dependencies]
-codec = { package = "parity-scale-codec", version = "2" }
+codec = { package = "parity-scale-codec", version = "3.0.0" }
 mockall = "0.10"
 serde_json = "1"
 tracing-test = "0.1"

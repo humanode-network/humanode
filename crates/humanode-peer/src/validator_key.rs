@@ -82,7 +82,10 @@ where
         let filtered = crypto_type_public_pairs.into_iter().filter_map(
             |CryptoTypePublicPair(crypto_type, public_key)| {
                 if crypto_type == T::CRYPTO_ID {
-                    Some(Self(T::from_slice(&public_key)))
+                    match T::from_slice(&public_key) {
+                        Ok(id) => Some(Self(id)),
+                        Err(_) => None,
+                    }
                 } else {
                     None
                 }
@@ -104,12 +107,15 @@ where
 #[cfg(test)]
 mod tests {
     use humanode_runtime::BioauthConsensusId;
+    use sp_core::Decode;
+    use sp_runtime::traits::TrailingZeroInput;
 
     use super::*;
 
     #[test]
     fn display() {
-        let key = AppCryptoPublic(BioauthConsensusId::default());
+        let zero_id = BioauthConsensusId::decode(&mut TrailingZeroInput::zeroes()).unwrap();
+        let key = AppCryptoPublic(zero_id);
         assert_eq!(
             key.to_string(),
             "0x0000000000000000000000000000000000000000000000000000000000000000"
@@ -118,7 +124,7 @@ mod tests {
 
     #[test]
     fn display_does_not_match_raw_key() {
-        let key = BioauthConsensusId::default();
-        assert_ne!(key.to_string(), AppCryptoPublic(key).to_string());
+        let zero_id = BioauthConsensusId::decode(&mut TrailingZeroInput::zeroes()).unwrap();
+        assert_ne!(zero_id.to_string(), AppCryptoPublic(zero_id).to_string());
     }
 }

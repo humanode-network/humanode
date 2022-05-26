@@ -13,7 +13,7 @@ use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
-use sc_client_api::{BlockchainEvents, ExecutorProvider};
+use sc_client_api::{BlockBackend, BlockchainEvents, ExecutorProvider};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
@@ -77,6 +77,7 @@ pub fn keystore_container(
         config.substrate.wasm_method,
         config.substrate.default_heap_pages,
         config.substrate.max_runtime_instances,
+        config.substrate.runtime_cache_size,
     );
 
     let (_client, _backend, keystore_container, task_manager) =
@@ -95,11 +96,9 @@ pub fn new_partial(
         sc_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
-            FullGrandpa,
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
             EffectiveFullBlockImport,
-            Duration,
             inherents::Creator,
             Arc<FrontierBackend>,
             Option<Telemetry>,
@@ -132,6 +131,7 @@ pub fn new_partial(
         config.wasm_method,
         config.default_heap_pages,
         config.max_runtime_instances,
+        config.runtime_cache_size,
     );
 
     let (client, backend, keystore_container, task_manager) =
@@ -167,7 +167,7 @@ pub fn new_partial(
     )?;
 
     let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
-        sc_consensus_babe::Config::get_or_compute(&*client)?,
+        sc_consensus_babe::Config::get(&*client)?,
         grandpa_block_import.clone(),
         Arc::clone(&client),
     )?;
@@ -189,7 +189,7 @@ pub fn new_partial(
     let import_queue = sc_consensus_babe::import_queue(
         babe_link.clone(),
         frontier_block_import.clone(),
-        Some(Box::new(grandpa_block_import.clone())),
+        Some(Box::new(grandpa_block_import)),
         Arc::clone(&client),
         select_chain.clone(),
         inherent_data_providers_creator.clone(),
@@ -207,11 +207,9 @@ pub fn new_partial(
         select_chain,
         transaction_pool,
         other: (
-            grandpa_block_import,
             grandpa_link,
             babe_link,
             frontier_block_import,
-            raw_slot_duration,
             inherent_data_providers_creator,
             frontier_backend,
             telemetry,
@@ -232,11 +230,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         transaction_pool,
         other:
             (
-                _grandpa_block_import,
                 grandpa_link,
                 babe_link,
                 block_import,
-                raw_slot_duration,
                 inherent_data_providers_creator,
                 frontier_backend,
                 mut telemetry,
@@ -248,10 +244,21 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         evm: evm_config,
     } = config;
 
+    let grandpa_protocol_name = sc_finality_grandpa::protocol_standard_name(
+        &client
+            .block_hash(0)
+            .ok()
+            .flatten()
+            .expect("Genesis block exists; qed"),
+        &config.chain_spec,
+    );
+
     config
         .network
         .extra_sets
-        .push(sc_finality_grandpa::grandpa_peers_set_config());
+        .push(sc_finality_grandpa::grandpa_peers_set_config(
+            grandpa_protocol_name.clone(),
+        ));
 
     let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
         Arc::clone(&backend),
@@ -352,20 +359,17 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let eth_max_stored_filters = evm_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
         let eth_overrides = Arc::clone(&eth_overrides);
-        let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCache::new(
+        let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
             task_manager.spawn_handle(),
             Arc::clone(&eth_overrides),
             50,
             50,
+            config.prometheus_registry().cloned(),
         ));
         let eth_max_past_logs = evm_config.max_past_logs;
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
 
-        let subscription_task_executor = Arc::new(sc_rpc::SubscriptionTaskExecutor::new(
-            task_manager.spawn_handle(),
-        ));
-
-        Box::new(move |deny_unsafe, _| {
+        Box::new(move |deny_unsafe, subscription_task_executor| {
             Ok(humanode_rpc::create(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
@@ -402,8 +406,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     eth_overrides: Arc::clone(&eth_overrides),
                     eth_block_data_cache: Arc::clone(&eth_block_data_cache),
                 },
-                subscription_task_executor: Arc::clone(&subscription_task_executor),
-            }))
+                subscription_task_executor,
+            })?)
         })
     };
 
@@ -419,7 +423,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         keystore: keystore_container.sync_keystore(),
         task_manager: &mut task_manager,
         transaction_pool: Arc::clone(&transaction_pool),
-        rpc_extensions_builder,
+        rpc_builder: rpc_extensions_builder,
         backend: Arc::clone(&backend),
         system_rpc_tx,
         config,
@@ -461,6 +465,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         keystore,
         local_role: role,
         telemetry: None,
+        protocol_name: grandpa_protocol_name,
     };
 
     if enable_grandpa {
@@ -486,10 +491,14 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         Some("evm"),
         MappingSyncWorker::new(
             client.import_notification_stream(),
-            raw_slot_duration,
+            Duration::from_millis(humanode_runtime::SLOT_DURATION),
             Arc::clone(&client),
             backend,
             Arc::clone(&frontier_backend),
+            // retry_times: usize,
+            3,
+            // sync_from: <Block::Header as HeaderT>::Number,
+            0,
             SyncStrategy::Normal,
         )
         .for_each(|()| futures::future::ready(())),

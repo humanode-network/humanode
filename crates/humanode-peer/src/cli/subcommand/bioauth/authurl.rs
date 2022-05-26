@@ -1,7 +1,5 @@
 //! Bioauth auth-url subcommand.
 
-use structopt::StructOpt;
-
 use crate::{
     cli::{
         params, utils::application_error, CliConfigurationExt, SubstrateCliConfigurationProvider,
@@ -11,14 +9,14 @@ use crate::{
 };
 
 /// The `bioauth auth-url` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct AuthUrlCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub base: Box<sc_cli::RunCmd>,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub bioauth_flow_params: params::BioauthFlowParams,
 }
 

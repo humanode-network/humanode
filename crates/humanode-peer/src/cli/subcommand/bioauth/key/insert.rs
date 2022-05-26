@@ -7,24 +7,23 @@ use sc_service::KeystoreContainer;
 use sp_application_crypto::{AppKey, AppPublic};
 use sp_core::Pair;
 use sp_keystore::CryptoStore;
-use structopt::StructOpt;
 
 use super::KeystoreBioauthId;
 use crate::cli::CliConfigurationExt;
 
 /// The `bioauth key insert` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct InsertKeyCmd {
     /// The secret key uri (mnemonic).
-    #[structopt(long)]
+    #[clap(long)]
     pub suri: String,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub shared_params: SharedParams,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub keystore_params: KeystoreParams,
 }
 

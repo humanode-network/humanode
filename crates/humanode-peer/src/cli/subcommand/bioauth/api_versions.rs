@@ -2,15 +2,14 @@
 
 use sc_cli::{CliConfiguration, SharedParams};
 use serde_json::json;
-use structopt::StructOpt;
 
 use crate::{cli::CliConfigurationExt, version};
 
 /// The `bioauth api-versions` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct ApiVersionsCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[structopt(flatten)]
+    #[clap(flatten)]
     pub shared_params: SharedParams,
 }
 

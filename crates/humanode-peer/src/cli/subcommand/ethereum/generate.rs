@@ -1,19 +1,18 @@
 //! Ethereum generate subcommand.
 
 use bip39::{Language, Mnemonic, MnemonicType};
-use structopt::StructOpt;
 
 use super::utils::extract_and_print_keys;
 
 /// The `ethereum generate` command.
-#[derive(Debug, StructOpt)]
+#[derive(Debug, clap::Parser)]
 pub struct GenerateAccountCmd {
     /// Generate 24 words mnemonic instead of 12.
-    #[structopt(long, short = "w")]
+    #[clap(long, short = 'w')]
     w24: bool,
 
     /// The account index to use in the derivation path.
-    #[structopt(long = "account-index", short = "a")]
+    #[clap(long = "account-index", short = 'a')]
     account_index: Option<u32>,
 }
 

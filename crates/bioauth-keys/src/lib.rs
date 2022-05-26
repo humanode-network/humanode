@@ -32,6 +32,9 @@ pub enum KeyExtractorError<SelectorError> {
     /// Something went wrong during the keystore interop.
     #[error("keystore error: {0}")]
     Keystore(sp_keystore::Error),
+    /// The key was corrupted at the keystore.
+    #[error("сorrupted public key - invalid size")]
+    CorruptedKey,
     /// Something went wrong when selecting the key.
     #[error("key selection error: {0}")]
     Selector(SelectorError),
@@ -72,7 +75,8 @@ where
             },
         );
 
-        let matching_keys = matching_crypto_public_keys.map(|bytes| Id::from_slice(&bytes));
+        let matching_keys =
+            matching_crypto_public_keys.filter_map(|bytes| Id::from_slice(&bytes).ok());
 
         let key = self
             .selector

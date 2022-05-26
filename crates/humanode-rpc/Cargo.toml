@@ -15,13 +15,12 @@ humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 primitives-frontier = { version = "0.1", path = "../primitives-frontier" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
-fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
-jsonrpc-core = "18"
-jsonrpc-pubsub = "18.0.0"
-pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a30fa2" }
+fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+fp-storage = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-6913e07" }
+jsonrpsee = { version = "0.13.0", features = ["server", "macros"] }
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
