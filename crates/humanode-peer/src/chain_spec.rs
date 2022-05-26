@@ -295,12 +295,10 @@ fn testnet_genesis(
             accounts: {
                 let mut map = BTreeMap::new();
                 map.insert(
-                    // H160 address of Alice dev account
-                    // Derived from SS58 (42 prefix) address
-                    // SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
-                    // hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
-                    // Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
-                    H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
+                    // H160 address of truffle Bob dev account
+                    // Public address: 0x531feaf89b50b35d559e4c34c9d34b8e1aeee10c
+                    // Private key: 0xddf0d48720b5478d0bb9775c7033f2774ca871b862d5d9ab630cc8916a8724fe
+                    H160::from_str("531feaf89b50b35d559e4c34c9d34b8e1aeee10c")
                         .expect("internal H160 is valid; qed"),
                     pallet_evm::GenesisAccount {
                         balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
@@ -311,12 +309,9 @@ fn testnet_genesis(
                     },
                 );
                 map.insert(
-                    // H160 address of Gerald dev account
+                    // H160 address of truffle Alice dev account
                     // Public address: 0x6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b
                     // Private key: 0x99b3c12287537e38c90a9219d4cb074a89a16e9cdb20bf85728ebd97c343e342
-                    // A proper private key should be used to allow testing EVM as Ethereum developer
-                    // For example, use it at Metamask, Remix, Truffle configuration, etc
-                    // We don't have a good converter between Substrate and Ethereum private keys for now.
                     H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
                         .expect("internal H160 is valid; qed"),
                     pallet_evm::GenesisAccount {
