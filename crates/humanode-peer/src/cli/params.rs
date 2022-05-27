@@ -1,5 +1,16 @@
 //! Shared CLI parameters.
 
+/// Possible RPC URL scheme preference options.
+#[derive(Debug, clap::ArgEnum, Clone)]
+pub enum RpcUrlSchemePreference {
+    /// Prefer HTTP (http or https).
+    Http,
+    /// Prefer WebSocket (ws or wss).
+    Ws,
+    /// No preference, use opinionated defaults.
+    NoPreference,
+}
+
 /// Shared CLI parameters used to configure bioauth flow.
 #[derive(Debug, clap::Parser, Clone)]
 pub struct BioauthFlowParams {
@@ -10,15 +21,25 @@ pub struct BioauthFlowParams {
 
     /// The URL to pass to the web app to connect to the node RPC.
     /// If not passed, a URL with `localhost` and the HTTP RPC port will be used.
-    #[clap(long, value_name = "RPC_URL", conflicts_with_all = &["rpc-url-ngrok-detect", "rpc-url-unset"])]
+    #[clap(long, value_name = "RPC_URL", conflicts_with_all = &["rpc-url-scheme-preference", "rpc-url-ngrok-detect", "rpc-url-unset"])]
     pub rpc_url: Option<String>,
+
+    /// What RPC URL scheme to prefer.
+    #[clap(
+        long,
+        arg_enum,
+        value_name = "RPC_URL_SCHEME_PREFERENCE",
+        default_value = "no-preference",
+        conflicts_with_all = &["rpc-url", "rpc-url-unset"]
+    )]
+    pub rpc_url_scheme_preference: RpcUrlSchemePreference,
 
     /// Detect RPC URL from ngrok.
     #[clap(long, conflicts_with_all = &["rpc-url", "rpc-url-unset"])]
     pub rpc_url_ngrok_detect: bool,
 
     /// Explicitly unset the RPC URL.
-    #[clap(long, conflicts_with_all = &["rpc-url", "rpc-url-ngrok-detect"])]
+    #[clap(long, conflicts_with_all = &["rpc-url", "rpc-url-scheme-preference", "rpc-url-ngrok-detect"])]
     pub rpc_url_unset: bool,
 
     /// The tunnel name at ngrok to detect RPC URL from, if ngrok is used to detect the RPC URL.

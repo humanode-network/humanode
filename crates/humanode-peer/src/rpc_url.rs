@@ -13,13 +13,18 @@ pub enum RpcUrl {
     /// The URL is to be constructed from the RPC endpoint port.
     /// This is typically used as a fallback.
     LocalhostWithPort {
-        /// The port of the RPC enpoint our peer binds the socket to.
+        /// The port of the RPC endpoint our peer binds the socket to.
         rpc_endpoint_port: u16,
+        /// The scheme to use for the RPC URL.
+        scheme: &'static str,
     },
     /// Detect the RPC URL from ngrok.
     DetectFromNgrok {
         /// The tunnel name to get the public URL from.
         tunnel_name: String,
+        /// The WebSocket port to match against, and switch protocol to WebSocket if the tunnel
+        /// address has this port.
+        ws_rpc_endpoint_port: Option<u16>,
     },
 }
 
@@ -49,19 +54,28 @@ impl RpcUrlResolver {
         match val {
             RpcUrl::Unset => Err(Cow::Borrowed("RPC URL was not set")),
             RpcUrl::Set(url) => Ok(Cow::Borrowed(url)),
-            RpcUrl::LocalhostWithPort { rpc_endpoint_port } => {
-                Ok(format!("http://localhost:{}", rpc_endpoint_port).into())
-            }
-            RpcUrl::DetectFromNgrok { tunnel_name } => {
-                Ok(self.detect_from_ngrok(&*tunnel_name).await?.into())
-            }
+            RpcUrl::LocalhostWithPort {
+                rpc_endpoint_port,
+                scheme,
+            } => Ok(format!("{}://localhost:{}", scheme, rpc_endpoint_port).into()),
+            RpcUrl::DetectFromNgrok {
+                tunnel_name,
+                ws_rpc_endpoint_port,
+            } => Ok(self
+                .detect_from_ngrok(&*tunnel_name, *ws_rpc_endpoint_port)
+                .await?
+                .into()),
         }
     }
 
     /// Detect the RPC URL from the `ngrok`'s API.
     /// Returns the public URL from the specified tunnel.
     /// Assumes that the tunnel has a proper protocol and points to a proper port.
-    async fn detect_from_ngrok(&self, tunnel_name: &str) -> Result<String, String> {
+    async fn detect_from_ngrok(
+        &self,
+        tunnel_name: &str,
+        ws_rpc_endpoint_port: Option<u16>,
+    ) -> Result<String, String> {
         let mut attempts_left = 10;
         let res = loop {
             let tunnel_name = std::borrow::Cow::Owned(tunnel_name.to_owned());
@@ -81,6 +95,16 @@ impl RpcUrlResolver {
                 Err(err) => return Err(err.to_string()),
             }
         };
-        Ok(res.public_url)
+        let mut public_url = res.public_url;
+        if let Some(ws_rpc_endpoint_port) = ws_rpc_endpoint_port {
+            if res
+                .config
+                .addr
+                .ends_with(&format!(":{}", ws_rpc_endpoint_port))
+            {
+                public_url = public_url.replacen("https", "wss", 1);
+            }
+        }
+        Ok(public_url)
     }
 }
