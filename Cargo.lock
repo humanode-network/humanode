@@ -1769,7 +1769,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "async-trait",
  "fc-db",
@@ -1788,7 +1788,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "fp-storage",
  "kvdb-rocksdb",
@@ -1804,7 +1804,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "fc-db",
  "fp-consensus",
@@ -1821,7 +1821,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -1862,7 +1862,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2000,7 +2000,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -2012,7 +2012,7 @@ dependencies = [
 [[package]]
 name = "fp-dynamic-fee"
 version = "1.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "async-trait",
  "sp-core",
@@ -2022,7 +2022,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "evm",
  "frame-support",
@@ -2035,7 +2035,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2052,7 +2052,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "ethereum",
  "frame-support",
@@ -2068,7 +2068,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "parity-scale-codec",
 ]
@@ -4938,7 +4938,7 @@ dependencies = [
 [[package]]
 name = "pallet-base-fee"
 version = "1.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -4972,7 +4972,7 @@ dependencies = [
 [[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "async-trait",
  "fp-dynamic-fee",
@@ -4991,7 +4991,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -5032,7 +5032,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "evm",
  "fp-evm",
@@ -5058,7 +5058,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "fp-evm",
  "num",
@@ -5067,7 +5067,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "fp-evm",
  "tiny-keccak",
@@ -5076,7 +5076,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=substrate-6913e07#a4de80e5592fbf3876c6a80ffa06078fd3233db0"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-05-27#794016da3340f29ffbb96e6179222ebc216cbad9"
 dependencies = [
  "fp-evm",
  "ripemd",
