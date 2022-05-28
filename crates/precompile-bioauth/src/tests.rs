@@ -19,17 +19,11 @@ fn make_bounded_authentications(
 #[test]
 fn test_empty_input() {
     new_test_ext().execute_with(|| {
-        let input: [u8; 0] = [];
+        let mut mock_hadnle = MockPrecompileHandle::new();
+        mock_hadnle.expect_input().return_const(vec![]);
+        let handle = &mut mock_hadnle as _;
 
-        let cost: u64 = 1;
-
-        let context: Context = Context {
-            address: Default::default(),
-            caller: Default::default(),
-            apparent_value: From::from(0),
-        };
-
-        let err = crate::Bioauth::<Test>::execute(&input, Some(cost), &context, false).unwrap_err();
+        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
         assert_eq!(
             err,
             PrecompileFailure::Error {
@@ -51,24 +45,16 @@ fn test_authorized() {
             },
         ]));
 
-        let input: [u8; 32] = sample_key;
+        let mut mock_hadnle = MockPrecompileHandle::new();
+        mock_hadnle.expect_input().return_const(sample_key.to_vec());
+        let handle = &mut mock_hadnle as _;
 
-        let cost: u64 = 1;
-
-        let context: Context = Context {
-            address: Default::default(),
-            caller: Default::default(),
-            apparent_value: From::from(0),
-        };
-
-        let val = crate::Bioauth::<Test>::execute(&input, Some(cost), &context, false).unwrap();
+        let val = crate::Bioauth::<Test>::execute(handle).unwrap();
         assert_eq!(
             val,
             PrecompileOutput {
                 exit_status: ExitSucceed::Returned,
-                cost: 200,
                 output: vec![1],
-                logs: vec![],
             }
         );
     })
@@ -81,24 +67,16 @@ fn test_not_authorized() {
 
         pallet_bioauth::ActiveAuthentications::<Test>::put(make_bounded_authentications(vec![]));
 
-        let input: [u8; 32] = sample_key;
+        let mut mock_hadnle = MockPrecompileHandle::new();
+        mock_hadnle.expect_input().return_const(sample_key.to_vec());
+        let handle = &mut mock_hadnle as _;
 
-        let cost: u64 = 1;
-
-        let context: Context = Context {
-            address: Default::default(),
-            caller: Default::default(),
-            apparent_value: From::from(0),
-        };
-
-        let val = crate::Bioauth::<Test>::execute(&input, Some(cost), &context, false).unwrap();
+        let val = crate::Bioauth::<Test>::execute(handle).unwrap();
         assert_eq!(
             val,
             PrecompileOutput {
                 exit_status: ExitSucceed::Returned,
-                cost: 200,
                 output: vec![0],
-                logs: vec![],
             }
         );
     })
