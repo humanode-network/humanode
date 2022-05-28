@@ -8,7 +8,7 @@ publish = false
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27", default-features = false }
+fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "substrate-9251791", default-features = false }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
