@@ -88,7 +88,7 @@ benchmarks! {
             };
             expired_auths.push(expired_auth);
         }
-        // TODO: Save these auths in the state
+        // Note: Save these auths in the state
 
     }: {
         let current_block_num: u32 = 10;
