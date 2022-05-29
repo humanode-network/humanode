@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use frame_support::WeakBoundedVec;
 
 use crate::{mock::*, *};
@@ -16,10 +18,62 @@ fn make_bounded_authentications(
     WeakBoundedVec::<_, MaxAuthentications>::try_from(authentications).unwrap()
 }
 
+fn make_selector(selector: u32) -> [u8; 4] {
+    selector.to_be_bytes()
+}
+
 #[test]
 fn test_empty_input() {
     new_test_ext().execute_with(|| {
         let input: [u8; 0] = [];
+
+        let cost: u64 = 1;
+
+        let context: Context = Context {
+            address: Default::default(),
+            caller: Default::default(),
+            apparent_value: From::from(0),
+        };
+
+        let err = crate::Bioauth::<Test>::execute(&input, Some(cost), &context, false).unwrap_err();
+        assert_eq!(
+            err,
+            PrecompileFailure::Error {
+                exit_status: ExitError::Other("unable to read the function selector".into())
+            }
+        );
+    })
+}
+
+#[test]
+fn test_invalid_selector() {
+    new_test_ext().execute_with(|| {
+        let mut input = Vec::new();
+        input.write_all(&make_selector(0x00000000)).unwrap();
+
+        let cost: u64 = 1;
+
+        let context: Context = Context {
+            address: Default::default(),
+            caller: Default::default(),
+            apparent_value: From::from(0),
+        };
+
+        let err = crate::Bioauth::<Test>::execute(&input, Some(cost), &context, false).unwrap_err();
+        assert_eq!(
+            err,
+            PrecompileFailure::Error {
+                exit_status: ExitError::Other("unable to read the function selector".into())
+            }
+        );
+    })
+}
+
+#[test]
+fn test_bad_argument() {
+    new_test_ext().execute_with(|| {
+        let mut input = Vec::new();
+        input.write_all(&make_selector(0xe3c90bb9)).unwrap();
 
         let cost: u64 = 1;
 
@@ -51,7 +105,9 @@ fn test_authorized() {
             },
         ]));
 
-        let input: [u8; 32] = sample_key;
+        let mut input = Vec::new();
+        input.write_all(&make_selector(0xe3c90bb9)).unwrap();
+        input.write_all(&sample_key).unwrap();
 
         let cost: u64 = 1;
 
@@ -81,7 +137,9 @@ fn test_not_authorized() {
 
         pallet_bioauth::ActiveAuthentications::<Test>::put(make_bounded_authentications(vec![]));
 
-        let input: [u8; 32] = sample_key;
+        let mut input = Vec::new();
+        input.write_all(&make_selector(0xe3c90bb9)).unwrap();
+        input.write_all(&sample_key).unwrap();
 
         let cost: u64 = 1;
 
