@@ -1,8 +1,9 @@
 //! Benchmark for pallet-bioauth extrinsics.
 
 use frame_benchmarking::benchmarks;
-use frame_support::traits::Get;
+use frame_support::traits::{Get, Hooks};
 use frame_system::RawOrigin;
+use crate::Pallet as Bioauth;
 
 use crate::*;
 
@@ -74,6 +75,24 @@ benchmarks! {
         let observed_pubkey: Vec<u8> = active_authentications_after[active_authentications_before as usize].public_key.encode();
         assert_eq!(observed_pubkey, expected_pubkey);
 
+    }
+
+    on_initialize {
+        // Populate with expired authentications
+        // Setting to 10 for now, can be increased later.
+        let mut expired_auths = vec![];
+        for i in 0..10 {
+            let expired_auth = Authentication {
+                public_key: make_pubkey(i),
+                expires_at: 1
+            };
+            expired_auths.push(expired_auth);
+        }
+        // TODO: Save these auths in the state
+
+    }: {
+        let current_block_num: u32 = 10;
+        Bioauth::<T>::on_initialize(current_block_num.into());
     }
 
     impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_benchmark_ext(), crate::mock::benchmarking::Benchmark);
