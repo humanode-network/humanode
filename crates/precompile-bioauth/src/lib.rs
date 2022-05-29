@@ -15,6 +15,10 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+/// The cost of the operation in gas.
+// TODO(#352): implement proper dynamic gas cost estimation.
+const GAS_COST: u64 = 200;
+
 /// Exposes the current bioauth status of an address to the EVM.
 pub struct Bioauth<Runtime>(PhantomData<Runtime>);
 
@@ -24,6 +28,8 @@ where
     T::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
+        handle.record_cost(GAS_COST)?;
+
         let account_id = T::ValidatorPublicKey::try_from(handle.input()).map_err(|_| {
             PrecompileFailure::Error {
                 exit_status: ExitError::Other("input must be a valid account id".into()),
