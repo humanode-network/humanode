@@ -20,6 +20,7 @@ fn make_bounded_authentications(
 fn test_empty_input() {
     new_test_ext().execute_with(|| {
         let mut mock_handle = MockPrecompileHandle::new();
+        mock_handle.expect_record_cost().returning(|_| Ok(()));
         mock_handle.expect_input().return_const(vec![]);
         let handle = &mut mock_handle as _;
 
@@ -46,6 +47,7 @@ fn test_authorized() {
         ]));
 
         let mut mock_handle = MockPrecompileHandle::new();
+        mock_handle.expect_record_cost().returning(|_| Ok(()));
         mock_handle.expect_input().return_const(sample_key.to_vec());
         let handle = &mut mock_handle as _;
 
@@ -68,6 +70,7 @@ fn test_not_authorized() {
         pallet_bioauth::ActiveAuthentications::<Test>::put(make_bounded_authentications(vec![]));
 
         let mut mock_handle = MockPrecompileHandle::new();
+        mock_handle.expect_record_cost().returning(|_| Ok(()));
         mock_handle.expect_input().return_const(sample_key.to_vec());
         let handle = &mut mock_handle as _;
 
