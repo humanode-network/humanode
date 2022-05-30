@@ -586,6 +586,17 @@ parameter_types! {
 
 pub struct ImOnlineSlasher;
 
+/// We have a notion of preauthenticated validators - the ones that we use to bootstrap the network.
+fn is_preauthenticated_bioauth(
+    authentication: &pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>,
+) -> bool {
+    // The [`UnixMilliseconds::MAX`] is what we use at the genesis when we insert the bootstrap
+    // nodes. This is a really bad way to encode the fact that a validator should never expire in
+    // the first place, so we should change it soon. For now, this hack will do.
+    // TODO(#361): figure something better that using fully filled expires_at.
+    authentication.expires_at == UnixMilliseconds::MAX
+}
+
 impl
     sp_staking::offence::ReportOffence<
         AccountId,
@@ -600,6 +611,11 @@ impl
         >,
     ) -> Result<(), sp_staking::offence::OffenceError> {
         for offender in offence.offenders {
+            // Hack to prevent preauthenticated nodes from being dropped.
+            if is_preauthenticated_bioauth(&offender.1) {
+                // Never kick the preauthenticated validators.
+                continue;
+            }
             Bioauth::deauthenticate(&offender.0);
         }
         Ok(())
