@@ -3,8 +3,8 @@
 use frame_benchmarking::benchmarks;
 use frame_support::traits::{Get, Hooks};
 use frame_system::RawOrigin;
-use crate::Pallet as Bioauth;
 
+use crate::Pallet as Bioauth;
 use crate::*;
 
 /// Enables construction of AuthTicket deterministically.
