@@ -68,7 +68,7 @@ jobs:
     name: ${{ matrix.plan.platform.name }} / ${{ matrix.plan.mode.name }}
     runs-on: ${{ matrix.plan.platform.os }}
     env: ${{ matrix.plan.platform.env }}
-    timeout-minutes: 50
+    timeout-minutes: 120
     steps:
 
       - name: Job config
