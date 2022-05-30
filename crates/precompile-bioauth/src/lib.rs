@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use fp_evm::{
-    Context, ExitError, ExitSucceed, Precompile, PrecompileFailure, PrecompileOutput,
+    ExitError, ExitSucceed, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
     PrecompileResult,
 };
 use sp_std::marker::PhantomData;
@@ -27,16 +27,14 @@ where
     T: pallet_bioauth::Config,
     T::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
-    fn execute(
-        input: &[u8],
-        _target_gas: Option<u64>,
-        _context: &Context,
-        _is_static: bool,
-    ) -> PrecompileResult {
-        let account_id =
-            T::ValidatorPublicKey::try_from(input).map_err(|_| PrecompileFailure::Error {
+    fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
+        handle.record_cost(GAS_COST)?;
+
+        let account_id = T::ValidatorPublicKey::try_from(handle.input()).map_err(|_| {
+            PrecompileFailure::Error {
                 exit_status: ExitError::Other("input must be a valid account id".into()),
-            })?;
+            }
+        })?;
 
         let is_authorized = pallet_bioauth::ActiveAuthentications::<T>::get()
             .iter()
@@ -46,9 +44,7 @@ where
 
         Ok(PrecompileOutput {
             exit_status: ExitSucceed::Returned,
-            cost: GAS_COST,
             output: bytes.to_vec(),
-            logs: Default::default(),
         })
     }
 }

@@ -15,11 +15,11 @@ humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 primitives-frontier = { version = "0.1", path = "../primitives-frontier" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
-fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
-fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
-fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
-fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
-fp-storage = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
+fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-28" }
+fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-28" }
+fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-28" }
+fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-28" }
+fp-storage = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-28" }
 jsonrpsee = { version = "0.13.0", features = ["server", "macros"] }
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
