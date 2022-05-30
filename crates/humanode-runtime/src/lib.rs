@@ -586,6 +586,13 @@ parameter_types! {
 
 pub struct ImOnlineSlasher;
 
+/// We have a notion of preauthenticated validators - the ones that we use to bootstrap the network.
+fn is_preauthenticated_bioauth(
+    authentication: &pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>,
+) -> bool {
+    authentication.expires_at == UnixMilliseconds::MAX
+}
+
 impl
     sp_staking::offence::ReportOffence<
         AccountId,
@@ -600,6 +607,11 @@ impl
         >,
     ) -> Result<(), sp_staking::offence::OffenceError> {
         for offender in offence.offenders {
+            // Hack to prevent preauthenticated nodes from being dropped.
+            if is_preauthenticated_bioauth(&offender.1) {
+                // Never kick the preauthenticated validators.
+                continue;
+            }
             Bioauth::deauthenticate(&offender.0);
         }
         Ok(())
