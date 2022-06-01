@@ -38,6 +38,8 @@ benchmarks! {
         where T::OpaqueAuthTicket: From<Vec<u8>>,
             T::RobonodeSignature: From<Vec<u8>>,
             T: AuthTicketBuilder + AuthTicketSigner,
+            T::ValidatorPublicKey: From<[u8; 32]>,
+            T::Moment: From<u64>
     }
 
     authenticate {
@@ -80,16 +82,20 @@ benchmarks! {
     on_initialize {
         // Populate with expired authentications
         // Setting to 10 for now, can be increased later.
-        let mut expired_auths = vec![];
+        let mut expired_auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
         for i in 0..10 {
+            let public_key: [u8; 32] = make_pubkey(i).try_into().unwrap();
             let expired_auth = Authentication {
-                public_key: make_pubkey(i),
-                expires_at: 1
+                public_key: public_key.into(),
+                expires_at: 1u64.into(),
             };
             expired_auths.push(expired_auth);
         }
-        // Note: Save these auths in the state
 
+        let weakly_bound_auths = WeakBoundedVec::force_from(expired_auths, Some("pallet-bioauth:benchmark:on_initialize"));
+        ActiveAuthentications::<T>::put(weakly_bound_auths);
+
+        let initial_auths = ActiveAuthentications::<T>::get();
     }: {
         let current_block_num: u32 = 10;
         Bioauth::<T>::on_initialize(current_block_num.into());
