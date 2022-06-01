@@ -403,6 +403,13 @@ impl pallet_timestamp::Config for Runtime {
     type WeightInfo = ();
 }
 
+impl pallet_authorship::Config for Runtime {
+    type FindAuthor = find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>;
+    type UncleGenerations = ConstU32<5>;
+    type FilterUncle = ();
+    type EventHandler = (ImOnline,);
+}
+
 impl pallet_balances::Config for Runtime {
     type MaxLocks = ConstU32<50>;
     type MaxReserves = ();
@@ -681,6 +688,8 @@ construct_runtime!(
         Timestamp: pallet_timestamp,
         Bioauth: pallet_bioauth,
         Babe: pallet_babe,
+        // Authorship must be before other pallets that rely on the data it captures.
+        Authorship: pallet_authorship,
         Balances: pallet_balances,
         TransactionPayment: pallet_transaction_payment,
         Session: pallet_session,
