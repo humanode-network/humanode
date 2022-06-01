@@ -94,11 +94,15 @@ benchmarks! {
 
         let weakly_bound_auths = WeakBoundedVec::force_from(expired_auths, Some("pallet-bioauth:benchmark:on_initialize"));
         ActiveAuthentications::<T>::put(weakly_bound_auths);
-
-        let initial_auths = ActiveAuthentications::<T>::get();
     }: {
         let current_block_num: u32 = 10;
         Bioauth::<T>::on_initialize(current_block_num.into());
+    }
+
+    verify {
+        // There shouldn't be any left since these are all expired auths
+        let auths_left = ActiveAuthentications::<T>::get();
+        assert_eq!(auths_left.len(), 0);
     }
 
     impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_benchmark_ext(), crate::mock::benchmarking::Benchmark);
