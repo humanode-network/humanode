@@ -167,6 +167,9 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
     (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 };
 
+/// The longevity, in blocks, that an equivocation report is valid for.
+const REPORT_LONGEVITY: u64 = EPOCH_DURATION_IN_BLOCKS as u64;
+
 // Consensus related constants.
 pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
 pub const MAX_AUTHORITIES: u32 = MAX_AUTHENTICATIONS;
@@ -323,7 +326,11 @@ impl pallet_babe::Config for Runtime {
         BabeId,
     )>>::IdentificationTuple;
 
-    type HandleEquivocation = ();
+    type HandleEquivocation = pallet_babe::EquivocationHandler<
+        Self::KeyOwnerIdentification,
+        Offences,
+        ConstU64<REPORT_LONGEVITY>,
+    >;
 
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
@@ -387,7 +394,11 @@ impl pallet_grandpa::Config for Runtime {
         GrandpaId,
     )>>::IdentificationTuple;
 
-    type HandleEquivocation = ();
+    type HandleEquivocation = pallet_grandpa::EquivocationHandler<
+        Self::KeyOwnerIdentification,
+        Offences,
+        ConstU64<REPORT_LONGEVITY>,
+    >;
 
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
