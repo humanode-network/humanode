@@ -611,6 +611,12 @@ impl pallet_im_online::Config for Runtime {
     type MaxPeerDataEncodingSize = ConstU32<MAX_PEER_DATA_ENCODING_SIZE>;
 }
 
+impl pallet_offences::Config for Runtime {
+    type Event = Event;
+    type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
+    type OnOffenceHandler = ();
+}
+
 parameter_types! {
     pub BlockGasLimit: U256 = U256::from(u32::max_value());
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
@@ -693,6 +699,7 @@ construct_runtime!(
         Balances: pallet_balances,
         TransactionPayment: pallet_transaction_payment,
         Session: pallet_session,
+        Offences: pallet_offences,
         Historical: pallet_session_historical,
         HumanodeSession: pallet_humanode_session,
         EthereumChainId: pallet_ethereum_chain_id,
