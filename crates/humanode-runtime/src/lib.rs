@@ -586,6 +586,17 @@ parameter_types! {
 
 pub struct ImOnlineSlasher;
 
+/// We have a notion of preauthenticated validators - the ones that we use to bootstrap the network.
+fn is_preauthenticated_bioauth(
+    authentication: &pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>,
+) -> bool {
+    // The [`UnixMilliseconds::MAX`] is what we use at the genesis when we insert the bootstrap
+    // nodes. This is a really bad way to encode the fact that a validator should never expire in
+    // the first place, so we should change it soon. For now, this hack will do.
+    // TODO(#361): figure something better that using fully filled expires_at.
+    authentication.expires_at == UnixMilliseconds::MAX
+}
+
 impl
     sp_staking::offence::ReportOffence<
         AccountId,
@@ -600,6 +611,11 @@ impl
         >,
     ) -> Result<(), sp_staking::offence::OffenceError> {
         for offender in offence.offenders {
+            // Hack to prevent preauthenticated nodes from being dropped.
+            if is_preauthenticated_bioauth(&offender.1) {
+                // Never kick the preauthenticated validators.
+                continue;
+            }
             Bioauth::deauthenticate(&offender.0);
         }
         Ok(())
@@ -630,21 +646,47 @@ impl pallet_im_online::Config for Runtime {
     type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
 }
 
-pub fn get_ethereum_address(authority_id: BabeId) -> H160 {
-    H160::from_slice(&authority_id.to_raw_vec()[4..24])
+pub struct FindAuthorBabe;
+
+impl FindAuthor<BabeId> for FindAuthorBabe {
+    fn find_author<'a, I>(digests: I) -> Option<BabeId>
+    where
+        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+    {
+        let author_index = Babe::find_author(digests)?;
+        Babe::authorities()
+            .get(author_index as usize)
+            .map(|babe_authority| babe_authority.0.clone())
+    }
+}
+
+pub struct FindAuthorFromSession<F, Id>(PhantomData<(F, Id)>);
+
+impl<F: FindAuthor<Id>, Id: sp_application_crypto::AppPublic> FindAuthor<AccountId>
+    for FindAuthorFromSession<F, Id>
+{
+    fn find_author<'a, I>(digests: I) -> Option<AccountId>
+    where
+        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+    {
+        let id = F::find_author(digests)?;
+        Session::key_owner(Id::ID, id.as_slice())
+    }
 }
 
 pub struct FindAuthorTruncated<F>(PhantomData<F>);
-impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
+
+pub fn truncate_account_id_into_ethereum_address(account_id: AccountId) -> H160 {
+    H160::from_slice(&account_id.to_raw_vec()[4..24])
+}
+
+impl<F: FindAuthor<AccountId>> FindAuthor<H160> for FindAuthorTruncated<F> {
     fn find_author<'a, I>(digests: I) -> Option<H160>
     where
         I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
     {
-        if let Some(author_index) = F::find_author(digests) {
-            let authority_id = Babe::authorities()[author_index as usize].0.clone();
-            return Some(get_ethereum_address(authority_id));
-        }
-        None
+        let account_id = F::find_author(digests)?;
+        Some(truncate_account_id_into_ethereum_address(account_id))
     }
 }
 
@@ -668,7 +710,7 @@ impl pallet_evm::Config for Runtime {
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
     type OnChargeTransaction = ();
-    type FindAuthor = FindAuthorTruncated<Babe>;
+    type FindAuthor = FindAuthorTruncated<FindAuthorFromSession<FindAuthorBabe, BabeId>>;
 }
 
 impl pallet_ethereum::Config for Runtime {
