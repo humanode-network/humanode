@@ -33,6 +33,22 @@ fn make_nonce(prefix: &str, idx: u32) -> Vec<u8> {
     nonce
 }
 
+fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
+    count: usize,
+    expires_at: Moment,
+) -> Vec<Authentication<Pubkey, Moment>> {
+    let mut auths: Vec<Authentication<Pubkey, Moment>> = vec![];
+    for i in 0..count {
+        let public_key: [u8; 32] = make_pubkey(i as u32).try_into().unwrap();
+        let auth = Authentication {
+            public_key: public_key.into(),
+            expires_at,
+        };
+        auths.push(auth);
+    }
+    auths
+}
+
 benchmarks! {
     where_clause {
         where T::OpaqueAuthTicket: From<Vec<u8>>,
@@ -50,6 +66,7 @@ benchmarks! {
         let auth_ticket = T::build(pubkey, nonce);
         let ticket_signature_bytes_vec = T::sign(auth_ticket.as_ref());
         let ticket: T::OpaqueAuthTicket = auth_ticket.into();
+
         let ticket_signature: T::RobonodeSignature = ticket_signature_bytes_vec.into();
 
         let authenticate_req = Authenticate {
@@ -80,31 +97,31 @@ benchmarks! {
     }
 
     on_initialize {
-        let current_block_num = 100;
-        // Populate with expired authentications
-        // Setting to 10 for now, can be increased later.
-        let mut expired_auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
-        for i in 0..100 {
-            let public_key: [u8; 32] = make_pubkey(i).try_into().unwrap();
-            let expired_auth = Authentication {
-                public_key: public_key.into(),
-                expires_at: T::CurrentMoment::now(),
-            };
-            expired_auths.push(expired_auth);
-        }
+        let b in 1..100;
+        let expired_auth_count = 100;
+        let active_auth_count = 10;
 
-        let weakly_bound_auths = WeakBoundedVec::force_from(expired_auths, Some("pallet-bioauth:benchmark:on_initialize"));
+        let mut auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
+        // Populate with expired authentications
+        let mut expired_auths = make_authentications(expired_auth_count, T::CurrentMoment::now());
+        auths.append(&mut expired_auths);
+
+        // Also, populate with active authentications
+        let mut active_auths = make_authentications(active_auth_count, (b as u64).into());
+        auths.append(&mut active_auths);
+
+        let weakly_bound_auths = WeakBoundedVec::force_from(auths, Some("pallet-bioauth:benchmark:on_initialize"));
         ActiveAuthentications::<T>::put(weakly_bound_auths);
 
         // Capture this state for comparison
         let auths_before = ActiveAuthentications::<T>::get();
     }: {
-        Bioauth::<T>::on_initialize(current_block_num.into());
+        Bioauth::<T>::on_initialize(b.into());
     }
 
     verify {
         let auths_after = ActiveAuthentications::<T>::get();
-        assert_eq!(auths_before.len() - auths_after.len(), 10);
+        assert_eq!(auths_before.len() - auths_after.len(), expired_auth_count);
     }
 
     impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_benchmark_ext(), crate::mock::benchmarking::Benchmark);
