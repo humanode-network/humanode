@@ -1,5 +1,7 @@
 //! The main entrypoint.
 
+use std::sync::Arc;
+
 use frame_benchmarking_cli::*;
 use humanode_runtime::Block;
 use sc_service::PartialComponents;
@@ -85,7 +87,8 @@ pub async fn run() -> sc_cli::Result<()> {
                         backend,
                         ..
                     } = service::new_partial(&config)?;
-                    let aux_revert = Box::new(|client, _, blocks| {
+                    let aux_revert = Box::new(|client, backend, blocks| {
+                        sc_consensus_babe::revert(Arc::clone(&client), backend, blocks)?;
                         sc_finality_grandpa::revert(client, blocks)?;
                         Ok(())
                     });
