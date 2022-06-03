@@ -560,7 +560,7 @@ impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
     }
 }
 
-pub struct ImOnlineSlasher;
+pub struct OffenceSlasher;
 
 /// We have a notion of preauthenticated validators - the ones that we use to bootstrap the network.
 fn is_preauthenticated_bioauth(
@@ -574,38 +574,38 @@ fn is_preauthenticated_bioauth(
 }
 
 impl
-    sp_staking::offence::ReportOffence<
+    sp_staking::offence::OnOffenceHandler<
         AccountId,
         pallet_im_online::IdentificationTuple<Runtime>,
-        pallet_im_online::UnresponsivenessOffence<pallet_im_online::IdentificationTuple<Runtime>>,
-    > for ImOnlineSlasher
+        Weight,
+    > for OffenceSlasher
 {
-    fn report_offence(
-        _reporters: Vec<AccountId>,
-        offence: pallet_im_online::UnresponsivenessOffence<
+    fn on_offence(
+        offenders: &[sp_staking::offence::OffenceDetails<
+            AccountId,
             pallet_im_online::IdentificationTuple<Runtime>,
-        >,
-    ) -> Result<(), sp_staking::offence::OffenceError> {
-        for offender in offence.offenders {
+        >],
+        _slash_fraction: &[Perbill],
+        _session: sp_staking::SessionIndex,
+        disable_strategy: sp_staking::offence::DisableStrategy,
+    ) -> Weight {
+        if disable_strategy == sp_staking::offence::DisableStrategy::Never {
+            return 0;
+        }
+        let mut weight: Weight = 0;
+        let weights = <Runtime as frame_system::Config>::DbWeight::get();
+        for details in offenders {
+            let (offender, identity) = &details.offender;
             // Hack to prevent preauthenticated nodes from being dropped.
-            if is_preauthenticated_bioauth(&offender.1) {
+            if is_preauthenticated_bioauth(identity) {
                 // Never kick the preauthenticated validators.
                 continue;
             }
-            Bioauth::deauthenticate(&offender.0);
+            let has_deathenticated = Bioauth::deauthenticate(offender);
+            weight = weight
+                .saturating_add(weights.reads_writes(1, if has_deathenticated { 1 } else { 0 }));
         }
-        Ok(())
-    }
-
-    fn is_known_offence(
-        _offenders: &[pallet_im_online::IdentificationTuple<Runtime>],
-        _time_slot: &<pallet_im_online::UnresponsivenessOffence<
-            pallet_im_online::IdentificationTuple<Runtime>,
-        > as sp_staking::offence::Offence<
-            pallet_im_online::IdentificationTuple<Runtime>,
-        >>::TimeSlot,
-    ) -> bool {
-        unreachable!("ImOnline will never call `is_known_offence`")
+        weight
     }
 }
 
@@ -614,7 +614,7 @@ impl pallet_im_online::Config for Runtime {
     type Event = Event;
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
-    type ReportUnresponsiveness = ImOnlineSlasher;
+    type ReportUnresponsiveness = Offences;
     type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
     type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
     type MaxKeys = ConstU32<MAX_KEYS>;
@@ -625,7 +625,7 @@ impl pallet_im_online::Config for Runtime {
 impl pallet_offences::Config for Runtime {
     type Event = Event;
     type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
-    type OnOffenceHandler = ();
+    type OnOffenceHandler = OffenceSlasher;
 }
 
 parameter_types! {
