@@ -60,7 +60,7 @@ benchmarks! {
         let i in 0..T::MaxAuthentications::get();
 
         // Create `Authenticate` request payload.
-        let public_key = make_pubkey(i as u32);
+        let public_key = make_pubkey(i);
         let nonce = make_nonce("nonce", i);
         let ticket = <T as AuthTicketBuilder<T>>::build(public_key, nonce);
         let ticket_signature = <T as AuthTicketSigner<T>>::sign(&ticket);
