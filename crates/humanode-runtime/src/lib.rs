@@ -314,12 +314,11 @@ impl pallet_randomness_collective_flip::Config for Runtime {}
 pub const SESSIONS_PER_ERA: u64 = 6;
 pub const BONDING_DURATION: u64 = 24 * 28;
 pub const EPOCH_DURATION: u64 = EPOCH_DURATION_IN_SLOTS;
-pub const EXPECTED_BLOCK_TIME: u64 = MILLISECS_PER_BLOCK;
 pub const REPORT_LONGEVITY: u64 = BONDING_DURATION * SESSIONS_PER_ERA * EPOCH_DURATION;
 
 impl pallet_babe::Config for Runtime {
     type EpochDuration = ConstU64<EPOCH_DURATION>;
-    type ExpectedBlockTime = ConstU64<EXPECTED_BLOCK_TIME>;
+    type ExpectedBlockTime = ConstU64<MILLISECS_PER_BLOCK>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
 
