@@ -503,9 +503,10 @@ impl pallet_bioauth::CurrentMoment<UnixMilliseconds> for CurrentMoment {
 const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
 const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
 const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
+const TIMESTAMP_DAY: UnixMilliseconds = 24 * TIMESTAMP_HOUR;
 
 parameter_types! {
-    pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
+    pub const AuthenticationsExpireAfter: UnixMilliseconds = 7 * TIMESTAMP_DAY;
     pub const MaxAuthentications: u32 = MAX_AUTHENTICATIONS;
     pub const MaxNonces: u32 = MAX_NONCES;
 }
