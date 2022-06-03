@@ -195,10 +195,10 @@ pub fn native_version() -> NativeVersion {
 }
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+const BLOCK_HASH_COUNT: u32 = 2400;
 
 parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
-    pub const BlockHashCount: BlockNumber = 2400;
     /// We allow for 2 seconds of compute with a 6 second average block time.
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
         ::with_sensible_defaults(2 * WEIGHT_PER_SECOND, NORMAL_DISPATCH_RATIO);
@@ -236,7 +236,7 @@ impl frame_system::Config for Runtime {
     /// The ubiquitous origin type.
     type Origin = Origin;
     /// Maximum number of block number to block hash mappings to keep (oldest pruned first).
-    type BlockHashCount = BlockHashCount;
+    type BlockHashCount = ConstU32<BLOCK_HASH_COUNT>;
     /// The weight of database operations that the runtime can invoke.
     type DbWeight = RocksDbWeight;
     /// Version of the runtime.
@@ -791,7 +791,7 @@ impl frame_system::offchain::CreateSignedTransaction<Call> for Runtime {
     )> {
         let tip = 0;
         // take the biggest period possible.
-        let period = BlockHashCount::get()
+        let period = BLOCK_HASH_COUNT
             .checked_next_power_of_two()
             .map(|c| c / 2)
             .unwrap_or(2) as u64;
@@ -1091,7 +1091,7 @@ impl_runtime_apis! {
             // <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
             sp_consensus_babe::BabeGenesisConfiguration {
                 slot_duration: Babe::slot_duration(),
-                epoch_length: EPOCH_DURATION,
+                epoch_length: EPOCH_DURATION_IN_SLOTS,
                 c: BABE_GENESIS_EPOCH_CONFIG.c,
                 genesis_authorities: Babe::authorities().to_vec(),
                 randomness: Babe::randomness(),
