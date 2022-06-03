@@ -311,13 +311,8 @@ impl pallet_bioauth::Verifier<Vec<u8>> for RobonodePublicKeyWrapper {
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
-const SESSIONS_PER_ERA: u64 = 6;
-const BONDING_DURATION: u64 = 24 * 28;
-const EPOCH_DURATION: u64 = EPOCH_DURATION_IN_SLOTS;
-const REPORT_LONGEVITY: u64 = BONDING_DURATION * SESSIONS_PER_ERA * EPOCH_DURATION;
-
 impl pallet_babe::Config for Runtime {
-    type EpochDuration = ConstU64<EPOCH_DURATION>;
+    type EpochDuration = ConstU64<EPOCH_DURATION_IN_SLOTS>;
     type ExpectedBlockTime = ConstU64<MILLISECS_PER_BLOCK>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
