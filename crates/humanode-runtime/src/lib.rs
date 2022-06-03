@@ -549,8 +549,8 @@ fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto
 }
 
 #[cfg(feature = "runtime-benchmarks")]
-impl pallet_bioauth::benchmarking::AuthTicketSigner for Runtime {
-    fn sign(auth_ticket: &[u8]) -> Vec<u8> {
+impl pallet_bioauth::benchmarking::AuthTicketSigner<Runtime> for Runtime {
+    fn sign(auth_ticket: &primitives_auth_ticket::OpaqueAuthTicket) -> Vec<u8> {
         use robonode_crypto::{Signature, Signer};
         // This secret key is taken from the first entry in https://ed25519.cr.yp.to/python/sign.input.
         // Must be compatible with public key provided in benchmark_config() function in
@@ -559,7 +559,7 @@ impl pallet_bioauth::benchmarking::AuthTicketSigner for Runtime {
             hex_literal::hex!("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60");
         let robonode_keypair = derive_keypair_from_secret_key(ROBONODE_SECRET_KEY);
         robonode_keypair
-            .try_sign(auth_ticket)
+            .try_sign(auth_ticket.as_ref())
             .unwrap_or(Signature::from_bytes(&[0; 64]).unwrap())
             .to_bytes()
             .to_vec()
@@ -567,13 +567,15 @@ impl pallet_bioauth::benchmarking::AuthTicketSigner for Runtime {
 }
 
 #[cfg(feature = "runtime-benchmarks")]
-impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
-    fn build(public_key: Vec<u8>, authentication_nonce: Vec<u8>) -> Vec<u8> {
-        let opaque_auth_ticket = OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
+impl pallet_bioauth::benchmarking::AuthTicketBuilder<Runtime> for Runtime {
+    fn build(
+        public_key: Vec<u8>,
+        authentication_nonce: Vec<u8>,
+    ) -> primitives_auth_ticket::OpaqueAuthTicket {
+        OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce,
-        });
-        opaque_auth_ticket.0
+        })
     }
 }
 

@@ -191,21 +191,21 @@ impl pallet_bioauth::Config for Benchmark {
 }
 
 #[cfg(feature = "runtime-benchmarks")]
-impl crate::benchmarking::AuthTicketSigner for Benchmark {
-    fn sign(_ticket: &[u8]) -> Vec<u8> {
+impl crate::benchmarking::AuthTicketSigner<Benchmark> for Benchmark {
+    fn sign(_ticket: &MockOpaqueAuthTicket) -> Vec<u8> {
         vec![0; 64]
     }
 }
 
 #[cfg(feature = "runtime-benchmarks")]
-impl crate::benchmarking::AuthTicketBuilder for Benchmark {
-    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Vec<u8> {
+impl crate::benchmarking::AuthTicketBuilder<Benchmark> for Benchmark {
+    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> MockOpaqueAuthTicket {
         let public_key_fixed_size: [u8; 32] = public_key.try_into().unwrap();
         let opaque_auth_ticket = AuthTicket {
             public_key: public_key_fixed_size,
             nonce,
         };
-        opaque_auth_ticket.encode()
+        MockOpaqueAuthTicket(opaque_auth_ticket)
     }
 }
 

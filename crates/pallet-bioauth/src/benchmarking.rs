@@ -7,18 +7,6 @@ use frame_system::RawOrigin;
 use crate::Pallet as Bioauth;
 use crate::*;
 
-/// Enables construction of AuthTicket deterministically.
-pub trait AuthTicketBuilder {
-    /// Make `AuthTicket` with predetermined 32 bytes public key and nonce.
-    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Vec<u8>;
-}
-
-/// Enables generation of signature with robonode private key provided at runtime.
-pub trait AuthTicketSigner {
-    /// Signs `AuthTicket` bytearray provided and returns digitial signature in bytearray.
-    fn sign(auth_ticket: &[u8]) -> Vec<u8>;
-}
-
 fn make_pubkey(idx: u32) -> Vec<u8> {
     let idx_in_bytes = idx.to_le_bytes();
     let mut pubkey = vec![0; 32];
@@ -31,6 +19,18 @@ fn make_nonce(prefix: &str, idx: u32) -> Vec<u8> {
     let idx_in_bytes = idx.to_le_bytes();
     nonce.extend(idx_in_bytes);
     nonce
+}
+
+/// Enables construction of AuthTicket deterministically.
+pub trait AuthTicketBuilder<Runtime: pallet::Config> {
+    /// Make `AuthTicket` with predetermined 32 bytes public key and nonce.
+    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Runtime::OpaqueAuthTicket;
+}
+
+/// Enables generation of signature with robonode private key provided at runtime.
+pub trait AuthTicketSigner<Runtime: pallet::Config> {
+    /// Signs `AuthTicket` bytearray provided and returns digitial signature in bytearray.
+    fn sign(auth_ticket: &Runtime::OpaqueAuthTicket) -> Runtime::RobonodeSignature;
 }
 
 fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
@@ -51,9 +51,7 @@ fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
 
 benchmarks! {
     where_clause {
-        where T::OpaqueAuthTicket: From<Vec<u8>>,
-            T::RobonodeSignature: From<Vec<u8>>,
-            T: AuthTicketBuilder + AuthTicketSigner,
+        where T: AuthTicketBuilder<T> + AuthTicketSigner<T>,
             T::ValidatorPublicKey: From<[u8; 32]>,
             T::Moment: From<u64>
     }
@@ -61,15 +59,12 @@ benchmarks! {
     authenticate {
         let i in 0..T::MaxAuthentications::get();
 
-        let pubkey = make_pubkey(i);
+        // Create `Authenticate` request payload.
+        let public_key = make_pubkey(i as u32);
         let nonce = make_nonce("nonce", i);
-        let auth_ticket = T::build(pubkey, nonce);
-        let ticket_signature_bytes_vec = T::sign(auth_ticket.as_ref());
-        let ticket: T::OpaqueAuthTicket = auth_ticket.into();
-
-        let ticket_signature: T::RobonodeSignature = ticket_signature_bytes_vec.into();
-
-        let authenticate_req = Authenticate {
+        let ticket = <T as AuthTicketBuilder<T>>::build(public_key, nonce);
+        let ticket_signature = <T as AuthTicketSigner<T>>::sign(&ticket);
+        let req = Authenticate {
             ticket,
             ticket_signature,
         };
@@ -77,7 +72,7 @@ benchmarks! {
         let active_authentications_before = ActiveAuthentications::<T>::get().len();
         let consumed_nonces_before = ConsumedAuthTicketNonces::<T>::get();
 
-    }: _(RawOrigin::None, authenticate_req)
+    }: _(RawOrigin::None, req)
 
     verify {
         // Verify nonce count
@@ -107,7 +102,8 @@ benchmarks! {
         auths.append(&mut expired_auths);
 
         // Also, populate with active authentications
-        let mut active_auths = make_authentications(active_auth_count, (b as u64).into());
+        let future_expiry = T::CurrentMoment::now() + (10u64).into();
+        let mut active_auths = make_authentications(active_auth_count, future_expiry);
         auths.append(&mut active_auths);
 
         let weakly_bound_auths = WeakBoundedVec::force_from(auths, Some("pallet-bioauth:benchmark:on_initialize"));
