@@ -683,7 +683,7 @@ impl pallet_ethereum::Config for Runtime {
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 }
 
-frame_support::parameter_types! {
+parameter_types! {
     pub BoundDivision: U256 = U256::from(1024);
 }
 
@@ -691,7 +691,7 @@ impl pallet_dynamic_fee::Config for Runtime {
     type MinGasPriceBoundDivisor = BoundDivision;
 }
 
-frame_support::parameter_types! {
+parameter_types! {
     pub IsActive: bool = true;
     pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
 }
