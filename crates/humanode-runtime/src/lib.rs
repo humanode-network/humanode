@@ -16,8 +16,8 @@ use fp_rpc::TransactionStatus;
 pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
-        ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get, KeyOwnerProofSystem,
-        Randomness,
+        ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get,
+        KeyOwnerProofSystem, Randomness,
     },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -545,10 +545,6 @@ impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
     }
 }
 
-parameter_types! {
-    pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
-}
-
 pub struct ImOnlineSlasher;
 
 /// We have a notion of preauthenticated validators - the ones that we use to bootstrap the network.
@@ -604,7 +600,7 @@ impl pallet_im_online::Config for Runtime {
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
     type ReportUnresponsiveness = ImOnlineSlasher;
-    type UnsignedPriority = ImOnlineUnsignedPriority;
+    type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
     type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
     type MaxKeys = ConstU32<MAX_KEYS>;
     type MaxPeerInHeartbeats = ConstU32<MAX_PEER_IN_HEARTBEATS>;
@@ -692,7 +688,6 @@ impl pallet_dynamic_fee::Config for Runtime {
 }
 
 parameter_types! {
-    pub IsActive: bool = true;
     pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
 }
 
@@ -712,7 +707,7 @@ impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
 impl pallet_base_fee::Config for Runtime {
     type Event = Event;
     type Threshold = BaseFeeThreshold;
-    type IsActive = IsActive;
+    type IsActive = ConstBool<true>;
     type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 }
 
