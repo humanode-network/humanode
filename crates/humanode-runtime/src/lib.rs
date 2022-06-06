@@ -15,7 +15,10 @@ use codec::{alloc::string::ToString, Decode, Encode, MaxEncodedLen};
 use fp_rpc::TransactionStatus;
 pub use frame_support::{
     construct_runtime, parameter_types,
-    traits::{ConstU32, FindAuthor, Get, KeyOwnerProofSystem, Randomness},
+    traits::{
+        ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get,
+        KeyOwnerProofSystem, Randomness,
+    },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         IdentityFee, Weight,
@@ -192,13 +195,11 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
-    pub const BlockHashCount: BlockNumber = 2400;
     /// We allow for 2 seconds of compute with a 6 second average block time.
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
         ::with_sensible_defaults(2 * WEIGHT_PER_SECOND, NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
-    pub const SS58Prefix: u8 = 42;
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -231,7 +232,7 @@ impl frame_system::Config for Runtime {
     /// The ubiquitous origin type.
     type Origin = Origin;
     /// Maximum number of block number to block hash mappings to keep (oldest pruned first).
-    type BlockHashCount = BlockHashCount;
+    type BlockHashCount = ConstU32<2400>;
     /// The weight of database operations that the runtime can invoke.
     type DbWeight = RocksDbWeight;
     /// Version of the runtime.
@@ -249,7 +250,7 @@ impl frame_system::Config for Runtime {
     /// Weight information for the extrinsics of this pallet.
     type SystemWeightInfo = ();
     /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
-    type SS58Prefix = SS58Prefix;
+    type SS58Prefix = ConstU16<42>;
     /// The set code logic, just the default since we're not a parachain.
     type OnSetCode = ();
     /// The maximum number of consumers allowed on a single account.
@@ -304,31 +305,11 @@ impl pallet_bioauth::Verifier<Vec<u8>> for RobonodePublicKeyWrapper {
     }
 }
 
-parameter_types! {
-    pub const ExistentialDeposit: u128 = 500;
-    pub const MaxLocks: u32 = 50;
-}
-
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
-parameter_types! {
-    pub const SessionsPerEra: u64 = 6;
-    pub const BondingDuration: u64 = 24 * 28;
-    // NOTE: Currently it is not possible to change the epoch duration after the chain has started.
-    //       Attempting to do so will brick block production.
-    pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
-    pub const ExpectedBlockTime: u64 = MILLISECS_PER_BLOCK;
-    pub const ReportLongevity: u64 =
-        BondingDuration::get() as u64 * SessionsPerEra::get() as u64 * EpochDuration::get();
-}
-
-parameter_types! {
-    pub const MaxAuthorities: u32 = MAX_AUTHORITIES;
-}
-
 impl pallet_babe::Config for Runtime {
-    type EpochDuration = EpochDuration;
-    type ExpectedBlockTime = ExpectedBlockTime;
+    type EpochDuration = ConstU64<EPOCH_DURATION_IN_SLOTS>;
+    type ExpectedBlockTime = ConstU64<MILLISECS_PER_BLOCK>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
 
@@ -345,7 +326,7 @@ impl pallet_babe::Config for Runtime {
     type HandleEquivocation = ();
 
     type WeightInfo = ();
-    type MaxAuthorities = MaxAuthorities;
+    type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
 }
 
 /// A link between the [`AccountId`] as in what we use to sign extrinsics in the system
@@ -409,11 +390,7 @@ impl pallet_grandpa::Config for Runtime {
     type HandleEquivocation = ();
 
     type WeightInfo = ();
-    type MaxAuthorities = MaxAuthorities;
-}
-
-parameter_types! {
-    pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
+    type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
 }
 
 /// A timestamp: milliseconds since the unix epoch.
@@ -422,12 +399,12 @@ pub type UnixMilliseconds = u64;
 impl pallet_timestamp::Config for Runtime {
     type Moment = UnixMilliseconds;
     type OnTimestampSet = Babe;
-    type MinimumPeriod = MinimumPeriod;
+    type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
     type WeightInfo = ();
 }
 
 impl pallet_balances::Config for Runtime {
-    type MaxLocks = MaxLocks;
+    type MaxLocks = ConstU32<50>;
     type MaxReserves = ();
     type ReserveIdentifier = [u8; 8];
     /// The type for recording an account's balance.
@@ -435,19 +412,14 @@ impl pallet_balances::Config for Runtime {
     /// The ubiquitous event type.
     type Event = Event;
     type DustRemoval = ();
-    type ExistentialDeposit = ExistentialDeposit;
+    type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
-parameter_types! {
-    pub const TransactionByteFee: Balance = 1;
-    pub const OperationalFeeMultiplier: u8 = 5;
-}
-
 impl pallet_transaction_payment::Config for Runtime {
     type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
-    type OperationalFeeMultiplier = OperationalFeeMultiplier;
+    type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
     type FeeMultiplierUpdate = ();
@@ -501,12 +473,7 @@ const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
 const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
 const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
 const TIMESTAMP_DAY: UnixMilliseconds = 24 * TIMESTAMP_HOUR;
-
-parameter_types! {
-    pub const AuthenticationsExpireAfter: UnixMilliseconds = 7 * TIMESTAMP_DAY;
-    pub const MaxAuthentications: u32 = MAX_AUTHENTICATIONS;
-    pub const MaxNonces: u32 = MAX_NONCES;
-}
+const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * TIMESTAMP_DAY;
 
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
@@ -519,10 +486,10 @@ impl pallet_bioauth::Config for Runtime {
     type Moment = UnixMilliseconds;
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
-    type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
+    type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
     type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
-    type MaxAuthentications = MaxAuthentications;
-    type MaxNonces = MaxNonces;
+    type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
+    type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
 }
@@ -573,13 +540,6 @@ impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
         });
         opaque_auth_ticket.0
     }
-}
-
-parameter_types! {
-    pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
-    pub const MaxKeys: u32 = MAX_KEYS;
-    pub const MaxPeerInHeartbeats: u32 = MAX_PEER_IN_HEARTBEATS;
-    pub const MaxPeerDataEncodingSize: u32 = MAX_PEER_DATA_ENCODING_SIZE;
 }
 
 pub struct ImOnlineSlasher;
@@ -637,11 +597,11 @@ impl pallet_im_online::Config for Runtime {
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
     type ReportUnresponsiveness = ImOnlineSlasher;
-    type UnsignedPriority = ImOnlineUnsignedPriority;
+    type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
     type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
-    type MaxKeys = MaxKeys;
-    type MaxPeerInHeartbeats = MaxPeerInHeartbeats;
-    type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
+    type MaxKeys = ConstU32<MAX_KEYS>;
+    type MaxPeerInHeartbeats = ConstU32<MAX_PEER_IN_HEARTBEATS>;
+    type MaxPeerDataEncodingSize = ConstU32<MAX_PEER_DATA_ENCODING_SIZE>;
 }
 
 parameter_types! {
@@ -674,7 +634,7 @@ impl pallet_ethereum::Config for Runtime {
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 }
 
-frame_support::parameter_types! {
+parameter_types! {
     pub BoundDivision: U256 = U256::from(1024);
 }
 
@@ -682,8 +642,7 @@ impl pallet_dynamic_fee::Config for Runtime {
     type MinGasPriceBoundDivisor = BoundDivision;
 }
 
-frame_support::parameter_types! {
-    pub IsActive: bool = true;
+parameter_types! {
     pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
 }
 
@@ -703,7 +662,7 @@ impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
 impl pallet_base_fee::Config for Runtime {
     type Event = Event;
     type Threshold = BaseFeeThreshold;
-    type IsActive = IsActive;
+    type IsActive = ConstBool<true>;
     type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 }
 
@@ -782,7 +741,7 @@ impl frame_system::offchain::CreateSignedTransaction<Call> for Runtime {
     )> {
         let tip = 0;
         // take the biggest period possible.
-        let period = BlockHashCount::get()
+        let period = <Self::BlockHashCount as Get<Self::BlockNumber>>::get()
             .checked_next_power_of_two()
             .map(|c| c / 2)
             .unwrap_or(2) as u64;
@@ -1082,7 +1041,7 @@ impl_runtime_apis! {
             // <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
             sp_consensus_babe::BabeGenesisConfiguration {
                 slot_duration: Babe::slot_duration(),
-                epoch_length: EpochDuration::get(),
+                epoch_length: <Self as pallet_babe::Config>::EpochDuration::get(),
                 c: BABE_GENESIS_EPOCH_CONFIG.c,
                 genesis_authorities: Babe::authorities().to_vec(),
                 randomness: Babe::randomness(),
