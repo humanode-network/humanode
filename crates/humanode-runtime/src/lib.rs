@@ -44,10 +44,7 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::{
-    crypto::{ByteArray, KeyTypeId},
-    OpaqueMetadata, H160, H256, U256,
-};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{
@@ -62,7 +59,6 @@ use sp_runtime::{
     ApplyExtrinsicResult, MultiSignature, SaturatedConversion,
 };
 pub use sp_runtime::{Perbill, Permill};
-use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -72,6 +68,7 @@ mod frontier_precompiles;
 use frontier_precompiles::FrontierPrecompiles;
 
 mod display_moment;
+mod find_author;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -607,50 +604,6 @@ impl pallet_im_online::Config for Runtime {
     type MaxPeerDataEncodingSize = ConstU32<MAX_PEER_DATA_ENCODING_SIZE>;
 }
 
-pub struct FindAuthorBabe;
-
-impl FindAuthor<BabeId> for FindAuthorBabe {
-    fn find_author<'a, I>(digests: I) -> Option<BabeId>
-    where
-        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-    {
-        let author_index = Babe::find_author(digests)?;
-        Babe::authorities()
-            .get(author_index as usize)
-            .map(|babe_authority| babe_authority.0.clone())
-    }
-}
-
-pub struct FindAuthorFromSession<F, Id>(PhantomData<(F, Id)>);
-
-impl<F: FindAuthor<Id>, Id: sp_application_crypto::AppPublic> FindAuthor<AccountId>
-    for FindAuthorFromSession<F, Id>
-{
-    fn find_author<'a, I>(digests: I) -> Option<AccountId>
-    where
-        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-    {
-        let id = F::find_author(digests)?;
-        Session::key_owner(Id::ID, id.as_slice())
-    }
-}
-
-pub struct FindAuthorTruncated<F>(PhantomData<F>);
-
-pub fn truncate_account_id_into_ethereum_address(account_id: AccountId) -> H160 {
-    H160::from_slice(&account_id.to_raw_vec()[4..24])
-}
-
-impl<F: FindAuthor<AccountId>> FindAuthor<H160> for FindAuthorTruncated<F> {
-    fn find_author<'a, I>(digests: I) -> Option<H160>
-    where
-        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-    {
-        let account_id = F::find_author(digests)?;
-        Some(truncate_account_id_into_ethereum_address(account_id))
-    }
-}
-
 parameter_types! {
     pub BlockGasLimit: U256 = U256::from(u32::max_value());
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
@@ -671,7 +624,9 @@ impl pallet_evm::Config for Runtime {
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
     type OnChargeTransaction = ();
-    type FindAuthor = FindAuthorTruncated<FindAuthorFromSession<FindAuthorBabe, BabeId>>;
+    type FindAuthor = find_author::FindAuthorTruncated<
+        find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
+    >;
 }
 
 impl pallet_ethereum::Config for Runtime {
