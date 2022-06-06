@@ -5100,6 +5100,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-substrate"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#438f40dc262ac32a4afd600d8d76214897a0f1a6"
