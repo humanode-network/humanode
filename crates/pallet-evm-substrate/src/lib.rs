@@ -8,6 +8,7 @@ use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 
+/// Evm address type.
 pub type EvmAddress = sp_core::H160;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
