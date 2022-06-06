@@ -161,6 +161,8 @@ pub const DAYS: BlockNumber = HOURS * 24;
 
 pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+// NOTE: Currently it is not possible to change the epoch duration after the chain has started.
+//       Attempting to do so will brick block production.
 pub const EPOCH_DURATION_IN_SLOTS: u64 = {
     const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
