@@ -2949,6 +2949,7 @@ dependencies = [
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
+ "pallet-evm-substrate",
  "pallet-grandpa",
  "pallet-humanode-session",
  "pallet-im-online",
