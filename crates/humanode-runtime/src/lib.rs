@@ -170,7 +170,7 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 };
 
 /// The longevity, in blocks, that an equivocation report is valid for.
-const REPORT_LONGEVITY: u64 = EPOCH_DURATION_IN_BLOCKS as u64;
+const REPORT_LONGEVITY: u64 = 3 * EPOCH_DURATION_IN_BLOCKS as u64;
 
 // Consensus related constants.
 pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
