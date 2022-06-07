@@ -668,7 +668,7 @@ impl pallet_base_fee::Config for Runtime {
 
 impl pallet_ethereum_chain_id::Config for Runtime {}
 
-impl pallet_evm_substrate::Config for Runtime {
+impl pallet_evm_accounts_mapping::Config for Runtime {
     type Event = Event;
 }
 
@@ -698,7 +698,7 @@ construct_runtime!(
         DynamicFee: pallet_dynamic_fee,
         BaseFee: pallet_base_fee,
         ImOnline: pallet_im_online,
-        EvmSubstrate: pallet_evm_substrate,
+        EvmAccountsMapping: pallet_evm_accounts_mapping,
     }
 );
 

@@ -2946,10 +2946,10 @@ dependencies = [
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
  "pallet-evm",
+ "pallet-evm-accounts-mapping",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
- "pallet-evm-substrate",
  "pallet-grandpa",
  "pallet-humanode-session",
  "pallet-im-online",
@@ -5052,6 +5052,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-accounts-mapping"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
@@ -5077,17 +5088,6 @@ dependencies = [
  "fp-evm",
  "ripemd",
  "sp-io",
-]
-
-[[package]]
-name = "pallet-evm-substrate"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
 ]
 
 [[package]]
