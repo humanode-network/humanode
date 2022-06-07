@@ -1,5 +1,5 @@
 [package]
-name = "pallet-evm-substrate"
+name = "pallet-evm-accounts-mapping"
 version = "0.1.0"
 edition = "2021"
 publish = false
