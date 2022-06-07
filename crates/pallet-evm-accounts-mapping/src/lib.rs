@@ -7,9 +7,19 @@
 use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
+use sp_std::prelude::*;
 
 /// Evm address type.
 pub type EvmAddress = sp_core::H160;
+
+/// Provides the capability to verify an ethereum signature.
+pub trait EthSignatureVerifier {
+    /// The error that can occur during ethereum signature verification.
+    type Error;
+
+    /// Verify the signature and extract a corresponding [`EvmAddress`] if it's ok.
+    fn verify(signature: Vec<u8>) -> Result<EvmAddress, Self::Error>;
+}
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -26,6 +36,7 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+        type EthSignatureVerifier: EthSignatureVerifier;
     }
 
     #[pallet::event]
@@ -43,6 +54,10 @@ pub mod pallet {
         AccountIdAlreadyMapped,
         /// Eth address has already mapped.
         EthAddressAlreadyMapped,
+        /// Bad ethereum signature.
+        BadSignature,
+        /// Invalid ethereum sugnature.
+        InvalidSignature,
     }
 
     #[pallet::storage]
@@ -61,7 +76,11 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(10_000)]
-        pub fn claim_account(origin: OriginFor<T>, eth_address: EvmAddress) -> DispatchResult {
+        pub fn claim_account(
+            origin: OriginFor<T>,
+            eth_address: EvmAddress,
+            signature: Vec<u8>,
+        ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
             ensure!(
@@ -72,6 +91,11 @@ pub mod pallet {
                 !Accounts::<T>::contains_key(eth_address),
                 Error::<T>::EthAddressAlreadyMapped
             );
+
+            let address = <T as Config>::EthSignatureVerifier::verify(signature)
+                .map_err(|_| Error::<T>::BadSignature)?;
+
+            ensure!(eth_address == address, Error::<T>::InvalidSignature);
 
             Accounts::<T>::insert(eth_address, &who);
             EvmAddresses::<T>::insert(&who, eth_address);
