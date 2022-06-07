@@ -161,11 +161,16 @@ pub const DAYS: BlockNumber = HOURS * 24;
 
 pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+// NOTE: Currently it is not possible to change the epoch duration after the chain has started.
+//       Attempting to do so will brick block production.
 pub const EPOCH_DURATION_IN_SLOTS: u64 = {
     const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
     (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 };
+
+/// The longevity, in blocks, that an equivocation report is valid for.
+const REPORT_LONGEVITY: u64 = 3 * EPOCH_DURATION_IN_BLOCKS as u64;
 
 // Consensus related constants.
 pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
@@ -323,7 +328,11 @@ impl pallet_babe::Config for Runtime {
         BabeId,
     )>>::IdentificationTuple;
 
-    type HandleEquivocation = ();
+    type HandleEquivocation = pallet_babe::EquivocationHandler<
+        Self::KeyOwnerIdentification,
+        Offences,
+        ConstU64<REPORT_LONGEVITY>,
+    >;
 
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
@@ -387,7 +396,11 @@ impl pallet_grandpa::Config for Runtime {
         GrandpaId,
     )>>::IdentificationTuple;
 
-    type HandleEquivocation = ();
+    type HandleEquivocation = pallet_grandpa::EquivocationHandler<
+        Self::KeyOwnerIdentification,
+        Offences,
+        ConstU64<REPORT_LONGEVITY>,
+    >;
 
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
@@ -401,6 +414,13 @@ impl pallet_timestamp::Config for Runtime {
     type OnTimestampSet = Babe;
     type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
     type WeightInfo = ();
+}
+
+impl pallet_authorship::Config for Runtime {
+    type FindAuthor = find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>;
+    type UncleGenerations = ConstU32<5>;
+    type FilterUncle = ();
+    type EventHandler = (ImOnline,);
 }
 
 impl pallet_balances::Config for Runtime {
@@ -542,7 +562,7 @@ impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
     }
 }
 
-pub struct ImOnlineSlasher;
+pub struct OffenceSlasher;
 
 /// We have a notion of preauthenticated validators - the ones that we use to bootstrap the network.
 fn is_preauthenticated_bioauth(
@@ -556,38 +576,38 @@ fn is_preauthenticated_bioauth(
 }
 
 impl
-    sp_staking::offence::ReportOffence<
+    sp_staking::offence::OnOffenceHandler<
         AccountId,
         pallet_im_online::IdentificationTuple<Runtime>,
-        pallet_im_online::UnresponsivenessOffence<pallet_im_online::IdentificationTuple<Runtime>>,
-    > for ImOnlineSlasher
+        Weight,
+    > for OffenceSlasher
 {
-    fn report_offence(
-        _reporters: Vec<AccountId>,
-        offence: pallet_im_online::UnresponsivenessOffence<
+    fn on_offence(
+        offenders: &[sp_staking::offence::OffenceDetails<
+            AccountId,
             pallet_im_online::IdentificationTuple<Runtime>,
-        >,
-    ) -> Result<(), sp_staking::offence::OffenceError> {
-        for offender in offence.offenders {
+        >],
+        _slash_fraction: &[Perbill],
+        _session: sp_staking::SessionIndex,
+        disable_strategy: sp_staking::offence::DisableStrategy,
+    ) -> Weight {
+        if disable_strategy == sp_staking::offence::DisableStrategy::Never {
+            return 0;
+        }
+        let mut weight: Weight = 0;
+        let weights = <Runtime as frame_system::Config>::DbWeight::get();
+        for details in offenders {
+            let (offender, identity) = &details.offender;
             // Hack to prevent preauthenticated nodes from being dropped.
-            if is_preauthenticated_bioauth(&offender.1) {
+            if is_preauthenticated_bioauth(identity) {
                 // Never kick the preauthenticated validators.
                 continue;
             }
-            Bioauth::deauthenticate(&offender.0);
+            let has_deathenticated = Bioauth::deauthenticate(offender);
+            weight = weight
+                .saturating_add(weights.reads_writes(1, if has_deathenticated { 1 } else { 0 }));
         }
-        Ok(())
-    }
-
-    fn is_known_offence(
-        _offenders: &[pallet_im_online::IdentificationTuple<Runtime>],
-        _time_slot: &<pallet_im_online::UnresponsivenessOffence<
-            pallet_im_online::IdentificationTuple<Runtime>,
-        > as sp_staking::offence::Offence<
-            pallet_im_online::IdentificationTuple<Runtime>,
-        >>::TimeSlot,
-    ) -> bool {
-        unreachable!("ImOnline will never call `is_known_offence`")
+        weight
     }
 }
 
@@ -596,12 +616,18 @@ impl pallet_im_online::Config for Runtime {
     type Event = Event;
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
-    type ReportUnresponsiveness = ImOnlineSlasher;
+    type ReportUnresponsiveness = Offences;
     type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
     type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
     type MaxKeys = ConstU32<MAX_KEYS>;
     type MaxPeerInHeartbeats = ConstU32<MAX_PEER_IN_HEARTBEATS>;
     type MaxPeerDataEncodingSize = ConstU32<MAX_PEER_DATA_ENCODING_SIZE>;
+}
+
+impl pallet_offences::Config for Runtime {
+    type Event = Event;
+    type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
+    type OnOffenceHandler = OffenceSlasher;
 }
 
 parameter_types! {
@@ -681,9 +707,12 @@ construct_runtime!(
         Timestamp: pallet_timestamp,
         Bioauth: pallet_bioauth,
         Babe: pallet_babe,
+        // Authorship must be before other pallets that rely on the data it captures.
+        Authorship: pallet_authorship,
         Balances: pallet_balances,
         TransactionPayment: pallet_transaction_payment,
         Session: pallet_session,
+        Offences: pallet_offences,
         Historical: pallet_session_historical,
         HumanodeSession: pallet_humanode_session,
         EthereumChainId: pallet_ethereum_chain_id,
