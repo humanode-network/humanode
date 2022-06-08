@@ -141,7 +141,7 @@ impl<T: Config> Pallet<T> {
     }
 }
 
-///
+/// Verify Eip712 typed signature based on provided domain_separator and entire message.
 pub struct Eip712VerifierFactory;
 
 impl Eip712Verifier for Eip712VerifierFactory {
