@@ -5128,6 +5128,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-bioauth",
+ "pallet-bootnodes",
  "pallet-session",
  "parity-scale-codec",
  "scale-info",
