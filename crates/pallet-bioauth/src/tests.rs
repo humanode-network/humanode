@@ -808,7 +808,7 @@ fn genesis_build() {
         },
     ];
     let config = pallet_bioauth::GenesisConfig {
-        robonode_public_key: MockVerifier,
+        robonode_public_key: MockVerifier::A,
         consumed_auth_ticket_nonces: consumed_auth_ticket_nonces.clone(),
         active_authentications: active_authentications.clone(),
     };
@@ -827,7 +827,7 @@ fn genesis_build() {
         with_mock_validator_set_updater(|mock| mock.checkpoint());
 
         // Assert the state.
-        assert_eq!(Bioauth::robonode_public_key(), MockVerifier);
+        assert_eq!(Bioauth::robonode_public_key(), MockVerifier::A);
         assert_eq!(
             Bioauth::consumed_auth_ticket_nonces().into_inner(),
             consumed_auth_ticket_nonces

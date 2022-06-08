@@ -61,9 +61,19 @@ impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAu
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct MockVerifier;
+pub enum MockVerifier {
+    A,
+    B,
+    C,
+}
+
+impl Default for MockVerifier {
+    fn default() -> Self {
+        Self::A
+    }
+}
 
 impl crate::Verifier<Vec<u8>> for MockVerifier {
     type Error = Infallible;
