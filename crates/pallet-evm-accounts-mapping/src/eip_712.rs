@@ -7,7 +7,8 @@ use sp_std::prelude::*;
 use crate::EvmAddress;
 
 /// Domain separator type definition.
-pub const DOMAIN: &str = "EIP712Domain(string name,string version,uint256 chainId,bytes32 salt)";
+pub const DOMAIN: &str =
+    "EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)";
 /// Domain name.
 pub const NAME: &str = "Humanode EVM Claim";
 /// Domain version.
