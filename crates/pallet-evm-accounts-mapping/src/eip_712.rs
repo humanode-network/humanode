@@ -9,7 +9,7 @@ use crate::EvmAddress;
 /// A signature (a 512-bit value, plus 8 bits for recovery ID).
 pub type Signature = [u8; 65];
 
-/// Provides the capability to verify an Eip712 based ethereum signature.
+/// Provides the capability to verify an EIP-712 based ethereum signature.
 pub trait Verifier {
     /// Verify the signature and extract a corresponding [`EvmAddress`] if it's ok.
     fn verify(
@@ -19,7 +19,7 @@ pub trait Verifier {
     ) -> Option<EvmAddress>;
 }
 
-/// Verify Eip712 typed signature based on provided domain_separator and entire message.
+/// Verify EIP-712 typed signature based on provided domain_separator and entire message.
 pub struct VerifierFactory;
 
 impl Verifier for VerifierFactory {
@@ -36,7 +36,7 @@ impl Verifier for VerifierFactory {
 }
 
 impl VerifierFactory {
-    /// Eip-712 message to be signed.
+    /// EIP-712 message to be signed.
     fn eip712_signable_message(domain_separator: [u8; 32], message: Vec<u8>) -> Vec<u8> {
         let payload_hash = Self::payload_hash(message);
 
