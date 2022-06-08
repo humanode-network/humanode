@@ -40,7 +40,7 @@ pub mod pallet {
     use super::*;
 
     #[pallet::config]
-    pub trait Config: frame_system::Config {
+    pub trait Config: frame_system::Config + pallet_evm::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
         type Eip712Verifier: Eip712Verifier;
     }
@@ -99,7 +99,7 @@ pub mod pallet {
             );
 
             let address = <T as Config>::Eip712Verifier::verify(
-                Self::account_domain_separator(),
+                Self::domain_separator(),
                 who.encode(),
                 signature,
             )
@@ -121,17 +121,20 @@ pub mod pallet {
 }
 
 impl<T: Config> Pallet<T> {
-    /// A domain separator used at Eip712 flow.
-    fn account_domain_separator() -> [u8; 32] {
-        let domain_hash =
-            keccak_256(b"EIP712Domain(string name,string version,uint256 chainId,bytes32 salt)");
+    /// A corresponding domain separator used at Eip712 flow.
+    fn domain_separator() -> [u8; 32] {
+        let domain = b"EIP712Domain(string name,string version,uint256 chainId,bytes32 salt)";
+        let name = b"Humanode EVM claim";
+        let version = b"1";
+        let chain_id = T::ChainId::get().to_ne_bytes();
+        let genesis_block_hash = frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero());
+
+        let domain_hash = keccak_256(domain);
         let mut domain_seperator_msg = domain_hash.to_vec();
-        domain_seperator_msg.extend_from_slice(&keccak_256(b"Humanode EVM claim")); // name
-        domain_seperator_msg.extend_from_slice(&keccak_256(b"1")); // version
-        domain_seperator_msg.extend_from_slice(&keccak_256(b"5234")); // chain id
-        domain_seperator_msg.extend_from_slice(
-            frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero()).as_ref(),
-        ); // genesis block hash
+        domain_seperator_msg.extend_from_slice(&keccak_256(name));
+        domain_seperator_msg.extend_from_slice(&keccak_256(version));
+        domain_seperator_msg.extend_from_slice(&keccak_256(&chain_id));
+        domain_seperator_msg.extend_from_slice(genesis_block_hash.as_ref());
         keccak_256(domain_seperator_msg.as_slice())
     }
 }
