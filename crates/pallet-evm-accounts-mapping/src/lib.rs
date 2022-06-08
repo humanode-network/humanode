@@ -112,16 +112,16 @@ pub mod pallet {
 impl<T: Config> Pallet<T> {
     /// A corresponding domain separator used at Eip712 flow.
     fn domain_separator() -> [u8; 32] {
-        let domain = b"EIP712Domain(string name,string version,uint256 chainId,bytes32 salt)";
-        let name = b"Humanode EVM claim";
-        let version = b"1";
+        let domain = eip_712::DOMAIN.as_bytes();
+        let name = eip_712::NAME.as_bytes();
+        let version = eip_712::VERSION.to_ne_bytes();
         let chain_id = T::ChainId::get().to_ne_bytes();
         let genesis_block_hash = frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero());
 
         let domain_hash = keccak_256(domain);
         let mut domain_seperator_msg = domain_hash.to_vec();
         domain_seperator_msg.extend_from_slice(&keccak_256(name));
-        domain_seperator_msg.extend_from_slice(&keccak_256(version));
+        domain_seperator_msg.extend_from_slice(&keccak_256(&version));
         domain_seperator_msg.extend_from_slice(&keccak_256(&chain_id));
         domain_seperator_msg.extend_from_slice(genesis_block_hash.as_ref());
         keccak_256(domain_seperator_msg.as_slice())
