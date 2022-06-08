@@ -7,9 +7,8 @@
 use frame_support::{pallet_prelude::*, sp_runtime::traits::Zero};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
-use sp_io::hashing::keccak_256;
 
-pub mod eip_712;
+pub mod account_claim_eip_712;
 
 /// Evm address type.
 pub type EvmAddress = sp_core::H160;
@@ -24,14 +23,14 @@ pub type EvmAddress = sp_core::H160;
 #[frame_support::pallet]
 pub mod pallet {
 
-    use eip_712::Verifier;
+    use account_claim_eip_712::Verifier;
 
     use super::*;
 
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_evm::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-        type Eip712Verifier: eip_712::Verifier;
+        type Eip712Verifier: account_claim_eip_712::Verifier;
     }
 
     #[pallet::event]
@@ -53,6 +52,8 @@ pub mod pallet {
         BadSignature,
         /// Invalid ethereum sugnature.
         InvalidSignature,
+        /// Invalid EIP-712 claim typed data.
+        InvalidEip712ClaimData,
     }
 
     #[pallet::storage]
@@ -74,7 +75,7 @@ pub mod pallet {
         pub fn claim_account(
             origin: OriginFor<T>,
             eth_address: EvmAddress,
-            signature: eip_712::Signature,
+            signature: account_claim_eip_712::Signature,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
@@ -87,12 +88,19 @@ pub mod pallet {
                 Error::<T>::EthAddressAlreadyMapped
             );
 
-            let address = <T as Config>::Eip712Verifier::verify(
-                Self::domain_separator(),
-                who.encode(),
-                signature,
-            )
-            .ok_or(Error::<T>::BadSignature)?;
+            let account_claim = account_claim_eip_712::AccountClaimTypedData {
+                name: account_claim_eip_712::NAME,
+                version: account_claim_eip_712::VERSION,
+                chain_id: T::ChainId::get(),
+                genesis_block_hash: frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero())
+                    .as_ref()
+                    .to_vec(),
+                account: who.encode(),
+            };
+
+            let address = <T as Config>::Eip712Verifier::verify(account_claim, signature)
+                .map_err(|_| Error::<T>::InvalidEip712ClaimData)?
+                .ok_or(Error::<T>::BadSignature)?;
 
             ensure!(eth_address == address, Error::<T>::InvalidSignature);
 
@@ -106,24 +114,5 @@ pub mod pallet {
 
             Ok(())
         }
-    }
-}
-
-impl<T: Config> Pallet<T> {
-    /// A corresponding domain separator used at Eip712 flow.
-    fn domain_separator() -> [u8; 32] {
-        let domain = eip_712::DOMAIN.as_bytes();
-        let name = eip_712::NAME.as_bytes();
-        let version = eip_712::VERSION.to_ne_bytes();
-        let chain_id = T::ChainId::get().to_ne_bytes();
-        let genesis_block_hash = frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero());
-
-        let domain_hash = keccak_256(domain);
-        let mut domain_seperator_msg = domain_hash.to_vec();
-        domain_seperator_msg.extend_from_slice(&keccak_256(name));
-        domain_seperator_msg.extend_from_slice(&keccak_256(&version));
-        domain_seperator_msg.extend_from_slice(&keccak_256(&chain_id));
-        domain_seperator_msg.extend_from_slice(genesis_block_hash.as_ref());
-        keccak_256(domain_seperator_msg.as_slice())
     }
 }
