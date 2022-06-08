@@ -42,11 +42,6 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
-        /// Chain ID of EVM.
-        #[pallet::constant]
-        type ChainId: Get<u64>;
-
         type Eip712Verifier: Eip712Verifier;
     }
 
