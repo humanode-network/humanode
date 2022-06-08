@@ -8,6 +8,7 @@ publish = false
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -20,6 +21,7 @@ std = [
   "scale-info/std",
   "frame-support/std",
   "frame-system/std",
+  "pallet-evm/std",
   "sp-core/std",
   "sp-io/std",
   "sp-std/std",
