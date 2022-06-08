@@ -7,6 +7,8 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
     /// A function to calculate required weights for authenticate call.
     fn authenticate() -> Weight;
+    /// A function to calculate required weights for set_robonode_public_key call.
+    fn set_robonode_public_key() -> Weight;
     /// A function to calculate required weights for on_initialize hook.
     fn on_initialize(update_required: bool) -> Weight;
 }
@@ -34,6 +36,11 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
     // Storage: Authorities (r:1 w:1)
     fn authenticate() -> Weight {
         calculate_weight::<T>(10_000_u64, 6_u64, 3_u64)
+    }
+
+    // Storage: Bioauth RobonodePublicKey (r:0 w:1)
+    fn set_robonode_public_key() -> Weight {
+        10_000_u64 + T::DbWeight::get().reads_writes(0, 1)
     }
 
     // Storage: Timestamp Now (r:1 w:0)
