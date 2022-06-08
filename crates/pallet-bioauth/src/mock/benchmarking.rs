@@ -65,9 +65,19 @@ impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAu
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct MockVerifier;
+pub enum MockVerifier {
+    A,
+    B,
+    C,
+}
+
+impl Default for MockVerifier {
+    fn default() -> Self {
+        Self::A
+    }
+}
 
 impl crate::Verifier<Vec<u8>> for MockVerifier {
     type Error = Infallible;
@@ -197,6 +207,16 @@ impl crate::benchmarking::AuthTicketBuilder for Benchmark {
             nonce,
         };
         opaque_auth_ticket.encode()
+    }
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+impl crate::benchmarking::RobonodePublicKeyBuilder<MockVerifier> for Benchmark {
+    fn build(value: crate::benchmarking::RobonodePublicKeyBuilderValue) -> MockVerifier {
+        match value {
+            crate::benchmarking::RobonodePublicKeyBuilderValue::A => MockVerifier::A,
+            crate::benchmarking::RobonodePublicKeyBuilderValue::B => MockVerifier::B,
+        }
     }
 }
 
