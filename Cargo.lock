@@ -4967,6 +4967,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-bootnodes"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "mockall",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-api",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
