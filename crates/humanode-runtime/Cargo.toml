@@ -14,6 +14,7 @@ bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-feat
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id", default-features = false }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
+pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
 precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-features = false }
@@ -103,6 +104,7 @@ std = [
   "pallet-authorship/std",
   "pallet-babe/std",
   "pallet-bioauth/std",
+  "pallet-bootnodes/std",
   "pallet-balances/std",
   "pallet-base-fee/std",
   "pallet-ethereum/std",
