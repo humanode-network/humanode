@@ -98,11 +98,15 @@ pub mod pallet {
                 account: who.encode(),
             };
 
-            let address = <T as Config>::Eip712Verifier::verify(account_claim, signature)
-                .map_err(|_| Error::<T>::InvalidEip712ClaimData)?
-                .ok_or(Error::<T>::BadSignature)?;
+            let eth_extracted_address =
+                <T as Config>::Eip712Verifier::verify(account_claim, signature)
+                    .map_err(|_| Error::<T>::InvalidEip712ClaimData)?
+                    .ok_or(Error::<T>::BadSignature)?;
 
-            ensure!(eth_address == address, Error::<T>::InvalidSignature);
+            ensure!(
+                eth_address == eth_extracted_address,
+                Error::<T>::InvalidSignature
+            );
 
             Accounts::<T>::insert(eth_address, &who);
             EvmAddresses::<T>::insert(&who, eth_address);
