@@ -1,4 +1,4 @@
-//! A substrate pallet containing the bioauth integration.
+//! A substrate pallet for storing the bootnodes for the validator set construction purposes.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
