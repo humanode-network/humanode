@@ -4,12 +4,10 @@ use std::{collections::BTreeMap, str::FromStr};
 
 use hex_literal::hex;
 use humanode_runtime::{
-    opaque::SessionKeys, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BioauthId,
+    opaque::SessionKeys, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BootnodesConfig,
     EVMConfig, EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig, ImOnlineConfig,
-    RobonodePublicKeyWrapper, SessionConfig, Signature, SudoConfig, SystemConfig, UnixMilliseconds,
-    WASM_BINARY,
+    RobonodePublicKeyWrapper, SessionConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
-use pallet_bioauth::{AuthTicketNonce, Authentication};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
@@ -66,9 +64,6 @@ pub fn authority_keys_from_seed(seed: &str) -> (AccountId, BabeId, GrandpaId, Im
     )
 }
 
-/// An expires at value that guarantees the authentication never expires.
-pub const AUTHENTICATION_NEVER_EXPIRES: UnixMilliseconds = UnixMilliseconds::MAX;
-
 /// A configuration for local testnet.
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
@@ -111,11 +106,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
                 ],
                 robonode_public_key,
-                vec![],
-                vec![pallet_bioauth::Authentication {
-                    public_key: authority_keys_from_seed("Alice").0,
-                    expires_at: AUTHENTICATION_NEVER_EXPIRES,
-                }],
+                vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
             )
         },
         // Bootnodes
@@ -163,11 +154,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 robonode_public_key,
-                vec![],
-                vec![pallet_bioauth::Authentication {
-                    public_key: authority_keys_from_seed("Alice").0,
-                    expires_at: AUTHENTICATION_NEVER_EXPIRES,
-                }],
+                vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
             )
         },
         // Bootnodes
@@ -218,11 +205,7 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
                     get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
                 ],
                 robonode_public_key,
-                vec![],
-                vec![pallet_bioauth::Authentication {
-                    public_key: authority_keys_from_seed("Alice").0,
-                    expires_at: AUTHENTICATION_NEVER_EXPIRES,
-                }],
+                vec![get_account_id_from_seed::<sr25519::Public>("Alice")],
             )
         },
         // Bootnodes
@@ -247,8 +230,7 @@ fn testnet_genesis(
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
     robonode_public_key: RobonodePublicKeyWrapper,
-    consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
-    active_authentications: Vec<Authentication<BioauthId, UnixMilliseconds>>,
+    bootnodes: Vec<AccountId>,
 ) -> GenesisConfig {
     GenesisConfig {
         system: SystemConfig {
@@ -291,10 +273,13 @@ fn testnet_genesis(
             // Assign network admin rights.
             key: Some(root_key),
         },
+        bootnodes: BootnodesConfig {
+            bootnodes: bootnodes.try_into().unwrap(),
+        },
         bioauth: BioauthConfig {
             robonode_public_key,
-            consumed_auth_ticket_nonces,
-            active_authentications,
+            consumed_auth_ticket_nonces: vec![],
+            active_authentications: vec![],
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 5234 },
         evm: EVMConfig {

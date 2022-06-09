@@ -690,6 +690,7 @@ construct_runtime!(
         System: frame_system,
         RandomnessCollectiveFlip: pallet_randomness_collective_flip,
         Timestamp: pallet_timestamp,
+        Bootnodes: pallet_bootnodes,
         Bioauth: pallet_bioauth,
         Babe: pallet_babe,
         // Authorship must be before other pallets that rely on the data it captures.
