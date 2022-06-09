@@ -22,15 +22,11 @@ pub type EvmAddress = sp_core::H160;
 )]
 #[frame_support::pallet]
 pub mod pallet {
-
-    use account_claim_eip_712::Verifier;
-
     use super::*;
 
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_evm::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-        type Eip712Verifier: account_claim_eip_712::Verifier;
     }
 
     #[pallet::event]
@@ -86,34 +82,43 @@ pub mod pallet {
                 Error::<T>::EthAddressAlreadyMapped
             );
 
-            let account_claim = account_claim_eip_712::AccountClaimTypedData {
-                name: account_claim_eip_712::NAME,
-                version: account_claim_eip_712::VERSION,
-                chain_id: T::ChainId::get(),
-                genesis_block_hash: frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero())
-                    .as_ref()
-                    .to_vec(),
-                account: who.encode(),
+            use sp_core::U256;
+
+            let chain_id = U256::from(T::ChainId::get()).into();
+            // let genesis_block_hash: = frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero());
+
+            let _account = who.encode();
+
+            let _domain_separator = account_claim_eip_712::EIP712Domain {
+                name: Some("Humanode Etherum Account Claim"),
+                version: Some("1"),
+                chain_id: Some(&chain_id),
+                verifying_contract: Some(&[0u8; 32]),
+                salt: None,
             };
 
-            let eth_extracted_address =
-                <T as Config>::Eip712Verifier::verify(account_claim, signature)
-                    .ok_or(Error::<T>::BadSignature)?;
+            drop(_domain_separator);
 
-            ensure!(
-                eth_address == eth_extracted_address,
-                Error::<T>::InvalidSignature
-            );
+            todo!();
 
-            Accounts::<T>::insert(eth_address, &who);
-            EvmAddresses::<T>::insert(&who, eth_address);
+            // let eth_extracted_address =
+            //     account_claim_eip_712::Verifier::verify(account_claim, signature)
+            //         .ok_or(Error::<T>::BadSignature)?;
 
-            Self::deposit_event(Event::ClaimAccount {
-                account_id: who,
-                evm_address: eth_address,
-            });
+            // ensure!(
+            //     eth_address == eth_extracted_address,
+            //     Error::<T>::InvalidSignature
+            // );
 
-            Ok(())
+            // Accounts::<T>::insert(eth_address, &who);
+            // EvmAddresses::<T>::insert(&who, eth_address);
+
+            // Self::deposit_event(Event::ClaimAccount {
+            //     account_id: who,
+            //     evm_address: eth_address,
+            // });
+
+            // Ok(())
         }
     }
 }

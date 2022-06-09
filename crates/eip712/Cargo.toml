@@ -1,0 +1,15 @@
+[package]
+name = "eip712"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sha3 = { version = "0.10", default-features = false }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[dev-dependencies]
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[features]
+default = ["std"]
+std = ["sha3/std", "sp-io/std"]
