@@ -87,12 +87,14 @@ pub mod pallet {
             );
 
             let account_claim = eip_712::AccountClaimTypedData {
+                domain_type: eip_712::DOMAIN_TYPE,
                 name: eip_712::NAME,
                 version: eip_712::VERSION,
                 chain_id: T::ChainId::get(),
                 genesis_block_hash: frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero())
                     .as_ref()
                     .to_vec(),
+                claim_type: eip_712::CLAIM_TYPE,
                 account: who.encode(),
             };
 

@@ -1761,29 +1761,9 @@ dependencies = [
  "auto_impl",
  "environmental",
  "ethereum",
- "evm-core 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "evm-gasometer 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "evm-runtime 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "log",
- "parity-scale-codec",
- "primitive-types",
- "rlp",
- "scale-info",
- "serde",
- "sha3 0.10.1",
-]
-
-[[package]]
-name = "evm"
-version = "0.35.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d#0b686f8c2c83a52638917caa649dc23302fda80d"
-dependencies = [
- "auto_impl",
- "environmental",
- "ethereum",
- "evm-core 0.35.0 (git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d)",
- "evm-gasometer 0.35.0 (git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d)",
- "evm-runtime 0.35.0 (git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d)",
+ "evm-core",
+ "evm-gasometer",
+ "evm-runtime",
  "log",
  "parity-scale-codec",
  "primitive-types",
@@ -1805,35 +1785,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "evm-core"
-version = "0.35.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d#0b686f8c2c83a52638917caa649dc23302fda80d"
-dependencies = [
- "parity-scale-codec",
- "primitive-types",
- "scale-info",
- "serde",
-]
-
-[[package]]
 name = "evm-gasometer"
 version = "0.35.0"
 source = "git+https://github.com/rust-blockchain/evm?branch=master#01bcbd2205a212c34451d3b4fabc962793b057d3"
 dependencies = [
  "environmental",
- "evm-core 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "evm-runtime 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "primitive-types",
-]
-
-[[package]]
-name = "evm-gasometer"
-version = "0.35.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d#0b686f8c2c83a52638917caa649dc23302fda80d"
-dependencies = [
- "environmental",
- "evm-core 0.35.0 (git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d)",
- "evm-runtime 0.35.0 (git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d)",
+ "evm-core",
+ "evm-runtime",
  "primitive-types",
 ]
 
@@ -1844,19 +1802,7 @@ source = "git+https://github.com/rust-blockchain/evm?branch=master#01bcbd2205a21
 dependencies = [
  "auto_impl",
  "environmental",
- "evm-core 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "primitive-types",
- "sha3 0.10.1",
-]
-
-[[package]]
-name = "evm-runtime"
-version = "0.35.0"
-source = "git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d#0b686f8c2c83a52638917caa649dc23302fda80d"
-dependencies = [
- "auto_impl",
- "environmental",
- "evm-core 0.35.0 (git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d)",
+ "evm-core",
  "primitive-types",
  "sha3 0.10.1",
 ]
@@ -1987,7 +1933,7 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/humanod
 dependencies = [
  "ethereum",
  "ethereum-types 0.13.1",
- "evm 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm",
  "fc-db",
  "fc-rpc-core",
  "fp-rpc",
@@ -2195,7 +2141,7 @@ name = "fp-evm"
 version = "3.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
 dependencies = [
- "evm 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm",
  "frame-support",
  "parity-scale-codec",
  "serde",
@@ -4629,30 +4575,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "module-evm-utility"
-version = "2.7.0"
-source = "git+https://github.com/AcalaNetwork/Acala#7727abeac1cb999ae07495a7836a695a5b1f8583"
-dependencies = [
- "ethereum",
- "evm 0.35.0 (git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d)",
- "evm-gasometer 0.35.0 (git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d)",
- "evm-runtime 0.35.0 (git+https://github.com/rust-blockchain/evm?rev=0b686f8c2c83a52638917caa649dc23302fda80d)",
- "sha3 0.9.1",
- "sp-std",
-]
-
-[[package]]
-name = "module-evm-utility-macro"
-version = "2.7.0"
-source = "git+https://github.com/AcalaNetwork/Acala#7727abeac1cb999ae07495a7836a695a5b1f8583"
-dependencies = [
- "module-evm-utility",
- "proc-macro2 1.0.39",
- "quote 1.0.18",
- "syn 1.0.95",
-]
-
-[[package]]
 name = "more-asserts"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5282,7 +5204,7 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/humanod
 dependencies = [
  "ethereum",
  "ethereum-types 0.13.1",
- "evm 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm",
  "fp-consensus",
  "fp-evm",
  "fp-rpc",
@@ -5321,7 +5243,7 @@ name = "pallet-evm"
 version = "6.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
 dependencies = [
- "evm 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm",
  "fp-evm",
  "frame-benchmarking",
  "frame-support",
@@ -5351,7 +5273,6 @@ dependencies = [
  "frame-system",
  "hex",
  "libsecp256k1 0.7.0",
- "module-evm-utility-macro",
  "pallet-evm",
  "parity-scale-codec",
  "scale-info",
