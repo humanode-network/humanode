@@ -2943,6 +2943,7 @@ dependencies = [
  "pallet-balances",
  "pallet-base-fee",
  "pallet-bioauth",
+ "pallet-bootnodes",
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
