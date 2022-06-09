@@ -681,7 +681,6 @@ impl pallet_ethereum_chain_id::Config for Runtime {}
 
 impl pallet_evm_accounts_mapping::Config for Runtime {
     type Event = Event;
-    type Eip712Verifier = pallet_evm_accounts_mapping::eip_712::VerifierFactory;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
