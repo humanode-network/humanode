@@ -1,8 +1,7 @@
 //! Implements EIP-712 typed verification logic for evm account claiming.
 
-use eip_712::{hash_structured_data, EIP712};
-use serde_json::from_str;
-use sp_core::H256;
+use module_evm_utility_macro::keccak256;
+use sp_core::{H256, U256};
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
 use sp_std::prelude::*;
 
@@ -30,68 +29,66 @@ pub struct AccountClaimTypedData {
     pub account: Vec<u8>,
 }
 
+/// TODO!
+pub fn to_bytes<T: Into<U256>>(value: T) -> [u8; 32] {
+    Into::<[u8; 32]>::into(value.into())
+}
+
 impl AccountClaimTypedData {
     /// TODO!
-    fn construct_hash(&self) -> Result<[u8; 32], eip_712::Error> {
-        let claim_eip_712_json = format!(
-            r#"{{
-            "primaryType": "Claim",
-            "domain": {{
-                "name": "{}",
-                "version": "{}",
-                "chainId": "0x{:x}",
-                "verifyingContract": "0x{}"
-            }},
-            "message": {{
-                "substrateAddress": "0x{}"
-            }},
-            "types": {{
-                "EIP712Domain": [
-                    {{ "name": "name", "type": "string" }},
-                    {{ "name": "version", "type": "string" }},
-                    {{ "name": "chainId", "type": "uint256" }},
-                    {{ "name": "verifyingContract", "type": "bytes" }}
-                ],
-                "Claim": [
-                    {{ "name": "substrateAddress", "type": "bytes" }}
-                ]
-            }}
-        }}"#,
-            self.name,
-            self.version,
-            self.chain_id,
-            hex::encode(self.genesis_block_hash.clone()),
-            hex::encode(self.account.clone())
-        );
+    fn evm_account_payload_hash(&self) -> [u8; 32] {
+        let tx_type_hash = keccak256!("Claim(bytes substrateAddress)");
+        let mut tx_msg = tx_type_hash.to_vec();
+        tx_msg.extend_from_slice(&keccak_256(&self.account));
+        keccak_256(tx_msg.as_slice())
+    }
 
-        let typed_data =
-            from_str::<EIP712>(&claim_eip_712_json).expect("Constructed from valid template");
-        Ok(hash_structured_data(typed_data)?.into())
+    /// TODO!
+    fn eip712_signable_message(&self) -> Vec<u8> {
+        let domain_separator = self.evm_account_domain_separator();
+        let payload_hash = self.evm_account_payload_hash();
+
+        let mut msg = b"\x19\x01".to_vec();
+        msg.extend_from_slice(&domain_separator);
+        msg.extend_from_slice(&payload_hash);
+        msg
+    }
+
+    /// TODO!
+    fn evm_account_domain_separator(&self) -> [u8; 32] {
+        let domain_hash = keccak256!(
+            "EIP712Domain(string name,string version,uint256 chainId,bytes verifyingContract)"
+        );
+        let mut domain_seperator_msg = domain_hash.to_vec();
+        domain_seperator_msg.extend_from_slice(keccak256!("Humanode EVM Claim"));
+        domain_seperator_msg.extend_from_slice(keccak256!("1"));
+        domain_seperator_msg.extend_from_slice(&to_bytes(1));
+        domain_seperator_msg.extend_from_slice(&keccak_256(&self.genesis_block_hash));
+        keccak_256(domain_seperator_msg.as_slice())
     }
 }
 
 /// Provides the capability to verify an EIP-712 based ethereum signature.
 pub trait Verifier {
-    /// TODO!.
-    type Error;
     /// Verify the signature and extract a corresponding [`EvmAddress`] if it's ok.
     fn verify(
         account_claimed_typed_data: AccountClaimTypedData,
         signature: Signature,
-    ) -> Result<Option<EvmAddress>, Self::Error>;
+    ) -> Option<EvmAddress>;
 }
 
 /// Verify EIP-712 typed signature based on provided domain_separator and entire message.
 pub struct VerifierFactory;
 
 impl Verifier for VerifierFactory {
-    type Error = eip_712::Error;
     fn verify(
         account_claimed_typed_data: AccountClaimTypedData,
         signature: Signature,
-    ) -> Result<Option<EvmAddress>, Self::Error> {
-        let msg_hash = account_claimed_typed_data.construct_hash()?;
-        Ok(recover_signer(&signature, &msg_hash))
+    ) -> Option<EvmAddress> {
+        let msg = account_claimed_typed_data.eip712_signable_message();
+        let msg_hash = keccak_256(msg.as_slice());
+
+        recover_signer(&signature, &msg_hash)
     }
 }
 
@@ -104,6 +101,9 @@ fn recover_signer(sig: &Signature, msg_hash: &[u8; 32]) -> Option<EvmAddress> {
 
 #[cfg(test)]
 mod tests {
+
+    use eip_712::{hash_structured_data, EIP712};
+    use serde_json::from_str;
 
     use super::*;
 
@@ -161,7 +161,7 @@ mod tests {
             name: "Humanode EVM Claim",
             version: "1",
             chain_id: 1,
-            genesis_block_hash: hex::decode("CcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC").unwrap(),
+            genesis_block_hash: hex::decode("cccccccccccccccccccccccccccccccccccccccc").unwrap(),
             account: hex::decode(
                 "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
             )
@@ -169,6 +169,6 @@ mod tests {
         };
 
         let evm_address = VerifierFactory::verify(alice_claim, signature).unwrap();
-        assert_eq!(evm_address, Some(expected_evm_address));
+        assert_eq!(evm_address, expected_evm_address);
     }
 }

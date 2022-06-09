@@ -52,8 +52,6 @@ pub mod pallet {
         BadSignature,
         /// Invalid ethereum sugnature.
         InvalidSignature,
-        /// Invalid EIP-712 claim typed data.
-        InvalidEip712ClaimData,
     }
 
     #[pallet::storage]
@@ -100,7 +98,6 @@ pub mod pallet {
 
             let eth_extracted_address =
                 <T as Config>::Eip712Verifier::verify(account_claim, signature)
-                    .map_err(|_| Error::<T>::InvalidEip712ClaimData)?
                     .ok_or(Error::<T>::BadSignature)?;
 
             ensure!(
