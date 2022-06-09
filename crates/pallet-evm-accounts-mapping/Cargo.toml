@@ -18,7 +18,7 @@ module-evm-utility-macro = { git = "https://github.com/AcalaNetwork/Acala" }
 
 [dev-dependencies]
 libsecp256k1 = "0.7"
-eip-712 = "=0.1.0"
+eth-eip-712 = { package = "eip-712", version = "=0.1.0" }
 serde_json = "1"
 
 [features]
