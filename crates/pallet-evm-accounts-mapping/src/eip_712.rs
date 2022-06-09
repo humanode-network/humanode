@@ -1,52 +1,55 @@
 //! Implements EIP-712 typed verification logic for evm account claiming.
 
-use module_evm_utility_macro::keccak256;
 use sp_core::{H256, U256};
 use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
 use sp_std::prelude::*;
 
 use crate::EvmAddress;
 
+/// Domain type definition.
+pub const DOMAIN_TYPE: &str =
+    "EIP712Domain(string name,string version,uint256 chainId,bytes verifyingContract)";
 /// Domain name.
 pub const NAME: &str = "Humanode EVM Claim";
 /// Domain version.
 pub const VERSION: &str = "1";
+/// Claim type definition.
+pub const CLAIM_TYPE: &str = "Claim(bytes substrateAddress)";
 
 /// A signature (a 512-bit value, plus 8 bits for recovery ID).
 pub type Signature = [u8; 65];
 
-/// TODO!
+/// EIP-712 related data used in evm account claiming message.
 pub struct AccountClaimTypedData {
-    /// TODO!
+    /// Domain type.
+    pub domain_type: &'static str,
+    /// Name.
     pub name: &'static str,
-    /// TODO!
+    /// Version.
     pub version: &'static str,
-    /// TODO!
+    /// ChainId.
     pub chain_id: u64,
-    /// TODO!
+    /// Genesis block hash.
     pub genesis_block_hash: Vec<u8>,
-    /// TODO!
+    /// Claim type.
+    pub claim_type: &'static str,
+    /// Account that claims.
     pub account: Vec<u8>,
 }
 
-/// TODO!
-pub fn to_bytes<T: Into<U256>>(value: T) -> [u8; 32] {
-    Into::<[u8; 32]>::into(value.into())
-}
-
 impl AccountClaimTypedData {
-    /// TODO!
-    fn evm_account_payload_hash(&self) -> [u8; 32] {
-        let tx_type_hash = keccak256!("Claim(bytes substrateAddress)");
+    /// Calculate claim hash.
+    fn claim_hash(&self) -> [u8; 32] {
+        let tx_type_hash = keccak_256(self.claim_type.as_bytes());
         let mut tx_msg = tx_type_hash.to_vec();
         tx_msg.extend_from_slice(&keccak_256(&self.account));
         keccak_256(tx_msg.as_slice())
     }
 
-    /// TODO!
+    /// Get EIP-712 message that should be signed.
     fn eip712_signable_message(&self) -> Vec<u8> {
-        let domain_separator = self.evm_account_domain_separator();
-        let payload_hash = self.evm_account_payload_hash();
+        let domain_separator = self.domain_separator();
+        let payload_hash = self.claim_hash();
 
         let mut msg = b"\x19\x01".to_vec();
         msg.extend_from_slice(&domain_separator);
@@ -54,14 +57,12 @@ impl AccountClaimTypedData {
         msg
     }
 
-    /// TODO!
-    fn evm_account_domain_separator(&self) -> [u8; 32] {
-        let domain_hash = keccak256!(
-            "EIP712Domain(string name,string version,uint256 chainId,bytes verifyingContract)"
-        );
+    /// Calculate domain hash.
+    fn domain_separator(&self) -> [u8; 32] {
+        let domain_hash = keccak_256(self.domain_type.as_bytes());
         let mut domain_seperator_msg = domain_hash.to_vec();
-        domain_seperator_msg.extend_from_slice(keccak256!("Humanode EVM Claim"));
-        domain_seperator_msg.extend_from_slice(keccak256!("1"));
+        domain_seperator_msg.extend_from_slice(&keccak_256(self.name.as_bytes()));
+        domain_seperator_msg.extend_from_slice(&keccak_256(self.version.as_bytes()));
         domain_seperator_msg.extend_from_slice(&to_bytes(1));
         domain_seperator_msg.extend_from_slice(&keccak_256(&self.genesis_block_hash));
         keccak_256(domain_seperator_msg.as_slice())
@@ -99,6 +100,11 @@ fn recover_signer(sig: &Signature, msg_hash: &[u8; 32]) -> Option<EvmAddress> {
         .ok()
 }
 
+/// A helper function to convert primitives into 32 bytes.
+fn to_bytes<T: Into<U256>>(value: T) -> [u8; 32] {
+    Into::<[u8; 32]>::into(value.into())
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -116,6 +122,7 @@ mod tests {
         r
     }
 
+    // A helper function to construct test data input.
     fn alice_test_input() -> (Signature, EvmAddress) {
         let claim_eip_712_json = r#"{
             "primaryType": "Claim",
@@ -158,10 +165,12 @@ mod tests {
     fn valid_claim() {
         let (signature, expected_evm_address) = alice_test_input();
         let alice_claim = AccountClaimTypedData {
-            name: "Humanode EVM Claim",
-            version: "1",
+            domain_type: DOMAIN_TYPE,
+            name: NAME,
+            version: VERSION,
             chain_id: 1,
-            genesis_block_hash: hex::decode("cccccccccccccccccccccccccccccccccccccccc").unwrap(),
+            genesis_block_hash: hex::decode("CcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC").unwrap(),
+            claim_type: CLAIM_TYPE,
             account: hex::decode(
                 "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
             )
