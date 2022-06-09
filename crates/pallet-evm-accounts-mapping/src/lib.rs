@@ -8,7 +8,7 @@ use frame_support::{pallet_prelude::*, sp_runtime::traits::Zero};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 
-pub mod account_claim_eip_712;
+pub mod eip_712;
 
 /// Evm address type.
 pub type EvmAddress = sp_core::H160;
@@ -23,14 +23,14 @@ pub type EvmAddress = sp_core::H160;
 #[frame_support::pallet]
 pub mod pallet {
 
-    use account_claim_eip_712::Verifier;
+    use eip_712::Verifier;
 
     use super::*;
 
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_evm::Config {
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-        type Eip712Verifier: account_claim_eip_712::Verifier;
+        type Eip712Verifier: eip_712::Verifier;
     }
 
     #[pallet::event]
@@ -73,7 +73,7 @@ pub mod pallet {
         pub fn claim_account(
             origin: OriginFor<T>,
             eth_address: EvmAddress,
-            signature: account_claim_eip_712::Signature,
+            signature: eip_712::Signature,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
@@ -86,9 +86,9 @@ pub mod pallet {
                 Error::<T>::EthAddressAlreadyMapped
             );
 
-            let account_claim = account_claim_eip_712::AccountClaimTypedData {
-                name: account_claim_eip_712::NAME,
-                version: account_claim_eip_712::VERSION,
+            let account_claim = eip_712::AccountClaimTypedData {
+                name: eip_712::NAME,
+                version: eip_712::VERSION,
                 chain_id: T::ChainId::get(),
                 genesis_block_hash: frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero())
                     .as_ref()

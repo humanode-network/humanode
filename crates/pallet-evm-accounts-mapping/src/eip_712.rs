@@ -102,7 +102,7 @@ fn recover_signer(sig: &Signature, msg_hash: &[u8; 32]) -> Option<EvmAddress> {
 #[cfg(test)]
 mod tests {
 
-    use eip_712::{hash_structured_data, EIP712};
+    use eth_eip_712::{hash_structured_data, EIP712};
     use serde_json::from_str;
 
     use super::*;
