@@ -113,7 +113,21 @@ mod tests {
 
     use super::*;
 
-    // A helper function to construct a message and sign it.
+    // Alice secret key.
+    fn alice_secret() -> libsecp256k1::SecretKey {
+        libsecp256k1::SecretKey::parse(&keccak_256(b"Alice")).unwrap()
+    }
+
+    // Alice public key.
+    fn alice_public() -> EvmAddress {
+        EvmAddress::from_slice(
+            &keccak_256(
+                &libsecp256k1::PublicKey::from_secret_key(&alice_secret()).serialize()[1..65],
+            )[12..],
+        )
+    }
+
+    // A helper function to sign a message.
     fn eth_sign(secret: &libsecp256k1::SecretKey, msg: [u8; 32]) -> Signature {
         let (sig, recovery_id) = libsecp256k1::sign(&libsecp256k1::Message::parse(&msg), secret);
         let mut r = [0u8; 65];
@@ -122,8 +136,8 @@ mod tests {
         r
     }
 
-    // A helper function to construct test data input.
-    fn alice_test_input() -> (Signature, EvmAddress) {
+    // A helper function to construct test EIP-712 signature.
+    fn alice_test_input() -> Signature {
         let claim_eip_712_json = r#"{
             "primaryType": "Claim",
             "domain": {
@@ -150,21 +164,13 @@ mod tests {
         let typed_data = from_str::<EIP712>(claim_eip_712_json).unwrap();
         let msg_bytes: [u8; 32] = hash_structured_data(typed_data).unwrap().into();
 
-        let secret = libsecp256k1::SecretKey::parse(&keccak_256(b"Alice")).unwrap();
-        let signature = eth_sign(&secret, msg_bytes);
-
-        let evm_address = EvmAddress::from_slice(
-            &keccak_256(&libsecp256k1::PublicKey::from_secret_key(&secret).serialize()[1..65])
-                [12..],
-        );
-
-        (signature, evm_address)
+        let secret = alice_secret();
+        eth_sign(&secret, msg_bytes)
     }
 
-    #[test]
-    fn valid_claim() {
-        let (signature, expected_evm_address) = alice_test_input();
-        let alice_claim = AccountClaimTypedData {
+    // A helper function to prepare alice account claim typed data.
+    fn prepare_account_claim_typed_data() -> AccountClaimTypedData {
+        AccountClaimTypedData {
             domain_type: DOMAIN_TYPE,
             name: NAME,
             version: VERSION,
@@ -175,9 +181,24 @@ mod tests {
                 "d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d",
             )
             .unwrap(),
-        };
+        }
+    }
+
+    #[test]
+    fn valid_signature() {
+        let signature = alice_test_input();
+        let alice_claim = prepare_account_claim_typed_data();
 
         let evm_address = VerifierFactory::verify(alice_claim, signature).unwrap();
-        assert_eq!(evm_address, expected_evm_address);
+        assert_eq!(evm_address, alice_public());
+    }
+
+    #[test]
+    fn invalid_signature() {
+        let signature = [1u8; 65];
+        let alice_claim = prepare_account_claim_typed_data();
+
+        let evm_address = VerifierFactory::verify(alice_claim, signature).unwrap();
+        assert_ne!(evm_address, alice_public());
     }
 }
