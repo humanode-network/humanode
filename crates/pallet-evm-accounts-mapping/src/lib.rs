@@ -25,8 +25,6 @@ pub mod pallet {
     pub trait Config: frame_system::Config + pallet_evm::Config {
         /// Event type.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-        /// Verifier type to extract author of EIP-712 claim signature.
-        type Eip712Verifier: eip_712::Verifier;
     }
 
     #[pallet::event]
@@ -93,7 +91,7 @@ pub mod pallet {
                 account: who.encode(),
             };
 
-            let eth_address = <T as Config>::Eip712Verifier::verify(account_claim, signature)
+            let eth_address = eip_712::VerifierFactory::verify(account_claim, signature)
                 .ok_or(Error::<T>::BadSignature)?;
 
             ensure!(
