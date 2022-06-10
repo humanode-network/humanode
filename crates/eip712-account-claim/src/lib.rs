@@ -88,17 +88,21 @@ pub fn verify_account_claim(
 /// Extract the signer address from the signatue and the message.
 fn recover_signer(sig: Signature, msg: &[u8; 32]) -> Option<[u8; 20]> {
     let pubkey = sp_io::crypto::secp256k1_ecdsa_recover(&sig, msg).ok()?;
+    Some(ecdsa_public_key_to_evm_address(&pubkey))
+}
 
+/// Convert the ECDSA public key to EVM address.
+fn ecdsa_public_key_to_evm_address(pubkey: &[u8]) -> [u8; 20] {
     let mut address = [0u8; 20];
-    address.copy_from_slice(&sp_io::hashing::keccak_256(&pubkey)[12..]);
-    Some(address)
+    address.copy_from_slice(&sp_io::hashing::keccak_256(pubkey)[12..]);
+    address
 }
 
 #[cfg(test)]
 mod tests {
     use eth_eip_712::{hash_structured_data, EIP712};
     use hex_literal::hex;
-    use sp_core::{crypto::Pair, U256};
+    use sp_core::{crypto::Pair, ecdsa, U256};
 
     use super::*;
 
@@ -111,7 +115,7 @@ mod tests {
     }
 
     fn evm_address_from_ecdsa(pair: &ecdsa::Pair) -> [u8; 20] {
-        pair.public().to_eth_address().unwrap()
+        ecdsa_public_key_to_evm_address(&pair.public().0)
     }
 
     // A helper function to construct test EIP-712 signature.
