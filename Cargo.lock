@@ -3085,10 +3085,12 @@ dependencies = [
  "frontier-api",
  "hex-literal",
  "keystore-bioauth-account-id",
+ "pallet-authorship",
  "pallet-babe",
  "pallet-balances",
  "pallet-base-fee",
  "pallet-bioauth",
+ "pallet-bootnodes",
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
@@ -3100,6 +3102,7 @@ dependencies = [
  "pallet-grandpa",
  "pallet-humanode-session",
  "pallet-im-online",
+ "pallet-offences",
  "pallet-randomness-collective-flip",
  "pallet-session",
  "pallet-sudo",
@@ -5158,6 +5161,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-bootnodes"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "mockall",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-api",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
@@ -5319,6 +5340,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-bioauth",
+ "pallet-bootnodes",
  "pallet-session",
  "parity-scale-codec",
  "scale-info",
@@ -5340,6 +5362,23 @@ dependencies = [
  "sp-application-crypto",
  "sp-core",
  "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-offences"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#92517913b239a6e20f8b26bad9ce2238e9b978e8"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
  "sp-runtime",
  "sp-staking",
  "sp-std",

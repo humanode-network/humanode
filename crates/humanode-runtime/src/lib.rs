@@ -161,11 +161,16 @@ pub const DAYS: BlockNumber = HOURS * 24;
 
 pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+// NOTE: Currently it is not possible to change the epoch duration after the chain has started.
+//       Attempting to do so will brick block production.
 pub const EPOCH_DURATION_IN_SLOTS: u64 = {
     const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
     (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 };
+
+/// The longevity, in blocks, that an equivocation report is valid for.
+const REPORT_LONGEVITY: u64 = 3 * EPOCH_DURATION_IN_BLOCKS as u64;
 
 // Consensus related constants.
 pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
@@ -323,7 +328,11 @@ impl pallet_babe::Config for Runtime {
         BabeId,
     )>>::IdentificationTuple;
 
-    type HandleEquivocation = ();
+    type HandleEquivocation = pallet_babe::EquivocationHandler<
+        Self::KeyOwnerIdentification,
+        Offences,
+        ConstU64<REPORT_LONGEVITY>,
+    >;
 
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
@@ -350,27 +359,9 @@ impl pallet_session::Config for Runtime {
     type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
 }
 
-pub struct AuthenticationFullIdentificationOf;
-impl
-    sp_runtime::traits::Convert<
-        AccountId,
-        Option<pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>>,
-    > for AuthenticationFullIdentificationOf
-{
-    fn convert(
-        account_id: AccountId,
-    ) -> Option<pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>> {
-        let active_authentications = Bioauth::active_authentications().into_inner();
-        active_authentications
-            .iter()
-            .find(|authentication| authentication.public_key == account_id)
-            .cloned()
-    }
-}
-
 impl pallet_session::historical::Config for Runtime {
-    type FullIdentification = pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>;
-    type FullIdentificationOf = AuthenticationFullIdentificationOf;
+    type FullIdentification = pallet_humanode_session::IdentificationFor<Self>;
+    type FullIdentificationOf = pallet_humanode_session::CurrentSessionIdentificationOf<Self>;
 }
 
 impl pallet_grandpa::Config for Runtime {
@@ -387,7 +378,11 @@ impl pallet_grandpa::Config for Runtime {
         GrandpaId,
     )>>::IdentificationTuple;
 
-    type HandleEquivocation = ();
+    type HandleEquivocation = pallet_grandpa::EquivocationHandler<
+        Self::KeyOwnerIdentification,
+        Offences,
+        ConstU64<REPORT_LONGEVITY>,
+    >;
 
     type WeightInfo = ();
     type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
@@ -401,6 +396,13 @@ impl pallet_timestamp::Config for Runtime {
     type OnTimestampSet = Babe;
     type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
     type WeightInfo = ();
+}
+
+impl pallet_authorship::Config for Runtime {
+    type FindAuthor = find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>;
+    type UncleGenerations = ConstU32<5>;
+    type FilterUncle = ();
+    type EventHandler = (ImOnline,);
 }
 
 impl pallet_balances::Config for Runtime {
@@ -494,8 +496,19 @@ impl pallet_bioauth::Config for Runtime {
     type AfterAuthHook = ();
 }
 
+impl pallet_bootnodes::Config for Runtime {
+    type BootnodeId = AccountId;
+    type MaxBootnodes = ConstU32<16>;
+}
+
+parameter_types! {
+    pub MaxSessionValidators: u32 = <<Runtime as pallet_bootnodes::Config>::MaxBootnodes as Get<u32>>::get() + <<Runtime as pallet_bioauth::Config>::MaxAuthentications as Get<u32>>::get();
+}
+
 impl pallet_humanode_session::Config for Runtime {
     type ValidatorPublicKeyOf = IdentityValidatorIdOf;
+    type BootnodeIdOf = sp_runtime::traits::Identity;
+    type MaxSessionValidators = MaxSessionValidators;
 }
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -542,52 +555,44 @@ impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
     }
 }
 
-pub struct ImOnlineSlasher;
-
-/// We have a notion of preauthenticated validators - the ones that we use to bootstrap the network.
-fn is_preauthenticated_bioauth(
-    authentication: &pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>,
-) -> bool {
-    // The [`UnixMilliseconds::MAX`] is what we use at the genesis when we insert the bootstrap
-    // nodes. This is a really bad way to encode the fact that a validator should never expire in
-    // the first place, so we should change it soon. For now, this hack will do.
-    // TODO(#361): figure something better that using fully filled expires_at.
-    authentication.expires_at == UnixMilliseconds::MAX
-}
+pub struct OffenceSlasher;
 
 impl
-    sp_staking::offence::ReportOffence<
+    sp_staking::offence::OnOffenceHandler<
         AccountId,
         pallet_im_online::IdentificationTuple<Runtime>,
-        pallet_im_online::UnresponsivenessOffence<pallet_im_online::IdentificationTuple<Runtime>>,
-    > for ImOnlineSlasher
+        Weight,
+    > for OffenceSlasher
 {
-    fn report_offence(
-        _reporters: Vec<AccountId>,
-        offence: pallet_im_online::UnresponsivenessOffence<
+    fn on_offence(
+        offenders: &[sp_staking::offence::OffenceDetails<
+            AccountId,
             pallet_im_online::IdentificationTuple<Runtime>,
-        >,
-    ) -> Result<(), sp_staking::offence::OffenceError> {
-        for offender in offence.offenders {
-            // Hack to prevent preauthenticated nodes from being dropped.
-            if is_preauthenticated_bioauth(&offender.1) {
-                // Never kick the preauthenticated validators.
-                continue;
-            }
-            Bioauth::deauthenticate(&offender.0);
+        >],
+        _slash_fraction: &[Perbill],
+        _session: sp_staking::SessionIndex,
+        disable_strategy: sp_staking::offence::DisableStrategy,
+    ) -> Weight {
+        if disable_strategy == sp_staking::offence::DisableStrategy::Never {
+            return 0;
         }
-        Ok(())
-    }
-
-    fn is_known_offence(
-        _offenders: &[pallet_im_online::IdentificationTuple<Runtime>],
-        _time_slot: &<pallet_im_online::UnresponsivenessOffence<
-            pallet_im_online::IdentificationTuple<Runtime>,
-        > as sp_staking::offence::Offence<
-            pallet_im_online::IdentificationTuple<Runtime>,
-        >>::TimeSlot,
-    ) -> bool {
-        unreachable!("ImOnline will never call `is_known_offence`")
+        let mut weight: Weight = 0;
+        let weights = <Runtime as frame_system::Config>::DbWeight::get();
+        for details in offenders {
+            let (_offender, identity) = &details.offender;
+            match identity {
+                pallet_humanode_session::Identification::Bioauth(authentication) => {
+                    let has_deathenticated = Bioauth::deauthenticate(&authentication.public_key);
+                    weight = weight.saturating_add(
+                        weights.reads_writes(1, if has_deathenticated { 1 } else { 0 }),
+                    );
+                }
+                pallet_humanode_session::Identification::Bootnode(..) => {
+                    // Never slash the bootnodes.
+                }
+            }
+        }
+        weight
     }
 }
 
@@ -596,12 +601,18 @@ impl pallet_im_online::Config for Runtime {
     type Event = Event;
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
-    type ReportUnresponsiveness = ImOnlineSlasher;
+    type ReportUnresponsiveness = Offences;
     type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
     type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
     type MaxKeys = ConstU32<MAX_KEYS>;
     type MaxPeerInHeartbeats = ConstU32<MAX_PEER_IN_HEARTBEATS>;
     type MaxPeerDataEncodingSize = ConstU32<MAX_PEER_DATA_ENCODING_SIZE>;
+}
+
+impl pallet_offences::Config for Runtime {
+    type Event = Event;
+    type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
+    type OnOffenceHandler = OffenceSlasher;
 }
 
 parameter_types! {
@@ -683,11 +694,15 @@ construct_runtime!(
         System: frame_system,
         RandomnessCollectiveFlip: pallet_randomness_collective_flip,
         Timestamp: pallet_timestamp,
+        Bootnodes: pallet_bootnodes,
         Bioauth: pallet_bioauth,
         Babe: pallet_babe,
+        // Authorship must be before other pallets that rely on the data it captures.
+        Authorship: pallet_authorship,
         Balances: pallet_balances,
         TransactionPayment: pallet_transaction_payment,
         Session: pallet_session,
+        Offences: pallet_offences,
         Historical: pallet_session_historical,
         HumanodeSession: pallet_humanode_session,
         EthereumChainId: pallet_ethereum_chain_id,

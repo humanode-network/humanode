@@ -14,6 +14,7 @@ bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-feat
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id", default-features = false }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
+pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
@@ -34,6 +35,7 @@ frame-system = { default-features = false, git = "https://github.com/humanode-ne
 frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 hex-literal = { version = "0.3", optional = true }
+pallet-authorship = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
@@ -45,6 +47,7 @@ pallet-evm-precompile-sha3fips = { default-features = false, git = "https://gith
 pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-offences = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-session = { default-features = false, features = [
   "historical",
@@ -99,8 +102,10 @@ std = [
   "frame-support/std",
   "frame-system/std",
   "frame-system-rpc-runtime-api/std",
+  "pallet-authorship/std",
   "pallet-babe/std",
   "pallet-bioauth/std",
+  "pallet-bootnodes/std",
   "pallet-balances/std",
   "pallet-base-fee/std",
   "pallet-ethereum/std",
@@ -113,6 +118,7 @@ std = [
   "pallet-dynamic-fee/std",
   "pallet-grandpa/std",
   "pallet-im-online/std",
+  "pallet-offences/std",
   "pallet-randomness-collective-flip/std",
   "pallet-session/std",
   "pallet-sudo/std",
