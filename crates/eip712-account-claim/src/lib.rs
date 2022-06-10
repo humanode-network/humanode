@@ -92,7 +92,7 @@ fn recover_signer(sig: Signature, msg: &[u8; 32]) -> Option<[u8; 20]> {
 }
 
 /// Convert the ECDSA public key to EVM address.
-fn ecdsa_public_key_to_evm_address(pubkey: &[u8]) -> [u8; 20] {
+fn ecdsa_public_key_to_evm_address(pubkey: &[u8; 64]) -> [u8; 20] {
     let mut address = [0u8; 20];
     address.copy_from_slice(&sp_io::hashing::keccak_256(pubkey)[12..]);
     address
@@ -114,8 +114,14 @@ mod tests {
         pair.sign_prehashed(&msg).0
     }
 
-    fn evm_address_from_ecdsa(pair: &ecdsa::Pair) -> [u8; 20] {
-        ecdsa_public_key_to_evm_address(&pair.public().0)
+    fn evm_address_from_seed(seed: &[u8]) -> [u8; 20] {
+        use secp256k1::{PublicKey, Secp256k1, SecretKey};
+        let secret = SecretKey::from_slice(&keccak_256(seed)).unwrap();
+        let context = Secp256k1::signing_only();
+        let public = PublicKey::from_secret_key(&context, &secret);
+        let mut public_bytes = [0u8; 64];
+        public_bytes.copy_from_slice(&public.serialize_uncompressed()[1..]);
+        ecdsa_public_key_to_evm_address(&public_bytes)
     }
 
     // A helper function to construct test EIP-712 signature.
@@ -199,18 +205,17 @@ mod tests {
         let domain = prepare_sample_domain();
 
         let evm_address = verify_account_claim(domain, &SAMPLE_ACCOUNT, signature).unwrap();
-        assert_eq!(evm_address, evm_address_from_ecdsa(&pair));
+        assert_eq!(evm_address, evm_address_from_seed(b"Alice"));
     }
 
     #[test]
     fn invalid_signature() {
-        let pair1 = ecdsa_pair(b"Alice");
-        let pair2 = ecdsa_pair(b"Bob");
-        let signature = test_input(&pair1);
+        let pair = ecdsa_pair(b"Alice");
+        let signature = test_input(&pair);
         let domain = prepare_sample_domain();
 
         let evm_address = verify_account_claim(domain, &SAMPLE_ACCOUNT, signature).unwrap();
-        assert_ne!(evm_address, evm_address_from_ecdsa(&pair2));
+        assert_ne!(evm_address, evm_address_from_seed(b"Bob"));
     }
 
     #[test]
