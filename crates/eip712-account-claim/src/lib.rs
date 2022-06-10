@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use sp_core_hashing_proc_macro::keccak_256 as const_keccak_256;
-use sp_io::{crypto::secp256k1_ecdsa_recover, hashing::keccak_256};
+use sp_io::hashing::keccak_256;
 
 /// EIP712Domain typehash.
 const EIP712_DOMAIN_TYPEHASH: [u8; 32] = const_keccak_256!(
@@ -82,56 +82,40 @@ pub fn verify_account_claim(
     let domain_hash = make_domain_hash(domain);
     let account_claim_hash = make_account_claim_hash(account);
     let msg_hash = make_eip712_message_hash(&domain_hash, &account_claim_hash);
-    recover_signer(&signature, &msg_hash)
-}
-
-/// Convert the EVM public key to an EVM address.
-fn evm_address_from_evm_pubkey(pubkey: &[u8; 64]) -> [u8; 20] {
-    let mut buf = [0u8; 20];
-    buf.copy_from_slice(&keccak_256(pubkey)[12..]);
-    buf
+    recover_signer(signature, &msg_hash)
 }
 
 /// Extract the signer address from the signatue and the message.
-fn recover_signer(sig: &Signature, msg: &[u8; 32]) -> Option<[u8; 20]> {
-    secp256k1_ecdsa_recover(sig, msg)
-        .map(|pubkey| evm_address_from_evm_pubkey(&pubkey))
-        .ok()
+fn recover_signer(sig: Signature, msg: &[u8; 32]) -> Option<[u8; 20]> {
+    let pubkey = sp_io::crypto::secp256k1_ecdsa_recover(&sig, msg).ok()?;
+
+    let mut address = [0u8; 20];
+    address.copy_from_slice(&sp_io::hashing::keccak_256(&pubkey)[12..]);
+    Some(address)
 }
 
 #[cfg(test)]
 mod tests {
     use eth_eip_712::{hash_structured_data, EIP712};
     use hex_literal::hex;
-    use serde_json::from_str;
-    use sp_core::U256;
+    use sp_core::{crypto::Pair, U256};
 
     use super::*;
 
-    // Alice secret key.
-    fn alice_secret() -> libsecp256k1::SecretKey {
-        libsecp256k1::SecretKey::parse(&keccak_256(b"Alice")).unwrap()
+    fn ecdsa_pair(seed: &[u8]) -> ecdsa::Pair {
+        ecdsa::Pair::from_seed(&keccak_256(seed))
     }
 
-    // Alice public key.
-    fn alice_public() -> [u8; 20] {
-        let full_pubkey = libsecp256k1::PublicKey::from_secret_key(&alice_secret()).serialize();
-        let mut pubkey = [0u8; 64];
-        pubkey.copy_from_slice(&full_pubkey[1..65]);
-        evm_address_from_evm_pubkey(&pubkey)
+    fn ecdsa_sign(pair: &ecdsa::Pair, msg: [u8; 32]) -> Signature {
+        pair.sign_prehashed(&msg).0
     }
 
-    // A helper function to sign a message.
-    fn eth_sign(secret: &libsecp256k1::SecretKey, msg: [u8; 32]) -> Signature {
-        let (sig, recovery_id) = libsecp256k1::sign(&libsecp256k1::Message::parse(&msg), secret);
-        let mut r = [0u8; 65];
-        r[0..64].copy_from_slice(&sig.serialize()[..]);
-        r[64] = recovery_id.serialize();
-        r
+    fn evm_address_from_ecdsa(pair: &ecdsa::Pair) -> [u8; 20] {
+        pair.public().to_eth_address().unwrap()
     }
 
     // A helper function to construct test EIP-712 signature.
-    fn alice_test_input() -> Signature {
+    fn test_input(pair: &ecdsa::Pair) -> Signature {
         let claim_eip_712_json = r#"{
             "primaryType": "Claim",
             "domain": {
@@ -155,11 +139,10 @@ mod tests {
                 ]
             }
         }"#;
-        let typed_data = from_str::<EIP712>(claim_eip_712_json).unwrap();
+        let typed_data: EIP712 = serde_json::from_str(claim_eip_712_json).unwrap();
         let msg_bytes: [u8; 32] = hash_structured_data(typed_data).unwrap().into();
 
-        let secret = alice_secret();
-        eth_sign(&secret, msg_bytes)
+        ecdsa_sign(pair, msg_bytes)
     }
 
     // A helper function to prepare alice account claim typed data.
@@ -207,19 +190,22 @@ mod tests {
 
     #[test]
     fn valid_signature() {
-        let signature = alice_test_input();
+        let pair = ecdsa_pair(b"Alice");
+        let signature = test_input(&pair);
         let domain = prepare_sample_domain();
 
         let evm_address = verify_account_claim(domain, &SAMPLE_ACCOUNT, signature).unwrap();
-        assert_eq!(evm_address, alice_public());
+        assert_eq!(evm_address, evm_address_from_ecdsa(&pair));
     }
 
     #[test]
     fn invalid_signature() {
-        let signature = [1u8; 65];
+        let pair1 = ecdsa_pair(b"Alice");
+        let pair2 = ecdsa_pair(b"Bob");
+        let signature = test_input(&pair1);
         let domain = prepare_sample_domain();
 
         let evm_address = verify_account_claim(domain, &SAMPLE_ACCOUNT, signature).unwrap();
-        assert_ne!(evm_address, alice_public());
+        assert_ne!(evm_address, evm_address_from_ecdsa(&pair2));
     }
 }
