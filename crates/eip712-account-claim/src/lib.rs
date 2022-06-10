@@ -208,4 +208,24 @@ mod tests {
         let evm_address = verify_account_claim(domain, &SAMPLE_ACCOUNT, signature).unwrap();
         assert_ne!(evm_address, evm_address_from_ecdsa(&pair2));
     }
+
+    #[test]
+    fn real_world_case1() {
+        let chain_id: [u8; 32] = U256::from(5234).into();
+        let domain = Domain {
+            name: "Humanode EVM Claim",
+            version: "1",
+            chain_id: &chain_id,
+            verifying_contract: &hex!("CcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"),
+        };
+        let account_to_claim =
+            hex!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d");
+        let signature = hex!("151d5f52e6c249db84b8705374c6f51dd08b50ddad5b1175ec20a7e00cbc48f55a23470ab0db16146b3b7d2a8565aaf2b700f548c9e9882a0034e654bd214e821b");
+
+        let evm_address = verify_account_claim(domain, &account_to_claim, signature).unwrap();
+        assert_eq!(
+            evm_address,
+            hex!("e9726f3d0a7736034e2a4c63ea28b3ab95622cb9"),
+        );
+    }
 }
