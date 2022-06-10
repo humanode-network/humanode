@@ -88,10 +88,12 @@ pub fn verify_account_claim(
 }
 
 /// Extract the signer address from the signatue and the message.
-fn recover_signer(sig: Signature, msg_hash: &[u8; 32]) -> Option<[u8; 20]> {
-    let signature = ecdsa::Signature::from_raw(sig);
-    let public = signature.recover_prehashed(msg_hash)?;
-    public.to_eth_address().ok()
+fn recover_signer(sig: Signature, msg: &[u8; 32]) -> Option<[u8; 20]> {
+    let pubkey = sp_io::crypto::secp256k1_ecdsa_recover(&sig, msg).ok()?;
+
+    let mut address = [0u8; 20];
+    address.copy_from_slice(&sp_io::hashing::keccak_256(&pubkey)[12..]);
+    Some(address)
 }
 
 #[cfg(test)]
