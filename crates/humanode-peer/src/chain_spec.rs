@@ -4,9 +4,9 @@ use std::{collections::BTreeMap, str::FromStr};
 
 use hex_literal::hex;
 use humanode_runtime::{
-    opaque::SessionKeys, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BootnodesConfig,
-    EVMConfig, EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig, ImOnlineConfig,
-    RobonodePublicKeyWrapper, SessionConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    opaque::SessionKeys, robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig,
+    BootnodesConfig, EVMConfig, EthereumChainIdConfig, EthereumConfig, GenesisConfig,
+    GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -69,7 +69,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
         WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
 
-    let robonode_public_key = RobonodePublicKeyWrapper::from_bytes(
+    let robonode_public_key = robonode::PublicKey::from_bytes(
         &hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab")[..],
     )
     .map_err(|err| format!("{:?}", err))?;
@@ -128,7 +128,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 pub fn development_config() -> Result<ChainSpec, String> {
     let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
-    let robonode_public_key = RobonodePublicKeyWrapper::from_bytes(
+    let robonode_public_key = robonode::PublicKey::from_bytes(
         &hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab")[..],
     )
     .map_err(|err| format!("{:?}", err))?;
@@ -179,7 +179,7 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
     // Public key is taken from the first entry of https://ed25519.cr.yp.to/python/sign.input
     // Must be compatible with secret key provided in AuthTicketSigner trait implemented for
     // Runtime in crates/humanode-runtime/src/lib.rs.
-    let robonode_public_key = RobonodePublicKeyWrapper::from_bytes(
+    let robonode_public_key = robonode::PublicKey::from_bytes(
         &hex!("d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a")[..],
     )
     .map_err(|err| format!("{:?}", err))?;
@@ -229,7 +229,7 @@ fn testnet_genesis(
     initial_authorities: Vec<(AccountId, BabeId, GrandpaId, ImOnlineId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
-    robonode_public_key: RobonodePublicKeyWrapper,
+    robonode_public_key: robonode::PublicKey,
     bootnodes: Vec<AccountId>,
 ) -> GenesisConfig {
     GenesisConfig {

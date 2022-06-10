@@ -516,6 +516,17 @@ pub mod pallet {
             )?;
             Ok(())
         }
+
+        #[pallet::weight(T::WeightInfo::set_robonode_public_key())]
+        pub fn set_robonode_public_key(
+            origin: OriginFor<T>,
+            robonode_public_key: T::RobonodePublicKey,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+            <RobonodePublicKey<T>>::put(&robonode_public_key);
+            <ActiveAuthentications<T>>::put(WeakBoundedVec::default());
+            Ok(())
+        }
     }
 
     #[pallet::hooks]
