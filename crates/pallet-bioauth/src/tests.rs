@@ -652,7 +652,7 @@ fn authentication_denied_by_before_hook() {
     });
 }
 
-/// This test verifies that the set_robonode_public_key updates the robonode public key properly.
+/// This test verifies that the [`set_robonode_public_key`] updates the robonode public key properly.
 #[test]
 fn set_robonode_public_key_updates_key() {
     new_test_ext().execute_with(|| {
