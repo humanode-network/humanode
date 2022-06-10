@@ -92,6 +92,8 @@ benchmarks! {
     }
 
     set_robonode_public_key {
+        // TODO(#374): populate the active authentications set.
+
         let robonode_public_key_before = RobonodePublicKey::<T>::get();
         let active_authentications_before = ActiveAuthentications::<T>::get();
         let consumed_nonces_before = ConsumedAuthTicketNonces::<T>::get();
