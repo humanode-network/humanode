@@ -5287,9 +5287,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-core",
- "sp-core-hashing-proc-macro",
- "sp-io",
- "sp-std",
 ]
 
 [[package]]
