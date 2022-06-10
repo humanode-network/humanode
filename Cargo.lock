@@ -1553,6 +1553,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "eip712-account-claim"
+version = "0.1.0"
+dependencies = [
+ "eip-712",
+ "hex-literal",
+ "libsecp256k1 0.7.0",
+ "serde_json",
+ "sp-core",
+ "sp-core-hashing-proc-macro",
+ "sp-io",
+]
+
+[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3074,6 +3087,7 @@ dependencies = [
  "author-ext-api",
  "bioauth-flow-api",
  "chrono",
+ "eip712-account-claim",
  "fp-rpc",
  "fp-self-contained",
  "frame-benchmarking",
@@ -5268,16 +5282,12 @@ dependencies = [
 name = "pallet-evm-accounts-mapping"
 version = "0.1.0"
 dependencies = [
- "eip-712",
  "frame-support",
  "frame-system",
- "hex",
- "libsecp256k1 0.7.0",
- "pallet-evm",
  "parity-scale-codec",
  "scale-info",
- "serde_json",
  "sp-core",
+ "sp-core-hashing-proc-macro",
  "sp-io",
  "sp-std",
 ]
