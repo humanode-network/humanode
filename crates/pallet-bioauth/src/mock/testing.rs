@@ -66,7 +66,6 @@ impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAu
 pub enum MockVerifier {
     A,
     B,
-    C,
 }
 
 impl Default for MockVerifier {
