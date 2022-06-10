@@ -2,29 +2,48 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{pallet_prelude::*, sp_runtime::traits::Zero};
+use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 
-pub mod eip_712;
-
-/// Evm address type.
+/// An EVM address.
 pub type EvmAddress = sp_core::H160;
+
+/// A signature (a 512-bit value, plus 8 bits for recovery ID).
+pub type Secp256k1EcdsaSignature = [u8; 65];
+
+/// The verifier for the ethereum signature.
+pub trait SignedClaimVerifier {
+    /// The type of the native account on the chain.
+    type AccountId;
+
+    /// Verify the provided `signature` against a message declaring a claim of the provided
+    /// `account_id`, and extract the signer's EVM address if the verification passes.
+    ///
+    /// Typically, the `account_id` would be either the message itself, or be used in one way or
+    /// another within the message to validate the signature against.
+    ///
+    /// This abstraction built with EIP-712 in mind.
+    fn verify(
+        account_id: Self::AccountId,
+        signature: Secp256k1EcdsaSignature,
+    ) -> Option<EvmAddress>;
+}
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-
-    use eip_712::Verifier;
-
     use super::*;
 
     #[pallet::config]
-    pub trait Config: frame_system::Config + pallet_evm::Config {
+    pub trait Config: frame_system::Config {
         /// Event type.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+        /// The signed claim verifier type.
+        type Verifier: SignedClaimVerifier<AccountId = Self::AccountId>;
     }
 
     #[pallet::event]
@@ -34,19 +53,19 @@ pub mod pallet {
         ClaimAccount {
             /// AccountId that does claiming.
             account_id: T::AccountId,
-            /// Eth address that is claimed.
+            /// EVM address that is claimed.
             evm_address: EvmAddress,
         },
     }
 
     #[pallet::error]
     pub enum Error<T> {
-        /// AccountId has already mapped.
-        AccountIdAlreadyMapped,
-        /// Eth address has already mapped.
-        EthAddressAlreadyMapped,
+        /// The native address has already been mapped.
+        NativeAddressAlreadyMapped,
+        /// The EVM address has already been mapped.
+        EvmAddressAlreadyMapped,
         /// Bad ethereum signature.
-        BadSignature,
+        BadEthereumSignature,
     }
 
     /// [`EvmAddress`] -> [`AccountId`] storage map.
@@ -66,45 +85,35 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        /// Extrinsic that provides a possibility to claim eth address once.
+        /// Create a permanent two-way binding between an Ethereum address and a native address.
+        /// The native address of the exstrinsic signer is used as a native address, while
+        /// the address of the payload signature creator is used as Ethereum address.
         #[pallet::weight(10_000)]
         pub fn claim_account(
             origin: OriginFor<T>,
-            signature: eip_712::Signature,
+            signature: Secp256k1EcdsaSignature,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
             ensure!(
                 !EvmAddresses::<T>::contains_key(&who),
-                Error::<T>::AccountIdAlreadyMapped
+                Error::<T>::NativeAddressAlreadyMapped
             );
 
-            let account_claim = eip_712::AccountClaimTypedData {
-                domain_type: eip_712::DOMAIN_TYPE,
-                name: eip_712::NAME,
-                version: eip_712::VERSION,
-                chain_id: T::ChainId::get(),
-                genesis_block_hash: frame_system::Pallet::<T>::block_hash(T::BlockNumber::zero())
-                    .as_ref()
-                    .to_vec(),
-                claim_type: eip_712::CLAIM_TYPE,
-                account: who.encode(),
-            };
-
-            let eth_address = eip_712::VerifierFactory::verify(account_claim, signature)
-                .ok_or(Error::<T>::BadSignature)?;
+            let evm_address = T::Verifier::verify(who.clone(), signature)
+                .ok_or(Error::<T>::BadEthereumSignature)?;
 
             ensure!(
-                !Accounts::<T>::contains_key(eth_address),
-                Error::<T>::EthAddressAlreadyMapped
+                !Accounts::<T>::contains_key(evm_address),
+                Error::<T>::EvmAddressAlreadyMapped
             );
 
-            Accounts::<T>::insert(eth_address, &who);
-            EvmAddresses::<T>::insert(&who, eth_address);
+            Accounts::<T>::insert(evm_address, &who);
+            EvmAddresses::<T>::insert(&who, evm_address);
 
             Self::deposit_event(Event::ClaimAccount {
                 account_id: who,
-                evm_address: eth_address,
+                evm_address,
             });
 
             Ok(())
