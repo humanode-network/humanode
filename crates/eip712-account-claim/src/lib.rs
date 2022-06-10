@@ -52,12 +52,12 @@ pub struct Domain<'a> {
 
 /// Prepare a hash for EIP712Domain data type.
 fn make_domain_hash(domain: Domain<'_>) -> [u8; 32] {
-    let mut buf = [0u8; 148];
+    let mut buf = [0u8; 160];
     buf[0..32].copy_from_slice(&EIP712_DOMAIN_TYPEHASH);
     buf[32..64].copy_from_slice(&keccak_256(domain.name.as_bytes()));
     buf[64..96].copy_from_slice(&keccak_256(domain.version.as_bytes()));
     buf[96..128].copy_from_slice(domain.chain_id);
-    buf[128..148].copy_from_slice(domain.verifying_contract);
+    buf[140..160].copy_from_slice(domain.verifying_contract);
     keccak_256(&buf)
 }
 
