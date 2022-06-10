@@ -1,6 +1,6 @@
 use super::*;
 
-/// The wrapper for the robonode public key, that enables ssotring it in the state.
+/// The wrapper for the robonode public key, that enables storing it in the state.
 #[derive(
     Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Encode, Decode, TypeInfo, MaxEncodedLen,
 )]
