@@ -66,6 +66,8 @@ pub mod pallet {
         EvmAddressAlreadyMapped,
         /// Bad ethereum signature.
         BadEthereumSignature,
+        /// Invalid ethereum signature.
+        InvalidEthereumSignature,
     }
 
     /// [`EvmAddress`] -> [`AccountId`] storage map.
@@ -91,6 +93,10 @@ pub mod pallet {
         #[pallet::weight(10_000)]
         pub fn claim_account(
             origin: OriginFor<T>,
+            // According to the fact that evm address can be extracted from any signature,
+            // we should clarify that we've got a proper one evm address.
+            // The address that was used to be claimed.
+            evm_address: EvmAddress,
             signature: Secp256k1EcdsaSignature,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -100,12 +106,17 @@ pub mod pallet {
                 Error::<T>::NativeAddressAlreadyMapped
             );
 
-            let evm_address = T::Verifier::verify(who.clone(), signature)
-                .ok_or(Error::<T>::BadEthereumSignature)?;
-
             ensure!(
                 !Accounts::<T>::contains_key(evm_address),
                 Error::<T>::EvmAddressAlreadyMapped
+            );
+
+            let expected_evm_address = T::Verifier::verify(who.clone(), signature)
+                .ok_or(Error::<T>::BadEthereumSignature)?;
+
+            ensure!(
+                evm_address == expected_evm_address,
+                Error::<T>::InvalidEthereumSignature
             );
 
             Accounts::<T>::insert(evm_address, &who);
