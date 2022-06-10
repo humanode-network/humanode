@@ -1557,8 +1557,8 @@ name = "eip712-account-claim"
 version = "0.1.0"
 dependencies = [
  "eip-712",
+ "frame-support",
  "hex-literal",
- "libsecp256k1 0.7.0",
  "serde_json",
  "sp-core",
  "sp-core-hashing-proc-macro",
