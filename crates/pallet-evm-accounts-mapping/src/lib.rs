@@ -85,6 +85,32 @@ pub mod pallet {
     #[pallet::pallet]
     pub struct Pallet<T>(_);
 
+    #[pallet::genesis_config]
+    pub struct GenesisConfig<T: Config> {
+        /// The mappings to set at genesis.
+        pub mappings: Vec<(T::AccountId, EvmAddress)>,
+    }
+
+    // The default value for the genesis config type.
+    #[cfg(feature = "std")]
+    impl<T: Config> Default for GenesisConfig<T> {
+        fn default() -> Self {
+            Self {
+                mappings: Default::default(),
+            }
+        }
+    }
+
+    #[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+        fn build(&self) {
+            for (account_id, evm_address) in &self.mappings {
+                Accounts::<T>::insert(evm_address, account_id);
+                EvmAddresses::<T>::insert(account_id, evm_address);
+            }
+        }
+    }
+
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Create a permanent two-way binding between an Ethereum address and a native address.
