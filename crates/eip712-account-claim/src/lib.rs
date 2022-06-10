@@ -176,7 +176,7 @@ mod tests {
     #[test]
     fn verify_test_chain_id() {
         let domain = prepare_sample_domain();
-        let expected_chain_id: [u8; 32] = U256::from("0x1").into();
+        let expected_chain_id: [u8; 32] = U256::from(5234).into();
         assert_eq!(domain.chain_id, &expected_chain_id);
     }
 
