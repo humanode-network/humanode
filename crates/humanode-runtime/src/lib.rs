@@ -69,6 +69,7 @@ use frontier_precompiles::FrontierPrecompiles;
 
 mod display_moment;
 mod find_author;
+pub mod eip712;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -679,33 +680,9 @@ impl pallet_base_fee::Config for Runtime {
 
 impl pallet_ethereum_chain_id::Config for Runtime {}
 
-pub enum Eip712AccountClaimVerifier {}
-
-impl pallet_evm_accounts_mapping::SignedClaimVerifier for Eip712AccountClaimVerifier {
-    type AccountId = AccountId;
-
-    fn verify(
-        account_id: Self::AccountId,
-        signature: pallet_evm_accounts_mapping::Secp256k1EcdsaSignature,
-    ) -> Option<pallet_evm_accounts_mapping::EvmAddress> {
-        let chain_id: [u8; 32] = U256::from(EthereumChainId::chain_id()).into();
-        let genesis_hash: [u8; 32] = System::block_hash(0).into();
-        let mut verifying_contract = [0u8; 20];
-        verifying_contract.copy_from_slice(&genesis_hash[0..20]);
-        let domain = eip712_account_claim::Domain {
-            name: "Humanode EVM Account Claim",
-            version: "1",
-            chain_id: &chain_id,
-            verifying_contract: &verifying_contract,
-        };
-        eip712_account_claim::verify_account_claim(domain, account_id.as_ref(), signature)
-            .map(Into::into)
-    }
-}
-
 impl pallet_evm_accounts_mapping::Config for Runtime {
     type Event = Event;
-    type Verifier = Eip712AccountClaimVerifier;
+    type Verifier = eip712::AccountClaimVerifier;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
