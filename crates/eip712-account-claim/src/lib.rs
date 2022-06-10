@@ -137,7 +137,7 @@ mod tests {
             "domain": {
                 "name": "Humanode EVM Claim",
                 "version": "1",
-                "chainId": "0x1",
+                "chainId": "0x1472",
                 "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
             },
             "message": {
@@ -167,7 +167,8 @@ mod tests {
         Domain {
             name: "Humanode EVM Claim",
             version: "1",
-            chain_id: &hex!("0000000000000000000000000000000000000000000000000000000000000001"),
+            // Chain ID is 5234 in hex.
+            chain_id: &hex!("0000000000000000000000000000000000000000000000000000000000001472"),
             verifying_contract: &hex!("CcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"),
         }
     }
