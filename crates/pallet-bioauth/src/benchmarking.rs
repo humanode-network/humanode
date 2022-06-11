@@ -97,7 +97,7 @@ benchmarks! {
         let active_auth_count = 10;
 
         let mut auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
-        // Populate with expired authentications
+        // Populate with expired authentications.
         let mut expired_auths = make_authentications(expired_auth_count, T::CurrentMoment::now());
         auths.append(&mut expired_auths);
 
