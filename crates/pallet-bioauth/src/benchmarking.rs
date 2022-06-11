@@ -109,7 +109,7 @@ benchmarks! {
         let weakly_bound_auths = WeakBoundedVec::force_from(auths, Some("pallet-bioauth:benchmark:on_initialize"));
         ActiveAuthentications::<T>::put(weakly_bound_auths);
 
-        // Capture this state for comparison
+        // Capture this state for comparison.
         let auths_before = ActiveAuthentications::<T>::get();
     }: {
         Bioauth::<T>::on_initialize(b.into());
