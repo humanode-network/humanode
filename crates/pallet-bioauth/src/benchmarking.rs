@@ -101,7 +101,7 @@ benchmarks! {
         let mut expired_auths = make_authentications(expired_auth_count, T::CurrentMoment::now());
         auths.append(&mut expired_auths);
 
-        // Also, populate with active authentications
+        // Also, populate with active authentications.
         let future_expiry = T::CurrentMoment::now() + (10u64).into();
         let mut active_auths = make_authentications(active_auth_count, future_expiry);
         auths.append(&mut active_auths);
