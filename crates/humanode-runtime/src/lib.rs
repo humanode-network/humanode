@@ -68,6 +68,7 @@ mod frontier_precompiles;
 use frontier_precompiles::FrontierPrecompiles;
 
 mod display_moment;
+pub mod eip712;
 mod find_author;
 pub mod robonode;
 
@@ -599,6 +600,11 @@ impl pallet_base_fee::Config for Runtime {
 
 impl pallet_ethereum_chain_id::Config for Runtime {}
 
+impl pallet_evm_accounts_mapping::Config for Runtime {
+    type Event = Event;
+    type Verifier = eip712::AccountClaimVerifier;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -629,6 +635,7 @@ construct_runtime!(
         DynamicFee: pallet_dynamic_fee,
         BaseFee: pallet_base_fee,
         ImOnline: pallet_im_online,
+        EvmAccountsMapping: pallet_evm_accounts_mapping,
     }
 );
 

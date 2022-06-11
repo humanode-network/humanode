@@ -5,8 +5,9 @@ use std::{collections::BTreeMap, str::FromStr};
 use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig,
-    BootnodesConfig, EVMConfig, EthereumChainIdConfig, EthereumConfig, GenesisConfig,
-    GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    BootnodesConfig, EVMConfig, EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig,
+    GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig,
+    SystemConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -320,6 +321,9 @@ fn testnet_genesis(
                 );
                 map
             },
+        },
+        evm_accounts_mapping: EvmAccountsMappingConfig {
+            mappings: Default::default(),
         },
         ethereum: EthereumConfig {},
         dynamic_fee: Default::default(),
