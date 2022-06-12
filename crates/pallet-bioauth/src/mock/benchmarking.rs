@@ -199,7 +199,10 @@ impl crate::benchmarking::AuthTicketSigner<Benchmark> for Benchmark {
 
 #[cfg(feature = "runtime-benchmarks")]
 impl crate::benchmarking::AuthTicketBuilder<Benchmark> for Benchmark {
-    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> MockOpaqueAuthTicket {
+    fn build(
+        public_key: Vec<u8>,
+        nonce: Vec<u8>,
+    ) -> <Benchmark as pallet_bioauth::Config>::OpaqueAuthTicket {
         let public_key_fixed_size: [u8; 32] = public_key.try_into().unwrap();
         let opaque_auth_ticket = AuthTicket {
             public_key: public_key_fixed_size,
