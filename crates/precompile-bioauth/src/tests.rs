@@ -1,4 +1,4 @@
-use frame_support::WeakBoundedVec;
+use frame_support::{traits::ConstU32, WeakBoundedVec};
 
 use crate::{mock::*, *};
 
@@ -11,9 +11,9 @@ fn make_bounded_authentications(
     authentications: Vec<pallet_bioauth::Authentication<ValidatorPublicKey, UnixMilliseconds>>,
 ) -> WeakBoundedVec<
     pallet_bioauth::Authentication<ValidatorPublicKey, UnixMilliseconds>,
-    MaxAuthentications,
+    ConstU32<MAX_AUTHENTICATIONS>,
 > {
-    WeakBoundedVec::<_, MaxAuthentications>::try_from(authentications).unwrap()
+    WeakBoundedVec::<_, ConstU32<MAX_AUTHENTICATIONS>>::try_from(authentications).unwrap()
 }
 
 #[test]

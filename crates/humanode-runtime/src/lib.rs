@@ -15,7 +15,10 @@ use codec::{alloc::string::ToString, Decode, Encode, MaxEncodedLen};
 use fp_rpc::TransactionStatus;
 pub use frame_support::{
     construct_runtime, parameter_types,
-    traits::{ConstU32, FindAuthor, Get, KeyOwnerProofSystem, Randomness},
+    traits::{
+        ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get,
+        KeyOwnerProofSystem, Randomness,
+    },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         IdentityFee, Weight,
@@ -41,10 +44,7 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::{
-    crypto::{ByteArray, KeyTypeId},
-    OpaqueMetadata, H160, H256, U256,
-};
+use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{
@@ -59,7 +59,6 @@ use sp_runtime::{
     ApplyExtrinsicResult, MultiSignature, SaturatedConversion,
 };
 pub use sp_runtime::{Perbill, Permill};
-use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
@@ -69,6 +68,9 @@ mod frontier_precompiles;
 use frontier_precompiles::FrontierPrecompiles;
 
 mod display_moment;
+pub mod eip712;
+mod find_author;
+pub mod robonode;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -161,11 +163,16 @@ pub const DAYS: BlockNumber = HOURS * 24;
 
 pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
 pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+// NOTE: Currently it is not possible to change the epoch duration after the chain has started.
+//       Attempting to do so will brick block production.
 pub const EPOCH_DURATION_IN_SLOTS: u64 = {
     const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
     (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 };
+
+/// The longevity, in blocks, that an equivocation report is valid for.
+const REPORT_LONGEVITY: u64 = 3 * EPOCH_DURATION_IN_BLOCKS as u64;
 
 // Consensus related constants.
 pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
@@ -195,13 +202,11 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
 parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
-    pub const BlockHashCount: BlockNumber = 2400;
     /// We allow for 2 seconds of compute with a 6 second average block time.
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
         ::with_sensible_defaults(2 * WEIGHT_PER_SECOND, NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
-    pub const SS58Prefix: u8 = 42;
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -234,7 +239,7 @@ impl frame_system::Config for Runtime {
     /// The ubiquitous origin type.
     type Origin = Origin;
     /// Maximum number of block number to block hash mappings to keep (oldest pruned first).
-    type BlockHashCount = BlockHashCount;
+    type BlockHashCount = ConstU32<2400>;
     /// The weight of database operations that the runtime can invoke.
     type DbWeight = RocksDbWeight;
     /// Version of the runtime.
@@ -252,86 +257,18 @@ impl frame_system::Config for Runtime {
     /// Weight information for the extrinsics of this pallet.
     type SystemWeightInfo = ();
     /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
-    type SS58Prefix = SS58Prefix;
+    type SS58Prefix = ConstU16<42>;
     /// The set code logic, just the default since we're not a parachain.
     type OnSetCode = ();
     /// The maximum number of consumers allowed on a single account.
     type MaxConsumers = ConstU32<16>;
 }
 
-/// The wrapper for the robonode public key, that enables ssotring it in the state.
-#[derive(
-    Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Encode, Decode, TypeInfo, MaxEncodedLen,
-)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct RobonodePublicKeyWrapper([u8; 32]);
-
-impl RobonodePublicKeyWrapper {
-    pub fn from_bytes(
-        bytes: &[u8],
-    ) -> Result<Self, robonode_crypto::ed25519_dalek::ed25519::Error> {
-        let actual_key = robonode_crypto::PublicKey::from_bytes(bytes)?;
-        Ok(Self(actual_key.to_bytes()))
-    }
-}
-
-/// The error that can occur during robonode signature validation.
-pub enum RobonodePublicKeyWrapperError {
-    UnableToParseKey,
-    UnableToParseSignature,
-    UnableToValidateSignature(robonode_crypto::ed25519_dalek::ed25519::Error),
-}
-
-impl pallet_bioauth::Verifier<Vec<u8>> for RobonodePublicKeyWrapper {
-    type Error = RobonodePublicKeyWrapperError;
-
-    fn verify<'a, D>(&self, data: D, signature: Vec<u8>) -> Result<bool, Self::Error>
-    where
-        D: AsRef<[u8]> + Send + 'a,
-    {
-        use robonode_crypto::Verifier;
-
-        let actual_key = robonode_crypto::PublicKey::from_bytes(&self.0)
-            .map_err(|_| RobonodePublicKeyWrapperError::UnableToParseKey)?;
-
-        let signature: robonode_crypto::Signature = signature
-            .as_slice()
-            .try_into()
-            .map_err(|_| RobonodePublicKeyWrapperError::UnableToParseSignature)?;
-
-        actual_key
-            .verify(data.as_ref(), &signature)
-            .map_err(RobonodePublicKeyWrapperError::UnableToValidateSignature)?;
-
-        Ok(true)
-    }
-}
-
-parameter_types! {
-    pub const ExistentialDeposit: u128 = 500;
-    pub const MaxLocks: u32 = 50;
-}
-
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
-parameter_types! {
-    pub const SessionsPerEra: u64 = 6;
-    pub const BondingDuration: u64 = 24 * 28;
-    // NOTE: Currently it is not possible to change the epoch duration after the chain has started.
-    //       Attempting to do so will brick block production.
-    pub const EpochDuration: u64 = EPOCH_DURATION_IN_SLOTS;
-    pub const ExpectedBlockTime: u64 = MILLISECS_PER_BLOCK;
-    pub const ReportLongevity: u64 =
-        BondingDuration::get() as u64 * SessionsPerEra::get() as u64 * EpochDuration::get();
-}
-
-parameter_types! {
-    pub const MaxAuthorities: u32 = MAX_AUTHORITIES;
-}
-
 impl pallet_babe::Config for Runtime {
-    type EpochDuration = EpochDuration;
-    type ExpectedBlockTime = ExpectedBlockTime;
+    type EpochDuration = ConstU64<EPOCH_DURATION_IN_SLOTS>;
+    type ExpectedBlockTime = ConstU64<MILLISECS_PER_BLOCK>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
 
@@ -345,10 +282,14 @@ impl pallet_babe::Config for Runtime {
         BabeId,
     )>>::IdentificationTuple;
 
-    type HandleEquivocation = ();
+    type HandleEquivocation = pallet_babe::EquivocationHandler<
+        Self::KeyOwnerIdentification,
+        Offences,
+        ConstU64<REPORT_LONGEVITY>,
+    >;
 
     type WeightInfo = ();
-    type MaxAuthorities = MaxAuthorities;
+    type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
 }
 
 /// A link between the [`AccountId`] as in what we use to sign extrinsics in the system
@@ -372,27 +313,9 @@ impl pallet_session::Config for Runtime {
     type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
 }
 
-pub struct AuthenticationFullIdentificationOf;
-impl
-    sp_runtime::traits::Convert<
-        AccountId,
-        Option<pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>>,
-    > for AuthenticationFullIdentificationOf
-{
-    fn convert(
-        account_id: AccountId,
-    ) -> Option<pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>> {
-        let active_authentications = Bioauth::active_authentications().into_inner();
-        active_authentications
-            .iter()
-            .find(|authentication| authentication.public_key == account_id)
-            .cloned()
-    }
-}
-
 impl pallet_session::historical::Config for Runtime {
-    type FullIdentification = pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>;
-    type FullIdentificationOf = AuthenticationFullIdentificationOf;
+    type FullIdentification = pallet_humanode_session::IdentificationFor<Self>;
+    type FullIdentificationOf = pallet_humanode_session::CurrentSessionIdentificationOf<Self>;
 }
 
 impl pallet_grandpa::Config for Runtime {
@@ -409,14 +332,14 @@ impl pallet_grandpa::Config for Runtime {
         GrandpaId,
     )>>::IdentificationTuple;
 
-    type HandleEquivocation = ();
+    type HandleEquivocation = pallet_grandpa::EquivocationHandler<
+        Self::KeyOwnerIdentification,
+        Offences,
+        ConstU64<REPORT_LONGEVITY>,
+    >;
 
     type WeightInfo = ();
-    type MaxAuthorities = MaxAuthorities;
-}
-
-parameter_types! {
-    pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
+    type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
 }
 
 /// A timestamp: milliseconds since the unix epoch.
@@ -425,12 +348,19 @@ pub type UnixMilliseconds = u64;
 impl pallet_timestamp::Config for Runtime {
     type Moment = UnixMilliseconds;
     type OnTimestampSet = Babe;
-    type MinimumPeriod = MinimumPeriod;
+    type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
     type WeightInfo = ();
 }
 
+impl pallet_authorship::Config for Runtime {
+    type FindAuthor = find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>;
+    type UncleGenerations = ConstU32<5>;
+    type FilterUncle = ();
+    type EventHandler = (ImOnline,);
+}
+
 impl pallet_balances::Config for Runtime {
-    type MaxLocks = MaxLocks;
+    type MaxLocks = ConstU32<50>;
     type MaxReserves = ();
     type ReserveIdentifier = [u8; 8];
     /// The type for recording an account's balance.
@@ -438,19 +368,14 @@ impl pallet_balances::Config for Runtime {
     /// The ubiquitous event type.
     type Event = Event;
     type DustRemoval = ();
-    type ExistentialDeposit = ExistentialDeposit;
+    type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
-parameter_types! {
-    pub const TransactionByteFee: Balance = 1;
-    pub const OperationalFeeMultiplier: u8 = 5;
-}
-
 impl pallet_transaction_payment::Config for Runtime {
     type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
-    type OperationalFeeMultiplier = OperationalFeeMultiplier;
+    type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
     type FeeMultiplierUpdate = ();
@@ -503,16 +428,12 @@ impl pallet_bioauth::CurrentMoment<UnixMilliseconds> for CurrentMoment {
 const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
 const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
 const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
-
-parameter_types! {
-    pub const AuthenticationsExpireAfter: UnixMilliseconds = 72 * TIMESTAMP_HOUR;
-    pub const MaxAuthentications: u32 = MAX_AUTHENTICATIONS;
-    pub const MaxNonces: u32 = MAX_NONCES;
-}
+const TIMESTAMP_DAY: UnixMilliseconds = 24 * TIMESTAMP_HOUR;
+const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * TIMESTAMP_DAY;
 
 impl pallet_bioauth::Config for Runtime {
     type Event = Event;
-    type RobonodePublicKey = RobonodePublicKeyWrapper;
+    type RobonodePublicKey = robonode::PublicKey;
     type RobonodeSignature = Vec<u8>;
     type ValidatorPublicKey = BioauthId;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
@@ -521,117 +442,67 @@ impl pallet_bioauth::Config for Runtime {
     type Moment = UnixMilliseconds;
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
-    type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
+    type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
     type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
-    type MaxAuthentications = MaxAuthentications;
-    type MaxNonces = MaxNonces;
+    type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
+    type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
 }
 
-impl pallet_humanode_session::Config for Runtime {
-    type ValidatorPublicKeyOf = IdentityValidatorIdOf;
-}
-
-#[cfg(feature = "runtime-benchmarks")]
-fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto::Keypair {
-    // Derive Public Key component.
-    let robonode_secret_key =
-        robonode_crypto::SecretKey::from_bytes(secret_key_bytes.as_ref()).unwrap();
-    let robonode_public_key: robonode_crypto::PublicKey = (&robonode_secret_key).into();
-
-    // Constructs bytes of Secret Key and Public Key.
-    let mut keypair_bytes = [0; 64];
-    let _ = &keypair_bytes[..32].copy_from_slice(robonode_secret_key.as_bytes());
-    let _ = &keypair_bytes[32..].copy_from_slice(robonode_public_key.as_bytes());
-
-    robonode_crypto::Keypair::from_bytes(keypair_bytes.as_ref()).unwrap()
-}
-
-#[cfg(feature = "runtime-benchmarks")]
-impl pallet_bioauth::benchmarking::AuthTicketSigner<Runtime> for Runtime {
-    fn sign(auth_ticket: &primitives_auth_ticket::OpaqueAuthTicket) -> Vec<u8> {
-        use robonode_crypto::{Signature, Signer};
-        // This secret key is taken from the first entry in https://ed25519.cr.yp.to/python/sign.input.
-        // Must be compatible with public key provided in benchmark_config() function in
-        // crates/humanode-peer/src/chain_spec.rs
-        const ROBONODE_SECRET_KEY: [u8; 32] =
-            hex_literal::hex!("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60");
-        let robonode_keypair = derive_keypair_from_secret_key(ROBONODE_SECRET_KEY);
-        robonode_keypair
-            .try_sign(auth_ticket.as_ref())
-            .unwrap_or(Signature::from_bytes(&[0; 64]).unwrap())
-            .to_bytes()
-            .to_vec()
-    }
-}
-
-#[cfg(feature = "runtime-benchmarks")]
-impl pallet_bioauth::benchmarking::AuthTicketBuilder<Runtime> for Runtime {
-    fn build(
-        public_key: Vec<u8>,
-        authentication_nonce: Vec<u8>,
-    ) -> primitives_auth_ticket::OpaqueAuthTicket {
-        OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
-            public_key,
-            authentication_nonce,
-        })
-    }
+impl pallet_bootnodes::Config for Runtime {
+    type BootnodeId = AccountId;
+    type MaxBootnodes = ConstU32<16>;
 }
 
 parameter_types! {
-    pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
-    pub const MaxKeys: u32 = MAX_KEYS;
-    pub const MaxPeerInHeartbeats: u32 = MAX_PEER_IN_HEARTBEATS;
-    pub const MaxPeerDataEncodingSize: u32 = MAX_PEER_DATA_ENCODING_SIZE;
+    pub MaxSessionValidators: u32 = <<Runtime as pallet_bootnodes::Config>::MaxBootnodes as Get<u32>>::get() + <<Runtime as pallet_bioauth::Config>::MaxAuthentications as Get<u32>>::get();
 }
 
-pub struct ImOnlineSlasher;
-
-/// We have a notion of preauthenticated validators - the ones that we use to bootstrap the network.
-fn is_preauthenticated_bioauth(
-    authentication: &pallet_bioauth::Authentication<BioauthId, UnixMilliseconds>,
-) -> bool {
-    // The [`UnixMilliseconds::MAX`] is what we use at the genesis when we insert the bootstrap
-    // nodes. This is a really bad way to encode the fact that a validator should never expire in
-    // the first place, so we should change it soon. For now, this hack will do.
-    // TODO(#361): figure something better that using fully filled expires_at.
-    authentication.expires_at == UnixMilliseconds::MAX
+impl pallet_humanode_session::Config for Runtime {
+    type ValidatorPublicKeyOf = IdentityValidatorIdOf;
+    type BootnodeIdOf = sp_runtime::traits::Identity;
+    type MaxSessionValidators = MaxSessionValidators;
 }
+
+pub struct OffenceSlasher;
 
 impl
-    sp_staking::offence::ReportOffence<
+    sp_staking::offence::OnOffenceHandler<
         AccountId,
         pallet_im_online::IdentificationTuple<Runtime>,
-        pallet_im_online::UnresponsivenessOffence<pallet_im_online::IdentificationTuple<Runtime>>,
-    > for ImOnlineSlasher
+        Weight,
+    > for OffenceSlasher
 {
-    fn report_offence(
-        _reporters: Vec<AccountId>,
-        offence: pallet_im_online::UnresponsivenessOffence<
+    fn on_offence(
+        offenders: &[sp_staking::offence::OffenceDetails<
+            AccountId,
             pallet_im_online::IdentificationTuple<Runtime>,
-        >,
-    ) -> Result<(), sp_staking::offence::OffenceError> {
-        for offender in offence.offenders {
-            // Hack to prevent preauthenticated nodes from being dropped.
-            if is_preauthenticated_bioauth(&offender.1) {
-                // Never kick the preauthenticated validators.
-                continue;
-            }
-            Bioauth::deauthenticate(&offender.0);
+        >],
+        _slash_fraction: &[Perbill],
+        _session: sp_staking::SessionIndex,
+        disable_strategy: sp_staking::offence::DisableStrategy,
+    ) -> Weight {
+        if disable_strategy == sp_staking::offence::DisableStrategy::Never {
+            return 0;
         }
-        Ok(())
-    }
-
-    fn is_known_offence(
-        _offenders: &[pallet_im_online::IdentificationTuple<Runtime>],
-        _time_slot: &<pallet_im_online::UnresponsivenessOffence<
-            pallet_im_online::IdentificationTuple<Runtime>,
-        > as sp_staking::offence::Offence<
-            pallet_im_online::IdentificationTuple<Runtime>,
-        >>::TimeSlot,
-    ) -> bool {
-        unreachable!("ImOnline will never call `is_known_offence`")
+        let mut weight: Weight = 0;
+        let weights = <Runtime as frame_system::Config>::DbWeight::get();
+        for details in offenders {
+            let (_offender, identity) = &details.offender;
+            match identity {
+                pallet_humanode_session::Identification::Bioauth(authentication) => {
+                    let has_deathenticated = Bioauth::deauthenticate(&authentication.public_key);
+                    weight = weight.saturating_add(
+                        weights.reads_writes(1, if has_deathenticated { 1 } else { 0 }),
+                    );
+                }
+                pallet_humanode_session::Identification::Bootnode(..) => {
+                    // Never slash the bootnodes.
+                }
+            }
+        }
+        weight
     }
 }
 
@@ -640,56 +511,18 @@ impl pallet_im_online::Config for Runtime {
     type Event = Event;
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
-    type ReportUnresponsiveness = ImOnlineSlasher;
-    type UnsignedPriority = ImOnlineUnsignedPriority;
+    type ReportUnresponsiveness = Offences;
+    type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
     type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
-    type MaxKeys = MaxKeys;
-    type MaxPeerInHeartbeats = MaxPeerInHeartbeats;
-    type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
+    type MaxKeys = ConstU32<MAX_KEYS>;
+    type MaxPeerInHeartbeats = ConstU32<MAX_PEER_IN_HEARTBEATS>;
+    type MaxPeerDataEncodingSize = ConstU32<MAX_PEER_DATA_ENCODING_SIZE>;
 }
 
-pub struct FindAuthorBabe;
-
-impl FindAuthor<BabeId> for FindAuthorBabe {
-    fn find_author<'a, I>(digests: I) -> Option<BabeId>
-    where
-        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-    {
-        let author_index = Babe::find_author(digests)?;
-        Babe::authorities()
-            .get(author_index as usize)
-            .map(|babe_authority| babe_authority.0.clone())
-    }
-}
-
-pub struct FindAuthorFromSession<F, Id>(PhantomData<(F, Id)>);
-
-impl<F: FindAuthor<Id>, Id: sp_application_crypto::AppPublic> FindAuthor<AccountId>
-    for FindAuthorFromSession<F, Id>
-{
-    fn find_author<'a, I>(digests: I) -> Option<AccountId>
-    where
-        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-    {
-        let id = F::find_author(digests)?;
-        Session::key_owner(Id::ID, id.as_slice())
-    }
-}
-
-pub struct FindAuthorTruncated<F>(PhantomData<F>);
-
-pub fn truncate_account_id_into_ethereum_address(account_id: AccountId) -> H160 {
-    H160::from_slice(&account_id.to_raw_vec()[4..24])
-}
-
-impl<F: FindAuthor<AccountId>> FindAuthor<H160> for FindAuthorTruncated<F> {
-    fn find_author<'a, I>(digests: I) -> Option<H160>
-    where
-        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-    {
-        let account_id = F::find_author(digests)?;
-        Some(truncate_account_id_into_ethereum_address(account_id))
-    }
+impl pallet_offences::Config for Runtime {
+    type Event = Event;
+    type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
+    type OnOffenceHandler = OffenceSlasher;
 }
 
 parameter_types! {
@@ -712,7 +545,9 @@ impl pallet_evm::Config for Runtime {
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
     type OnChargeTransaction = ();
-    type FindAuthor = FindAuthorTruncated<FindAuthorFromSession<FindAuthorBabe, BabeId>>;
+    type FindAuthor = find_author::FindAuthorTruncated<
+        find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
+    >;
 }
 
 impl pallet_ethereum::Config for Runtime {
@@ -720,7 +555,7 @@ impl pallet_ethereum::Config for Runtime {
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 }
 
-frame_support::parameter_types! {
+parameter_types! {
     pub BoundDivision: U256 = U256::from(1024);
 }
 
@@ -728,8 +563,7 @@ impl pallet_dynamic_fee::Config for Runtime {
     type MinGasPriceBoundDivisor = BoundDivision;
 }
 
-frame_support::parameter_types! {
-    pub IsActive: bool = true;
+parameter_types! {
     pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
 }
 
@@ -749,11 +583,16 @@ impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
 impl pallet_base_fee::Config for Runtime {
     type Event = Event;
     type Threshold = BaseFeeThreshold;
-    type IsActive = IsActive;
+    type IsActive = ConstBool<true>;
     type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 }
 
 impl pallet_ethereum_chain_id::Config for Runtime {}
+
+impl pallet_evm_accounts_mapping::Config for Runtime {
+    type Event = Event;
+    type Verifier = eip712::AccountClaimVerifier;
+}
 
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
@@ -766,11 +605,15 @@ construct_runtime!(
         System: frame_system,
         RandomnessCollectiveFlip: pallet_randomness_collective_flip,
         Timestamp: pallet_timestamp,
+        Bootnodes: pallet_bootnodes,
         Bioauth: pallet_bioauth,
         Babe: pallet_babe,
+        // Authorship must be before other pallets that rely on the data it captures.
+        Authorship: pallet_authorship,
         Balances: pallet_balances,
         TransactionPayment: pallet_transaction_payment,
         Session: pallet_session,
+        Offences: pallet_offences,
         Historical: pallet_session_historical,
         HumanodeSession: pallet_humanode_session,
         EthereumChainId: pallet_ethereum_chain_id,
@@ -781,6 +624,7 @@ construct_runtime!(
         DynamicFee: pallet_dynamic_fee,
         BaseFee: pallet_base_fee,
         ImOnline: pallet_im_online,
+        EvmAccountsMapping: pallet_evm_accounts_mapping,
     }
 );
 
@@ -828,7 +672,7 @@ impl frame_system::offchain::CreateSignedTransaction<Call> for Runtime {
     )> {
         let tip = 0;
         // take the biggest period possible.
-        let period = BlockHashCount::get()
+        let period = <Self::BlockHashCount as Get<Self::BlockNumber>>::get()
             .checked_next_power_of_two()
             .map(|c| c / 2)
             .unwrap_or(2) as u64;
@@ -1128,7 +972,7 @@ impl_runtime_apis! {
             // <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
             sp_consensus_babe::BabeGenesisConfiguration {
                 slot_duration: Babe::slot_duration(),
-                epoch_length: EpochDuration::get(),
+                epoch_length: <Self as pallet_babe::Config>::EpochDuration::get(),
                 c: BABE_GENESIS_EPOCH_CONFIG.c,
                 genesis_authorities: Babe::authorities().to_vec(),
                 randomness: Babe::randomness(),

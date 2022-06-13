@@ -7,7 +7,7 @@
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::traits::{IsSubType, StorageVersion};
 use frame_support::weights::DispatchInfo;
-use frame_support::{parameter_types, WeakBoundedVec};
+use frame_support::{traits::ConstU32, WeakBoundedVec};
 pub use pallet::*;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -99,16 +99,14 @@ pub struct Authenticate<OpaqueAuthTicket, Commitment> {
     pub ticket_signature: Commitment,
 }
 
-parameter_types! {
-    /// The maximum length of a single nonce (in bytes).
-    pub const AuthTicketNonceMaxBytes: u32 = 256;
-}
+/// The maximum length of a single nonce (in bytes).
+pub const AUTH_TICKET_NONCE_MAX_BYTES: u32 = 256;
 
 /// The nonce used by robonode in the auth tickets.
 pub type AuthTicketNonce = Vec<u8>;
 
 /// The nonce type in this pallet with bounded number of bytes at the nonce.
-pub type BoundedAuthTicketNonce = WeakBoundedVec<u8, AuthTicketNonceMaxBytes>;
+pub type BoundedAuthTicketNonce = WeakBoundedVec<u8, ConstU32<AUTH_TICKET_NONCE_MAX_BYTES>>;
 
 /// The auth ticket passed to us from the robonode.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -322,8 +320,9 @@ pub mod pallet {
                     .iter()
                     .cloned()
                     .map(|nonce| {
-                        BoundedAuthTicketNonce::try_from(nonce)
-                            .expect("Initial nonce len must be less than AuthTicketNonceMaxBytes")
+                        BoundedAuthTicketNonce::try_from(nonce).expect(
+                            "Initial nonce len must be less than AUTH_TICKET_NONCE_MAX_BYTES",
+                        )
                     })
                     .collect::<Vec<_>>(),
             )
@@ -515,6 +514,17 @@ pub mod pallet {
                     Ok(())
                 },
             )?;
+            Ok(())
+        }
+
+        #[pallet::weight(T::WeightInfo::set_robonode_public_key())]
+        pub fn set_robonode_public_key(
+            origin: OriginFor<T>,
+            robonode_public_key: T::RobonodePublicKey,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+            <RobonodePublicKey<T>>::put(&robonode_public_key);
+            <ActiveAuthentications<T>>::put(WeakBoundedVec::default());
             Ok(())
         }
     }

@@ -7,6 +7,22 @@ use frame_system::RawOrigin;
 use crate::Pallet as Bioauth;
 use crate::*;
 
+/// The robonode public key has to be deterministic, but we don't want to specify the exact key
+/// values.
+/// We require all benchmarkable runtimes to implement two possible robonode keys.
+pub enum RobonodePublicKeyBuilderValue {
+    /// Variant A, should also be the default.
+    A,
+    /// Variant B.
+    B,
+}
+
+/// Provides the robonode public key to the benchmarks.
+pub trait RobonodePublicKeyBuilder<RobonodePublicKey> {
+    /// Build a value of the `RobonodePublicKey` type for a given variant.
+    fn build(value: RobonodePublicKeyBuilderValue) -> RobonodePublicKey;
+}
+
 fn make_pubkey(idx: u32) -> Vec<u8> {
     let idx_in_bytes = idx.to_le_bytes();
     let mut pubkey = vec![0; 32];
@@ -53,7 +69,8 @@ benchmarks! {
     where_clause {
         where T: AuthTicketBuilder<T> + AuthTicketSigner<T>,
             T::ValidatorPublicKey: From<[u8; 32]>,
-            T::Moment: From<u64>
+            T::Moment: From<u64>,
+            T: RobonodePublicKeyBuilder<T::RobonodePublicKey>
     }
 
     authenticate {
@@ -88,7 +105,28 @@ benchmarks! {
         let expected_pubkey = make_pubkey(i);
         let observed_pubkey: Vec<u8> = active_authentications_after[active_authentications_before as usize].public_key.encode();
         assert_eq!(observed_pubkey, expected_pubkey);
+    }
 
+    set_robonode_public_key {
+        // TODO(#374): populate the active authentications set.
+
+        let robonode_public_key_before = RobonodePublicKey::<T>::get();
+        let active_authentications_before = ActiveAuthentications::<T>::get();
+        let consumed_nonces_before = ConsumedAuthTicketNonces::<T>::get();
+
+        let new_robonode_public_key = <T as RobonodePublicKeyBuilder<T::RobonodePublicKey>>::build(RobonodePublicKeyBuilderValue::B);
+
+        assert_ne!(robonode_public_key_before, new_robonode_public_key);
+
+    }: _(RawOrigin::Root, new_robonode_public_key.clone())
+    verify {
+        let robonode_public_key_after = RobonodePublicKey::<T>::get();
+        let active_authentications_after = ActiveAuthentications::<T>::get();
+        let consumed_nonces_after = ConsumedAuthTicketNonces::<T>::get();
+
+        assert_eq!(robonode_public_key_after, new_robonode_public_key);
+        assert!(active_authentications_after == vec![]);
+        assert!(consumed_nonces_after == consumed_nonces_before);
     }
 
     on_initialize {
