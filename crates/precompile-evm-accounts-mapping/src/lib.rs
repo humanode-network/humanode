@@ -12,6 +12,9 @@ use sp_std::marker::PhantomData;
 #[cfg(test)]
 mod mock;
 
+#[cfg(test)]
+mod tests;
+
 /// The cost of the operation in gas.
 // TODO(#352): implement proper dynamic gas cost estimation.
 const GAS_COST: u64 = 200;
@@ -34,7 +37,7 @@ where
                     exit_status: ExitError::Other("input must be a valid evm address".into()),
                 })?;
 
-        let evm_address = sp_core::H160::from(evm_address_bytes);
+        let evm_address = pallet_evm_accounts_mapping::EvmAddress::from(evm_address_bytes);
         let native_account = pallet_evm_accounts_mapping::Accounts::<T>::get(evm_address)
             .ok_or_else(|| PrecompileFailure::Error {
                 exit_status: ExitError::Other("evm address isn't mapped".into()),

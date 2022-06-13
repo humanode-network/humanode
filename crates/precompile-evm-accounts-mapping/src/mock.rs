@@ -23,12 +23,6 @@ pub type Signature = MultiSignature;
 /// to the public key of our transaction signing scheme.
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 
-/// An EVM address.
-pub type EvmAddress = sp_core::H160;
-
-/// A signature (a 512-bit value, plus 8 bits for recovery ID).
-pub type Secp256k1EcdsaSignature = [u8; 65];
-
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
     pub enum Test where
@@ -68,15 +62,15 @@ impl system::Config for Test {
     type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-mock! {
-    pub Verifier {}
+pub struct MockVerifier;
 
-    impl pallet_evm_accounts_mapping::SignedClaimVerifier for Verifier {
-        type AccountId = AccountId;
-        fn verify(
-            account_id: AccountId,
-            signature: Secp256k1EcdsaSignature,
-        ) -> Option<EvmAddress>;
+impl pallet_evm_accounts_mapping::SignedClaimVerifier for MockVerifier {
+    type AccountId = AccountId;
+    fn verify(
+        _account_id: AccountId,
+        _signature: pallet_evm_accounts_mapping::Secp256k1EcdsaSignature,
+    ) -> Option<pallet_evm_accounts_mapping::EvmAddress> {
+        panic!("should be unused in tests")
     }
 }
 

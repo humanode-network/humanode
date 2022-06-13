@@ -5876,6 +5876,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
+ "hex-literal",
  "mockall",
  "pallet-evm-accounts-mapping",
  "parity-scale-codec",
