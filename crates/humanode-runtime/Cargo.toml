@@ -90,6 +90,7 @@ std = [
   "author-ext-api/std",
   "bioauth-flow-api/std",
   "keystore-bioauth-account-id/std",
+  "precompile-bioauth/std",
   "primitives-auth-ticket/std",
   "chrono/std",
   "codec/std",
