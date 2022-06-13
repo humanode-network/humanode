@@ -16,7 +16,7 @@ mod mock;
 mod tests;
 
 /// The cost of the operation in gas.
-// TODO(#352): implement proper dynamic gas cost estimation.
+// TODO(#378): implement proper dynamic gas cost estimation.
 const GAS_COST: u64 = 200;
 
 /// Exposes a proper evm accounts mapping to native accounts.
