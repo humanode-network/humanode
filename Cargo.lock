@@ -5870,6 +5870,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "precompile-evm-accounts-mapping"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "pallet-evm-accounts-mapping",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-std",
+]
+
+[[package]]
 name = "predicates"
 version = "1.0.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
