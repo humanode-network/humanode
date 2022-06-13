@@ -42,7 +42,7 @@ where
 
         let precompile_output = match native_account {
             Some(account) => account.encode(),
-            None => vec![],
+            None => sp_std::vec![],
         };
 
         Ok(PrecompileOutput {

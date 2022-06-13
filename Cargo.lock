@@ -3125,6 +3125,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
  "precompile-bioauth",
+ "precompile-evm-accounts-mapping",
  "primitives-auth-ticket",
  "robonode-crypto",
  "scale-info",

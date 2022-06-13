@@ -4,6 +4,7 @@ use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use precompile_bioauth::Bioauth;
+use precompile_evm_accounts_mapping::EvmAccountsMapping;
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
@@ -20,7 +21,7 @@ where
     R: pallet_evm::Config,
 {
     pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-        sp_std::vec![1, 2, 3, 4, 5, 1024, 1025, 2048]
+        sp_std::vec![1, 2, 3, 4, 5, 1024, 1025, 2048, 2049]
             .into_iter()
             .map(|x| hash(x as u64))
             .collect()
@@ -31,6 +32,7 @@ impl<R> PrecompileSet for FrontierPrecompiles<R>
 where
     R: pallet_evm::Config,
     R: pallet_bioauth::Config,
+    R: pallet_evm_accounts_mapping::Config,
     R::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
     fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
@@ -46,6 +48,7 @@ where
             a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
             // Humanode precompiles:
             a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
+            a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
             // Fallback
             _ => None,
         }
