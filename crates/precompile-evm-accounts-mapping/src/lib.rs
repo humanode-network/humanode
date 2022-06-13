@@ -9,6 +9,9 @@ use fp_evm::{
 };
 use sp_std::marker::PhantomData;
 
+#[cfg(test)]
+mod mock;
+
 /// The cost of the operation in gas.
 // TODO(#352): implement proper dynamic gas cost estimation.
 const GAS_COST: u64 = 200;

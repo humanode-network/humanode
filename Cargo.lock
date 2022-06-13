@@ -5874,9 +5874,16 @@ name = "precompile-evm-accounts-mapping"
 version = "0.1.0"
 dependencies = [
  "fp-evm",
+ "frame-support",
+ "frame-system",
+ "mockall",
  "pallet-evm-accounts-mapping",
  "parity-scale-codec",
+ "primitive-types",
+ "scale-info",
  "sp-core",
+ "sp-io",
+ "sp-runtime",
  "sp-std",
 ]
 

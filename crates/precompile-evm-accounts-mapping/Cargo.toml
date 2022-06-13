@@ -12,6 +12,15 @@ fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locke
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
+[dev-dependencies]
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+mockall = "0.10"
+primitive-types = "0.11"
+scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
 [features]
 default = ["std"]
 std = [
