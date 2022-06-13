@@ -38,14 +38,16 @@ where
                 })?;
 
         let evm_address = pallet_evm_accounts_mapping::EvmAddress::from(evm_address_bytes);
-        let native_account = pallet_evm_accounts_mapping::Accounts::<T>::get(evm_address)
-            .ok_or_else(|| PrecompileFailure::Error {
-                exit_status: ExitError::Other("evm address isn't mapped".into()),
-            })?;
+        let native_account = pallet_evm_accounts_mapping::Accounts::<T>::get(evm_address);
+
+        let precompile_output = match native_account {
+            Some(account) => account.encode(),
+            None => vec![],
+        };
 
         Ok(PrecompileOutput {
             exit_status: ExitSucceed::Returned,
-            output: native_account.encode(),
+            output: precompile_output,
         })
     }
 }

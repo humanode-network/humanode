@@ -54,9 +54,9 @@ fn test_success_mapped_evm_address() {
     })
 }
 
-// This test returns an error if evm address isn't mapped.
+// This test returns an empty output for unmapped evm address.
 #[test]
-fn test_error_unmapped_evm_address() {
+fn test_success_unmapped_evm_address() {
     new_test_ext().execute_with(|| {
         // Test data.
         let evm_address = pallet_evm_accounts_mapping::EvmAddress::from(hex!(
@@ -70,11 +70,12 @@ fn test_error_unmapped_evm_address() {
             .return_const(evm_address.as_bytes().to_vec());
         let handle = &mut mock_handle as _;
 
-        let err = crate::EvmAccountsMapping::<Test>::execute(handle).unwrap_err();
+        let val = crate::EvmAccountsMapping::<Test>::execute(handle).unwrap();
         assert_eq!(
-            err,
-            PrecompileFailure::Error {
-                exit_status: ExitError::Other("evm address isn't mapped".into())
+            val,
+            PrecompileOutput {
+                exit_status: ExitSucceed::Returned,
+                output: vec![],
             }
         );
     })
