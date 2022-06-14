@@ -243,7 +243,7 @@ fn testnet_genesis(
             balances: endowed_accounts
                 .iter()
                 .cloned()
-                .map(|k| (k, 1 << 60))
+                .map(|k| (k, 10u128.pow(18 + 6)))
                 .collect(),
         },
         session: SessionConfig {
