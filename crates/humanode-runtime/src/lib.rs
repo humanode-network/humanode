@@ -67,6 +67,7 @@ use sp_version::RuntimeVersion;
 mod frontier_precompiles;
 use frontier_precompiles::FrontierPrecompiles;
 
+pub mod currency;
 mod display_moment;
 pub mod eip712;
 mod find_author;
@@ -385,12 +386,12 @@ impl
     ) {
         use frame_support::traits::Currency;
         let who = AccountId::from([0u8; 32]);
-        Balances::resolve_creating(&who, amount);
+        currency::HumanodeCurrency::resolve_creating(&who, amount);
     }
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-    type OnChargeTransaction = CurrencyAdapter<Balances, FeedMe>;
+    type OnChargeTransaction = CurrencyAdapter<currency::HumanodeCurrency, FeedMe>;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
@@ -564,7 +565,7 @@ impl pallet_evm::Config for Runtime {
     type CallOrigin = EnsureAddressTruncated;
     type WithdrawOrigin = EnsureAddressTruncated;
     type AddressMapping = HashedAddressMapping<BlakeTwo256>;
-    type Currency = Balances;
+    type Currency = currency::HumanodeCurrency;
     type Event = Event;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = FrontierPrecompiles<Self>;
