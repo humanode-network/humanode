@@ -71,6 +71,7 @@ use frontier_precompiles::FrontierPrecompiles;
 mod display_moment;
 pub mod eip712;
 mod find_author;
+pub mod fixed_supply;
 pub mod robonode;
 
 /// An index to a block.
@@ -371,13 +372,13 @@ type PotInstanceFees = pallet_pot::Instance2;
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
     type Event = Event;
     type PalletId = TreasuryPotPalletId;
-    type Currency = Balances;
+    type Currency = fixed_supply::Currency;
 }
 
 impl pallet_pot::Config<PotInstanceFees> for Runtime {
     type Event = Event;
     type PalletId = FeesPotPalletId;
-    type Currency = Balances;
+    type Currency = fixed_supply::Currency;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -388,14 +389,23 @@ impl pallet_balances::Config for Runtime {
     type Balance = Balance;
     /// The ubiquitous event type.
     type Event = Event;
-    type DustRemoval = ();
-    type ExistentialDeposit = ConstU128<500>;
+    /// Setting this as the dust removal guarantees we never disturb the balance. However, it only
+    /// works good in conjunction with an [`ExistentialDeposit`] value fitted in such a way that
+    /// there will never be a non-zero dust to remove.
+    type DustRemoval = fixed_supply::ImbalanceHandler<pallet_balances::NegativeImbalance<Self>>;
+    /// `1` allows an account to be ripped, but does not allow any loss of funds, i.e. you can't
+    /// get to a state where the account would have less tokens than the existential deposit, but
+    /// bigger than `0`. To ensure fixes supply, we need to prevent funds being lost.
+    /// For the record, existential deposit of `0` will prevent account ripping altogether, enabling
+    /// account records to stay around forever. This would also work for fixed supply, but
+    /// the benchmarks of the balances pallet break if we do it.
+    type ExistentialDeposit = ConstU128<1>;
     type AccountStore = System;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-    type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+    type OnChargeTransaction = CurrencyAdapter<fixed_supply::Currency, ()>;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
@@ -571,14 +581,14 @@ impl pallet_evm::Config for Runtime {
     type CallOrigin = EnsureAddressTruncated;
     type WithdrawOrigin = EnsureAddressTruncated;
     type AddressMapping = HashedAddressMapping<BlakeTwo256>;
-    type Currency = Balances;
+    type Currency = fixed_supply::Currency;
     type Event = Event;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = FrontierPrecompiles<Self>;
     type PrecompilesValue = PrecompilesValue;
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
-    type OnChargeTransaction = ();
+    type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<fixed_supply::Currency, ()>;
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
     >;
