@@ -256,8 +256,10 @@ impl frame_system::Config for Runtime {
     type AccountData = pallet_balances::AccountData<Balance>;
     /// Weight information for the extrinsics of this pallet.
     type SystemWeightInfo = ();
-    /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
-    type SS58Prefix = ConstU16<42>;
+    /// This is used as an identifier of the chain.
+    /// 42 is the generic substrate prefix.
+    /// 5234 in Humanode prefix.
+    type SS58Prefix = ConstU16<5234>;
     /// The set code logic, just the default since we're not a parachain.
     type OnSetCode = ();
     /// The maximum number of consumers allowed on a single account.
