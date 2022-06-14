@@ -224,6 +224,9 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
     ))
 }
 
+/// The standard balance we put into genesis-endowed dev accounts.
+const DEV_ACCOUNT_BALANCE: u128 = 10u128.pow(18 + 6);
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
@@ -243,7 +246,7 @@ fn testnet_genesis(
             balances: endowed_accounts
                 .iter()
                 .cloned()
-                .map(|k| (k, 1 << 60))
+                .map(|k| (k, DEV_ACCOUNT_BALANCE))
                 .collect(),
         },
         session: SessionConfig {
@@ -295,8 +298,7 @@ fn testnet_genesis(
                     H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
                         .expect("internal H160 is valid; qed"),
                     fp_evm::GenesisAccount {
-                        balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
-                            .expect("internal U256 is valid; qed"),
+                        balance: U256::from(DEV_ACCOUNT_BALANCE),
                         code: Default::default(),
                         nonce: Default::default(),
                         storage: Default::default(),
@@ -312,8 +314,7 @@ fn testnet_genesis(
                     H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
                         .expect("internal H160 is valid; qed"),
                     fp_evm::GenesisAccount {
-                        balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
-                            .expect("internal U256 is valid; qed"),
+                        balance: U256::from(DEV_ACCOUNT_BALANCE),
                         code: Default::default(),
                         nonce: Default::default(),
                         storage: Default::default(),
