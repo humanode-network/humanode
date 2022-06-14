@@ -373,8 +373,24 @@ impl pallet_balances::Config for Runtime {
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
+pub struct FeedMe;
+
+impl
+    frame_support::traits::OnUnbalanced<
+        <Balances as frame_support::traits::Currency<AccountId>>::NegativeImbalance,
+    > for FeedMe
+{
+    fn on_nonzero_unbalanced(
+        amount: <Balances as frame_support::traits::Currency<AccountId>>::NegativeImbalance,
+    ) {
+        use frame_support::traits::Currency;
+        let who = AccountId::from([0u8; 32]);
+        Balances::resolve_creating(&who, amount);
+    }
+}
+
 impl pallet_transaction_payment::Config for Runtime {
-    type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+    type OnChargeTransaction = CurrencyAdapter<Balances, FeedMe>;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
