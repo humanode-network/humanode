@@ -396,7 +396,7 @@ impl pallet_balances::Config for Runtime {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-    type OnChargeTransaction = CurrencyAdapter<currency::HumanodeCurrency, ()>;
+    type OnChargeTransaction = CurrencyAdapter<currency::FixedSupplyCurrency, ()>;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
@@ -572,7 +572,7 @@ impl pallet_evm::Config for Runtime {
     type CallOrigin = EnsureAddressTruncated;
     type WithdrawOrigin = EnsureAddressTruncated;
     type AddressMapping = HashedAddressMapping<BlakeTwo256>;
-    type Currency = currency::HumanodeCurrency;
+    type Currency = currency::FixedSupplyCurrency;
     type Event = Event;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = FrontierPrecompiles<Self>;
