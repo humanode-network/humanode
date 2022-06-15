@@ -1,6 +1,6 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
-use std::{collections::BTreeMap, str::FromStr};
+use std::collections::BTreeMap;
 
 use hex_literal::hex;
 use humanode_runtime::{
@@ -14,7 +14,6 @@ use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::{H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
     app_crypto::{sr25519, Pair, Public},
@@ -287,41 +286,7 @@ fn testnet_genesis(
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 5234 },
         evm: EVMConfig {
-            accounts: {
-                let mut map = BTreeMap::new();
-                map.insert(
-                    // H160 address of Alice dev account
-                    // Derived from SS58 (42 prefix) address
-                    // SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
-                    // hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
-                    // Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
-                    H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
-                        .expect("internal H160 is valid; qed"),
-                    fp_evm::GenesisAccount {
-                        balance: U256::from(DEV_ACCOUNT_BALANCE),
-                        code: Default::default(),
-                        nonce: Default::default(),
-                        storage: Default::default(),
-                    },
-                );
-                map.insert(
-                    // H160 address of Gerald dev account
-                    // Public address: 0x6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b
-                    // Private key: 0x99b3c12287537e38c90a9219d4cb074a89a16e9cdb20bf85728ebd97c343e342
-                    // A proper private key should be used to allow testing EVM as Ethereum developer
-                    // For example, use it at Metamask, Remix, Truffle configuration, etc
-                    // We don't have a good converter between Substrate and Ethereum private keys for now.
-                    H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
-                        .expect("internal H160 is valid; qed"),
-                    fp_evm::GenesisAccount {
-                        balance: U256::from(DEV_ACCOUNT_BALANCE),
-                        code: Default::default(),
-                        nonce: Default::default(),
-                        storage: Default::default(),
-                    },
-                );
-                map
-            },
+            accounts: BTreeMap::new(),
         },
         evm_accounts_mapping: EvmAccountsMappingConfig {
             mappings: Default::default(),
