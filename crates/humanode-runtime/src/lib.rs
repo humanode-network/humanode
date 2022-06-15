@@ -450,6 +450,19 @@ impl pallet_bioauth::Config for Runtime {
     type AfterAuthHook = ();
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
+    fn build(
+        public_key: Vec<u8>,
+        authentication_nonce: Vec<u8>,
+    ) -> <Self as pallet_bioauth::Config>::OpaqueAuthTicket {
+        OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
+            public_key,
+            authentication_nonce,
+        })
+    }
+}
+
 impl pallet_bootnodes::Config for Runtime {
     type BootnodeId = AccountId;
     type MaxBootnodes = ConstU32<16>;

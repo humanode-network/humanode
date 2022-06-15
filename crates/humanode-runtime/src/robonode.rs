@@ -66,10 +66,10 @@ pub mod benchmarks {
         robonode_crypto::Keypair::from_bytes(keypair_bytes.as_ref()).unwrap()
     }
 
-    impl pallet_bioauth::benchmarking::AuthTicketSigner<Runtime> for Runtime {
+    impl pallet_bioauth::benchmarking::AuthTicketSigner for Runtime {
         fn sign(
             auth_ticket: &primitives_auth_ticket::OpaqueAuthTicket,
-        ) -> <Runtime as pallet_bioauth::Config>::RobonodeSignature {
+        ) -> <Self as pallet_bioauth::Config>::RobonodeSignature {
             use robonode_crypto::{Signature, Signer};
             // This secret key is taken from the first entry in https://ed25519.cr.yp.to/python/sign.input.
             // Must be compatible with public key provided in benchmark_config() function in
@@ -83,18 +83,6 @@ pub mod benchmarks {
                 .unwrap_or(Signature::from_bytes(&[0; 64]).unwrap())
                 .to_bytes()
                 .to_vec()
-        }
-    }
-
-    impl pallet_bioauth::benchmarking::AuthTicketBuilder<Runtime> for Runtime {
-        fn build(
-            public_key: Vec<u8>,
-            authentication_nonce: Vec<u8>,
-        ) -> primitives_auth_ticket::OpaqueAuthTicket {
-            OpaqueAuthTicket::from(&primitives_auth_ticket::AuthTicket {
-                public_key,
-                authentication_nonce,
-            })
         }
     }
 
