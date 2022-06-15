@@ -67,11 +67,11 @@ use sp_version::RuntimeVersion;
 mod frontier_precompiles;
 use frontier_precompiles::FrontierPrecompiles;
 
-pub mod currency;
 mod display_moment;
 pub mod eip712;
 pub mod fees;
 mod find_author;
+pub mod fixed_supply;
 pub mod robonode;
 
 /// An index to a block.
@@ -372,13 +372,13 @@ type PotInstanceFees = pallet_pot::Instance2;
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
     type Event = Event;
     type PalletId = TreasuryPotPalletId;
-    type Currency = currency::FixedSupplyCurrency;
+    type Currency = fixed_supply::Currency;
 }
 
 impl pallet_pot::Config<PotInstanceFees> for Runtime {
     type Event = Event;
     type PalletId = FeesPotPalletId;
-    type Currency = currency::FixedSupplyCurrency;
+    type Currency = fixed_supply::Currency;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -389,8 +389,7 @@ impl pallet_balances::Config for Runtime {
     type Balance = Balance;
     /// The ubiquitous event type.
     type Event = Event;
-    type DustRemoval =
-        currency::FixedSupplyImbalanceHandler<pallet_balances::NegativeImbalance<Self>>;
+    type DustRemoval = fixed_supply::ImbalanceHandler<pallet_balances::NegativeImbalance<Self>>;
     type ExistentialDeposit = ConstU128<0>;
     type AccountStore = System;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
@@ -573,7 +572,7 @@ impl pallet_evm::Config for Runtime {
     type CallOrigin = EnsureAddressTruncated;
     type WithdrawOrigin = EnsureAddressTruncated;
     type AddressMapping = HashedAddressMapping<BlakeTwo256>;
-    type Currency = currency::FixedSupplyCurrency;
+    type Currency = fixed_supply::Currency;
     type Event = Event;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = FrontierPrecompiles<Self>;
