@@ -38,7 +38,6 @@ use pallet_grandpa::{
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_session::historical as pallet_session_historical;
 pub use pallet_timestamp::Call as TimestampCall;
-use pallet_transaction_payment::CurrencyAdapter;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -71,6 +70,7 @@ use frontier_precompiles::FrontierPrecompiles;
 pub mod currency;
 mod display_moment;
 pub mod eip712;
+pub mod fees;
 mod find_author;
 pub mod robonode;
 
@@ -396,7 +396,7 @@ impl pallet_balances::Config for Runtime {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-    type OnChargeTransaction = CurrencyAdapter<currency::FixedSupplyCurrency, ()>;
+    type OnChargeTransaction = fees::NoFee;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
@@ -579,7 +579,7 @@ impl pallet_evm::Config for Runtime {
     type PrecompilesValue = PrecompilesValue;
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
-    type OnChargeTransaction = ();
+    type OnChargeTransaction = fees::NoFee;
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
     >;
