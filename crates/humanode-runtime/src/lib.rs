@@ -368,7 +368,8 @@ impl pallet_balances::Config for Runtime {
     type Balance = Balance;
     /// The ubiquitous event type.
     type Event = Event;
-    type DustRemoval = ();
+    type DustRemoval =
+        currency::FixedSupplyImbalanceHandler<pallet_balances::NegativeImbalance<Self>>;
     type ExistentialDeposit = ConstU128<0>;
     type AccountStore = System;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;

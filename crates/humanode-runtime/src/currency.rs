@@ -1,5 +1,9 @@
+use core::marker::PhantomData;
+
 use frame_support::traits::fungible::Inspect;
-use frame_support::traits::{Currency, Imbalance, SameOrOther, SignedImbalance, TryDrop};
+use frame_support::traits::{
+    Currency, Imbalance, OnUnbalanced, SameOrOther, SignedImbalance, TryDrop,
+};
 
 use super::*;
 
@@ -288,5 +292,13 @@ impl Drop for FixedSupplyNegativeImbalance {
         if val != &<Balances as Currency<AccountId>>::NegativeImbalance::zero() {
             panic!("dropping a non-zero negative imbalance")
         }
+    }
+}
+
+pub struct FixedSupplyImbalanceHandler<Imbalance>(PhantomData<Imbalance>);
+
+impl<Imbalance: TryDrop> OnUnbalanced<Imbalance> for FixedSupplyImbalanceHandler<Imbalance> {
+    fn on_nonzero_unbalanced(_amount: Imbalance) {
+        panic!("non-zero imbalance not settled");
     }
 }
