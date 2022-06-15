@@ -2,76 +2,72 @@ use core::marker::PhantomData;
 
 use frame_support::traits::fungible::Inspect;
 use frame_support::traits::{
-    Currency, Imbalance, OnUnbalanced, SameOrOther, SignedImbalance, TryDrop,
+    Currency as CurrencyT, Imbalance, OnUnbalanced, SameOrOther, SignedImbalance, TryDrop,
 };
 
 use super::*;
 
-pub struct FixedSupplyCurrency(Balances);
+pub struct Currency(Balances);
 
 #[derive(Default)]
-pub struct FixedSupplyPositiveImbalance(
-    Option<<Balances as Currency<AccountId>>::PositiveImbalance>,
-);
+pub struct PositiveImbalance(Option<<Balances as CurrencyT<AccountId>>::PositiveImbalance>);
 
 #[derive(Default)]
-pub struct FixedSupplyNegativeImbalance(
-    Option<<Balances as Currency<AccountId>>::NegativeImbalance>,
-);
+pub struct NegativeImbalance(Option<<Balances as CurrencyT<AccountId>>::NegativeImbalance>);
 
-impl FixedSupplyPositiveImbalance {
-    fn new(val: <Balances as Currency<AccountId>>::PositiveImbalance) -> Self {
+impl PositiveImbalance {
+    fn new(val: <Balances as CurrencyT<AccountId>>::PositiveImbalance) -> Self {
         Self(Some(val))
     }
 
-    fn must_take(&mut self) -> <Balances as Currency<AccountId>>::PositiveImbalance {
+    fn must_take(&mut self) -> <Balances as CurrencyT<AccountId>>::PositiveImbalance {
         self.0.take().unwrap()
     }
 
-    fn must_ref(&self) -> &<Balances as Currency<AccountId>>::PositiveImbalance {
+    fn must_ref(&self) -> &<Balances as CurrencyT<AccountId>>::PositiveImbalance {
         self.0.as_ref().unwrap()
     }
 }
 
-impl FixedSupplyNegativeImbalance {
-    fn new(val: <Balances as Currency<AccountId>>::NegativeImbalance) -> Self {
+impl NegativeImbalance {
+    fn new(val: <Balances as CurrencyT<AccountId>>::NegativeImbalance) -> Self {
         Self(Some(val))
     }
 
-    fn must_take(&mut self) -> <Balances as Currency<AccountId>>::NegativeImbalance {
+    fn must_take(&mut self) -> <Balances as CurrencyT<AccountId>>::NegativeImbalance {
         self.0.take().unwrap()
     }
 
-    fn must_ref(&self) -> &<Balances as Currency<AccountId>>::NegativeImbalance {
+    fn must_ref(&self) -> &<Balances as CurrencyT<AccountId>>::NegativeImbalance {
         self.0.as_ref().unwrap()
     }
 
-    fn must_mut(&mut self) -> &mut <Balances as Currency<AccountId>>::NegativeImbalance {
+    fn must_mut(&mut self) -> &mut <Balances as CurrencyT<AccountId>>::NegativeImbalance {
         self.0.as_mut().unwrap()
     }
 }
 
-impl Currency<AccountId> for FixedSupplyCurrency {
-    type Balance = <Balances as Currency<AccountId>>::Balance;
+impl CurrencyT<AccountId> for Currency {
+    type Balance = <Balances as CurrencyT<AccountId>>::Balance;
 
-    type PositiveImbalance = FixedSupplyPositiveImbalance;
+    type PositiveImbalance = PositiveImbalance;
 
-    type NegativeImbalance = FixedSupplyNegativeImbalance;
+    type NegativeImbalance = NegativeImbalance;
 
     fn total_balance(who: &AccountId) -> Self::Balance {
-        <Balances as Currency<AccountId>>::total_balance(who)
+        <Balances as CurrencyT<AccountId>>::total_balance(who)
     }
 
     fn can_slash(who: &AccountId, value: Self::Balance) -> bool {
-        <Balances as Currency<AccountId>>::can_slash(who, value)
+        <Balances as CurrencyT<AccountId>>::can_slash(who, value)
     }
 
     fn total_issuance() -> Self::Balance {
-        <Balances as Currency<AccountId>>::total_issuance()
+        <Balances as CurrencyT<AccountId>>::total_issuance()
     }
 
     fn minimum_balance() -> Self::Balance {
-        <Balances as Currency<AccountId>>::minimum_balance()
+        <Balances as CurrencyT<AccountId>>::minimum_balance()
     }
 
     fn burn(_amount: Self::Balance) -> Self::PositiveImbalance {
@@ -83,7 +79,7 @@ impl Currency<AccountId> for FixedSupplyCurrency {
     }
 
     fn free_balance(who: &AccountId) -> Self::Balance {
-        <Balances as Currency<AccountId>>::free_balance(who)
+        <Balances as CurrencyT<AccountId>>::free_balance(who)
     }
 
     fn ensure_can_withdraw(
@@ -92,7 +88,7 @@ impl Currency<AccountId> for FixedSupplyCurrency {
         reasons: frame_support::traits::WithdrawReasons,
         new_balance: Self::Balance,
     ) -> frame_support::dispatch::DispatchResult {
-        <Balances as Currency<AccountId>>::ensure_can_withdraw(who, amount, reasons, new_balance)
+        <Balances as CurrencyT<AccountId>>::ensure_can_withdraw(who, amount, reasons, new_balance)
     }
 
     fn transfer(
@@ -101,24 +97,24 @@ impl Currency<AccountId> for FixedSupplyCurrency {
         value: Self::Balance,
         existence_requirement: frame_support::traits::ExistenceRequirement,
     ) -> frame_support::dispatch::DispatchResult {
-        <Balances as Currency<AccountId>>::transfer(source, dest, value, existence_requirement)
+        <Balances as CurrencyT<AccountId>>::transfer(source, dest, value, existence_requirement)
     }
 
     fn slash(who: &AccountId, value: Self::Balance) -> (Self::NegativeImbalance, Self::Balance) {
-        let (imbalance, amount) = <Balances as Currency<AccountId>>::slash(who, value);
-        (FixedSupplyNegativeImbalance::new(imbalance), amount)
+        let (imbalance, amount) = <Balances as CurrencyT<AccountId>>::slash(who, value);
+        (NegativeImbalance::new(imbalance), amount)
     }
 
     fn deposit_into_existing(
         who: &AccountId,
         value: Self::Balance,
     ) -> Result<Self::PositiveImbalance, sp_runtime::DispatchError> {
-        <Balances as Currency<AccountId>>::deposit_into_existing(who, value)
-            .map(FixedSupplyPositiveImbalance::new)
+        <Balances as CurrencyT<AccountId>>::deposit_into_existing(who, value)
+            .map(PositiveImbalance::new)
     }
 
     fn deposit_creating(who: &AccountId, value: Self::Balance) -> Self::PositiveImbalance {
-        FixedSupplyPositiveImbalance::new(<Balances as Currency<AccountId>>::deposit_creating(
+        PositiveImbalance::new(<Balances as CurrencyT<AccountId>>::deposit_creating(
             who, value,
         ))
     }
@@ -129,26 +125,26 @@ impl Currency<AccountId> for FixedSupplyCurrency {
         reasons: frame_support::traits::WithdrawReasons,
         liveness: frame_support::traits::ExistenceRequirement,
     ) -> Result<Self::NegativeImbalance, sp_runtime::DispatchError> {
-        <Balances as Currency<AccountId>>::withdraw(who, value, reasons, liveness)
-            .map(FixedSupplyNegativeImbalance::new)
+        <Balances as CurrencyT<AccountId>>::withdraw(who, value, reasons, liveness)
+            .map(NegativeImbalance::new)
     }
 
     fn make_free_balance_be(
         who: &AccountId,
         balance: Self::Balance,
     ) -> SignedImbalance<Self::Balance, Self::PositiveImbalance> {
-        match <Balances as Currency<AccountId>>::make_free_balance_be(who, balance) {
+        match <Balances as CurrencyT<AccountId>>::make_free_balance_be(who, balance) {
             SignedImbalance::Positive(val) => {
-                SignedImbalance::Positive(FixedSupplyPositiveImbalance::new(val))
+                SignedImbalance::Positive(PositiveImbalance::new(val))
             }
             SignedImbalance::Negative(val) => {
-                SignedImbalance::Negative(FixedSupplyNegativeImbalance::new(val))
+                SignedImbalance::Negative(NegativeImbalance::new(val))
             }
         }
     }
 }
 
-impl Inspect<AccountId> for FixedSupplyCurrency {
+impl Inspect<AccountId> for Currency {
     type Balance = <Balances as Inspect<AccountId>>::Balance;
 
     fn total_issuance() -> Self::Balance {
@@ -183,11 +179,11 @@ impl Inspect<AccountId> for FixedSupplyCurrency {
     }
 }
 
-impl Imbalance<Balance> for FixedSupplyPositiveImbalance {
-    type Opposite = FixedSupplyNegativeImbalance;
+impl Imbalance<Balance> for PositiveImbalance {
+    type Opposite = NegativeImbalance;
 
     fn zero() -> Self {
-        Self::new(<Balances as Currency<AccountId>>::PositiveImbalance::zero())
+        Self::new(<Balances as CurrencyT<AccountId>>::PositiveImbalance::zero())
     }
 
     fn drop_zero(mut self) -> Result<(), Self> {
@@ -211,7 +207,7 @@ impl Imbalance<Balance> for FixedSupplyPositiveImbalance {
         match self.must_take().offset(other.must_take()) {
             SameOrOther::None => SameOrOther::None,
             SameOrOther::Same(val) => SameOrOther::Same(Self::new(val)),
-            SameOrOther::Other(val) => SameOrOther::Other(FixedSupplyNegativeImbalance::new(val)),
+            SameOrOther::Other(val) => SameOrOther::Other(NegativeImbalance::new(val)),
         }
     }
 
@@ -220,11 +216,11 @@ impl Imbalance<Balance> for FixedSupplyPositiveImbalance {
     }
 }
 
-impl Imbalance<Balance> for FixedSupplyNegativeImbalance {
-    type Opposite = FixedSupplyPositiveImbalance;
+impl Imbalance<Balance> for NegativeImbalance {
+    type Opposite = PositiveImbalance;
 
     fn zero() -> Self {
-        Self::new(<Balances as Currency<AccountId>>::NegativeImbalance::zero())
+        Self::new(<Balances as CurrencyT<AccountId>>::NegativeImbalance::zero())
     }
 
     fn drop_zero(mut self) -> Result<(), Self> {
@@ -248,7 +244,7 @@ impl Imbalance<Balance> for FixedSupplyNegativeImbalance {
         match self.must_take().offset(other.must_take()) {
             SameOrOther::None => SameOrOther::None,
             SameOrOther::Same(val) => SameOrOther::Same(Self::new(val)),
-            SameOrOther::Other(val) => SameOrOther::Other(FixedSupplyPositiveImbalance::new(val)),
+            SameOrOther::Other(val) => SameOrOther::Other(PositiveImbalance::new(val)),
         }
     }
 
@@ -257,47 +253,47 @@ impl Imbalance<Balance> for FixedSupplyNegativeImbalance {
     }
 }
 
-impl TryDrop for FixedSupplyPositiveImbalance {
+impl TryDrop for PositiveImbalance {
     fn try_drop(mut self) -> Result<(), Self> {
         self.must_take().try_drop().map_err(Self::new)
     }
 }
 
-impl TryDrop for FixedSupplyNegativeImbalance {
+impl TryDrop for NegativeImbalance {
     fn try_drop(mut self) -> Result<(), Self> {
         self.must_take().try_drop().map_err(Self::new)
     }
 }
 
-impl Drop for FixedSupplyPositiveImbalance {
+impl Drop for PositiveImbalance {
     fn drop(&mut self) {
         let val = match &self.0 {
             None => return,
             Some(val) => val,
         };
 
-        if val != &<Balances as Currency<AccountId>>::PositiveImbalance::zero() {
+        if val != &<Balances as CurrencyT<AccountId>>::PositiveImbalance::zero() {
             panic!("dropping a non-zero positive imbalance")
         }
     }
 }
 
-impl Drop for FixedSupplyNegativeImbalance {
+impl Drop for NegativeImbalance {
     fn drop(&mut self) {
         let val = match &self.0 {
             None => return,
             Some(val) => val,
         };
 
-        if val != &<Balances as Currency<AccountId>>::NegativeImbalance::zero() {
+        if val != &<Balances as CurrencyT<AccountId>>::NegativeImbalance::zero() {
             panic!("dropping a non-zero negative imbalance")
         }
     }
 }
 
-pub struct FixedSupplyImbalanceHandler<Imbalance>(PhantomData<Imbalance>);
+pub struct ImbalanceHandler<Imbalance>(PhantomData<Imbalance>);
 
-impl<Imbalance: TryDrop> OnUnbalanced<Imbalance> for FixedSupplyImbalanceHandler<Imbalance> {
+impl<Imbalance: TryDrop> OnUnbalanced<Imbalance> for ImbalanceHandler<Imbalance> {
     fn on_nonzero_unbalanced(_amount: Imbalance) {
         panic!("non-zero imbalance not settled");
     }
