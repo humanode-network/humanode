@@ -3125,6 +3125,7 @@ dependencies = [
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
  "precompile-bioauth",
+ "precompile-evm-accounts-mapping",
  "primitives-auth-ticket",
  "robonode-crypto",
  "scale-info",
@@ -5863,6 +5864,25 @@ dependencies = [
  "primitive-types",
  "scale-info",
  "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "precompile-evm-accounts-mapping"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "mockall",
+ "pallet-evm-accounts-mapping",
+ "parity-scale-codec",
+ "primitive-types",
+ "scale-info",
  "sp-core",
  "sp-io",
  "sp-runtime",

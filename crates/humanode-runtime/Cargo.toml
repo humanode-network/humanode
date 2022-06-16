@@ -20,6 +20,7 @@ pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-i
 pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
 precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-features = false }
+precompile-evm-accounts-mapping = { version = "0.1", path = "../precompile-evm-accounts-mapping", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 
@@ -90,6 +91,8 @@ std = [
   "author-ext-api/std",
   "bioauth-flow-api/std",
   "keystore-bioauth-account-id/std",
+  "precompile-bioauth/std",
+  "precompile-evm-accounts-mapping/std",
   "primitives-auth-ticket/std",
   "chrono/std",
   "codec/std",

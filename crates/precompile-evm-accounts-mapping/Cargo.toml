@@ -1,0 +1,32 @@
+[package]
+name = "precompile-evm-accounts-mapping"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
+
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
+fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01", default-features = false }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[dev-dependencies]
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+hex-literal = "0.3"
+mockall = "0.10"
+primitive-types = "0.11"
+scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[features]
+default = ["std"]
+std = [
+  "codec/std",
+  "fp-evm/std",
+  "sp-std/std",
+  "pallet-evm-accounts-mapping/std",
+]
