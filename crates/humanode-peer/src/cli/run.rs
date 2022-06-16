@@ -13,6 +13,8 @@ use crate::service;
 pub async fn run() -> sc_cli::Result<()> {
     let root: Root = sc_cli::SubstrateCli::from_args();
 
+    sp_core::crypto::set_default_ss58_version(sp_core::crypto::Ss58AddressFormat::custom(5234));
+
     match &root.subcommand {
         Some(Subcommand::Key(cmd)) => cmd.run(&root),
         Some(Subcommand::BuildSpec(cmd)) => {
