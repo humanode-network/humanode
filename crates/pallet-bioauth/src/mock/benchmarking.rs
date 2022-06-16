@@ -192,25 +192,28 @@ impl pallet_bioauth::Config for Benchmark {
 
 #[cfg(feature = "runtime-benchmarks")]
 impl crate::benchmarking::AuthTicketSigner for Benchmark {
-    fn sign(_ticket: &[u8]) -> Vec<u8> {
+    fn sign(_ticket: &MockOpaqueAuthTicket) -> Vec<u8> {
         vec![0; 64]
     }
 }
 
 #[cfg(feature = "runtime-benchmarks")]
 impl crate::benchmarking::AuthTicketBuilder for Benchmark {
-    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Vec<u8> {
+    fn build(
+        public_key: Vec<u8>,
+        nonce: Vec<u8>,
+    ) -> <Self as pallet_bioauth::Config>::OpaqueAuthTicket {
         let public_key_fixed_size: [u8; 32] = public_key.try_into().unwrap();
         let opaque_auth_ticket = AuthTicket {
             public_key: public_key_fixed_size,
             nonce,
         };
-        opaque_auth_ticket.encode()
+        MockOpaqueAuthTicket(opaque_auth_ticket)
     }
 }
 
 #[cfg(feature = "runtime-benchmarks")]
-impl crate::benchmarking::RobonodePublicKeyBuilder<MockVerifier> for Benchmark {
+impl crate::benchmarking::RobonodePublicKeyBuilder for Benchmark {
     fn build(value: crate::benchmarking::RobonodePublicKeyBuilderValue) -> MockVerifier {
         match value {
             crate::benchmarking::RobonodePublicKeyBuilderValue::A => MockVerifier::A,
