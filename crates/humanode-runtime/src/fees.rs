@@ -1,5 +1,9 @@
 use super::*;
 
+/// An [`frame_support::weights::WeightToFee`] implementation that coverts any amount of weight to
+/// zero fee, effectively making it so we don't change any fee per transacion at all.
+pub type FreeWeight = frame_support::weights::ConstantMultiplier<Balance, ConstU128<0>>;
+
 /// No not take any fee.
 ///
 /// Provides the implementations of the transaction charging traits that don't withdraw any fee

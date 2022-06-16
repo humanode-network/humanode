@@ -22,7 +22,7 @@ pub use frame_support::{
     },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-        IdentityFee, Weight,
+        Weight,
     },
     ConsensusEngineId, PalletId, StorageValue, WeakBoundedVec,
 };
@@ -407,8 +407,8 @@ impl pallet_balances::Config for Runtime {
 impl pallet_transaction_payment::Config for Runtime {
     type OnChargeTransaction = fees::NoFee;
     type OperationalFeeMultiplier = ConstU8<5>;
-    type WeightToFee = IdentityFee<Balance>;
-    type LengthToFee = IdentityFee<Balance>;
+    type WeightToFee = fees::FreeWeight;
+    type LengthToFee = fees::FreeWeight;
     type FeeMultiplierUpdate = ();
 }
 
