@@ -49,7 +49,7 @@ impl pallet_bioauth::Verifier<Vec<u8>> for PublicKey {
 }
 
 #[cfg(feature = "runtime-benchmarks")]
-pub mod benchmarks {
+mod benchmarks {
     use super::*;
 
     fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto::Keypair {
