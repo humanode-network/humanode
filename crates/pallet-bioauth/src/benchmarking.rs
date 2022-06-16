@@ -38,15 +38,17 @@ fn make_nonce(prefix: &str, idx: u32) -> Vec<u8> {
 }
 
 /// Enables construction of AuthTicket deterministically.
-pub trait AuthTicketBuilder<Runtime: pallet::Config> {
+pub trait AuthTicketBuilder: pallet::Config {
     /// Make `AuthTicket` with predetermined 32 bytes public key and nonce.
-    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Runtime::OpaqueAuthTicket;
+    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> <Self as pallet::Config>::OpaqueAuthTicket;
 }
 
 /// Enables generation of signature with robonode private key provided at runtime.
-pub trait AuthTicketSigner<Runtime: pallet::Config> {
+pub trait AuthTicketSigner: pallet::Config {
     /// Signs `AuthTicket` bytearray provided and returns digitial signature in bytearray.
-    fn sign(auth_ticket: &Runtime::OpaqueAuthTicket) -> Runtime::RobonodeSignature;
+    fn sign(
+        auth_ticket: &<Self as pallet::Config>::OpaqueAuthTicket,
+    ) -> <Self as pallet::Config>::RobonodeSignature;
 }
 
 fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
@@ -67,7 +69,7 @@ fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
 
 benchmarks! {
     where_clause {
-        where T: AuthTicketBuilder<T> + AuthTicketSigner<T>,
+        where T: AuthTicketBuilder + AuthTicketSigner,
             T::ValidatorPublicKey: From<[u8; 32]>,
             T::Moment: From<u64>,
             T: RobonodePublicKeyBuilder<T::RobonodePublicKey>
@@ -79,8 +81,8 @@ benchmarks! {
         // Create `Authenticate` request payload.
         let public_key = make_pubkey(i);
         let nonce = make_nonce("nonce", i);
-        let ticket = <T as AuthTicketBuilder<T>>::build(public_key, nonce);
-        let ticket_signature = <T as AuthTicketSigner<T>>::sign(&ticket);
+        let ticket = <T as AuthTicketBuilder>::build(public_key, nonce);
+        let ticket_signature = <T as AuthTicketSigner>::sign(&ticket);
         let req = Authenticate {
             ticket,
             ticket_signature,
@@ -131,6 +133,7 @@ benchmarks! {
 
     on_initialize {
         let b in 1..100;
+        let block_num = b;
         let expired_auth_count = 100;
         let active_auth_count = 10;
 
@@ -150,7 +153,7 @@ benchmarks! {
         // Capture this state for comparison.
         let auths_before = ActiveAuthentications::<T>::get();
     }: {
-        Bioauth::<T>::on_initialize(b.into());
+        Bioauth::<T>::on_initialize(block_num.into());
     }
 
     verify {

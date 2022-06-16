@@ -52,7 +52,7 @@ impl pallet_bioauth::Verifier<Vec<u8>> for PublicKey {
 pub mod benchmarks {
     use super::*;
 
-    pub fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto::Keypair {
+    fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto::Keypair {
         // Derive Public Key component.
         let robonode_secret_key =
             robonode_crypto::SecretKey::from_bytes(secret_key_bytes.as_ref()).unwrap();
