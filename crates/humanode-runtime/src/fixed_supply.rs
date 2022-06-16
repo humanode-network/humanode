@@ -1,3 +1,6 @@
+//! The implementation of the various bits and pieces that we use throughut the ssytem to ensure
+//! the fixed supply.
+
 use core::marker::PhantomData;
 
 use frame_support::traits::fungible::Inspect;
