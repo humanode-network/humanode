@@ -10,6 +10,7 @@ use jsonrpsee::{
     proc_macros::rpc,
     types::error::{CallError, ErrorCode, ErrorObject},
 };
+use rpc_deny_unsafe::DenyUnsafe;
 use sc_transaction_pool_api::{error::IntoPoolError, TransactionPool as TransactionPoolT};
 use sp_api::{BlockT, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
@@ -45,6 +46,8 @@ pub struct AuthorExt<ValidatorKeyExtractor, Client, Block, TransactionPool> {
     client: Arc<Client>,
     /// The transaction pool to use.
     pool: Arc<TransactionPool>,
+    /// Whether to deny unsafe calls or not.
+    deny_unsafe: DenyUnsafe,
     /// The phantom types.
     phantom_types: PhantomData<Block>,
 }
@@ -57,11 +60,13 @@ impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
         validator_key_extractor: ValidatorKeyExtractor,
         client: Arc<Client>,
         pool: Arc<TransactionPool>,
+        deny_unsafe: DenyUnsafe,
     ) -> Self {
         Self {
             validator_key_extractor,
             client,
             pool,
+            deny_unsafe,
             phantom_types: PhantomData,
         }
     }
@@ -110,6 +115,8 @@ where
     TransactionPool: TransactionPoolT<Block = Block>,
 {
     async fn set_keys(&self, session_keys: Bytes) -> RpcResult<()> {
+        self.deny_unsafe.check_if_safe()?;
+
         info!("Author extension - setting keys in progress");
 
         let validator_key = self.validator_public_key()?.ok_or_else(|| {

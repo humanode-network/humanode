@@ -16,6 +16,7 @@ use jsonrpsee::{
 };
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
+use rpc_deny_unsafe::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
@@ -190,6 +191,8 @@ pub struct Bioauth<
     client: Arc<Client>,
     /// The transaction pool to use.
     pool: Arc<TransactionPool>,
+    /// Whether to deny unsafe calls or not.
+    deny_unsafe: DenyUnsafe,
     /// The phantom types.
     phantom_types: PhantomData<(Block, Timestamp)>,
 }
@@ -220,6 +223,7 @@ impl<
         validator_signer_factory: ValidatorSignerFactory,
         client: Arc<Client>,
         pool: Arc<TransactionPool>,
+        deny_unsafe: DenyUnsafe,
     ) -> Self {
         Self {
             robonode_client,
@@ -227,6 +231,7 @@ impl<
             validator_signer_factory,
             client,
             pool,
+            deny_unsafe,
             phantom_types: PhantomData,
         }
     }
@@ -395,6 +400,8 @@ where
     }
 
     async fn enroll(&self, liveness_data: LivenessData) -> RpcResult<()> {
+        self.deny_unsafe.check_if_safe()?;
+
         info!("Bioauth flow - enrolling in progress");
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
@@ -433,6 +440,8 @@ where
     }
 
     async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<()> {
+        self.deny_unsafe.check_if_safe()?;
+
         info!("Bioauth flow - authentication in progress");
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
