@@ -366,6 +366,7 @@ dependencies = [
  "author-ext-api",
  "bioauth-keys",
  "jsonrpsee",
+ "rpc-deny-unsafe",
  "sc-transaction-pool-api",
  "sp-api",
  "sp-blockchain",
@@ -508,6 +509,7 @@ dependencies = [
  "pallet-bioauth",
  "primitives-liveness-data",
  "robonode-client",
+ "rpc-deny-unsafe",
  "sc-transaction-pool-api",
  "serde",
  "serde_json",
@@ -6643,6 +6645,13 @@ checksum = "ffc936cf8a7ea60c58f030fd36a612a48f440610214dc54bc36431f9ea0c3efb"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "rpc-deny-unsafe"
+version = "0.1.0"
+dependencies = [
+ "sc-rpc-api",
 ]
 
 [[package]]

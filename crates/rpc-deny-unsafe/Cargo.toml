@@ -1,0 +1,8 @@
+[package]
+name = "rpc-deny-unsafe"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }

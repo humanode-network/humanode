@@ -275,6 +275,7 @@ where
             author_validator_key_extractor,
             Arc::clone(&client),
             Arc::clone(&pool),
+            deny_unsafe,
         )
         .into_rpc(),
     )?;
@@ -286,6 +287,7 @@ where
             bioauth_validator_signer_factory,
             Arc::clone(&client),
             Arc::clone(&pool),
+            deny_unsafe,
         )
         .into_rpc(),
     )?;
