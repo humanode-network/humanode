@@ -7,11 +7,17 @@ use frame_support::traits::{
 
 use super::*;
 
+/// A wrapper around [`Balances`] that attempts to ensure fixed supply but panicing on
+/// any of the operations that would result in a change of the total issuance.
 pub struct Currency(Balances);
 
+/// The [`PositiveImbalance`] wrapper that panics on non-zero imbalance drop.
+/// Ensures the fixed fee by preventing the operations that change the total issuance.
 #[derive(Default)]
 pub struct PositiveImbalance(Option<<Balances as CurrencyT<AccountId>>::PositiveImbalance>);
 
+/// The [`NegativeImbalance`] wrapper that panics on non-zero imbalance drop.
+/// Ensures the fixed fee by preventing the operations that change the total issuance.
 #[derive(Default)]
 pub struct NegativeImbalance(Option<<Balances as CurrencyT<AccountId>>::NegativeImbalance>);
 
