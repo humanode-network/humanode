@@ -1,5 +1,9 @@
 use super::*;
 
+/// No not take any fee.
+///
+/// Provides the implementations of the transaction charging traits that don't withdraw any fee
+/// no matter what the input parameters are.
 pub struct NoFee;
 
 impl pallet_transaction_payment::OnChargeTransaction<Runtime> for NoFee {
