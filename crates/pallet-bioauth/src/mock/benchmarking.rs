@@ -213,7 +213,7 @@ impl crate::benchmarking::AuthTicketBuilder for Benchmark {
 }
 
 #[cfg(feature = "runtime-benchmarks")]
-impl crate::benchmarking::RobonodePublicKeyBuilder<MockVerifier> for Benchmark {
+impl crate::benchmarking::RobonodePublicKeyBuilder for Benchmark {
     fn build(value: crate::benchmarking::RobonodePublicKeyBuilderValue) -> MockVerifier {
         match value {
             crate::benchmarking::RobonodePublicKeyBuilderValue::A => MockVerifier::A,

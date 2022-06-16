@@ -86,7 +86,7 @@ mod benchmarks {
         }
     }
 
-    impl pallet_bioauth::benchmarking::RobonodePublicKeyBuilder<robonode::PublicKey> for Runtime {
+    impl pallet_bioauth::benchmarking::RobonodePublicKeyBuilder for Runtime {
         fn build(value: pallet_bioauth::benchmarking::RobonodePublicKeyBuilderValue) -> PublicKey {
             match value {
                 pallet_bioauth::benchmarking::RobonodePublicKeyBuilderValue::A => {

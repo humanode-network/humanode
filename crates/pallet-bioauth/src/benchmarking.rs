@@ -18,9 +18,9 @@ pub enum RobonodePublicKeyBuilderValue {
 }
 
 /// Provides the robonode public key to the benchmarks.
-pub trait RobonodePublicKeyBuilder<RobonodePublicKey> {
+pub trait RobonodePublicKeyBuilder: pallet::Config {
     /// Build a value of the `RobonodePublicKey` type for a given variant.
-    fn build(value: RobonodePublicKeyBuilderValue) -> RobonodePublicKey;
+    fn build(value: RobonodePublicKeyBuilderValue) -> <Self as pallet::Config>::RobonodePublicKey;
 }
 
 fn make_pubkey(idx: u32) -> Vec<u8> {
@@ -72,7 +72,7 @@ benchmarks! {
         where T: AuthTicketBuilder + AuthTicketSigner,
             T::ValidatorPublicKey: From<[u8; 32]>,
             T::Moment: From<u64>,
-            T: RobonodePublicKeyBuilder<T::RobonodePublicKey>
+            T: RobonodePublicKeyBuilder
     }
 
     authenticate {
@@ -116,7 +116,7 @@ benchmarks! {
         let active_authentications_before = ActiveAuthentications::<T>::get();
         let consumed_nonces_before = ConsumedAuthTicketNonces::<T>::get();
 
-        let new_robonode_public_key = <T as RobonodePublicKeyBuilder<T::RobonodePublicKey>>::build(RobonodePublicKeyBuilderValue::B);
+        let new_robonode_public_key = <T as RobonodePublicKeyBuilder>::build(RobonodePublicKeyBuilderValue::B);
 
         assert_ne!(robonode_public_key_before, new_robonode_public_key);
 
