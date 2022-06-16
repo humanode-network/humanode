@@ -67,18 +67,6 @@ const codeModes = {
     platformIndependent: true,
     cargoCacheKey: "code",
   },
-  testBenchmark: {
-    name: "test benchmark",
-    cargoCommand: "test",
-    cargoArgs: "--features runtime-benchmarks",
-    cargoCacheKey: "test-benchmark",
-  },
-  runBenchmark: {
-    name: "test-run pallet benchmarks",
-    cargoCommand: "run",
-    cargoArgs: "--features runtime-benchmarks benchmark pallet --chain benchmark --execution wasm --wasm-execution compiled --pallet '*' --extrinsic '*' --steps 1 --repeat 1",
-    cargoCacheKey: "run-benchmark",
-  },
 };
 
 const buildModes = {
