@@ -324,7 +324,7 @@
       },
       "args": [
         "--chain", "./state.json",
-        "-l", "debug,afg=info,trust_dns_proto=info,wasmtime_cranelift::compiler=info,sync=info,multistream_select=info,jsonrpsee_ws_server=info,txpool=info,libp2p_=info,rpc_metrics=info,sub-libp2p=info,substrate=warn,sc_service=info",
+        "-l", "debug,executor=trace,state::=trace,afg=info,trust_dns_proto=info,wasmtime_cranelift::compiler=info,sync=info,multistream_select=info,jsonrpsee_ws_server=info,txpool=info,libp2p_=info,rpc_metrics=info,sub-libp2p=info,substrate=warn,sc_service=info",
         "--execution", "native",
         "--alice"
       ],
