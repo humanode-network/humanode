@@ -108,10 +108,9 @@ impl<T: Config> Pallet<T> {
     fn update_current_session_identities<'a>(
         new_entries: impl Iterator<Item = &'a IdentificationTupleFor<T>> + 'a,
     ) {
-        let mut res = <CurrentSessionIdentities<T>>::clear(16, None);
-        while let Some(cursor) = res.maybe_cursor {
-            res = <CurrentSessionIdentities<T>>::clear(16, Some(&cursor));
-        }
+        // TODO(#388): switch back to `clear` after it is fixed.
+        #[allow(deprecated)]
+        <CurrentSessionIdentities<T>>::remove_all(None);
 
         for (account_id, identity) in new_entries {
             <CurrentSessionIdentities<T>>::insert(account_id, identity);
