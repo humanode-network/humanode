@@ -7,18 +7,11 @@ on:
     tags:
       - 'v*.*.*'
 
-jobs:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
 
-  cancel-previous:
-    name: Cancel redundant jobs
-    runs-on: ubuntu-20.04
-    timeout-minutes: 3
-    if: github.ref != 'refs/heads/master'
-    steps:
-      - uses: styfle/cancel-workflow-action@0.9.0
-        with:
-          access_token: ${{ github.token }}
-          all_but_latest: true # can cancel workflows scheduled later
+jobs:
 
   docker:
     name: Docker
@@ -67,7 +60,7 @@ jobs:
             target/docker/*/*/cargo/registry/cache/
             target/docker/*/*/cargo/git/db/
             target/docker/*/*/target/
-          key: ${{ runner.os }}-docker-cargo-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          key: docker-cargo-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
 
       - name: Build the code and docker image
         run: docker/build.sh
