@@ -64,6 +64,7 @@ sp-block-builder = { default-features = false, git = "https://github.com/humanod
 sp-consensus-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -74,7 +75,7 @@ sp-version = { default-features = false, git = "https://github.com/humanode-netw
 static_assertions = { version = "1.1.0", default-features = false }
 
 [features]
-default = ["std"]
+default = ["std", "with-tracing"]
 runtime-benchmarks = [
   "hex-literal",
   "frame-benchmarking/runtime-benchmarks",
@@ -132,6 +133,7 @@ std = [
   "sp-consensus-babe/std",
   "sp-core/std",
   "sp-inherents/std",
+  "sp-io/std",
   "sp-offchain/std",
   "sp-runtime/std",
   "sp-session/std",
@@ -140,3 +142,4 @@ std = [
   "sp-transaction-pool/std",
   "sp-version/std",
 ]
+with-tracing = ["sp-io/with-tracing"]
