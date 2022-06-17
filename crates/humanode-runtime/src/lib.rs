@@ -811,6 +811,9 @@ impl_runtime_apis! {
         }
 
         fn initialize_block(header: &<Block as BlockT>::Header) {
+            sp_std::if_std! {
+                println!("QWEQWEQW==================================");
+            }
             Executive::initialize_block(header)
         }
     }
