@@ -1,0 +1,655 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'author-ext-api'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=author-ext-api"
+        ],
+        "filter": {
+          "name": "author-ext-api",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'author-ext-rpc'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=author-ext-rpc"
+        ],
+        "filter": {
+          "name": "author-ext-rpc",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'bioauth-keys'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=bioauth-keys"
+        ],
+        "filter": {
+          "name": "bioauth-keys",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'bioauth-flow-api'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=bioauth-flow-api"
+        ],
+        "filter": {
+          "name": "bioauth-flow-api",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'bioauth-flow-rpc'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=bioauth-flow-rpc"
+        ],
+        "filter": {
+          "name": "bioauth-flow-rpc",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'pallet-bioauth'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=pallet-bioauth"
+        ],
+        "filter": {
+          "name": "pallet-bioauth",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'primitives-liveness-data'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=primitives-liveness-data"
+        ],
+        "filter": {
+          "name": "primitives-liveness-data",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'robonode-client'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=robonode-client"
+        ],
+        "filter": {
+          "name": "robonode-client",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'devutil-auth-ticket'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=devutil-auth-ticket"
+        ],
+        "filter": {
+          "name": "devutil-auth-ticket",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'devutil-auth-ticket'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=devutil-auth-ticket",
+          "--package=devutil-auth-ticket"
+        ],
+        "filter": {
+          "name": "devutil-auth-ticket",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'devutil-auth-ticket'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=devutil-auth-ticket",
+          "--package=devutil-auth-ticket"
+        ],
+        "filter": {
+          "name": "devutil-auth-ticket",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'primitives-auth-ticket'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=primitives-auth-ticket"
+        ],
+        "filter": {
+          "name": "primitives-auth-ticket",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'robonode-crypto'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=robonode-crypto"
+        ],
+        "filter": {
+          "name": "robonode-crypto",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'eip712-account-claim'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=eip712-account-claim"
+        ],
+        "filter": {
+          "name": "eip712-account-claim",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'facetec-api-client'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=facetec-api-client"
+        ],
+        "filter": {
+          "name": "facetec-api-client",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'frontier-api'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=frontier-api"
+        ],
+        "filter": {
+          "name": "frontier-api",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'humanode-peer'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=humanode-peer",
+          "--package=humanode-peer"
+        ],
+        "filter": {
+          "name": "humanode-peer",
+          "kind": "bin"
+        }
+      },
+      "args": [
+        "--chain", "./state.json",
+        "-l", "debug,afg=info,trust_dns_proto=info,wasmtime_cranelift::compiler=info,sync=info,multistream_select=info,jsonrpsee_ws_server=info,txpool=info,libp2p_=info,rpc_metrics=info,sub-libp2p=info,substrate=warn,sc_service=info",
+        "--execution", "native",
+        "--alice"
+      ],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'humanode-peer'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=humanode-peer",
+          "--package=humanode-peer"
+        ],
+        "filter": {
+          "name": "humanode-peer",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'humanode-rpc'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=humanode-rpc"
+        ],
+        "filter": {
+          "name": "humanode-rpc",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'humanode-runtime'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=humanode-runtime"
+        ],
+        "filter": {
+          "name": "humanode-runtime",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'keystore-bioauth-account-id'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=keystore-bioauth-account-id"
+        ],
+        "filter": {
+          "name": "keystore-bioauth-account-id",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'pallet-bootnodes'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=pallet-bootnodes"
+        ],
+        "filter": {
+          "name": "pallet-bootnodes",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'pallet-ethereum-chain-id'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=pallet-ethereum-chain-id"
+        ],
+        "filter": {
+          "name": "pallet-ethereum-chain-id",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'pallet-evm-accounts-mapping'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=pallet-evm-accounts-mapping"
+        ],
+        "filter": {
+          "name": "pallet-evm-accounts-mapping",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'pallet-humanode-session'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=pallet-humanode-session"
+        ],
+        "filter": {
+          "name": "pallet-humanode-session",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'precompile-bioauth'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=precompile-bioauth"
+        ],
+        "filter": {
+          "name": "precompile-bioauth",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'precompile-evm-accounts-mapping'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=precompile-evm-accounts-mapping"
+        ],
+        "filter": {
+          "name": "precompile-evm-accounts-mapping",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'primitives-frontier'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=primitives-frontier"
+        ],
+        "filter": {
+          "name": "primitives-frontier",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'ngrok-api'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=ngrok-api"
+        ],
+        "filter": {
+          "name": "ngrok-api",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'robonode-keygen'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=robonode-keygen",
+          "--package=robonode-keygen"
+        ],
+        "filter": {
+          "name": "robonode-keygen",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'robonode-keygen'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=robonode-keygen",
+          "--package=robonode-keygen"
+        ],
+        "filter": {
+          "name": "robonode-keygen",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in library 'robonode-server'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--lib",
+          "--package=robonode-server"
+        ],
+        "filter": {
+          "name": "robonode-server",
+          "kind": "lib"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug executable 'robonode-server'",
+      "cargo": {
+        "args": [
+          "build",
+          "--bin=robonode-server",
+          "--package=robonode-server"
+        ],
+        "filter": {
+          "name": "robonode-server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "type": "lldb",
+      "request": "launch",
+      "name": "Debug unit tests in executable 'robonode-server'",
+      "cargo": {
+        "args": [
+          "test",
+          "--no-run",
+          "--bin=robonode-server",
+          "--package=robonode-server"
+        ],
+        "filter": {
+          "name": "robonode-server",
+          "kind": "bin"
+        }
+      },
+      "args": [],
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
