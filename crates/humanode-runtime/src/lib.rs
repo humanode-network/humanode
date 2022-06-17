@@ -807,14 +807,23 @@ impl_runtime_apis! {
         }
 
         fn execute_block(block: Block) {
-            Executive::execute_block(block)
+            sp_std::if_std! {
+                println!("Before execute");
+            }
+            Executive::execute_block(block);
+            sp_std::if_std! {
+                println!("After execute");
+            }
         }
 
         fn initialize_block(header: &<Block as BlockT>::Header) {
             sp_std::if_std! {
-                println!("QWEQWEQW==================================");
+                println!("Before init");
             }
-            Executive::initialize_block(header)
+            Executive::initialize_block(header);
+            sp_std::if_std! {
+                println!("After init");
+            }
         }
     }
 
