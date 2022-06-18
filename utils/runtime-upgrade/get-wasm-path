@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+
+WASM_FILE_PATH="target/release/wbuild/humanode-runtime/humanode_runtime.compact.wasm"
+
+printf "%s/%s\n" "$(pwd)" "$WASM_FILE_PATH"
