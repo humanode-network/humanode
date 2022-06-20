@@ -3,6 +3,7 @@ name = "humanode-peer"
 version = "0.1.0"
 edition = "2021"
 publish = false
+authors = ["Humanode Core"]
 
 # Run the peer by default.
 default-run = "humanode-peer"
