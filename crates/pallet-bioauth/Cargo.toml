@@ -23,6 +23,7 @@ sp-io = { default-features = false, git = "https://github.com/humanode-network/s
 
 [features]
 default = ["std"]
+runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks", "hex-literal"]
 std = [
   "serde",
   "codec/std",
@@ -33,5 +34,4 @@ std = [
   "sp-std/std",
   "sp-runtime/std",
 ]
-runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks", "hex-literal"]
 try-runtime = ["frame-support/try-runtime"]
