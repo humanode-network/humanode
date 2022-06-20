@@ -36,6 +36,10 @@ pub trait AuthorExt {
     /// Set_keys with provided session keys data.
     #[method(name = "authorExt_setKeys")]
     async fn set_keys(&self, session_keys: Bytes) -> RpcResult<()>;
+
+    /// Provide validator public key.
+    #[method(name = "authorExt_getValidatorPublicKey")]
+    async fn get_validator_public_key(&self) -> RpcResult<Vec<u8>>;
 }
 
 /// The RPC implementation.
@@ -179,5 +183,17 @@ where
         info!("Author extension - setting keys transaction complete");
 
         Ok(())
+    }
+
+    async fn get_validator_public_key(&self) -> RpcResult<Vec<u8>> {
+        let validator_public_key = self.validator_public_key()?.ok_or_else(|| {
+            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
+                ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
+                "Validator key not available".to_owned(),
+                None::<()>,
+            )))
+        })?;
+
+        Ok(validator_public_key.encode())
     }
 }
