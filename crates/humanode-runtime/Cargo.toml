@@ -140,3 +140,4 @@ std = [
   "sp-transaction-pool/std",
   "sp-version/std",
 ]
+try-runtime = ["frame-system/try-runtime", "pallet-bioauth/try-runtime", "pallet-humanode-session/try-runtime"]
