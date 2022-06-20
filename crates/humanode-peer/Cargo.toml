@@ -77,6 +77,9 @@ url = "2"
 [dev-dependencies]
 indoc = "1.0"
 
+[build-dependencies]
+vergen = { version = "7", default-features = false, features = ["cargo", "git"] }
+
 [features]
 default = ["wasmtime"]
 runtime-benchmarks = [
