@@ -2,9 +2,13 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use frame_support::traits::StorageVersion;
 pub use pallet::*;
 use sp_runtime::traits::Convert;
 use sp_std::prelude::*;
+
+/// The current storage version.
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -38,6 +42,7 @@ pub mod pallet {
     }
 
     #[pallet::pallet]
+    #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T>(_);
 
     /// A mapping between the [`T::AccountId`], and the [`IdentificationFor<T>`] for the current
