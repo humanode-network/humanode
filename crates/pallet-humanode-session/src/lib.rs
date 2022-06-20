@@ -7,6 +7,8 @@ pub use pallet::*;
 use sp_runtime::traits::Convert;
 use sp_std::prelude::*;
 
+mod migrations;
+
 /// The type representing the session index in our chain.
 type SessionIndex = u32;
 
@@ -19,13 +21,18 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::pallet_prelude::*;
+    use frame_system::pallet_prelude::*;
 
     use super::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
     pub trait Config:
-        frame_system::Config + pallet_bioauth::Config + pallet_bootnodes::Config
+        frame_system::Config
+        /* Session pallet is only required for migration to v1. */
+        + pallet_session::Config
+        + pallet_bioauth::Config
+        + pallet_bootnodes::Config
     {
         /// The type for converting the key that `pallet_bioauth` uses into the key that session
         /// requires.
@@ -63,6 +70,25 @@ pub mod pallet {
     /// The number of the current session, as filled in by the session manager.
     #[pallet::storage]
     pub type CurrentSessionIndex<T: Config> = StorageValue<_, SessionIndex, OptionQuery>;
+
+    #[pallet::hooks]
+    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+        fn on_runtime_upgrade() -> Weight {
+            migrations::v1::migrate::<T>()
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn pre_upgrade() -> Result<(), &'static str> {
+            migrations::v1::pre_migrate::<T>();
+            Ok(())
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn post_upgrade() -> Result<(), &'static str> {
+            migrations::v1::post_migrate::<T>();
+            Ok(())
+        }
+    }
 }
 
 /// The identification type, to indicate where does a particular validator comes from, in a given
