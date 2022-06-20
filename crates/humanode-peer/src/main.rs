@@ -1,6 +1,7 @@
 //! The Humanode Peer implementation, main executable entrypoint.
 
 mod api_versions;
+mod build_info;
 mod chain_spec;
 mod cli;
 mod configuration;
