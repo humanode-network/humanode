@@ -16,5 +16,5 @@ thiserror = { version = "1", optional = true }
 url = { version = "2", optional = true }
 
 [features]
-default = ["client", "http"]
 client = ["http", "url", "http-body", "thiserror", "async-trait", "reqwest"]
+default = ["client", "http"]
