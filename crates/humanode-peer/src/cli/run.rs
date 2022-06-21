@@ -13,11 +13,14 @@ use crate::service;
 pub async fn run() -> sc_cli::Result<()> {
     let root: Root = sc_cli::SubstrateCli::from_args();
 
-    match &root.subcommand {
+    match &root.command.subcommand {
         Some(Subcommand::Key(cmd)) => cmd.run(&root),
         Some(Subcommand::BuildSpec(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
-            runner.sync_run(|config| cmd.run(config.substrate.chain_spec, config.substrate.network))
+            runner.sync_run(|config| {
+                cmd.base
+                    .run(config.substrate.chain_spec, config.substrate.network)
+            })
         }
         Some(Subcommand::CheckBlock(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
@@ -29,7 +32,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         import_queue,
                         ..
                     } = service::new_partial(&config)?;
-                    Ok((cmd.run(client, import_queue), task_manager))
+                    Ok((cmd.base.run(client, import_queue), task_manager))
                 })
                 .await
         }
@@ -42,7 +45,10 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         ..
                     } = service::new_partial(&config)?;
-                    Ok((cmd.run(client, config.substrate.database), task_manager))
+                    Ok((
+                        cmd.base.run(client, config.substrate.database),
+                        task_manager,
+                    ))
                 })
                 .await
         }
@@ -55,7 +61,10 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         ..
                     } = service::new_partial(&config)?;
-                    Ok((cmd.run(client, config.substrate.chain_spec), task_manager))
+                    Ok((
+                        cmd.base.run(client, config.substrate.chain_spec),
+                        task_manager,
+                    ))
                 })
                 .await
         }
@@ -69,13 +78,13 @@ pub async fn run() -> sc_cli::Result<()> {
                         import_queue,
                         ..
                     } = service::new_partial(&config)?;
-                    Ok((cmd.run(client, import_queue), task_manager))
+                    Ok((cmd.base.run(client, import_queue), task_manager))
                 })
                 .await
         }
         Some(Subcommand::PurgeChain(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
-            runner.sync_run(|config| cmd.run(config.substrate.database))
+            runner.sync_run(|config| cmd.base.run(config.substrate.database))
         }
         Some(Subcommand::Revert(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
@@ -92,7 +101,10 @@ pub async fn run() -> sc_cli::Result<()> {
                         sc_finality_grandpa::revert(client, blocks)?;
                         Ok(())
                     });
-                    Ok((cmd.run(client, backend, Some(aux_revert)), task_manager))
+                    Ok((
+                        cmd.base.run(client, backend, Some(aux_revert)),
+                        task_manager,
+                    ))
                 })
                 .await
         }
@@ -139,7 +151,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         if !cfg!(feature = "runtime-benchmarks") {
                             return Err(
                                 "Runtime benchmarking wasn't enabled when building the node. \
-							You can enable it with `--features runtime-benchmarks`."
+                                    You can enable it with `--features runtime-benchmarks`."
                                     .into(),
                             );
                         }
@@ -166,7 +178,7 @@ pub async fn run() -> sc_cli::Result<()> {
             })
         }
         None => {
-            let runner = root.create_humanode_runner(&root.run)?;
+            let runner = root.create_humanode_runner(&root.command.run)?;
             sc_cli::print_node_infos::<Root>(&runner.config().substrate);
             runner
                 .run_node(|config| async move {
@@ -178,3 +190,5 @@ pub async fn run() -> sc_cli::Result<()> {
         }
     }
 }
+
+impl super::CliConfigurationExt for frame_benchmarking_cli::BenchmarkCmd {}

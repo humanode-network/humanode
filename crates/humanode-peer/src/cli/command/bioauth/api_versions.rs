@@ -32,4 +32,6 @@ impl CliConfiguration for ApiVersionsCmd {
     }
 }
 
-impl CliConfigurationExt for ApiVersionsCmd {}
+impl CliConfigurationExt for ApiVersionsCmd {
+
+}

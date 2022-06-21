@@ -2,19 +2,15 @@
 
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 
-use super::{CliConfigurationExt, Runner, Subcommand};
+use super::{CliConfigurationExt, Runner};
 use crate::chain_spec;
 
 /// The root of the CLI commands hierarchy.
 #[derive(Debug, clap::Parser)]
 pub struct Root {
-    /// Additional subcommands.
-    #[clap(subcommand)]
-    pub subcommand: Option<Subcommand>,
-
-    /// The `run` command used to run a node.
+    #[allow(missing_docs)]
     #[clap(flatten)]
-    pub run: super::RunCmd,
+    pub command: super::command::Command,
 }
 
 impl SubstrateCli for Root {
@@ -74,5 +70,3 @@ impl Root {
         Runner::new(self, command)
     }
 }
-
-impl CliConfigurationExt for sc_cli::RunCmd {}

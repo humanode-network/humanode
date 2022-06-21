@@ -112,10 +112,6 @@ pub fn new_partial(
         ..
     } = config;
 
-    let evm_config = evm_config
-        .as_ref()
-        .ok_or_else(|| ServiceError::Other("evm config is not set".into()))?;
-
     let telemetry = config
         .telemetry_endpoints
         .clone()
@@ -241,7 +237,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let Configuration {
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
-        evm: evm_config,
+        evm: _evm_config,
+        ethereum_rpc: ethereum_rpc_config,
     } = config;
 
     let grandpa_protocol_name = sc_finality_grandpa::protocol_standard_name(
@@ -269,8 +266,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let bioauth_flow_config = bioauth_flow_config
         .ok_or_else(|| ServiceError::Other("bioauth flow config is not set".into()))?;
 
-    let evm_config =
-        evm_config.expect("already used during substrate partial components exctraction");
+    let ethereum_rpc_config = ethereum_rpc_config
+        .ok_or_else(|| ServiceError::Other("Ethereum RPC config is not set".into()))?;
 
     let role = config.role.clone();
     let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
@@ -282,7 +279,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let prometheus_registry = config.prometheus_registry().cloned();
     let eth_filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
     let eth_fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
-    let eth_fee_history_limit = evm_config.fee_history_limit;
+    let eth_fee_history_limit = ethereum_rpc_config.fee_history_limit;
     let eth_overrides = humanode_rpc::overrides_handle(Arc::clone(&client));
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
@@ -356,7 +353,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let select_chain = select_chain.clone();
 
         let eth_filter_pool = eth_filter_pool.clone();
-        let eth_max_stored_filters = evm_config.max_stored_filters;
+        let eth_max_stored_filters = ethereum_rpc_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
         let eth_overrides = Arc::clone(&eth_overrides);
         let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
@@ -366,7 +363,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             50,
             config.prometheus_registry().cloned(),
         ));
-        let eth_max_past_logs = evm_config.max_past_logs;
+        let eth_max_past_logs = ethereum_rpc_config.max_past_logs;
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
 
         Box::new(move |deny_unsafe, subscription_task_executor| {
