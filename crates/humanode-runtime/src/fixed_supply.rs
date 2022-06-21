@@ -1,4 +1,4 @@
-//! The implementation of the various bits and pieces that we use throughut the ssytem to ensure
+//! The implementation of the various bits and pieces that we use throughout the system to ensure
 //! the fixed supply.
 
 use core::marker::PhantomData;
@@ -10,7 +10,7 @@ use frame_support::traits::{
 
 use super::*;
 
-/// A wrapper around [`Balances`] that attempts to ensure fixed supply but panicing on
+/// A wrapper around [`Balances`] that attempts to ensure fixed supply but panicking on
 /// any of the operations that would result in a change of the total issuance.
 pub struct Currency(Balances);
 
@@ -302,7 +302,7 @@ impl Drop for NegativeImbalance {
 
 /// An imbalance handler that will panic on any non-zero imbalance, effectively preventing
 /// the system from adjusting the total issuance in any direction, while also aborting (ideally)
-/// the action that caused in this adjustment.
+/// the action that caused this adjustment.
 ///
 /// This is just a failsafe mechanism, the real fix is to avoid the operation that would lead to
 /// the change in the total issuance in the first place, rather than `panic`-crash them here.
