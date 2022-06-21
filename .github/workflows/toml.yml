@@ -19,8 +19,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Lint TOML files
-        run: npx @taplo/cli@0.3.2 lint
+      - name: Check TOML files format
+        run: npx @taplo/cli@0.4.0 format --check
         env:
           npm_config_yes: "true"
 
