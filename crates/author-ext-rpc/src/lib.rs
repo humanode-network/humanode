@@ -32,10 +32,14 @@ enum ApiErrorCode {
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
-pub trait AuthorExt {
+pub trait AuthorExt<VPK> {
     /// Set_keys with provided session keys data.
     #[method(name = "authorExt_setKeys")]
     async fn set_keys(&self, session_keys: Bytes) -> RpcResult<()>;
+
+    /// Provide validator public key.
+    #[method(name = "authorExt_getValidatorPublicKey")]
+    async fn get_validator_public_key(&self) -> RpcResult<VPK>;
 }
 
 /// The RPC implementation.
@@ -95,7 +99,8 @@ where
 }
 
 #[async_trait]
-impl<ValidatorKeyExtractor, Client, Block, TransactionPool> AuthorExtServer
+impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
+    AuthorExtServer<ValidatorKeyExtractor::PublicKeyType>
     for AuthorExt<ValidatorKeyExtractor, Client, Block, TransactionPool>
 where
     Client: Send + Sync + 'static,
@@ -179,5 +184,17 @@ where
         info!("Author extension - setting keys transaction complete");
 
         Ok(())
+    }
+
+    async fn get_validator_public_key(&self) -> RpcResult<ValidatorKeyExtractor::PublicKeyType> {
+        let validator_public_key = self.validator_public_key()?.ok_or_else(|| {
+            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
+                ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
+                "Validator key not available".to_owned(),
+                None::<()>,
+            )))
+        })?;
+
+        Ok(validator_public_key)
     }
 }
