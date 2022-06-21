@@ -23,7 +23,12 @@ impl SubstrateCli for Root {
     }
 
     fn impl_version() -> String {
-        "0".to_owned()
+        format!(
+            "{}/{}/{}",
+            crate::build_info::GIT_SHA,
+            crate::build_info::CARGO_PROFILE,
+            crate::build_info::CARGO_FEATURES,
+        )
     }
 
     fn description() -> String {

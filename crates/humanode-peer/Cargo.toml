@@ -3,6 +3,7 @@ name = "humanode-peer"
 version = "0.1.0"
 edition = "2021"
 publish = false
+authors = ["Humanode Core"]
 
 # Run the peer by default.
 default-run = "humanode-peer"
@@ -76,6 +77,9 @@ url = "2"
 
 [dev-dependencies]
 indoc = "1.0"
+
+[build-dependencies]
+vergen = { version = "7", default-features = false, features = ["cargo", "git"] }
 
 [features]
 default = ["wasmtime"]
