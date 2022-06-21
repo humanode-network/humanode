@@ -353,7 +353,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let select_chain = select_chain.clone();
 
         let eth_filter_pool = eth_filter_pool.clone();
-        let eth_max_stored_filters = ethereum_rpc_config.max_stored_filters;
         let frontier_backend = Arc::clone(&frontier_backend);
         let eth_overrides = Arc::clone(&eth_overrides);
         let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
@@ -363,7 +362,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             50,
             config.prometheus_registry().cloned(),
         ));
-        let eth_max_past_logs = ethereum_rpc_config.max_past_logs;
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
 
         Box::new(move |deny_unsafe, subscription_task_executor| {
@@ -395,9 +393,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 select_chain: select_chain.clone(),
                 evm: humanode_rpc::EvmDeps {
                     eth_filter_pool: eth_filter_pool.clone(),
-                    eth_max_stored_filters,
+                    eth_max_stored_filters: ethereum_rpc_config.max_stored_filters,
                     eth_backend: Arc::clone(&frontier_backend),
-                    eth_max_past_logs,
+                    eth_max_past_logs: ethereum_rpc_config.max_past_logs,
                     eth_fee_history_limit,
                     eth_fee_history_cache: Arc::clone(&eth_fee_history_cache),
                     eth_overrides: Arc::clone(&eth_overrides),
