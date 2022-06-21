@@ -1,12 +1,12 @@
 //! Fee calculation logic.
 //!
 //! This is a temporary one, until we have a more full featured version, which will likely
-//! be implemented is a separate, dedicated crate (or crates).
+//! be implemented in a separate, dedicated crate (or crates).
 
 use super::*;
 
-/// An [`frame_support::weights::WeightToFee`] implementation that coverts any amount of weight to
-/// zero fee, effectively making it so we don't change any fee per transacion at all.
+/// An [`frame_support::weights::WeightToFee`] implementation that converts any amount of weight to
+/// zero fee, effectively making it so we don't charge any fee per transaction at all.
 pub type FreeWeight = frame_support::weights::ConstantMultiplier<Balance, ConstU128<0>>;
 
 /// No not take any fee.
