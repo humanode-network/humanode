@@ -1,0 +1,35 @@
+#!/bin/bash
+set -euo pipefail
+
+# This is an opinionated script for forking the state for devemopment purposes.
+# It partly does what the try-runtime would be used for, but externally.
+
+IN_SPEC="$1"
+OUT_SPEC="$2"
+
+jq_inplace() {
+  local FILE="$1"
+  shift
+  local TMP_FILE="$FILE.tmp"
+
+  jq "$@" >"$TMP_FILE" <"$FILE"
+  mv "$TMP_FILE" "$FILE"
+}
+
+set_prefix() {
+  local PREFIX="$1"
+  local VALUE="$2"
+
+  jq_inplace "$OUT_SPEC" '.genesis.raw.top[$prefix] = $value' \
+    --arg prefix "$PREFIX" \
+    --arg value "$VALUE"
+}
+
+cp "$IN_SPEC" "$OUT_SPEC"
+
+PREFIX_BABE_AUTHORITIES="0x1cb6f36e027abb2091cfb5110ab5087f5e0621c4869aa60c02be9adcc98a0d1d"
+
+VALUE_ALICE_VEC="0x04d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d0100000000000000"
+
+# Set the babe authorities to just `//Alice`.
+set_prefix "$PREFIX_BABE_AUTHORITIES" "$VALUE_ALICE_VEC"
