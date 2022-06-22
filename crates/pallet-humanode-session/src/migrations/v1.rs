@@ -32,7 +32,7 @@ pub fn migrate<T: Config>() -> Weight {
         return weight;
     }
 
-    // Restore session index from the sessions pallet.
+    // Restore session index from the session pallet.
     let session_index = <pallet_session::Pallet<T>>::current_index();
     <CurrentSessionIndex<T>>::put(session_index);
     // Read the session index from the session pallet, then write it to our own state.
