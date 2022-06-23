@@ -25,6 +25,21 @@ set_prefix() {
     --arg value "$VALUE"
 }
 
+delete_prefix() {
+  local PREFIX="$1"
+
+  jq_inplace "$OUT_SPEC" 'del(.genesis.raw.top[$prefix])' \
+    --arg prefix "$PREFIX"
+}
+
+get_prefix() {
+  local PREFIX="$1"
+
+  jq '.genesis.raw.top[$prefix]' \
+    --arg prefix "$PREFIX" \
+    --raw <"$OUT_SPEC"
+}
+
 cp "$IN_SPEC" "$OUT_SPEC"
 
 PREFIX_BABE_AUTHORITIES="0x1cb6f36e027abb2091cfb5110ab5087f5e0621c4869aa60c02be9adcc98a0d1d"
