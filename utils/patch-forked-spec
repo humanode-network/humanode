@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# This is an opinionated script for forking the state for devemopment purposes.
+# This is an opinionated script for forking the state for development purposes.
 # It partly does what the try-runtime would be used for, but externally.
 
 IN_SPEC="$1"
