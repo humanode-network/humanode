@@ -2,9 +2,18 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use frame_support::traits::StorageVersion;
 pub use pallet::*;
 use sp_runtime::traits::Convert;
 use sp_std::prelude::*;
+
+mod migrations;
+
+/// The type representing the session index in our chain.
+type SessionIndex = u32;
+
+/// The current storage version.
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -12,13 +21,18 @@ use sp_std::prelude::*;
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::pallet_prelude::*;
+    use frame_system::pallet_prelude::*;
 
     use super::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
     pub trait Config:
-        frame_system::Config + pallet_bioauth::Config + pallet_bootnodes::Config
+        frame_system::Config
+        /* Session pallet is only required for migration to v1. */
+        + pallet_session::Config
+        + pallet_bioauth::Config
+        + pallet_bootnodes::Config
     {
         /// The type for converting the key that `pallet_bioauth` uses into the key that session
         /// requires.
@@ -38,13 +52,43 @@ pub mod pallet {
     }
 
     #[pallet::pallet]
+    #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T>(_);
 
-    /// A mapping between the [`T::AccountId`], and the [`IdentificationFor<T>`] for the current
-    /// session.
+    /// A mapping between the session and the [`T::AccountId`] to the [`IdentificationFor<T>`].
     #[pallet::storage]
-    pub type CurrentSessionIdentities<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, IdentificationFor<T>, OptionQuery>;
+    pub type SessionIdentities<T: Config> = StorageDoubleMap<
+        _,
+        Twox64Concat,
+        SessionIndex,
+        Twox64Concat,
+        T::AccountId,
+        IdentificationFor<T>,
+        OptionQuery,
+    >;
+
+    /// The number of the current session, as filled in by the session manager.
+    #[pallet::storage]
+    pub type CurrentSessionIndex<T: Config> = StorageValue<_, SessionIndex, OptionQuery>;
+
+    #[pallet::hooks]
+    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+        fn on_runtime_upgrade() -> Weight {
+            migrations::v1::migrate::<T>()
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn pre_upgrade() -> Result<(), &'static str> {
+            migrations::v1::pre_migrate::<T>();
+            Ok(())
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn post_upgrade() -> Result<(), &'static str> {
+            migrations::v1::post_migrate::<T>();
+            Ok(())
+        }
+    }
 }
 
 /// The identification type, to indicate where does a particular validator comes from, in a given
@@ -104,37 +148,47 @@ impl<T: Config> Pallet<T> {
         bootnodes.chain(bioauth_active_authentications)
     }
 
-    /// Clears and re-populates the [`CurrentSessionIdentities`] with the entries.
-    fn update_current_session_identities<'a>(
+    /// Clears and re-populates the [`SessionIdentities`] for a given session with the entries.
+    fn update_session_identities<'a>(
+        session_index: u32,
         new_entries: impl Iterator<Item = &'a IdentificationTupleFor<T>> + 'a,
     ) {
-        // TODO(#388): switch back to `clear` after it is fixed.
-        #[allow(deprecated)]
-        <CurrentSessionIdentities<T>>::remove_all(None);
+        Self::clear_session_identities(session_index);
 
         for (account_id, identity) in new_entries {
-            <CurrentSessionIdentities<T>>::insert(account_id, identity);
+            <SessionIdentities<T>>::insert(session_index, account_id, identity);
         }
+    }
+
+    /// Clears the [`SessionIdentities`] for a given session.
+    fn clear_session_identities(session_index: u32) {
+        // TODO(#388): switch to `clear_prefix` after the API is fixed.
+        #[allow(deprecated)]
+        <SessionIdentities<T>>::remove_prefix(session_index, None);
     }
 }
 
 impl<T: Config> pallet_session::historical::SessionManager<T::AccountId, IdentificationFor<T>>
     for Pallet<T>
 {
-    fn new_session(_new_index: u32) -> Option<Vec<IdentificationTupleFor<T>>> {
+    fn new_session(new_index: u32) -> Option<Vec<IdentificationTupleFor<T>>> {
         // Compute the next list of the authorities.
         let next_authorities = Self::next_authorities().collect::<Vec<_>>();
 
         // Set the list of authorities for the current session.
-        Self::update_current_session_identities(next_authorities.iter());
+        Self::update_session_identities(new_index, next_authorities.iter());
 
         Some(next_authorities)
     }
 
-    // This part of code is reachable, but we leave it empty
-    // as we don't have any meaningful things to do here.
-    fn start_session(_start_index: u32) {}
-    fn end_session(_end_index: u32) {}
+    fn start_session(start_index: u32) {
+        <CurrentSessionIndex<T>>::put(start_index);
+    }
+
+    fn end_session(end_index: u32) {
+        Self::clear_session_identities(end_index);
+        <CurrentSessionIndex<T>>::kill();
+    }
 }
 
 // In fact, the [`pallet_session::historical::SessionManager`] should not require the
@@ -154,7 +208,7 @@ impl<T: Config> pallet_session::SessionManager<T::AccountId> for Pallet<T> {
     }
 }
 
-/// A converter that uses stored [`CurrentSessionIdentities`] mapping to provide an identification
+/// A converter that uses stored [`SessionIdentities`] mapping to provide an identification
 /// for a given account.
 pub struct CurrentSessionIdentificationOf<T>(
     core::marker::PhantomData<T>,
@@ -165,6 +219,7 @@ impl<T: Config> sp_runtime::traits::Convert<T::AccountId, Option<IdentificationF
     for CurrentSessionIdentificationOf<T>
 {
     fn convert(account_id: T::AccountId) -> Option<IdentificationFor<T>> {
-        <CurrentSessionIdentities<T>>::get(account_id)
+        let session_index = <CurrentSessionIndex<T>>::get()?;
+        <SessionIdentities<T>>::get(session_index, account_id)
     }
 }
