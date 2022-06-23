@@ -17,6 +17,10 @@ pub struct RunCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
     #[clap(flatten)]
     pub evm_params: params::EvmParams,
+
+    #[allow(missing_docs, clippy::missing_docs_in_private_items)]
+    #[clap(flatten)]
+    pub ethereum_rpc_params: params::EthereumRpcParams,
 }
 
 impl SubstrateCliConfigurationProvider for RunCmd {
@@ -34,5 +38,9 @@ impl CliConfigurationExt for RunCmd {
 
     fn evm_params(&self) -> Option<&params::EvmParams> {
         Some(&self.evm_params)
+    }
+
+    fn ethereum_rpc_params(&self) -> Option<&params::EthereumRpcParams> {
+        Some(&self.ethereum_rpc_params)
     }
 }
