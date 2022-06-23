@@ -51,9 +51,17 @@ pub struct BioauthFlowParams {
     pub robonode_url: Option<String>,
 }
 
-/// Shared CLI parameters used to configure evm.
+/// Shared CLI parameters used to configure EVM.
 #[derive(Debug, clap::Parser, Clone)]
 pub struct EvmParams {
+    /// The dynamic-fee pallet target gas price set by block author.
+    #[clap(long, default_value = "1")]
+    pub target_gas_price: u64,
+}
+
+/// Shared CLI parameters used to configure Ethereum RPC.
+#[derive(Debug, clap::Parser, Clone)]
+pub struct EthereumRpcParams {
     /// Maximum number of logs to keep from the latest block;
     /// it is not possible to query logs older than this amount from the latest block in the past.
     #[clap(long, default_value = "10000")]
@@ -62,10 +70,6 @@ pub struct EvmParams {
     /// Maximum number of stored filters.
     #[clap(long, default_value = "500")]
     pub max_stored_filters: usize,
-
-    /// The dynamic-fee pallet target gas price set by block author.
-    #[clap(long, default_value = "1")]
-    pub target_gas_price: u64,
 
     /// Maximum fee history cache size.
     #[clap(long, default_value = "2048")]

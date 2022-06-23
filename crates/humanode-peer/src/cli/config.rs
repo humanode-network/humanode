@@ -44,17 +44,26 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             }
         });
 
-        let evm = self.evm_params().map(|params| configuration::Evm {
-            max_past_logs: params.max_past_logs,
-            max_stored_filters: params.max_stored_filters,
-            target_gas_price: params.target_gas_price,
-            fee_history_limit: params.fee_history_limit,
-        });
+        let evm = {
+            let params = self.evm_params();
+            configuration::Evm {
+                target_gas_price: params.map(|p| p.target_gas_price).unwrap_or(1),
+            }
+        };
+
+        let ethereum_rpc = self
+            .ethereum_rpc_params()
+            .map(|params| configuration::EthereumRpc {
+                max_past_logs: params.max_past_logs,
+                max_stored_filters: params.max_stored_filters,
+                fee_history_limit: params.fee_history_limit,
+            });
 
         Ok(Configuration {
             substrate,
             bioauth_flow,
             evm,
+            ethereum_rpc,
         })
     }
 
@@ -65,6 +74,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
 
     /// Provide the evm params, if available.
     fn evm_params(&self) -> Option<&params::EvmParams> {
+        None
+    }
+
+    /// Provide the Ethereum RPC params.
+    fn ethereum_rpc_params(&self) -> Option<&params::EthereumRpcParams> {
         None
     }
 }
