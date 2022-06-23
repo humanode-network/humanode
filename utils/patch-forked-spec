@@ -43,8 +43,12 @@ get_prefix() {
 cp "$IN_SPEC" "$OUT_SPEC"
 
 PREFIX_BABE_AUTHORITIES="0x1cb6f36e027abb2091cfb5110ab5087f5e0621c4869aa60c02be9adcc98a0d1d"
+PREFIX_SYSTEM_LAST_RUNTIME_UPGRADE="0x26aa394eea5630e07c48ae0c9558cef7f9cce9c888469bb1a0dceaa129672ef8"
 
 VALUE_ALICE_VEC="0x04d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d0100000000000000"
 
 # Set the babe authorities to just `//Alice`.
 set_prefix "$PREFIX_BABE_AUTHORITIES" "$VALUE_ALICE_VEC"
+
+# Remove the `system.lastRuntimeUpgrade` to ensure runtime upgrade will run.
+delete_prefix "$PREFIX_SYSTEM_LAST_RUNTIME_UPGRADE"
