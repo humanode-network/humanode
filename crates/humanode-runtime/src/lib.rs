@@ -554,7 +554,10 @@ parameter_types! {
 }
 
 impl pallet_evm::Config for Runtime {
-    type FeeCalculator = BaseFee;
+    // Currently we apply zero fee logic. In this case we use empty tuple
+    // for FeeCalculator that provides BaseFee as Zero.
+    // As a result we have gas_price = 0.
+    type FeeCalculator = ();
     type GasWeightMapping = ();
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
     type CallOrigin = EnsureAddressTruncated;
