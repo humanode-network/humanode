@@ -80,11 +80,11 @@ impl CurrencyT<AccountId> for Currency {
     }
 
     fn burn(_amount: Self::Balance) -> Self::PositiveImbalance {
-        panic!("no");
+        panic!("currency burn attempted");
     }
 
     fn issue(_amount: Self::Balance) -> Self::NegativeImbalance {
-        panic!("no");
+        panic!("currency issue attempted");
     }
 
     fn free_balance(who: &AccountId) -> Self::Balance {
