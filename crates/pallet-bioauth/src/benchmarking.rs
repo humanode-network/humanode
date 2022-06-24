@@ -3,6 +3,7 @@
 use frame_benchmarking::benchmarks;
 use frame_support::traits::{Get, Hooks};
 use frame_system::RawOrigin;
+use sp_std::if_std;
 
 use crate::Pallet as Bioauth;
 use crate::*;
@@ -67,6 +68,20 @@ fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
     auths
 }
 
+/// Populate storage with nonces to emulate blockchain condition under load
+fn populate_nonces<Runtime: pallet::Config>(count: usize) {
+    let mut consumed_nonces = vec![];
+    for n in 0..count {
+        let nonce = make_nonce("consumed_nonce", n as u32);
+        let consumed_nonce =
+            BoundedAuthTicketNonce::force_from(nonce, Some("benchmark::bioauth::populate_nonces"));
+        consumed_nonces.push(consumed_nonce);
+    }
+    let weakly_bounded_consumed_nonces =
+        WeakBoundedVec::<_, Runtime::MaxNonces>::try_from(consumed_nonces).unwrap();
+    ConsumedAuthTicketNonces::<Runtime>::put(weakly_bounded_consumed_nonces);
+}
+
 benchmarks! {
     where_clause {
         where T: AuthTicketBuilder + AuthTicketSigner,
@@ -77,6 +92,17 @@ benchmarks! {
 
     authenticate {
         let i in 0..T::MaxAuthentications::get();
+
+        // Fill nonces close to maximum capacity
+        populate_nonces::<T>(T::MaxNonces::get() as usize - 1);
+
+        // Populate active auths
+        let count = T::MaxAuthentications::get() - 1;
+        let expiry = T::CurrentMoment::now() + (10u64).into();
+        let active_auths = make_authentications::<T::ValidatorPublicKey, T::Moment>(count as usize, expiry);
+        let weakly_bounded_active_auths =
+            WeakBoundedVec::<_, T::MaxAuthentications>::try_from(active_auths).unwrap();
+        ActiveAuthentications::<T>::put(weakly_bounded_active_auths);
 
         // Create `Authenticate` request payload.
         let public_key = make_pubkey(i);
@@ -111,6 +137,12 @@ benchmarks! {
 
     set_robonode_public_key {
         // TODO(#374): populate the active authentications set.
+        let count = T::MaxAuthentications::get() - 1;
+        let expiry = T::CurrentMoment::now() + (10u64).into();
+        let active_auths = make_authentications::<T::ValidatorPublicKey, T::Moment>(count as usize, expiry);
+        let weakly_bounded_active_auths =
+            WeakBoundedVec::<_, T::MaxAuthentications>::try_from(active_auths).unwrap();
+        ActiveAuthentications::<T>::put(weakly_bounded_active_auths);
 
         let robonode_public_key_before = RobonodePublicKey::<T>::get();
         let active_authentications_before = ActiveAuthentications::<T>::get();
