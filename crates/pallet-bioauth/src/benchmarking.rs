@@ -3,7 +3,6 @@
 use frame_benchmarking::benchmarks;
 use frame_support::traits::{Get, Hooks};
 use frame_system::RawOrigin;
-use sp_std::if_std;
 
 use crate::Pallet as Bioauth;
 use crate::*;
@@ -24,10 +23,13 @@ pub trait RobonodePublicKeyBuilder: pallet::Config {
     fn build(value: RobonodePublicKeyBuilderValue) -> <Self as pallet::Config>::RobonodePublicKey;
 }
 
-fn make_pubkey(idx: u32) -> Vec<u8> {
-    let idx_in_bytes = idx.to_le_bytes();
+fn make_pubkey(prefix: &str, idx: u32) -> Vec<u8> {
     let mut pubkey = vec![0; 32];
-    let _ = &pubkey[0..idx_in_bytes.len()].copy_from_slice(&idx_in_bytes);
+    let prefix_in_bytes = Vec::from(prefix);
+    let _ = &pubkey[0..prefix_in_bytes.len()].copy_from_slice(&prefix_in_bytes);
+    let idx_in_bytes = idx.to_le_bytes();
+    let _ = &pubkey[prefix_in_bytes.len()..(prefix_in_bytes.len() + idx_in_bytes.len())]
+        .copy_from_slice(&idx_in_bytes);
     pubkey
 }
 
@@ -53,12 +55,13 @@ pub trait AuthTicketSigner: pallet::Config {
 }
 
 fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
+    prefix: &str,
     count: usize,
     expires_at: Moment,
 ) -> Vec<Authentication<Pubkey, Moment>> {
     let mut auths: Vec<Authentication<Pubkey, Moment>> = vec![];
     for i in 0..count {
-        let public_key: [u8; 32] = make_pubkey(i as u32).try_into().unwrap();
+        let public_key: [u8; 32] = make_pubkey(prefix, i as u32).try_into().unwrap();
         let auth = Authentication {
             public_key: public_key.into(),
             expires_at,
@@ -82,6 +85,22 @@ fn populate_nonces<Runtime: pallet::Config>(count: usize) {
     ConsumedAuthTicketNonces::<Runtime>::put(weakly_bounded_consumed_nonces);
 }
 
+fn populate_active_auths<Runtime: pallet::Config>(count: u32)
+where
+    <Runtime as pallet::Config>::ValidatorPublicKey: From<[u8; 32]>,
+    <Runtime as pallet::Config>::Moment: From<u64>,
+{
+    let expiry = Runtime::CurrentMoment::now() + (10u64).into();
+    let active_auths = make_authentications::<Runtime::ValidatorPublicKey, Runtime::Moment>(
+        "active",
+        count as usize,
+        expiry,
+    );
+    let weakly_bounded_active_auths =
+        WeakBoundedVec::<_, Runtime::MaxAuthentications>::try_from(active_auths).unwrap();
+    ActiveAuthentications::<Runtime>::put(weakly_bounded_active_auths);
+}
+
 benchmarks! {
     where_clause {
         where T: AuthTicketBuilder + AuthTicketSigner,
@@ -98,14 +117,10 @@ benchmarks! {
 
         // Populate active auths
         let count = T::MaxAuthentications::get() - 1;
-        let expiry = T::CurrentMoment::now() + (10u64).into();
-        let active_auths = make_authentications::<T::ValidatorPublicKey, T::Moment>(count as usize, expiry);
-        let weakly_bounded_active_auths =
-            WeakBoundedVec::<_, T::MaxAuthentications>::try_from(active_auths).unwrap();
-        ActiveAuthentications::<T>::put(weakly_bounded_active_auths);
+        populate_active_auths::<T>(count);
 
         // Create `Authenticate` request payload.
-        let public_key = make_pubkey(i);
+        let public_key = make_pubkey("new", i);
         let nonce = make_nonce("nonce", i);
         let ticket = <T as AuthTicketBuilder>::build(public_key, nonce);
         let ticket_signature = <T as AuthTicketSigner>::sign(&ticket);
@@ -130,7 +145,7 @@ benchmarks! {
         assert_eq!(active_authentications_after.len() - active_authentications_before, 1);
 
         // Verify public key
-        let expected_pubkey = make_pubkey(i);
+        let expected_pubkey = make_pubkey("new", i);
         let observed_pubkey: Vec<u8> = active_authentications_after[active_authentications_before as usize].public_key.encode();
         assert_eq!(observed_pubkey, expected_pubkey);
     }
@@ -138,11 +153,7 @@ benchmarks! {
     set_robonode_public_key {
         // TODO(#374): populate the active authentications set.
         let count = T::MaxAuthentications::get() - 1;
-        let expiry = T::CurrentMoment::now() + (10u64).into();
-        let active_auths = make_authentications::<T::ValidatorPublicKey, T::Moment>(count as usize, expiry);
-        let weakly_bounded_active_auths =
-            WeakBoundedVec::<_, T::MaxAuthentications>::try_from(active_auths).unwrap();
-        ActiveAuthentications::<T>::put(weakly_bounded_active_auths);
+        populate_active_auths::<T>(count);
 
         let robonode_public_key_before = RobonodePublicKey::<T>::get();
         let active_authentications_before = ActiveAuthentications::<T>::get();
@@ -171,12 +182,12 @@ benchmarks! {
 
         let mut auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
         // Populate with expired authentications.
-        let mut expired_auths = make_authentications(expired_auth_count, T::CurrentMoment::now());
+        let mut expired_auths = make_authentications("expired", expired_auth_count, T::CurrentMoment::now());
         auths.append(&mut expired_auths);
 
         // Also, populate with active authentications.
         let future_expiry = T::CurrentMoment::now() + (10u64).into();
-        let mut active_auths = make_authentications(active_auth_count, future_expiry);
+        let mut active_auths = make_authentications("active", active_auth_count, future_expiry);
         auths.append(&mut active_auths);
 
         let weakly_bound_auths = WeakBoundedVec::force_from(auths, Some("pallet-bioauth:benchmark:on_initialize"));
