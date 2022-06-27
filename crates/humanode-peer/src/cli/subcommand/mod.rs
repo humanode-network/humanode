@@ -47,6 +47,14 @@ pub enum Subcommand {
     #[clap(name = "benchmark", about = "Benchmark runtime pallets.")]
     #[clap(subcommand)]
     Benchmark(frame_benchmarking_cli::BenchmarkCmd),
+
+    /// Try some command against runtime state.
+    #[cfg(feature = "try-runtime")]
+    TryRuntime(try_runtime_cli::TryRuntimeCmd),
+
+    /// Try some command against runtime state. Note: `try-runtime` feature must be enabled.
+    #[cfg(not(feature = "try-runtime"))]
+    TryRuntime,
 }
 
 impl CliConfigurationExt for sc_cli::BuildSpecCmd {}
@@ -57,3 +65,5 @@ impl CliConfigurationExt for sc_cli::ImportBlocksCmd {}
 impl CliConfigurationExt for sc_cli::PurgeChainCmd {}
 impl CliConfigurationExt for sc_cli::RevertCmd {}
 impl CliConfigurationExt for frame_benchmarking_cli::BenchmarkCmd {}
+#[cfg(feature = "try-runtime")]
+impl CliConfigurationExt for try_runtime_cli::TryRuntimeCmd {}
