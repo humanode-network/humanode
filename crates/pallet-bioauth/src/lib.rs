@@ -557,7 +557,7 @@ pub mod pallet {
                 <ActiveAuthentications<T>>::put(bounded_active_authentications);
             }
 
-            T::WeightInfo::on_initialize(update_required)
+            T::WeightInfo::on_initialize()
         }
     }
 

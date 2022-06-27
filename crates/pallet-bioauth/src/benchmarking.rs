@@ -3,6 +3,7 @@
 use frame_benchmarking::benchmarks;
 use frame_support::traits::{Get, Hooks};
 use frame_system::RawOrigin;
+use sp_std::if_std;
 
 use crate::Pallet as Bioauth;
 use crate::*;
@@ -96,6 +97,7 @@ where
         count as usize,
         expiry,
     );
+
     let weakly_bounded_active_auths =
         WeakBoundedVec::<_, Runtime::MaxAuthentications>::try_from(active_auths).unwrap();
     ActiveAuthentications::<Runtime>::put(weakly_bounded_active_auths);
@@ -112,12 +114,11 @@ benchmarks! {
     authenticate {
         let i in 0..T::MaxAuthentications::get();
 
-        // Fill nonces close to maximum capacity
-        populate_nonces::<T>(T::MaxNonces::get() as usize - 1);
+        // Populate nonces
+        populate_nonces::<T>(100 as usize);
 
         // Populate active auths
-        let count = T::MaxAuthentications::get() - 1;
-        populate_active_auths::<T>(count);
+        populate_active_auths::<T>(100);
 
         // Create `Authenticate` request payload.
         let public_key = make_pubkey("new", i);
@@ -152,8 +153,7 @@ benchmarks! {
 
     set_robonode_public_key {
         // TODO(#374): populate the active authentications set.
-        let count = T::MaxAuthentications::get() - 1;
-        populate_active_auths::<T>(count);
+        populate_active_auths::<T>(100);
 
         let robonode_public_key_before = RobonodePublicKey::<T>::get();
         let active_authentications_before = ActiveAuthentications::<T>::get();
