@@ -2437,6 +2437,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "frame-try-runtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#438f40dc262ac32a4afd600d8d76214897a0f1a6"
+dependencies = [
+ "frame-support",
+ "sp-api",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "frontier-api"
 version = "0.1.0"
 dependencies = [
@@ -3145,6 +3156,7 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "frame-try-runtime",
  "frontier-api",
  "hex-literal",
  "keystore-bioauth-account-id",
@@ -9766,7 +9778,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
  "digest 0.10.3",
- "rand 0.4.6",
+ "rand 0.8.5",
  "static_assertions",
 ]
 
