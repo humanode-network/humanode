@@ -145,6 +145,7 @@ std = [
 try-runtime = [
   "frame-executive/try-runtime",
   "frame-system/try-runtime",
+  "frame-try-runtime",
   "pallet-bioauth/try-runtime",
   "pallet-humanode-session/try-runtime"
 ]
