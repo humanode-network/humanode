@@ -89,5 +89,5 @@ runtime-benchmarks = [
   "humanode-runtime/runtime-benchmarks",
   "frame-benchmarking/runtime-benchmarks",
 ]
-wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]
 try-runtime = ["humanode-runtime/try-runtime", "try-runtime-cli"]
+wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]
