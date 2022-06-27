@@ -65,3 +65,5 @@ impl CliConfigurationExt for sc_cli::ImportBlocksCmd {}
 impl CliConfigurationExt for sc_cli::PurgeChainCmd {}
 impl CliConfigurationExt for sc_cli::RevertCmd {}
 impl CliConfigurationExt for frame_benchmarking_cli::BenchmarkCmd {}
+#[cfg(feature = "try-runtime")]
+impl CliConfigurationExt for try_runtime_cli::TryRuntimeCmd {}
