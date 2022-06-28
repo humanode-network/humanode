@@ -36,6 +36,10 @@ impl PositiveImbalance {
     fn must_ref(&self) -> &<Balances as CurrencyT<AccountId>>::PositiveImbalance {
         self.0.as_ref().unwrap()
     }
+
+    fn must_mut(&mut self) -> &mut <Balances as CurrencyT<AccountId>>::PositiveImbalance {
+        self.0.as_mut().unwrap()
+    }
 }
 
 impl NegativeImbalance {
@@ -209,7 +213,7 @@ impl Imbalance<Balance> for PositiveImbalance {
     }
 
     fn subsume(&mut self, mut other: Self) {
-        self.must_take().subsume(other.must_take())
+        self.must_mut().subsume(other.must_take())
     }
 
     fn offset(mut self, mut other: Self::Opposite) -> SameOrOther<Self, Self::Opposite> {
