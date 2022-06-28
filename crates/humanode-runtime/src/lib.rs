@@ -554,7 +554,7 @@ parameter_types! {
 }
 
 impl pallet_evm::Config for Runtime {
-    type FeeCalculator = BaseFee;
+    type FeeCalculator = fees::FreeGas;
     type GasWeightMapping = ();
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
     type CallOrigin = EnsureAddressTruncated;
@@ -584,30 +584,6 @@ parameter_types! {
 
 impl pallet_dynamic_fee::Config for Runtime {
     type MinGasPriceBoundDivisor = BoundDivision;
-}
-
-parameter_types! {
-    pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
-}
-
-pub struct BaseFeeThreshold;
-impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
-    fn lower() -> Permill {
-        Permill::zero()
-    }
-    fn ideal() -> Permill {
-        Permill::from_parts(500_000)
-    }
-    fn upper() -> Permill {
-        Permill::from_parts(1_000_000)
-    }
-}
-
-impl pallet_base_fee::Config for Runtime {
-    type Event = Event;
-    type Threshold = BaseFeeThreshold;
-    type IsActive = ConstBool<true>;
-    type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 }
 
 impl pallet_ethereum_chain_id::Config for Runtime {}
@@ -645,7 +621,6 @@ construct_runtime!(
         Ethereum: pallet_ethereum,
         EVM: pallet_evm,
         DynamicFee: pallet_dynamic_fee,
-        BaseFee: pallet_base_fee,
         ImOnline: pallet_im_online,
         EvmAccountsMapping: pallet_evm_accounts_mapping,
     }
@@ -1178,7 +1153,8 @@ impl_runtime_apis! {
         }
 
         fn elasticity() -> Option<Permill> {
-            Some(BaseFee::elasticity())
+            // TODO(#410) : return the use of the `pallet_base_fee` here.
+            None
         }
     }
 
