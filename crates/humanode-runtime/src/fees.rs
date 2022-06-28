@@ -3,6 +3,8 @@
 //! This is a temporary one, until we have a more full featured version, which will likely
 //! be implemented in a separate, dedicated crate (or crates).
 
+use sp_runtime::traits::Zero;
+
 use super::*;
 
 /// An [`frame_support::weights::WeightToFee`] implementation that converts any amount of weight to
@@ -34,9 +36,17 @@ impl pallet_transaction_payment::OnChargeTransaction<Runtime> for NoFee {
         _who: &AccountId,
         _call: &Call,
         _info: &DispatchInfoOf<Call>,
-        _fee: Self::Balance,
-        _tip: Self::Balance,
+        fee: Self::Balance,
+        tip: Self::Balance,
     ) -> Result<Self::LiquidityInfo, TransactionValidityError> {
+        assert!(
+            fee.is_zero(),
+            "we have to ensure the fee is always zero at this time"
+        );
+        assert!(
+            tip.is_zero(),
+            "we have to ensure the tip is always zero at this time"
+        );
         Ok(())
     }
 
@@ -44,10 +54,18 @@ impl pallet_transaction_payment::OnChargeTransaction<Runtime> for NoFee {
         _who: &AccountId,
         _dispatch_info: &DispatchInfoOf<Call>,
         _post_info: &PostDispatchInfoOf<Call>,
-        _corrected_fee: Self::Balance,
-        _tip: Self::Balance,
+        corrected_fee: Self::Balance,
+        tip: Self::Balance,
         _already_withdrawn: Self::LiquidityInfo,
     ) -> Result<(), TransactionValidityError> {
+        assert!(
+            corrected_fee.is_zero(),
+            "the fee must still be zero after the correction"
+        );
+        assert!(
+            tip.is_zero(),
+            "the tip must still be zero after the correctionå"
+        );
         Ok(())
     }
 }
@@ -57,17 +75,25 @@ impl pallet_evm::OnChargeEVMTransaction<Runtime> for NoFee {
 
     fn withdraw_fee(
         _who: &H160,
-        _fee: U256,
+        fee: U256,
     ) -> Result<Self::LiquidityInfo, pallet_evm::Error<Runtime>> {
+        assert!(
+            fee.is_zero(),
+            "we have to ensure the EVM fee is always zero at this time"
+        );
         Ok(())
     }
 
     fn correct_and_deposit_fee(
         _who: &H160,
-        _corrected_fee: U256,
+        corrected_fee: U256,
         _base_fee: U256,
         _already_withdrawn: Self::LiquidityInfo,
     ) -> Self::LiquidityInfo {
+        assert!(
+            corrected_fee.is_zero(),
+            "the EVM fee must still be zero after the correction"
+        );
     }
 
     fn pay_priority_fee(_tip: Self::LiquidityInfo) {}
