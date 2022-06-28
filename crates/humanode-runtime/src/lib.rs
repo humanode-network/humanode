@@ -1217,6 +1217,12 @@ impl_runtime_apis! {
         }
     }
 
+    impl native_chain_id_api::NativeChainIdApi<Block> for Runtime {
+        fn get() -> u16 {
+            NativeChainId::get()
+        }
+    }
+
     #[cfg(feature = "runtime-benchmarks")]
     impl frame_benchmarking::Benchmark<Block> for Runtime {
         fn benchmark_metadata(extra: bool) -> (

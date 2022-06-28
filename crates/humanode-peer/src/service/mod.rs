@@ -19,6 +19,7 @@ pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
+use sp_core::crypto::Ss58AddressFormat;
 use tracing::*;
 
 use crate::configuration::Configuration;
@@ -137,6 +138,10 @@ pub fn new_partial(
             executor,
         )?;
     let client = Arc::new(client);
+
+    // We would like to support our custom SS58 prefix (that isn't yet registered in the `ss58-registry`).
+    let native_chain_id = native_chain_id::NativeChainId::<_, _>::new(Arc::clone(&client));
+    sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(native_chain_id.get()));
 
     let telemetry = telemetry.map(|(worker, telemetry)| {
         task_manager

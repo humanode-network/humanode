@@ -1,0 +1,11 @@
+[package]
+name = "native-chain-id"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+native-chain-id-api = { version = "0.1", path = "../native-chain-id-api" }
+
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "master" }
