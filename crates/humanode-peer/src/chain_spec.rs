@@ -300,7 +300,6 @@ fn testnet_genesis(
         },
         ethereum: EthereumConfig {},
         dynamic_fee: Default::default(),
-        base_fee: Default::default(),
         transaction_payment: Default::default(),
         fees_pot: Default::default(),
         treasury_pot: Default::default(),
