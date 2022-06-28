@@ -9,6 +9,17 @@ use super::*;
 /// zero fee, effectively making it so we don't charge any fee per transaction at all.
 pub type FreeWeight = frame_support::weights::ConstantMultiplier<Balance, ConstU128<0>>;
 
+/// The implementation of [`pallet_evm::FeeCalculator`] that configures the min gas price to be
+/// zero, effectively making the gas free.
+/// With this, we are supposed to not change any fees for the EVM transactions.
+pub struct FreeGas;
+
+impl pallet_evm::FeeCalculator for FreeGas {
+    fn min_gas_price() -> (U256, Weight) {
+        (U256::zero(), 0u64)
+    }
+}
+
 /// No not take any fee.
 ///
 /// Provides the implementations of the transaction charging traits that don't withdraw any fee
