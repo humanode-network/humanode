@@ -1,0 +1,15 @@
+use crate::{self as pallet_native_chain_id, mock::*};
+
+/// This test verifies that genesis initialization properly assignes the state.
+#[test]
+fn genesis_build() {
+    // Prepare some sample data and a config.
+    let chain_id = 2020;
+    let config = pallet_native_chain_id::GenesisConfig { chain_id };
+
+    // Build the state from the config.
+    new_test_ext_with(config).execute_with(move || {
+        // Assert the state.
+        assert_eq!(NativeChainId::chain_id(), chain_id);
+    })
+}
