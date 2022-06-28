@@ -3,7 +3,7 @@
 use frame_benchmarking::benchmarks;
 use frame_support::traits::{Get, Hooks};
 use frame_system::RawOrigin;
-use sp_std::if_std;
+use sp_std::cmp;
 
 use crate::Pallet as Bioauth;
 use crate::*;
@@ -112,17 +112,23 @@ benchmarks! {
     }
 
     authenticate {
-        let i in 0..T::MaxAuthentications::get();
+        let m in 0 .. T::MaxAuthentications::get() - 1;
+        let n in 0 .. T::MaxNonces::get() - 1;
 
-        // Populate nonces
-        populate_nonces::<T>(100 as usize);
+        // This is a workaround for now. Otherwise, it takes too long
+        // to run a round of benchmark and it might crash the system.
+        let nonce_count = cmp::min(m, 1024);
+        let auth_count = cmp::min(n, 1024);
+
+        // Populate nonces close to maximum capacity
+        populate_nonces::<T>(nonce_count as usize);
 
         // Populate active auths
-        populate_active_auths::<T>(100);
+        populate_active_auths::<T>(auth_count);
 
         // Create `Authenticate` request payload.
-        let public_key = make_pubkey("new", i);
-        let nonce = make_nonce("nonce", i);
+        let public_key = make_pubkey("new", m);
+        let nonce = make_nonce("nonce", n);
         let ticket = <T as AuthTicketBuilder>::build(public_key, nonce);
         let ticket_signature = <T as AuthTicketSigner>::sign(&ticket);
         let req = Authenticate {
@@ -146,14 +152,16 @@ benchmarks! {
         assert_eq!(active_authentications_after.len() - active_authentications_before, 1);
 
         // Verify public key
-        let expected_pubkey = make_pubkey("new", i);
+        let expected_pubkey = make_pubkey("new", m);
         let observed_pubkey: Vec<u8> = active_authentications_after[active_authentications_before as usize].public_key.encode();
         assert_eq!(observed_pubkey, expected_pubkey);
     }
 
     set_robonode_public_key {
-        // TODO(#374): populate the active authentications set.
-        populate_active_auths::<T>(100);
+        // This is a workaround for now. Otherwise, it takes too long
+        // to run a round of benchmark and it might crash the system.
+        let auth_count = cmp::min(1024, T::MaxAuthentications::get());
+        populate_active_auths::<T>(auth_count);
 
         let robonode_public_key_before = RobonodePublicKey::<T>::get();
         let active_authentications_before = ActiveAuthentications::<T>::get();
@@ -175,15 +183,16 @@ benchmarks! {
     }
 
     on_initialize {
-        let b in 1..100;
-        let block_num = b;
-        let expired_auth_count = 100;
+        let m in 0 .. T::MaxAuthentications::get();
         let active_auth_count = 10;
+        // This is a workaround for now. Otherwise, it takes too long
+        // to run a round of benchmark and it might crash the system.
+        let expiring_auth_count = cmp::min(m, 1024);
 
         let mut auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
         // Populate with expired authentications.
-        let mut expired_auths = make_authentications("expired", expired_auth_count, T::CurrentMoment::now());
-        auths.append(&mut expired_auths);
+        let mut expiring_auths = make_authentications("expired", m as usize, T::CurrentMoment::now());
+        auths.append(&mut expiring_auths);
 
         // Also, populate with active authentications.
         let future_expiry = T::CurrentMoment::now() + (10u64).into();
@@ -196,12 +205,13 @@ benchmarks! {
         // Capture this state for comparison.
         let auths_before = ActiveAuthentications::<T>::get();
     }: {
+        let block_num = 100_u32;
         Bioauth::<T>::on_initialize(block_num.into());
     }
 
     verify {
         let auths_after = ActiveAuthentications::<T>::get();
-        assert_eq!(auths_before.len() - auths_after.len(), expired_auth_count);
+        assert_eq!(auths_before.len() - auths_after.len(), m as usize);
     }
 
     impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_benchmark_ext(), crate::mock::benchmarking::Benchmark);
