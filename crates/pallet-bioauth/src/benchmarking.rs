@@ -55,6 +55,7 @@ pub trait AuthTicketSigner: pallet::Config {
     ) -> <Self as pallet::Config>::RobonodeSignature;
 }
 
+/// Convenient function to generate `Authentication` struct in bulk with custom prefix for public key.
 fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
     prefix: &str,
     count: usize,
@@ -86,6 +87,7 @@ fn populate_nonces<Runtime: pallet::Config>(count: usize) {
     ConsumedAuthTicketNonces::<Runtime>::put(weakly_bounded_consumed_nonces);
 }
 
+/// Populate `ActiveAuthentications` storage with active authentications with custom prefix in public key.
 fn populate_active_auths<Runtime: pallet::Config>(count: u32)
 where
     <Runtime as pallet::Config>::ValidatorPublicKey: From<[u8; 32]>,
