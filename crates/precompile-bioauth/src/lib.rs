@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use pallet_evm::{ExitError, Precompile, PrecompileFailure, PrecompileOutput, PrecompileResult};
+use pallet_evm::{ExitError, Precompile, PrecompileFailure, PrecompileOutput};
 use precompile_utils::{succeed, EvmResult, PrecompileHandleExt};
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
@@ -34,6 +34,8 @@ where
     T::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
     fn execute(handle: &mut impl pallet_evm::PrecompileHandle) -> pallet_evm::PrecompileResult {
+        handle.record_cost(GAS_COST)?;
+
         let selector = handle.read_selector()?;
 
         match selector {
@@ -47,6 +49,7 @@ where
     T: pallet_bioauth::Config,
     T::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
+    /// Check if input address is authenticated.
     fn is_authenticated(
         handle: &mut impl pallet_evm::PrecompileHandle,
     ) -> EvmResult<PrecompileOutput> {
@@ -60,18 +63,11 @@ where
             }
         })?;
 
-        let is_authorized = pallet_bioauth::ActiveAuthentications::<T>::get()
+        let is_authenticated = pallet_bioauth::ActiveAuthentications::<T>::get()
             .iter()
             .any(|active_authetication| active_authetication.public_key == account_id);
 
-        let bytes = if is_authorized { &[1] } else { &[0] };
-
-        // Ok(PrecompileOutput {
-        // exit_status: ExitSucceed::Returned,
-        // // cost: GAS_COST,
-        // output: bytes.to_vec(),
-        // // logs: Default::default(),
-        // })
+        let bytes = if is_authenticated { &[1] } else { &[0] };
 
         Ok(succeed(bytes))
     }

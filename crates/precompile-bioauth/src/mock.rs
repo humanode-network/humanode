@@ -1,6 +1,9 @@
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::parameter_types;
+use fp_evm::{Context, ExitError, ExitReason, PrecompileHandle, Transfer};
+use frame_support::traits::{ConstU16, ConstU32, ConstU64};
 use frame_system as system;
+use mockall::predicate::*;
+use mockall::*;
 use pallet_bioauth::{weights, AuthTicket, TryConvert};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -111,11 +114,6 @@ impl pallet_bioauth::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvid
     }
 }
 
-parameter_types! {
-    pub const BlockHashCount: u64 = 250;
-    pub const SS58Prefix: u8 = 42;
-}
-
 impl system::Config for Test {
     type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
@@ -131,14 +129,14 @@ impl system::Config for Test {
     type Lookup = IdentityLookup<Self::AccountId>;
     type Header = Header;
     type Event = Event;
-    type BlockHashCount = BlockHashCount;
+    type BlockHashCount = ConstU64<250>;
     type Version = ();
     type PalletInfo = PalletInfo;
     type AccountData = ();
     type OnNewAccount = ();
     type OnKilledAccount = ();
     type SystemWeightInfo = ();
-    type SS58Prefix = SS58Prefix;
+    type SS58Prefix = ConstU16<42>;
     type OnSetCode = ();
     type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
@@ -147,12 +145,8 @@ const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
 const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
 
 pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = TIMESTAMP_MINUTE;
-
-parameter_types! {
-    pub const AuthenticationsExpireAfter: UnixMilliseconds = AUTHENTICATIONS_EXPIRE_AFTER;
-    pub const MaxAuthentications: u32 = 512;
-    pub const MaxNonces: u32 = 512;
-}
+pub const MAX_AUTHENTICATIONS: u32 = 512;
+pub const MAX_NONCES: u32 = 512;
 
 pub struct DisplayMoment;
 
@@ -179,12 +173,44 @@ impl pallet_bioauth::Config for Test {
     type Moment = UnixMilliseconds;
     type DisplayMoment = DisplayMoment;
     type CurrentMoment = MockCurrentMomentProvider;
-    type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
+    type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
     type WeightInfo = weights::SubstrateWeight<Self>;
-    type MaxAuthentications = MaxAuthentications;
-    type MaxNonces = MaxNonces;
+    type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
+    type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
+}
+
+mock! {
+    pub PrecompileHandle {}
+
+    impl PrecompileHandle for PrecompileHandle {
+        fn call(
+            &mut self,
+            to: primitive_types::H160,
+            transfer: Option<Transfer>,
+            input: Vec<u8>,
+            gas_limit: Option<u64>,
+            is_static: bool,
+            context: &Context,
+        ) -> (ExitReason, Vec<u8>);
+
+        fn record_cost(&mut self, cost: u64) -> Result<(), ExitError>;
+
+        fn remaining_gas(&self) -> u64;
+
+        fn log(&mut self, address: primitive_types::H160, topics: Vec<primitive_types::H256>, data: Vec<u8>) -> Result<(), ExitError>;
+
+        fn code_address(&self) -> primitive_types::H160;
+
+        fn input(&self) -> &[u8];
+
+        fn context(&self) -> &Context;
+
+        fn is_static(&self) -> bool;
+
+        fn gas_limit(&self) -> Option<u64>;
+    }
 }
 
 /// Build test externalities from the default genesis.

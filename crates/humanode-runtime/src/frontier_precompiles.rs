@@ -1,8 +1,10 @@
-use pallet_evm::{Context, Precompile, PrecompileResult, PrecompileSet};
+use pallet_evm::PrecompileHandle;
+use pallet_evm::{Precompile, PrecompileResult, PrecompileSet};
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use precompile_bioauth::Bioauth;
+use precompile_evm_accounts_mapping::EvmAccountsMapping;
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
@@ -19,7 +21,7 @@ where
     R: pallet_evm::Config,
 {
     pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-        sp_std::vec![1, 2, 3, 4, 5, 1024, 1025, 2048]
+        sp_std::vec![1, 2, 3, 4, 5, 1024, 1025, 2048, 2049]
             .into_iter()
             .map(|x| hash(x as u64))
             .collect()
@@ -30,34 +32,23 @@ impl<R> PrecompileSet for FrontierPrecompiles<R>
 where
     R: pallet_evm::Config,
     R: pallet_bioauth::Config,
+    R: pallet_evm_accounts_mapping::Config,
     R::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
-    fn execute(
-        &self,
-        address: H160,
-        input: &[u8],
-        target_gas: Option<u64>,
-        context: &Context,
-        is_static: bool,
-    ) -> Option<PrecompileResult> {
-        match address {
+    fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
+        match handle.code_address() {
             // Ethereum precompiles :
-            a if a == hash(1) => Some(ECRecover::execute(input, target_gas, context, is_static)),
-            a if a == hash(2) => Some(Sha256::execute(input, target_gas, context, is_static)),
-            a if a == hash(3) => Some(Ripemd160::execute(input, target_gas, context, is_static)),
-            a if a == hash(4) => Some(Identity::execute(input, target_gas, context, is_static)),
-            a if a == hash(5) => Some(Modexp::execute(input, target_gas, context, is_static)),
+            a if a == hash(1) => Some(ECRecover::execute(handle)),
+            a if a == hash(2) => Some(Sha256::execute(handle)),
+            a if a == hash(3) => Some(Ripemd160::execute(handle)),
+            a if a == hash(4) => Some(Identity::execute(handle)),
+            a if a == hash(5) => Some(Modexp::execute(handle)),
             // Non-Frontier specific nor Ethereum precompiles :
-            a if a == hash(1024) => {
-                Some(Sha3FIPS256::execute(input, target_gas, context, is_static))
-            }
-            a if a == hash(1025) => Some(ECRecoverPublicKey::execute(
-                input, target_gas, context, is_static,
-            )),
+            a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
+            a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
             // Humanode precompiles:
-            a if a == hash(2048) => {
-                Some(Bioauth::<R>::execute(input, target_gas, context, is_static))
-            }
+            a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
+            a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
             // Fallback
             _ => None,
         }

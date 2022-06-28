@@ -1,5 +1,7 @@
 //! The main entrypoint.
 
+use std::sync::Arc;
+
 use frame_benchmarking_cli::*;
 use humanode_runtime::Block;
 use sc_service::PartialComponents;
@@ -85,7 +87,8 @@ pub async fn run() -> sc_cli::Result<()> {
                         backend,
                         ..
                     } = service::new_partial(&config)?;
-                    let aux_revert = Box::new(|client, _, blocks| {
+                    let aux_revert = Box::new(|client, backend, blocks| {
+                        sc_consensus_babe::revert(Arc::clone(&client), backend, blocks)?;
                         sc_finality_grandpa::revert(client, blocks)?;
                         Ok(())
                     });
@@ -162,6 +165,34 @@ pub async fn run() -> sc_cli::Result<()> {
                 }
             })
         }
+        #[cfg(feature = "try-runtime")]
+        Some(Subcommand::TryRuntime(cmd)) => {
+            let runner = root.create_humanode_runner(cmd)?;
+            runner
+                .run_tasks(|config| async move {
+                    // we don't need any of the components of new_partial, just a runtime, or a task
+                    // manager to do `async_run`.
+                    let registry = config
+                        .substrate
+                        .prometheus_config
+                        .as_ref()
+                        .map(|cfg| &cfg.registry);
+                    let task_manager = sc_service::TaskManager::new(
+                        config.substrate.tokio_handle.clone(),
+                        registry,
+                    )
+                    .map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
+                    Ok((
+                        cmd.run::<Block, service::ExecutorDispatch>(config.substrate),
+                        task_manager,
+                    ))
+                })
+                .await
+        }
+        #[cfg(not(feature = "try-runtime"))]
+        Some(Subcommand::TryRuntime) => Err("TryRuntime wasn't enabled when building the node. \
+				You can enable it with `--features try-runtime`."
+            .into()),
         None => {
             let runner = root.create_humanode_runner(&root.run)?;
             sc_cli::print_node_infos::<Root>(&runner.config().substrate);

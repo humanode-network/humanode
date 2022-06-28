@@ -3,6 +3,7 @@ name = "humanode-peer"
 version = "0.1.0"
 edition = "2021"
 publish = false
+authors = ["Humanode Core"]
 
 # Run the peer by default.
 default-run = "humanode-peer"
@@ -21,20 +22,20 @@ anyhow = "1"
 async-trait = "0.1"
 clap = { version = "3.1.6", features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "3.0.0" }
-fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
-fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
-fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
-fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
-fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
+fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
+fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
+fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
+fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
+fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
 fdlimit = "0.2"
-fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
+fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
 frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.3"
 libsecp256k1 = "0.6"
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-05-27" }
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 qr2term = "0.2"
 reqwest = "0.11"
@@ -72,10 +73,14 @@ tiny-bip39 = "0.8"
 tiny-hderive = "0.3.0"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
+try-runtime-cli = { git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 url = "2"
 
 [dev-dependencies]
 indoc = "1.0"
+
+[build-dependencies]
+vergen = { version = "7", default-features = false, features = ["cargo", "git"] }
 
 [features]
 default = ["wasmtime"]
@@ -84,4 +89,5 @@ runtime-benchmarks = [
   "humanode-runtime/runtime-benchmarks",
   "frame-benchmarking/runtime-benchmarks",
 ]
+try-runtime = ["humanode-runtime/try-runtime", "try-runtime-cli"]
 wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]

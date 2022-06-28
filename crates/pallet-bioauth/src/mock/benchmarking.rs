@@ -1,5 +1,5 @@
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::parameter_types;
+use frame_support::traits::{ConstU16, ConstU32, ConstU64};
 use frame_system as system;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -65,9 +65,18 @@ impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAu
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct MockVerifier;
+pub enum MockVerifier {
+    A,
+    B,
+}
+
+impl Default for MockVerifier {
+    fn default() -> Self {
+        Self::A
+    }
+}
 
 impl crate::Verifier<Vec<u8>> for MockVerifier {
     type Error = Infallible;
@@ -114,11 +123,6 @@ impl crate::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
     }
 }
 
-parameter_types! {
-    pub const BlockHashCount: u64 = 250;
-    pub const SS58Prefix: u8 = 42;
-}
-
 impl system::Config for Benchmark {
     type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
@@ -134,28 +138,24 @@ impl system::Config for Benchmark {
     type Lookup = IdentityLookup<Self::AccountId>;
     type Header = Header;
     type Event = Event;
-    type BlockHashCount = BlockHashCount;
+    type BlockHashCount = ConstU64<250>;
     type Version = ();
     type PalletInfo = PalletInfo;
     type AccountData = ();
     type OnNewAccount = ();
     type OnKilledAccount = ();
     type SystemWeightInfo = ();
-    type SS58Prefix = SS58Prefix;
+    type SS58Prefix = ConstU16<42>;
     type OnSetCode = ();
-    type MaxConsumers = frame_support::traits::ConstU32<16>;
+    type MaxConsumers = ConstU32<16>;
 }
 
 const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
 const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
 
 pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = TIMESTAMP_MINUTE;
-
-parameter_types! {
-    pub const AuthenticationsExpireAfter: UnixMilliseconds = AUTHENTICATIONS_EXPIRE_AFTER;
-    pub const MaxAuthentications: u32 = 512;
-    pub const MaxNonces: u32 = 512;
-}
+pub const MAX_AUTHENTICATIONS: u32 = 512;
+pub const MAX_NONCES: u32 = 512;
 
 pub struct DisplayMoment;
 
@@ -182,30 +182,43 @@ impl pallet_bioauth::Config for Benchmark {
     type Moment = UnixMilliseconds;
     type DisplayMoment = DisplayMoment;
     type CurrentMoment = MockCurrentMomentProvider;
-    type AuthenticationsExpireAfter = AuthenticationsExpireAfter;
+    type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
     type WeightInfo = weights::SubstrateWeight<Benchmark>;
-    type MaxAuthentications = MaxAuthentications;
-    type MaxNonces = MaxNonces;
+    type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
+    type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
 }
 
 #[cfg(feature = "runtime-benchmarks")]
 impl crate::benchmarking::AuthTicketSigner for Benchmark {
-    fn sign(_ticket: &[u8]) -> Vec<u8> {
+    fn sign(_ticket: &MockOpaqueAuthTicket) -> Vec<u8> {
         vec![0; 64]
     }
 }
 
 #[cfg(feature = "runtime-benchmarks")]
 impl crate::benchmarking::AuthTicketBuilder for Benchmark {
-    fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> Vec<u8> {
+    fn build(
+        public_key: Vec<u8>,
+        nonce: Vec<u8>,
+    ) -> <Self as pallet_bioauth::Config>::OpaqueAuthTicket {
         let public_key_fixed_size: [u8; 32] = public_key.try_into().unwrap();
         let opaque_auth_ticket = AuthTicket {
             public_key: public_key_fixed_size,
             nonce,
         };
-        opaque_auth_ticket.encode()
+        MockOpaqueAuthTicket(opaque_auth_ticket)
+    }
+}
+
+#[cfg(feature = "runtime-benchmarks")]
+impl crate::benchmarking::RobonodePublicKeyBuilder for Benchmark {
+    fn build(value: crate::benchmarking::RobonodePublicKeyBuilderValue) -> MockVerifier {
+        match value {
+            crate::benchmarking::RobonodePublicKeyBuilderValue::A => MockVerifier::A,
+            crate::benchmarking::RobonodePublicKeyBuilderValue::B => MockVerifier::B,
+        }
     }
 }
 

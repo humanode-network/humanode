@@ -7,4 +7,6 @@ rustflags = [
   "-Wclippy::missing_docs_in_private_items",
   "-Wclippy::clone_on_ref_ptr",
   "-Wclippy::await_holding_lock",
+  # A few exceptions.
+  "-Aclippy::cargo-common-metadata",
 ]

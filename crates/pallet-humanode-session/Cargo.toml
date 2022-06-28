@@ -6,11 +6,14 @@ publish = false
 
 [dependencies]
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
+pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-session = { default-features = false, features = ["historical"], git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-session = { default-features = false, features = [
+  "historical",
+], git = "https://github.com/humanode-network/substrate", branch = "master" }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -18,12 +21,14 @@ sp-std = { default-features = false, git = "https://github.com/humanode-network/
 [features]
 default = ["std"]
 std = [
+  "pallet-bioauth/std",
+  "pallet-bootnodes/std",
   "codec/std",
-  "scale-info/std",
   "frame-support/std",
   "frame-system/std",
   "pallet-session/std",
-  "sp-std/std",
+  "scale-info/std",
   "sp-runtime/std",
+  "sp-std/std",
 ]
 try-runtime = ["frame-support/try-runtime"]

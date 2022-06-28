@@ -22,12 +22,12 @@ use sc_client_api::{
     client::BlockchainEvents,
 };
 use sc_consensus_babe::{Config, Epoch};
-use sc_consensus_babe_rpc::{BabeApiServer, BabeRpc};
+use sc_consensus_babe_rpc::{Babe, BabeApiServer};
 use sc_consensus_epochs::SharedEpochChanges;
 use sc_finality_grandpa::{
     FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
 };
-use sc_finality_grandpa_rpc::{GrandpaApiServer, GrandpaRpc};
+use sc_finality_grandpa_rpc::{Grandpa, GrandpaApiServer};
 use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool::{ChainApi, Pool};
@@ -180,7 +180,7 @@ where
     C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
     P: TransactionPool<Block = Block> + 'static,
     VKE: KeyExtractorT + Send + Sync + 'static,
-    VKE::PublicKeyType: Encode + AsRef<[u8]> + Send + Sync,
+    VKE::PublicKeyType: Encode + AsRef<[u8]> + Send + Sync + sp_runtime::Serialize,
     VKE::Error: std::fmt::Debug,
     VSF: SignerFactory<Vec<u8>, VKE::PublicKeyType> + Send + Sync + 'static,
     VSF::Signer: Send + Sync + 'static,
@@ -189,8 +189,8 @@ where
     A: ChainApi<Block = Block> + 'static,
     SC: SelectChain<Block> + 'static,
 {
-    use pallet_transaction_payment_rpc::{TransactionPaymentApiServer, TransactionPaymentRpc};
-    use substrate_frame_rpc_system::{SystemApiServer, SystemRpc};
+    use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+    use substrate_frame_rpc_system::{System, SystemApiServer};
 
     let mut io = RpcModule::new(());
 
@@ -243,12 +243,12 @@ where
         eth_block_data_cache,
     } = evm;
 
-    io.merge(SystemRpc::new(Arc::clone(&client), Arc::clone(&pool), deny_unsafe).into_rpc())?;
+    io.merge(System::new(Arc::clone(&client), Arc::clone(&pool), deny_unsafe).into_rpc())?;
 
-    io.merge(TransactionPaymentRpc::new(Arc::clone(&client)).into_rpc())?;
+    io.merge(TransactionPayment::new(Arc::clone(&client)).into_rpc())?;
 
     io.merge(
-        BabeRpc::new(
+        Babe::new(
             Arc::clone(&client),
             babe_shared_epoch_changes,
             keystore,
@@ -260,7 +260,7 @@ where
     )?;
 
     io.merge(
-        GrandpaRpc::new(
+        Grandpa::new(
             Arc::clone(&subscription_task_executor),
             grandpa_shared_authority_set,
             grandpa_shared_voter_state,
@@ -275,6 +275,7 @@ where
             author_validator_key_extractor,
             Arc::clone(&client),
             Arc::clone(&pool),
+            deny_unsafe,
         )
         .into_rpc(),
     )?;
@@ -286,6 +287,7 @@ where
             bioauth_validator_signer_factory,
             Arc::clone(&client),
             Arc::clone(&pool),
+            deny_unsafe,
         )
         .into_rpc(),
     )?;

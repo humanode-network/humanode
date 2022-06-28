@@ -1,7 +1,8 @@
 use std::ops::Div;
 
 use frame_support::{
-    assert_err, assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, WeakBoundedVec,
+    assert_err, assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, traits::ConstU32,
+    WeakBoundedVec,
 };
 use mockall::predicate;
 
@@ -36,14 +37,17 @@ fn block_to_process_moment(moment: UnixMilliseconds) -> BlockNumber {
 
 fn make_bounded_active_authentications(
     authentications: Vec<Authentication<ValidatorPublicKey, UnixMilliseconds>>,
-) -> WeakBoundedVec<Authentication<ValidatorPublicKey, UnixMilliseconds>, MaxAuthentications> {
-    WeakBoundedVec::<_, MaxAuthentications>::try_from(authentications).unwrap()
+) -> WeakBoundedVec<
+    Authentication<ValidatorPublicKey, UnixMilliseconds>,
+    ConstU32<MAX_AUTHENTICATIONS>,
+> {
+    WeakBoundedVec::<_, ConstU32<MAX_AUTHENTICATIONS>>::try_from(authentications).unwrap()
 }
 
 fn make_bounded_consumed_auth_nonces(
     auth_nonces: Vec<Vec<u8>>,
-) -> WeakBoundedVec<pallet_bioauth::BoundedAuthTicketNonce, MaxNonces> {
-    WeakBoundedVec::<_, MaxNonces>::try_from(
+) -> WeakBoundedVec<pallet_bioauth::BoundedAuthTicketNonce, ConstU32<MAX_NONCES>> {
+    WeakBoundedVec::<_, ConstU32<MAX_NONCES>>::try_from(
         auth_nonces
             .iter()
             .cloned()
@@ -648,6 +652,98 @@ fn authentication_denied_by_before_hook() {
     });
 }
 
+/// This test verifies that the [`set_robonode_public_key`] updates the robonode public key properly.
+#[test]
+fn set_robonode_public_key_updates_key() {
+    new_test_ext().execute_with(|| {
+        // Prepare the test precondition.
+        let expires_at = CHAIN_START + 2 * SLOT_DURATION;
+        let bounded_active_authentications =
+            make_bounded_active_authentications(vec![Authentication {
+                public_key: bounded(b"key1"),
+                expires_at,
+            }]);
+
+        let bounded_consumed_auth_ticket_nonces =
+            make_bounded_consumed_auth_nonces(vec![b"nonce1".to_vec()]);
+
+        <ActiveAuthentications<Test>>::put(bounded_active_authentications);
+        <ConsumedAuthTicketNonces<Test>>::put(bounded_consumed_auth_ticket_nonces.clone());
+
+        // Check the test precondition.
+        assert_eq!(Bioauth::robonode_public_key(), MockVerifier::A);
+
+        // Prepare test input.
+        let input = MockVerifier::B;
+
+        // Execute the key change.
+        assert_ok!(Bioauth::set_robonode_public_key(Origin::root(), input));
+
+        // Ensure the key has changed.
+        assert_eq!(Bioauth::robonode_public_key(), MockVerifier::B);
+
+        // Ensure the active authentications are cleared.
+        assert_eq!(<ActiveAuthentications<Test>>::get(), vec![]);
+
+        // Ensure that the auth ticket nonces are *not* cleared.
+        assert_eq!(
+            <ConsumedAuthTicketNonces<Test>>::get(),
+            bounded_consumed_auth_ticket_nonces
+        );
+    });
+}
+
+/// This test verifies that the [`set_robonode_public_key`] checks the origin.
+#[test]
+fn set_robonode_public_key_checks_the_origin() {
+    new_test_ext().execute_with(|| {
+        // Prepare the test precondition.
+        let expires_at = CHAIN_START + 2 * SLOT_DURATION;
+        let bounded_active_authentications =
+            make_bounded_active_authentications(vec![Authentication {
+                public_key: bounded(b"key1"),
+                expires_at,
+            }]);
+
+        let bounded_consumed_auth_ticket_nonces =
+            make_bounded_consumed_auth_nonces(vec![b"nonce1".to_vec()]);
+
+        <ActiveAuthentications<Test>>::put(bounded_active_authentications.clone());
+        <ConsumedAuthTicketNonces<Test>>::put(bounded_consumed_auth_ticket_nonces.clone());
+
+        // Check the test precondition.
+        assert_eq!(Bioauth::robonode_public_key(), MockVerifier::A);
+
+        // Prepare test input.
+        let input = MockVerifier::B;
+
+        // Attempt key changes with various origins.
+        assert_err!(
+            Bioauth::set_robonode_public_key(Origin::none(), input.clone()),
+            sp_runtime::DispatchError::BadOrigin
+        );
+        assert_err!(
+            Bioauth::set_robonode_public_key(Origin::signed(123), input),
+            sp_runtime::DispatchError::BadOrigin
+        );
+
+        // Ensure that the key has not changed.
+        assert_eq!(Bioauth::robonode_public_key(), MockVerifier::A);
+
+        // Ensure that the active authentications are *not* cleared.
+        assert_eq!(
+            <ActiveAuthentications<Test>>::get(),
+            bounded_active_authentications
+        );
+
+        // Ensure that the auth ticket nonces are *not* cleared.
+        assert_eq!(
+            <ConsumedAuthTicketNonces<Test>>::get(),
+            bounded_consumed_auth_ticket_nonces
+        );
+    });
+}
+
 /// This test verifies SignedExt logic for transaction processing with empty state.
 #[test]
 fn signed_ext_check_bioauth_tx_permits_empty_state() {
@@ -804,7 +900,7 @@ fn genesis_build() {
         },
     ];
     let config = pallet_bioauth::GenesisConfig {
-        robonode_public_key: MockVerifier,
+        robonode_public_key: MockVerifier::A,
         consumed_auth_ticket_nonces: consumed_auth_ticket_nonces.clone(),
         active_authentications: active_authentications.clone(),
     };
@@ -823,7 +919,7 @@ fn genesis_build() {
         with_mock_validator_set_updater(|mock| mock.checkpoint());
 
         // Assert the state.
-        assert_eq!(Bioauth::robonode_public_key(), MockVerifier);
+        assert_eq!(Bioauth::robonode_public_key(), MockVerifier::A);
         assert_eq!(
             Bioauth::consumed_auth_ticket_nonces().into_inner(),
             consumed_auth_ticket_nonces
