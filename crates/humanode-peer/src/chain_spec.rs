@@ -269,7 +269,7 @@ fn testnet_genesis(
             consumed_auth_ticket_nonces: vec![],
             active_authentications: vec![],
         },
-        chain_properties: ChainPropertiesConfig { chain_id: 5234 },
+        chain_properties: ChainPropertiesConfig { ss58_prefix: 5234 },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 5234 },
         evm: EVMConfig {
             accounts: {

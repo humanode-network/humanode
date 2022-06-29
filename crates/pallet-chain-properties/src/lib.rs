@@ -1,4 +1,4 @@
-//! A substrate minimal Pallet that stores the numeric Native chain id in the runtime.
+//! A substrate minimal Pallet that stores chain properties in the runtime.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -27,7 +27,7 @@ pub mod pallet {
 
     use super::*;
 
-    /// The Native Chain Id Pallet
+    /// The Chain Properties Pallet
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
     #[pallet::generate_store(pub(super) trait Store)]
@@ -39,25 +39,25 @@ pub mod pallet {
 
     impl<T: Config> Get<u16> for Pallet<T> {
         fn get() -> u16 {
-            Self::chain_id()
+            Self::ss58_prefix()
         }
     }
 
-    /// Native chain id.
+    /// Ss58 Prefix.
     #[pallet::storage]
-    #[pallet::getter(fn chain_id)]
-    pub type ChainId<T> = StorageValue<_, u16, ValueQuery>;
+    #[pallet::getter(fn ss58_prefix)]
+    pub type Ss58Prefix<T> = StorageValue<_, u16, ValueQuery>;
 
     #[pallet::genesis_config]
     #[derive(Default)]
     pub struct GenesisConfig {
-        pub chain_id: u16,
+        pub ss58_prefix: u16,
     }
 
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig {
         fn build(&self) {
-            ChainId::<T>::put(self.chain_id);
+            Ss58Prefix::<T>::put(self.ss58_prefix);
         }
     }
 }

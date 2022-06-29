@@ -7,7 +7,7 @@ use sp_runtime::{
     BuildStorage,
 };
 
-use crate::{self as pallet_native_chain_id};
+use crate::{self as pallet_chain_properties};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -23,7 +23,7 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-        NativeChainId: pallet_native_chain_id::{Pallet, Storage, Config},
+        NativeChainId: pallet_chain_properties::{Pallet, Storage, Config},
     }
 );
 
@@ -54,12 +54,12 @@ impl system::Config for Test {
     type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-impl pallet_native_chain_id::Config for Test {}
+impl pallet_chain_properties::Config for Test {}
 
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
 pub fn new_test_ext_with(
-    config: pallet_native_chain_id::GenesisConfig,
+    config: pallet_chain_properties::GenesisConfig,
 ) -> sp_io::TestExternalities {
     // Build genesis.
     let config = GenesisConfig {
