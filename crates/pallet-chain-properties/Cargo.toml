@@ -1,5 +1,5 @@
 [package]
-name = "pallet-native-chain-id"
+name = "pallet-chain-properties"
 version = "0.1.0"
 edition = "2021"
 publish = false

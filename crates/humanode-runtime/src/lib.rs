@@ -260,7 +260,7 @@ impl frame_system::Config for Runtime {
     /// Weight information for the extrinsics of this pallet.
     type SystemWeightInfo = ();
     /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
-    type SS58Prefix = NativeChainId;
+    type SS58Prefix = ChainProperties;
     /// The set code logic, just the default since we're not a parachain.
     type OnSetCode = ();
     /// The maximum number of consumers allowed on a single account.
@@ -624,7 +624,7 @@ impl pallet_base_fee::Config for Runtime {
     type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 }
 
-impl pallet_native_chain_id::Config for Runtime {}
+impl pallet_chain_properties::Config for Runtime {}
 
 impl pallet_ethereum_chain_id::Config for Runtime {}
 
@@ -657,7 +657,7 @@ construct_runtime!(
         Offences: pallet_offences,
         Historical: pallet_session_historical,
         HumanodeSession: pallet_humanode_session,
-        NativeChainId: pallet_native_chain_id,
+        ChainProperties: pallet_chain_properties,
         EthereumChainId: pallet_ethereum_chain_id,
         Sudo: pallet_sudo,
         Grandpa: pallet_grandpa,
@@ -1219,7 +1219,7 @@ impl_runtime_apis! {
 
     impl native_chain_id_api::NativeChainIdApi<Block> for Runtime {
         fn get() -> u16 {
-            NativeChainId::get()
+            ChainProperties::get()
         }
     }
 
