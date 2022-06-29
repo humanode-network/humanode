@@ -1,4 +1,5 @@
 use frame_support::{traits::ConstU32, WeakBoundedVec};
+use pallet_evm::ExitSucceed;
 
 use crate::{mock::*, *};
 

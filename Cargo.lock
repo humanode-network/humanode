@@ -673,7 +673,9 @@ version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba3569f383e8f1598449f1a423e72e99569137b47740b1da11ef19af3d5c3223"
 dependencies = [
+ "lazy_static",
  "memchr",
+ "regex-automata",
 ]
 
 [[package]]
@@ -931,6 +933,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30ed07550be01594c6026cff2a1d7fe9c8f683caa798e12b68694ac9e88286a3"
 dependencies = [
  "cache-padded",
+]
+
+[[package]]
+name = "console"
+version = "0.15.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a28b32d32ca44b70c3e4acd7db1babf555fa026e385fb95f18028f88848b3c31"
+dependencies = [
+ "encode_unicode",
+ "libc",
+ "once_cell",
+ "terminal_size",
+ "winapi",
 ]
 
 [[package]]
@@ -1603,6 +1618,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "encode_unicode"
+version = "0.3.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a357d28ed41a50f9c765dbfe56cbc04a64e53e5fc58ba79fbc34c10ef3df831f"
+
+[[package]]
 name = "encoding_rs"
 version = "0.8.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2196,25 +2217,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "fp-evm"
-version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier.git?branch=precompile-utils#2daf2222cbf64535ce1a42e503bdde6747e18cfa"
-dependencies = [
- "evm",
- "frame-support",
- "parity-scale-codec",
- "sp-core",
- "sp-std",
-]
-
-[[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
 dependencies = [
  "ethereum",
  "ethereum-types 0.13.1",
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "parity-scale-codec",
  "scale-info",
  "sp-api",
@@ -3066,7 +3075,7 @@ dependencies = [
  "fc-rpc",
  "fc-rpc-core",
  "fdlimit",
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "frame-benchmarking",
  "frame-benchmarking-cli",
  "futures 0.3.21",
@@ -3194,7 +3203,7 @@ dependencies = [
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
- "pallet-evm 6.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "pallet-evm",
  "pallet-evm-accounts-mapping",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
@@ -5309,7 +5318,7 @@ name = "pallet-base-fee"
 version = "1.0.0"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
 dependencies = [
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -5363,7 +5372,7 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/humanod
 dependencies = [
  "async-trait",
  "fp-dynamic-fee",
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "frame-support",
  "frame-system",
  "parity-scale-codec",
@@ -5384,14 +5393,14 @@ dependencies = [
  "ethereum-types 0.13.1",
  "evm",
  "fp-consensus",
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "fp-rpc",
  "fp-self-contained",
  "fp-storage",
  "frame-support",
  "frame-system",
  "pallet-balances",
- "pallet-evm 6.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "pallet-evm",
  "pallet-timestamp",
  "parity-scale-codec",
  "rlp",
@@ -5422,7 +5431,7 @@ version = "6.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
 dependencies = [
  "evm",
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
@@ -5435,30 +5444,6 @@ dependencies = [
  "rlp",
  "scale-info",
  "serde",
- "sha3 0.10.1",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-evm"
-version = "6.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier.git?branch=precompile-utils#2daf2222cbf64535ce1a42e503bdde6747e18cfa"
-dependencies = [
- "evm",
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier.git?branch=precompile-utils)",
- "frame-support",
- "frame-system",
- "hex",
- "log",
- "pallet-balances",
- "pallet-timestamp",
- "parity-scale-codec",
- "primitive-types",
- "rlp",
- "scale-info",
  "sha3 0.10.1",
  "sp-core",
  "sp-io",
@@ -5482,7 +5467,7 @@ name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
 dependencies = [
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "num",
 ]
 
@@ -5491,7 +5476,7 @@ name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
 dependencies = [
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "tiny-keccak 2.0.2",
 ]
 
@@ -5500,7 +5485,7 @@ name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
 dependencies = [
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "ripemd",
  "sp-io",
 ]
@@ -6042,14 +6027,14 @@ checksum = "eb9f9e6e233e5c4a35559a617bf40a4ec447db2e84c20b55a6f83167b7e57872"
 name = "precompile-bioauth"
 version = "0.1.0"
 dependencies = [
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "frame-support",
  "frame-system",
  "getrandom 0.2.6",
  "mockall",
  "num_enum",
  "pallet-bioauth",
- "pallet-evm 6.0.0-dev (git+https://github.com/humanode-network/frontier.git?branch=precompile-utils)",
+ "pallet-evm",
  "parity-scale-codec",
  "precompile-utils",
  "primitive-types",
@@ -6065,7 +6050,7 @@ dependencies = [
 name = "precompile-evm-accounts-mapping"
 version = "0.1.0"
 dependencies = [
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01)",
+ "fp-evm",
  "frame-support",
  "frame-system",
  "hex-literal",
@@ -6083,19 +6068,20 @@ dependencies = [
 [[package]]
 name = "precompile-utils"
 version = "0.1.0"
-source = "git+https://github.com/humanode-network/frontier.git?branch=precompile-utils#2daf2222cbf64535ce1a42e503bdde6747e18cfa"
 dependencies = [
  "evm",
- "fp-evm 3.0.0-dev (git+https://github.com/humanode-network/frontier.git?branch=precompile-utils)",
+ "fp-evm",
  "frame-support",
  "frame-system",
+ "hex-literal",
  "impl-trait-for-tuples",
  "log",
  "num_enum",
- "pallet-evm 6.0.0-dev (git+https://github.com/humanode-network/frontier.git?branch=precompile-utils)",
+ "pallet-evm",
  "parity-scale-codec",
  "precompile-utils-macro",
  "sha3 0.9.1",
+ "similar-asserts",
  "sp-core",
  "sp-io",
  "sp-std",
@@ -6105,7 +6091,6 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/humanode-network/frontier.git?branch=precompile-utils#2daf2222cbf64535ce1a42e503bdde6747e18cfa"
 dependencies = [
  "num_enum",
  "proc-macro2 1.0.39",
@@ -8400,6 +8385,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "similar"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2e24979f63a11545f5f2c60141afe249d4f19f84581ea2138065e400941d83d3"
+dependencies = [
+ "bstr",
+ "unicode-segmentation",
+]
+
+[[package]]
+name = "similar-asserts"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "64c9f531a2375031d51c23c415ca12d0f0271b976211e2f727b7a0eac06a099d"
+dependencies = [
+ "console",
+ "similar",
+]
+
+[[package]]
 name = "slab"
 version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9352,6 +9357,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bab24d30b911b2376f3a13cc2cd443142f0c81dda04c118693e35b3835757755"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "terminal_size"
+version = "0.1.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "633c1a546cee861a1a6d0dc69ebeca693bf4296661ba7852b9d21d159e0506df"
+dependencies = [
+ "libc",
+ "winapi",
 ]
 
 [[package]]
