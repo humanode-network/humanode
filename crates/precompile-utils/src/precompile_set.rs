@@ -366,7 +366,7 @@ where
 
     #[inline(always)]
     fn used_addresses(&self) -> Vec<H160> {
-        // TODO: We currently can't get the list of used addresses.
+        // We currently can't get the list of used addresses.
         vec![]
     }
 }

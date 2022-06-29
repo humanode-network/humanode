@@ -1,9 +1,9 @@
 //! Precompile utils
 
-// TODO(https://github.com/PureStake/moonbeam/issues/1633): This crate was vendored from
+// TODO(PureStake/moonbeam#1633): This crate was vendored from
 // [Moonbeam](https://github.com/PureStake/moonbeam) at commit
 // `dce1f4fec17f20dc96ffc9c549b7221d7029b8c3`. It is a temporary copy, until the live version is
-// moved to Frontier.
+// moved to Frontier (https://github.com/PureStake/moonbeam/issues/1633).
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(assert_matches)]
