@@ -1,6 +1,10 @@
 //! Macros for precompile utils .
-#![allow(missing_docs)]
 #![crate_type = "proc-macro"]
+// Ignore incompatible lints from original project.
+#![allow(missing_docs)]
+#![allow(clippy::double_must_use)]
+#![allow(clippy::missing_docs_in_private_items)]
+
 extern crate proc_macro;
 
 use proc_macro::TokenStream;

@@ -7,7 +7,12 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(assert_matches)]
+// Ignore incompatible lints from original project.
 #![allow(missing_docs)]
+#![allow(clippy::double_must_use)]
+#![allow(clippy::missing_docs_in_private_items)]
+#![allow(clippy::from_over_into)]
+#![allow(clippy::new_without_default)]
 
 extern crate alloc;
 
