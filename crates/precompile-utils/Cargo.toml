@@ -23,7 +23,9 @@ sp-io = { git = "https://github.com/humanode-network/substrate", branch = "maste
 sp-std = { git = "https://github.com/humanode-network/substrate", branch = "master", default-features = false }
 
 # Frontier
-evm = { git = "https://github.com/rust-blockchain/evm", branch = "master", default-features = false, features = [ "with-codec" ] }
+evm = { git = "https://github.com/rust-blockchain/evm", branch = "master", default-features = false, features = [
+  "with-codec",
+] }
 fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01", default-features = false }
 pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01", default-features = false }
 
@@ -36,13 +38,13 @@ hex-literal = "0.3.1"
 [features]
 default = ["std"]
 std = [
-	"codec/std",
-	"fp-evm/std",
-	"frame-support/std",
-	"frame-system/std",
-	"pallet-evm/std",
-	"sp-core/std",
-	"sp-io/std",
-	"sp-std/std",
+  "codec/std",
+  "fp-evm/std",
+  "frame-support/std",
+  "frame-system/std",
+  "pallet-evm/std",
+  "sp-core/std",
+  "sp-io/std",
+  "sp-std/std",
 ]
 testing = ["similar-asserts", "std"]
