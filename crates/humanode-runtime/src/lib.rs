@@ -1217,8 +1217,8 @@ impl_runtime_apis! {
         }
     }
 
-    impl native_chain_id_api::NativeChainIdApi<Block> for Runtime {
-        fn get() -> u16 {
+    impl chain_properties_api::ChainPropertiesApi<Block> for Runtime {
+        fn ss58_prefix() -> u16 {
             ChainProperties::get()
         }
     }

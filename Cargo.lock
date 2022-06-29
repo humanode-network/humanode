@@ -825,6 +825,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "chain-properties-api"
+version = "0.1.0"
+dependencies = [
+ "sp-api",
+ "sp-std",
+]
+
+[[package]]
 name = "checked_int_cast"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3232,6 +3240,7 @@ version = "0.1.0"
 dependencies = [
  "author-ext-api",
  "bioauth-flow-api",
+ "chain-properties-api",
  "chrono",
  "crypto-utils",
  "eip712-account-claim",
@@ -3248,7 +3257,6 @@ dependencies = [
  "frontier-api",
  "hex-literal",
  "keystore-bioauth-account-id",
- "native-chain-id-api",
  "pallet-authorship",
  "pallet-babe",
  "pallet-balances",
@@ -4963,17 +4971,9 @@ dependencies = [
 name = "native-chain-id"
 version = "0.1.0"
 dependencies = [
- "native-chain-id-api",
+ "chain-properties-api",
  "sp-api",
  "sp-blockchain",
-]
-
-[[package]]
-name = "native-chain-id-api"
-version = "0.1.0"
-dependencies = [
- "sp-api",
- "sp-std",
 ]
 
 [[package]]
