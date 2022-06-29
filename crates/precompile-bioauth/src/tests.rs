@@ -1,5 +1,6 @@
 use frame_support::{traits::ConstU32, WeakBoundedVec};
 use pallet_evm::ExitSucceed;
+use precompile_utils::EvmDataWriter;
 
 use crate::{mock::*, *};
 
@@ -20,9 +21,11 @@ fn make_bounded_authentications(
 #[test]
 fn test_empty_input() {
     new_test_ext().execute_with(|| {
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated).build();
+
         let mut mock_handle = MockPrecompileHandle::new();
         mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(vec![]);
+        mock_handle.expect_input().return_const(input);
         let handle = &mut mock_handle as _;
 
         let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
@@ -39,6 +42,9 @@ fn test_empty_input() {
 fn test_authorized() {
     new_test_ext().execute_with(|| {
         let sample_key = [0; 32];
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
+            .write(sp_core::H256::from(sample_key))
+            .build();
 
         pallet_bioauth::ActiveAuthentications::<Test>::put(make_bounded_authentications(vec![
             TestAuthentication {
@@ -49,7 +55,7 @@ fn test_authorized() {
 
         let mut mock_handle = MockPrecompileHandle::new();
         mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(sample_key.to_vec());
+        mock_handle.expect_input().return_const(input);
         let handle = &mut mock_handle as _;
 
         let val = crate::Bioauth::<Test>::execute(handle).unwrap();
@@ -66,13 +72,15 @@ fn test_authorized() {
 #[test]
 fn test_not_authorized() {
     new_test_ext().execute_with(|| {
-        let sample_key = [0; 32];
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
+            .write(sp_core::H256::from([0; 32]))
+            .build();
 
         pallet_bioauth::ActiveAuthentications::<Test>::put(make_bounded_authentications(vec![]));
 
         let mut mock_handle = MockPrecompileHandle::new();
         mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(sample_key.to_vec());
+        mock_handle.expect_input().return_const(input);
         let handle = &mut mock_handle as _;
 
         let val = crate::Bioauth::<Test>::execute(handle).unwrap();

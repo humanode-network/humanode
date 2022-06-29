@@ -55,7 +55,11 @@ where
     ) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
 
-        input.expect_arguments(1)?;
+        input
+            .expect_arguments(1)
+            .map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("input must be a valid account id".into()),
+            })?;
 
         let account_id = T::ValidatorPublicKey::try_from(input.read_till_end()?).map_err(|_| {
             PrecompileFailure::Error {
