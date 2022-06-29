@@ -825,6 +825,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "chain-properties"
+version = "0.1.0"
+dependencies = [
+ "chain-properties-api",
+ "sp-api",
+ "sp-blockchain",
+]
+
+[[package]]
 name = "chain-properties-api"
 version = "0.1.0"
 dependencies = [
@@ -3126,6 +3135,7 @@ dependencies = [
  "async-trait",
  "bioauth-flow-rpc",
  "bioauth-keys",
+ "chain-properties",
  "clap",
  "crypto-utils",
  "fc-consensus",
@@ -3145,7 +3155,6 @@ dependencies = [
  "indoc",
  "keystore-bioauth-account-id",
  "libsecp256k1 0.6.0",
- "native-chain-id",
  "ngrok-api",
  "pallet-bioauth",
  "pallet-dynamic-fee",
@@ -4965,15 +4974,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7d66043b25d4a6cccb23619d10c19c25304b355a7dccd4a8e11423dd2382146"
 dependencies = [
  "rand 0.8.5",
-]
-
-[[package]]
-name = "native-chain-id"
-version = "0.1.0"
-dependencies = [
- "chain-properties-api",
- "sp-api",
- "sp-blockchain",
 ]
 
 [[package]]

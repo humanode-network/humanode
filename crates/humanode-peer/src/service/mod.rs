@@ -7,6 +7,7 @@ use std::{
     time::Duration,
 };
 
+use chain_properties::ChainProperties;
 use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
@@ -140,8 +141,10 @@ pub fn new_partial(
     let client = Arc::new(client);
 
     // We would like to support our custom SS58 prefix (that isn't yet registered in the `ss58-registry`).
-    let native_chain_id = native_chain_id::NativeChainId::<_, _>::new(Arc::clone(&client));
-    sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(native_chain_id.get()));
+    let chain_properties = ChainProperties::<_, _>::new(Arc::clone(&client));
+    sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(
+        chain_properties.ss58_prefix(),
+    ));
 
     let telemetry = telemetry.map(|(worker, telemetry)| {
         task_manager

@@ -11,11 +11,11 @@ default-run = "humanode-peer"
 [dependencies]
 bioauth-flow-rpc = { version = "0.1", path = "../bioauth-flow-rpc" }
 bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
+chain-properties = { version = "0.1", path = "../chain-properties" }
 crypto-utils = { version = "0.1", path = "../crypto-utils" }
 humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id" }
-native-chain-id = { version = "0.1", path = "../native-chain-id" }
 ngrok-api = { version = "0.1", path = "../ngrok-api" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
@@ -86,10 +86,6 @@ vergen = { version = "7", default-features = false, features = ["cargo", "git"] 
 
 [features]
 default = ["wasmtime"]
-runtime-benchmarks = [
-  "wasmtime",
-  "humanode-runtime/runtime-benchmarks",
-  "frame-benchmarking/runtime-benchmarks",
-]
+runtime-benchmarks = ["wasmtime", "humanode-runtime/runtime-benchmarks", "frame-benchmarking/runtime-benchmarks"]
 try-runtime = ["humanode-runtime/try-runtime", "try-runtime-cli"]
 wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]
