@@ -3178,6 +3178,7 @@ dependencies = [
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-offences",
+ "pallet-pot",
  "pallet-randomness-collective-flip",
  "pallet-session",
  "pallet-sudo",

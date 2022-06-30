@@ -23,7 +23,7 @@ pub use frame_support::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         IdentityFee, Weight,
     },
-    ConsensusEngineId, StorageValue, WeakBoundedVec,
+    ConsensusEngineId, PalletId, StorageValue, WeakBoundedVec,
 };
 use keystore_bioauth_account_id::KeystoreBioauthAccountId;
 pub use pallet_balances::Call as BalancesCall;
@@ -359,6 +359,26 @@ impl pallet_authorship::Config for Runtime {
     type EventHandler = (ImOnline,);
 }
 
+parameter_types! {
+    pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
+    pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
+}
+
+type PotInstanceTreasury = pallet_pot::Instance1;
+type PotInstanceFees = pallet_pot::Instance2;
+
+impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
+    type Event = Event;
+    type PalletId = TreasuryPotPalletId;
+    type Currency = Balances;
+}
+
+impl pallet_pot::Config<PotInstanceFees> for Runtime {
+    type Event = Event;
+    type PalletId = FeesPotPalletId;
+    type Currency = Balances;
+}
+
 impl pallet_balances::Config for Runtime {
     type MaxLocks = ConstU32<50>;
     type MaxReserves = ();
@@ -623,6 +643,8 @@ construct_runtime!(
         Babe: pallet_babe,
         // Authorship must be before other pallets that rely on the data it captures.
         Authorship: pallet_authorship,
+        TreasuryPot: pallet_pot::<Instance1>,
+        FeesPot: pallet_pot::<Instance2>,
         Balances: pallet_balances,
         TransactionPayment: pallet_transaction_payment,
         Session: pallet_session,
