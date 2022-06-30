@@ -643,9 +643,9 @@ construct_runtime!(
         Babe: pallet_babe,
         // Authorship must be before other pallets that rely on the data it captures.
         Authorship: pallet_authorship,
+        Balances: pallet_balances,
         TreasuryPot: pallet_pot::<Instance1>,
         FeesPot: pallet_pot::<Instance2>,
-        Balances: pallet_balances,
         TransactionPayment: pallet_transaction_payment,
         Session: pallet_session,
         Offences: pallet_offences,

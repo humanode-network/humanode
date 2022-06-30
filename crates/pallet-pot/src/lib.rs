@@ -27,6 +27,21 @@ pub type NegativeImbalanceOf<T, I = ()> = <<T as Config<I>>::Currency as Currenc
     <T as frame_system::Config>::AccountId,
 >>::NegativeImbalance;
 
+/// The initial state of the pot, for use in genesis.
+#[cfg(feature = "std")]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub enum InitialState<Balance> {
+    /// The state of the pot accout is not checked at genesis.
+    Unchecked,
+    /// The account will be guaranteed to exist at genesis.
+    Initialized,
+    /// The account will be guaranteed to be initilaize with the given balance at genesis.
+    Balance {
+        /// The balance to set for the account.
+        balance: Balance,
+    },
+}
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -64,16 +79,15 @@ pub mod pallet {
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config<I>, I: 'static = ()> {
-        /// The initial amount of funds in the pot, must be greater or equal to the existential
-        /// deposit.
-        pub initial_balance: BalanceOf<T, I>,
+        /// The initial state of the pot account.
+        pub initial_state: InitialState<BalanceOf<T, I>>,
     }
 
     #[cfg(feature = "std")]
     impl<T: Config<I>, I: 'static> Default for GenesisConfig<T, I> {
         fn default() -> Self {
             Self {
-                initial_balance: T::Currency::minimum_balance(),
+                initial_state: InitialState::Initialized,
             }
         }
     }
@@ -81,14 +95,30 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
         fn build(&self) {
-            // Create the pot account.
+            // Check the pot account.
             let account_id = <Pallet<T, I>>::account_id();
-            let min = T::Currency::minimum_balance();
-            assert!(
-                self.initial_balance >= min,
-                "the initial pot balance must be greater or equal than the existential balance"
-            );
-            let _ = T::Currency::make_free_balance_be(&account_id, self.initial_balance);
+
+            match self.initial_state {
+                InitialState::Unchecked => {
+                    // Just pass though.
+                }
+                InitialState::Initialized => {
+                    let current = T::Currency::free_balance(&account_id);
+                    let min = T::Currency::minimum_balance();
+                    assert!(
+                        current >= min,
+                        "the initial pot balance must be greater or equal than the existential balance"
+                    );
+                }
+                InitialState::Balance { balance } => {
+                    let min = T::Currency::minimum_balance();
+                    assert!(
+                        balance >= min,
+                        "the configured initial pot balance must be greater or equal than the existential balance"
+                    );
+                    let _ = T::Currency::make_free_balance_be(&account_id, balance);
+                }
+            }
         }
     }
 }
