@@ -260,6 +260,8 @@ impl frame_system::Config for Runtime {
     /// Weight information for the extrinsics of this pallet.
     type SystemWeightInfo = ();
     /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
+    /// The Humande prefix is defined at pallet-chain-properties. It allows us to set up
+    /// it easy in genesis before launching the chain without changing the code itself.
     type SS58Prefix = ChainProperties;
     /// The set code logic, just the default since we're not a parachain.
     type OnSetCode = ();
