@@ -78,7 +78,7 @@ fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
     auths
 }
 
-/// Populate storage with nonces to emulate blockchain condition under load
+/// Populate storage with nonces to emulate blockchain condition under load.
 fn populate_nonces<Runtime: pallet::Config>(count: usize) {
     let mut consumed_nonces = vec![];
     for n in 0..count {
