@@ -24,11 +24,16 @@ pub trait RobonodePublicKeyBuilder: pallet::Config {
     fn build(value: RobonodePublicKeyBuilderValue) -> <Self as pallet::Config>::RobonodePublicKey;
 }
 
+/// Generate 32 bytes pubkey with
+/// NOTE: `prefix` and `idx` must be strictly under 32 bytes
 fn make_pubkey(prefix: &str, idx: u32) -> Vec<u8> {
     let mut pubkey = vec![0; 32];
     let prefix_in_bytes = Vec::from(prefix);
-    let _ = &pubkey[0..prefix_in_bytes.len()].copy_from_slice(&prefix_in_bytes);
     let idx_in_bytes = idx.to_le_bytes();
+    if prefix_in_bytes.len() + idx_in_bytes.len() > 32 {
+        panic!("`prefix` and `idx` exceeds 32 bytes");
+    }
+    let _ = &pubkey[0..prefix_in_bytes.len()].copy_from_slice(&prefix_in_bytes);
     let _ = &pubkey[prefix_in_bytes.len()..(prefix_in_bytes.len() + idx_in_bytes.len())]
         .copy_from_slice(&idx_in_bytes);
     pubkey
@@ -186,6 +191,7 @@ benchmarks! {
 
     on_initialize {
         let m in 0 .. T::MaxAuthentications::get();
+        let block_num = 100_u32;
         let active_auth_count = 10;
         // This is a workaround for now. Otherwise, it takes too long
         // to run a round of benchmark and it might crash the system.
@@ -193,7 +199,7 @@ benchmarks! {
 
         let mut auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
         // Populate with expired authentications.
-        let mut expiring_auths = make_authentications("expired", m as usize, T::CurrentMoment::now());
+        let mut expiring_auths = make_authentications("expired", expiring_auth_count as usize, T::CurrentMoment::now());
         auths.append(&mut expiring_auths);
 
         // Also, populate with active authentications.
@@ -207,13 +213,12 @@ benchmarks! {
         // Capture this state for comparison.
         let auths_before = ActiveAuthentications::<T>::get();
     }: {
-        let block_num = 100_u32;
         Bioauth::<T>::on_initialize(block_num.into());
     }
 
     verify {
         let auths_after = ActiveAuthentications::<T>::get();
-        assert_eq!(auths_before.len() - auths_after.len(), m as usize);
+        assert_eq!(auths_before.len() - auths_after.len(), expiring_auth_count as usize);
     }
 
     impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_benchmark_ext(), crate::mock::benchmarking::Benchmark);
