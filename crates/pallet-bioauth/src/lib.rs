@@ -428,10 +428,7 @@ pub mod pallet {
     /// Cost incurred from decoding vec of length M or N. Charged as maximum
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        #[pallet::weight(T::WeightInfo::authenticate(
-            T::MaxAuthentications::get(),
-            T::MaxNonces::get()
-        ))]
+        #[pallet::weight(T::WeightInfo::authenticate())]
         pub fn authenticate(
             origin: OriginFor<T>,
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
@@ -565,7 +562,7 @@ pub mod pallet {
 
             // Weight: O(M) where M is the number of auths.
             // Cost incurred from decoding vec of length M. Charged as maximum.
-            T::WeightInfo::on_initialize(T::MaxAuthentications::get())
+            T::WeightInfo::on_initialize(update_required)
         }
     }
 

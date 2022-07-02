@@ -119,8 +119,8 @@ benchmarks! {
     }
 
     authenticate {
-        let m in 0 .. T::MaxAuthentications::get() - 1;
-        let n in 0 .. T::MaxNonces::get() - 1;
+        let m in 0 .. T::MaxAuthentications::get();
+        let n in 0 .. T::MaxNonces::get();
 
         // This is a workaround for now. Otherwise, it takes too long
         // to run a round of benchmark and it might crash the system.
