@@ -3,7 +3,6 @@
 use frame_benchmarking::benchmarks;
 use frame_support::traits::{Get, Hooks};
 use frame_system::RawOrigin;
-use sp_std::cmp;
 
 use crate::Pallet as Bioauth;
 use crate::*;
@@ -60,33 +59,34 @@ pub trait AuthTicketSigner: pallet::Config {
     ) -> <Self as pallet::Config>::RobonodeSignature;
 }
 
-/// Convenient function to generate `Authentication` struct in bulk with custom prefix for public key.
+/// Convenient function to generate an [`Authentication`] struct in bulk with custom prefix
+/// for public key.
 fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
     prefix: &str,
     count: usize,
     expires_at: Moment,
 ) -> Vec<Authentication<Pubkey, Moment>> {
-    let mut auths: Vec<Authentication<Pubkey, Moment>> = vec![];
-    for i in 0..count {
-        let public_key: [u8; 32] = make_pubkey(prefix, i as u32).try_into().unwrap();
-        let auth = Authentication {
-            public_key: public_key.into(),
-            expires_at,
-        };
-        auths.push(auth);
-    }
-    auths
+    (0..count)
+        .into_iter()
+        .map(|i| {
+            let public_key: [u8; 32] = make_pubkey(prefix, i as u32).try_into().unwrap();
+            Authentication {
+                public_key: public_key.into(),
+                expires_at,
+            }
+        })
+        .collect()
 }
 
 /// Populate storage with nonces to emulate blockchain condition under load.
-fn populate_nonces<Runtime: pallet::Config>(count: usize) {
-    let mut consumed_nonces = vec![];
-    for n in 0..count {
-        let nonce = make_nonce("consumed_nonce", n as u32);
-        let consumed_nonce =
-            BoundedAuthTicketNonce::force_from(nonce, Some("benchmark::bioauth::populate_nonces"));
-        consumed_nonces.push(consumed_nonce);
-    }
+fn populate_nonces<Runtime: pallet::Config>(count: u32) {
+    let consumed_nonces: Vec<_> = (0..count)
+        .into_iter()
+        .map(|n| {
+            let nonce = make_nonce("consumed_nonce", n);
+            BoundedAuthTicketNonce::try_from(nonce).unwrap()
+        })
+        .collect();
     let weakly_bounded_consumed_nonces =
         WeakBoundedVec::<_, Runtime::MaxNonces>::try_from(consumed_nonces).unwrap();
     ConsumedAuthTicketNonces::<Runtime>::put(weakly_bounded_consumed_nonces);
@@ -112,31 +112,22 @@ where
 
 benchmarks! {
     where_clause {
-        where T: AuthTicketBuilder + AuthTicketSigner,
+        where
+            T: AuthTicketBuilder + AuthTicketSigner,
             T::ValidatorPublicKey: From<[u8; 32]>,
             T::Moment: From<u64>,
             T: RobonodePublicKeyBuilder
     }
 
     authenticate {
-        let m in 0 .. T::MaxAuthentications::get();
-        let n in 0 .. T::MaxNonces::get();
+        // Populate authentications and nonces close to maximum capacity.
+        populate_active_auths::<T>(T::MaxAuthentications::get() - 1);
+        populate_nonces::<T>(T::MaxNonces::get() - 1);
 
-        // This is a workaround for now. Otherwise, it takes too long
-        // to run a round of benchmark and it might crash the system.
-        let nonce_count = cmp::min(m, 1024);
-        let auth_count = cmp::min(n, 1024);
-
-        // Populate nonces close to maximum capacity
-        populate_nonces::<T>(nonce_count as usize);
-
-        // Populate active auths
-        populate_active_auths::<T>(auth_count);
-
-        // Create `Authenticate` request payload.
-        let public_key = make_pubkey("new", m);
-        let nonce = make_nonce("nonce", n);
-        let ticket = <T as AuthTicketBuilder>::build(public_key, nonce);
+        // Create `authenticate` extrinsic payload.
+        let public_key = make_pubkey("new", T::MaxAuthentications::get());
+        let nonce = make_nonce("nonce", T::MaxNonces::get());
+        let ticket = <T as AuthTicketBuilder>::build(public_key.clone(), nonce);
         let ticket_signature = <T as AuthTicketSigner>::sign(&ticket);
         let req = Authenticate {
             ticket,
@@ -159,16 +150,13 @@ benchmarks! {
         assert_eq!(active_authentications_after.len() - active_authentications_before, 1);
 
         // Verify public key
-        let expected_pubkey = make_pubkey("new", m);
         let observed_pubkey: Vec<u8> = active_authentications_after[active_authentications_before as usize].public_key.encode();
-        assert_eq!(observed_pubkey, expected_pubkey);
+        assert_eq!(observed_pubkey, public_key);
     }
 
     set_robonode_public_key {
-        // This is a workaround for now. Otherwise, it takes too long
-        // to run a round of benchmark and it might crash the system.
-        let auth_count = cmp::min(1024, T::MaxAuthentications::get());
-        populate_active_auths::<T>(auth_count);
+        let authentications_count = T::MaxAuthentications::get() - 1;
+        populate_active_auths::<T>(authentications_count);
 
         let robonode_public_key_before = RobonodePublicKey::<T>::get();
         let active_authentications_before = ActiveAuthentications::<T>::get();
@@ -190,12 +178,9 @@ benchmarks! {
     }
 
     on_initialize {
-        let m in 0 .. T::MaxAuthentications::get();
         let block_num = 100_u32;
-        let active_auth_count = 10;
-        // This is a workaround for now. Otherwise, it takes too long
-        // to run a round of benchmark and it might crash the system.
-        let expiring_auth_count = cmp::min(m, 1024);
+        let active_auth_count: u32 = T::MaxAuthentications::get() / 2;
+        let expiring_auth_count: u32 = T::MaxAuthentications::get() - active_auth_count - 1;
 
         let mut auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
         // Populate with expired authentications.
@@ -204,10 +189,10 @@ benchmarks! {
 
         // Also, populate with active authentications.
         let future_expiry = T::CurrentMoment::now() + (10u64).into();
-        let mut active_auths = make_authentications("active", active_auth_count, future_expiry);
+        let mut active_auths = make_authentications("active", active_auth_count as usize, future_expiry);
         auths.append(&mut active_auths);
 
-        let weakly_bound_auths = WeakBoundedVec::force_from(auths, Some("pallet-bioauth:benchmark:on_initialize"));
+        let weakly_bound_auths = WeakBoundedVec::try_from(auths).unwrap();
         ActiveAuthentications::<T>::put(weakly_bound_auths);
 
         // Capture this state for comparison.
