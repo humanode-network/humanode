@@ -1,4 +1,4 @@
-use frame_support::traits::{ConstU16, ConstU64};
+use frame_support::{parameter_types, traits::ConstU64};
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
@@ -27,6 +27,10 @@ frame_support::construct_runtime!(
     }
 );
 
+parameter_types! {
+    pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
+}
+
 impl system::Config for Test {
     type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
@@ -49,7 +53,7 @@ impl system::Config for Test {
     type OnNewAccount = ();
     type OnKilledAccount = ();
     type SystemWeightInfo = ();
-    type SS58Prefix = ConstU16<42>;
+    type SS58Prefix = SS58Prefix;
     type OnSetCode = ();
     type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
