@@ -16,11 +16,7 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
-#[allow(
-    missing_docs,
-    clippy::missing_docs_in_private_items,
-    clippy::unused_unit
-)]
+#[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::pallet_prelude::*;
@@ -51,6 +47,7 @@ pub mod pallet {
     #[pallet::genesis_config]
     #[derive(Default)]
     pub struct GenesisConfig {
+        /// Ss58 prefix.
         pub ss58_prefix: u16,
     }
 
