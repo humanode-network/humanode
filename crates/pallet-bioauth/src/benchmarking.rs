@@ -45,7 +45,7 @@ fn make_nonce(prefix: &str, idx: u32) -> Vec<u8> {
     nonce
 }
 
-/// Enables construction of AuthTicket deterministically.
+/// Enables construction of [`AuthTicket`]s deterministically.
 pub trait AuthTicketBuilder: pallet::Config {
     /// Make `AuthTicket` with predetermined 32 bytes public key and nonce.
     fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> <Self as pallet::Config>::OpaqueAuthTicket;
@@ -78,22 +78,8 @@ fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
         .collect()
 }
 
-/// Populate storage with nonces to emulate blockchain condition under load.
-fn populate_nonces<Runtime: pallet::Config>(count: u32) {
-    let consumed_nonces: Vec<_> = (0..count)
-        .into_iter()
-        .map(|n| {
-            let nonce = make_nonce("consumed_nonce", n);
-            BoundedAuthTicketNonce::try_from(nonce).unwrap()
-        })
-        .collect();
-    let weakly_bounded_consumed_nonces =
-        WeakBoundedVec::<_, Runtime::MaxNonces>::try_from(consumed_nonces).unwrap();
-    ConsumedAuthTicketNonces::<Runtime>::put(weakly_bounded_consumed_nonces);
-}
-
-/// Populate `ActiveAuthentications` storage with active authentications with custom prefix in public key.
-fn populate_active_auths<Runtime: pallet::Config>(count: u32)
+/// Populate the [`ActiveAuthentications`] storage with generated data.
+fn populate_active_authentications<Runtime: pallet::Config>(count: u32)
 where
     <Runtime as pallet::Config>::ValidatorPublicKey: From<[u8; 32]>,
     <Runtime as pallet::Config>::Moment: From<u64>,
@@ -110,6 +96,20 @@ where
     ActiveAuthentications::<Runtime>::put(weakly_bounded_active_auths);
 }
 
+/// Populate the [`ConsumedAuthTicketNonces`] storage with generated data.
+fn populate_consumed_auth_ticket_nonces<Runtime: pallet::Config>(count: u32) {
+    let consumed_nonces: Vec<_> = (0..count)
+        .into_iter()
+        .map(|n| {
+            let nonce = make_nonce("consumed_nonce", n);
+            BoundedAuthTicketNonce::try_from(nonce).unwrap()
+        })
+        .collect();
+    let weakly_bounded_consumed_nonces =
+        WeakBoundedVec::<_, Runtime::MaxNonces>::try_from(consumed_nonces).unwrap();
+    ConsumedAuthTicketNonces::<Runtime>::put(weakly_bounded_consumed_nonces);
+}
+
 benchmarks! {
     where_clause {
         where
@@ -120,9 +120,9 @@ benchmarks! {
     }
 
     authenticate {
-        // Populate authentications and nonces close to maximum capacity.
-        populate_active_auths::<T>(T::MaxAuthentications::get() - 1);
-        populate_nonces::<T>(T::MaxNonces::get() - 1);
+        // Vary the amount of pre-populated active authentications and consumed nonces.
+        let a in 0 .. (T::MaxAuthentications::get() - 1) =>  populate_active_authentications::<T>(a);
+        let n in 0 .. (T::MaxNonces::get() - 1) => populate_consumed_auth_ticket_nonces::<T>(n);
 
         // Create `authenticate` extrinsic payload.
         let public_key = make_pubkey("new", T::MaxAuthentications::get());
@@ -134,53 +134,57 @@ benchmarks! {
             ticket_signature,
         };
 
-        let active_authentications_before = ActiveAuthentications::<T>::get().len();
-        let consumed_nonces_before = ConsumedAuthTicketNonces::<T>::get();
+        // Capture some data used during the verification.
+        let active_authentications_before_len = ActiveAuthentications::<T>::get().len();
+        let consumed_auth_ticket_nonces_before_len = ConsumedAuthTicketNonces::<T>::get().len();
 
     }: _(RawOrigin::None, req)
-
     verify {
-        // Verify nonce count
-        let consumed_nonces_after = ConsumedAuthTicketNonces::<T>::get();
-        assert_eq!(consumed_nonces_after.len() - consumed_nonces_before.len(), 1);
+        // Verify that exactly one active authentication was added.
+        let active_authentications_after_len = ActiveAuthentications::<T>::get().len();
+        assert_eq!(active_authentications_after_len - active_authentications_before_len, 1);
 
-        // Bsed on the fact that benhcmarking can be used for different chain specifications,
-        // we just need to properly compare the size of active authentications before and after running benchmarks.
-        let active_authentications_after = ActiveAuthentications::<T>::get();
-        assert_eq!(active_authentications_after.len() - active_authentications_before, 1);
-
-        // Verify public key
-        let observed_pubkey: Vec<u8> = active_authentications_after[active_authentications_before as usize].public_key.encode();
-        assert_eq!(observed_pubkey, public_key);
+        // Verify that exactly one consumed auth ticket nonce was added.
+        let consumed_auth_ticket_nonces_after_len = ConsumedAuthTicketNonces::<T>::get().len();
+        assert_eq!(consumed_auth_ticket_nonces_after_len - consumed_auth_ticket_nonces_before_len, 1);
     }
 
     set_robonode_public_key {
-        let authentications_count = T::MaxAuthentications::get() - 1;
-        populate_active_auths::<T>(authentications_count);
+        // Vary the amount of pre-populated active authentications.
+        let a in 0 .. (T::MaxAuthentications::get() - 1) =>  populate_active_authentications::<T>(a);
 
+        // Use constant, yet non-zero amount of nonces, as this call isn't supposed to be dependent
+        // anyhow on the nonces.
+        populate_consumed_auth_ticket_nonces::<T>(10);
+
+        // Capture this state for comparison.
         let robonode_public_key_before = RobonodePublicKey::<T>::get();
         let active_authentications_before = ActiveAuthentications::<T>::get();
-        let consumed_nonces_before = ConsumedAuthTicketNonces::<T>::get();
+        let consumed_auth_ticket_nonces_before = ConsumedAuthTicketNonces::<T>::get();
 
+        // Prepare the [`set_robonode_public_key`] extrinsic argument.
         let new_robonode_public_key = <T as RobonodePublicKeyBuilder>::build(RobonodePublicKeyBuilderValue::B);
 
+        // Self-check that the new key is different from the old one.
         assert_ne!(robonode_public_key_before, new_robonode_public_key);
 
     }: _(RawOrigin::Root, new_robonode_public_key.clone())
     verify {
         let robonode_public_key_after = RobonodePublicKey::<T>::get();
         let active_authentications_after = ActiveAuthentications::<T>::get();
-        let consumed_nonces_after = ConsumedAuthTicketNonces::<T>::get();
+        let consumed_auth_ticket_nonces_after = ConsumedAuthTicketNonces::<T>::get();
 
         assert_eq!(robonode_public_key_after, new_robonode_public_key);
         assert!(active_authentications_after == vec![]);
-        assert!(consumed_nonces_after == consumed_nonces_before);
+        assert!(consumed_auth_ticket_nonces_after == consumed_auth_ticket_nonces_before);
     }
 
     on_initialize {
         let block_num = 100_u32;
-        let active_auth_count: u32 = T::MaxAuthentications::get() / 2;
-        let expiring_auth_count: u32 = T::MaxAuthentications::get() - active_auth_count - 1;
+
+        let a in 0 .. (T::MaxAuthentications::get() - 1);
+        let active_auth_count: u32 = a / 2;
+        let expiring_auth_count: u32 = a - active_auth_count;
 
         let mut auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
         // Populate with expired authentications.
@@ -196,14 +200,13 @@ benchmarks! {
         ActiveAuthentications::<T>::put(weakly_bound_auths);
 
         // Capture this state for comparison.
-        let auths_before = ActiveAuthentications::<T>::get();
+        let active_authentications_before_len = ActiveAuthentications::<T>::get().len();
     }: {
         Bioauth::<T>::on_initialize(block_num.into());
     }
-
     verify {
-        let auths_after = ActiveAuthentications::<T>::get();
-        assert_eq!(auths_before.len() - auths_after.len(), expiring_auth_count as usize);
+        let active_authentications_after_len = ActiveAuthentications::<T>::get().len();
+        assert_eq!(active_authentications_before_len - active_authentications_after_len, expiring_auth_count as usize);
     }
 
     impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_benchmark_ext(), crate::mock::benchmarking::Benchmark);
