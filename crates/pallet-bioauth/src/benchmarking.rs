@@ -180,8 +180,6 @@ benchmarks! {
     }
 
     on_initialize {
-        let block_num = 100_u32;
-
         let a in 0 .. (T::MaxAuthentications::get() - 1);
         let active_auth_count: u32 = a / 2;
         let expiring_auth_count: u32 = a - active_auth_count;
@@ -202,7 +200,7 @@ benchmarks! {
         // Capture this state for comparison.
         let active_authentications_before_len = ActiveAuthentications::<T>::get().len();
     }: {
-        Bioauth::<T>::on_initialize(block_num.into());
+        Bioauth::<T>::on_initialize(100u32.into());
     }
     verify {
         let active_authentications_after_len = ActiveAuthentications::<T>::get().len();
