@@ -210,6 +210,7 @@ parameter_types! {
         ::with_sensible_defaults(2 * WEIGHT_PER_SECOND, NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+    pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -262,7 +263,7 @@ impl frame_system::Config for Runtime {
     /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
     /// The Humande prefix is defined at pallet-chain-properties. It allows us to set up
     /// it easy in genesis before launching the chain without changing the code itself.
-    type SS58Prefix = ChainProperties;
+    type SS58Prefix = SS58Prefix;
     /// The set code logic, just the default since we're not a parachain.
     type OnSetCode = ();
     /// The maximum number of consumers allowed on a single account.
@@ -1221,7 +1222,7 @@ impl_runtime_apis! {
 
     impl chain_properties_api::ChainPropertiesApi<Block> for Runtime {
         fn ss58_prefix() -> u16 {
-            ChainProperties::get()
+            ChainProperties::ss58_prefix()
         }
     }
 

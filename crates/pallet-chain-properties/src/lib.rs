@@ -33,12 +33,6 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {}
 
-    impl<T: Config> Get<u16> for Pallet<T> {
-        fn get() -> u16 {
-            Self::ss58_prefix()
-        }
-    }
-
     /// Ss58 Prefix.
     #[pallet::storage]
     #[pallet::getter(fn ss58_prefix)]
