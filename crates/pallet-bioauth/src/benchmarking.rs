@@ -121,8 +121,8 @@ benchmarks! {
 
     authenticate {
         // Vary the amount of pre-populated active authentications and consumed nonces.
-        let a in 0 .. (T::MaxAuthentications::get() - 1) =>  populate_active_authentications::<T>(a);
-        let n in 0 .. (T::MaxNonces::get() - 1) => populate_consumed_auth_ticket_nonces::<T>(n);
+        let a in 0 .. (T::MaxAuthentications::get() - 2) =>  populate_active_authentications::<T>(a);
+        let n in 0 .. (T::MaxNonces::get() - 2) => populate_consumed_auth_ticket_nonces::<T>(n);
 
         // Create `authenticate` extrinsic payload.
         let public_key = make_pubkey("new", T::MaxAuthentications::get());
