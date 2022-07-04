@@ -23,7 +23,7 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-        NativeChainId: pallet_chain_properties::{Pallet, Storage, Config},
+        ChainProperties: pallet_chain_properties::{Pallet, Storage, Config},
     }
 );
 
@@ -63,7 +63,7 @@ pub fn new_test_ext_with(
 ) -> sp_io::TestExternalities {
     // Build genesis.
     let config = GenesisConfig {
-        native_chain_id: config,
+        chain_properties: config,
         ..Default::default()
     };
     let storage = config.build_storage().unwrap();

@@ -10,6 +10,6 @@ fn genesis_build() {
     // Build the state from the config.
     new_test_ext_with(config).execute_with(move || {
         // Assert the state.
-        assert_eq!(NativeChainId::ss58_prefix(), ss58_prefix);
+        assert_eq!(ChainProperties::ss58_prefix(), ss58_prefix);
     })
 }
