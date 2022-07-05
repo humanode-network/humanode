@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use pallet_evm::{ExitError, Precompile, PrecompileFailure, PrecompileOutput};
-use precompile_utils::{succeed, EvmResult, FunctionModifier, PrecompileHandleExt};
+use precompile_utils::{succeed, EvmResult, PrecompileHandleExt};
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 
@@ -38,11 +38,6 @@ where
 
         let selector = handle.read_selector()?;
 
-        // Check function is compatible with context.
-        handle.check_function_modifier(match selector {
-            Action::IsAuthenticated => FunctionModifier::View,
-        })?;
-
         match selector {
             Action::IsAuthenticated => Self::is_authenticated(handle),
         }
@@ -60,14 +55,12 @@ where
     ) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
 
-        // Validate number of arguments.
         input
             .expect_arguments(1)
             .map_err(|_| PrecompileFailure::Error {
                 exit_status: ExitError::Other("input must be a valid account id".into()),
             })?;
 
-        // Try to read public key.
         let account_id = T::ValidatorPublicKey::try_from(input.read_till_end()?).map_err(|_| {
             PrecompileFailure::Error {
                 exit_status: ExitError::Other("input must be a valid account id".into()),
