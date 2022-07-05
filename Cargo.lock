@@ -1359,17 +1359,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "derivative"
-version = "2.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcc3dd5e9e9c0b295d6e1e4d811fb6f157d5ffd784b8d202fc62eac8035a770b"
-dependencies = [
- "proc-macro2 1.0.39",
- "quote 1.0.18",
- "syn 1.0.95",
-]
-
-[[package]]
 name = "derive_more"
 version = "0.99.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6085,7 +6074,6 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-std",
- "xcm",
 ]
 
 [[package]]
@@ -10758,30 +10746,6 @@ dependencies = [
  "curve25519-dalek 3.2.0",
  "rand_core 0.5.1",
  "zeroize",
-]
-
-[[package]]
-name = "xcm"
-version = "0.9.20"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.20#568169b41aea59a54ab8cfa23c31e84a26708280"
-dependencies = [
- "derivative",
- "impl-trait-for-tuples",
- "log",
- "parity-scale-codec",
- "scale-info",
- "xcm-procedural",
-]
-
-[[package]]
-name = "xcm-procedural"
-version = "0.1.0"
-source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.20#568169b41aea59a54ab8cfa23c31e84a26708280"
-dependencies = [
- "Inflector",
- "proc-macro2 1.0.39",
- "quote 1.0.18",
- "syn 1.0.95",
 ]
 
 [[package]]
