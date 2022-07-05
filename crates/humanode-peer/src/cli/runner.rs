@@ -119,13 +119,13 @@ impl<C: SubstrateCli> Runner<C> {
 /// A helper function to extract Humanode Ss58 prefix from provided
 /// chain spec during boot node.
 fn ss58_prefix(chain_spec: &dyn sc_service::ChainSpec) -> Result<u16> {
-    let chain_spec_value: serde_json::Value =
-        serde_json::from_str(&chain_spec.as_json(false)?).unwrap();
+    let chain_spec_value: serde_json::Value = serde_json::from_str(&chain_spec.as_json(false)?)
+        .map_err(|err| sc_cli::Error::Application(err.into()))?;
 
     let genesis = humanode_runtime::GenesisConfig::deserialize(
         chain_spec_value["genesis"]["runtime"].clone(),
     )
-    .unwrap();
+    .map_err(|err| sc_cli::Error::Application(err.into()))?;
 
     Ok(genesis.chain_properties.ss58_prefix)
 }
