@@ -5,6 +5,8 @@ use std::marker::PhantomData;
 use futures::Future;
 use sc_cli::{Error as CliError, Result, SubstrateCli};
 use sc_service::{Error as ServiceError, TaskManager};
+use serde::Deserialize;
+use sp_core::crypto::Ss58AddressFormat;
 
 use super::{CliConfigurationExt, Root};
 use crate::configuration::Configuration;
@@ -38,6 +40,11 @@ impl<C: SubstrateCli> Runner<C> {
     pub fn new<T: CliConfigurationExt>(cli: &Root, command: &T) -> Result<Self> {
         let runtime_handle = tokio::runtime::Handle::current();
         let config = command.create_humanode_configuration(cli, runtime_handle)?;
+
+        // We support our custom SS58 prefix (that isn't yet registered in the `ss58-registry`)
+        // from provided chain spec using set_default_ss58_version.
+        let humanode_ss58_prefix = ss58_prefix(config.substrate.chain_spec.as_ref())?;
+        sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(humanode_ss58_prefix));
 
         Ok(Self {
             config,
@@ -107,4 +114,18 @@ impl<C: SubstrateCli> Runner<C> {
     pub fn config(&self) -> &Configuration {
         &self.config
     }
+}
+
+/// A helper function to extract Humanode Ss58 prefix from provided
+/// chain spec during boot node.
+fn ss58_prefix(chain_spec: &dyn sc_service::ChainSpec) -> Result<u16> {
+    let chain_spec_value: serde_json::Value =
+        serde_json::from_str(&chain_spec.as_json(false)?).unwrap();
+
+    let genesis = humanode_runtime::GenesisConfig::deserialize(
+        chain_spec_value["genesis"]["runtime"].clone(),
+    )
+    .unwrap();
+
+    Ok(genesis.chain_properties.ss58_prefix)
 }

@@ -7,7 +7,6 @@ use std::{
     time::Duration,
 };
 
-use chain_properties::ChainProperties;
 use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
@@ -20,7 +19,6 @@ pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
-use sp_core::crypto::Ss58AddressFormat;
 use tracing::*;
 
 use crate::configuration::Configuration;
@@ -139,12 +137,6 @@ pub fn new_partial(
             executor,
         )?;
     let client = Arc::new(client);
-
-    // We would like to support our custom SS58 prefix (that isn't yet registered in the `ss58-registry`).
-    let chain_properties = ChainProperties::<_, _>::new(Arc::clone(&client));
-    sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(
-        chain_properties.ss58_prefix(),
-    ));
 
     let telemetry = telemetry.map(|(worker, telemetry)| {
         task_manager
