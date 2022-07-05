@@ -1220,12 +1220,6 @@ impl_runtime_apis! {
         }
     }
 
-    impl chain_properties_api::ChainPropertiesApi<Block> for Runtime {
-        fn ss58_prefix() -> u16 {
-            ChainProperties::ss58_prefix()
-        }
-    }
-
     #[cfg(feature = "runtime-benchmarks")]
     impl frame_benchmarking::Benchmark<Block> for Runtime {
         fn benchmark_metadata(extra: bool) -> (
