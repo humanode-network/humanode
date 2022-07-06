@@ -121,8 +121,9 @@ benchmarks! {
 
     authenticate {
         // Vary the amount of pre-populated active authentications and consumed nonces.
-        let a in 0 .. (T::MaxAuthentications::get() - 2) =>  populate_active_authentications::<T>(a);
-        let n in 0 .. (T::MaxNonces::get() - 2) => populate_consumed_auth_ticket_nonces::<T>(n);
+        // Leave one space spare for the payload to be inserted in this call.
+        let a in 0 .. (T::MaxAuthentications::get() - 1) =>  populate_active_authentications::<T>(a);
+        let n in 0 .. (T::MaxNonces::get() - 1) => populate_consumed_auth_ticket_nonces::<T>(n);
 
         // Create `authenticate` extrinsic payload.
         let public_key = make_pubkey("new", T::MaxAuthentications::get());
@@ -151,7 +152,7 @@ benchmarks! {
 
     set_robonode_public_key {
         // Vary the amount of pre-populated active authentications.
-        let a in 0 .. (T::MaxAuthentications::get() - 1) =>  populate_active_authentications::<T>(a);
+        let a in 0 .. (T::MaxAuthentications::get()) =>  populate_active_authentications::<T>(a);
 
         // Use constant, yet non-zero amount of nonces, as this call isn't supposed to be dependent
         // anyhow on the nonces.
@@ -180,7 +181,7 @@ benchmarks! {
     }
 
     on_initialize {
-        let a in 0 .. (T::MaxAuthentications::get() - 1);
+        let a in 0 .. (T::MaxAuthentications::get());
         let active_auth_count: u32 = a / 2;
         let expiring_auth_count: u32 = a - active_auth_count;
 
