@@ -23,7 +23,7 @@ pub trait RobonodePublicKeyBuilder: pallet::Config {
     fn build(value: RobonodePublicKeyBuilderValue) -> <Self as pallet::Config>::RobonodePublicKey;
 }
 
-/// Generate 32 bytes pubkey with prefix of our choice
+/// Generate 32 bytes pubkey with prefix of our choice.
 /// NOTE: `prefix` and `idx` must be strictly under 32 bytes
 fn make_pubkey(prefix: &str, idx: u32) -> Vec<u8> {
     let mut pubkey = vec![0; 32];
