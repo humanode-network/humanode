@@ -75,8 +75,8 @@ const codeModes = {
   },
   runBenchmark: {
     name: "test-run pallet benchmarks",
-    cargoCommand: "run",
-    cargoArgs: "--features runtime-benchmarks benchmark pallet --chain benchmark --execution wasm --wasm-execution compiled --pallet 'pallet-bioauth' --extrinsic '*' --steps 1 --repeat 1",
+    cargoCommand: "run --release",
+    cargoArgs: "--features runtime-benchmarks benchmark pallet --chain benchmark --execution wasm --wasm-execution compiled --pallet '*' --extrinsic '*' --steps 1 --repeat 1",
     cargoCacheKey: "run-benchmark",
   },
 };
