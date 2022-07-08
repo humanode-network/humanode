@@ -57,15 +57,10 @@ where
 
         input
             .expect_arguments(1)
-            .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("input must be a valid account id".into()),
-            })?;
+            .map_err(|_| error_invalid_input())?;
 
-        let account_id = T::ValidatorPublicKey::try_from(input.read_till_end()?).map_err(|_| {
-            PrecompileFailure::Error {
-                exit_status: ExitError::Other("input must be a valid account id".into()),
-            }
-        })?;
+        let account_id = T::ValidatorPublicKey::try_from(input.read_till_end()?)
+            .map_err(|_| error_invalid_input())?;
 
         let is_authenticated = pallet_bioauth::ActiveAuthentications::<T>::get()
             .iter()
@@ -74,5 +69,12 @@ where
         let bytes = if is_authenticated { &[1] } else { &[0] };
 
         Ok(succeed(bytes))
+    }
+}
+
+/// Helper function returning the error for invalid input.
+fn error_invalid_input() -> PrecompileFailure {
+    PrecompileFailure::Error {
+        exit_status: ExitError::Other("input must be a valid account id".into()),
     }
 }

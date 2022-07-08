@@ -29,12 +29,7 @@ fn test_empty_input() {
         let handle = &mut mock_handle as _;
 
         let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
-        assert_eq!(
-            err,
-            PrecompileFailure::Error {
-                exit_status: ExitError::Other("input must be a valid account id".into())
-            }
-        );
+        assert_eq!(err, error_invalid_input());
     })
 }
 
