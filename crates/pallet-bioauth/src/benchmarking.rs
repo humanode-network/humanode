@@ -98,13 +98,11 @@ where
 
 /// Populate the [`ConsumedAuthTicketNonces`] storage with generated data.
 fn populate_consumed_auth_ticket_nonces<Runtime: pallet::Config>(count: u32) {
-    let consumed_nonces: Vec<_> = (0..count)
-        .into_iter()
-        .map(|n| {
-            let nonce = make_nonce("consumed_nonce", n);
-            BoundedAuthTicketNonce::try_from(nonce).unwrap()
-        })
-        .collect();
+    let mut consumed_nonces: Vec<_> = vec![];
+    for i in 0..count {
+        let nonce = make_nonce("consumed_nonce", i);
+        consumed_nonces.push(BoundedAuthTicketNonce::try_from(nonce).unwrap());
+    }
     let weakly_bounded_consumed_nonces =
         WeakBoundedVec::<_, Runtime::MaxNonces>::try_from(consumed_nonces).unwrap();
     ConsumedAuthTicketNonces::<Runtime>::put(weakly_bounded_consumed_nonces);
@@ -134,6 +132,8 @@ benchmarks! {
             ticket,
             ticket_signature,
         };
+
+        panic!("Hello World");
 
         // Capture some data used during the verification.
         let active_authentications_before_len = ActiveAuthentications::<T>::get().len();
