@@ -133,8 +133,6 @@ benchmarks! {
             ticket_signature,
         };
 
-        panic!("Hello World");
-
         // Capture some data used during the verification.
         let active_authentications_before_len = ActiveAuthentications::<T>::get().len();
         let consumed_auth_ticket_nonces_before_len = ConsumedAuthTicketNonces::<T>::get().len();
