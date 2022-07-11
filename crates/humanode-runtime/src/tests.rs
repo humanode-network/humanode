@@ -1,4 +1,4 @@
-use frame_support::{assert_ok, traits::Currency};
+use frame_support::assert_ok;
 use sp_runtime::app_crypto::sr25519;
 
 use super::*;
@@ -58,21 +58,15 @@ pub fn new_test_ext_with() -> sp_io::TestExternalities {
 fn total_issuance_transaction_fee() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
-        // Assert the state.
+        // Check total issuance before making transfer.
         assert_eq!(Balances::total_issuance(), 200);
+        // Make transfer.
         assert_ok!(Balances::transfer(
             Some(get_account_id_from_seed::<sr25519::Public>("Alice")).into(),
             get_account_id_from_seed::<sr25519::Public>("Bob").into(),
             10
         ));
-        assert_eq!(
-            Balances::total_balance(&get_account_id_from_seed::<sr25519::Public>("Alice")),
-            90
-        );
-        assert_eq!(
-            Balances::total_balance(&get_account_id_from_seed::<sr25519::Public>("Bob")),
-            110
-        );
+        // Check total issuance after making transfer.
         assert_eq!(Balances::total_issuance(), 200);
     })
 }
