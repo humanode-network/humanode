@@ -55,7 +55,7 @@ pub fn new_test_ext_with() -> sp_io::TestExternalities {
 }
 
 #[test]
-fn it_works() {
+fn total_issuance_transaction_fee() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Assert the state.
