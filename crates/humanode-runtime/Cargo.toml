@@ -19,6 +19,7 @@ pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-feat
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
+pallet-pot = { version = "0.1", path = "../pallet-pot", default-features = false }
 precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-features = false }
 precompile-evm-accounts-mapping = { version = "0.1", path = "../precompile-evm-accounts-mapping", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
@@ -124,6 +125,7 @@ std = [
   "pallet-grandpa/std",
   "pallet-im-online/std",
   "pallet-offences/std",
+  "pallet-pot/std",
   "pallet-randomness-collective-flip/std",
   "pallet-session/std",
   "pallet-sudo/std",
@@ -161,6 +163,7 @@ try-runtime = [
   "pallet-humanode-session/try-runtime",
   "pallet-im-online/try-runtime",
   "pallet-offences/try-runtime",
+  "pallet-pot/try-runtime",
   "pallet-randomness-collective-flip/try-runtime",
   "pallet-session/try-runtime",
   "pallet-sudo/try-runtime",

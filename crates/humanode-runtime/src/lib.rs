@@ -1,5 +1,6 @@
 //! The substrate runtime for the Humanode network.
 
+#![recursion_limit = "256"]
 // TODO(#66): switch back to warn
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
@@ -23,7 +24,7 @@ pub use frame_support::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
         Weight,
     },
-    ConsensusEngineId, StorageValue, WeakBoundedVec,
+    ConsensusEngineId, PalletId, StorageValue, WeakBoundedVec,
 };
 use keystore_bioauth_account_id::KeystoreBioauthAccountId;
 pub use pallet_balances::Call as BalancesCall;
@@ -363,6 +364,26 @@ impl pallet_authorship::Config for Runtime {
     type EventHandler = (ImOnline,);
 }
 
+parameter_types! {
+    pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
+    pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
+}
+
+type PotInstanceTreasury = pallet_pot::Instance1;
+type PotInstanceFees = pallet_pot::Instance2;
+
+impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
+    type Event = Event;
+    type PalletId = TreasuryPotPalletId;
+    type Currency = fixed_supply::Currency;
+}
+
+impl pallet_pot::Config<PotInstanceFees> for Runtime {
+    type Event = Event;
+    type PalletId = FeesPotPalletId;
+    type Currency = fixed_supply::Currency;
+}
+
 impl pallet_balances::Config for Runtime {
     type MaxLocks = ConstU32<50>;
     type MaxReserves = ();
@@ -613,6 +634,8 @@ construct_runtime!(
         // Authorship must be before other pallets that rely on the data it captures.
         Authorship: pallet_authorship,
         Balances: pallet_balances,
+        TreasuryPot: pallet_pot::<Instance1>,
+        FeesPot: pallet_pot::<Instance2>,
         TransactionPayment: pallet_transaction_payment,
         Session: pallet_session,
         Offences: pallet_offences,
