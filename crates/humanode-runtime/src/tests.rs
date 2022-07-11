@@ -1,3 +1,4 @@
+use frame_support::{assert_ok, traits::Currency};
 use sp_runtime::{
     app_crypto::{sr25519, Pair, Public},
     traits::{IdentifyAccount, Verify},
@@ -19,13 +20,8 @@ pub fn new_test_ext_with() -> sp_io::TestExternalities {
     ];
     // Build test genesis.
     let config = GenesisConfig {
-        ethereum_chain_id: EthereumChainIdConfig { chain_id: 5234 },
         balances: BalancesConfig {
-            balances: endowed_accounts
-                .iter()
-                .cloned()
-                .map(|k| (k, 10000000000000))
-                .collect(),
+            balances: endowed_accounts.iter().cloned().map(|k| (k, 100)).collect(),
         },
         session: SessionConfig {
             keys: authorities
@@ -88,11 +84,23 @@ pub fn authority_keys_from_seed(seed: &str) -> (AccountId, BabeId, GrandpaId, Im
 
 #[test]
 fn it_works() {
-    let chain_id = 5234;
-
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Assert the state.
-        assert_eq!(EthereumChainId::chain_id(), chain_id);
+        assert_eq!(Balances::total_issuance(), 200);
+        assert_ok!(Balances::transfer(
+            Some(get_account_id_from_seed::<sr25519::Public>("Alice")).into(),
+            get_account_id_from_seed::<sr25519::Public>("Bob").into(),
+            10
+        ));
+        assert_eq!(
+            Balances::total_balance(&get_account_id_from_seed::<sr25519::Public>("Alice")),
+            90
+        );
+        assert_eq!(
+            Balances::total_balance(&get_account_id_from_seed::<sr25519::Public>("Bob")),
+            110
+        );
+        assert_eq!(Balances::total_issuance(), 200);
     })
 }
