@@ -390,21 +390,14 @@ impl pallet_balances::Config for Runtime {
     type Balance = Balance;
     /// The ubiquitous event type.
     type Event = Event;
-    /// Setting this as the dust removal guarantees we never disturb the balance. However, it only
-    /// works good in conjunction with an [`ExistentialDeposit`] value fitted in such a way that
-    /// there will never be a non-zero dust to remove.
+    /// The dust is collected at the treasury pot.
+    /// Regardless of the existential deposit value, this will never alter the total issuance.
     type DustRemoval = fixed_supply::ImbalanceAdapterHanlder<
         pallet_balances::NegativeImbalance<Self>,
         fixed_supply::NegativeImbalance,
         TreasuryPot,
     >;
-    /// `1` allows an account to be ripped, but does not allow any loss of funds, i.e. you can't
-    /// get to a state where the account would have less tokens than the existential deposit, but
-    /// bigger than `0`. To ensure fixes supply, we need to prevent funds being lost.
-    /// For the record, existential deposit of `0` will prevent account ripping altogether, enabling
-    /// account records to stay around forever. This would also work for fixed supply, but
-    /// the benchmarks of the balances pallet break if we do it.
-    type ExistentialDeposit = ConstU128<1>;
+    type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
