@@ -393,7 +393,7 @@ impl pallet_balances::Config for Runtime {
     /// Setting this as the dust removal guarantees we never disturb the balance. However, it only
     /// works good in conjunction with an [`ExistentialDeposit`] value fitted in such a way that
     /// there will never be a non-zero dust to remove.
-    type DustRemoval = fixed_supply::ImbalanceHandler<pallet_balances::NegativeImbalance<Self>>;
+    type DustRemoval = TreasuryPot;
     /// `1` allows an account to be ripped, but does not allow any loss of funds, i.e. you can't
     /// get to a state where the account would have less tokens than the existential deposit, but
     /// bigger than `0`. To ensure fixes supply, we need to prevent funds being lost.
@@ -406,7 +406,7 @@ impl pallet_balances::Config for Runtime {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<fixed_supply::Currency, ()>;
+    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<fixed_supply::Currency, FeesPot>;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
@@ -589,7 +589,7 @@ impl pallet_evm::Config for Runtime {
     type PrecompilesValue = PrecompilesValue;
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
-    type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<fixed_supply::Currency, ()>;
+    type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<fixed_supply::Currency, FeesPot>;
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
     >;
