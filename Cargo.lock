@@ -1221,6 +1221,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "crypto-utils"
+version = "0.1.0"
+dependencies = [
+ "pallet-im-online",
+ "sp-consensus-babe",
+ "sp-finality-grandpa",
+ "sp-runtime",
+]
+
+[[package]]
 name = "ctor"
 version = "0.1.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3035,6 +3045,7 @@ dependencies = [
  "bioauth-flow-rpc",
  "bioauth-keys",
  "clap",
+ "crypto-utils",
  "fc-consensus",
  "fc-db",
  "fc-mapping-sync",
@@ -3147,6 +3158,7 @@ dependencies = [
  "author-ext-api",
  "bioauth-flow-api",
  "chrono",
+ "crypto-utils",
  "eip712-account-claim",
  "fp-rpc",
  "fp-self-contained",

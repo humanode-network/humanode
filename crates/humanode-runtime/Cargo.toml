@@ -74,7 +74,9 @@ sp-version = { default-features = false, git = "https://github.com/humanode-netw
 static_assertions = { version = "1.1.0", default-features = false }
 
 [dev-dependencies]
-sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+crypto-utils = { version = "0.1", path = "../crypto-utils" }
+
+sp-io = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [features]
 default = ["std"]

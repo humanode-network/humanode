@@ -66,8 +66,6 @@ use sp_version::RuntimeVersion;
 mod frontier_precompiles;
 use frontier_precompiles::FrontierPrecompiles;
 
-#[cfg(feature = "std")]
-pub mod crypto;
 mod display_moment;
 pub mod eip712;
 pub mod fees;

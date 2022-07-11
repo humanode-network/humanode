@@ -11,6 +11,7 @@ default-run = "humanode-peer"
 [dependencies]
 bioauth-flow-rpc = { version = "0.1", path = "../bioauth-flow-rpc" }
 bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
+crypto-utils = { version = "0.1", path = "../crypto-utils" }
 humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id" }

@@ -1,22 +1,23 @@
+use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
 use frame_support::assert_ok;
 use sp_runtime::app_crypto::sr25519;
 
 use super::*;
-use crate::{
-    crypto::{authority_keys_from_seed, get_account_id_from_seed},
-    opaque::SessionKeys,
-};
+use crate::{opaque::SessionKeys, AccountId, Signature};
+
+/// The public key for the accounts.
+type AccountPublic = <Signature as Verify>::Signer;
 
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
 pub fn new_test_ext_with() -> sp_io::TestExternalities {
     let authorities = vec![
-        authority_keys_from_seed("Alice"),
-        authority_keys_from_seed("Bob"),
+        authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
+        authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob"),
     ];
     let endowed_accounts = vec![
-        get_account_id_from_seed::<sr25519::Public>("Alice"),
-        get_account_id_from_seed::<sr25519::Public>("Bob"),
+        get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
+        get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob"),
     ];
     // Build test genesis.
     let config = GenesisConfig {
@@ -62,8 +63,13 @@ fn total_issuance_transaction_fee() {
         assert_eq!(Balances::total_issuance(), 200);
         // Make transfer.
         assert_ok!(Balances::transfer(
-            Some(get_account_id_from_seed::<sr25519::Public>("Alice")).into(),
-            get_account_id_from_seed::<sr25519::Public>("Bob").into(),
+            Some(get_account_id_from_seed::<
+                sr25519::Public,
+                AccountPublic,
+                AccountId,
+            >("Alice"))
+            .into(),
+            get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob").into(),
             10
         ));
         // Check total issuance after making transfer.
