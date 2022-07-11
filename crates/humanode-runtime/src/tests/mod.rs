@@ -5,82 +5,17 @@ use sp_runtime::app_crypto::sr25519;
 use super::*;
 use crate::{opaque::SessionKeys, AccountId, Signature};
 
+mod fixed_supply;
+
 /// The public key for the accounts.
 type AccountPublic = <Signature as Verify>::Signer;
 
-/// Build test externalities from the custom genesis.
-/// Using this call requires manual assertions on the genesis init logic.
-pub fn new_test_ext_with() -> sp_io::TestExternalities {
-    let authorities = vec![
-        authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
-        authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob"),
-    ];
-    let endowed_accounts = vec![
-        get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
-        get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob"),
-    ];
-    // Build test genesis.
-    let config = GenesisConfig {
-        balances: BalancesConfig {
-            balances: {
-                let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
-                endowed_accounts
-                    .iter()
-                    .chain(pot_accounts.iter())
-                    .cloned()
-                    .map(|k| (k, 1000))
-                    .collect()
-            },
-        },
-        session: SessionConfig {
-            keys: authorities
-                .iter()
-                .map(|x| {
-                    (
-                        x.0.clone(),
-                        x.0.clone(),
-                        SessionKeys {
-                            babe: x.1.clone(),
-                            grandpa: x.2.clone(),
-                            im_online: x.3.clone(),
-                        },
-                    )
-                })
-                .collect::<Vec<_>>(),
-        },
-        babe: BabeConfig {
-            authorities: vec![],
-            epoch_config: Some(BABE_GENESIS_EPOCH_CONFIG),
-        },
-        bootnodes: BootnodesConfig {
-            bootnodes: endowed_accounts.try_into().unwrap(),
-        },
-        ..Default::default()
-    };
-    let storage = config.build_storage().unwrap();
-
-    // Make test externalities from the storage.
-    storage.into()
+/// A helper function to return [`AccountId`] based on runtime data and provided seed.
+fn account_id(seed: &str) -> AccountId {
+    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(seed)
 }
 
-#[test]
-fn total_issuance_transaction_fee() {
-    // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
-        // Check total issuance before making transfer.
-        let total_issuance_before = Balances::total_issuance();
-        // Make transfer.
-        assert_ok!(Balances::transfer(
-            Some(get_account_id_from_seed::<
-                sr25519::Public,
-                AccountPublic,
-                AccountId,
-            >("Alice"))
-            .into(),
-            get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob").into(),
-            100
-        ));
-        // Check total issuance after making transfer.
-        assert_eq!(Balances::total_issuance(), total_issuance_before);
-    })
+/// A helper function to return authorities keys based on runtime data and provided seed.
+fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) {
+    authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>(seed)
 }
