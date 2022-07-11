@@ -4,10 +4,11 @@ use std::collections::BTreeMap;
 
 use hex_literal::hex;
 use humanode_runtime::{
-    opaque::SessionKeys, robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig,
-    BootnodesConfig, EVMConfig, EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig,
-    GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig,
-    SystemConfig, WASM_BINARY,
+    crypto::{authority_keys_from_seed, get_account_id_from_seed},
+    opaque::SessionKeys,
+    robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BootnodesConfig, EVMConfig,
+    EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig, GenesisConfig, GrandpaConfig,
+    ImOnlineConfig, SessionConfig, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -15,10 +16,7 @@ use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_runtime::{
-    app_crypto::{sr25519, Pair, Public},
-    traits::{IdentifyAccount, Verify},
-};
+use sp_runtime::app_crypto::sr25519;
 
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
@@ -34,34 +32,6 @@ pub struct Extensions {
     pub robonode_url: Option<String>,
     /// The Web App URL, necessary for printing the Web App QR Code.
     pub webapp_url: Option<String>,
-}
-
-/// Generate a crypto pair from seed.
-pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
-    TPublic::Pair::from_string(&format!("//{}", seed), None)
-        .expect("static values are valid; qed")
-        .public()
-}
-
-/// The public key for the accounts.
-type AccountPublic = <Signature as Verify>::Signer;
-
-/// Generate an account ID from seed.
-pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
-where
-    AccountPublic: From<<TPublic::Pair as Pair>::Public>,
-{
-    AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
-}
-
-/// Generate consensus authority keys.
-pub fn authority_keys_from_seed(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) {
-    (
-        get_account_id_from_seed::<sr25519::Public>(seed),
-        get_from_seed::<BabeId>(seed),
-        get_from_seed::<GrandpaId>(seed),
-        get_from_seed::<ImOnlineId>(seed),
-    )
 }
 
 /// A configuration for local testnet.
