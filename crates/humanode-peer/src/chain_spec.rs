@@ -4,10 +4,10 @@ use std::{collections::BTreeMap, str::FromStr};
 
 use hex_literal::hex;
 use humanode_runtime::{
-    opaque::SessionKeys,
-    robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BootnodesConfig, EVMConfig,
-    EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig, GenesisConfig, GrandpaConfig,
-    ImOnlineConfig, SessionConfig, SudoConfig, SystemConfig, WASM_BINARY,
+    opaque::SessionKeys, robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig,
+    BootnodesConfig, EVMConfig, EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig,
+    GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig, SudoConfig, SystemConfig,
+    WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
