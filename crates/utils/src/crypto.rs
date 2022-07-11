@@ -1,8 +1,14 @@
 //! Various crypto helper functions.
 
-use sp_runtime::app_crypto::{sr25519, Pair, Public};
+use sp_runtime::{
+    app_crypto::{sr25519, Pair, Public},
+    traits::{IdentifyAccount, Verify},
+};
 
-use crate::{AccountId, BabeId, GrandpaId, IdentifyAccount, ImOnlineId, Signature, Verify};
+use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
+use sp_consensus_babe::AuthorityId as BabeId;
+use sp_finality_grandpa::AuthorityId as GrandpaId;
+use humanode_runtime::{AccountId, Signature};
 
 /// The public key for the accounts.
 type AccountPublic = <Signature as Verify>::Signer;

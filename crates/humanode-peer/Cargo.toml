@@ -17,6 +17,7 @@ keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-acc
 ngrok-api = { version = "0.1", path = "../ngrok-api" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
+utils = { version = "0.1", path = "../utils" }
 
 anyhow = "1"
 async-trait = "0.1"

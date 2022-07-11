@@ -4,7 +4,6 @@ use std::{collections::BTreeMap, str::FromStr};
 
 use hex_literal::hex;
 use humanode_runtime::{
-    crypto::{authority_keys_from_seed, get_account_id_from_seed},
     opaque::SessionKeys,
     robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig, BootnodesConfig, EVMConfig,
     EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig, GenesisConfig, GrandpaConfig,
@@ -18,6 +17,7 @@ use sp_consensus_babe::AuthorityId as BabeId;
 use sp_core::{H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::app_crypto::sr25519;
+use utils::crypto::{authority_keys_from_seed, get_account_id_from_seed};
 
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
