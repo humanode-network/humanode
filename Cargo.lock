@@ -3107,7 +3107,6 @@ dependencies = [
  "tracing",
  "try-runtime-cli",
  "url 2.2.2",
- "utils",
  "vergen",
 ]
 
@@ -9955,17 +9954,6 @@ name = "utf-8"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09cc8ee72d2a9becf2f2febe0205bbed8fc6615b7cb429ad062dc7b7ddd036a9"
-
-[[package]]
-name = "utils"
-version = "0.1.0"
-dependencies = [
- "humanode-runtime",
- "pallet-im-online",
- "sp-consensus-babe",
- "sp-finality-grandpa",
- "sp-runtime",
-]
 
 [[package]]
 name = "uuid"
