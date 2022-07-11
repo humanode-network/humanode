@@ -22,7 +22,15 @@ pub fn new_test_ext_with() -> sp_io::TestExternalities {
     // Build test genesis.
     let config = GenesisConfig {
         balances: BalancesConfig {
-            balances: endowed_accounts.iter().cloned().map(|k| (k, 100)).collect(),
+            balances: {
+                let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
+                endowed_accounts
+                    .iter()
+                    .chain(pot_accounts.iter())
+                    .cloned()
+                    .map(|k| (k, 1000))
+                    .collect()
+            },
         },
         session: SessionConfig {
             keys: authorities
@@ -60,7 +68,7 @@ fn total_issuance_transaction_fee() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Check total issuance before making transfer.
-        assert_eq!(Balances::total_issuance(), 200);
+        let total_issuance_before = Balances::total_issuance();
         // Make transfer.
         assert_ok!(Balances::transfer(
             Some(get_account_id_from_seed::<
@@ -70,9 +78,9 @@ fn total_issuance_transaction_fee() {
             >("Alice"))
             .into(),
             get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob").into(),
-            10
+            100
         ));
         // Check total issuance after making transfer.
-        assert_eq!(Balances::total_issuance(), 200);
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
