@@ -1,16 +1,12 @@
 //! Various crypto helper functions.
 
-use humanode_runtime::{AccountId, Signature};
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
-    app_crypto::{sr25519, Pair, Public},
-    traits::{IdentifyAccount, Verify},
+    app_crypto::{Pair, Public},
+    traits::IdentifyAccount,
 };
-
-/// The public key for the accounts.
-type AccountPublic = <Signature as Verify>::Signer;
 
 /// Generate a crypto pair from seed.
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
@@ -20,17 +16,22 @@ pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Pu
 }
 
 /// Generate an account ID from seed.
-pub fn get_account_id_from_seed<TPublic: Public>(seed: &str) -> AccountId
+pub fn get_account_id_from_seed<TPublic: Public, AccountPublic, AccountId>(seed: &str) -> AccountId
 where
-    AccountPublic: From<<TPublic::Pair as Pair>::Public>,
+    AccountPublic: From<<TPublic::Pair as Pair>::Public> + IdentifyAccount<AccountId = AccountId>,
 {
     AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
 /// Generate consensus authority keys.
-pub fn authority_keys_from_seed(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) {
+pub fn authority_keys_from_seed<TPublic: Public, AccountPublic, AccountId>(
+    seed: &str,
+) -> (AccountId, BabeId, GrandpaId, ImOnlineId)
+where
+    AccountPublic: From<<TPublic::Pair as Pair>::Public> + IdentifyAccount<AccountId = AccountId>,
+{
     (
-        get_account_id_from_seed::<sr25519::Public>(seed),
+        get_account_id_from_seed::<TPublic, AccountPublic, AccountId>(seed),
         get_from_seed::<BabeId>(seed),
         get_from_seed::<GrandpaId>(seed),
         get_from_seed::<ImOnlineId>(seed),
