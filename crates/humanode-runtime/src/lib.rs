@@ -1,5 +1,6 @@
 //! The substrate runtime for the Humanode network.
 
+#![recursion_limit = "256"]
 // TODO(#66): switch back to warn
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
