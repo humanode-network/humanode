@@ -304,6 +304,18 @@ impl Drop for NegativeImbalance {
     }
 }
 
+impl From<pallet_balances::PositiveImbalance<Runtime>> for PositiveImbalance {
+    fn from(val: pallet_balances::PositiveImbalance<Runtime>) -> Self {
+        Self::new(val)
+    }
+}
+
+impl From<pallet_balances::NegativeImbalance<Runtime>> for NegativeImbalance {
+    fn from(val: pallet_balances::NegativeImbalance<Runtime>) -> Self {
+        Self::new(val)
+    }
+}
+
 /// An imbalance handler that will panic on any non-zero imbalance, effectively preventing
 /// the system from adjusting the total issuance in any direction, while also aborting (ideally)
 /// the action that caused this adjustment.
@@ -315,5 +327,28 @@ pub struct ImbalanceHandler<Imbalance>(PhantomData<Imbalance>);
 impl<Imbalance: TryDrop> OnUnbalanced<Imbalance> for ImbalanceHandler<Imbalance> {
     fn on_nonzero_unbalanced(_amount: Imbalance) {
         panic!("non-zero imbalance not settled");
+    }
+}
+
+/// An imbalance handler that adapts one imbalance to another. Use with caution.
+#[derive(Default)]
+pub struct ImbalanceAdapterHanlder<ImbalanceFrom, ImbalanceTo, ToOnUnbalanced>(
+    PhantomData<(ImbalanceFrom, ImbalanceTo, ToOnUnbalanced)>,
+);
+
+impl<ImbalanceFrom, ImbalanceTo, ToOnUnbalanced> OnUnbalanced<ImbalanceFrom>
+    for ImbalanceAdapterHanlder<ImbalanceFrom, ImbalanceTo, ToOnUnbalanced>
+where
+    ImbalanceFrom: TryDrop,
+    ImbalanceTo: TryDrop,
+    ImbalanceTo: From<ImbalanceFrom>,
+    ToOnUnbalanced: OnUnbalanced<ImbalanceTo>,
+{
+    fn on_unbalanced(amount: ImbalanceFrom) {
+        ToOnUnbalanced::on_unbalanced(amount.into())
+    }
+
+    fn on_nonzero_unbalanced(amount: ImbalanceFrom) {
+        ToOnUnbalanced::on_nonzero_unbalanced(amount.into())
     }
 }

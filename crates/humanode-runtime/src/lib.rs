@@ -393,7 +393,11 @@ impl pallet_balances::Config for Runtime {
     /// Setting this as the dust removal guarantees we never disturb the balance. However, it only
     /// works good in conjunction with an [`ExistentialDeposit`] value fitted in such a way that
     /// there will never be a non-zero dust to remove.
-    type DustRemoval = TreasuryPot;
+    type DustRemoval = fixed_supply::ImbalanceAdapterHanlder<
+        pallet_balances::NegativeImbalance<Self>,
+        fixed_supply::NegativeImbalance,
+        TreasuryPot,
+    >;
     /// `1` allows an account to be ripped, but does not allow any loss of funds, i.e. you can't
     /// get to a state where the account would have less tokens than the existential deposit, but
     /// bigger than `0`. To ensure fixes supply, we need to prevent funds being lost.
