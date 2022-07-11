@@ -73,6 +73,9 @@ sp-transaction-pool = { default-features = false, git = "https://github.com/huma
 sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 static_assertions = { version = "1.1.0", default-features = false }
 
+[dev-dependencies]
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
 [features]
 default = ["std"]
 runtime-benchmarks = [
