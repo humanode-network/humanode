@@ -22,7 +22,7 @@ const GAS_COST: u64 = 200;
 #[derive(Debug, PartialEq)]
 pub enum Action {
     /// Check if an address has been authenticated.
-    IsAuthenticated = "isAuthenticated(address)",
+    IsAuthenticated = "isAuthenticated(bytes32)",
 }
 
 /// Exposes the current bioauth status of an address to the EVM.
