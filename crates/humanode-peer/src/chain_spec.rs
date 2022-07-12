@@ -240,11 +240,18 @@ fn testnet_genesis(
         },
         balances: BalancesConfig {
             // Configure endowed accounts with initial balance of 1 << 60.
-            balances: endowed_accounts
-                .iter()
-                .cloned()
-                .map(|k| (k, 1 << 60))
-                .collect(),
+            balances: {
+                let pot_accounts = vec![
+                    humanode_runtime::TreasuryPot::account_id(),
+                    humanode_runtime::FeesPot::account_id(),
+                ];
+                endowed_accounts
+                    .iter()
+                    .chain(pot_accounts.iter())
+                    .cloned()
+                    .map(|k| (k, 1 << 60))
+                    .collect()
+            },
         },
         session: SessionConfig {
             keys: initial_authorities
@@ -329,6 +336,8 @@ fn testnet_genesis(
         dynamic_fee: Default::default(),
         base_fee: Default::default(),
         transaction_payment: Default::default(),
+        fees_pot: Default::default(),
+        treasury_pot: Default::default(),
     }
 }
 

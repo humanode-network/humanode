@@ -3178,6 +3178,7 @@ dependencies = [
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-offences",
+ "pallet-pot",
  "pallet-randomness-collective-flip",
  "pallet-session",
  "pallet-sudo",
@@ -5507,6 +5508,19 @@ dependencies = [
  "serde",
  "sp-runtime",
  "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-pot"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-runtime",
  "sp-std",
 ]
 
