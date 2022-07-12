@@ -36,7 +36,11 @@ where
     fn execute(handle: &mut impl pallet_evm::PrecompileHandle) -> pallet_evm::PrecompileResult {
         handle.record_cost(GAS_COST)?;
 
-        let selector = handle.read_selector()?;
+        let selector = handle
+            .read_selector()
+            .map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("invalid function selector".into()),
+            })?;
 
         match selector {
             Action::IsAuthenticated => Self::is_authenticated(handle),
@@ -58,7 +62,7 @@ where
         input
             .expect_arguments(1)
             .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("input must be a valid account id".into()),
+                exit_status: ExitError::Other("exactly one arguement is expected".into()),
             })?;
 
         let account_id = T::ValidatorPublicKey::try_from(input.read_till_end()?).map_err(|_| {
