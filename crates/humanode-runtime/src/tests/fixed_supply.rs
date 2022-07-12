@@ -4,8 +4,6 @@ use super::*;
 
 const INIT_BALANCE: u128 = 1000;
 
-const EXISTENTIAL_DEPOSIT: u128 = 500;
-
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
 pub fn new_test_ext_with() -> sp_io::TestExternalities {
@@ -60,13 +58,15 @@ pub fn new_test_ext_with() -> sp_io::TestExternalities {
 fn total_issuance_transaction_fee() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
+        let existential_deposit =
+            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
         // Check total issuance before making transfer.
         let total_issuance_before = Balances::total_issuance();
         // Make KeepAlive transfer.
         assert_ok!(Balances::transfer_keep_alive(
             Some(account_id("Bob")).into(),
             account_id("Alice").into(),
-            INIT_BALANCE - EXISTENTIAL_DEPOSIT
+            INIT_BALANCE - existential_deposit
         ));
         // Check total issuance after making transfer.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
@@ -77,6 +77,8 @@ fn total_issuance_transaction_fee() {
 fn total_issuance_dust_removal() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
+        let existential_deposit =
+            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
         // Check total issuance before making transfer.
         let total_issuance_before = Balances::total_issuance();
 
@@ -84,7 +86,7 @@ fn total_issuance_dust_removal() {
         assert_ok!(Balances::transfer(
             Some(account_id("Bob")).into(),
             account_id("Alice").into(),
-            INIT_BALANCE - EXISTENTIAL_DEPOSIT + 1,
+            INIT_BALANCE - existential_deposit + 1,
         ));
         // Check total issuance after making transfer.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
