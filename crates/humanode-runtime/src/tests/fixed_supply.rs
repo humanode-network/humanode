@@ -1,8 +1,14 @@
 //! Tests to verify fixed supply logic.
 
+use frame_support::{
+    dispatch::DispatchInfo,
+    weights::{DispatchClass, Pays},
+};
+use sp_runtime::traits::SignedExtension;
+
 use super::*;
 
-const INIT_BALANCE: u128 = 1000;
+const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
 
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
@@ -94,5 +100,32 @@ fn total_issuance_dust_removal() {
         assert!(!frame_system::Account::<Runtime>::contains_key(
             &account_id("Bob")
         ));
+    })
+}
+
+#[test]
+fn total_issuance_transaction_payment_validate() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        let call = pallet_balances::Call::transfer {
+            dest: account_id("Alice").into(),
+            value: 100,
+        }
+        .into();
+
+        let normal = DispatchInfo {
+            weight: 10,
+            class: DispatchClass::Normal,
+            pays_fee: Pays::Yes,
+        };
+
+        assert_ok!(
+            pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(0).validate(
+                &account_id("Bob"),
+                &call,
+                &normal,
+                10
+            )
+        );
     })
 }
