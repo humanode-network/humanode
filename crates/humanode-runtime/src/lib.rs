@@ -73,6 +73,8 @@ pub mod eip712;
 mod find_author;
 pub mod fixed_supply;
 pub mod robonode;
+#[cfg(test)]
+mod tests;
 
 /// An index to a block.
 pub type BlockNumber = u32;
