@@ -38,6 +38,16 @@ pub struct Extensions {
 /// The public key for the accounts.
 type AccountPublic = <Signature as Verify>::Signer;
 
+/// Generate an account ID from seed.
+pub fn account_id(seed: &str) -> AccountId {
+    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(seed)
+}
+
+/// Generate consensus authority keys.
+pub fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) {
+    authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>(seed)
+}
+
 /// A configuration for local testnet.
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
@@ -58,47 +68,26 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
             testnet_genesis(
                 wasm_binary,
                 // Initial PoA authorities
-                vec![
-                    authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
-                    authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob"),
-                ],
+                vec![authority_keys("Alice"), authority_keys("Bob")],
                 // Sudo account
-                get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
+                account_id("Alice"),
                 // Pre-funded accounts
                 vec![
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob"),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Charlie",
-                    ),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Dave"),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Eve"),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Ferdie"),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Alice//stash",
-                    ),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Bob//stash",
-                    ),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Charlie//stash",
-                    ),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Dave//stash",
-                    ),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Eve//stash",
-                    ),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Ferdie//stash",
-                    ),
+                    account_id("Alice"),
+                    account_id("Bob"),
+                    account_id("Charlie"),
+                    account_id("Dave"),
+                    account_id("Eve"),
+                    account_id("Ferdie"),
+                    account_id("Alice//stash"),
+                    account_id("Bob//stash"),
+                    account_id("Charlie//stash"),
+                    account_id("Dave//stash"),
+                    account_id("Eve//stash"),
+                    account_id("Ferdie//stash"),
                 ],
                 robonode_public_key,
-                vec![get_account_id_from_seed::<
-                    sr25519::Public,
-                    AccountPublic,
-                    AccountId,
-                >("Alice")],
+                vec![account_id("Alice")],
             )
         },
         // Bootnodes
@@ -135,30 +124,18 @@ pub fn development_config() -> Result<ChainSpec, String> {
             testnet_genesis(
                 wasm_binary,
                 // Initial PoA authorities
-                vec![authority_keys_from_seed::<
-                    sr25519::Public,
-                    AccountPublic,
-                    AccountId,
-                >("Alice")],
+                vec![authority_keys("Alice")],
                 // Sudo account
-                get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
+                account_id("Alice"),
                 // Pre-funded accounts
                 vec![
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob"),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Alice//stash",
-                    ),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Bob//stash",
-                    ),
+                    account_id("Alice"),
+                    account_id("Bob"),
+                    account_id("Alice//stash"),
+                    account_id("Bob//stash"),
                 ],
                 robonode_public_key,
-                vec![get_account_id_from_seed::<
-                    sr25519::Public,
-                    AccountPublic,
-                    AccountId,
-                >("Alice")],
+                vec![account_id("Alice")],
             )
         },
         // Bootnodes
@@ -198,30 +175,18 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
             testnet_genesis(
                 wasm_binary,
                 // Initial PoA authorities
-                vec![authority_keys_from_seed::<
-                    sr25519::Public,
-                    AccountPublic,
-                    AccountId,
-                >("Alice")],
+                vec![authority_keys("Alice")],
                 // Sudo account
-                get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
+                account_id("Alice"),
                 // Pre-funded accounts
                 vec![
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Alice"),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>("Bob"),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Alice//stash",
-                    ),
-                    get_account_id_from_seed::<sr25519::Public, AccountPublic, AccountId>(
-                        "Bob//stash",
-                    ),
+                    account_id("Alice"),
+                    account_id("Bob"),
+                    account_id("Alice//stash"),
+                    account_id("Bob//stash"),
                 ],
                 robonode_public_key,
-                vec![get_account_id_from_seed::<
-                    sr25519::Public,
-                    AccountPublic,
-                    AccountId,
-                >("Alice")],
+                vec![account_id("Alice")],
             )
         },
         // Bootnodes
