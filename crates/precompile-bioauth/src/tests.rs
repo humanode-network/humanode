@@ -37,7 +37,7 @@ fn test_empty_selector() {
 }
 
 #[test]
-fn test_empty_input() {
+fn test_is_authenticated_empty_input() {
     new_test_ext().execute_with(|| {
         let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated).build();
 
@@ -57,7 +57,7 @@ fn test_empty_input() {
 }
 
 #[test]
-fn test_invalid_input() {
+fn test_is_authenticated_invalid_input() {
     new_test_ext().execute_with(|| {
         let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
             .write(Bytes::from("invalid input"))
@@ -79,7 +79,7 @@ fn test_invalid_input() {
 }
 
 #[test]
-fn test_authorized() {
+fn test_is_authenticated_true() {
     new_test_ext().execute_with(|| {
         let sample_key = [0; 32];
         let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
@@ -110,7 +110,7 @@ fn test_authorized() {
 }
 
 #[test]
-fn test_not_authorized() {
+fn test_is_authenticated_false() {
     new_test_ext().execute_with(|| {
         let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
             .write(sp_core::H256::from([0; 32]))
