@@ -41,8 +41,7 @@ impl<C: SubstrateCli> Runner<C> {
         let runtime_handle = tokio::runtime::Handle::current();
         let config = command.create_humanode_configuration(cli, runtime_handle)?;
 
-        // We support our custom SS58 prefix (that isn't yet registered in the `ss58-registry`)
-        // from provided chain spec using set_default_ss58_version.
+        // Regardless of whether our ss58 prefix is registered or not, we are setting a default prefix here.
         let humanode_ss58_prefix = ss58_prefix(config.substrate.chain_spec.as_ref())?;
         sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(humanode_ss58_prefix));
 
