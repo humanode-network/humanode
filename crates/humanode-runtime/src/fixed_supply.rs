@@ -352,3 +352,52 @@ where
         ToOnUnbalanced::on_nonzero_unbalanced(amount.into())
     }
 }
+
+/// The fixed supply transaction charger.
+///
+/// This implementation maps the `LiquidityInfo` to the unguarded `NegativeImbalance` while we are
+/// passing it around, effectively making it so it doesn't panic if dropped in-flight.
+/// This is a workaround for the transaction validation logic, that is known to drop
+/// the `LiquidityInfo` while in the validation process of the transaction.
+pub struct TransactionCharger<OU>(PhantomData<OU>);
+
+impl<OU> pallet_transaction_payment::OnChargeTransaction<Runtime> for TransactionCharger<OU>
+where
+    OU: OnUnbalanced<NegativeImbalance>,
+{
+    type Balance = Balance;
+    type LiquidityInfo = Option<<Balances as CurrencyT<AccountId>>::NegativeImbalance>;
+
+    fn withdraw_fee(
+        who: &AccountId,
+        call: &Call,
+        info: &DispatchInfoOf<Call>,
+        fee: Self::Balance,
+        tip: Self::Balance,
+    ) -> Result<Self::LiquidityInfo, TransactionValidityError> {
+        let liquidity_info =
+            <pallet_transaction_payment::CurrencyAdapter::<Currency, OU> as pallet_transaction_payment::OnChargeTransaction<Runtime>>::withdraw_fee(
+                who, call, info, fee, tip,
+            )?;
+        Ok(liquidity_info.map(|mut imbalance| imbalance.must_take()))
+    }
+
+    fn correct_and_deposit_fee(
+        who: &AccountId,
+        dispatch_info: &DispatchInfoOf<Call>,
+        post_info: &PostDispatchInfoOf<Call>,
+        corrected_fee: Self::Balance,
+        tip: Self::Balance,
+        already_withdrawn: Self::LiquidityInfo,
+    ) -> Result<(), TransactionValidityError> {
+        let already_withdrawn_fixed = already_withdrawn.map(NegativeImbalance::from);
+        <pallet_transaction_payment::CurrencyAdapter::<Currency, OU> as pallet_transaction_payment::OnChargeTransaction<Runtime>>::correct_and_deposit_fee(
+            who,
+            dispatch_info,
+            post_info,
+            corrected_fee,
+            tip,
+            already_withdrawn_fixed,
+        )
+    }
+}
