@@ -5,10 +5,9 @@ use std::marker::PhantomData;
 use futures::Future;
 use sc_cli::{Error as CliError, Result, SubstrateCli};
 use sc_service::{Error as ServiceError, TaskManager};
-use serde::Deserialize;
 use sp_core::crypto::Ss58AddressFormat;
 
-use super::{CliConfigurationExt, Root};
+use super::{utils::application_error, CliConfigurationExt, Root};
 use crate::configuration::Configuration;
 
 /// Run a future until it completes or a signal is recevied.
@@ -115,16 +114,22 @@ impl<C: SubstrateCli> Runner<C> {
     }
 }
 
-/// A helper function to extract Humanode Ss58 prefix from provided
+/// A helper function to extract Humanode ss58 prefix from provided
 /// chain spec during boot node.
 fn ss58_prefix(chain_spec: &dyn sc_service::ChainSpec) -> Result<u16> {
-    let chain_spec_value: serde_json::Value = serde_json::from_str(&chain_spec.as_json(false)?)
-        .map_err(|err| sc_cli::Error::Application(err.into()))?;
+    let genesis = chain_spec.build_storage().map_err(application_error)?.top;
 
-    let genesis = humanode_runtime::GenesisConfig::deserialize(
-        chain_spec_value["genesis"]["runtime"].clone(),
-    )
-    .map_err(|err| sc_cli::Error::Application(err.into()))?;
+    // Encoded ss58 prefix key at genesis raw.
+    let chain_properties = "3f2605a656718007c77d5646bebdfd9cbb924729a787163fbb3374830b42793f";
+    let ss58_prefix_bytes: [u8; 2] = genesis
+        .get(&hex::decode(chain_properties).expect("should be valid"))
+        .ok_or("ss58 prefix is not set")
+        .map_err(application_error)?
+        .as_slice()
+        .try_into()
+        .map_err(application_error)?;
 
-    Ok(genesis.chain_properties.ss58_prefix)
+    let ss58_prefix = u16::from_le_bytes(ss58_prefix_bytes);
+
+    Ok(ss58_prefix)
 }
