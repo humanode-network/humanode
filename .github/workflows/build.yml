@@ -103,6 +103,9 @@ jobs:
         with:
           swap-size-gb: 5
 
+      - name: Result of Swap Space
+        run: echo "Increased swap space!"
+
       - name: Run cargo ${{ matrix.plan.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
         with:
