@@ -7,7 +7,6 @@ use frame_support::{
     weights::{DispatchClass, Pays},
 };
 use pallet_evm::AddressMapping;
-use sp_application_crypto::ByteArray;
 use sp_runtime::traits::SignedExtension;
 
 use super::*;
@@ -62,11 +61,6 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 
     // Make test externalities from the storage.
     storage.into()
-}
-
-/// A helper function to get a corresponding EVM truncated address for provided AccountId.
-fn evm_truncated_address(account_id: AccountId) -> H160 {
-    H160::from_slice(&account_id.as_slice()[0..20])
 }
 
 #[test]
