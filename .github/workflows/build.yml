@@ -93,7 +93,6 @@ jobs:
 
       - name: Print build environment info
         run: |
-          echo "Hello World"
           set -x
           cargo --version
           cargo clippy --version
