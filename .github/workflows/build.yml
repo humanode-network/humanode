@@ -93,18 +93,11 @@ jobs:
 
       - name: Print build environment info
         run: |
+          echo "Hello World"
           set -x
           cargo --version
           cargo clippy --version
           env
-
-      - name: Set Swap Space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 5
-
-      - name: Result of Swap Space
-        run: echo "Increased swap space!"
 
       - name: Run cargo ${{ matrix.plan.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
