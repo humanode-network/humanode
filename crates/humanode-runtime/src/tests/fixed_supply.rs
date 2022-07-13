@@ -64,6 +64,11 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     storage.into()
 }
 
+/// A helper function to get a corresponding EVM truncated address for provided AccountId.
+fn evm_truncated_address(account_id: AccountId) -> H160 {
+    H160::from_slice(&account_id.as_slice()[0..20])
+}
+
 #[test]
 fn total_issuance_transaction_fee() {
     // Build the state from the config.
@@ -150,7 +155,7 @@ fn total_issuance_evm_withdraw() {
         // Check total issuance before making evm withdraw.
         let total_issuance_before = Balances::total_issuance();
 
-        let bob_evm = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
+        let bob_evm = evm_truncated_address(account_id("Bob"));
         let hashed_bob_evm =
             <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
 
@@ -178,7 +183,7 @@ fn total_issuance_evm_call() {
         // Check total issuance before making evm call.
         let total_issuance_before = Balances::total_issuance();
 
-        let bob_evm = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
+        let bob_evm = evm_truncated_address(account_id("Bob"));
         let hashed_bob_evm =
             <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
 
@@ -217,7 +222,7 @@ fn total_issuance_evm_create() {
         // Check total issuance before making evm create.
         let total_issuance_before = Balances::total_issuance();
 
-        let bob_evm = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
+        let bob_evm = evm_truncated_address(account_id("Bob"));
         let hashed_bob_evm =
             <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
 
