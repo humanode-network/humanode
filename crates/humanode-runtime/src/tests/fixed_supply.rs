@@ -4,7 +4,6 @@ use std::str::FromStr;
 
 use frame_support::{
     dispatch::DispatchInfo,
-    traits::Currency,
     weights::{DispatchClass, Pays},
 };
 use pallet_evm::AddressMapping;
@@ -12,7 +11,6 @@ use sp_application_crypto::ByteArray;
 use sp_runtime::traits::SignedExtension;
 
 use super::*;
-use crate::find_author::truncate_account_id_into_ethereum_address;
 
 const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
 
@@ -138,6 +136,34 @@ fn total_issuance_transaction_payment_validate() {
         );
 
         // Check total issuance after making transaction validate.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+#[test]
+fn total_issuance_evm_withdraw() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        let existential_deposit =
+            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+
+        // Check total issuance before making evm withdraw.
+        let total_issuance_before = Balances::total_issuance();
+
+        let bob_evm = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
+        let hashed_bob_evm =
+            <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
+
+        // Send tokens to hashed_bob_evm to make withdraw from bob_evm.
+        assert_ok!(Balances::transfer(
+            Some(account_id("Bob")).into(),
+            hashed_bob_evm.into(),
+            INIT_BALANCE - existential_deposit - 1,
+        ));
+
+        assert_ok!(EVM::withdraw(Some(account_id("Bob")).into(), bob_evm, 1000));
+
+        // Check total issuance after making evm withdraw.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
