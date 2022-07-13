@@ -76,7 +76,7 @@ const codeModes = {
   runBenchmark: {
     name: "test-run pallet benchmarks",
     cargoCommand: "run",
-    cargoArgs: "--features runtime-benchmarks,wasmtime benchmark pallet --chain benchmark --heap-pages 4096 --pallet '*' --extrinsic '*' --steps 1 --repeat 1",
+    cargoArgs: "--features runtime-benchmarks,wasmtime benchmark pallet --chain benchmark --pallet '*' --extrinsic '*' --steps 1 --repeat 1",
     cargoCacheKey: "run-benchmark",
   },
 };
