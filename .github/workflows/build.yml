@@ -100,6 +100,7 @@ jobs:
 
       - name: Run cargo ${{ matrix.plan.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
+        timeout-minutes: 120
         with:
           command: ${{ matrix.plan.mode.cargoCommand }}
           args: ${{ matrix.plan.mode.cargoArgs }}
