@@ -45,7 +45,7 @@ jobs:
     name: ${{ matrix.plan.platform.name }} / ${{ matrix.plan.mode.name }}
     runs-on: ${{ matrix.plan.platform.os }}
     env: ${{ matrix.plan.platform.env }}
-    timeout-minutes: 50
+    timeout-minutes: 70
     steps:
 
       - name: Job config
@@ -77,7 +77,6 @@ jobs:
 
       - name: Run cargo ${{ matrix.plan.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
-        timeout-minutes: 100
         with:
           command: ${{ matrix.plan.mode.cargoCommand }}
           args: ${{ matrix.plan.mode.cargoArgs }}
