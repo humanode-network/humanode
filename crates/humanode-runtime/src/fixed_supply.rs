@@ -401,3 +401,46 @@ where
         )
     }
 }
+
+impl<OU> pallet_evm::OnChargeEVMTransaction<Runtime> for TransactionCharger<OU>
+where
+    OU: OnUnbalanced<NegativeImbalance>,
+{
+    type LiquidityInfo = Option<NegativeImbalance>;
+
+    fn withdraw_fee(
+        who: &H160,
+        fee: U256,
+    ) -> Result<Self::LiquidityInfo, pallet_evm::Error<Runtime>> {
+        <pallet_evm::EVMCurrencyAdapter<Currency, OU> as pallet_evm::OnChargeEVMTransaction<
+            Runtime,
+        >>::withdraw_fee(who, fee)
+    }
+
+    fn correct_and_deposit_fee(
+        who: &H160,
+        corrected_fee: U256,
+        base_fee: U256,
+        already_withdrawn: Self::LiquidityInfo,
+    ) -> Self::LiquidityInfo {
+        <pallet_evm::EVMCurrencyAdapter<Currency, OU> as pallet_evm::OnChargeEVMTransaction<
+            Runtime,
+        >>::correct_and_deposit_fee(who, corrected_fee, base_fee, already_withdrawn)
+    }
+
+    fn pay_priority_fee(tip: Self::LiquidityInfo) {
+        if let Some(tip) = tip {
+            // This is a rewrite of the default EVM implementation that blantly mishandles
+            // imbalances. By not following the imbalances discipline (i.e. using the wrong
+            // function) the EVM implementation leads to the appearance of two mirroring opposite
+            // imbalances - while they could've just do `resolve_creating` instead.
+            // This is the correct rewrite of the same logic.
+
+            use pallet_evm::AddressMapping;
+            let account_id = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(
+                <pallet_evm::Pallet<Runtime>>::find_author(),
+            );
+            Currency::resolve_creating(&account_id, tip);
+        }
+    }
+}
