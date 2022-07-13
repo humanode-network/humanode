@@ -16,7 +16,7 @@ const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
 
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
-pub fn new_test_ext_with() -> sp_io::TestExternalities {
+fn new_test_ext_with() -> sp_io::TestExternalities {
     let authorities = vec![authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
