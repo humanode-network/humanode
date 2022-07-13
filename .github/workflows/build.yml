@@ -98,9 +98,13 @@ jobs:
           cargo clippy --version
           env
 
+      - name: Set Swap Space
+        uses: pierotofy/set-swap-space@master
+        with:
+          swap-size-gb: 5
+
       - name: Run cargo ${{ matrix.plan.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
-        timeout-minutes: 120
         with:
           command: ${{ matrix.plan.mode.cargoCommand }}
           args: ${{ matrix.plan.mode.cargoArgs }}
