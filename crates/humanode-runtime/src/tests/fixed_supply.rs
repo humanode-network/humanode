@@ -206,3 +206,41 @@ fn total_issuance_evm_call() {
         assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
+
+#[test]
+fn total_issuance_evm_create() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        let existential_deposit =
+            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+
+        // Check total issuance before making evm create.
+        let total_issuance_before = Balances::total_issuance();
+
+        let bob_evm = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
+        let hashed_bob_evm =
+            <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
+
+        // Send tokens to hashed_bob_evm to make create from bob_evm.
+        assert_ok!(Balances::transfer(
+            Some(account_id("Bob")).into(),
+            hashed_bob_evm.into(),
+            INIT_BALANCE - existential_deposit - 1,
+        ));
+
+        assert_ok!(EVM::create(
+            Some(account_id("Bob")).into(),
+            bob_evm,
+            Vec::new(),
+            U256::from(1_000),
+            1000000,
+            U256::from(2_000_000_000),
+            Some(U256::from(1)),
+            Some(U256::from(0)),
+            Vec::new(),
+        ));
+
+        // Check total issuance after making evm call.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
