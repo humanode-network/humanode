@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use pallet_evm::{ExitError, Precompile, PrecompileFailure, PrecompileOutput};
-use precompile_utils::{succeed, EvmResult, PrecompileHandleExt};
+use precompile_utils::{succeed, EvmDataWriter, EvmResult, PrecompileHandleExt};
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 
@@ -75,8 +75,8 @@ where
             .iter()
             .any(|active_authetication| active_authetication.public_key == account_id);
 
-        let bytes = if is_authenticated { &[1] } else { &[0] };
-
-        Ok(succeed(bytes))
+        Ok(succeed(
+            EvmDataWriter::new().write(is_authenticated).build(),
+        ))
     }
 }
