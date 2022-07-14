@@ -119,10 +119,11 @@ impl<C: SubstrateCli> Runner<C> {
 fn ss58_prefix(chain_spec: &dyn sc_service::ChainSpec) -> Result<u16> {
     let genesis = chain_spec.build_storage().map_err(application_error)?.top;
 
-    // Encoded ss58 prefix key at genesis raw.
-    let chain_properties = "3f2605a656718007c77d5646bebdfd9cbb924729a787163fbb3374830b42793f";
     let ss58_prefix_bytes: [u8; 2] = genesis
-        .get(&hex::decode(chain_properties).expect("should be valid"))
+        .get(&crypto_utils::storage::encoded_key(
+            "ChainProperties",
+            "Ss58Prefix",
+        ))
         .ok_or("ss58 prefix is not set")
         .map_err(application_error)?
         .as_slice()
