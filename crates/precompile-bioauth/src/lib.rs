@@ -62,7 +62,7 @@ where
         input
             .expect_arguments(1)
             .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly one arguement is expected".into()),
+                exit_status: ExitError::Other("exactly one argument is expected".into()),
             })?;
 
         let account_id = T::ValidatorPublicKey::try_from(input.read_till_end()?).map_err(|_| {
