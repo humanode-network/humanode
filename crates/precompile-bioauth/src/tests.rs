@@ -50,7 +50,7 @@ fn test_is_authenticated_empty_input() {
         assert_eq!(
             err,
             PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly one arguement is expected".into())
+                exit_status: ExitError::Other("exactly one argument is expected".into())
             }
         );
     })
