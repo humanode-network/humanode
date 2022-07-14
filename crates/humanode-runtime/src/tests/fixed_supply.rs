@@ -140,7 +140,7 @@ fn total_issuance_transaction_payment_validate() {
         // validation is dropped, and in the real execution, the unbalance is properly dealt with.
 
         // This assertion is set to check that the total balance is *not* equal to the previous one,
-        // but not because it is the intended behaviour (on the contrrary! we'd rather have
+        // but not because it is the intended behaviour (on the contrary! we'd rather have
         // the balance intact!), but to alert us if/when things change, and this balance becomes
         // intact after the calculation.
         // If you see this assertion start failing (while the *rest of the suite is ok*) - it might
