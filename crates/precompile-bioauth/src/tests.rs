@@ -103,7 +103,7 @@ fn test_is_authenticated_true() {
             val,
             PrecompileOutput {
                 exit_status: ExitSucceed::Returned,
-                output: vec![1],
+                output: EvmDataWriter::new().write(true).build(),
             }
         );
     })
@@ -128,7 +128,7 @@ fn test_is_authenticated_false() {
             val,
             PrecompileOutput {
                 exit_status: ExitSucceed::Returned,
-                output: vec![0],
+                output: EvmDataWriter::new().write(false).build(),
             }
         );
     })
