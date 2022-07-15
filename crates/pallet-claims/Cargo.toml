@@ -1,0 +1,54 @@
+[package]
+name = "pallet-claims"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
+frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+hex-literal = "0.3"
+libsecp256k1 = { version = "0.7", optional = true }
+pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+pallet-vesting = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+rustc-hex = { version = "2", optional = true }
+scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
+serde = { version = "1", features = ["derive"], optional = true }
+sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[dev-dependencies]
+pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-vesting = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+serde_json = "1"
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[features]
+default = ["std"]
+runtime-benchmarks = [
+  "sp-core",
+  "frame-support/runtime-benchmarks",
+  "frame-benchmarking/runtime-benchmarks",
+  "pallet-balances/runtime-benchmarks",
+  "pallet-vesting/runtime-benchmarks",
+]
+std = [
+  "serde",
+  "codec/std",
+  "scale-info/std",
+  "frame-support/std",
+  "frame-system/std",
+  "frame-benchmarking/std",
+  "pallet-balances/std",
+  "pallet-vesting/std",
+  "sp-std/std",
+  "sp-runtime/std",
+  "libsecp256k1",
+  "rustc-hex",
+]
+try-runtime = ["frame-support/try-runtime"]

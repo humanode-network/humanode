@@ -5369,6 +5369,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-claims"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "libsecp256k1 0.7.0",
+ "pallet-balances",
+ "pallet-vesting",
+ "parity-scale-codec",
+ "rustc-hex",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sp-api",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
@@ -5687,6 +5710,21 @@ dependencies = [
  "parity-scale-codec",
  "sp-api",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-vesting"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#438f40dc262ac32a4afd600d8d76214897a0f1a6"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -9928,7 +9966,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
  "digest 0.10.3",
- "rand 0.8.5",
+ "rand 0.4.6",
  "static_assertions",
 ]
 
