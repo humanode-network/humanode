@@ -103,20 +103,10 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
         .unwrap();
     pallet_claims::GenesisConfig::<Test> {
         claims: vec![
-            (eth(&alice()), 100, None, None),
-            (
-                eth(&dave()),
-                200,
-                None,
-                Some(pallet_claims::StatementKind::Regular),
-            ),
-            (
-                eth(&eve()),
-                300,
-                Some(42),
-                Some(pallet_claims::StatementKind::Saft),
-            ),
-            (eth(&frank()), 400, Some(43), None),
+            (eth(&alice()), 100),
+            (eth(&dave()), 200),
+            (eth(&eve()), 300),
+            (eth(&frank()), 400),
         ],
         vesting: vec![(eth(&alice()), (50, 10, 1))],
     }

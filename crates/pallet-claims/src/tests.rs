@@ -2,18 +2,18 @@
 
 use codec::Encode;
 use frame_support::{
-    assert_err, assert_noop, assert_ok,
-    dispatch::{DispatchError::BadOrigin, GetDispatchInfo},
+    assert_err, assert_noop, assert_ok, dispatch::DispatchError::BadOrigin,
     traits::ExistenceRequirement,
-    weights::Pays,
 };
 use hex_literal::hex;
 use pallet_claims::Call as ClaimsCall;
-use sp_runtime::transaction_validity::TransactionLongevity;
+use sp_runtime::transaction_validity::{
+    InvalidTransaction, TransactionLongevity, ValidTransaction,
+};
 
 use crate::{
     self as pallet_claims,
-    mock::{new_test_ext, Balances, Call, Claims, Origin, Test, Vesting},
+    mock::{new_test_ext, Balances, Claims, Origin, Test, Vesting},
     secp_utils::*,
     *,
 };
@@ -64,14 +64,13 @@ fn basic_claim_moving_works() {
     new_test_ext().execute_with(|| {
         assert_eq!(Balances::free_balance(42), 0);
         assert_noop!(
-            Claims::move_claim(Origin::signed(1), eth(&alice()), eth(&bob()), None),
+            Claims::move_claim(Origin::signed(1), eth(&alice()), eth(&bob())),
             BadOrigin
         );
         assert_ok!(Claims::move_claim(
             Origin::signed(6),
             eth(&alice()),
             eth(&bob()),
-            None
         ));
         assert_noop!(
             Claims::claim(
@@ -93,211 +92,10 @@ fn basic_claim_moving_works() {
 }
 
 #[test]
-fn claim_attest_moving_works() {
-    new_test_ext().execute_with(|| {
-        assert_ok!(Claims::move_claim(
-            Origin::signed(6),
-            eth(&dave()),
-            eth(&bob()),
-            None
-        ));
-        let s = sig::<Test>(&bob(), &42u64.encode(), StatementKind::Regular.to_text());
-        assert_ok!(Claims::claim_attest(
-            Origin::none(),
-            42,
-            s,
-            StatementKind::Regular.to_text().to_vec()
-        ));
-        assert_eq!(Balances::free_balance(&42), 200);
-    });
-}
-
-#[test]
-fn attest_moving_works() {
-    new_test_ext().execute_with(|| {
-        assert_ok!(Claims::move_claim(
-            Origin::signed(6),
-            eth(&eve()),
-            eth(&bob()),
-            Some(42)
-        ));
-        assert_ok!(Claims::attest(
-            Origin::signed(42),
-            StatementKind::Saft.to_text().to_vec()
-        ));
-        assert_eq!(Balances::free_balance(&42), 300);
-    });
-}
-
-#[test]
-fn claiming_does_not_bypass_signing() {
-    new_test_ext().execute_with(|| {
-        assert_ok!(Claims::claim(
-            Origin::none(),
-            42,
-            sig::<Test>(&alice(), &42u64.encode(), &[][..])
-        ));
-        assert_noop!(
-            Claims::claim(
-                Origin::none(),
-                42,
-                sig::<Test>(&dave(), &42u64.encode(), &[][..])
-            ),
-            Error::<Test>::InvalidStatement,
-        );
-        assert_noop!(
-            Claims::claim(
-                Origin::none(),
-                42,
-                sig::<Test>(&eve(), &42u64.encode(), &[][..])
-            ),
-            Error::<Test>::InvalidStatement,
-        );
-        assert_ok!(Claims::claim(
-            Origin::none(),
-            42,
-            sig::<Test>(&frank(), &42u64.encode(), &[][..])
-        ));
-    });
-}
-
-#[test]
-fn attest_claiming_works() {
-    new_test_ext().execute_with(|| {
-        assert_eq!(Balances::free_balance(42), 0);
-        let s = sig::<Test>(&dave(), &42u64.encode(), StatementKind::Saft.to_text());
-        let r = Claims::claim_attest(
-            Origin::none(),
-            42,
-            s.clone(),
-            StatementKind::Saft.to_text().to_vec(),
-        );
-        assert_noop!(r, Error::<Test>::InvalidStatement);
-
-        let r = Claims::claim_attest(
-            Origin::none(),
-            42,
-            s,
-            StatementKind::Regular.to_text().to_vec(),
-        );
-        assert_noop!(r, Error::<Test>::SignerHasNoClaim);
-        // ^^^ we use ecdsa_recover, so an invalid signature just results in a random signer id
-        // being recovered, which realistically will never have a claim.
-
-        let s = sig::<Test>(&dave(), &42u64.encode(), StatementKind::Regular.to_text());
-        assert_ok!(Claims::claim_attest(
-            Origin::none(),
-            42,
-            s,
-            StatementKind::Regular.to_text().to_vec()
-        ));
-        assert_eq!(Balances::free_balance(&42), 200);
-        assert_eq!(Claims::total(), total_claims() - 200);
-
-        let s = sig::<Test>(&dave(), &42u64.encode(), StatementKind::Regular.to_text());
-        let r = Claims::claim_attest(
-            Origin::none(),
-            42,
-            s,
-            StatementKind::Regular.to_text().to_vec(),
-        );
-        assert_noop!(r, Error::<Test>::SignerHasNoClaim);
-    });
-}
-
-#[test]
-fn attesting_works() {
-    new_test_ext().execute_with(|| {
-        assert_eq!(Balances::free_balance(42), 0);
-        assert_noop!(
-            Claims::attest(Origin::signed(69), StatementKind::Saft.to_text().to_vec()),
-            Error::<Test>::SenderHasNoClaim
-        );
-        assert_noop!(
-            Claims::attest(
-                Origin::signed(42),
-                StatementKind::Regular.to_text().to_vec()
-            ),
-            Error::<Test>::InvalidStatement
-        );
-        assert_ok!(Claims::attest(
-            Origin::signed(42),
-            StatementKind::Saft.to_text().to_vec()
-        ));
-        assert_eq!(Balances::free_balance(&42), 300);
-        assert_eq!(Claims::total(), total_claims() - 300);
-    });
-}
-
-#[test]
-fn claim_cannot_clobber_preclaim() {
-    new_test_ext().execute_with(|| {
-        assert_eq!(Balances::free_balance(42), 0);
-        // Alice's claim is 100
-        assert_ok!(Claims::claim(
-            Origin::none(),
-            42,
-            sig::<Test>(&alice(), &42u64.encode(), &[][..])
-        ));
-        assert_eq!(Balances::free_balance(&42), 100);
-        // Eve's claim is 300 through Account 42
-        assert_ok!(Claims::attest(
-            Origin::signed(42),
-            StatementKind::Saft.to_text().to_vec()
-        ));
-        assert_eq!(Balances::free_balance(&42), 100 + 300);
-        assert_eq!(Claims::total(), total_claims() - 400);
-    });
-}
-
-#[test]
-fn valid_attest_transactions_are_free() {
-    new_test_ext().execute_with(|| {
-        let p = PrevalidateAttests::<Test>::new();
-        let c = Call::Claims(ClaimsCall::attest {
-            statement: StatementKind::Saft.to_text().to_vec(),
-        });
-        let di = c.get_dispatch_info();
-        assert_eq!(di.pays_fee, Pays::No);
-        let r = p.validate(&42, &c, &di, 20);
-        assert_eq!(r, TransactionValidity::Ok(ValidTransaction::default()));
-    });
-}
-
-#[test]
-fn invalid_attest_transactions_are_recognized() {
-    new_test_ext().execute_with(|| {
-        let p = PrevalidateAttests::<Test>::new();
-        let c = Call::Claims(ClaimsCall::attest {
-            statement: StatementKind::Regular.to_text().to_vec(),
-        });
-        let di = c.get_dispatch_info();
-        let r = p.validate(&42, &c, &di, 20);
-        assert!(r.is_err());
-        let c = Call::Claims(ClaimsCall::attest {
-            statement: StatementKind::Saft.to_text().to_vec(),
-        });
-        let di = c.get_dispatch_info();
-        let r = p.validate(&69, &c, &di, 20);
-        assert!(r.is_err());
-    });
-}
-
-#[test]
-fn cannot_bypass_attest_claiming() {
-    new_test_ext().execute_with(|| {
-        assert_eq!(Balances::free_balance(42), 0);
-        let s = sig::<Test>(&dave(), &42u64.encode(), &[]);
-        let r = Claims::claim(Origin::none(), 42, s.clone());
-        assert_noop!(r, Error::<Test>::InvalidStatement);
-    });
-}
-
-#[test]
 fn add_claim_works() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Claims::mint_claim(Origin::signed(42), eth(&bob()), 200, None, None),
+            Claims::mint_claim(Origin::signed(42), eth(&bob()), 200, None),
             sp_runtime::traits::BadOrigin,
         );
         assert_eq!(Balances::free_balance(42), 0);
@@ -309,13 +107,7 @@ fn add_claim_works() {
             ),
             Error::<Test>::SignerHasNoClaim,
         );
-        assert_ok!(Claims::mint_claim(
-            Origin::root(),
-            eth(&bob()),
-            200,
-            None,
-            None
-        ));
+        assert_ok!(Claims::mint_claim(Origin::root(), eth(&bob()), 200, None));
         assert_eq!(Claims::total(), total_claims() + 200);
         assert_ok!(Claims::claim(
             Origin::none(),
@@ -332,13 +124,7 @@ fn add_claim_works() {
 fn add_claim_with_vesting_works() {
     new_test_ext().execute_with(|| {
         assert_noop!(
-            Claims::mint_claim(
-                Origin::signed(42),
-                eth(&bob()),
-                200,
-                Some((50, 10, 1)),
-                None
-            ),
+            Claims::mint_claim(Origin::signed(42), eth(&bob()), 200, Some((50, 10, 1)),),
             sp_runtime::traits::BadOrigin,
         );
         assert_eq!(Balances::free_balance(42), 0);
@@ -355,7 +141,6 @@ fn add_claim_with_vesting_works() {
             eth(&bob()),
             200,
             Some((50, 10, 1)),
-            None
         ));
         assert_ok!(Claims::claim(
             Origin::none(),
@@ -370,51 +155,6 @@ fn add_claim_with_vesting_works() {
             <Balances as Currency<_>>::transfer(&69, &80, 180, ExistenceRequirement::AllowDeath),
             pallet_balances::Error::<Test, _>::LiquidityRestrictions,
         );
-    });
-}
-
-#[test]
-fn add_claim_with_statement_works() {
-    new_test_ext().execute_with(|| {
-        assert_noop!(
-            Claims::mint_claim(
-                Origin::signed(42),
-                eth(&bob()),
-                200,
-                None,
-                Some(StatementKind::Regular)
-            ),
-            sp_runtime::traits::BadOrigin,
-        );
-        assert_eq!(Balances::free_balance(42), 0);
-        let signature = sig::<Test>(&bob(), &69u64.encode(), StatementKind::Regular.to_text());
-        assert_noop!(
-            Claims::claim_attest(
-                Origin::none(),
-                69,
-                signature.clone(),
-                StatementKind::Regular.to_text().to_vec()
-            ),
-            Error::<Test>::SignerHasNoClaim
-        );
-        assert_ok!(Claims::mint_claim(
-            Origin::root(),
-            eth(&bob()),
-            200,
-            None,
-            Some(StatementKind::Regular)
-        ));
-        assert_noop!(
-            Claims::claim_attest(Origin::none(), 69, signature.clone(), vec![],),
-            Error::<Test>::SignerHasNoClaim
-        );
-        assert_ok!(Claims::claim_attest(
-            Origin::none(),
-            69,
-            signature.clone(),
-            StatementKind::Regular.to_text().to_vec()
-        ));
-        assert_eq!(Balances::free_balance(&69), 200);
     });
 }
 
@@ -470,7 +210,6 @@ fn claiming_while_vested_doesnt_work() {
             eth(&bob()),
             200,
             Some((50, 10, 1)),
-            None
         ));
         // New total
         assert_eq!(Claims::total(), total_claims() + 200);
@@ -570,66 +309,6 @@ fn validate_unsigned_works() {
                 }
             ),
             InvalidTransaction::Custom(ValidityError::SignerHasNoClaim.into()).into(),
-        );
-        let s = sig::<Test>(&dave(), &1u64.encode(), StatementKind::Regular.to_text());
-        let call = ClaimsCall::claim_attest {
-            dest: 1,
-            ethereum_signature: s,
-            statement: StatementKind::Regular.to_text().to_vec(),
-        };
-        assert_eq!(
-            <Pallet<Test>>::validate_unsigned(source, &call),
-            Ok(ValidTransaction {
-                priority: 100,
-                requires: vec![],
-                provides: vec![("claims", eth(&dave())).encode()],
-                longevity: TransactionLongevity::max_value(),
-                propagate: true,
-            })
-        );
-        assert_eq!(
-            <Pallet<Test>>::validate_unsigned(
-                source,
-                &ClaimsCall::claim_attest {
-                    dest: 1,
-                    ethereum_signature: EcdsaSignature([0; 65]),
-                    statement: StatementKind::Regular.to_text().to_vec()
-                }
-            ),
-            InvalidTransaction::Custom(ValidityError::InvalidEthereumSignature.into()).into(),
-        );
-
-        let s = sig::<Test>(&bob(), &1u64.encode(), StatementKind::Regular.to_text());
-        let call = ClaimsCall::claim_attest {
-            dest: 1,
-            ethereum_signature: s,
-            statement: StatementKind::Regular.to_text().to_vec(),
-        };
-        assert_eq!(
-            <Pallet<Test>>::validate_unsigned(source, &call),
-            InvalidTransaction::Custom(ValidityError::SignerHasNoClaim.into()).into(),
-        );
-
-        let s = sig::<Test>(&dave(), &1u64.encode(), StatementKind::Saft.to_text());
-        let call = ClaimsCall::claim_attest {
-            dest: 1,
-            ethereum_signature: s,
-            statement: StatementKind::Regular.to_text().to_vec(),
-        };
-        assert_eq!(
-            <Pallet<Test>>::validate_unsigned(source, &call),
-            InvalidTransaction::Custom(ValidityError::SignerHasNoClaim.into()).into(),
-        );
-
-        let s = sig::<Test>(&dave(), &1u64.encode(), StatementKind::Saft.to_text());
-        let call = ClaimsCall::claim_attest {
-            dest: 1,
-            ethereum_signature: s,
-            statement: StatementKind::Saft.to_text().to_vec(),
-        };
-        assert_eq!(
-            <Pallet<Test>>::validate_unsigned(source, &call),
-            InvalidTransaction::Custom(ValidityError::InvalidStatement.into()).into(),
         );
     });
 }
