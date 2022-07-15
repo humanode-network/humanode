@@ -62,7 +62,7 @@ impl RpcUrlResolver {
                 tunnel_name,
                 ws_rpc_endpoint_port,
             } => Ok(self
-                .detect_from_ngrok(&*tunnel_name, *ws_rpc_endpoint_port)
+                .detect_from_ngrok(tunnel_name, *ws_rpc_endpoint_port)
                 .await?
                 .into()),
         }

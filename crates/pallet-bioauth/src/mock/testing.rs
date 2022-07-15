@@ -130,7 +130,7 @@ pub fn with_mock_validator_set_updater<F, R>(f: F) -> R
 where
     F: FnOnce(&mut MockValidatorSetUpdater) -> R,
 {
-    MOCK_VALIDATOR_SET_UPDATER.with(|var| f(&mut *var.borrow_mut()))
+    MOCK_VALIDATOR_SET_UPDATER.with(|var| f(&mut var.borrow_mut()))
 }
 
 mock! {
@@ -153,7 +153,7 @@ pub fn with_mock_current_moment_provider<F, R>(f: F) -> R
 where
     F: FnOnce(&mut MockCurrentMomentProvider) -> R,
 {
-    MOCK_CURRENT_MOMENT_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
+    MOCK_CURRENT_MOMENT_PROVIDER.with(|var| f(&mut var.borrow_mut()))
 }
 
 mock! {
@@ -191,14 +191,14 @@ pub fn with_mock_before_auth_hook_provider<F, R>(f: F) -> R
 where
     F: FnOnce(&mut MockBeforeAuthHookProvider) -> R,
 {
-    MOCK_BEFORE_AUTH_HOOK_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
+    MOCK_BEFORE_AUTH_HOOK_PROVIDER.with(|var| f(&mut var.borrow_mut()))
 }
 
 pub fn with_mock_after_auth_hook_provider<F, R>(f: F) -> R
 where
     F: FnOnce(&mut MockAfterAuthHookProvider) -> R,
 {
-    MOCK_AFTER_AUTH_HOOK_PROVIDER.with(|var| f(&mut *var.borrow_mut()))
+    MOCK_AFTER_AUTH_HOOK_PROVIDER.with(|var| f(&mut var.borrow_mut()))
 }
 
 impl system::Config for Test {
