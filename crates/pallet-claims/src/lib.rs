@@ -59,9 +59,9 @@ impl<'de> Deserialize<'de> for EthereumAddress {
         let offset = if base_string.starts_with("0x") { 2 } else { 0 };
         let s = &base_string[offset..];
         if s.len() != 40 {
-            Err(serde::de::Error::custom(
+            return Err(serde::de::Error::custom(
                 "Bad length of Ethereum address (should be 42 including '0x')",
-            ))?;
+            ));
         }
         let raw: Vec<u8> = rustc_hex::FromHex::from_hex(s)
             .map_err(|e| serde::de::Error::custom(format!("{:?}", e)))?;
@@ -76,7 +76,7 @@ pub struct EcdsaSignature(pub [u8; 65]);
 
 impl PartialEq for EcdsaSignature {
     fn eq(&self, other: &Self) -> bool {
-        &self.0[..] == &other.0[..]
+        self.0[..] == other.0[..]
     }
 }
 
@@ -174,6 +174,7 @@ pub mod pallet {
     pub(super) type Vesting<T: Config> =
         StorageMap<_, Identity, EthereumAddress, (BalanceOf<T>, BalanceOf<T>, T::BlockNumber)>;
 
+    #[allow(clippy::type_complexity)]
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         pub claims: Vec<(EthereumAddress, BalanceOf<T>)>,
@@ -302,8 +303,12 @@ pub mod pallet {
                 .map(|_| ())
                 .or_else(ensure_root)?;
 
-            Claims::<T>::take(&old).map(|c| Claims::<T>::insert(&new, c));
-            Vesting::<T>::take(&old).map(|c| Vesting::<T>::insert(&new, c));
+            if let Some(c) = Claims::<T>::take(&old) {
+                Claims::<T>::insert(&new, c)
+            }
+            if let Some(c) = Vesting::<T>::take(&old) {
+                Vesting::<T>::insert(&new, c)
+            }
             Ok(Pays::No.into())
         }
     }
@@ -324,14 +329,14 @@ pub mod pallet {
                     ethereum_signature,
                 } => {
                     let data = account.using_encoded(to_ascii_hex);
-                    Self::eth_recover(&ethereum_signature, &data, &[][..])
+                    Self::eth_recover(ethereum_signature, &data, &[][..])
                 }
                 _ => return Err(InvalidTransaction::Call.into()),
             };
 
-            let signer = maybe_signer.ok_or(InvalidTransaction::Custom(
-                ValidityError::InvalidEthereumSignature.into(),
-            ))?;
+            let signer = maybe_signer.ok_or_else(|| {
+                InvalidTransaction::Custom(ValidityError::InvalidEthereumSignature.into())
+            })?;
 
             let e = InvalidTransaction::Custom(ValidityError::SignerHasNoClaim.into());
             ensure!(<Claims<T>>::contains_key(&signer), e);
@@ -370,7 +375,7 @@ impl<T: Config> Pallet<T> {
         }
         let mut v = b"\x19Ethereum Signed Message:\n".to_vec();
         v.extend(rev.into_iter().rev());
-        v.extend_from_slice(&prefix[..]);
+        v.extend_from_slice(prefix);
         v.extend_from_slice(what);
         v.extend_from_slice(extra);
         v
