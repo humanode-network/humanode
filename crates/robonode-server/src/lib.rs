@@ -56,6 +56,6 @@ impl logic::Signer<Vec<u8>> for robonode_crypto::Keypair {
 #[async_trait::async_trait]
 impl logic::PublicKeyProvider for robonode_crypto::Keypair {
     fn public_key(&self) -> &[u8] {
-        &*self.public.as_bytes()
+        self.public.as_bytes()
     }
 }

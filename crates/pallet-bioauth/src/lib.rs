@@ -346,10 +346,10 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
-        // Event documentation should end with an array that provides descriptive names for event
-        // parameters.
-        /// New authentication was added to the state. [validator_public_key]
-        NewAuthentication(T::ValidatorPublicKey),
+        /// New authentication was added to the state.
+        NewAuthentication {
+            validator_public_key: T::ValidatorPublicKey,
+        },
     }
 
     /// Possible error conditions during `authenticate` call processing.
@@ -507,7 +507,9 @@ pub mod pallet {
                             <T as Config>::AfterAuthHook::hook(before_hook_data);
 
                             // Emit an event.
-                            Self::deposit_event(Event::NewAuthentication(public_key));
+                            Self::deposit_event(Event::NewAuthentication {
+                                validator_public_key: public_key,
+                            });
                             Ok(())
                         },
                     )?;
