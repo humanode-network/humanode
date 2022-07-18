@@ -178,9 +178,6 @@ pub mod pallet {
         /// The getter for the current moment.
         type CurrentMoment: CurrentMoment<Self::Moment>;
 
-        /// The step moment between unlocking.
-        type StepMoment: Get<Self::Moment>;
-
         /// Convert the moment into a balance.
         type MomentToBalance: Convert<Self::Moment, BalanceOf<Self>>;
 

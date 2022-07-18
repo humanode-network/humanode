@@ -15,10 +15,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::cell::RefCell;
+
 use frame_support::{
     parameter_types,
     traits::{ConstU32, ConstU64, GenesisBuild},
 };
+use mockall::mock;
 use sp_core::H256;
 use sp_runtime::{
     testing::Header,
@@ -30,6 +33,25 @@ use crate as pallet_vesting;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
+
+/// A timestamp: milliseconds since the unix epoch.
+pub type UnixMilliseconds = u64;
+
+mock! {
+    pub CurrentMomentProvider {
+        pub fn now(&self) -> UnixMilliseconds;
+    }
+}
+
+thread_local! {
+    pub static MOCK_CURRENT_MOMENT_PROVIDER: RefCell<MockCurrentMomentProvider> = RefCell::new(MockCurrentMomentProvider::new());
+}
+
+impl crate::CurrentMoment<UnixMilliseconds> for MockCurrentMomentProvider {
+    fn now() -> UnixMilliseconds {
+        MOCK_CURRENT_MOMENT_PROVIDER.with(|val| val.borrow().now())
+    }
+}
 
 frame_support::construct_runtime!(
     pub enum Test where
@@ -90,9 +112,11 @@ parameter_types! {
     pub static ExistentialDeposit: u64 = 0;
 }
 impl Config for Test {
-    type BlockNumberToBalance = Identity;
-    type Currency = Balances;
     type Event = Event;
+    type Currency = Balances;
+    type Moment = UnixMilliseconds;
+    type CurrentMoment = MockCurrentMomentProvider;
+    type MomentToBalance = Identity;
     const MAX_VESTING_SCHEDULES: u32 = 3;
     type MinVestedTransfer = MinVestedTransfer;
     type WeightInfo = ();
@@ -100,7 +124,7 @@ impl Config for Test {
 
 pub struct ExtBuilder {
     existential_deposit: u64,
-    vesting_genesis_config: Option<Vec<(u64, u64, u64, u64)>>,
+    vesting_genesis_config: Option<Vec<(u64, UnixMilliseconds, UnixMilliseconds, u64)>>,
 }
 
 impl Default for ExtBuilder {
@@ -118,7 +142,10 @@ impl ExtBuilder {
         self
     }
 
-    pub fn vesting_genesis_config(mut self, config: Vec<(u64, u64, u64, u64)>) -> Self {
+    pub fn vesting_genesis_config(
+        mut self,
+        config: Vec<(u64, UnixMilliseconds, UnixMilliseconds, u64)>,
+    ) -> Self {
         self.vesting_genesis_config = Some(config);
         self
     }
@@ -145,9 +172,9 @@ impl ExtBuilder {
             vesting_config
         } else {
             vec![
-                (1, 0, 10, 5 * self.existential_deposit),
+                (1, 5, 10, 5 * self.existential_deposit),
                 (2, 10, 20, 0),
-                (12, 10, 20, 5 * self.existential_deposit),
+                (12, 5, 20, 5 * self.existential_deposit),
             ]
         };
 
