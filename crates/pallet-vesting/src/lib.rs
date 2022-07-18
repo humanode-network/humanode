@@ -67,6 +67,15 @@ type BalanceOf<T> =
 /// MaxLocks type alias.
 type MaxLocksOf<T> =
     <<T as Config>::Currency as LockableCurrency<<T as frame_system::Config>::AccountId>>::MaxLocks;
+/// Full VestingInfo type.
+type FullVestingInfo<T> = VestingInfo<BalanceOf<T>, <T as Config>::Moment>;
+/// Fule vesting type.
+type FullVesting<T> = (
+    <T as frame_system::Config>::AccountId,
+    <T as Config>::Moment,
+    <T as Config>::Moment,
+    BalanceOf<T>,
+);
 
 /// An identifier for a lock to be used in vesting.
 const VESTING_ID: LockIdentifier = *b"vesting ";
@@ -213,7 +222,7 @@ pub mod pallet {
         _,
         Blake2_128Concat,
         T::AccountId,
-        BoundedVec<VestingInfo<BalanceOf<T>, T::Moment>, MaxVestingSchedulesGet<T>>,
+        BoundedVec<FullVestingInfo<T>, MaxVestingSchedulesGet<T>>,
     >;
 
     /// Storage version of the pallet.
@@ -229,7 +238,7 @@ pub mod pallet {
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         /// The list of vesting to use.
-        pub vesting: Vec<(T::AccountId, T::Moment, T::Moment, BalanceOf<T>)>,
+        pub vesting: Vec<FullVesting<T>>,
     }
 
     #[cfg(feature = "std")]
@@ -548,7 +557,7 @@ impl<T: Config> Pallet<T> {
     fn report_schedule_updates(
         schedules: Vec<VestingInfo<BalanceOf<T>, T::Moment>>,
         action: VestingAction,
-    ) -> (Vec<VestingInfo<BalanceOf<T>, T::Moment>>, BalanceOf<T>) {
+    ) -> (Vec<FullVestingInfo<T>>, BalanceOf<T>) {
         let now = T::CurrentMoment::now();
 
         let mut total_locked_now: BalanceOf<T> = Zero::zero();
@@ -621,7 +630,7 @@ impl<T: Config> Pallet<T> {
     fn exec_action(
         schedules: Vec<VestingInfo<BalanceOf<T>, T::Moment>>,
         action: VestingAction,
-    ) -> Result<(Vec<VestingInfo<BalanceOf<T>, T::Moment>>, BalanceOf<T>), DispatchError> {
+    ) -> Result<(Vec<FullVestingInfo<T>>, BalanceOf<T>), DispatchError> {
         let (schedules, locked_now) = match action {
             VestingAction::Merge {
                 index1: idx1,
