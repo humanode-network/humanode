@@ -90,7 +90,6 @@ const VESTING_ID: LockIdentifier = *b"vesting ";
 #[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, RuntimeDebug, MaxEncodedLen, TypeInfo)]
 enum Releases {
     V0,
-    V1,
 }
 
 impl Default for Releases {
@@ -233,7 +232,7 @@ pub mod pallet {
             use sp_runtime::traits::Saturating;
 
             // Genesis uses the latest storage version.
-            StorageVersion::<T>::put(Releases::V1);
+            StorageVersion::<T>::put(Releases::V0);
 
             // Generate initial vesting configuration
             // * who - Account which we are generating vesting configuration for

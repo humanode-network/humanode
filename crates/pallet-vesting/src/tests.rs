@@ -1175,7 +1175,7 @@ fn build_genesis_has_storage_version_v1() {
         .existential_deposit(ED)
         .build()
         .execute_with(|| {
-            assert_eq!(StorageVersion::<Test>::get(), Releases::V1);
+            assert_eq!(StorageVersion::<Test>::get(), Releases::V0);
         });
 }
 
