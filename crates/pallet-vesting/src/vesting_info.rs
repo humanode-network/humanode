@@ -91,13 +91,15 @@ where
         // Moment that count toward vesting;
         // saturating to 0 when m < starting_moment.
         let vested_time = m.saturating_sub(self.start);
-        let vested_steps = vested_time.checked_div(&self.step).unwrap_or(Zero::zero());
+        let vested_steps = vested_time
+            .checked_div(&self.step)
+            .unwrap_or_else(Zero::zero);
         let vested_steps = MomentToBalance::convert(vested_steps);
         // Return amount that is still locked in vesting.
         vested_steps
             .checked_mul(&self.per_step()) // `per_block` accessor guarantees at least 1.
             .map(|to_unlock| self.locked.saturating_sub(to_unlock))
-            .unwrap_or(Zero::zero())
+            .unwrap_or_else(Zero::zero)
     }
 
     // /// Moment at which the schedule ends (as type `Balance`).
