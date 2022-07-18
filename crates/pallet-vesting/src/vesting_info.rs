@@ -21,37 +21,41 @@ use super::*;
 
 /// Struct to encode the vesting schedule of an individual account.
 #[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, RuntimeDebug, MaxEncodedLen, TypeInfo)]
-pub struct VestingInfo<Balance, BlockNumber> {
+pub struct VestingInfo<Balance, Moment> {
     /// Locked amount at genesis.
     locked: Balance,
-    /// Amount that gets unlocked every block after `starting_block`.
-    per_block: Balance,
-    /// Starting block for unlocking(vesting).
-    starting_block: BlockNumber,
+    /// Step moment between unlocking(vesting).
+    step: Moment,
+    /// Amount that gets unlocked every step moment after `starting_moment`.
+    per_step: Balance,
+    /// Starting moment for unlocking(vesting).
+    start: Moment,
 }
 
-impl<Balance, BlockNumber> VestingInfo<Balance, BlockNumber>
+impl<Balance, Moment> VestingInfo<Balance, Moment>
 where
     Balance: AtLeast32BitUnsigned + Copy,
-    BlockNumber: AtLeast32BitUnsigned + Copy + Bounded,
+    Moment: AtLeast32Bit + Copy + Bounded,
 {
     /// Instantiate a new `VestingInfo`.
     pub fn new(
         locked: Balance,
-        per_block: Balance,
-        starting_block: BlockNumber,
-    ) -> VestingInfo<Balance, BlockNumber> {
+        step: Moment,
+        per_step: Balance,
+        start: Moment,
+    ) -> VestingInfo<Balance, Moment> {
         VestingInfo {
             locked,
-            per_block,
-            starting_block,
+            step,
+            per_step,
+            start,
         }
     }
 
     /// Validate parameters for `VestingInfo`. Note that this does not check
     /// against `MinVestedTransfer`.
     pub fn is_valid(&self) -> bool {
-        !self.locked.is_zero() && !self.raw_per_block().is_zero()
+        !self.locked.is_zero() && !self.raw_per_step().is_zero()
     }
 
     /// Locked amount at schedule creation.
@@ -59,60 +63,62 @@ where
         self.locked
     }
 
-    /// Amount that gets unlocked every block after `starting_block`. Corrects for `per_block` of 0.
-    /// We don't let `per_block` be less than 1, or else the vesting will never end.
-    /// This should be used whenever accessing `per_block` unless explicitly checking for 0 values.
-    pub fn per_block(&self) -> Balance {
-        self.per_block.max(One::one())
+    /// Stem moment between unlocking.
+    pub fn step(&self) -> Moment {
+        self.step
     }
 
-    /// Get the unmodified `per_block`. Generally should not be used, but is useful for
-    /// validating `per_block`.
-    pub(crate) fn raw_per_block(&self) -> Balance {
-        self.per_block
+    /// Amount that gets unlocked every step moment after `start`. Corrects for `per_step` of 0.
+    /// We don't let `per_step` be less than 1, or else the vesting will never end.
+    /// This should be used whenever accessing `per_step` unless explicitly checking for 0 values.
+    pub fn per_step(&self) -> Balance {
+        self.per_step.max(One::one())
     }
 
-    /// Starting block for unlocking(vesting).
-    pub fn starting_block(&self) -> BlockNumber {
-        self.starting_block
+    /// Get the unmodified `per_step_moment`. Generally should not be used, but is useful for
+    /// validating `per_step_moment`.
+    pub(crate) fn raw_per_step(&self) -> Balance {
+        self.per_step
     }
 
-    /// Amount locked at block `n`.
-    pub fn locked_at<BlockNumberToBalance: Convert<BlockNumber, Balance>>(
-        &self,
-        n: BlockNumber,
-    ) -> Balance {
-        // Number of blocks that count toward vesting;
-        // saturating to 0 when n < starting_block.
-        let vested_block_count = n.saturating_sub(self.starting_block);
-        let vested_block_count = BlockNumberToBalance::convert(vested_block_count);
+    /// Starting moment for unlocking(vesting).
+    pub fn start(&self) -> Moment {
+        self.start
+    }
+
+    /// Amount locked at moment `m`.
+    pub fn locked_at<MomentToBalance: Convert<Moment, Balance>>(&self, m: Moment) -> Balance {
+        // Moment that count toward vesting;
+        // saturating to 0 when m < starting_moment.
+        let vested_time = m.saturating_sub(self.start);
+        let vested_steps = vested_time.checked_div(&self.step).unwrap_or(Zero::zero());
+        let vested_steps = MomentToBalance::convert(vested_steps);
         // Return amount that is still locked in vesting.
-        vested_block_count
-            .checked_mul(&self.per_block()) // `per_block` accessor guarantees at least 1.
+        vested_steps
+            .checked_mul(&self.per_step()) // `per_block` accessor guarantees at least 1.
             .map(|to_unlock| self.locked.saturating_sub(to_unlock))
             .unwrap_or(Zero::zero())
     }
 
-    /// Block number at which the schedule ends (as type `Balance`).
-    pub fn ending_block_as_balance<BlockNumberToBalance: Convert<BlockNumber, Balance>>(
-        &self,
-    ) -> Balance {
-        let starting_block = BlockNumberToBalance::convert(self.starting_block);
-        let duration = if self.per_block() >= self.locked {
-            // If `per_block` is bigger than `locked`, the schedule will end
-            // the block after starting.
-            One::one()
-        } else {
-            self.locked / self.per_block()
-                + if (self.locked % self.per_block()).is_zero() {
-                    Zero::zero()
-                } else {
-                    // `per_block` does not perfectly divide `locked`, so we need an extra block to
-                    // unlock some amount less than `per_block`.
-                    One::one()
-                }
-        };
+    // /// Moment at which the schedule ends (as type `Balance`).
+    // pub fn ending_moment_as_balance<MomentToBalance: Convert<Moment, Balance>>(&self) -> Balance {
+    //     let steps = if self.per_step() >= self.locked {
+    //         // If `per_step` is bigger than `locked`, the schedule will end
+    //         // the step after starting.
+    //         One::one()
+    //     } else {
+    //         self.locked / self.per_step()
+    //             + if (self.locked % self.per_step()).is_zero() {
+    //                 Zero::zero()
+    //             } else {
+    //                 // `per_step` does not perfectly divide `locked`, so we need an extra step to
+    //                 // unlock some amount less than `per_step`.
+    //                 One::one()
+    //             }
+    //     };
 
-        starting_block.saturating_add(duration)
-    }
+    //     let start_moment = MomentToBalance::convert(self.start);
+    //     let duration = self.step.checked_mul(v)
+    //     start_moment.saturating_add(duration)
+    // }
 }
