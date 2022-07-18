@@ -63,7 +63,6 @@ use frame_support::{
     traits::{
         Currency, ExistenceRequirement, Get, LockIdentifier, LockableCurrency, WithdrawReasons,
     },
-    weights::Weight,
 };
 pub use pallet::*;
 use scale_info::TypeInfo;
@@ -79,17 +78,20 @@ use traits::VestingSchedule;
 pub use vesting_info::*;
 pub use weights::WeightInfo;
 
+/// Balance type alias.
 type BalanceOf<T> =
     <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+/// MaxLocks type alias.
 type MaxLocksOf<T> =
     <<T as Config>::Currency as LockableCurrency<<T as frame_system::Config>::AccountId>>::MaxLocks;
 
+/// An identifier for a lock to be used in vesting.
 const VESTING_ID: LockIdentifier = *b"vesting ";
 
-// A value placed in storage that represents the current version of the Vesting storage.
-// This value is used by `on_runtime_upgrade` to determine whether we run storage migration logic.
+/// A value placed in storage that represents the current version of the Vesting storage.
 #[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, RuntimeDebug, MaxEncodedLen, TypeInfo)]
 enum Releases {
+    /// Version 0.
     V0,
 }
 
@@ -105,9 +107,17 @@ enum VestingAction {
     /// Do not actively remove any schedules.
     Passive,
     /// Remove the schedule specified by the index.
-    Remove { index: usize },
+    Remove {
+        /// Schedule index.
+        index: usize,
+    },
     /// Remove the two schedules, specified by index, so they can be merged.
-    Merge { index1: usize, index2: usize },
+    Merge {
+        /// The first schedule index to be merged.
+        index1: usize,
+        /// The second schedule index to be merged.
+        index2: usize,
+    },
 }
 
 impl VestingAction {
@@ -138,7 +148,7 @@ impl VestingAction {
     }
 }
 
-// Wrapper for `T::MAX_VESTING_SCHEDULES` to satisfy `trait Get`.
+/// Wrapper for `T::MAX_VESTING_SCHEDULES` to satisfy `trait Get`.
 pub struct MaxVestingSchedulesGet<T>(PhantomData<T>);
 impl<T: Config> Get<u32> for MaxVestingSchedulesGet<T> {
     fn get() -> u32 {
@@ -152,6 +162,9 @@ pub trait CurrentMoment<Moment> {
     fn now() -> Moment;
 }
 
+// We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
+// fix them at their end.
+#[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::pallet_prelude::*;
@@ -232,6 +245,7 @@ pub mod pallet {
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
+        /// The list of vesting to use.
         pub vesting: Vec<(T::AccountId, T::Moment, T::Moment, BalanceOf<T>)>,
     }
 
@@ -285,13 +299,17 @@ pub mod pallet {
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// The amount vested has been updated. This could indicate a change in funds available.
-        /// The balance given is the amount which is left unvested (and thus locked).
         VestingUpdated {
+            /// A corresponding account.
             account: T::AccountId,
+            /// The balance given is the amount which is left unvested (and thus locked).
             unvested: BalanceOf<T>,
         },
         /// An \[account\] has become fully vested.
-        VestingCompleted { account: T::AccountId },
+        VestingCompleted {
+            /// A corresponding account.
+            account: T::AccountId,
+        },
     }
 
     /// Error for the vesting pallet.
@@ -475,8 +493,8 @@ pub mod pallet {
 }
 
 impl<T: Config> Pallet<T> {
-    // Create a new `VestingInfo`, based off of two other `VestingInfo`s.
-    // NOTE: We assume both schedules have had funds unlocked up through the current moment.
+    /// Create a new `VestingInfo`, based off of two other `VestingInfo`s.
+    /// NOTE: We assume both schedules have had funds unlocked up through the current moment.
     fn merge_vesting_info(
         now: T::Moment,
         schedule1: VestingInfo<BalanceOf<T>, T::Moment>,
@@ -485,7 +503,7 @@ impl<T: Config> Pallet<T> {
         todo!();
     }
 
-    // Execute a vested transfer from `source` to `target` with the given `schedule`.
+    /// Execute a vested transfer from `source` to `target` with the given `schedule`.
     fn do_vested_transfer(
         source: <T::Lookup as StaticLookup>::Source,
         target: <T::Lookup as StaticLookup>::Source,
@@ -539,8 +557,8 @@ impl<T: Config> Pallet<T> {
     ///
     /// Returns a tuple that consists of:
     /// - Vec of vesting schedules, where completed schedules and those specified
-    /// 	by filter are removed. (Note the vec is not checked for respecting
-    /// 	bounded length.)
+    /// by filter are removed. (Note the vec is not checked for respecting
+    /// bounded length.)
     /// - The amount locked at the current block number based on the given schedules.
     ///
     /// NOTE: the amount locked does not include any schedules that are filtered out via `action`.
@@ -658,8 +676,8 @@ impl<T: Config> Pallet<T> {
         };
 
         debug_assert!(
-            locked_now > Zero::zero() && schedules.len() > 0
-                || locked_now == Zero::zero() && schedules.len() == 0
+            locked_now > Zero::zero() && !schedules.is_empty()
+                || locked_now == Zero::zero() && schedules.is_empty()
         );
 
         Ok((schedules, locked_now))
