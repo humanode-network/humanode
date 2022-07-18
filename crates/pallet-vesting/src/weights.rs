@@ -44,13 +44,21 @@ use sp_std::marker::PhantomData;
 
 /// Weight functions needed for pallet_vesting.
 pub trait WeightInfo {
+     /// A function to calculate required weights for vest_locked call.
 	fn vest_locked(l: u32, s: u32, ) -> Weight;
+     /// A function to calculate required weights for vest_unlocked call.
 	fn vest_unlocked(l: u32, s: u32, ) -> Weight;
+     /// A function to calculate required weights for vest_other_locked call.
 	fn vest_other_locked(l: u32, s: u32, ) -> Weight;
+     /// A function to calculate required weights for vest_other_unlocked call.
 	fn vest_other_unlocked(l: u32, s: u32, ) -> Weight;
+     /// A function to calculate required weights for vested_transfer call.
 	fn vested_transfer(l: u32, s: u32, ) -> Weight;
+     /// A function to calculate required weights for force_vested_transfer call.
 	fn force_vested_transfer(l: u32, s: u32, ) -> Weight;
+     /// A function to calculate required weights for not_unlocking_merge_schedules call.
 	fn not_unlocking_merge_schedules(l: u32, s: u32, ) -> Weight;
+     /// A function to calculate required weights for unlocking_merge_schedules call.
 	fn unlocking_merge_schedules(l: u32, s: u32, ) -> Weight;
 }
 
