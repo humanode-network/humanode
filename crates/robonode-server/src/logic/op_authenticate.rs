@@ -185,6 +185,7 @@ where
         };
 
         // Prepare an opaque auth ticket, get ready for signing.
+        #[allow(clippy::needless_borrow)]
         let opaque_auth_ticket = (&auth_ticket).into();
 
         // Sign the auth ticket with our private key, so that later on it's possible to validate
