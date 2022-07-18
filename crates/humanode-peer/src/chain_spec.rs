@@ -318,6 +318,8 @@ fn testnet_genesis(
         transaction_payment: Default::default(),
         fees_pot: Default::default(),
         treasury_pot: Default::default(),
+        claims: Default::default(),
+        vesting: Default::default(),
     }
 }
 

@@ -18,3 +18,16 @@ impl WeightInfo for TestWeightInfo {
         0
     }
 }
+
+// TODO: generate some deafult weights
+impl WeightInfo for () {
+    fn claim() -> Weight {
+        0
+    }
+    fn mint_claim() -> Weight {
+        0
+    }
+    fn move_claim() -> Weight {
+        0
+    }
+}

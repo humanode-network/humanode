@@ -631,6 +631,27 @@ impl pallet_evm_accounts_mapping::Config for Runtime {
     type Verifier = eip712::AccountClaimVerifier;
 }
 
+impl pallet_vesting::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+    type BlockNumberToBalance = sp_runtime::traits::ConvertInto;
+    type MinVestedTransfer = ConstU128<{ 10u128.pow(18) }>;
+    type WeightInfo = ();
+    const MAX_VESTING_SCHEDULES: u32 = 28;
+}
+
+parameter_types! {
+    pub const ClaimsPrefix: &'static [u8] = b"Pay HMNDs to the Humanode account:";
+}
+
+impl pallet_claims::Config for Runtime {
+    type Event = Event;
+    type VestingSchedule = Vesting;
+    type Prefix = ClaimsPrefix;
+    type MoveClaimOrigin = frame_system::EnsureRoot<AccountId>;
+    type WeightInfo = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -664,6 +685,8 @@ construct_runtime!(
         BaseFee: pallet_base_fee,
         ImOnline: pallet_im_online,
         EvmAccountsMapping: pallet_evm_accounts_mapping,
+        Vesting: pallet_vesting,
+        Claims: pallet_claims,
     }
 );
 
