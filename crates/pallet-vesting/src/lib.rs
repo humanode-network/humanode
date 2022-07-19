@@ -69,12 +69,6 @@ type MaxLocksOf<T> =
     <<T as Config>::Currency as LockableCurrency<<T as frame_system::Config>::AccountId>>::MaxLocks;
 /// Full VestingInfo type.
 type FullVestingInfo<T> = VestingInfo<BalanceOf<T>, <T as Config>::Moment>;
-/// Fule vesting type.
-type FullVesting<T> = (
-    <T as frame_system::Config>::AccountId,
-    <T as Config>::Moment,
-    BalanceOf<T>,
-);
 
 /// An identifier for a lock to be used in vesting.
 const VESTING_ID: LockIdentifier = *b"vesting ";
@@ -237,7 +231,7 @@ pub mod pallet {
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         /// The list of vesting to use.
-        pub vesting: Vec<FullVesting<T>>,
+        pub vesting: Vec<(T::AccountId, T::Moment, BalanceOf<T>)>,
     }
 
     #[cfg(feature = "std")]
