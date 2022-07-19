@@ -2,8 +2,11 @@
 
 use frame_support::{dispatch::DispatchResult, traits::Currency};
 
+/// A linear unlocking logic.
 pub trait LinearUnlocking<Balance, Moment> {
-    fn locked_at(start: Moment, genesis_locked: Balance, current: Moment) -> Balance;
+    /// Get locked balance for provided moment.
+    fn locked_at(start: Moment, genesis_locked: Balance, moment: Moment) -> Balance;
+    /// Get end moment when the latest unlocking is going to be.
     fn end(start: Moment, genesis_locked: Balance) -> Moment;
 }
 
