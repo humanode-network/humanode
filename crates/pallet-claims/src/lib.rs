@@ -17,7 +17,7 @@ use sp_std::prelude::*;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-#[cfg(any(test, feature = "runtime-benchmarks"))]
+#[cfg(test)]
 mod mock;
 #[cfg(any(test, feature = "runtime-benchmarks"))]
 mod secp_utils;
