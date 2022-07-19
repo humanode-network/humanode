@@ -2,11 +2,9 @@
 
 use frame_support::{dispatch::DispatchResult, traits::Currency};
 
-pub trait LinearUnlocking {
-    type Balance;
-    type Moment;
-    fn locked_at(&self, moment: Self::Moment) -> Self::Balance;
-    fn end(&self) -> Self::Moment;
+pub trait LinearUnlocking<Balance, Moment> {
+    fn locked_at(start: Moment, genesis_locked: Balance, current: Moment) -> Balance;
+    fn end(start: Moment, genesis_locked: Balance) -> Moment;
 }
 
 /// A vesting schedule over a currency. This allows a particular currency to have vesting limits
@@ -34,8 +32,6 @@ pub trait VestingSchedule<AccountId> {
     fn add_vesting_schedule(
         who: &AccountId,
         locked: <Self::Currency as Currency<AccountId>>::Balance,
-        step: Self::Moment,
-        per_step: <Self::Currency as Currency<AccountId>>::Balance,
         start: Self::Moment,
     ) -> DispatchResult;
 
@@ -43,8 +39,6 @@ pub trait VestingSchedule<AccountId> {
     fn can_add_vesting_schedule(
         who: &AccountId,
         locked: <Self::Currency as Currency<AccountId>>::Balance,
-        step: Self::Moment,
-        per_step: <Self::Currency as Currency<AccountId>>::Balance,
         start: Self::Moment,
     ) -> DispatchResult;
 

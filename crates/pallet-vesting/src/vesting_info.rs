@@ -5,32 +5,21 @@ use crate::traits::LinearUnlocking as LinearUnlockingT;
 
 /// Struct to encode the vesting schedule of an individual account.
 #[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, RuntimeDebug, MaxEncodedLen, TypeInfo)]
-pub struct VestingInfo<Balance, Moment, LinearUnlocking> {
+pub struct VestingInfo<Balance, Moment> {
     /// Locked amount at genesis.
     locked: Balance,
     /// Starting moment for unlocking(vesting).
     start: Moment,
-    /// Linear unlocking function.
-    linear_unlocking: LinearUnlocking,
 }
 
-impl<Balance, Moment, LinearUnlocking> VestingInfo<Balance, Moment, LinearUnlocking>
+impl<Balance, Moment> VestingInfo<Balance, Moment>
 where
     Balance: AtLeast32BitUnsigned + Copy,
     Moment: AtLeast32Bit + Copy + Bounded,
-    LinearUnlocking: LinearUnlockingT,
 {
     /// Instantiate a new `VestingInfo`.
-    pub fn new(
-        locked: Balance,
-        start: Moment,
-        linear_unlocking: LinearUnlocking,
-    ) -> VestingInfo<Balance, Moment, LinearUnlocking> {
-        VestingInfo {
-            locked,
-            start,
-            linear_unlocking,
-        }
+    pub fn new(locked: Balance, start: Moment) -> VestingInfo<Balance, Moment> {
+        VestingInfo { locked, start }
     }
 
     /// Validate parameters for `VestingInfo`. Note that this does not check
@@ -50,12 +39,15 @@ where
     }
 
     /// Amount locked at moment.
-    pub fn locked_at(&self, moment: Moment) -> Balance {
-        self.linear_unlocking.locked_at(moment)
+    pub fn locked_at<LinearUnlocking: LinearUnlockingT<Balance, Moment>>(
+        &self,
+        moment: Moment,
+    ) -> Balance {
+        LinearUnlocking::locked_at(self.start, self.locked, moment)
     }
 
     /// Moment at which the schedule ends.
-    pub fn end(&self) -> Moment {
-        self.linear_unlocking.end()
+    pub fn end<LinearUnlocking: LinearUnlockingT<Balance, Moment>>(&self) -> Moment {
+        LinearUnlocking::end(self.start, self.locked)
     }
 }

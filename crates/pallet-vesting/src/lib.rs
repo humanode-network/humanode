@@ -51,13 +51,13 @@ pub use pallet::*;
 use scale_info::TypeInfo;
 use sp_runtime::{
     traits::{
-        AtLeast32Bit, AtLeast32BitUnsigned, Bounded, Convert, MaybeSerializeDeserialize, One,
-        Saturating, StaticLookup, Zero,
+        AtLeast32Bit, AtLeast32BitUnsigned, Bounded, MaybeSerializeDeserialize, Saturating,
+        StaticLookup, Zero,
     },
     RuntimeDebug,
 };
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*};
-use traits::VestingSchedule;
+use traits::{LinearUnlocking, VestingSchedule};
 pub use vesting_info::*;
 pub use weights::WeightInfo;
 
@@ -72,7 +72,6 @@ type FullVestingInfo<T> = VestingInfo<BalanceOf<T>, <T as Config>::Moment>;
 /// Fule vesting type.
 type FullVesting<T> = (
     <T as frame_system::Config>::AccountId,
-    <T as Config>::Moment,
     <T as Config>::Moment,
     BalanceOf<T>,
 );
@@ -184,7 +183,7 @@ pub mod pallet {
         type CurrentMoment: CurrentMoment<Self::Moment>;
 
         /// Convert the moment into a balance.
-        type MomentToBalance: Convert<Self::Moment, BalanceOf<Self>>;
+        type LinearUnlocking: LinearUnlocking<BalanceOf<Self>, Self::Moment>;
 
         /// The minimum amount transferred to call `vested_transfer`.
         #[pallet::constant]
@@ -263,7 +262,7 @@ pub mod pallet {
             // * begin - Block when the account will start to vest
             // * length - Number of blocks from `begin` until fully vested
             // * liquid - Number of units which can be spent before vesting begins
-            for &(ref who, begin, step, liquid) in self.vesting.iter() {
+            for &(ref who, begin, liquid) in self.vesting.iter() {
                 let balance = T::Currency::free_balance(who);
                 assert!(
                     !balance.is_zero(),
@@ -271,9 +270,7 @@ pub mod pallet {
                 );
                 // Total genesis `balance` minus `liquid` equals funds locked for vesting
                 let locked = balance.saturating_sub(liquid);
-                let step_as_balance = T::MomentToBalance::convert(step);
-                let per_step = locked / step_as_balance.max(sp_runtime::traits::One::one());
-                let vesting_info = VestingInfo::new(locked, step, per_step, begin);
+                let vesting_info = VestingInfo::new(locked, begin);
                 if !vesting_info.is_valid() {
                     panic!("Invalid VestingInfo params at genesis")
                 };
@@ -513,13 +510,7 @@ impl<T: Config> Pallet<T> {
         let source = T::Lookup::lookup(source)?;
 
         // Check we can add to this account prior to any storage writes.
-        Self::can_add_vesting_schedule(
-            &target,
-            schedule.locked(),
-            schedule.step(),
-            schedule.per_step(),
-            schedule.start(),
-        )?;
+        Self::can_add_vesting_schedule(&target, schedule.locked(), schedule.start())?;
 
         T::Currency::transfer(
             &source,
@@ -529,13 +520,7 @@ impl<T: Config> Pallet<T> {
         )?;
 
         // We can't let this fail because the currency transfer has already happened.
-        let res = Self::add_vesting_schedule(
-            &target,
-            schedule.locked(),
-            schedule.step(),
-            schedule.per_step(),
-            schedule.start(),
-        );
+        let res = Self::add_vesting_schedule(&target, schedule.locked(), schedule.start());
         debug_assert!(
             res.is_ok(),
             "Failed to add a schedule when we had to succeed."
@@ -564,7 +549,7 @@ impl<T: Config> Pallet<T> {
         let filtered_schedules = action
             .pick_schedules::<T>(schedules)
             .filter(|schedule| {
-                let locked_now = schedule.locked_at::<T::MomentToBalance>(now);
+                let locked_now = schedule.locked_at::<T::LinearUnlocking>(now);
                 let keep = !locked_now.is_zero();
                 if keep {
                     total_locked_now = total_locked_now.saturating_add(locked_now);
@@ -657,7 +642,7 @@ impl<T: Config> Pallet<T> {
                     // 1) need to add it to the accounts vesting schedule collection,
                     schedules.push(new_schedule);
                     // (we use `locked_at` in case this is a schedule that started in the past)
-                    let new_schedule_locked = new_schedule.locked_at::<T::MomentToBalance>(now);
+                    let new_schedule_locked = new_schedule.locked_at::<T::LinearUnlocking>(now);
                     // and 2) update the locked amount to reflect the schedule we just added.
                     locked_now = locked_now.saturating_add(new_schedule_locked);
                 } // In the None case there was no new schedule to account for.
@@ -689,7 +674,7 @@ where
             let now = T::CurrentMoment::now();
             let total_locked_now = v.iter().fold(Zero::zero(), |total, schedule| {
                 schedule
-                    .locked_at::<T::MomentToBalance>(now)
+                    .locked_at::<T::LinearUnlocking>(now)
                     .saturating_add(total)
             });
             Some(T::Currency::free_balance(who).min(total_locked_now))
@@ -713,15 +698,13 @@ where
     fn add_vesting_schedule(
         who: &T::AccountId,
         locked: BalanceOf<T>,
-        step: T::Moment,
-        per_step: BalanceOf<T>,
         start: T::Moment,
     ) -> DispatchResult {
         if locked.is_zero() {
             return Ok(());
         }
 
-        let vesting_schedule = VestingInfo::new(locked, step, per_step, start);
+        let vesting_schedule = VestingInfo::new(locked, start);
         // Check for `per_block` or `locked` of 0.
         if !vesting_schedule.is_valid() {
             return Err(Error::<T>::InvalidScheduleParams.into());
@@ -750,12 +733,10 @@ where
     fn can_add_vesting_schedule(
         who: &T::AccountId,
         locked: BalanceOf<T>,
-        step: T::Moment,
-        per_block: BalanceOf<T>,
         start: T::Moment,
     ) -> DispatchResult {
         // Check for `per_block` or `locked` of 0.
-        if !VestingInfo::new(locked, step, per_block, start).is_valid() {
+        if !VestingInfo::new(locked, start).is_valid() {
             return Err(Error::<T>::InvalidScheduleParams.into());
         }
 
