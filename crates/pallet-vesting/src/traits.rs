@@ -2,6 +2,13 @@
 
 use frame_support::{dispatch::DispatchResult, traits::Currency};
 
+pub trait LinearUnlocking {
+    type Balance;
+    type Moment;
+    fn locked_at(&self, moment: Self::Moment) -> Self::Balance;
+    fn end(&self) -> Self::Moment;
+}
+
 /// A vesting schedule over a currency. This allows a particular currency to have vesting limits
 /// applied to it.
 pub trait VestingSchedule<AccountId> {
