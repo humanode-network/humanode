@@ -422,6 +422,7 @@ impl pallet_bioauth::TryConvert<OpaqueAuthTicket, pallet_bioauth::AuthTicket<Bio
     fn try_convert(
         value: OpaqueAuthTicket,
     ) -> Result<pallet_bioauth::AuthTicket<BioauthId>, Self::Error> {
+        #[allow(clippy::needless_borrow)]
         let primitives_auth_ticket::AuthTicket {
             public_key,
             authentication_nonce: nonce,

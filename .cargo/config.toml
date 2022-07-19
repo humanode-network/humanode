@@ -9,4 +9,5 @@ rustflags = [
   "-Wclippy::await_holding_lock",
   # A few exceptions.
   "-Aclippy::cargo-common-metadata",
+  "-Aclippy::derive-partial-eq-without-eq",
 ]

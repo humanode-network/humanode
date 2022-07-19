@@ -8,7 +8,7 @@ use tracing::info;
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let mut logger = sc_tracing::logging::LoggerBuilder::new(parse_log_level());
     logger.with_colors(true);
-    let _ = logger.init()?;
+    logger.init()?;
 
     let addr: std::net::SocketAddr = env("ADDR")?;
     let facetec_server_url = env("FACETEC_SERVER_URL")?;

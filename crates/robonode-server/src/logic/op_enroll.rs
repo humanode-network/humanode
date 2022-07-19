@@ -174,8 +174,6 @@ where
             return Err(Error::InternalErrorDbEnrollUnsuccessful);
         }
 
-        drop(db_enroll_res);
-
         Ok(())
     }
 }
