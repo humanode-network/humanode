@@ -9,7 +9,6 @@ codec = { package = "parity-scale-codec", version = "3.0.0", default-features = 
 frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-hex-literal = "0.3"
 libsecp256k1 = { version = "0.7", default-features = false, optional = true }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
 pallet-vesting = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master", optional = true }
@@ -23,6 +22,7 @@ sp-runtime = { default-features = false, git = "https://github.com/humanode-netw
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [dev-dependencies]
+hex-literal = "0.3"
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-vesting = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 serde_json = "1"
