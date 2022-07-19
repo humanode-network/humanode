@@ -483,7 +483,40 @@ impl<T: Config> Pallet<T> {
         schedule1: VestingInfo<BalanceOf<T>, T::Moment>,
         schedule2: VestingInfo<BalanceOf<T>, T::Moment>,
     ) -> Option<VestingInfo<BalanceOf<T>, T::Moment>> {
-        todo!();
+        let schedule1_end = schedule1.end::<T::LinearUnlocking>();
+        let schedule2_end = schedule2.end::<T::LinearUnlocking>();
+
+        // Check if one or both schedules have ended.
+        match (schedule1_end <= now, schedule2_end <= now) {
+            // If both schedules have ended, we don't merge and exit early.
+            (true, true) => return None,
+            // If one schedule has ended, we treat the one that has not ended as the new
+            // merged schedule.
+            (true, false) => return Some(schedule2),
+            (false, true) => return Some(schedule1),
+            // If neither schedule has ended don't exit early.
+            _ => {}
+        }
+
+        let locked = schedule1
+            .locked_at::<T::LinearUnlocking>(now)
+            .saturating_add(schedule2.locked_at::<T::LinearUnlocking>(now));
+        // This shouldn't happen because we know at least one end moment is greater than now,
+        // thus at least a schedule a some locked balance.
+        debug_assert!(
+            !locked.is_zero(),
+            "merge_vesting_info validation checks failed to catch a locked of 0"
+        );
+
+        let start = now.max(schedule1.start()).max(schedule2.start());
+
+        let schedule = VestingInfo::new(locked, start);
+        debug_assert!(
+            schedule.is_valid(),
+            "merge_vesting_info schedule validation check failed"
+        );
+
+        Some(schedule)
     }
 
     /// Execute a vested transfer from `source` to `target` with the given `schedule`.
