@@ -1255,6 +1255,8 @@ impl_runtime_apis! {
             list_benchmark!(list, extra, pallet_balances, Balances);
             list_benchmark!(list, extra, pallet_timestamp, Timestamp);
             list_benchmark!(list, extra, pallet_bioauth, Bioauth);
+            list_benchmark!(list, extra, pallet_vesting, Vesting);
+            list_benchmark!(list, extra, pallet_claims, Claims);
 
             let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -1298,6 +1300,8 @@ impl_runtime_apis! {
             add_benchmark!(params, batches, pallet_balances, Balances);
             add_benchmark!(params, batches, pallet_timestamp, Timestamp);
             add_benchmark!(params, batches, pallet_bioauth, Bioauth);
+            add_benchmark!(params, batches, pallet_vesting, Vesting);
+            add_benchmark!(params, batches, pallet_claims, Claims);
 
             Ok(batches)
         }
