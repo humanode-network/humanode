@@ -2,7 +2,9 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use pallet_evm::{ExitError, Precompile, PrecompileFailure, PrecompileOutput};
+use pallet_evm::{
+    ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
+};
 use precompile_utils::{succeed, EvmDataWriter, EvmResult, PrecompileHandleExt};
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
@@ -33,7 +35,7 @@ where
     T: pallet_bioauth::Config,
     T::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
-    fn execute(handle: &mut impl pallet_evm::PrecompileHandle) -> pallet_evm::PrecompileResult {
+    fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
         handle.record_cost(GAS_COST)?;
 
         let selector = handle
@@ -54,9 +56,7 @@ where
     T::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
     /// Check if input address is authenticated.
-    fn is_authenticated(
-        handle: &mut impl pallet_evm::PrecompileHandle,
-    ) -> EvmResult<PrecompileOutput> {
+    fn is_authenticated(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
 
         input
