@@ -8,9 +8,13 @@ use sp_arithmetic::traits::{
 mod traits;
 pub use traits::*;
 
+/// Implements linear westing logic with cliff.
 pub struct LinearWithCliff<AccountId, Moment, Currency: CurrencyT<AccountId>> {
+    /// Vesting cliff.
     cliff: Moment,
+    /// Vesting period.
     period: Moment,
+    /// Amount that should be unlocked per one vesting period.
     per_period: Currency::Balance,
 }
 
