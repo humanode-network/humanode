@@ -2,7 +2,8 @@
 
 use frame_support::traits::Currency as CurrencyT;
 use sp_arithmetic::traits::{
-    AtLeast32BitUnsigned, CheckedMul, Saturating, UniqueSaturatedFrom, UniqueSaturatedInto, Zero,
+    AtLeast32BitUnsigned, CheckedDiv, CheckedMul, Saturating, UniqueSaturatedFrom,
+    UniqueSaturatedInto, Zero,
 };
 
 mod traits;
@@ -57,11 +58,30 @@ where
                     periods_number,
                 ),
             )
-            .unwrap();
+            .unwrap_or_else(Zero::zero);
         genesis_locked.saturating_sub(vested_balance)
     }
 
     fn end(&self, genesis_locked: Currency::Balance, start: Self::Moment) -> Self::Moment {
-        todo!()
+        let periods_number = <Currency::Balance as UniqueSaturatedInto<u32>>::unique_saturated_into(
+            genesis_locked
+                .checked_div(&self.per_period)
+                .unwrap_or_else(Zero::zero),
+        ) + if (genesis_locked % self.per_period).is_zero() {
+            0
+        } else {
+            // `per_period` does not perfectly divide `locked`, so we need an extra period to
+            // unlock some amount less than `per_period`.
+            1
+        };
+
+        let actual_start = start.saturating_add(self.cliff);
+        let actual_vesting_time = self
+            .period
+            .checked_mul(
+                &<Moment as UniqueSaturatedFrom<u32>>::unique_saturated_from(periods_number),
+            )
+            .unwrap_or_else(Zero::zero);
+        actual_start.saturating_add(actual_vesting_time)
     }
 }
