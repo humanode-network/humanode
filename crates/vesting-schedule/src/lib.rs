@@ -15,7 +15,7 @@ pub struct LinearWithCliff<AccountId, Moment, Currency: CurrencyT<AccountId>> {
     cliff: Moment,
     /// Vesting period.
     period: Moment,
-    /// Amount that should be unlocked per one vesting period.
+    /// Amount that should be unlocked per one vesting period. (!= 0)
     per_period: Currency::Balance,
 }
 
