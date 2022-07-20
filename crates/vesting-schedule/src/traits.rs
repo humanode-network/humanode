@@ -1,0 +1,22 @@
+//! Generic vesting schedule related traits to abstract away the implementations.
+
+use frame_support::traits::Currency;
+
+/// [`VestingSchedule`] defines logic for currency vesting(unlocking).
+pub trait VestingSchedule<AccountId> {
+    /// The type used to denote time: Timestamp, BlockNumber, etc.
+    type Moment;
+    /// The currency that this schedule applies to.
+    type Currency: Currency<AccountId>;
+    /// Locked amount at provided moment.
+    fn locked_at(
+        genesis_locked: <Self::Currency as Currency<AccountId>>::Balance,
+        start: Self::Moment,
+        moment: Self::Moment,
+    ) -> <Self::Currency as Currency<AccountId>>::Balance;
+    /// Moment at which the schedule ends.
+    fn end(
+        genesis_locked: <Self::Currency as Currency<AccountId>>::Balance,
+        start: Self::Moment,
+    ) -> Self::Moment;
+}
