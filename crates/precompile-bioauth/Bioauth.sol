@@ -13,9 +13,9 @@ interface Bioauth {
      * Check if a humanode address is authenticated.
      * Selector: e3c90bb9
      *
-     * @param humanode_address The humanode address to check.
+     * @param humanodeAddress The humanode address to check.
      * @return Whether or not the address is authenticated.
      */
-    function isAuthenticated(bytes32 humanode_address) external returns (bool);
+    function isAuthenticated(bytes32 humanodeAddress) external view returns (bool);
 }
 
