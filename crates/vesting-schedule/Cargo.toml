@@ -6,9 +6,11 @@ publish = false
 
 [dependencies]
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-arithmetic = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [features]
 default = ["std"]
 std = [
   "frame-support/std",
+  "sp-arithmetic/std",
 ]

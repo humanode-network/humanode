@@ -10,12 +10,14 @@ pub trait VestingSchedule<AccountId> {
     type Currency: Currency<AccountId>;
     /// Locked amount at provided moment.
     fn locked_at(
+        &self,
         genesis_locked: <Self::Currency as Currency<AccountId>>::Balance,
         start: Self::Moment,
         moment: Self::Moment,
     ) -> <Self::Currency as Currency<AccountId>>::Balance;
     /// Moment at which the schedule ends.
     fn end(
+        &self,
         genesis_locked: <Self::Currency as Currency<AccountId>>::Balance,
         start: Self::Moment,
     ) -> Self::Moment;
