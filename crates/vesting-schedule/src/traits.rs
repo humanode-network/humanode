@@ -8,6 +8,10 @@ pub trait VestingSchedule<AccountId> {
     type Moment;
     /// The currency that this schedule applies to.
     type Currency: Currency<AccountId>;
+    /// An error that can occur at vesting schedule logic.
+    type Error;
+    /// Validate the schedule.
+    fn validate(&self) -> Result<(), Self::Error>;
     /// Locked amount at provided moment.
     fn locked_at(
         &self,

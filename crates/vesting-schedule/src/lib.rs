@@ -19,6 +19,12 @@ pub struct LinearWithCliff<AccountId, Moment, Currency: CurrencyT<AccountId>> {
     per_period: Currency::Balance,
 }
 
+/// An error that can occur at linear with cliff vesting schedule logic.
+pub enum LinearWithCliffError {
+    /// We don't let `per_period` be less than 1, or else the vesting will never end.
+    ZeroPerPeriod,
+}
+
 impl<AccountId, Moment, Currency> VestingSchedule<AccountId>
     for LinearWithCliff<AccountId, Moment, Currency>
 where
@@ -28,6 +34,15 @@ where
     type Moment = Moment;
 
     type Currency = Currency;
+
+    type Error = LinearWithCliffError;
+
+    fn validate(&self) -> Result<(), Self::Error> {
+        if self.per_period == Zero::zero() {
+            return Err(LinearWithCliffError::ZeroPerPeriod);
+        }
+        Ok(())
+    }
 
     fn locked_at(
         &self,
