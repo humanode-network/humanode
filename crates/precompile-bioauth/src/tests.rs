@@ -1,4 +1,6 @@
 use frame_support::{traits::ConstU32, WeakBoundedVec};
+use pallet_evm::ExitSucceed;
+use precompile_utils::{Bytes, EvmDataWriter};
 
 use crate::{mock::*, *};
 
@@ -17,11 +19,53 @@ fn make_bounded_authentications(
 }
 
 #[test]
-fn test_empty_input() {
+fn test_empty_selector() {
     new_test_ext().execute_with(|| {
         let mut mock_handle = MockPrecompileHandle::new();
         mock_handle.expect_record_cost().returning(|_| Ok(()));
         mock_handle.expect_input().return_const(vec![]);
+        let handle = &mut mock_handle as _;
+
+        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
+        assert_eq!(
+            err,
+            PrecompileFailure::Error {
+                exit_status: ExitError::Other("invalid function selector".into())
+            }
+        );
+    })
+}
+
+#[test]
+fn test_is_authenticated_empty_input() {
+    new_test_ext().execute_with(|| {
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated).build();
+
+        let mut mock_handle = MockPrecompileHandle::new();
+        mock_handle.expect_record_cost().returning(|_| Ok(()));
+        mock_handle.expect_input().return_const(input);
+        let handle = &mut mock_handle as _;
+
+        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
+        assert_eq!(
+            err,
+            PrecompileFailure::Error {
+                exit_status: ExitError::Other("exactly one argument is expected".into())
+            }
+        );
+    })
+}
+
+#[test]
+fn test_is_authenticated_invalid_input() {
+    new_test_ext().execute_with(|| {
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
+            .write(Bytes::from("invalid input"))
+            .build();
+
+        let mut mock_handle = MockPrecompileHandle::new();
+        mock_handle.expect_record_cost().returning(|_| Ok(()));
+        mock_handle.expect_input().return_const(input);
         let handle = &mut mock_handle as _;
 
         let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
@@ -35,9 +79,12 @@ fn test_empty_input() {
 }
 
 #[test]
-fn test_authorized() {
+fn test_is_authenticated_true() {
     new_test_ext().execute_with(|| {
         let sample_key = [0; 32];
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
+            .write(sp_core::H256::from(sample_key))
+            .build();
 
         pallet_bioauth::ActiveAuthentications::<Test>::put(make_bounded_authentications(vec![
             TestAuthentication {
@@ -48,7 +95,7 @@ fn test_authorized() {
 
         let mut mock_handle = MockPrecompileHandle::new();
         mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(sample_key.to_vec());
+        mock_handle.expect_input().return_const(input);
         let handle = &mut mock_handle as _;
 
         let val = crate::Bioauth::<Test>::execute(handle).unwrap();
@@ -56,22 +103,24 @@ fn test_authorized() {
             val,
             PrecompileOutput {
                 exit_status: ExitSucceed::Returned,
-                output: vec![1],
+                output: EvmDataWriter::new().write(true).build(),
             }
         );
     })
 }
 
 #[test]
-fn test_not_authorized() {
+fn test_is_authenticated_false() {
     new_test_ext().execute_with(|| {
-        let sample_key = [0; 32];
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
+            .write(sp_core::H256::from([0; 32]))
+            .build();
 
         pallet_bioauth::ActiveAuthentications::<Test>::put(make_bounded_authentications(vec![]));
 
         let mut mock_handle = MockPrecompileHandle::new();
         mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(sample_key.to_vec());
+        mock_handle.expect_input().return_const(input);
         let handle = &mut mock_handle as _;
 
         let val = crate::Bioauth::<Test>::execute(handle).unwrap();
@@ -79,7 +128,7 @@ fn test_not_authorized() {
             val,
             PrecompileOutput {
                 exit_status: ExitSucceed::Returned,
-                output: vec![0],
+                output: EvmDataWriter::new().write(false).build(),
             }
         );
     })
