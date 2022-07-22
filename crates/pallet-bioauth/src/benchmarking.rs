@@ -23,10 +23,18 @@ pub trait RobonodePublicKeyBuilder: pallet::Config {
     fn build(value: RobonodePublicKeyBuilderValue) -> <Self as pallet::Config>::RobonodePublicKey;
 }
 
-fn make_pubkey(idx: u32) -> Vec<u8> {
-    let idx_in_bytes = idx.to_le_bytes();
+/// Generate 32 bytes pubkey with prefix of our choice.
+/// NOTE: `prefix` and `idx` must be strictly under 32 bytes
+fn make_pubkey(prefix: &str, idx: u32) -> Vec<u8> {
     let mut pubkey = vec![0; 32];
-    let _ = &pubkey[0..idx_in_bytes.len()].copy_from_slice(&idx_in_bytes);
+    let prefix_in_bytes = Vec::from(prefix);
+    let idx_in_bytes = idx.to_le_bytes();
+    if prefix_in_bytes.len() + idx_in_bytes.len() > 32 {
+        panic!("`prefix` and `idx` exceeds 32 bytes");
+    }
+    let _ = &pubkey[0..prefix_in_bytes.len()].copy_from_slice(&prefix_in_bytes);
+    let _ = &pubkey[prefix_in_bytes.len()..(prefix_in_bytes.len() + idx_in_bytes.len())]
+        .copy_from_slice(&idx_in_bytes);
     pubkey
 }
 
@@ -37,7 +45,7 @@ fn make_nonce(prefix: &str, idx: u32) -> Vec<u8> {
     nonce
 }
 
-/// Enables construction of AuthTicket deterministically.
+/// Enables construction of [`AuthTicket`]s deterministically.
 pub trait AuthTicketBuilder: pallet::Config {
     /// Make `AuthTicket` with predetermined 32 bytes public key and nonce.
     fn build(public_key: Vec<u8>, nonce: Vec<u8>) -> <Self as pallet::Config>::OpaqueAuthTicket;
@@ -51,114 +59,151 @@ pub trait AuthTicketSigner: pallet::Config {
     ) -> <Self as pallet::Config>::RobonodeSignature;
 }
 
+/// Convenient function to generate an [`Authentication`] struct in bulk with custom prefix
+/// for public key.
 fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
+    prefix: &str,
     count: usize,
     expires_at: Moment,
 ) -> Vec<Authentication<Pubkey, Moment>> {
-    let mut auths: Vec<Authentication<Pubkey, Moment>> = vec![];
+    (0..count)
+        .into_iter()
+        .map(|i| {
+            let public_key: [u8; 32] = make_pubkey(prefix, i as u32).try_into().unwrap();
+            Authentication {
+                public_key: public_key.into(),
+                expires_at,
+            }
+        })
+        .collect()
+}
+
+/// Populate the [`ActiveAuthentications`] storage with generated data.
+fn populate_active_authentications<Runtime: pallet::Config>(count: u32)
+where
+    <Runtime as pallet::Config>::ValidatorPublicKey: From<[u8; 32]>,
+    <Runtime as pallet::Config>::Moment: From<u64>,
+{
+    let expiry = Runtime::CurrentMoment::now() + (10u64).into();
+    let active_auths = make_authentications::<Runtime::ValidatorPublicKey, Runtime::Moment>(
+        "active",
+        count as usize,
+        expiry,
+    );
+
+    let weakly_bounded_active_auths =
+        WeakBoundedVec::<_, Runtime::MaxAuthentications>::try_from(active_auths).unwrap();
+    ActiveAuthentications::<Runtime>::put(weakly_bounded_active_auths);
+}
+
+/// Populate the [`ConsumedAuthTicketNonces`] storage with generated data.
+fn populate_consumed_auth_ticket_nonces<Runtime: pallet::Config>(count: u32) {
+    let mut consumed_nonces: Vec<_> = vec![];
     for i in 0..count {
-        let public_key: [u8; 32] = make_pubkey(i as u32).try_into().unwrap();
-        let auth = Authentication {
-            public_key: public_key.into(),
-            expires_at,
-        };
-        auths.push(auth);
+        let nonce = make_nonce("consumed_nonce", i);
+        consumed_nonces.push(BoundedAuthTicketNonce::try_from(nonce).unwrap());
     }
-    auths
+    let weakly_bounded_consumed_nonces =
+        WeakBoundedVec::<_, Runtime::MaxNonces>::try_from(consumed_nonces).unwrap();
+    ConsumedAuthTicketNonces::<Runtime>::put(weakly_bounded_consumed_nonces);
 }
 
 benchmarks! {
     where_clause {
-        where T: AuthTicketBuilder + AuthTicketSigner,
+        where
+            T: AuthTicketBuilder + AuthTicketSigner,
             T::ValidatorPublicKey: From<[u8; 32]>,
             T::Moment: From<u64>,
             T: RobonodePublicKeyBuilder
     }
 
     authenticate {
-        let i in 0..T::MaxAuthentications::get();
+        // Vary the amount of pre-populated active authentications and consumed nonces.
+        // Leave one space spare for the payload to be inserted in this call.
+        let a in 0 .. (T::MaxAuthentications::get() - 1) =>  populate_active_authentications::<T>(a);
+        let n in 0 .. (T::MaxNonces::get() - 1) => populate_consumed_auth_ticket_nonces::<T>(n);
 
-        // Create `Authenticate` request payload.
-        let public_key = make_pubkey(i);
-        let nonce = make_nonce("nonce", i);
-        let ticket = <T as AuthTicketBuilder>::build(public_key, nonce);
+        // Create `authenticate` extrinsic payload.
+        let public_key = make_pubkey("new", T::MaxAuthentications::get());
+        let nonce = make_nonce("nonce", T::MaxNonces::get());
+        let ticket = <T as AuthTicketBuilder>::build(public_key.clone(), nonce);
         let ticket_signature = <T as AuthTicketSigner>::sign(&ticket);
         let req = Authenticate {
             ticket,
             ticket_signature,
         };
 
-        let active_authentications_before = ActiveAuthentications::<T>::get().len();
-        let consumed_nonces_before = ConsumedAuthTicketNonces::<T>::get();
+        // Capture some data used during the verification.
+        let active_authentications_before_len = ActiveAuthentications::<T>::get().len();
+        let consumed_auth_ticket_nonces_before_len = ConsumedAuthTicketNonces::<T>::get().len();
 
     }: _(RawOrigin::None, req)
-
     verify {
-        // Verify nonce count
-        let consumed_nonces_after = ConsumedAuthTicketNonces::<T>::get();
-        assert_eq!(consumed_nonces_after.len() - consumed_nonces_before.len(), 1);
+        // Verify that exactly one active authentication was added.
+        let active_authentications_after_len = ActiveAuthentications::<T>::get().len();
+        assert_eq!(active_authentications_after_len - active_authentications_before_len, 1);
 
-        // Bsed on the fact that benhcmarking can be used for different chain specifications,
-        // we just need to properly compare the size of active authentications before and after running benchmarks.
-        let active_authentications_after = ActiveAuthentications::<T>::get();
-        assert_eq!(active_authentications_after.len() - active_authentications_before, 1);
-
-        // Verify public key
-        let expected_pubkey = make_pubkey(i);
-        let observed_pubkey: Vec<u8> = active_authentications_after[active_authentications_before as usize].public_key.encode();
-        assert_eq!(observed_pubkey, expected_pubkey);
+        // Verify that exactly one consumed auth ticket nonce was added.
+        let consumed_auth_ticket_nonces_after_len = ConsumedAuthTicketNonces::<T>::get().len();
+        assert_eq!(consumed_auth_ticket_nonces_after_len - consumed_auth_ticket_nonces_before_len, 1);
     }
 
     set_robonode_public_key {
-        // TODO(#374): populate the active authentications set.
+        // Vary the amount of pre-populated active authentications.
+        let a in 0 .. (T::MaxAuthentications::get()) =>  populate_active_authentications::<T>(a);
 
+        // Use constant, yet non-zero amount of nonces, as this call isn't supposed to be dependent
+        // anyhow on the nonces.
+        populate_consumed_auth_ticket_nonces::<T>(10);
+
+        // Capture this state for comparison.
         let robonode_public_key_before = RobonodePublicKey::<T>::get();
         let active_authentications_before = ActiveAuthentications::<T>::get();
-        let consumed_nonces_before = ConsumedAuthTicketNonces::<T>::get();
+        let consumed_auth_ticket_nonces_before = ConsumedAuthTicketNonces::<T>::get();
 
+        // Prepare the [`set_robonode_public_key`] extrinsic argument.
         let new_robonode_public_key = <T as RobonodePublicKeyBuilder>::build(RobonodePublicKeyBuilderValue::B);
 
+        // Self-check that the new key is different from the old one.
         assert_ne!(robonode_public_key_before, new_robonode_public_key);
 
     }: _(RawOrigin::Root, new_robonode_public_key.clone())
     verify {
         let robonode_public_key_after = RobonodePublicKey::<T>::get();
         let active_authentications_after = ActiveAuthentications::<T>::get();
-        let consumed_nonces_after = ConsumedAuthTicketNonces::<T>::get();
+        let consumed_auth_ticket_nonces_after = ConsumedAuthTicketNonces::<T>::get();
 
         assert_eq!(robonode_public_key_after, new_robonode_public_key);
         assert!(active_authentications_after == vec![]);
-        assert!(consumed_nonces_after == consumed_nonces_before);
+        assert!(consumed_auth_ticket_nonces_after == consumed_auth_ticket_nonces_before);
     }
 
     on_initialize {
-        let b in 1..100;
-        let block_num = b;
-        let expired_auth_count = 100;
-        let active_auth_count = 10;
+        let a in 0 .. (T::MaxAuthentications::get());
+        let active_auth_count: u32 = a / 2;
+        let expiring_auth_count: u32 = a - active_auth_count;
 
         let mut auths: Vec<Authentication<T::ValidatorPublicKey, T::Moment>> = vec![];
         // Populate with expired authentications.
-        let mut expired_auths = make_authentications(expired_auth_count, T::CurrentMoment::now());
-        auths.append(&mut expired_auths);
+        let mut expiring_auths = make_authentications("expired", expiring_auth_count as usize, T::CurrentMoment::now());
+        auths.append(&mut expiring_auths);
 
         // Also, populate with active authentications.
         let future_expiry = T::CurrentMoment::now() + (10u64).into();
-        let mut active_auths = make_authentications(active_auth_count, future_expiry);
+        let mut active_auths = make_authentications("active", active_auth_count as usize, future_expiry);
         auths.append(&mut active_auths);
 
-        let weakly_bound_auths = WeakBoundedVec::force_from(auths, Some("pallet-bioauth:benchmark:on_initialize"));
+        let weakly_bound_auths = WeakBoundedVec::try_from(auths).unwrap();
         ActiveAuthentications::<T>::put(weakly_bound_auths);
 
         // Capture this state for comparison.
-        let auths_before = ActiveAuthentications::<T>::get();
+        let active_authentications_before_len = ActiveAuthentications::<T>::get().len();
     }: {
-        Bioauth::<T>::on_initialize(block_num.into());
+        Bioauth::<T>::on_initialize(100u32.into());
     }
-
     verify {
-        let auths_after = ActiveAuthentications::<T>::get();
-        assert_eq!(auths_before.len() - auths_after.len(), expired_auth_count);
+        let active_authentications_after_len = ActiveAuthentications::<T>::get().len();
+        assert_eq!(active_authentications_before_len - active_authentications_after_len, expiring_auth_count as usize);
     }
 
     impl_benchmark_test_suite!(Pallet, crate::mock::benchmarking::new_benchmark_ext(), crate::mock::benchmarking::Benchmark);

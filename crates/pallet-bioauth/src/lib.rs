@@ -423,6 +423,9 @@ pub mod pallet {
     /// Dispatchable functions must be annotated with a weight and must return
     /// a [`frame_support::dispatch::DispatchResult`] or
     /// or [`frame_support::dispatch::DispatchResultWithPostInfo`].
+    ///
+    /// Weight: `O(M + N) where M is the number of authentications and N is the number of nonces`
+    /// Cost incurred from decoding vec of length M or N. Charged as maximum
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(T::WeightInfo::authenticate())]
@@ -559,6 +562,8 @@ pub mod pallet {
                 <ActiveAuthentications<T>>::put(bounded_active_authentications);
             }
 
+            // Weight: O(M) where M is the number of auths.
+            // Cost incurred from decoding vec of length M. Charged as maximum.
             T::WeightInfo::on_initialize(update_required)
         }
     }
