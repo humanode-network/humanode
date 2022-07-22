@@ -38,7 +38,6 @@ use pallet_grandpa::{
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_session::historical as pallet_session_historical;
 pub use pallet_timestamp::Call as TimestampCall;
-use pallet_transaction_payment::CurrencyAdapter;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -388,14 +387,14 @@ impl pallet_balances::Config for Runtime {
     type Balance = Balance;
     /// The ubiquitous event type.
     type Event = Event;
-    type DustRemoval = ();
+    type DustRemoval = TreasuryPot;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-    type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, FeesPot>;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
     type LengthToFee = IdentityFee<Balance>;
@@ -579,7 +578,7 @@ impl pallet_evm::Config for Runtime {
     type PrecompilesValue = PrecompilesValue;
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
-    type OnChargeTransaction = ();
+    type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, FeesPot>;
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
     >;
