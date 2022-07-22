@@ -40,7 +40,7 @@ pub mod pallet {
     #[pallet::pallet]
     pub struct Pallet<T>(_);
 
-    /// A mapping between the [`T::AccountId`], and the [`IdentificationFor<T>`] for the current
+    /// A mapping between the `T::AccountId`, and the [`IdentificationFor<T>`] for the current
     /// session.
     #[pallet::storage]
     pub type CurrentSessionIdentities<T: Config> =

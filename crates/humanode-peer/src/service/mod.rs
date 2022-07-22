@@ -556,7 +556,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
 /// Initialize the keystore with the [`KeystoreBioauthId`] key from the dev seed.
 ///
-/// This is analogous to [`sp_session::generate_initial_session_keys`] which
+/// This is analogous to `sp_session::generate_initial_session_keys` which
 /// executes as part of [`sc_service::spawn_tasks`] - but for the [`KeystoreBioauthId`], which
 /// is not a part of the session keys set, so it wont be populated that way.
 ///
