@@ -3,30 +3,24 @@
 
 use core::marker::PhantomData;
 
-use frame_support::traits::fungible::Inspect;
-use frame_support::traits::{
-    Currency as CurrencyT, Imbalance, OnUnbalanced, SameOrOther, SignedImbalance, TryDrop,
-};
+use frame_support::traits::{Currency, OnUnbalanced};
 
 use super::*;
 
 /// The corrected implementation of the [`pallet_evm::EVMCurrencyAdapter`].
-pub struct EvmTransactionCharger<C, OU>(PhantomData<C, OU>);
+pub struct EvmTransactionCharger<C, OU>(PhantomData<(C, OU)>);
 
-impl<C, OU> pallet_evm::OnChargeEVMTransaction<Runtime> for EvmTransactionCharger<C, OU>
+impl<T, C, OU> pallet_evm::OnChargeEVMTransaction<T> for EvmTransactionCharger<C, OU>
 where
-    C: Currency,
-    OU: OnUnbalanced<Currency::NegativeImbalance>,
+    T: pallet_evm::Config,
+    C: Currency<<T as frame_system::Config>::AccountId>,
+    OU: OnUnbalanced<<C as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance>,
 {
-    type LiquidityInfo = Option<Currency::NegativeImbalance>;
+    type LiquidityInfo =
+        Option<<C as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance>;
 
-    fn withdraw_fee(
-        who: &H160,
-        fee: U256,
-    ) -> Result<Self::LiquidityInfo, pallet_evm::Error<Runtime>> {
-        <pallet_evm::EVMCurrencyAdapter<C, OU> as pallet_evm::OnChargeEVMTransaction<
-            Runtime,
-        >>::withdraw_fee(who, fee)
+    fn withdraw_fee(who: &H160, fee: U256) -> Result<Self::LiquidityInfo, pallet_evm::Error<T>> {
+        <pallet_evm::EVMCurrencyAdapter<C, OU> as pallet_evm::OnChargeEVMTransaction<T>>::withdraw_fee(who, fee)
     }
 
     fn correct_and_deposit_fee(
@@ -35,9 +29,7 @@ where
         base_fee: U256,
         already_withdrawn: Self::LiquidityInfo,
     ) -> Self::LiquidityInfo {
-        <pallet_evm::EVMCurrencyAdapter<C, OU> as pallet_evm::OnChargeEVMTransaction<
-            Runtime,
-        >>::correct_and_deposit_fee(who, corrected_fee, base_fee, already_withdrawn)
+        <pallet_evm::EVMCurrencyAdapter<C, OU> as pallet_evm::OnChargeEVMTransaction<T>>::correct_and_deposit_fee(who, corrected_fee, base_fee, already_withdrawn)
     }
 
     fn pay_priority_fee(tip: Self::LiquidityInfo) {
@@ -49,8 +41,8 @@ where
             // This is the correct rewrite of the same logic.
 
             use pallet_evm::AddressMapping;
-            let account_id = <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(
-                <pallet_evm::Pallet<Runtime>>::find_author(),
+            let account_id = <T as pallet_evm::Config>::AddressMapping::into_account_id(
+                <pallet_evm::Pallet<T>>::find_author(),
             );
             C::resolve_creating(&account_id, tip);
         }

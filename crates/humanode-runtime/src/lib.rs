@@ -70,6 +70,7 @@ use frontier_precompiles::FrontierPrecompiles;
 mod display_moment;
 pub mod eip712;
 mod find_author;
+mod fixed_supply;
 pub mod robonode;
 #[cfg(test)]
 mod tests;
