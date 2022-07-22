@@ -19,7 +19,6 @@ impl WeightInfo for TestWeightInfo {
     }
 }
 
-// TODO: generate some deafult weights
 impl WeightInfo for () {
     fn claim() -> Weight {
         0
