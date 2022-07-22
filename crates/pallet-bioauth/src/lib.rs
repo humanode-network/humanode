@@ -46,8 +46,8 @@ pub trait Verifier<S: ?Sized> {
 }
 
 /// A trait that enables a third-party type to define a potentially fallible conversion from A to B.
-/// Is in analogous to [`sp_runtime::Convert`] is a sense that the third-party is acting as
-/// the converter, and to [`std::convert::TryFtom`] in a sense that the converion is fallible.
+/// Is in analogous to [`sp_runtime::traits::Convert`] is a sense that the third-party is acting as
+/// the converter, and to [`std::convert::TryFrom`] in a sense that the converion is fallible.
 pub trait TryConvert<A, B> {
     /// The error that can occur during conversion.
     type Error;
