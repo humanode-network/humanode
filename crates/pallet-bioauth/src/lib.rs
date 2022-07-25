@@ -46,8 +46,8 @@ pub trait Verifier<S: ?Sized> {
 }
 
 /// A trait that enables a third-party type to define a potentially fallible conversion from A to B.
-/// Is in analogous to [`sp_runtime::Convert`] is a sense that the third-party is acting as
-/// the converter, and to [`std::convert::TryFtom`] in a sense that the converion is fallible.
+/// Is in analogous to [`sp_runtime::traits::Convert`] is a sense that the third-party is acting as
+/// the converter, and to [`std::convert::TryFrom`] in a sense that the converion is fallible.
 pub trait TryConvert<A, B> {
     /// The error that can occur during conversion.
     type Error;
@@ -423,6 +423,9 @@ pub mod pallet {
     /// Dispatchable functions must be annotated with a weight and must return
     /// a [`frame_support::dispatch::DispatchResult`] or
     /// or [`frame_support::dispatch::DispatchResultWithPostInfo`].
+    ///
+    /// Weight: `O(M + N) where M is the number of authentications and N is the number of nonces`
+    /// Cost incurred from decoding vec of length M or N. Charged as maximum
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::weight(T::WeightInfo::authenticate())]
@@ -559,6 +562,8 @@ pub mod pallet {
                 <ActiveAuthentications<T>>::put(bounded_active_authentications);
             }
 
+            // Weight: O(M) where M is the number of auths.
+            // Cost incurred from decoding vec of length M. Charged as maximum.
             T::WeightInfo::on_initialize(update_required)
         }
     }

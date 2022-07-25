@@ -55,7 +55,7 @@ pub mod pallet {
     #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T>(_);
 
-    /// A mapping between the session and the [`T::AccountId`] to the [`IdentificationFor<T>`].
+    /// A mapping between the session and the `T::AccountId` to the [`IdentificationFor<T>`].
     #[pallet::storage]
     pub type SessionIdentities<T: Config> = StorageDoubleMap<
         _,

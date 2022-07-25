@@ -70,13 +70,13 @@ pub mod pallet {
         InvalidEthereumSignature,
     }
 
-    /// [`EvmAddress`] -> [`AccountId`] storage map.
+    /// `EvmAddress` -> `AccountId` storage map.
     #[pallet::storage]
     #[pallet::getter(fn accounts)]
     pub type Accounts<T: Config> =
         StorageMap<_, Twox64Concat, EvmAddress, T::AccountId, OptionQuery>;
 
-    /// [`AccountId`] -> [`EvmAddress`] storage map.
+    /// `AccountId` -> `EvmAddress` storage map.
     #[pallet::storage]
     #[pallet::getter(fn evm_addresses)]
     pub type EvmAddresses<T: Config> =

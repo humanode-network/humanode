@@ -67,6 +67,13 @@ const codeModes = {
     platformIndependent: true,
     cargoCacheKey: "code",
   },
+  docs: {
+    name: "doc",
+    cargoCommand: "doc",
+    cargoArgs: "--workspace --document-private-items",
+    platformIndependent: true,
+    cargoCacheKey: "doc",
+  },
   testBenchmark: {
     name: "test benchmark",
     cargoCommand: "test",
@@ -76,7 +83,7 @@ const codeModes = {
   runBenchmark: {
     name: "test-run pallet benchmarks",
     cargoCommand: "run",
-    cargoArgs: "--features runtime-benchmarks benchmark pallet --chain benchmark --execution wasm --wasm-execution compiled --pallet '*' --extrinsic '*' --steps 1 --repeat 1",
+    cargoArgs: "--release --features runtime-benchmarks,wasmtime benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 1 --repeat 0 --external-repeat 0",
     cargoCacheKey: "run-benchmark",
   },
 };
