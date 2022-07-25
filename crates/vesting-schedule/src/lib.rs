@@ -1,5 +1,7 @@
 //! The vesting schedule.
 
+#![cfg_attr(not(feature = "std"), no_std)]
+
 use frame_support::traits::Currency as CurrencyT;
 use sp_arithmetic::traits::{
     AtLeast32BitUnsigned, CheckedDiv, CheckedMul, Saturating, UniqueSaturatedFrom,
