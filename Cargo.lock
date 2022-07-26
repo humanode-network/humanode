@@ -5690,6 +5690,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-vesting"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+ "sp-std",
+ "vesting-schedule",
+]
+
+[[package]]
 name = "parity-db"
 version = "0.3.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
