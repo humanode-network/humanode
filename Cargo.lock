@@ -5650,6 +5650,12 @@ dependencies = [
 [[package]]
 name = "pallet-token-claims"
 version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+]
 
 [[package]]
 name = "pallet-transaction-payment"
