@@ -4,6 +4,7 @@
 
 use frame_support::traits::StorageVersion;
 
+mod types;
 mod weights;
 
 /// The current storage version.
