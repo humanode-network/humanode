@@ -15,6 +15,18 @@ use scale_info::TypeInfo;
 )]
 pub struct EthereumAddress([u8; 20]);
 
+/// The claim information.
+#[derive(
+    Clone, Copy, PartialEq, Eq, Encode, Decode, Default, RuntimeDebug, TypeInfo, MaxEncodedLen,
+)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct ClaimInfo<Balance, Vesting> {
+    /// The amount to claim.
+    pub balance: Balance,
+    /// The vesting configuration for the given claim.
+    pub vesting: Option<Vesting>,
+}
+
 #[cfg(feature = "std")]
 impl Serialize for EthereumAddress {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
