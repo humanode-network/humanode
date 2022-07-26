@@ -2,14 +2,22 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod vesting_info;
+
 use codec::MaxEncodedLen;
 use frame_support::{
     pallet_prelude::*,
+    storage::bounded_vec::BoundedVec,
     traits::{Currency, StorageVersion},
 };
 pub use pallet::*;
 use sp_runtime::traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize};
+use vesting_info::VestingInfo;
 use vesting_schedule::VestingSchedule;
+
+/// Balance type alias.
+type BalanceOf<T> =
+    <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
@@ -48,10 +56,20 @@ pub mod pallet {
         type CurrentMoment: CurrentMoment<Self::Moment>;
 
         /// Maximum number of vesting schedules an account may have at a given moment.
-        const MAX_VESTING_SCHEDULES: u32;
+        type MaxVestingSchedules: Get<u32>;
     }
 
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T>(_);
+
+    /// Information regarding the vesting of a given account.
+    #[pallet::storage]
+    #[pallet::getter(fn vesting)]
+    pub type Vesting<T: Config> = StorageMap<
+        _,
+        Blake2_128Concat,
+        T::AccountId,
+        BoundedVec<VestingInfo<BalanceOf<T>, <T as Config>::Moment>, T::MaxVestingSchedules>,
+    >;
 }
