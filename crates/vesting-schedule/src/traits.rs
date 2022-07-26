@@ -11,7 +11,11 @@ pub trait VestingSchedule<AccountId> {
     /// An error that can occur at vesting schedule logic.
     type Error;
     /// Validate the schedule.
-    fn validate(&self) -> Result<(), Self::Error>;
+    fn validate(
+        &self,
+        genesis_locked: <Self::Currency as Currency<AccountId>>::Balance,
+        start: Self::Moment,
+    ) -> Result<(), Self::Error>;
     /// Locked amount at provided moment.
     fn locked_at(
         &self,

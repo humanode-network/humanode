@@ -25,6 +25,8 @@ pub struct LinearWithCliff<AccountId, Moment, Currency: CurrencyT<AccountId>> {
 pub enum LinearWithCliffError {
     /// We don't let `per_period` be less than 1, or else the vesting will never end.
     ZeroPerPeriod,
+    /// Genesis locked shouldn't be zero.
+    ZeroGenesisLocked,
 }
 
 impl<AccountId, Moment, Currency> VestingSchedule<AccountId>
@@ -39,9 +41,16 @@ where
 
     type Error = LinearWithCliffError;
 
-    fn validate(&self) -> Result<(), Self::Error> {
+    fn validate(
+        &self,
+        genesis_locked: Currency::Balance,
+        _start: Self::Moment,
+    ) -> Result<(), Self::Error> {
         if self.per_period == Zero::zero() {
             return Err(LinearWithCliffError::ZeroPerPeriod);
+        }
+        if genesis_locked == Zero::zero() {
+            return Err(LinearWithCliffError::ZeroGenesisLocked);
         }
         Ok(())
     }
