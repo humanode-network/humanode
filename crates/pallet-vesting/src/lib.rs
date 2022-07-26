@@ -18,6 +18,8 @@ use vesting_schedule::VestingSchedule;
 /// Balance type alias.
 type BalanceOf<T> =
     <<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+/// Full VestingInfo type.
+type FullVestingInfo<T> = VestingInfo<BalanceOf<T>, <T as Config>::Moment>;
 
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
@@ -70,6 +72,6 @@ pub mod pallet {
         _,
         Blake2_128Concat,
         T::AccountId,
-        BoundedVec<VestingInfo<BalanceOf<T>, <T as Config>::Moment>, T::MaxVestingSchedules>,
+        BoundedVec<FullVestingInfo<T>, T::MaxVestingSchedules>,
     >;
 }
