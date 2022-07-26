@@ -8,10 +8,10 @@ use codec::MaxEncodedLen;
 use frame_support::{
     pallet_prelude::*,
     storage::bounded_vec::BoundedVec,
-    traits::{Currency, StorageVersion},
+    traits::{Currency, LockIdentifier, LockableCurrency, StorageVersion, WithdrawReasons},
 };
 pub use pallet::*;
-use sp_runtime::traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize};
+use sp_runtime::traits::{AtLeast32BitUnsigned, MaybeSerializeDeserialize, Zero};
 use vesting_info::VestingInfo;
 use vesting_schedule::VestingSchedule;
 
@@ -41,7 +41,7 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         /// The currency to operate with.
-        type Currency: Currency<Self::AccountId>;
+        type Currency: LockableCurrency<Self::AccountId>;
 
         /// The vesting schedule to operate with.
         type VestingSchedule: VestingSchedule<Self::AccountId>;
@@ -59,6 +59,9 @@ pub mod pallet {
 
         /// Maximum number of vesting schedules an account may have at a given moment.
         type MaxVestingSchedules: Get<u32>;
+
+        /// An lock identifier for a lockable currency to be used in vesting.
+        type VestingLockId: Get<LockIdentifier>;
     }
 
     #[pallet::pallet]
@@ -74,4 +77,42 @@ pub mod pallet {
         T::AccountId,
         BoundedVec<FullVestingInfo<T>, T::MaxVestingSchedules>,
     >;
+
+    #[pallet::genesis_config]
+    pub struct GenesisConfig<T: Config> {
+        /// The list of vesting to use.
+        pub vesting: Vec<(T::AccountId, BalanceOf<T>, T::Moment)>,
+    }
+
+    #[cfg(feature = "std")]
+    impl<T: Config> Default for GenesisConfig<T> {
+        fn default() -> Self {
+            GenesisConfig {
+                vesting: Default::default(),
+            }
+        }
+    }
+
+    #[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+        fn build(&self) {
+            for &(ref who, locked, start) in self.vesting.iter() {
+                let balance = T::Currency::free_balance(who);
+                assert!(
+                    !balance.is_zero(),
+                    "Currencies must be init'd before vesting"
+                );
+
+                // TODO. Vesting validate
+
+                let vesting_info = VestingInfo { locked, start };
+
+                Vesting::<T>::try_append(who, vesting_info)
+                    .expect("Too many vesting schedules at genesis.");
+
+                let reasons = WithdrawReasons::TRANSFER | WithdrawReasons::RESERVE;
+                T::Currency::set_lock(T::VestingLockId::get(), who, locked, reasons);
+            }
+        }
+    }
 }

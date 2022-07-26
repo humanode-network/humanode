@@ -6,7 +6,7 @@ use super::*;
 #[derive(Encode, Decode, Copy, Clone, PartialEq, Eq, RuntimeDebug, MaxEncodedLen, TypeInfo)]
 pub struct VestingInfo<Balance, Moment> {
     /// Locked amount at genesis.
-    locked: Balance,
+    pub locked: Balance,
     /// Starting moment for unlocking(vesting).
-    start: Moment,
+    pub start: Moment,
 }
