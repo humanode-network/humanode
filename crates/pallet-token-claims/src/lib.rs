@@ -4,6 +4,8 @@
 
 use frame_support::traits::StorageVersion;
 
+mod weights;
+
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
@@ -16,6 +18,7 @@ pub mod pallet {
     use frame_system::pallet_prelude::*;
 
     use super::*;
+    use crate::weights::WeightInfo;
 
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
@@ -26,6 +29,9 @@ pub mod pallet {
     pub trait Config: frame_system::Config {
         /// Overarching event type.
         type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+        /// The weight informtation provider type.
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::event]
