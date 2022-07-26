@@ -37,5 +37,8 @@ pub mod pallet {
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {}
+
+    #[pallet::call]
+    impl<T: Config> Pallet<T> {}
 }
 pub use pallet::*;
