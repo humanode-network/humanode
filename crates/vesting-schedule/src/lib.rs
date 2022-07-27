@@ -11,7 +11,7 @@ use sp_arithmetic::traits::{
 mod traits;
 pub use traits::*;
 
-/// Implements linear westing logic with cliff.
+/// Implements linear vesting logic with cliff.
 pub struct LinearWithCliff<AccountId, Moment, Currency: CurrencyT<AccountId>> {
     /// Vesting cliff.
     cliff: Moment,

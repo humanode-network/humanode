@@ -103,7 +103,7 @@ pub mod pallet {
                     "Currencies must be init'd before vesting"
                 );
 
-                // TODO. Vesting validate
+                VestingSchedule::validate(<T as Config>::VestingSchedule, locked, start);
 
                 let vesting_info = VestingInfo { locked, start };
 
