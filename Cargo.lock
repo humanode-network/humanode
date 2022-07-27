@@ -5654,7 +5654,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "parity-scale-codec",
- "rustc-hex",
+ "primitives-ethereum",
  "scale-info",
  "serde",
  "serde_json",
@@ -6178,6 +6178,19 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-std",
+]
+
+[[package]]
+name = "primitives-ethereum"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "rustc-hex",
+ "scale-info",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

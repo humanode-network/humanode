@@ -22,12 +22,10 @@ type BalanceOf<T> = <CurrencyOf<T> as Currency<<T as frame_system::Config>::Acco
 pub mod pallet {
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
+    use primitives_ethereum::EthereumAddress;
 
     use super::*;
-    use crate::{
-        types::{ClaimInfo, EthereumAddress},
-        weights::WeightInfo,
-    };
+    use crate::{types::ClaimInfo, weights::WeightInfo};
 
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
