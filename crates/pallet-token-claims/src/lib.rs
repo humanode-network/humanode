@@ -50,7 +50,7 @@ pub mod pallet {
         type Currency: Currency<<Self as frame_system::Config>::AccountId>;
 
         /// Vesting schedule configuration type.
-        type VestingSchedule: Member + Parameter + MaxEncodedLen;
+        type VestingSchedule: Member + Parameter + MaxEncodedLen + MaybeSerializeDeserialize;
 
         /// Interface into the vesting implementation.
         type VestingInterface: VestingInterface<
@@ -72,6 +72,29 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn claims)]
     pub type Claims<T> = StorageMap<_, Twox64Concat, EthereumAddress, ClaimInfoOf<T>, OptionQuery>;
+
+    #[pallet::genesis_config]
+    pub struct GenesisConfig<T: Config> {
+        claims: Vec<(EthereumAddress, ClaimInfoOf<T>)>,
+    }
+
+    #[cfg(feature = "std")]
+    impl<T: Config> Default for GenesisConfig<T> {
+        fn default() -> Self {
+            GenesisConfig {
+                claims: Default::default(),
+            }
+        }
+    }
+
+    #[pallet::genesis_build]
+    impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
+        fn build(&self) {
+            for (eth_address, info) in self.claims.iter() {
+                Claims::<T>::insert(eth_address, info.clone());
+            }
+        }
+    }
 
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
