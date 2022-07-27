@@ -10,6 +10,13 @@ pub mod traits;
 mod types;
 mod weights;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
@@ -75,7 +82,8 @@ pub mod pallet {
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
-        claims: Vec<(EthereumAddress, ClaimInfoOf<T>)>,
+        /// The claims to initialize at genesis.
+        pub claims: Vec<(EthereumAddress, ClaimInfoOf<T>)>,
     }
 
     #[cfg(feature = "std")]

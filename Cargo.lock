@@ -5651,13 +5651,17 @@ dependencies = [
 name = "pallet-token-claims"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "pallet-balances",
  "parity-scale-codec",
  "primitives-ethereum",
  "scale-info",
  "serde",
  "serde_json",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]
