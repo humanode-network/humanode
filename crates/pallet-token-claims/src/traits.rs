@@ -1,0 +1,58 @@
+//! Traits we use and expose.
+
+use frame_support::dispatch::DispatchResult;
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
+
+/// The verifier for the Ethereum signature.
+///
+/// The idea is we don't pass in the message we use for the verification, but instead we pass in
+/// the message parameters.
+///
+/// This abstraction built with EIP-712 in mind, but can also be implemented with any generic
+/// ECDSA signature.
+pub trait PreconstructedMessageVerifier {
+    /// The type describing the parameters used to construct a message.
+    type MessageParams;
+
+    /// Generate a message and verify the provided `signature` against the said message.
+    /// Extract the [`EthereumAddress`] from the signature and return it.
+    ///
+    /// The caller should check that the extracted address matches what is expected, as successfull
+    /// recovery does not necessarily guarantee the correctness of the signature - that can only
+    /// be achieved with checking the recovered address against the expected one.
+    fn recover_signer(
+        message_params: Self::MessageParams,
+        signature: EcdsaSignature,
+    ) -> Option<EthereumAddress>;
+
+    /// Calls [`Self::recover_signer`] and then checks that the `signer` matches the recovered address.
+    fn verify(
+        message_params: Self::MessageParams,
+        signer: &EthereumAddress,
+        signature: EcdsaSignature,
+    ) -> bool {
+        let recovered = match Self::recover_signer(message_params, signature) {
+            Some(recovered) => recovered,
+            None => return false,
+        };
+        &recovered == signer
+    }
+}
+
+/// The interface to the vesting implementation.
+pub trait VestingInterface {
+    /// The Account ID to apply vesting to.
+    type AccountId;
+    /// The type of balance to lock under the vesting.
+    type Balance;
+    /// The vesting schedule configuration.
+    type Schedule;
+
+    /// Lock the specified amount of balance (`balance_to_lock`) on the given account (`account`)
+    /// with the provided vesting schedule configuration (`schedule`).
+    fn lock_under_vesting(
+        account: &Self::AccountId,
+        balance_to_lock: Self::Balance,
+        schedule: Self::Schedule,
+    ) -> DispatchResult;
+}

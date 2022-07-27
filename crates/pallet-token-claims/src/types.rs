@@ -2,6 +2,7 @@
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{Deserialize, RuntimeDebug, Serialize};
+use primitives_ethereum::EthereumAddress;
 use scale_info::TypeInfo;
 
 /// The claim information.
@@ -14,4 +15,12 @@ pub struct ClaimInfo<Balance, Vesting> {
     pub balance: Balance,
     /// The vesting configuration for the given claim.
     pub vesting: Option<Vesting>,
+}
+
+/// The collection of parameters used for construcing a message that had to be signed.
+pub struct EthereumSignatureMessageParams<AccountId> {
+    /// The account ID of whoever is requesting the claim.
+    pub account_id: AccountId,
+    /// The ethereum address the claim is authorized for.
+    pub ethereum_address: EthereumAddress,
 }
