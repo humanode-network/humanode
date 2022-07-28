@@ -144,7 +144,7 @@ pub mod pallet {
                 ethereum_address,
             };
 
-            if <T as Config>::EthereumSignatureVerifier::verify(
+            if !<T as Config>::EthereumSignatureVerifier::verify(
                 message_params,
                 &ethereum_address,
                 ethereum_signature,
