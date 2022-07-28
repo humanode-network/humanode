@@ -1,4 +1,5 @@
 use frame_support::traits::Currency as CurrencyT;
+use sp_runtime::traits::Saturating;
 use sp_std::marker::PhantomData;
 
 use super::*;
@@ -25,12 +26,15 @@ where
     ) -> <<VestingSchedule as VestingScheduleT<AccountId>>::Currency as CurrencyT<AccountId>>::Balance
     {
         let now = TimestampMoment::<R>::now();
-        let total_locked_now = vesting_info
-            .schedules
-            .iter()
-            .fold(Zero::zero(), |total, schedule| {
-                schedule.locked_at(vesting_info.locked, vesting_info.start, now)
-            });
+        let total_locked_now =
+            vesting_info
+                .schedules
+                .iter()
+                .fold(Zero::zero(), |total, schedule| {
+                    schedule
+                        .locked_at(vesting_info.locked, vesting_info.start, now)
+                        .saturating_add(total)
+                });
         <VestingSchedule as VestingScheduleT<AccountId>>::Currency::free_balance(who)
             .min(total_locked_now)
     }
