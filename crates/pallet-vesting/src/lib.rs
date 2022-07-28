@@ -3,6 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 mod vesting_info;
+mod vesting_schedule;
 
 use codec::MaxEncodedLen;
 use frame_support::{
@@ -43,9 +44,6 @@ pub mod pallet {
         /// The currency to operate with.
         type Currency: LockableCurrency<Self::AccountId>;
 
-        /// The vesting schedule to operate with.
-        type VestingSchedule: VestingSchedule<Self::AccountId>;
-
         /// Type used for expressing moment.
         type Moment: Parameter
             + Default
@@ -53,6 +51,16 @@ pub mod pallet {
             + Copy
             + MaybeSerializeDeserialize
             + MaxEncodedLen;
+
+        /// The vesting schedule type to operate with.
+        type VestingSchedule: VestingSchedule<
+            Self::AccountId,
+            Moment = Self::Moment,
+            Currency = Self::Currency,
+        >;
+
+        /// The vesting schedule value itself.
+        type VestinScheduleValue: Get<Self::VestingSchedule>;
 
         /// The getter for the current moment.
         type CurrentMoment: CurrentMoment<Self::Moment>;
@@ -103,7 +111,7 @@ pub mod pallet {
                     "Currencies must be init'd before vesting"
                 );
 
-                VestingSchedule::validate(<T as Config>::VestingSchedule, locked, start);
+                VestingSchedule::validate(&T::VestinScheduleValue::get(), locked, start);
 
                 let vesting_info = VestingInfo { locked, start };
 

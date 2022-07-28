@@ -1,6 +1,4 @@
-//! The vesting schedule.
-
-#![cfg_attr(not(feature = "std"), no_std)]
+//! Vesting schedule logic.
 
 use frame_support::traits::Currency as CurrencyT;
 use sp_arithmetic::traits::{
@@ -8,8 +6,34 @@ use sp_arithmetic::traits::{
     UniqueSaturatedInto, Zero,
 };
 
-mod traits;
-pub use traits::*;
+/// [`VestingSchedule`] defines logic for currency vesting(unlocking).
+pub trait VestingSchedule<AccountId> {
+    /// The type used to denote time: Timestamp, BlockNumber, etc.
+    type Moment;
+    /// The currency that this schedule applies to.
+    type Currency: CurrencyT<AccountId>;
+    /// An error that can occur at vesting schedule logic.
+    type Error;
+    /// Validate the schedule.
+    fn validate(
+        &self,
+        genesis_locked: <Self::Currency as CurrencyT<AccountId>>::Balance,
+        start: Self::Moment,
+    ) -> Result<(), Self::Error>;
+    /// Locked amount at provided moment.
+    fn locked_at(
+        &self,
+        genesis_locked: <Self::Currency as CurrencyT<AccountId>>::Balance,
+        start: Self::Moment,
+        moment: Self::Moment,
+    ) -> <Self::Currency as CurrencyT<AccountId>>::Balance;
+    /// Moment at which the schedule ends.
+    fn end(
+        &self,
+        genesis_locked: <Self::Currency as CurrencyT<AccountId>>::Balance,
+        start: Self::Moment,
+    ) -> Self::Moment;
+}
 
 /// Implements linear vesting logic with cliff.
 pub struct LinearWithCliff<AccountId, Moment, Currency: CurrencyT<AccountId>> {

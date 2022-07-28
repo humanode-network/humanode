@@ -3220,6 +3220,7 @@ dependencies = [
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-vesting",
  "parity-scale-codec",
  "precompile-bioauth",
  "precompile-evm-accounts-mapping",
@@ -5698,9 +5699,9 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-arithmetic",
  "sp-runtime",
  "sp-std",
- "vesting-schedule",
 ]
 
 [[package]]
