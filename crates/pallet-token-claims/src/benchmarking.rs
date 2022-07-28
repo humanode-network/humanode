@@ -28,9 +28,26 @@ benchmarks! {
         let signature = <T as Interface>::create_ecdsa_signature();
         let account_id = <T as Interface>::create_account_id();
         <Claims<T>>::insert(ethereum_address, claim_info);
+
+        #[cfg(test)]
+        let test_data = {
+            use crate::mock;
+
+            let recover_signer_ctx = mock::MockEthereumSignatureVerifier::recover_signer_context();
+            recover_signer_ctx.expect().returning(move |_, _| Some((&ethereum_address).clone()));
+            (recover_signer_ctx,)
+        };
+
+
     }: _(RawOrigin::Signed(account_id), ethereum_address, signature)
     verify {
         assert_eq!(Claims::<T>::get(ethereum_address), None);
+
+        #[cfg(test)]
+        {
+            let (recover_signer_ctx,) = test_data;
+            recover_signer_ctx.checkpoint();
+        }
     }
 
     impl_benchmark_test_suite!(

@@ -18,6 +18,7 @@ pub struct ClaimInfo<Balance, Vesting> {
 }
 
 /// The collection of parameters used for construcing a message that had to be signed.
+#[derive(PartialEq, Eq, RuntimeDebug)]
 pub struct EthereumSignatureMessageParams<AccountId> {
     /// The account ID of whoever is requesting the claim.
     pub account_id: AccountId,

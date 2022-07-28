@@ -1,16 +1,21 @@
 //! The mock for the pallet.
 
 use frame_support::{
-    ord_parameter_types, parameter_types,
+    ord_parameter_types, parameter_types, sp_io,
     traits::{ConstU32, ConstU64},
 };
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 use sp_core::H256;
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
+    BuildStorage,
 };
 
 use crate::{self as pallet_token_claims};
+
+mod utils;
+pub use self::utils::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -82,66 +87,41 @@ impl pallet_token_claims::Config for Test {
     type WeightInfo = ();
 }
 
-// This function basically just builds a genesis storage key/value store according to
-// our desired mockup.
-pub fn new_test_ext() -> frame_support::sp_io::TestExternalities {
+/// Utility function for creating dummy ethereum accounts.
+pub fn eth(num: u8) -> EthereumAddress {
+    let mut addr = [0; 20];
+    addr[19] = num;
+    EthereumAddress(addr)
+}
+
+pub fn sig(num: u8) -> EcdsaSignature {
+    let mut signature = [0; 65];
+    signature[64] = num;
+    EcdsaSignature(signature)
+}
+
+pub fn new_test_ext() -> sp_io::TestExternalities {
     let genesis_config = GenesisConfig {
         system: Default::default(),
         balances: Default::default(),
-        token_claims: Default::default(),
+        token_claims: TokenClaimsConfig {
+            claims: [(eth(1), 10, None), (eth(2), 20, Some(MockVestingSchedule))]
+                .into_iter()
+                .map(|(eth_address, balance, vesting)| {
+                    (
+                        eth_address,
+                        pallet_token_claims::types::ClaimInfo { balance, vesting },
+                    )
+                })
+                .collect(),
+        },
     };
-    use sp_runtime::BuildStorage;
+    new_test_ext_with(genesis_config)
+}
+
+// This function basically just builds a genesis storage key/value store according to
+// our desired mockup.
+pub fn new_test_ext_with(genesis_config: GenesisConfig) -> sp_io::TestExternalities {
     let storage = genesis_config.build_storage().unwrap();
     storage.into()
 }
-
-/// Test mocks
-mod mocks {
-    use codec::{Decode, Encode, MaxEncodedLen};
-    use frame_support::{Deserialize, Serialize};
-    use scale_info::TypeInfo;
-
-    use super::*;
-    use crate::{
-        traits::{self, PreconstructedMessageVerifier},
-        types::EthereumSignatureMessageParams,
-    };
-
-    #[derive(
-        Debug, Clone, Decode, Encode, MaxEncodedLen, TypeInfo, PartialEq, Eq, Serialize, Deserialize,
-    )]
-    pub struct MockVestingSchedule;
-
-    #[derive(Debug)]
-    pub struct MockVestingInterface;
-
-    impl traits::VestingInterface for MockVestingInterface {
-        type AccountId = <Test as frame_system::Config>::AccountId;
-        type Balance = crate::BalanceOf<Test>;
-        type Schedule = MockVestingSchedule;
-
-        fn lock_under_vesting(
-            _account: &Self::AccountId,
-            _balance_to_lock: Self::Balance,
-            _schedule: Self::Schedule,
-        ) -> frame_support::dispatch::DispatchResult {
-            Ok(())
-        }
-    }
-
-    #[derive(Debug)]
-    pub struct MockEthereumSignatureVerifier;
-
-    impl PreconstructedMessageVerifier for MockEthereumSignatureVerifier {
-        type MessageParams =
-            EthereumSignatureMessageParams<<Test as frame_system::Config>::AccountId>;
-
-        fn recover_signer(
-            _message_params: Self::MessageParams,
-            _signature: primitives_ethereum::EcdsaSignature,
-        ) -> Option<primitives_ethereum::EthereumAddress> {
-            None
-        }
-    }
-}
-use self::mocks::*;
