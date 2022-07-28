@@ -45,3 +45,14 @@ mock! {
         ) -> Option<primitives_ethereum::EthereumAddress>;
     }
 }
+
+pub fn runtime_lock() -> std::sync::MutexGuard<'static, ()> {
+    static MOCK_RUNTIME_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+    // Ignore the poisoning for the tests that panic.
+    // We only care about concurrency here, not about the poisoning.
+    match MOCK_RUNTIME_MUTEX.lock() {
+        Ok(guard) => guard,
+        Err(poisoned) => poisoned.into_inner(),
+    }
+}

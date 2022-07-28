@@ -33,9 +33,12 @@ benchmarks! {
         let test_data = {
             use crate::mock;
 
+            let mock_runtime_guard = mock::runtime_lock();
+
             let recover_signer_ctx = mock::MockEthereumSignatureVerifier::recover_signer_context();
             recover_signer_ctx.expect().returning(move |_, _| Some((&ethereum_address).clone()));
-            (recover_signer_ctx,)
+
+            (mock_runtime_guard, recover_signer_ctx)
         };
 
 
@@ -45,8 +48,11 @@ benchmarks! {
 
         #[cfg(test)]
         {
-            let (recover_signer_ctx,) = test_data;
+            let (mock_runtime_guard, recover_signer_ctx,) = test_data;
+
             recover_signer_ctx.checkpoint();
+
+            drop(mock_runtime_guard);
         }
     }
 
