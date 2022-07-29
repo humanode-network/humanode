@@ -32,7 +32,7 @@ type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSched
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::pallet_prelude::*;
+    use frame_support::{pallet_prelude::*, storage::with_storage_layer};
     use frame_system::pallet_prelude::*;
     use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
@@ -158,23 +158,25 @@ pub mod pallet {
 
     impl<T: Config> Pallet<T> {
         fn process_claim(who: T::AccountId, ethereum_address: EthereumAddress) -> DispatchResult {
-            let ClaimInfo { balance, vesting } =
-                <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
+            with_storage_layer(move || {
+                let ClaimInfo { balance, vesting } =
+                    <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
 
-            T::Currency::deposit_creating(&who, balance);
+                T::Currency::deposit_creating(&who, balance);
 
-            if let Some(ref vesting) = vesting {
-                T::VestingInterface::lock_under_vesting(&who, balance, vesting.clone())?;
-            }
+                if let Some(ref vesting) = vesting {
+                    T::VestingInterface::lock_under_vesting(&who, balance, vesting.clone())?;
+                }
 
-            Self::deposit_event(Event::TokensClaimed {
-                who,
-                ethereum_address,
-                balance,
-                vesting,
-            });
+                Self::deposit_event(Event::TokensClaimed {
+                    who,
+                    ethereum_address,
+                    balance,
+                    vesting,
+                });
 
-            Ok(())
+                Ok(())
+            })
         }
     }
 }
