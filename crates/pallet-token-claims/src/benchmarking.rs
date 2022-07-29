@@ -6,27 +6,46 @@ use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
 use crate::*;
 
-/// The benchmark interface into the environment.
-pub trait Interface {
-    type Config: super::Config;
+/// The possible claim info variants that we'd need to conduct the benchmarks.
+pub enum ClaimInfoVariant {
+    /// Claim without vesting and any balance.
+    WithoutVesting,
+    /// Claim with vesting and any balance.
+    WithVesting,
+}
 
+/// The benchmark interface into the environment.
+pub trait Interface: super::Config {
+    /// Obtain an Account ID.
+    fn create_account_id() -> <Self as frame_system::Config>::AccountId;
+
+    /// Obtain an ethereum address.
     fn create_ethereum_address() -> EthereumAddress;
-    fn create_claim_info() -> super::ClaimInfoOf<Self::Config>;
-    fn create_ecdsa_signature() -> EcdsaSignature;
-    fn create_account_id() -> <Self::Config as frame_system::Config>::AccountId;
+
+    /// Obtain an ECDSA signature that would fit the provided Account ID and the Ethereum address
+    /// under the associated runtime.
+    fn create_ecdsa_signature(
+        account_id: &<Self as frame_system::Config>::AccountId,
+        ethereum_address: &EthereumAddress,
+    ) -> EcdsaSignature;
+
+    /// Obtain a claim info variant.
+    fn create_claim_info(claim_info_variant: ClaimInfoVariant) -> super::ClaimInfoOf<Self>;
 }
 
 benchmarks! {
     where_clause {
         where
-            T: Interface<Config = T>
+            T: Interface
     }
 
     claim {
-        let ethereum_address = <T as Interface>::create_ethereum_address();
-        let claim_info = <T as Interface>::create_claim_info();
-        let signature = <T as Interface>::create_ecdsa_signature();
         let account_id = <T as Interface>::create_account_id();
+        let ethereum_address = <T as  Interface>::create_ethereum_address();
+        let ethereum_signature = <T as  Interface>::create_ecdsa_signature(&account_id, &ethereum_address);
+
+        // We bench with the worst case scenario - with vested claim.
+        let claim_info = <T as  Interface>::create_claim_info(ClaimInfoVariant::WithVesting);
         <Claims<T>>::insert(ethereum_address, claim_info);
 
         #[cfg(test)]
@@ -36,21 +55,25 @@ benchmarks! {
             let mock_runtime_guard = mock::runtime_lock();
 
             let recover_signer_ctx = mock::MockEthereumSignatureVerifier::recover_signer_context();
-            recover_signer_ctx.expect().returning(move |_, _| Some((&ethereum_address).clone()));
+            recover_signer_ctx.expect().return_const(Some(ethereum_address));
 
-            (mock_runtime_guard, recover_signer_ctx)
+            let lock_under_vesting_ctx = mock::MockVestingInterface::lock_under_vesting_context();
+            lock_under_vesting_ctx.expect().return_const(Ok(()));
+
+            (mock_runtime_guard, recover_signer_ctx, lock_under_vesting_ctx)
         };
 
 
-    }: _(RawOrigin::Signed(account_id), ethereum_address, signature)
+    }: _(RawOrigin::Signed(account_id), ethereum_address, ethereum_signature)
     verify {
         assert_eq!(Claims::<T>::get(ethereum_address), None);
 
         #[cfg(test)]
         {
-            let (mock_runtime_guard, recover_signer_ctx,) = test_data;
+            let (mock_runtime_guard, recover_signer_ctx, lock_under_vesting_ctx) = test_data;
 
             recover_signer_ctx.checkpoint();
+            lock_under_vesting_ctx.checkpoint();
 
             drop(mock_runtime_guard);
         }
@@ -65,24 +88,28 @@ benchmarks! {
 
 #[cfg(test)]
 impl Interface for crate::mock::Test {
-    type Config = Self;
+    fn create_account_id() -> <Self as frame_system::Config>::AccountId {
+        42
+    }
 
     fn create_ethereum_address() -> EthereumAddress {
         EthereumAddress::default()
     }
 
-    fn create_claim_info() -> crate::ClaimInfoOf<Self::Config> {
-        crate::types::ClaimInfo {
-            balance: 0,
-            vesting: None,
-        }
-    }
-
-    fn create_ecdsa_signature() -> EcdsaSignature {
+    fn create_ecdsa_signature(
+        _account_id: &<Self as frame_system::Config>::AccountId,
+        _ethereum_address: &EthereumAddress,
+    ) -> EcdsaSignature {
         EcdsaSignature::default()
     }
 
-    fn create_account_id() -> <Self::Config as frame_system::Config>::AccountId {
-        0
+    fn create_claim_info(claim_info_variant: ClaimInfoVariant) -> crate::ClaimInfoOf<Self> {
+        crate::types::ClaimInfo {
+            balance: 100,
+            vesting: match claim_info_variant {
+                ClaimInfoVariant::WithoutVesting => None,
+                ClaimInfoVariant::WithVesting => Some(crate::mock::MockVestingSchedule),
+            },
+        }
     }
 }
