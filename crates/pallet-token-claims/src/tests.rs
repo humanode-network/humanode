@@ -1,6 +1,6 @@
 //! The tests for the pallet.
 
-use frame_support::{assert_err, assert_ok};
+use frame_support::{assert_noop, assert_ok};
 use mockall::predicate;
 use primitives_ethereum::EthereumAddress;
 
@@ -126,7 +126,7 @@ fn claim_eth_signature_recovery_failure() {
         lock_under_vesting_ctx.expect().never();
 
         // Invoke the function under test.
-        assert_err!(
+        assert_noop!(
             TokenClaims::claim(Origin::signed(42), eth(1), sig(1)),
             <Error<Test>>::InvalidSignature
         );
@@ -167,7 +167,7 @@ fn claim_eth_signature_recovery_invalid() {
         lock_under_vesting_ctx.expect().never();
 
         // Invoke the function under test.
-        assert_err!(
+        assert_noop!(
             TokenClaims::claim(Origin::signed(42), eth(1), sig(1)),
             <Error<Test>>::InvalidSignature
         );
