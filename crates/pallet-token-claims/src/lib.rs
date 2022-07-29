@@ -32,7 +32,12 @@ type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSched
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::{pallet_prelude::*, storage::with_storage_layer};
+    use frame_support::{
+        pallet_prelude::*,
+        sp_runtime::traits::{CheckedAdd, Zero},
+        storage::with_storage_layer,
+        traits::{ExistenceRequirement, WithdrawReasons},
+    };
     use frame_system::pallet_prelude::*;
     use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
@@ -55,6 +60,10 @@ pub mod pallet {
 
         /// Currency to claim.
         type Currency: Currency<<Self as frame_system::Config>::AccountId>;
+
+        /// The ID for the pot account to use.
+        #[pallet::constant]
+        type PotAccountId: Get<<Self as frame_system::Config>::AccountId>;
 
         /// Vesting schedule configuration type.
         type VestingSchedule: Member + Parameter + MaxEncodedLen + MaybeSerializeDeserialize;
@@ -98,9 +107,21 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
+            let mut total_claimable_balance: BalanceOf<T> = Zero::zero();
+
             for (eth_address, info) in self.claims.iter() {
                 Claims::<T>::insert(eth_address, info.clone());
+                total_claimable_balance =
+                    total_claimable_balance.checked_add(&info.balance).unwrap();
             }
+
+            // Ensure that our pot account has exatly the right balance.
+            let expected_pot_balance = <CurrencyOf<T>>::minimum_balance() + total_claimable_balance;
+            let pot_account_id = T::PotAccountId::get();
+            assert_eq!(
+                <CurrencyOf<T>>::free_balance(&pot_account_id),
+                expected_pot_balance,
+            );
         }
     }
 
@@ -162,7 +183,13 @@ pub mod pallet {
                 let ClaimInfo { balance, vesting } =
                     <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
 
-                T::Currency::deposit_creating(&who, balance);
+                let funds = T::Currency::withdraw(
+                    &T::PotAccountId::get(),
+                    balance,
+                    WithdrawReasons::TRANSFER,
+                    ExistenceRequirement::KeepAlive,
+                )?;
+                T::Currency::resolve_creating(&who, funds);
 
                 if let Some(ref vesting) = vesting {
                     T::VestingInterface::lock_under_vesting(&who, balance, vesting.clone())?;

@@ -1,8 +1,9 @@
 //! The mock for the pallet.
 
 use frame_support::{
-    sp_io,
+    parameter_types, sp_io,
     traits::{ConstU32, ConstU64},
+    PalletId,
 };
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 use sp_core::H256;
@@ -28,6 +29,7 @@ frame_support::construct_runtime!(
     {
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+        Pot: pallet_pot::{Pallet, Config<T>, Event<T>},
         TokenClaims: pallet_token_claims::{Pallet, Call, Storage, Config<T>, Event<T>},
     }
 );
@@ -71,10 +73,24 @@ impl pallet_balances::Config for Test {
     type WeightInfo = ();
 }
 
+parameter_types! {
+    pub const PotPalletId: PalletId = PalletId(*b"tokenclm");
+}
+
+impl pallet_pot::Config for Test {
+    type Event = Event;
+    type Currency = Balances;
+    type PalletId = PotPalletId;
+}
+
+parameter_types! {
+    pub PotAccountId: u64 = Pot::account_id();
+}
 
 impl pallet_token_claims::Config for Test {
     type Event = Event;
     type Currency = Balances;
+    type PotAccountId = PotAccountId;
     type VestingSchedule = MockVestingSchedule;
     type VestingInterface = MockVestingInterface;
     type EthereumSignatureVerifier = MockEthereumSignatureVerifier;
@@ -97,7 +113,14 @@ pub fn sig(num: u8) -> EcdsaSignature {
 pub fn new_test_ext() -> sp_io::TestExternalities {
     let genesis_config = GenesisConfig {
         system: Default::default(),
-        balances: Default::default(),
+        balances: BalancesConfig {
+            balances: vec![(
+                Pot::account_id(),
+                30 /* tokens sum */ +
+                1, /* existential deposit */
+            )],
+        },
+        pot: Default::default(),
         token_claims: TokenClaimsConfig {
             claims: [(eth(1), 10, None), (eth(2), 20, Some(MockVestingSchedule))]
                 .into_iter()
