@@ -6,8 +6,8 @@ use primitives_ethereum::EthereumAddress;
 
 use crate::{
     mock::{
-        self, eth, new_test_ext, sig, Balances, MockEthereumSignatureVerifier,
-        MockVestingInterface, MockVestingSchedule, Origin, Test, TokenClaims,
+        eth, new_test_ext, sig, Balances, MockEthereumSignatureVerifier, MockVestingInterface,
+        MockVestingSchedule, Origin, Test, TestExternalitiesExt, TokenClaims,
     },
     types::{ClaimInfo, EthereumSignatureMessageParams},
     *,
@@ -15,9 +15,7 @@ use crate::{
 
 #[test]
 fn basic_setup_works() {
-    new_test_ext().execute_with(|| {
-        let _guard = mock::runtime_lock();
-
+    new_test_ext().execute_with_ext(|_| {
         assert_eq!(<Claims<Test>>::get(&EthereumAddress::default()), None);
         assert_eq!(
             <Claims<Test>>::get(&eth(1)),
@@ -39,9 +37,7 @@ fn basic_setup_works() {
 /// This test verifies that claiming works in the happy path (when there is no vesting).
 #[test]
 fn claiming_works_no_vesting() {
-    new_test_ext().execute_with(|| {
-        let _guard = mock::runtime_lock();
-
+    new_test_ext().execute_with_ext(|_| {
         assert!(<Claims<Test>>::contains_key(&eth(1)));
         assert_eq!(Balances::free_balance(42), 0);
 
@@ -63,9 +59,7 @@ fn claiming_works_no_vesting() {
 /// This test verifies that claiming works in the happy path with vesting.
 #[test]
 fn claiming_works_with_vesting() {
-    new_test_ext().execute_with(|| {
-        let _guard = mock::runtime_lock();
-
+    new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(&eth(1)));
         assert_eq!(Balances::free_balance(42), 0);
@@ -103,9 +97,7 @@ fn claiming_works_with_vesting() {
 /// the ethereum signature fails.
 #[test]
 fn claim_eth_signature_recovery_failure() {
-    new_test_ext().execute_with(|| {
-        let _guard = mock::runtime_lock();
-
+    new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(&eth(2)));
         assert_eq!(Balances::free_balance(42), 0);
@@ -142,9 +134,7 @@ fn claim_eth_signature_recovery_failure() {
 /// the ethereum signature recoves an address that does not match the expected one.
 #[test]
 fn claim_eth_signature_recovery_invalid() {
-    new_test_ext().execute_with(|| {
-        let _guard = mock::runtime_lock();
-
+    new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(&eth(2)));
         assert_eq!(Balances::free_balance(42), 0);

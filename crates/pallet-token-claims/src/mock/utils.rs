@@ -56,3 +56,21 @@ pub fn runtime_lock() -> std::sync::MutexGuard<'static, ()> {
         Err(poisoned) => poisoned.into_inner(),
     }
 }
+
+pub trait TestExternalitiesExt {
+    fn execute_with_ext<R, E>(&mut self, execute: E) -> R
+    where
+        E: for<'e> FnOnce(&'e ()) -> R;
+}
+
+impl TestExternalitiesExt for frame_support::sp_io::TestExternalities {
+    fn execute_with_ext<R, E>(&mut self, execute: E) -> R
+    where
+        E: for<'e> FnOnce(&'e ()) -> R,
+    {
+        let guard = runtime_lock();
+        let result = self.execute_with(|| execute(&guard));
+        drop(guard);
+        result
+    }
+}
