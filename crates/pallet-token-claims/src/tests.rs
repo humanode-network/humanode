@@ -3,6 +3,7 @@
 use frame_support::{assert_noop, assert_ok};
 use mockall::predicate;
 use primitives_ethereum::EthereumAddress;
+use sp_runtime::DispatchError;
 
 use crate::{
     mock::{
@@ -174,6 +175,51 @@ fn claim_eth_signature_recovery_invalid() {
 
         // Assert state changes.
         assert!(<Claims<Test>>::contains_key(&eth(1)));
+        assert_eq!(Balances::free_balance(42), 0);
+
+        // Assert mock invocations.
+        recover_signer_ctx.checkpoint();
+        lock_under_vesting_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that claiming does end up in a consistent state if the vesting interface call
+/// returns an error.
+#[test]
+fn claim_lock_under_vesting_failure() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<Claims<Test>>::contains_key(&eth(2)));
+        assert_eq!(Balances::free_balance(42), 0);
+
+        // Set mock expectations.
+        let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
+        let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
+        recover_signer_ctx
+            .expect()
+            .once()
+            .with(
+                predicate::eq(EthereumSignatureMessageParams {
+                    account_id: 42,
+                    ethereum_address: eth(2),
+                }),
+                predicate::eq(sig(1)),
+            )
+            .return_const(Some(eth(2)));
+        lock_under_vesting_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(42), predicate::eq(20), predicate::always())
+            .return_const(Err(DispatchError::Other("vesting interface failed")));
+
+        // Invoke the function under test.
+        assert_noop!(
+            TokenClaims::claim(Origin::signed(42), eth(2), sig(1)),
+            DispatchError::Other("vesting interface failed"),
+        );
+
+        // Assert state changes.
+        assert!(<Claims<Test>>::contains_key(&eth(2)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Assert mock invocations.
