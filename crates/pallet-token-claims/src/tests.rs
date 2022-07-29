@@ -53,6 +53,9 @@ fn claiming_works_no_vesting() {
 
         assert!(!<Claims<Test>>::contains_key(&eth(1)));
         assert_eq!(Balances::free_balance(42), 10);
+
+        recover_signer_ctx.checkpoint();
+        lock_under_vesting_ctx.checkpoint();
     });
 }
 
@@ -90,6 +93,10 @@ fn claiming_works_with_vesting() {
         // Assert state changes.
         assert!(!<Claims<Test>>::contains_key(&eth(2)));
         assert_eq!(Balances::free_balance(42), 20);
+
+        // Assert mock invocations.
+        recover_signer_ctx.checkpoint();
+        lock_under_vesting_ctx.checkpoint();
     });
 }
 
@@ -127,6 +134,10 @@ fn claim_eth_signature_recovery_failure() {
         // Assert state changes.
         assert!(<Claims<Test>>::contains_key(&eth(1)));
         assert_eq!(Balances::free_balance(42), 0);
+
+        // Assert mock invocations.
+        recover_signer_ctx.checkpoint();
+        lock_under_vesting_ctx.checkpoint();
     });
 }
 
@@ -164,5 +175,9 @@ fn claim_eth_signature_recovery_invalid() {
         // Assert state changes.
         assert!(<Claims<Test>>::contains_key(&eth(1)));
         assert_eq!(Balances::free_balance(42), 0);
+
+        // Assert mock invocations.
+        recover_signer_ctx.checkpoint();
+        lock_under_vesting_ctx.checkpoint();
     });
 }
