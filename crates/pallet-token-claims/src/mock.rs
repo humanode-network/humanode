@@ -1,7 +1,7 @@
 //! The mock for the pallet.
 
 use frame_support::{
-    ord_parameter_types, parameter_types, sp_io,
+    sp_io,
     traits::{ConstU32, ConstU64},
 };
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
@@ -71,12 +71,6 @@ impl pallet_balances::Config for Test {
     type WeightInfo = ();
 }
 
-parameter_types! {
-    pub Prefix: &'static [u8] = b"Pay RUSTs to the TEST account:";
-}
-ord_parameter_types! {
-    pub const Six: u64 = 6;
-}
 
 impl pallet_token_claims::Config for Test {
     type Event = Event;
