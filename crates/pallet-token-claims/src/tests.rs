@@ -7,8 +7,8 @@ use sp_runtime::DispatchError;
 
 use crate::{
     mock::{
-        eth, new_test_ext, sig, Balances, MockEthereumSignatureVerifier, MockVestingInterface,
-        MockVestingSchedule, Origin, Test, TestExternalitiesExt, TokenClaims,
+        eth, new_test_ext, sig, Balances, EthAddr, MockEthereumSignatureVerifier,
+        MockVestingInterface, MockVestingSchedule, Origin, Test, TestExternalitiesExt, TokenClaims,
     },
     types::{ClaimInfo, EthereumSignatureMessageParams},
     *,
@@ -19,14 +19,14 @@ fn basic_setup_works() {
     new_test_ext().execute_with_ext(|_| {
         assert_eq!(<Claims<Test>>::get(&EthereumAddress::default()), None);
         assert_eq!(
-            <Claims<Test>>::get(&eth(1)),
+            <Claims<Test>>::get(&eth(EthAddr::NoVesting)),
             Some(ClaimInfo {
                 balance: 10,
                 vesting: None
             })
         );
         assert_eq!(
-            <Claims<Test>>::get(&eth(2)),
+            <Claims<Test>>::get(&eth(EthAddr::WithVesting)),
             Some(ClaimInfo {
                 balance: 20,
                 vesting: Some(MockVestingSchedule)
@@ -39,20 +39,24 @@ fn basic_setup_works() {
 #[test]
 fn claiming_works_no_vesting() {
     new_test_ext().execute_with_ext(|_| {
-        assert!(<Claims<Test>>::contains_key(&eth(1)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 0);
 
         let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
         recover_signer_ctx
             .expect()
             .once()
-            .returning(|_, _| Some(eth(1)));
+            .returning(|_, _| Some(eth(EthAddr::NoVesting)));
         let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
         lock_under_vesting_ctx.expect().never();
 
-        assert_ok!(TokenClaims::claim(Origin::signed(42), eth(1), sig(1),));
+        assert_ok!(TokenClaims::claim(
+            Origin::signed(42),
+            eth(EthAddr::NoVesting),
+            sig(1),
+        ));
 
-        assert!(!<Claims<Test>>::contains_key(&eth(1)));
+        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 10);
 
         recover_signer_ctx.checkpoint();
@@ -65,7 +69,7 @@ fn claiming_works_no_vesting() {
 fn claiming_works_with_vesting() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(1)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Set mock expectations.
@@ -77,11 +81,11 @@ fn claiming_works_with_vesting() {
             .with(
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
-                    ethereum_address: eth(2),
+                    ethereum_address: eth(EthAddr::WithVesting),
                 }),
                 predicate::eq(sig(1)),
             )
-            .return_const(Some(eth(2)));
+            .return_const(Some(eth(EthAddr::WithVesting)));
         lock_under_vesting_ctx
             .expect()
             .once()
@@ -89,10 +93,14 @@ fn claiming_works_with_vesting() {
             .return_const(Ok(()));
 
         // Invoke the function under test.
-        assert_ok!(TokenClaims::claim(Origin::signed(42), eth(2), sig(1)));
+        assert_ok!(TokenClaims::claim(
+            Origin::signed(42),
+            eth(EthAddr::WithVesting),
+            sig(1)
+        ));
 
         // Assert state changes.
-        assert!(!<Claims<Test>>::contains_key(&eth(2)));
+        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
         assert_eq!(Balances::free_balance(42), 20);
 
         // Assert mock invocations.
@@ -107,7 +115,7 @@ fn claiming_works_with_vesting() {
 fn claim_eth_signature_recovery_failure() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(2)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Set mock expectations.
@@ -119,7 +127,7 @@ fn claim_eth_signature_recovery_failure() {
             .with(
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
-                    ethereum_address: eth(1),
+                    ethereum_address: eth(EthAddr::NoVesting),
                 }),
                 predicate::eq(sig(1)),
             )
@@ -128,12 +136,12 @@ fn claim_eth_signature_recovery_failure() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(1), sig(1)),
+            TokenClaims::claim(Origin::signed(42), eth(EthAddr::NoVesting), sig(1)),
             <Error<Test>>::InvalidSignature
         );
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(&eth(1)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Assert mock invocations.
@@ -148,7 +156,8 @@ fn claim_eth_signature_recovery_failure() {
 fn claim_eth_signature_recovery_invalid() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(2)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
+        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Set mock expectations.
@@ -160,21 +169,22 @@ fn claim_eth_signature_recovery_invalid() {
             .with(
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
-                    ethereum_address: eth(1),
+                    ethereum_address: eth(EthAddr::NoVesting),
                 }),
                 predicate::eq(sig(1)),
             )
-            .return_const(Some(eth(2)));
+            .return_const(Some(eth(EthAddr::Unknown)));
         lock_under_vesting_ctx.expect().never();
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(1), sig(1)),
+            TokenClaims::claim(Origin::signed(42), eth(EthAddr::NoVesting), sig(1)),
             <Error<Test>>::InvalidSignature
         );
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(&eth(1)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
+        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Assert mock invocations.
@@ -189,7 +199,7 @@ fn claim_eth_signature_recovery_invalid() {
 fn claim_lock_under_vesting_failure() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(2)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Set mock expectations.
@@ -201,11 +211,11 @@ fn claim_lock_under_vesting_failure() {
             .with(
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
-                    ethereum_address: eth(2),
+                    ethereum_address: eth(EthAddr::WithVesting),
                 }),
                 predicate::eq(sig(1)),
             )
-            .return_const(Some(eth(2)));
+            .return_const(Some(eth(EthAddr::WithVesting)));
         lock_under_vesting_ctx
             .expect()
             .once()
@@ -214,12 +224,12 @@ fn claim_lock_under_vesting_failure() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(2), sig(1)),
+            TokenClaims::claim(Origin::signed(42), eth(EthAddr::WithVesting), sig(1)),
             DispatchError::Other("vesting interface failed"),
         );
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(&eth(2)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Assert mock invocations.

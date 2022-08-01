@@ -92,7 +92,7 @@ impl Interface for crate::mock::Test {
     }
 
     fn ethereum_address() -> EthereumAddress {
-        mock::eth(1)
+        mock::eth(mock::EthAddr::NoVesting)
     }
 
     fn create_ecdsa_signature(

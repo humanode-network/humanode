@@ -97,13 +97,32 @@ impl pallet_token_claims::Config for Test {
     type WeightInfo = ();
 }
 
+pub enum EthAddr {
+    NoVesting,
+    WithVesting,
+    Unknown,
+    Other(u8),
+}
+
+impl From<EthAddr> for u8 {
+    fn from(eth_addr: EthAddr) -> Self {
+        match eth_addr {
+            EthAddr::NoVesting => 1,
+            EthAddr::WithVesting => 2,
+            EthAddr::Unknown => 3,
+            EthAddr::Other(val) => val,
+        }
+    }
+}
+
 /// Utility function for creating dummy ethereum accounts.
-pub fn eth(num: u8) -> EthereumAddress {
+pub fn eth(val: EthAddr) -> EthereumAddress {
     let mut addr = [0; 20];
-    addr[19] = num;
+    addr[19] = val.into();
     EthereumAddress(addr)
 }
 
+/// Utility function for creating dummy ecdsa signatures.
 pub fn sig(num: u8) -> EcdsaSignature {
     let mut signature = [0; 65];
     signature[64] = num;
@@ -122,15 +141,18 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
         },
         pot: Default::default(),
         token_claims: TokenClaimsConfig {
-            claims: [(eth(1), 10, None), (eth(2), 20, Some(MockVestingSchedule))]
-                .into_iter()
-                .map(|(eth_address, balance, vesting)| {
-                    (
-                        eth_address,
-                        pallet_token_claims::types::ClaimInfo { balance, vesting },
-                    )
-                })
-                .collect(),
+            claims: [
+                (eth(EthAddr::NoVesting), 10, None),
+                (eth(EthAddr::WithVesting), 20, Some(MockVestingSchedule)),
+            ]
+            .into_iter()
+            .map(|(eth_address, balance, vesting)| {
+                (
+                    eth_address,
+                    pallet_token_claims::types::ClaimInfo { balance, vesting },
+                )
+            })
+            .collect(),
         },
     };
     new_test_ext_with(genesis_config)
