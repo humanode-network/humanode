@@ -15,6 +15,14 @@ use crate::{
     *,
 };
 
+fn pot_account_balance() -> BalanceOf<Test> {
+    <CurrencyOf<Test>>::free_balance(&<Test as Config>::PotAccountId::get())
+}
+
+fn currency_total_issuance() -> BalanceOf<Test> {
+    <CurrencyOf<Test>>::total_issuance()
+}
+
 #[test]
 fn basic_setup_works() {
     new_test_ext().execute_with_ext(|_| {
@@ -37,7 +45,7 @@ fn basic_setup_works() {
 
         // Check the pot balance.
         assert_eq!(
-            <CurrencyOf<Test>>::free_balance(<Test as Config>::PotAccountId::get()),
+            pot_account_balance(),
             30 + <CurrencyOf<Test>>::minimum_balance()
         );
     });
@@ -50,6 +58,8 @@ fn claiming_works_no_vesting() {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 0);
+        let pot_account_balance_before = pot_account_balance();
+        let currency_total_issuance_before = currency_total_issuance();
 
         // Set mock expectations.
         let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
@@ -77,6 +87,11 @@ fn claiming_works_no_vesting() {
         // Assert state changes.
         assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 10);
+        assert_eq!(pot_account_balance_before - pot_account_balance(), 10);
+        assert_eq!(
+            currency_total_issuance_before - currency_total_issuance(),
+            0
+        );
 
         // Assert mock invocations.
         recover_signer_ctx.checkpoint();
@@ -91,6 +106,8 @@ fn claiming_works_with_vesting() {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
         assert_eq!(Balances::free_balance(42), 0);
+        let pot_account_balance_before = pot_account_balance();
+        let currency_total_issuance_before = currency_total_issuance();
 
         // Set mock expectations.
         let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
@@ -122,6 +139,11 @@ fn claiming_works_with_vesting() {
         // Assert state changes.
         assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
         assert_eq!(Balances::free_balance(42), 20);
+        assert_eq!(pot_account_balance_before - pot_account_balance(), 20);
+        assert_eq!(
+            currency_total_issuance_before - currency_total_issuance(),
+            0
+        );
 
         // Assert mock invocations.
         recover_signer_ctx.checkpoint();
@@ -137,6 +159,8 @@ fn claim_eth_signature_recovery_failure() {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 0);
+        let pot_account_balance_before = pot_account_balance();
+        let currency_total_issuance_before = currency_total_issuance();
 
         // Set mock expectations.
         let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
@@ -163,6 +187,11 @@ fn claim_eth_signature_recovery_failure() {
         // Assert state changes.
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 0);
+        assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
+        assert_eq!(
+            currency_total_issuance_before - currency_total_issuance(),
+            0
+        );
 
         // Assert mock invocations.
         recover_signer_ctx.checkpoint();
@@ -179,6 +208,8 @@ fn claim_eth_signature_recovery_invalid() {
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
+        let pot_account_balance_before = pot_account_balance();
+        let currency_total_issuance_before = currency_total_issuance();
 
         // Set mock expectations.
         let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
@@ -206,6 +237,11 @@ fn claim_eth_signature_recovery_invalid() {
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
+        assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
+        assert_eq!(
+            currency_total_issuance_before - currency_total_issuance(),
+            0
+        );
 
         // Assert mock invocations.
         recover_signer_ctx.checkpoint();
@@ -221,6 +257,8 @@ fn claim_lock_under_vesting_failure() {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
         assert_eq!(Balances::free_balance(42), 0);
+        let pot_account_balance_before = pot_account_balance();
+        let currency_total_issuance_before = currency_total_issuance();
 
         // Set mock expectations.
         let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
@@ -251,6 +289,11 @@ fn claim_lock_under_vesting_failure() {
         // Assert state changes.
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
         assert_eq!(Balances::free_balance(42), 0);
+        assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
+        assert_eq!(
+            currency_total_issuance_before - currency_total_issuance(),
+            0
+        );
 
         // Assert mock invocations.
         recover_signer_ctx.checkpoint();
@@ -265,6 +308,8 @@ fn claim_non_existing() {
         // Check test preconditions.
         assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
+        let pot_account_balance_before = pot_account_balance();
+        let currency_total_issuance_before = currency_total_issuance();
 
         // Set mock expectations.
         let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
@@ -291,6 +336,11 @@ fn claim_non_existing() {
         // Assert state changes.
         assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
+        assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
+        assert_eq!(
+            currency_total_issuance_before - currency_total_issuance(),
+            0
+        );
 
         // Assert mock invocations.
         recover_signer_ctx.checkpoint();
@@ -312,10 +362,7 @@ fn genesis_empty() {
     })
     .execute_with_ext(|_| {
         // Check the pot balance.
-        assert_eq!(
-            <CurrencyOf<Test>>::free_balance(<Test as Config>::PotAccountId::get()),
-            <CurrencyOf<Test>>::minimum_balance()
-        );
+        assert_eq!(pot_account_balance(), <CurrencyOf<Test>>::minimum_balance());
     });
 }
 
