@@ -47,26 +47,38 @@ fn basic_setup_works() {
 #[test]
 fn claiming_works_no_vesting() {
     new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 0);
 
+        // Set mock expectations.
         let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
         recover_signer_ctx
             .expect()
             .once()
+            .with(
+                predicate::eq(EthereumSignatureMessageParams {
+                    account_id: 42,
+                    ethereum_address: eth(EthAddr::NoVesting),
+                }),
+                predicate::eq(sig(1)),
+            )
             .returning(|_, _| Some(eth(EthAddr::NoVesting)));
         let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
         lock_under_vesting_ctx.expect().never();
 
+        // Invoke the function under test.
         assert_ok!(TokenClaims::claim(
             Origin::signed(42),
             eth(EthAddr::NoVesting),
             sig(1),
         ));
 
+        // Assert state changes.
         assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
         assert_eq!(Balances::free_balance(42), 10);
 
+        // Assert mock invocations.
         recover_signer_ctx.checkpoint();
         lock_under_vesting_ctx.checkpoint();
     });
