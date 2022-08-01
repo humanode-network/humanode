@@ -244,3 +244,43 @@ fn claim_lock_under_vesting_failure() {
         lock_under_vesting_ctx.checkpoint();
     });
 }
+
+/// This test verifies that when there is no claim, the claim call fails.
+#[test]
+fn claim_non_existing() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
+        assert_eq!(Balances::free_balance(42), 0);
+
+        // Set mock expectations.
+        let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
+        let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
+        recover_signer_ctx
+            .expect()
+            .once()
+            .with(
+                predicate::eq(EthereumSignatureMessageParams {
+                    account_id: 42,
+                    ethereum_address: eth(EthAddr::Unknown),
+                }),
+                predicate::eq(sig(1)),
+            )
+            .return_const(Some(eth(EthAddr::Unknown)));
+        lock_under_vesting_ctx.expect().never();
+
+        // Invoke the function under test.
+        assert_noop!(
+            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Unknown), sig(1)),
+            <Error<Test>>::NoClaim,
+        );
+
+        // Assert state changes.
+        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
+        assert_eq!(Balances::free_balance(42), 0);
+
+        // Assert mock invocations.
+        recover_signer_ctx.checkpoint();
+        lock_under_vesting_ctx.checkpoint();
+    });
+}
