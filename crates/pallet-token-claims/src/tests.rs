@@ -17,6 +17,7 @@ use crate::{
 #[test]
 fn basic_setup_works() {
     new_test_ext().execute_with_ext(|_| {
+        // Check the claims.
         assert_eq!(<Claims<Test>>::get(&EthereumAddress::default()), None);
         assert_eq!(
             <Claims<Test>>::get(&eth(EthAddr::NoVesting)),
@@ -31,6 +32,12 @@ fn basic_setup_works() {
                 balance: 20,
                 vesting: Some(MockVestingSchedule)
             })
+        );
+
+        // Check the pot balance.
+        assert_eq!(
+            <CurrencyOf<Test>>::free_balance(<Test as Config>::PotAccountId::get()),
+            30 + <CurrencyOf<Test>>::minimum_balance()
         );
     });
 }
