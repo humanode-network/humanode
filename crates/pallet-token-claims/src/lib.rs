@@ -33,8 +33,8 @@ type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSched
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::{
-        pallet_prelude::*,
-        sp_runtime::traits::{CheckedAdd, Zero},
+        pallet_prelude::{ValueQuery, *},
+        sp_runtime::traits::{CheckedAdd, Saturating, Zero},
         storage::with_storage_layer,
         traits::{ExistenceRequirement, WithdrawReasons},
     };
@@ -89,6 +89,11 @@ pub mod pallet {
     #[pallet::getter(fn claims)]
     pub type Claims<T> = StorageMap<_, Twox64Concat, EthereumAddress, ClaimInfoOf<T>, OptionQuery>;
 
+    /// The total amount of claimable balance in the pot.
+    #[pallet::storage]
+    #[pallet::getter(fn total_claimable)]
+    pub type TotalClaimable<T> = StorageValue<_, BalanceOf<T>, ValueQuery>;
+
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         /// The claims to initialize at genesis.
@@ -122,6 +127,9 @@ pub mod pallet {
                 <CurrencyOf<T>>::free_balance(&pot_account_id),
                 expected_pot_balance,
             );
+
+            // Initialize the total claimable balance.
+            <Pallet<T>>::update_total_claimable_balance();
         }
     }
 
@@ -183,17 +191,19 @@ pub mod pallet {
                 let ClaimInfo { balance, vesting } =
                     <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
 
-                let funds = T::Currency::withdraw(
+                let funds = <CurrencyOf<T>>::withdraw(
                     &T::PotAccountId::get(),
                     balance,
                     WithdrawReasons::TRANSFER,
                     ExistenceRequirement::KeepAlive,
                 )?;
-                T::Currency::resolve_creating(&who, funds);
+                <CurrencyOf<T>>::resolve_creating(&who, funds);
 
                 if let Some(ref vesting) = vesting {
                     T::VestingInterface::lock_under_vesting(&who, balance, vesting.clone())?;
                 }
+
+                Self::update_total_claimable_balance();
 
                 Self::deposit_event(Event::TokensClaimed {
                     who,
@@ -204,6 +214,13 @@ pub mod pallet {
 
                 Ok(())
             })
+        }
+
+        fn update_total_claimable_balance() {
+            <TotalClaimable<T>>::set(
+                <CurrencyOf<T>>::free_balance(&T::PotAccountId::get())
+                    .saturating_sub(<CurrencyOf<T>>::minimum_balance()),
+            );
         }
     }
 }
