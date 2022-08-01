@@ -7,8 +7,9 @@ use sp_runtime::DispatchError;
 
 use crate::{
     mock::{
-        eth, new_test_ext, sig, Balances, EthAddr, MockEthereumSignatureVerifier,
-        MockVestingInterface, MockVestingSchedule, Origin, Test, TestExternalitiesExt, TokenClaims,
+        eth, new_test_ext, new_test_ext_with, sig, Balances, EthAddr,
+        MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, Origin, Test,
+        TestExternalitiesExt, TokenClaims,
     },
     types::{ClaimInfo, EthereumSignatureMessageParams},
     *,
@@ -282,5 +283,51 @@ fn claim_non_existing() {
         // Assert mock invocations.
         recover_signer_ctx.checkpoint();
         lock_under_vesting_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that empty claims in genesis are handled correctly.
+#[test]
+fn genesis_empty() {
+    new_test_ext_with(mock::GenesisConfig {
+        balances: mock::BalancesConfig {
+            balances: vec![(
+                mock::Pot::account_id(),
+                1, /* existential deposit only */
+            )],
+        },
+        ..Default::default()
+    })
+    .execute_with_ext(|_| {
+        // Check the pot balance.
+        assert_eq!(
+            <CurrencyOf<Test>>::free_balance(<Test as Config>::PotAccountId::get()),
+            <CurrencyOf<Test>>::minimum_balance()
+        );
+    });
+}
+
+/// This test verifies that the genesis builder correctly ensures the pot balance.
+#[test]
+#[should_panic = "invalid balance in the token claims pot account: got 124, expected 457"]
+fn genesis_ensure_balance_is_checked() {
+    new_test_ext_with(mock::GenesisConfig {
+        balances: mock::BalancesConfig {
+            balances: vec![(
+                mock::Pot::account_id(),
+                1 /* existential deposit */ +
+                123, /* total claimable amount that doesn't match the sum of claims */
+            )],
+        },
+        token_claims: mock::TokenClaimsConfig {
+            claims: vec![(
+                EthereumAddress([0; 20]),
+                ClaimInfo {
+                    balance: 456,
+                    vesting: None,
+                },
+            )],
+        },
+        ..Default::default()
     });
 }

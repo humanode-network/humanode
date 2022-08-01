@@ -123,10 +123,13 @@ pub mod pallet {
             // Ensure that our pot account has exatly the right balance.
             let expected_pot_balance = <CurrencyOf<T>>::minimum_balance() + total_claimable_balance;
             let pot_account_id = T::PotAccountId::get();
-            assert_eq!(
-                <CurrencyOf<T>>::free_balance(&pot_account_id),
-                expected_pot_balance,
-            );
+            let actual_pot_balance = <CurrencyOf<T>>::free_balance(&pot_account_id);
+            if actual_pot_balance != expected_pot_balance {
+                panic!(
+                    "invalid balance in the token claims pot account: got {:?}, expected {:?}",
+                    actual_pot_balance, expected_pot_balance
+                );
+            }
 
             // Initialize the total claimable balance.
             <Pallet<T>>::update_total_claimable_balance();
