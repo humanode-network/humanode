@@ -1,10 +1,9 @@
 //! Ethereum address.
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{
-    serde::{Deserializer, Serializer},
-    Deserialize, RuntimeDebug, Serialize,
-};
+#[cfg(feature = "std")]
+use frame_support::serde::{self, Deserialize, Deserializer, Serialize, Serializer};
+use frame_support::RuntimeDebug;
 use scale_info::TypeInfo;
 
 /// An Ethereum address (i.e. 20 bytes, used to represent an Ethereum account).

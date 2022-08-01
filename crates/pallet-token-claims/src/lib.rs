@@ -32,9 +32,11 @@ type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSched
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
+    #[cfg(feature = "std")]
+    use frame_support::sp_runtime::traits::{CheckedAdd, Zero};
     use frame_support::{
         pallet_prelude::{ValueQuery, *},
-        sp_runtime::traits::{CheckedAdd, Saturating, Zero},
+        sp_runtime::traits::Saturating,
         storage::with_storage_layer,
         traits::{ExistenceRequirement, WithdrawReasons},
     };

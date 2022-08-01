@@ -1,7 +1,9 @@
 //! Custom types we use.
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::{Deserialize, RuntimeDebug, Serialize};
+use frame_support::RuntimeDebug;
+#[cfg(feature = "std")]
+use frame_support::{Deserialize, Serialize};
 use primitives_ethereum::EthereumAddress;
 use scale_info::TypeInfo;
 
