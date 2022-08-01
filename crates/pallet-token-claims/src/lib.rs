@@ -84,7 +84,7 @@ pub mod pallet {
         type WeightInfo: WeightInfo;
     }
 
-    /// The public key of the robonode.
+    /// The claims that are available in the system.
     #[pallet::storage]
     #[pallet::getter(fn claims)]
     pub type Claims<T> = StorageMap<_, Twox64Concat, EthereumAddress, ClaimInfoOf<T>, OptionQuery>;
