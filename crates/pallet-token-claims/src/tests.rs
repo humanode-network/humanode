@@ -406,7 +406,7 @@ fn genesis_empty() {
 /// This test verifies that the genesis builder correctly ensures the pot balance.
 #[test]
 #[should_panic = "invalid balance in the token claims pot account: got 124, expected 457"]
-fn genesis_ensure_balance_is_checked() {
+fn genesis_ensure_pot_balance_is_checked() {
     new_test_ext_with(mock::GenesisConfig {
         balances: mock::BalancesConfig {
             balances: vec![(
@@ -423,6 +423,60 @@ fn genesis_ensure_balance_is_checked() {
                     vesting: None,
                 },
             )],
+            total_claimable: Some(456),
+        },
+        ..Default::default()
+    });
+}
+
+/// This test verifies that the genesis builder asserted the equality of the configured and computed
+/// total claimable balances.
+#[test]
+#[should_panic = "computed total claimable balance (123) is different from the one specified at the genesis config (456)"]
+fn genesis_ensure_total_claimable_balance_is_asserted() {
+    new_test_ext_with(mock::GenesisConfig {
+        balances: mock::BalancesConfig {
+            balances: vec![(
+                mock::Pot::account_id(),
+                1 /* existential deposit */ +
+                123, /* total claimable amount */
+            )],
+        },
+        token_claims: mock::TokenClaimsConfig {
+            claims: vec![(
+                EthereumAddress([0; 20]),
+                ClaimInfo {
+                    balance: 123, /* the only contribution to the total claimable balance */
+                    vesting: None,
+                },
+            )],
+            total_claimable: Some(456), /* the configured total claimable balance that doesn't matched the computed value */
+        },
+        ..Default::default()
+    });
+}
+
+/// This test verifies that the genesis builder works when no assertion of the total claimable
+/// balance is set.
+#[test]
+fn genesis_no_total_claimable_balance_assertion_works() {
+    new_test_ext_with(mock::GenesisConfig {
+        balances: mock::BalancesConfig {
+            balances: vec![(
+                mock::Pot::account_id(),
+                1 /* existential deposit */ +
+                123, /* total claimable amount */
+            )],
+        },
+        token_claims: mock::TokenClaimsConfig {
+            claims: vec![(
+                EthereumAddress([0; 20]),
+                ClaimInfo {
+                    balance: 123,
+                    vesting: None,
+                },
+            )],
+            total_claimable: None, /* don't assert */
         },
         ..Default::default()
     });

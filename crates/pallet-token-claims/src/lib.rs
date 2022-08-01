@@ -98,6 +98,11 @@ pub mod pallet {
     pub struct GenesisConfig<T: Config> {
         /// The claims to initialize at genesis.
         pub claims: Vec<(EthereumAddress, ClaimInfoOf<T>)>,
+        /// The total claimable balance.
+        ///
+        /// If provided, must be equal to the sum of all claims balances.
+        /// This is useful for double-checking the expected sum during the genesis construction.
+        pub total_claimable: Option<BalanceOf<T>>,
     }
 
     #[cfg(feature = "std")]
@@ -105,6 +110,7 @@ pub mod pallet {
         fn default() -> Self {
             GenesisConfig {
                 claims: Default::default(),
+                total_claimable: None,
             }
         }
     }
@@ -133,6 +139,17 @@ pub mod pallet {
 
             // Initialize the total claimable balance.
             <Pallet<T>>::update_total_claimable_balance();
+
+            // Check that the total claimable balance we computed matched the one declared in the
+            // genesis configuration.
+            if let Some(expected_total_claimable_balance) = self.total_claimable {
+                if expected_total_claimable_balance != total_claimable_balance {
+                    panic!(
+                        "computed total claimable balance ({:?}) is different from the one specified at the genesis config ({:?})",
+                        total_claimable_balance, expected_total_claimable_balance
+                    );
+                }
+            }
         }
     }
 
