@@ -390,3 +390,77 @@ fn genesis_ensure_balance_is_checked() {
         ..Default::default()
     });
 }
+
+/// This test verifies that we can consume all of the claims seqentially and get to the empty
+/// claimable balance in the pot but without killing the pot account.
+#[test]
+fn claiming_sequential() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert_eq!(Balances::free_balance(42), 0);
+        let pot_account_balance_before = pot_account_balance();
+        let currency_total_issuance_before = currency_total_issuance();
+
+        // Prepare the keys to iterate over all the claims.
+        let claims: Vec<_> = <Claims<Test>>::iter().collect();
+
+        // Iterate over all the claims conuming them.
+        for (claim_eth_address, claim_info) in &claims {
+            // Set mock expectations.
+            let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
+            recover_signer_ctx
+                .expect()
+                .once()
+                .with(
+                    predicate::eq(EthereumSignatureMessageParams {
+                        account_id: 42,
+                        ethereum_address: *claim_eth_address,
+                    }),
+                    predicate::eq(sig(1)),
+                )
+                .return_const(Some(*claim_eth_address));
+            let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
+
+            match claim_info.vesting {
+                Some(ref vesting) => lock_under_vesting_ctx
+                    .expect()
+                    .once()
+                    .with(
+                        predicate::eq(42),
+                        predicate::eq(claim_info.balance),
+                        predicate::eq(vesting.clone()),
+                    )
+                    .return_const(Ok(())),
+                None => lock_under_vesting_ctx.expect().never(),
+            };
+
+            assert_ok!(TokenClaims::claim(
+                Origin::signed(42),
+                *claim_eth_address,
+                sig(1),
+            ));
+
+            // Assert state changes for this local iteration.
+            assert!(!<Claims<Test>>::contains_key(claim_eth_address));
+            assert_eq!(
+                currency_total_issuance_before - currency_total_issuance(),
+                0
+            );
+
+            // Assert mock invocations.
+            recover_signer_ctx.checkpoint();
+            lock_under_vesting_ctx.checkpoint();
+        }
+
+        // Assert overall state changes.
+        assert_eq!(
+            Balances::free_balance(42),
+            pot_account_balance_before - <CurrencyOf<Test>>::minimum_balance()
+        );
+        assert_eq!(pot_account_balance(), <CurrencyOf<Test>>::minimum_balance());
+        assert_eq!(
+            currency_total_issuance_before - currency_total_issuance(),
+            0
+        );
+    });
+}
