@@ -42,6 +42,7 @@ benchmarks! {
         let claim_info = Claims::<T>::get(ethereum_address).unwrap();
 
         let account_balance_before = <CurrencyOf<T>>::total_balance(&account_id);
+        let currency_total_issuance_before = <CurrencyOf<T>>::total_issuance();
 
         #[cfg(test)]
         let test_data = {
@@ -66,6 +67,10 @@ benchmarks! {
 
         let account_balance_after = <CurrencyOf<T>>::total_balance(&account_id);
         assert_eq!(account_balance_after - account_balance_before, claim_info.balance);
+        assert_eq!(
+            currency_total_issuance_before,
+            <CurrencyOf<T>>::total_issuance(),
+        );
 
         #[cfg(test)]
         {
