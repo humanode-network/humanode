@@ -51,10 +51,10 @@ benchmarks! {
             let mock_runtime_guard = mock::runtime_lock();
 
             let recover_signer_ctx = mock::MockEthereumSignatureVerifier::recover_signer_context();
-            recover_signer_ctx.expect().return_const(Some(ethereum_address));
+            recover_signer_ctx.expect().times(1..).return_const(Some(ethereum_address));
 
             let lock_under_vesting_ctx = mock::MockVestingInterface::lock_under_vesting_context();
-            lock_under_vesting_ctx.expect().return_const(Ok(()));
+            lock_under_vesting_ctx.expect().times(1..).return_const(Ok(()));
 
             (mock_runtime_guard, recover_signer_ctx, lock_under_vesting_ctx)
         };
@@ -97,7 +97,7 @@ impl Interface for crate::mock::Test {
     }
 
     fn ethereum_address() -> EthereumAddress {
-        mock::eth(mock::EthAddr::NoVesting)
+        mock::eth(mock::EthAddr::WithVesting)
     }
 
     fn create_ecdsa_signature(
