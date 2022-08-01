@@ -73,7 +73,7 @@ fn claiming_works_no_vesting() {
                 }),
                 predicate::eq(sig(1)),
             )
-            .returning(|_, _| Some(eth(EthAddr::NoVesting)));
+            .return_const(Some(eth(EthAddr::NoVesting)));
         let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
         lock_under_vesting_ctx.expect().never();
 
