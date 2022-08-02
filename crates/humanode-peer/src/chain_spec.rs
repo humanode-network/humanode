@@ -8,7 +8,7 @@ use humanode_runtime::{
     opaque::SessionKeys, robonode, AccountId, BabeConfig, Balance, BalancesConfig, BioauthConfig,
     BootnodesConfig, ChainPropertiesConfig, EVMConfig, EthereumChainIdConfig, EthereumConfig,
     EvmAccountsMappingConfig, GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig,
-    Signature, SudoConfig, SystemConfig, WASM_BINARY,
+    Signature, SudoConfig, SystemConfig, TokenClaimsConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -236,6 +236,10 @@ fn testnet_genesis(
                         humanode_runtime::FeesPot::account_id(),
                         EXISTANTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE,
                     ),
+                    (
+                        humanode_runtime::TokenClaimsPot::account_id(),
+                        EXISTANTIAL_DEPOSIT,
+                    ),
                 ];
                 pot_accounts
                     .into_iter()
@@ -333,6 +337,11 @@ fn testnet_genesis(
         transaction_payment: Default::default(),
         fees_pot: Default::default(),
         treasury_pot: Default::default(),
+        token_claims_pot: Default::default(),
+        token_claims: TokenClaimsConfig {
+            claims: vec![],
+            total_claimable: Some(0),
+        },
     }
 }
 

@@ -13,6 +13,7 @@ author-ext-api = { version = "0.1", path = "../author-ext-api", default-features
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
 eip712-account-claim = { version = "0.1", path = "../eip712-account-claim", default-features = false }
 eip712-common = { version = "0.1", path = "../eip712-common", default-features = false }
+eip712-token-claim = { version = "0.1", path = "../eip712-token-claim", default-features = false }
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id", default-features = false }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
@@ -22,6 +23,7 @@ pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-i
 pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
 pallet-pot = { version = "0.1", path = "../pallet-pot", default-features = false }
+pallet-token-claims = { version = "0.1", path = "../pallet-token-claims", default-features = false }
 precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-features = false }
 precompile-evm-accounts-mapping = { version = "0.1", path = "../precompile-evm-accounts-mapping", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
@@ -94,13 +96,15 @@ runtime-benchmarks = [
   "pallet-balances/runtime-benchmarks",
   "pallet-ethereum/runtime-benchmarks",
   "pallet-timestamp/runtime-benchmarks",
+  "pallet-token-claims/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
 ]
 std = [
   "author-ext-api/std",
   "bioauth-flow-api/std",
-  "eip712-common/std",
   "eip712-account-claim/std",
+  "eip712-common/std",
+  "eip712-token-claim/std",
   "keystore-bioauth-account-id/std",
   "precompile-bioauth/std",
   "precompile-evm-accounts-mapping/std",
@@ -136,6 +140,7 @@ std = [
   "pallet-randomness-collective-flip/std",
   "pallet-session/std",
   "pallet-sudo/std",
+  "pallet-token-claims/std",
   "pallet-timestamp/std",
   "pallet-transaction-payment/std",
   "pallet-transaction-payment-rpc-runtime-api/std",

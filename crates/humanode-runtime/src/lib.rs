@@ -65,6 +65,7 @@ use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
 mod frontier_precompiles;
+mod vesting;
 use frontier_precompiles::FrontierPrecompiles;
 
 mod display_moment;
@@ -368,10 +369,12 @@ impl pallet_authorship::Config for Runtime {
 parameter_types! {
     pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
     pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
+    pub const TokenClaimsPotPalletId: PalletId = PalletId(*b"hmnd/tc1");
 }
 
 type PotInstanceTreasury = pallet_pot::Instance1;
 type PotInstanceFees = pallet_pot::Instance2;
+type PotInstanceTokenClaims = pallet_pot::Instance3;
 
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
     type Event = Event;
@@ -382,6 +385,12 @@ impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
 impl pallet_pot::Config<PotInstanceFees> for Runtime {
     type Event = Event;
     type PalletId = FeesPotPalletId;
+    type Currency = Balances;
+}
+
+impl pallet_pot::Config<PotInstanceTokenClaims> for Runtime {
+    type Event = Event;
+    type PalletId = TokenClaimsPotPalletId;
     type Currency = Balances;
 }
 
@@ -636,6 +645,20 @@ impl pallet_evm_accounts_mapping::Config for Runtime {
     type Verifier = eip712::AccountClaimVerifier;
 }
 
+parameter_types! {
+    pub TokenClaimsPotAccountId: AccountId = TokenClaimsPot::account_id();
+}
+
+impl pallet_token_claims::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+    type PotAccountId = TokenClaimsPotAccountId;
+    type VestingSchedule = ();
+    type VestingInterface = vesting::TokenClaimsInterface;
+    type EthereumSignatureVerifier = eip712::TokenClaimVerifier;
+    type WeightInfo = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -655,6 +678,7 @@ construct_runtime!(
         Balances: pallet_balances,
         TreasuryPot: pallet_pot::<Instance1>,
         FeesPot: pallet_pot::<Instance2>,
+        TokenClaimsPot: pallet_pot::<Instance3>,
         TransactionPayment: pallet_transaction_payment,
         Session: pallet_session,
         Offences: pallet_offences,
@@ -670,6 +694,7 @@ construct_runtime!(
         BaseFee: pallet_base_fee,
         ImOnline: pallet_im_online,
         EvmAccountsMapping: pallet_evm_accounts_mapping,
+        TokenClaims: pallet_token_claims,
     }
 );
 
@@ -689,6 +714,7 @@ pub type SignedExtra = (
     frame_system::CheckWeight<Runtime>,
     pallet_bioauth::CheckBioauthTx<Runtime>,
     pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+    pallet_token_claims::CheckTokenClaim<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
@@ -736,6 +762,7 @@ impl frame_system::offchain::CreateSignedTransaction<Call> for Runtime {
             frame_system::CheckWeight::<Runtime>::new(),
             pallet_bioauth::CheckBioauthTx::<Runtime>::new(),
             pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
+            pallet_token_claims::CheckTokenClaim::<Runtime>::new(),
         );
         let raw_payload = SignedPayload::new(call, extra).ok()?;
         let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;
