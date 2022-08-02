@@ -1,4 +1,4 @@
-//! Common ethereum related priomitives.
+//! Common ethereum related primitives.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 

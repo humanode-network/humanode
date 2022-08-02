@@ -8,7 +8,7 @@ use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 /// The idea is we don't pass in the message we use for the verification, but instead we pass in
 /// the message parameters.
 ///
-/// This abstraction built with EIP-712 in mind, but can also be implemented with any generic
+/// This abstraction is built with EIP-712 in mind, but can also be implemented with any generic
 /// ECDSA signature.
 pub trait PreconstructedMessageVerifier {
     /// The type describing the parameters used to construct a message.

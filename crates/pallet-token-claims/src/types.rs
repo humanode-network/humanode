@@ -19,7 +19,7 @@ pub struct ClaimInfo<Balance, Vesting> {
     pub vesting: Option<Vesting>,
 }
 
-/// The collection of parameters used for construcing a message that had to be signed.
+/// The collection of parameters used for constructing a message that had to be signed.
 #[derive(PartialEq, Eq, RuntimeDebug)]
 pub struct EthereumSignatureMessageParams<AccountId> {
     /// The account ID of whoever is requesting the claim.
