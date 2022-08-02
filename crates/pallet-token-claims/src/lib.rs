@@ -7,8 +7,8 @@ use frame_support::traits::{Currency, StorageVersion};
 pub use self::pallet::*;
 
 pub mod traits;
-mod types;
-mod weights;
+pub mod types;
+pub mod weights;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
