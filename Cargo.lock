@@ -5807,11 +5807,16 @@ dependencies = [
 name = "pallet-vesting"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
+ "mockall 0.11.2",
+ "once_cell",
+ "pallet-balances",
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-core",
 ]
 
 [[package]]
