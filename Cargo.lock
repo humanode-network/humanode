@@ -3234,6 +3234,7 @@ dependencies = [
  "chrono",
  "crypto-utils",
  "eip712-account-claim",
+ "eip712-common",
  "fp-rpc",
  "fp-self-contained",
  "frame-benchmarking",
@@ -5539,6 +5540,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "parity-scale-codec",
+ "primitives-ethereum",
  "scale-info",
  "sp-core",
 ]
@@ -6172,6 +6174,7 @@ dependencies = [
  "pallet-evm-accounts-mapping",
  "parity-scale-codec",
  "primitive-types",
+ "primitives-ethereum",
  "scale-info",
  "sp-core",
  "sp-io",

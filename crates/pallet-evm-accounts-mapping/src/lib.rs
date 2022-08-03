@@ -5,12 +5,7 @@
 use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
-
-/// An EVM address.
-pub type EvmAddress = sp_core::H160;
-
-/// A signature (a 512-bit value, plus 8 bits for recovery ID).
-pub type Secp256k1EcdsaSignature = [u8; 65];
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
 /// The verifier for the ethereum signature.
 pub trait SignedClaimVerifier {
@@ -18,16 +13,13 @@ pub trait SignedClaimVerifier {
     type AccountId;
 
     /// Verify the provided `signature` against a message declaring a claim of the provided
-    /// `account_id`, and extract the signer's EVM address if the verification passes.
+    /// `account_id`, and extract the signer's Ethereum address if the verification passes.
     ///
     /// Typically, the `account_id` would be either the message itself, or be used in one way or
     /// another within the message to validate the signature against.
     ///
     /// This abstraction built with EIP-712 in mind.
-    fn verify(
-        account_id: Self::AccountId,
-        signature: Secp256k1EcdsaSignature,
-    ) -> Option<EvmAddress>;
+    fn verify(account_id: &Self::AccountId, signature: &EcdsaSignature) -> Option<EthereumAddress>;
 }
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
@@ -53,8 +45,8 @@ pub mod pallet {
         ClaimAccount {
             /// AccountId that does claiming.
             account_id: T::AccountId,
-            /// EVM address that is claimed.
-            evm_address: EvmAddress,
+            /// Ethereum address that is claimed.
+            ethereum_address: EthereumAddress,
         },
     }
 
@@ -62,25 +54,25 @@ pub mod pallet {
     pub enum Error<T> {
         /// The native address has already been mapped.
         NativeAddressAlreadyMapped,
-        /// The EVM address has already been mapped.
-        EvmAddressAlreadyMapped,
+        /// The Ethereum address has already been mapped.
+        EthereumAddressAlreadyMapped,
         /// Bad ethereum signature.
         BadEthereumSignature,
         /// Invalid ethereum signature.
         InvalidEthereumSignature,
     }
 
-    /// `EvmAddress` -> `AccountId` storage map.
+    /// `EthereumAddress` -> `AccountId` storage map.
     #[pallet::storage]
     #[pallet::getter(fn accounts)]
     pub type Accounts<T: Config> =
-        StorageMap<_, Twox64Concat, EvmAddress, T::AccountId, OptionQuery>;
+        StorageMap<_, Twox64Concat, EthereumAddress, T::AccountId, OptionQuery>;
 
-    /// `AccountId` -> `EvmAddress` storage map.
+    /// `AccountId` -> `EthereumAddress` storage map.
     #[pallet::storage]
-    #[pallet::getter(fn evm_addresses)]
-    pub type EvmAddresses<T: Config> =
-        StorageMap<_, Twox64Concat, T::AccountId, EvmAddress, OptionQuery>;
+    #[pallet::getter(fn ethereum_addresses)]
+    pub type EthereumAddresses<T: Config> =
+        StorageMap<_, Twox64Concat, T::AccountId, EthereumAddress, OptionQuery>;
 
     #[pallet::pallet]
     pub struct Pallet<T>(_);
@@ -88,7 +80,7 @@ pub mod pallet {
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         /// The mappings to set at genesis.
-        pub mappings: Vec<(T::AccountId, EvmAddress)>,
+        pub mappings: Vec<(T::AccountId, EthereumAddress)>,
     }
 
     // The default value for the genesis config type.
@@ -104,9 +96,9 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
-            for (account_id, evm_address) in &self.mappings {
-                Accounts::<T>::insert(evm_address, account_id);
-                EvmAddresses::<T>::insert(account_id, evm_address);
+            for (account_id, ethereum_address) in &self.mappings {
+                Accounts::<T>::insert(ethereum_address, account_id);
+                EthereumAddresses::<T>::insert(account_id, ethereum_address);
             }
         }
     }
@@ -119,38 +111,38 @@ pub mod pallet {
         #[pallet::weight(10_000)]
         pub fn claim_account(
             origin: OriginFor<T>,
-            // According to the fact that evm address can be extracted from any signature,
-            // we should clarify that we've got a proper one evm address.
+            // Due to the fact that ethereum address can be extracted from any signature
+            // we must ensure that the address we've got matches the requested one.
             // The address that was used to be claimed.
-            evm_address: EvmAddress,
-            signature: Secp256k1EcdsaSignature,
+            ethereum_address: EthereumAddress,
+            ecdsa_signature: EcdsaSignature,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
             ensure!(
-                !EvmAddresses::<T>::contains_key(&who),
+                !EthereumAddresses::<T>::contains_key(&who),
                 Error::<T>::NativeAddressAlreadyMapped
             );
 
             ensure!(
-                !Accounts::<T>::contains_key(evm_address),
-                Error::<T>::EvmAddressAlreadyMapped
+                !Accounts::<T>::contains_key(ethereum_address),
+                Error::<T>::EthereumAddressAlreadyMapped
             );
 
-            let expected_evm_address = T::Verifier::verify(who.clone(), signature)
+            let expected_ethereum_address = T::Verifier::verify(&who, &ecdsa_signature)
                 .ok_or(Error::<T>::BadEthereumSignature)?;
 
             ensure!(
-                evm_address == expected_evm_address,
+                ethereum_address == expected_ethereum_address,
                 Error::<T>::InvalidEthereumSignature
             );
 
-            Accounts::<T>::insert(evm_address, &who);
-            EvmAddresses::<T>::insert(&who, evm_address);
+            Accounts::<T>::insert(ethereum_address, &who);
+            EthereumAddresses::<T>::insert(&who, ethereum_address);
 
             Self::deposit_event(Event::ClaimAccount {
                 account_id: who,
-                evm_address,
+                ethereum_address,
             });
 
             Ok(())

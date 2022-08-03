@@ -3,6 +3,7 @@ use frame_support::traits::{ConstU16, ConstU64};
 use frame_system as system;
 use mockall::predicate::*;
 use mockall::*;
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 use sp_core::H256;
 use sp_runtime::{
     testing::Header,
@@ -66,10 +67,7 @@ pub struct MockVerifier;
 
 impl pallet_evm_accounts_mapping::SignedClaimVerifier for MockVerifier {
     type AccountId = AccountId;
-    fn verify(
-        _account_id: AccountId,
-        _signature: pallet_evm_accounts_mapping::Secp256k1EcdsaSignature,
-    ) -> Option<pallet_evm_accounts_mapping::EvmAddress> {
+    fn verify(_account_id: &AccountId, _signature: &EcdsaSignature) -> Option<EthereumAddress> {
         panic!("should be unused in tests")
     }
 }
