@@ -128,7 +128,7 @@ pub mod pallet {
                     total_claimable_balance.checked_add(&info.balance).unwrap();
             }
 
-            // Ensure that our pot account has exatly the right balance.
+            // Ensure that our pot account has exactly the right balance.
             let expected_pot_balance = <CurrencyOf<T>>::minimum_balance() + total_claimable_balance;
             let pot_account_id = T::PotAccountId::get();
             let actual_pot_balance = <CurrencyOf<T>>::free_balance(&pot_account_id);
