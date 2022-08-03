@@ -1626,6 +1626,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "eip712-token-claim"
+version = "0.1.0"
+dependencies = [
+ "eip712-common",
+ "eip712-common-test-utils",
+ "hex-literal",
+]
+
+[[package]]
 name = "either"
 version = "1.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
