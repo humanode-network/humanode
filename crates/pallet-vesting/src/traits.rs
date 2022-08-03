@@ -1,6 +1,6 @@
 //! Traits we use and expose.
 
-use frame_support::{sp_runtime::DispatchError, weights::Weight};
+use frame_support::sp_runtime::DispatchError;
 
 /// The scheduling driver.
 ///
@@ -21,9 +21,6 @@ pub trait SchedulingDriver {
     /// Determines the computation parameters for a particular case.
     type Schedule;
 
-    /// The weight information of this driver.
-    type WeightInfo: SchedulingDriverWeightInfo;
-
     /// Given the initially locked balance and the schedule configuration, relying on
     /// the scheduling driver's for the notion on where are we in the schedule,
     /// compute the effective balance value that has to be kept locked.
@@ -41,13 +38,4 @@ pub trait SchedulingDriver {
         initially_locked_balance: Self::Balance,
         schedule: &Self::Schedule,
     ) -> Result<Self::Balance, DispatchError>;
-}
-
-/// The weight information for the scheduling driver.
-pub trait SchedulingDriverWeightInfo {
-    /// The weight of the `compute_balance_under_lock` call.
-    ///
-    /// Should be estimated as a worst-case scenario.
-    /// The size of inputs is constant, so inputs information is omitted here.
-    fn compute_balance_under_lock() -> Weight;
 }
