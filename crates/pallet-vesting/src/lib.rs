@@ -34,7 +34,10 @@ pub mod pallet {
     use frame_system::pallet_prelude::*;
 
     use super::*;
-    use crate::{traits::SchedulingDriver, weights::WeightInfo};
+    use crate::{
+        traits::{SchedulingDriver, SchedulingDriverWeightInfo},
+        weights::WeightInfo,
+    };
 
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
@@ -106,6 +109,16 @@ pub mod pallet {
 
         /// No vesting is active for a given account.
         NoVesting,
+    }
+
+    #[pallet::call]
+    impl<T: Config> Pallet<T> {
+        /// Unlock the vested balance according to the schedule.
+        #[pallet::weight(T::WeightInfo::unlock() + <T::SchedulingDriver as SchedulingDriver>::WeightInfo::compute_balance_under_lock())]
+        pub fn unlock(origin: OriginFor<T>) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+            Self::unlock_vested_balance(&who)
+        }
     }
 
     impl<T: Config> Pallet<T> {
