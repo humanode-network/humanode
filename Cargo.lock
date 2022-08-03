@@ -1595,13 +1595,34 @@ dependencies = [
 name = "eip712-account-claim"
 version = "0.1.0"
 dependencies = [
- "eip-712",
+ "eip712-common",
+ "eip712-common-test-utils",
  "hex-literal",
- "secp256k1 0.22.1",
- "serde_json",
+]
+
+[[package]]
+name = "eip712-common"
+version = "0.1.0"
+dependencies = [
+ "hex-literal",
+ "primitives-ethereum",
  "sp-core",
  "sp-core-hashing-proc-macro",
  "sp-io",
+ "sp-std",
+]
+
+[[package]]
+name = "eip712-common-test-utils"
+version = "0.1.0"
+dependencies = [
+ "eip-712",
+ "eip712-common",
+ "hex-literal",
+ "primitives-ethereum",
+ "secp256k1 0.22.1",
+ "serde_json",
+ "sp-core",
 ]
 
 [[package]]

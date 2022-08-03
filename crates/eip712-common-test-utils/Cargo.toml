@@ -1,0 +1,14 @@
+[package]
+name = "eip712-common-test-utils"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+eip712-common = { version = "0.1", path = "../eip712-common" }
+primitives-ethereum = { version = "0.1", path = "../primitives-ethereum" }
+
+eth-eip-712 = { package = "eip-712", version = "=0.1.0" }
+hex-literal = "0.3"
+secp256k1 = "0.22"
+serde_json = "1"
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
