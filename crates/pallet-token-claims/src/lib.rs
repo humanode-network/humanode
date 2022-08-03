@@ -139,9 +139,6 @@ pub mod pallet {
                 );
             }
 
-            // Initialize the total claimable balance.
-            <Pallet<T>>::update_total_claimable_balance();
-
             // Check that the total claimable balance we computed matched the one declared in the
             // genesis configuration.
             if let Some(expected_total_claimable_balance) = self.total_claimable {
@@ -152,6 +149,9 @@ pub mod pallet {
                     );
                 }
             }
+
+            // Initialize the total claimable balance.
+            <Pallet<T>>::update_total_claimable_balance();
         }
     }
 
