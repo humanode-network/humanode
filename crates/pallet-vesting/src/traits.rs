@@ -19,6 +19,10 @@ pub trait SchedulingDriver {
     /// The schedule configuration.
     ///
     /// Determines the computation parameters for a particular case.
+    ///
+    /// Schedule is supposed to provide both the initial balance and the actual scheduling
+    /// information.
+    /// This allows implementing non-trivial schedule composition logic.
     type Schedule;
 
     /// Given the initially locked balance and the schedule configuration, relying on
@@ -35,7 +39,6 @@ pub trait SchedulingDriver {
     /// If the rounding of the resulting balance is required, it is up to the implementation how
     /// this rounding is performed. It might be made configurabe via [`Self::Schedule`].
     fn compute_balance_under_lock(
-        initially_locked_balance: Self::Balance,
         schedule: &Self::Schedule,
     ) -> Result<Self::Balance, DispatchError>;
 }

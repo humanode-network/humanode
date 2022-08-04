@@ -21,7 +21,6 @@ mock! {
         type Schedule = MockSchedule;
 
         fn compute_balance_under_lock(
-            initially_locked_balance: <Self as traits::SchedulingDriver>::Balance,
             schedule: &<Self as traits::SchedulingDriver>::Schedule,
         ) -> Result<<Self as traits::SchedulingDriver>::Balance, DispatchError>;
     }

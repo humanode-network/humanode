@@ -7,7 +7,6 @@ use frame_support::traits::{Currency, LockIdentifier, LockableCurrency, StorageV
 pub use self::pallet::*;
 
 pub mod traits;
-pub mod types;
 pub mod weights;
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -26,8 +25,6 @@ type CurrencyOf<T> = <T as Config>::Currency;
 type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 /// The balance from a given config.
 type BalanceOf<T> = <CurrencyOf<T> as Currency<AccountIdOf<T>>>::Balance;
-/// The lock info from a given config.
-type LockInfoOf<T> = types::LockInfo<BalanceOf<T>, <T as Config>::Schedule>;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -72,22 +69,23 @@ pub mod pallet {
         type WeightInfo: WeightInfo;
     }
 
-    /// The locks information.
+    /// The schedules information.
     #[pallet::storage]
     #[pallet::getter(fn locks)]
-    pub type Locks<T> = StorageMap<_, Twox64Concat, AccountIdOf<T>, LockInfoOf<T>, OptionQuery>;
+    pub type Schedules<T> =
+        StorageMap<_, Twox64Concat, AccountIdOf<T>, <T as Config>::Schedule, OptionQuery>;
 
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// Balance was locked under vesting.
         Locked {
-            /// Who had the balance unlocked.
+            /// Who had the balance locked.
             who: T::AccountId,
-            /// The balance that was unlocked.
-            balance: BalanceOf<T>,
             /// The unlocking schedule.
             schedule: T::Schedule,
+            /// The balance that is locked under vesting.
+            balance_under_lock: BalanceOf<T>,
         },
         /// Vested balance was partially unlocked.
         PartiallyUnlocked {
@@ -126,40 +124,47 @@ pub mod pallet {
     }
 
     impl<T: Config> Pallet<T> {
-        /// Lock the specified balance at the given account under vesting.
+        /// Lock the balance at the given account under the specified vesting schedule.
         ///
-        /// This will fully lock the balance in question, allowing the user to invoke unlocking
-        /// as needed.
+        /// The amount to lock depends on the actual schedule and will be computed on the fly.
         ///
-        /// Only one vesting lock per account can exist at a time.
-        /// Locking zero balance is prohibited in this implementation.
-        pub fn lock_under_vesting(
-            who: &T::AccountId,
-            amount: BalanceOf<T>,
-            schedule: T::Schedule,
-        ) -> DispatchResult {
+        /// Only one vesting balance lock per account can exist at a time.
+        ///
+        /// Locking zero balance will skip creating the lock and will directly emit
+        /// the "fully unlocked" event.
+        pub fn lock_under_vesting(who: &T::AccountId, schedule: T::Schedule) -> DispatchResult {
             in_storage_layer(|| {
-                // Check if we're locking zero balance.
-                if amount == Zero::zero() {
-                    return Err(<Error<T>>::LockingZeroBalance.into());
-                }
-
                 // Check if a given account already has vesting engaged.
-                if <Locks<T>>::contains_key(who) {
+                if <Schedules<T>>::contains_key(who) {
                     return Err(<Error<T>>::VestingAlreadyEngaged.into());
                 }
 
-                // Store the schedule.
-                <Locks<T>>::insert(
-                    who,
-                    types::LockInfo {
-                        initial_locked_balance: amount,
-                        schedule,
-                    },
-                );
+                // Compute the locked balance.
+                let computed_locked_balance =
+                    T::SchedulingDriver::compute_balance_under_lock(&schedule)?;
 
-                // Fully lock the balance initially, disregarding the unlock schedule at this time.
-                Self::set_lock(who, amount);
+                // Send the event announcing the lock.
+                Self::deposit_event(Event::Locked {
+                    who: who.clone(),
+                    schedule: schedule.clone(),
+                    balance_under_lock: computed_locked_balance,
+                });
+
+                // Check if we're locking zero balance.
+                if computed_locked_balance == Zero::zero() {
+                    // If we do - skip creating the schedule and locking altogether.
+
+                    // Send the unlock event.
+                    Self::deposit_event(Event::FullyUnlocked { who: who.clone() });
+
+                    return Ok(());
+                }
+
+                // Store the schedule.
+                <Schedules<T>>::insert(who, schedule);
+
+                // Set the lock.
+                Self::set_lock(who, computed_locked_balance);
 
                 Ok(())
             })
@@ -175,19 +180,17 @@ pub mod pallet {
         /// the vesting information around.
         pub fn unlock_vested_balance(who: &T::AccountId) -> DispatchResult {
             in_storage_layer(|| {
-                let lock_info = <Locks<T>>::get(who).ok_or(<Error<T>>::NoVesting)?;
+                let schedule = <Schedules<T>>::get(who).ok_or(<Error<T>>::NoVesting)?;
 
                 // Compute the new locked balance.
-                let computed_locked_balance = T::SchedulingDriver::compute_balance_under_lock(
-                    lock_info.initial_locked_balance,
-                    &lock_info.schedule,
-                )?;
+                let computed_locked_balance =
+                    T::SchedulingDriver::compute_balance_under_lock(&schedule)?;
 
                 // If we ended up locking the whole balance we are done with the vesting.
                 // Clean up the state and unlock the whole balance.
                 if computed_locked_balance == Zero::zero() {
-                    // Remove the lock info.
-                    <Locks<T>>::remove(who);
+                    // Remove the schedule.
+                    <Schedules<T>>::remove(who);
 
                     // Remove the balance lock.
                     <CurrencyOf<T> as LockableCurrency<T::AccountId>>::remove_lock(
@@ -202,7 +205,7 @@ pub mod pallet {
                     return Ok(());
                 }
 
-                // Set the lock to the new value if the balance to lock is non-zero.
+                // Set the lock to the updated value.
                 Self::set_lock(who, computed_locked_balance);
 
                 // Dispatch the event.
@@ -215,7 +218,7 @@ pub mod pallet {
             })
         }
 
-        fn set_lock(who: &T::AccountId, balance_to_lock: BalanceOf<T>) {
+        pub(crate) fn set_lock(who: &T::AccountId, balance_to_lock: BalanceOf<T>) {
             debug_assert!(
                 balance_to_lock != Zero::zero(),
                 "we must ensure that the balance is non-zero when calling this fn"

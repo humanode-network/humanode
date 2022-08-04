@@ -33,10 +33,6 @@ benchmarks! {
         assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), 1000u32.into());
         assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_ok());
 
-        <Pallet<T>>::lock_under_vesting(&account_id, 100u32.into(), schedule)?;
-        assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), 1000u32.into());
-        assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_err());
-
         #[cfg(test)]
         let test_data = {
             use crate::mock;
@@ -44,6 +40,19 @@ benchmarks! {
             let mock_runtime_guard = mock::runtime_lock();
 
             let compute_balance_under_lock_ctx = mock::MockSchedulingDriver::compute_balance_under_lock_context();
+            compute_balance_under_lock_ctx.expect().once().return_const(Ok(100));
+
+            (mock_runtime_guard, compute_balance_under_lock_ctx)
+        };
+
+        <Pallet<T>>::lock_under_vesting(&account_id, schedule)?;
+        assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), 1000u32.into());
+        assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_err());
+
+        #[cfg(test)]
+        let test_data = {
+            let (mock_runtime_guard, compute_balance_under_lock_ctx) = test_data;
+
             compute_balance_under_lock_ctx.expect().times(1..).return_const(Ok(0));
 
             (mock_runtime_guard, compute_balance_under_lock_ctx)
@@ -53,7 +62,7 @@ benchmarks! {
 
     }: _(origin)
     verify {
-        assert_eq!(Locks::<T>::get(&account_id), None);
+        assert_eq!(Schedules::<T>::get(&account_id), None);
         assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), 1000u32.into());
         assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_ok());
 
