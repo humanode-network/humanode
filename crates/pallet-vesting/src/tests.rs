@@ -129,6 +129,49 @@ fn lock_under_vesting_conflicts_with_existing_lock() {
     });
 }
 
+/// This test verifies that `lock_under_vesting` can lock the balance greater than the free balance
+/// available at the account.
+/// This is not a part of the design, but just demonstrates this one property of the system we have
+/// here.
+#[test]
+fn lock_under_vesting_can_lock_balance_greater_than_free_balance() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare the test state.
+        Balances::make_free_balance_be(&42, 1000);
+
+        // Check test preconditions.
+        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 1000);
+
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(MockSchedule))
+            .return_const(Ok(1100));
+
+        // Invoke the function under test.
+        assert_ok!(Vesting::lock_under_vesting(&42, MockSchedule));
+
+        // Assert state changes.
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 0);
+        assert!(<Schedules<Test>>::get(&42).is_some());
+        // assert_eq!(System::events().len(), 1);
+        // System::assert_has_event(mock::Event::Vesting(Event::Locked {
+        //     who: 42,
+        //     schedule: MockSchedule,
+        //     balance_under_lock: 1100,
+        // }));
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
+
 /// This test verifies that `unlock` works in the happy path when we need to unlock the whole
 /// balance.
 #[test]
