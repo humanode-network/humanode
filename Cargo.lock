@@ -3255,6 +3255,7 @@ dependencies = [
  "pallet-bioauth",
  "pallet-bootnodes",
  "pallet-chain-properties",
+ "pallet-chain-start-moment",
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
@@ -3275,6 +3276,7 @@ dependencies = [
  "pallet-token-claims",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-vesting",
  "parity-scale-codec",
  "precompile-bioauth",
  "precompile-evm-accounts-mapping",
@@ -3298,6 +3300,8 @@ dependencies = [
  "sp-version",
  "static_assertions",
  "substrate-wasm-builder",
+ "vesting-schedule-linear",
+ "vesting-scheduling-timestamp",
 ]
 
 [[package]]

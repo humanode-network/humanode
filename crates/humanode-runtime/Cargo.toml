@@ -19,15 +19,19 @@ keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-acc
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
 pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
 pallet-chain-properties = { version = "0.1", path = "../pallet-chain-properties", default-features = false }
+pallet-chain-start-moment = { version = "0.1", path = "../pallet-chain-start-moment", default-features = false }
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
 pallet-pot = { version = "0.1", path = "../pallet-pot", default-features = false }
 pallet-token-claims = { version = "0.1", path = "../pallet-token-claims", default-features = false }
+pallet-vesting = { version = "0.1", path = "../pallet-vesting", default-features = false }
 precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-features = false }
 precompile-evm-accounts-mapping = { version = "0.1", path = "../precompile-evm-accounts-mapping", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
+vesting-schedule-linear = { version = "0.1", path = "../vesting-schedule-linear", default-features = false }
+vesting-scheduling-timestamp = { version = "0.1", path = "../vesting-scheduling-timestamp", default-features = false }
 
 chrono = { version = "0.4.19", default-features = false }
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
@@ -97,6 +101,7 @@ runtime-benchmarks = [
   "pallet-ethereum/runtime-benchmarks",
   "pallet-timestamp/runtime-benchmarks",
   "pallet-token-claims/runtime-benchmarks",
+  "pallet-vesting/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
 ]
 std = [
@@ -125,6 +130,7 @@ std = [
   "pallet-balances/std",
   "pallet-base-fee/std",
   "pallet-chain-properties/std",
+  "pallet-chain-start-moment/std",
   "pallet-ethereum/std",
   "pallet-ethereum-chain-id/std",
   "pallet-evm-accounts-mapping/std",
@@ -144,6 +150,7 @@ std = [
   "pallet-timestamp/std",
   "pallet-transaction-payment/std",
   "pallet-transaction-payment-rpc-runtime-api/std",
+  "pallet-vesting/std",
   "robonode-crypto/std",
   "sp-application-crypto/std",
   "sp-api/std",
@@ -158,6 +165,8 @@ std = [
   "sp-std/std",
   "sp-transaction-pool/std",
   "sp-version/std",
+  "vesting-schedule-linear/std",
+  "vesting-scheduling-timestamp/std",
 ]
 try-runtime = [
   "frame-executive/try-runtime",

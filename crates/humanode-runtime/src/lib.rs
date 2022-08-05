@@ -14,6 +14,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 // A few exports that help ease life for downstream crates.
 use codec::{alloc::string::ToString, Decode, Encode, MaxEncodedLen};
 use fp_rpc::TransactionStatus;
+use frame_support::traits::LockIdentifier;
 pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
@@ -359,6 +360,10 @@ impl pallet_timestamp::Config for Runtime {
     type WeightInfo = ();
 }
 
+impl pallet_chain_start_moment::Config for Runtime {
+    type Time = Timestamp;
+}
+
 impl pallet_authorship::Config for Runtime {
     type FindAuthor = find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>;
     type UncleGenerations = ConstU32<5>;
@@ -653,9 +658,22 @@ impl pallet_token_claims::Config for Runtime {
     type Event = Event;
     type Currency = Balances;
     type PotAccountId = TokenClaimsPotAccountId;
-    type VestingSchedule = ();
+    type VestingSchedule = <Self as pallet_vesting::Config>::Schedule;
     type VestingInterface = vesting::TokenClaimsInterface;
     type EthereumSignatureVerifier = eip712::TokenClaimVerifier;
+    type WeightInfo = ();
+}
+
+parameter_types! {
+    pub VestingLockId: LockIdentifier = *b"hmnd/vs1";
+}
+
+impl pallet_vesting::Config for Runtime {
+    type Event = Event;
+    type Currency = Balances;
+    type LockId = VestingLockId;
+    type Schedule = vesting::Schedule;
+    type SchedulingDriver = vesting::Driver;
     type WeightInfo = ();
 }
 
@@ -670,6 +688,7 @@ construct_runtime!(
         System: frame_system,
         RandomnessCollectiveFlip: pallet_randomness_collective_flip,
         Timestamp: pallet_timestamp,
+        ChainStartMoment: pallet_chain_start_moment,
         Bootnodes: pallet_bootnodes,
         Bioauth: pallet_bioauth,
         Babe: pallet_babe,
@@ -695,6 +714,7 @@ construct_runtime!(
         ImOnline: pallet_im_online,
         EvmAccountsMapping: pallet_evm_accounts_mapping,
         TokenClaims: pallet_token_claims,
+        Vesting: pallet_vesting,
     }
 );
 
