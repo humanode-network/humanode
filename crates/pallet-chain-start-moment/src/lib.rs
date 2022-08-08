@@ -42,15 +42,21 @@ pub mod pallet {
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-        fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+        fn on_finalize(n: BlockNumberFor<T>) {
             if n != 1u8.into() {
-                return 0;
+                return;
             }
 
             let now = T::Time::now();
-            <ChainStart<T>>::put(now);
 
-            <T as frame_system::Config>::DbWeight::get().writes(1)
+            // Ensure that the chain start is properly initialized.
+            assert_ne!(
+                now,
+                0u8.into(),
+                "the chain start moment is zero, it is not right"
+            );
+
+            <ChainStart<T>>::put(now);
         }
     }
 }

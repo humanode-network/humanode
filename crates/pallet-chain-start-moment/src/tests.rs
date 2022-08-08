@@ -2,31 +2,20 @@ use frame_support::traits::Hooks;
 
 use crate::mock::*;
 
-fn set_initial_timestamp(val: UnixMilliseconds) {
-    assert!(!<pallet_timestamp::Now<Test>>::exists());
-    <pallet_timestamp::Now<Test>>::put(val);
+fn set_timestamp(inc: UnixMilliseconds) {
+    Timestamp::set(Origin::none(), inc).unwrap();
 }
 
-fn get_current_timestamp_checked() -> UnixMilliseconds {
-    assert!(<pallet_timestamp::Now<Test>>::exists());
-    <pallet_timestamp::Now<Test>>::get()
-}
-
-fn run_to_block(n: u64, time_per_block: UnixMilliseconds) {
-    while System::block_number() < n {
-        Timestamp::set(
-            Origin::none(),
-            get_current_timestamp_checked() + time_per_block,
-        )
-        .unwrap();
+fn switch_block() {
+    if System::block_number() != 0 {
         Timestamp::on_finalize(System::block_number());
         ChainStartMoment::on_finalize(System::block_number());
         System::on_finalize(System::block_number());
-        System::set_block_number(System::block_number() + 1);
-        System::on_initialize(System::block_number());
-        Timestamp::on_initialize(System::block_number());
-        ChainStartMoment::on_initialize(System::block_number());
     }
+    System::set_block_number(System::block_number() + 1);
+    System::on_initialize(System::block_number());
+    Timestamp::on_initialize(System::block_number());
+    ChainStartMoment::on_initialize(System::block_number());
 }
 
 /// This test verifies that the chain start moment is not set at genesis.
@@ -44,19 +33,21 @@ fn value_is_not_set_at_genesis() {
 fn value_is_set_at_first_block() {
     // Build the state from the config.
     new_test_ext().execute_with(move || {
-        set_initial_timestamp(100);
-
+        // Block 0.
         // Ensure we don't have any timestamp set first.
         assert_eq!(ChainStartMoment::chain_start(), None);
 
-        // Run for one block.
-        run_to_block(1, 6);
+        // Block 0 -> 1.
+        switch_block();
+        set_timestamp(100);
+        assert_eq!(ChainStartMoment::chain_start(), None,);
 
-        // Assert the state.
+        // Block 1 -> 2.
+        switch_block();
         assert_eq!(
             ChainStartMoment::chain_start(),
-            Some(106),
-            "the chain start must be set correctly right after the first block has initalized"
+            Some(100),
+            "the chain start must be set correctly right after the first block has been finalized"
         );
     })
 }
@@ -66,16 +57,40 @@ fn value_is_set_at_first_block() {
 fn value_does_not_get_written_after_the_first_block() {
     // Build the state from the config.
     new_test_ext().execute_with(move || {
-        set_initial_timestamp(100);
+        // Block 0 -> 1.
+        switch_block();
 
-        // Run for two block.
-        run_to_block(2, 6);
+        set_timestamp(100);
+
+        // Block 1 -> 2.
+        switch_block();
+
+        set_timestamp(106);
+
+        // Block 2 -> 3.
+        switch_block();
 
         // Assert the state.
         assert_eq!(
             ChainStartMoment::chain_start(),
-            Some(106),
+            Some(100),
             "the chain start moment must've been recorded at the first block"
         );
+    })
+}
+
+/// This test verifies that the chain start moment is valid when capture it.
+#[test]
+#[should_panic = "the chain start moment is zero, it is not right"]
+fn value_is_properly_checked() {
+    // Build the state from the config.
+    new_test_ext().execute_with(move || {
+        // Block 0 -> 1.
+        switch_block();
+
+        set_timestamp(0);
+
+        // Block 1 -> 2.
+        switch_block();
     })
 }
