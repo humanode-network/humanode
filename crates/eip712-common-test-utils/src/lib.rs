@@ -1,4 +1,4 @@
-//! Implements EIP-712 typed verification logic for the token claiming.
+//! Common test utils for EIP-712 typed data message construction and signature verification.
 
 use eip712_common::*;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};

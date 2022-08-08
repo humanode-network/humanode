@@ -1,4 +1,4 @@
-//! Implements EIP-712 typed verification logic for the token claiming.
+//! Common logic for EIP-712 typed data message construction and signature verification.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
