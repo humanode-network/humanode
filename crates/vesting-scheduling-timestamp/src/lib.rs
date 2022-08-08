@@ -20,15 +20,20 @@ pub trait Config {
     type Timestamp: CheckedSub;
 
     /// The starting point timestamp provider.
-    type StartingPoint: Get<Self::Timestamp>;
+    type StartingPoint: Get<Option<Self::Timestamp>>;
 
     /// The current timestamp provider.
     type Now: Get<Self::Timestamp>;
 }
 
+/// The error we return when the starting point is [`None`].
+pub const STARTING_POINT_NOT_DEFINED_ERROR: DispatchError = DispatchError::Other(
+    "vesting scheduling driver is not ready: vesting starting point not defined",
+);
 /// The error we return when the time now is before the starting point.
-pub const SCHEDULE_NOT_READY_ERROR: DispatchError =
-    DispatchError::Other("schedule is not ready: time now is before the starting point");
+pub const TIME_NOW_AFTER_THE_STARTING_POINT_ERROR: DispatchError = DispatchError::Other(
+    "vesting scheduling driver is not ready: time now is before the vesting starting point",
+);
 /// The error we return when there is an overflow in the calculations somewhere.
 pub const OVERFLOW_ERROR: DispatchError =
     DispatchError::Arithmetic(frame_support::sp_runtime::ArithmeticError::Overflow);
@@ -36,9 +41,10 @@ pub const OVERFLOW_ERROR: DispatchError =
 impl<T: Config, S> Adapter<T, S> {
     /// How much time has passed since the starting point.
     fn compute_duration_since_starting_point() -> Result<T::Timestamp, DispatchError> {
+        let starting_point = T::StartingPoint::get().ok_or(STARTING_POINT_NOT_DEFINED_ERROR)?;
         T::Now::get()
-            .checked_sub(&T::StartingPoint::get())
-            .ok_or(SCHEDULE_NOT_READY_ERROR)
+            .checked_sub(&starting_point)
+            .ok_or(TIME_NOW_AFTER_THE_STARTING_POINT_ERROR)
     }
 }
 
