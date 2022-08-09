@@ -1,5 +1,5 @@
 [package]
-name = "eip712-account-claim"
+name = "eip712-token-claim"
 version = "0.1.0"
 edition = "2021"
 

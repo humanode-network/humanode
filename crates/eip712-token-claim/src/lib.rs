@@ -1,48 +1,44 @@
-//! Implements EIP-712 typed verification logic for the EVM account claiming.
+//! Implements EIP-712 typed verification logic for the token claiming.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use eip712_common::{
-    const_keccak_256, keccak_256, Domain, EcdsaSignature, EthBytes, EthereumAddress,
+    const_keccak_256, keccak_256, make_payload_hash, Domain, EcdsaSignature, EthBytes,
+    EthereumAddress,
 };
 
-/// Account claim typehash.
-const ACCOUNT_CLAIM_TYPEHASH: [u8; 32] = const_keccak_256!(b"Claim(bytes substrateAddress)");
+/// Token claim typehash.
+const TOKEN_CLAIM_TYPEHASH: [u8; 32] = const_keccak_256!(b"TokenClaim(bytes substrateAddress)");
 
-/// Prepare a hash for our account claim data type.
-/// To be used at EIP-712 message payload.
-fn make_account_claim_hash(account: &EthBytes) -> [u8; 32] {
-    let mut buf = [0u8; 64];
-    buf[0..32].copy_from_slice(&ACCOUNT_CLAIM_TYPEHASH);
-    buf[32..64].copy_from_slice(&keccak_256(account));
-    keccak_256(&buf)
+/// Make the data hash from the `TokenClaim` payload.
+fn hash_token_claim_data(account: &EthBytes) -> [u8; 32] {
+    keccak_256(account)
 }
 
 /// Verify EIP-712 typed signature based on provided domain_separator and entire message.
-pub fn verify_account_claim(
+pub fn verify_token_claim(
     signature: &EcdsaSignature,
     domain: Domain<'_>,
     account: &[u8],
 ) -> Option<EthereumAddress> {
-    let payload_hash = make_account_claim_hash(account);
+    let payload_hash = make_payload_hash(&TOKEN_CLAIM_TYPEHASH, [&hash_token_claim_data(account)]);
     eip712_common::verify_signature(signature, domain, &payload_hash)
 }
 
 #[cfg(test)]
 mod tests {
     use eip712_common_test_utils::{
-        ecdsa, ecdsa_pair, ecdsa_sign_typed_data, ethereum_address_from_seed, U256,
+        ecdsa, ecdsa_pair, ecdsa_sign_typed_data, ethereum_address_from_seed,
     };
     use hex_literal::hex;
 
     use super::*;
 
-    // A helper function to construct test EIP-712 signature.
     fn test_input(pair: &ecdsa::Pair) -> EcdsaSignature {
-        let typed_data_json = r#"{
-            "primaryType": "Claim",
+        let type_data_json = r#"{
+            "primaryType": "TokenClaim",
             "domain": {
-                "name": "Humanode EVM Claim",
+                "name": "Humanode Token Claim",
                 "version": "1",
                 "chainId": "0x1472",
                 "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
@@ -57,18 +53,17 @@ mod tests {
                     { "name": "chainId", "type": "uint256" },
                     { "name": "verifyingContract", "type": "address" }
                 ],
-                "Claim": [
+                "TokenClaim": [
                     { "name": "substrateAddress", "type": "bytes" }
                 ]
             }
         }"#;
-        ecdsa_sign_typed_data(pair, typed_data_json)
+        ecdsa_sign_typed_data(pair, type_data_json)
     }
 
-    // A helper function to prepare alice account claim typed data.
     fn prepare_sample_domain() -> Domain<'static> {
         Domain {
-            name: "Humanode EVM Claim",
+            name: "Humanode Token Claim",
             version: "1",
             // Chain ID is 5234 in hex.
             chain_id: &hex!("0000000000000000000000000000000000000000000000000000000000001472"),
@@ -85,7 +80,7 @@ mod tests {
         let signature = test_input(&pair);
         let domain = prepare_sample_domain();
 
-        let ethereum_address = verify_account_claim(&signature, domain, &SAMPLE_ACCOUNT).unwrap();
+        let ethereum_address = verify_token_claim(&signature, domain, &SAMPLE_ACCOUNT).unwrap();
         assert_eq!(ethereum_address, ethereum_address_from_seed(b"Alice"));
     }
 
@@ -95,28 +90,7 @@ mod tests {
         let signature = test_input(&pair);
         let domain = prepare_sample_domain();
 
-        let ethereum_address = verify_account_claim(&signature, domain, &SAMPLE_ACCOUNT).unwrap();
+        let ethereum_address = verify_token_claim(&signature, domain, &SAMPLE_ACCOUNT).unwrap();
         assert_ne!(ethereum_address, ethereum_address_from_seed(b"Bob"));
-    }
-
-    #[test]
-    fn real_world_case1() {
-        let chain_id: [u8; 32] = U256::from(5234).into();
-        let domain = Domain {
-            name: "Humanode EVM Claim",
-            version: "1",
-            chain_id: &chain_id,
-            verifying_contract: &hex!("CcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"),
-        };
-        let account_to_claim =
-            hex!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d");
-        let signature = hex!("151d5f52e6c249db84b8705374c6f51dd08b50ddad5b1175ec20a7e00cbc48f55a23470ab0db16146b3b7d2a8565aaf2b700f548c9e9882a0034e654bd214e821b");
-
-        let ethereum_address =
-            verify_account_claim(&EcdsaSignature(signature), domain, &account_to_claim).unwrap();
-        assert_eq!(
-            ethereum_address.0,
-            hex!("e9726f3d0a7736034e2a4c63ea28b3ab95622cb9"),
-        );
     }
 }

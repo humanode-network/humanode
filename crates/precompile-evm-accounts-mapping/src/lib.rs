@@ -1,4 +1,4 @@
-//! A precompile to check and return a proper native account for provided evm address.
+//! A precompile to check and return a proper native account for provided ethereum address.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -7,6 +7,7 @@ use fp_evm::{
     ExitError, ExitSucceed, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
     PrecompileResult,
 };
+use primitives_ethereum::EthereumAddress;
 use sp_std::marker::PhantomData;
 
 #[cfg(test)]
@@ -29,16 +30,16 @@ where
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
         handle.record_cost(GAS_COST)?;
 
-        let evm_address_bytes: [u8; 20] =
+        let ethereum_address_bytes: [u8; 20] =
             handle
                 .input()
                 .try_into()
                 .map_err(|_| PrecompileFailure::Error {
-                    exit_status: ExitError::Other("input must be a valid evm address".into()),
+                    exit_status: ExitError::Other("input must be a valid ethereum address".into()),
                 })?;
 
-        let evm_address = pallet_evm_accounts_mapping::EvmAddress::from(evm_address_bytes);
-        let native_account = pallet_evm_accounts_mapping::Accounts::<T>::get(evm_address);
+        let ethereum_address = EthereumAddress(ethereum_address_bytes);
+        let native_account = pallet_evm_accounts_mapping::Accounts::<T>::get(ethereum_address);
 
         let precompile_output = match native_account {
             Some(account) => account.encode(),

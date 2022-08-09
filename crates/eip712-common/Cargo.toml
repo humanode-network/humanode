@@ -1,0 +1,19 @@
+[package]
+name = "eip712-common"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
+
+sp-core-hashing-proc-macro = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[dev-dependencies]
+hex-literal = "0.3"
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+
+[features]
+default = ["std"]
+std = ["primitives-ethereum/std", "sp-io/std", "sp-std/std"]
