@@ -32,6 +32,9 @@ fn lock_under_vesting_works() {
             .with(predicate::eq(MockSchedule))
             .return_const(Ok(100));
 
+        // Set block number to enable events.
+        System::set_block_number(1);
+
         // Invoke the function under test.
         assert_ok!(Vesting::lock_under_vesting(&42, MockSchedule));
 
@@ -72,6 +75,9 @@ fn lock_under_vesting_works_with_zero() {
             .with(predicate::eq(MockSchedule))
             .return_const(Ok(0));
 
+        // Set block number to enable events.
+        System::set_block_number(1);
+
         // Invoke the function under test.
         assert_ok!(Vesting::lock_under_vesting(&42, MockSchedule));
 
@@ -111,6 +117,9 @@ fn lock_under_vesting_conflicts_with_existing_lock() {
         let compute_balance_under_lock_ctx =
             MockSchedulingDriver::compute_balance_under_lock_context();
         compute_balance_under_lock_ctx.expect().never();
+
+        // Set block number to enable events.
+        System::set_block_number(1);
 
         // Invoke the function under test.
         assert_noop!(
@@ -153,6 +162,9 @@ fn lock_under_vesting_can_lock_balance_greater_than_free_balance() {
             .with(predicate::eq(MockSchedule))
             .return_const(Ok(1100));
 
+        // Set block number to enable events.
+        System::set_block_number(1);
+
         // Invoke the function under test.
         assert_ok!(Vesting::lock_under_vesting(&42, MockSchedule));
 
@@ -160,12 +172,12 @@ fn lock_under_vesting_can_lock_balance_greater_than_free_balance() {
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 0);
         assert!(<Schedules<Test>>::get(&42).is_some());
-        // assert_eq!(System::events().len(), 1);
-        // System::assert_has_event(mock::Event::Vesting(Event::Locked {
-        //     who: 42,
-        //     schedule: MockSchedule,
-        //     balance_under_lock: 1100,
-        // }));
+        assert_eq!(System::events().len(), 1);
+        System::assert_has_event(mock::Event::Vesting(Event::Locked {
+            who: 42,
+            schedule: MockSchedule,
+            balance_under_lock: 1100,
+        }));
 
         // Assert mock invocations.
         compute_balance_under_lock_ctx.checkpoint();
@@ -195,6 +207,9 @@ fn unlock_works_full() {
             .once()
             .with(predicate::eq(MockSchedule))
             .return_const(Ok(0));
+
+        // Set block number to enable events.
+        System::set_block_number(1);
 
         // Invoke the function under test.
         assert_ok!(Vesting::unlock(Origin::signed(42)));
@@ -234,6 +249,9 @@ fn unlock_works_partial() {
             .once()
             .with(predicate::eq(MockSchedule))
             .return_const(Ok(90));
+
+        // Set block number to enable events.
+        System::set_block_number(1);
 
         // Invoke the function under test.
         assert_ok!(Vesting::unlock(Origin::signed(42)));
@@ -276,6 +294,9 @@ fn unlock_computation_failure() {
             .once()
             .with(predicate::eq(MockSchedule))
             .return_const(Err(DispatchError::Other("compute_balance_under failed")));
+
+        // Set block number to enable events.
+        System::set_block_number(1);
 
         // Invoke the function under test.
         assert_noop!(
