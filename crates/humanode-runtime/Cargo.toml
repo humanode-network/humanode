@@ -98,6 +98,8 @@ runtime-benchmarks = [
 std = [
   "author-ext-api/std",
   "bioauth-flow-api/std",
+  "eip712-common/std",
+  "eip712-account-claim/std",
   "keystore-bioauth-account-id/std",
   "precompile-bioauth/std",
   "precompile-evm-accounts-mapping/std",
