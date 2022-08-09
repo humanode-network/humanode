@@ -10351,9 +10351,11 @@ name = "vesting-scheduling-timestamp"
 version = "0.1.0"
 dependencies = [
  "frame-support",
+ "mockall 0.11.2",
  "num-traits",
  "pallet-vesting",
  "serde",
+ "serde_json",
  "vesting-schedule-linear",
 ]
 

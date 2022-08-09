@@ -12,12 +12,10 @@ frame-support = { default-features = false, git = "https://github.com/humanode-n
 num-traits = { version = "0.2", default-features = false }
 serde = { version = "1", optional = true }
 
+[dev-dependencies]
+mockall = "0.11"
+serde_json = "1"
+
 [features]
 default = ["std"]
-std = [
-  "frame-support/std",
-  "num-traits/std",
-  "pallet-vesting/std",
-  "serde",
-  "vesting-schedule-linear/std",
-]
+std = ["frame-support/std", "num-traits/std", "pallet-vesting/std", "serde", "vesting-schedule-linear/std"]

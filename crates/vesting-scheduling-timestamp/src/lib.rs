@@ -11,6 +11,11 @@ use vesting_schedule_linear::{
     LinearSchedule,
 };
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 /// The adapter connects the given schedule to the timestamp scheduling driver.
 pub struct Adapter<T: Config, Schedule>(PhantomData<(T, Schedule)>);
 
