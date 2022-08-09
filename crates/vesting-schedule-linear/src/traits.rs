@@ -24,8 +24,8 @@ pub struct SimpleFracScaler<T, Value, FracPart>(PhantomData<(T, Value, FracPart)
 
 impl<T, Value, FracPart> FracScale for SimpleFracScaler<T, Value, FracPart>
 where
-    T: num_traits::CheckedMul + num_traits::CheckedDiv,
-    Value: Into<T> + Copy,
+    T: num_traits::CheckedMul + num_traits::CheckedDiv + num_traits::Zero,
+    Value: Into<T> + Copy + num_traits::Zero,
     FracPart: Into<T> + Copy,
     T: TryInto<Value>,
 {
@@ -37,9 +37,29 @@ where
         nom: &Self::FracPart,
         denom: &Self::FracPart,
     ) -> Option<Self::Value> {
-        let x = (*value).into();
-        let x = x.checked_mul(&(*nom).into())?;
-        let x = x.checked_div(&(*denom).into())?;
-        x.try_into().ok()
+        let value = (*value).into();
+        let nom = (*nom).into();
+
+        let upscaled = value.checked_mul(&nom)?;
+        if upscaled.is_zero() {
+            return Some(num_traits::Zero::zero());
+        }
+
+        let denom = (*denom).into();
+        let downscaled = upscaled.checked_div(&denom)?;
+        downscaled.try_into().ok()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn simple_frac_scaler() {
+        assert_eq!(
+            <SimpleFracScaler<u8, u8, u8>>::frac_scale(&0, &100, &100),
+            Some(0)
+        );
     }
 }
