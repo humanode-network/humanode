@@ -10343,7 +10343,6 @@ dependencies = [
  "scale-info",
  "serde",
  "serde_json",
- "thiserror",
 ]
 
 [[package]]
