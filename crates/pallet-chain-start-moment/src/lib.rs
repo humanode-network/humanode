@@ -42,6 +42,13 @@ pub mod pallet {
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+        fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+            if n != 1u8.into() {
+                return 0;
+            }
+            <T as frame_system::Config>::DbWeight::get().writes(1)
+        }
+
         fn on_finalize(n: BlockNumberFor<T>) {
             if n != 1u8.into() {
                 return;
