@@ -6,7 +6,7 @@ use num_traits::{CheckedSub, Unsigned, Zero};
 
 pub mod traits;
 
-use traits::FracScale;
+use traits::{FracScale, FracScaleError};
 
 /// The linear schedule.
 #[derive(
@@ -39,14 +39,14 @@ where
     pub fn compute_locked_balance<S>(
         &self,
         duration_since_starting_point: Duration,
-    ) -> Option<Balance>
+    ) -> Result<Balance, FracScaleError>
     where
         S: FracScale<Value = Balance, FracPart = Duration>,
     {
         let progress = match duration_since_starting_point.checked_sub(&self.cliff) {
             // We don't have the progress yet because the cliff period did not pass yet, so
             // lock the whole balance.
-            None => return Some(self.balance),
+            None => return Ok(self.balance),
             Some(v) => v,
         };
 
@@ -54,7 +54,7 @@ where
             // We don't have the locked fraction already because the vesting period is already
             // over.
             // We guarantee that we unlock everything by making it so
-            None => return Some(Zero::zero()),
+            None => return Ok(Zero::zero()),
             Some(v) => v,
         };
 

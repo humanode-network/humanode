@@ -6,7 +6,10 @@ use core::marker::PhantomData;
 
 use frame_support::{sp_runtime::DispatchError, traits::Get, BoundedVec};
 use num_traits::{CheckedAdd, CheckedSub, Unsigned, Zero};
-use vesting_schedule_linear::{traits::FracScale, LinearSchedule};
+use vesting_schedule_linear::{
+    traits::{FracScale, FracScaleError},
+    LinearSchedule,
+};
 
 /// The adapter connects the given schedule to the timestamp scheduling driver.
 pub struct Adapter<T: Config, Schedule>(PhantomData<(T, Schedule)>);
@@ -37,6 +40,17 @@ pub const TIME_NOW_AFTER_THE_STARTING_POINT_ERROR: DispatchError = DispatchError
 /// The error we return when there is an overflow in the calculations somewhere.
 pub const OVERFLOW_ERROR: DispatchError =
     DispatchError::Arithmetic(frame_support::sp_runtime::ArithmeticError::Overflow);
+/// The error we return when there is an overflow in the calculations somewhere.
+pub const DIVISION_BY_ZERO_ERROR: DispatchError =
+    DispatchError::Arithmetic(frame_support::sp_runtime::ArithmeticError::DivisionByZero);
+
+/// Convert the `FracScaleError` to our error types.
+fn convert_frac_scale_error(err: FracScaleError) -> DispatchError {
+    match err {
+        FracScaleError::Overflow | FracScaleError::Conversion => OVERFLOW_ERROR,
+        FracScaleError::DivisionByZero => DIVISION_BY_ZERO_ERROR,
+    }
+}
 
 impl<T: Config, S> Adapter<T, S> {
     /// How much time has passed since the starting point.
@@ -70,7 +84,7 @@ where
         let duration_since_starting_point = Self::compute_duration_since_starting_point()?;
         let balance_under_lock = schedule
             .compute_locked_balance::<T::FracScale>(duration_since_starting_point)
-            .ok_or(OVERFLOW_ERROR)?;
+            .map_err(convert_frac_scale_error)?;
         Ok(balance_under_lock)
     }
 }
@@ -109,10 +123,10 @@ where
             .iter()
             .try_fold(Zero::zero(), |acc: Self::Balance, schedule| {
                 let balance = schedule
-                    .compute_locked_balance::<T::FracScale>(duration_since_starting_point)?;
-                acc.checked_add(&balance)
-            })
-            .ok_or(OVERFLOW_ERROR)?;
+                    .compute_locked_balance::<T::FracScale>(duration_since_starting_point)
+                    .map_err(convert_frac_scale_error)?;
+                acc.checked_add(&balance).ok_or(OVERFLOW_ERROR)
+            })?;
         Ok(balance)
     }
 }
