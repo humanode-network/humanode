@@ -175,6 +175,26 @@ mod tests {
     }
 
     #[test]
+    fn logic_all_zeroes() {
+        let schedule = TestLinearSchedule {
+            balance: 0,
+            cliff: 0,
+            vesting: 0,
+        };
+
+        let compute = |point| {
+            schedule
+                .compute_locked_balance::<TestScaler>(point)
+                .unwrap()
+        };
+
+        assert_eq!(compute(0), 0);
+        assert_eq!(compute(1), 0);
+        assert_eq!(compute(2), 0);
+        assert_eq!(compute(0xff), 0);
+    }
+
+    #[test]
     fn logic_precision() {
         let schedule = LinearSchedule {
             balance: 1000000000,
