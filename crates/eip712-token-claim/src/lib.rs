@@ -11,17 +11,20 @@ use eip712_common::{
 const TOKEN_CLAIM_TYPEHASH: [u8; 32] = const_keccak_256!(b"TokenClaim(bytes substrateAddress)");
 
 /// Make the data hash from the `TokenClaim` payload.
-fn hash_token_claim_data(account: &EthBytes) -> [u8; 32] {
-    keccak_256(account)
+fn hash_token_claim_data(substrate_address: &EthBytes) -> [u8; 32] {
+    keccak_256(substrate_address)
 }
 
 /// Verify EIP-712 typed signature based on provided domain_separator and entire message.
 pub fn verify_token_claim(
     signature: &EcdsaSignature,
     domain: Domain<'_>,
-    account: &[u8],
+    substrate_address: &[u8],
 ) -> Option<EthereumAddress> {
-    let payload_hash = make_payload_hash(&TOKEN_CLAIM_TYPEHASH, [&hash_token_claim_data(account)]);
+    let payload_hash = make_payload_hash(
+        &TOKEN_CLAIM_TYPEHASH,
+        [&hash_token_claim_data(substrate_address)],
+    );
     eip712_common::verify_signature(signature, domain, &payload_hash)
 }
 
