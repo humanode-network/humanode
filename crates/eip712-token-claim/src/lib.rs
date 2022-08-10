@@ -43,7 +43,7 @@ mod tests {
             "domain": {
                 "name": "Humanode Token Claim",
                 "version": "1",
-                "chainId": "0x1472",
+                "chainId": "0x1",
                 "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
             },
             "message": {
@@ -68,8 +68,8 @@ mod tests {
         Domain {
             name: "Humanode Token Claim",
             version: "1",
-            // Chain ID is 5234 in hex.
-            chain_id: &hex!("0000000000000000000000000000000000000000000000000000000000001472"),
+            // Chain ID is 1 in hex.
+            chain_id: &hex!("0000000000000000000000000000000000000000000000000000000000000001"),
             verifying_contract: &hex!("CcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"),
         }
     }
