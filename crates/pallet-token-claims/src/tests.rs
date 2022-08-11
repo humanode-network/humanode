@@ -75,11 +75,11 @@ fn claiming_works_no_vesting() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::NoVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::NoVesting)));
         let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
@@ -129,11 +129,11 @@ fn claiming_works_with_vesting() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::WithVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::WithVesting)));
         lock_under_vesting_ctx
@@ -187,11 +187,11 @@ fn claim_eth_signature_recovery_failure() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::NoVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(None);
         lock_under_vesting_ctx.expect().never();
@@ -241,11 +241,11 @@ fn claim_eth_signature_recovery_invalid() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::NoVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::Unknown)));
         lock_under_vesting_ctx.expect().never();
@@ -295,11 +295,11 @@ fn claim_lock_under_vesting_failure() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::WithVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::WithVesting)));
         lock_under_vesting_ctx
@@ -351,11 +351,11 @@ fn claim_non_existing() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::Unknown),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::Unknown)));
         lock_under_vesting_ctx.expect().never();
@@ -574,11 +574,11 @@ fn claiming_sequential() {
                 .expect()
                 .once()
                 .with(
+                    predicate::eq(sig(1)),
                     predicate::eq(EthereumSignatureMessageParams {
                         account_id: 42,
                         ethereum_address: *claim_eth_address,
                     }),
-                    predicate::eq(sig(1)),
                 )
                 .return_const(Some(*claim_eth_address));
             let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();

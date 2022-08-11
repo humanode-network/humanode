@@ -45,7 +45,7 @@ pub mod pallet {
 
     use super::*;
     use crate::{
-        traits::{PreconstructedMessageVerifier, VestingInterface},
+        traits::{verify_ethereum_signature, EthereumSignatureVerifier, VestingInterface},
         types::{ClaimInfo, EthereumSignatureMessageParams},
         weights::WeightInfo,
     };
@@ -78,7 +78,7 @@ pub mod pallet {
         >;
 
         /// The ethereum signature verifier for the claim requests.
-        type EthereumSignatureVerifier: PreconstructedMessageVerifier<
+        type EthereumSignatureVerifier: EthereumSignatureVerifier<
             MessageParams = EthereumSignatureMessageParams<Self::AccountId>,
         >;
 
@@ -202,10 +202,10 @@ pub mod pallet {
                 ethereum_address,
             };
 
-            if !<T as Config>::EthereumSignatureVerifier::verify(
-                message_params,
+            if !verify_ethereum_signature::<<T as Config>::EthereumSignatureVerifier>(
+                &ethereum_signature,
+                &message_params,
                 &ethereum_address,
-                ethereum_signature,
             ) {
                 return Err(Error::<T>::InvalidSignature.into());
             }
