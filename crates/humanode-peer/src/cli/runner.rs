@@ -40,8 +40,18 @@ impl<C: SubstrateCli> Runner<C> {
         let runtime_handle = tokio::runtime::Handle::current();
         let config = command.create_humanode_configuration(cli, runtime_handle)?;
 
+        let properties = config.substrate.chain_spec.properties();
+        let humanode_ss58_prefix: u16 = match properties.get("SS58Prefix") {
+            Some(value) => value
+                .as_u64()
+                .ok_or("SS58Prefix should be u16")
+                .map_err(application_error)?
+                .try_into()
+                .map_err(application_error)?,
+            None => 42,
+        };
+
         // Regardless of whether our ss58 prefix is registered or not, we are setting a default prefix here.
-        let humanode_ss58_prefix = ss58_prefix(config.substrate.chain_spec.as_ref())?;
         sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(humanode_ss58_prefix));
 
         Ok(Self {
@@ -112,25 +122,4 @@ impl<C: SubstrateCli> Runner<C> {
     pub fn config(&self) -> &Configuration {
         &self.config
     }
-}
-
-/// A helper function to extract Humanode ss58 prefix from provided
-/// chain spec during boot node.
-fn ss58_prefix(chain_spec: &dyn sc_service::ChainSpec) -> Result<u16> {
-    let genesis = chain_spec.build_storage().map_err(application_error)?.top;
-
-    let ss58_prefix_bytes: [u8; 2] = genesis
-        .get(&crypto_utils::storage::encoded_key(
-            "ChainProperties",
-            "Ss58Prefix",
-        ))
-        .ok_or("ss58 prefix is not set")
-        .map_err(application_error)?
-        .as_slice()
-        .try_into()
-        .map_err(application_error)?;
-
-    let ss58_prefix = u16::from_le_bytes(ss58_prefix_bytes);
-
-    Ok(ss58_prefix)
 }
