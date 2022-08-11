@@ -429,7 +429,7 @@ fn genesis_ensure_pot_balance_is_checked() {
     });
 }
 
-/// This test verifies that the genesis builder asserted the equality of the configured and computed
+/// This test verifies that the genesis builder asserts the equality of the configured and computed
 /// total claimable balances.
 #[test]
 #[should_panic = "computed total claimable balance (123) is different from the one specified at the genesis config (456)"]
