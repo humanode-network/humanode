@@ -1239,7 +1239,6 @@ dependencies = [
 name = "crypto-utils"
 version = "0.1.0"
 dependencies = [
- "frame-support",
  "pallet-im-online",
  "sp-consensus-babe",
  "sp-finality-grandpa",
@@ -3120,6 +3119,7 @@ dependencies = [
  "bioauth-flow-rpc",
  "bioauth-keys",
  "clap",
+ "crypto-utils",
  "fc-consensus",
  "fc-db",
  "fc-mapping-sync",

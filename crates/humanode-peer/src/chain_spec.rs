@@ -2,7 +2,7 @@
 
 use std::{collections::BTreeMap, str::FromStr};
 
-use crypto_utils::account::{authority_keys_from_seed, get_account_id_from_seed};
+use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
 use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig,

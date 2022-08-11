@@ -5,7 +5,6 @@ edition = "2021"
 publish = false
 
 [dependencies]
-frame-support = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-im-online = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "master" }
