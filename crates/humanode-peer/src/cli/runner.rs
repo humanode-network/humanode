@@ -3,6 +3,7 @@
 use std::marker::PhantomData;
 
 use futures::Future;
+use sc_chain_spec::Properties;
 use sc_cli::{Error as CliError, Result, SubstrateCli};
 use sc_service::{Error as ServiceError, TaskManager};
 use sp_core::crypto::Ss58AddressFormat;
@@ -40,17 +41,7 @@ impl<C: SubstrateCli> Runner<C> {
         let runtime_handle = tokio::runtime::Handle::current();
         let config = command.create_humanode_configuration(cli, runtime_handle)?;
 
-        let properties = config.substrate.chain_spec.properties();
-        let humanode_ss58_prefix: u16 = match properties.get("SS58Prefix") {
-            Some(value) => value
-                .as_u64()
-                .ok_or("SS58Prefix should be u16")
-                .map_err(application_error)?
-                .try_into()
-                .map_err(application_error)?,
-            // Use default 42 SS58Prefix if it's not set.
-            None => 42,
-        };
+        let humanode_ss58_prefix = get_ss58_prefix(config.substrate.chain_spec.properties())?;
 
         // Regardless of whether our ss58 prefix is registered or not, we are setting a default prefix here.
         sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(humanode_ss58_prefix));
@@ -123,4 +114,20 @@ impl<C: SubstrateCli> Runner<C> {
     pub fn config(&self) -> &Configuration {
         &self.config
     }
+}
+
+/// A helper function to get SS58Prefix.
+fn get_ss58_prefix(properties: Properties) -> Result<u16> {
+    let humanode_ss58_prefix: u16 = match properties.get("SS58Prefix") {
+        Some(value) => value
+            .as_u64()
+            .ok_or("SS58Prefix should be u16")
+            .map_err(application_error)?
+            .try_into()
+            .map_err(application_error)?,
+        // Use default 42 SS58Prefix if it's not set.
+        None => 42,
+    };
+
+    Ok(humanode_ss58_prefix)
 }
