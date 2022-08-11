@@ -17,6 +17,7 @@ frontier-api = { version = "0.1", path = "../frontier-api", default-features = f
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id", default-features = false }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
 pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
+pallet-chain-properties = { version = "0.1", path = "../pallet-chain-properties", default-features = false }
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
@@ -119,6 +120,7 @@ std = [
   "pallet-bootnodes/std",
   "pallet-balances/std",
   "pallet-base-fee/std",
+  "pallet-chain-properties/std",
   "pallet-ethereum/std",
   "pallet-ethereum-chain-id/std",
   "pallet-evm-accounts-mapping/std",
@@ -161,6 +163,7 @@ try-runtime = [
   "pallet-balances/try-runtime",
   "pallet-bioauth/try-runtime",
   "pallet-bootnodes/try-runtime",
+  "pallet-chain-properties/try-runtime",
   "pallet-ethereum-chain-id/try-runtime",
   "pallet-ethereum/try-runtime",
   "pallet-evm-accounts-mapping/try-runtime",

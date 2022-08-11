@@ -3253,6 +3253,7 @@ dependencies = [
  "pallet-base-fee",
  "pallet-bioauth",
  "pallet-bootnodes",
+ "pallet-chain-properties",
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
@@ -5445,6 +5446,19 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-chain-properties"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
 ]
 
 [[package]]

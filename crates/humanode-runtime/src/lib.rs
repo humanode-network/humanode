@@ -17,8 +17,8 @@ use fp_rpc::TransactionStatus;
 pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
-        ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get,
-        KeyOwnerProofSystem, Randomness,
+        ConstBool, ConstU128, ConstU32, ConstU64, ConstU8, FindAuthor, Get, KeyOwnerProofSystem,
+        Randomness,
     },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -210,6 +210,7 @@ parameter_types! {
         ::with_sensible_defaults(2 * WEIGHT_PER_SECOND, NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+    pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -260,7 +261,9 @@ impl frame_system::Config for Runtime {
     /// Weight information for the extrinsics of this pallet.
     type SystemWeightInfo = ();
     /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
-    type SS58Prefix = ConstU16<42>;
+    /// The Humande prefix is defined at pallet-chain-properties. It allows us to set up
+    /// it easy in genesis before launching the chain without changing the code itself.
+    type SS58Prefix = SS58Prefix;
     /// The set code logic, just the default since we're not a parachain.
     type OnSetCode = ();
     /// The maximum number of consumers allowed on a single account.
@@ -624,6 +627,8 @@ impl pallet_base_fee::Config for Runtime {
     type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
 }
 
+impl pallet_chain_properties::Config for Runtime {}
+
 impl pallet_ethereum_chain_id::Config for Runtime {}
 
 impl pallet_evm_accounts_mapping::Config for Runtime {
@@ -655,6 +660,7 @@ construct_runtime!(
         Offences: pallet_offences,
         Historical: pallet_session_historical,
         HumanodeSession: pallet_humanode_session,
+        ChainProperties: pallet_chain_properties,
         EthereumChainId: pallet_ethereum_chain_id,
         Sudo: pallet_sudo,
         Grandpa: pallet_grandpa,

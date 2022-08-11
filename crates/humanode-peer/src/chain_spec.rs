@@ -6,9 +6,9 @@ use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
 use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig,
-    BootnodesConfig, EVMConfig, EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig,
-    GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig,
-    SystemConfig, WASM_BINARY,
+    BootnodesConfig, ChainPropertiesConfig, EVMConfig, EthereumChainIdConfig, EthereumConfig,
+    EvmAccountsMappingConfig, GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig,
+    Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -269,6 +269,7 @@ fn testnet_genesis(
             consumed_auth_ticket_nonces: vec![],
             active_authentications: vec![],
         },
+        chain_properties: ChainPropertiesConfig { ss58_prefix: 42 },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 5234 },
         evm: EVMConfig {
             accounts: {
