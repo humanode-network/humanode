@@ -314,3 +314,41 @@ fn unlock_computation_failure() {
         compute_balance_under_lock_ctx.checkpoint();
     });
 }
+
+/// This test verifies the `unlock` behaviour when it is called for an account that does not
+/// have vesting.
+#[test]
+fn unlock_no_vesting_error() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare the test state.
+        Balances::make_free_balance_be(&42, 1000);
+
+        // Check test preconditions.
+        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 1000);
+
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx.expect().never();
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_noop!(
+            Vesting::unlock(Origin::signed(42)),
+            <Error<Test>>::NoVesting,
+        );
+
+        // Assert state changes.
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 1000);
+        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert_eq!(System::events().len(), 0);
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
