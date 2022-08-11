@@ -10,7 +10,7 @@ use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 ///
 /// This abstraction is built with EIP-712 in mind, but can also be implemented with any generic
 /// ECDSA signature.
-pub trait PreconstructedMessageVerifier {
+pub trait EthereumSignatureVerifier {
     /// The type describing the parameters used to construct a message.
     type MessageParams;
 
@@ -21,22 +21,23 @@ pub trait PreconstructedMessageVerifier {
     /// recovery does not necessarily guarantee the correctness of the signature - that can only
     /// be achieved with checking the recovered address against the expected one.
     fn recover_signer(
-        message_params: Self::MessageParams,
-        signature: EcdsaSignature,
+        signature: &EcdsaSignature,
+        message_params: &Self::MessageParams,
     ) -> Option<EthereumAddress>;
+}
 
-    /// Calls [`Self::recover_signer`] and then checks that the `signer` matches the recovered address.
-    fn verify(
-        message_params: Self::MessageParams,
-        signer: &EthereumAddress,
-        signature: EcdsaSignature,
-    ) -> bool {
-        let recovered = match Self::recover_signer(message_params, signature) {
-            Some(recovered) => recovered,
-            None => return false,
-        };
-        &recovered == signer
-    }
+/// Calls [`EthereumSignatureVerifier::recover_signer`] and then checks that the `signer`
+/// matches the recovered address.
+pub fn verify_ethereum_signature<T: EthereumSignatureVerifier>(
+    signature: &EcdsaSignature,
+    message_params: &T::MessageParams,
+    signer: &EthereumAddress,
+) -> bool {
+    let recovered = match T::recover_signer(signature, message_params) {
+        Some(recovered) => recovered,
+        None => return false,
+    };
+    &recovered == signer
 }
 
 /// The interface to the vesting implementation.
