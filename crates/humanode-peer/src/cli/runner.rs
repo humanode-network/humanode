@@ -48,6 +48,7 @@ impl<C: SubstrateCli> Runner<C> {
                 .map_err(application_error)?
                 .try_into()
                 .map_err(application_error)?,
+            // Use default 42 SS58Prefix if it's not set.
             None => 42,
         };
 
