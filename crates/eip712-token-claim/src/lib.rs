@@ -97,6 +97,9 @@ mod tests {
         assert_ne!(ethereum_address, ethereum_address_from_seed(b"Bob"));
     }
 
+    /// This test contains the data obtained from MetaMask browser extension via an injected web3
+    /// interface.
+    /// It validates that the real-world external ecosystem works properly with our code.
     #[test]
     fn real_world_case1() {
         let chain_id: [u8; 32] = U256::from(1).into();
