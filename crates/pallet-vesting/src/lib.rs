@@ -56,7 +56,7 @@ pub mod pallet {
         /// The ID of the lock to use at the lockable balance.
         type LockId: Get<LockIdentifier>;
 
-        /// The vesting schedule configration type.
+        /// The vesting schedule configuration type.
         type Schedule: Member + Parameter + MaxEncodedLen + MaybeSerializeDeserialize;
 
         /// The scheduling driver to use for computing balance unlocks.
