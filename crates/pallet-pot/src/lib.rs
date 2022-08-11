@@ -63,6 +63,18 @@ pub mod pallet {
         type PalletId: Get<PalletId>;
     }
 
+    #[pallet::extra_constants]
+    impl<T: Config<I>, I: 'static> Pallet<T, I> {
+        /// The account ID of the pot.
+        ///
+        /// This actually performs computation.
+        /// If you need to keep using it, then make sure you cache the value and
+        /// only call this once.
+        pub fn account_id() -> T::AccountId {
+            T::PalletId::get().into_account_truncating()
+        }
+    }
+
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T, I = ()>(_);
@@ -124,17 +136,10 @@ pub mod pallet {
 }
 
 impl<T: Config<I>, I: 'static> Pallet<T, I> {
-    /// The account ID of the pot.
-    ///
-    /// This actually does computation. If you need to keep using it, then make sure you cache the
-    /// value and only call this once.
-    pub fn account_id() -> T::AccountId {
-        T::PalletId::get().into_account_truncating()
-    }
-
-    /// Return the amount of money in the pot.
-    // The existential deposit is not part of the pot so treasury account never gets deleted.
-    pub fn pot() -> BalanceOf<T, I> {
+    /// Return the balance currently stored in the pot.
+    // The existential deposit (`minimum_balance`) is not part of
+    // the pot so the pot account never gets killed.
+    pub fn balance() -> BalanceOf<T, I> {
         T::Currency::free_balance(&Self::account_id())
             // Must never be less than 0 but better be safe.
             .saturating_sub(T::Currency::minimum_balance())
