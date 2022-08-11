@@ -37,7 +37,7 @@ pub trait SchedulingDriver {
     /// calls to this function.
     ///
     /// If the rounding of the resulting balance is required, it is up to the implementation how
-    /// this rounding is performed. It might be made configurabe via [`Self::Schedule`].
+    /// this rounding is performed. It might be made configurable via [`Self::Schedule`].
     fn compute_balance_under_lock(
         schedule: &Self::Schedule,
     ) -> Result<Self::Balance, DispatchError>;
