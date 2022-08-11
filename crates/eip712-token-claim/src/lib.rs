@@ -11,24 +11,27 @@ use eip712_common::{
 const TOKEN_CLAIM_TYPEHASH: [u8; 32] = const_keccak_256!(b"TokenClaim(bytes substrateAddress)");
 
 /// Make the data hash from the `TokenClaim` payload.
-fn hash_token_claim_data(account: &EthBytes) -> [u8; 32] {
-    keccak_256(account)
+fn hash_token_claim_data(substrate_address: &EthBytes) -> [u8; 32] {
+    keccak_256(substrate_address)
 }
 
 /// Verify EIP-712 typed signature based on provided domain_separator and entire message.
 pub fn verify_token_claim(
     signature: &EcdsaSignature,
     domain: Domain<'_>,
-    account: &[u8],
+    substrate_address: &[u8],
 ) -> Option<EthereumAddress> {
-    let payload_hash = make_payload_hash(&TOKEN_CLAIM_TYPEHASH, [&hash_token_claim_data(account)]);
+    let payload_hash = make_payload_hash(
+        &TOKEN_CLAIM_TYPEHASH,
+        [&hash_token_claim_data(substrate_address)],
+    );
     eip712_common::verify_signature(signature, domain, &payload_hash)
 }
 
 #[cfg(test)]
 mod tests {
     use eip712_common_test_utils::{
-        ecdsa, ecdsa_pair, ecdsa_sign_typed_data, ethereum_address_from_seed,
+        ecdsa, ecdsa_pair, ecdsa_sign_typed_data, ethereum_address_from_seed, U256,
     };
     use hex_literal::hex;
 
@@ -40,7 +43,7 @@ mod tests {
             "domain": {
                 "name": "Humanode Token Claim",
                 "version": "1",
-                "chainId": "0x1472",
+                "chainId": "0x1",
                 "verifyingContract": "0xCcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"
             },
             "message": {
@@ -65,8 +68,8 @@ mod tests {
         Domain {
             name: "Humanode Token Claim",
             version: "1",
-            // Chain ID is 5234 in hex.
-            chain_id: &hex!("0000000000000000000000000000000000000000000000000000000000001472"),
+            // Chain ID is 1 in hex.
+            chain_id: &hex!("0000000000000000000000000000000000000000000000000000000000000001"),
             verifying_contract: &hex!("CcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"),
         }
     }
@@ -92,5 +95,29 @@ mod tests {
 
         let ethereum_address = verify_token_claim(&signature, domain, &SAMPLE_ACCOUNT).unwrap();
         assert_ne!(ethereum_address, ethereum_address_from_seed(b"Bob"));
+    }
+
+    /// This test contains the data obtained from MetaMask browser extension via an injected web3
+    /// interface.
+    /// It validates that the real-world external ecosystem works properly with our code.
+    #[test]
+    fn real_world_case1() {
+        let chain_id: [u8; 32] = U256::from(1).into();
+        let domain = Domain {
+            name: "Humanode Token Claim",
+            version: "1",
+            chain_id: &chain_id,
+            verifying_contract: &hex!("CcCCccccCCCCcCCCCCCcCcCccCcCCCcCcccccccC"),
+        };
+        let substrate_account =
+            hex!("181bafa36430dfc3ff5e51e34ce78dcda0dc6b6ded9b9c7d6c22f971738c9d6f");
+        let signature = hex!("3027e569de1d835350ffa4f07218d3be7298de65f12ffc767c6d80ab16ee704245e158f660817433f3748563cf83cf8a53a5ab569e7751bf158d9215f0e9b58b1b");
+
+        let ethereum_address =
+            verify_token_claim(&EcdsaSignature(signature), domain, &substrate_account).unwrap();
+        assert_eq!(
+            ethereum_address.0,
+            hex!("6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
+        );
     }
 }
