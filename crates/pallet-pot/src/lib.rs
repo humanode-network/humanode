@@ -136,9 +136,10 @@ pub mod pallet {
 }
 
 impl<T: Config<I>, I: 'static> Pallet<T, I> {
-    /// Return the amount of money in the pot.
-    // The existential deposit is not part of the pot so treasury account never gets deleted.
-    pub fn pot() -> BalanceOf<T, I> {
+    /// Return the balance currently stored in the pot.
+    // The existential deposit (`minimum_balance`) is not part of
+    // the pot so the pot account never gets killed.
+    pub fn balance() -> BalanceOf<T, I> {
         T::Currency::free_balance(&Self::account_id())
             // Must never be less than 0 but better be safe.
             .saturating_sub(T::Currency::minimum_balance())
