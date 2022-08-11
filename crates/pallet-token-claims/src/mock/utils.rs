@@ -36,12 +36,12 @@ mock! {
     #[derive(Debug)]
     pub EthereumSignatureVerifier {}
 
-    impl traits::PreconstructedMessageVerifier for EthereumSignatureVerifier {
+    impl traits::EthereumSignatureVerifier for EthereumSignatureVerifier {
         type MessageParams = EthereumSignatureMessageParams<AccountId>;
 
         fn recover_signer(
-            message_params: <Self as traits::PreconstructedMessageVerifier>::MessageParams,
-            signature: EcdsaSignature,
+            signature: &EcdsaSignature,
+            message_params: &<Self as traits::EthereumSignatureVerifier>::MessageParams,
         ) -> Option<primitives_ethereum::EthereumAddress>;
     }
 }
