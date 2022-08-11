@@ -106,9 +106,6 @@ pub mod pallet {
         /// Vesting is already engaged for a given account.
         VestingAlreadyEngaged,
 
-        /// Locking zero balance under vesting is prohibited.
-        LockingZeroBalance,
-
         /// No vesting is active for a given account.
         NoVesting,
     }
