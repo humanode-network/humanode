@@ -1,5 +1,7 @@
 //! Ethereum address.
 
+use core::fmt::Write;
+
 use codec::{Decode, Encode, MaxEncodedLen};
 #[cfg(feature = "std")]
 use frame_support::serde::{self, Deserialize, Deserializer, Serialize, Serializer};
@@ -13,6 +15,16 @@ use scale_info::TypeInfo;
     Clone, Copy, PartialEq, Eq, Encode, Decode, Default, RuntimeDebug, TypeInfo, MaxEncodedLen,
 )]
 pub struct EthereumAddress(pub [u8; 20]);
+
+impl core::fmt::Display for EthereumAddress {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("0x")?;
+        for hex in rustc_hex::ToHexIter::new(self.0.iter()) {
+            f.write_char(hex)?;
+        }
+        Ok(())
+    }
+}
 
 #[cfg(feature = "std")]
 impl Serialize for EthereumAddress {
