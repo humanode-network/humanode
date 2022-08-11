@@ -75,11 +75,11 @@ fn claiming_works_no_vesting() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::NoVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::NoVesting)));
         let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
@@ -129,11 +129,11 @@ fn claiming_works_with_vesting() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::WithVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::WithVesting)));
         lock_under_vesting_ctx
@@ -187,11 +187,11 @@ fn claim_eth_signature_recovery_failure() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::NoVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(None);
         lock_under_vesting_ctx.expect().never();
@@ -241,11 +241,11 @@ fn claim_eth_signature_recovery_invalid() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::NoVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::Unknown)));
         lock_under_vesting_ctx.expect().never();
@@ -295,11 +295,11 @@ fn claim_lock_under_vesting_failure() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::WithVesting),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::WithVesting)));
         lock_under_vesting_ctx
@@ -351,11 +351,11 @@ fn claim_non_existing() {
             .expect()
             .once()
             .with(
+                predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
                     ethereum_address: eth(EthAddr::Unknown),
                 }),
-                predicate::eq(sig(1)),
             )
             .return_const(Some(eth(EthAddr::Unknown)));
         lock_under_vesting_ctx.expect().never();
@@ -429,7 +429,7 @@ fn genesis_ensure_pot_balance_is_checked() {
     });
 }
 
-/// This test verifies that the genesis builder asserted the equality of the configured and computed
+/// This test verifies that the genesis builder asserts the equality of the configured and computed
 /// total claimable balances.
 #[test]
 #[should_panic = "computed total claimable balance (123) is different from the one specified at the genesis config (456)"]
@@ -482,6 +482,77 @@ fn genesis_no_total_claimable_balance_assertion_works() {
     });
 }
 
+/// This test verifies that the genesis builder does not allow conflicting keys (eth addresses)
+/// in claims.
+#[test]
+#[should_panic = "conflicting claim found in genesis for address 0x0000000000000000000000000000000000000000"]
+fn genesis_does_not_allow_same_eth_address() {
+    new_test_ext_with(mock::GenesisConfig {
+        balances: mock::BalancesConfig {
+            balances: vec![(
+                mock::Pot::account_id(),
+                1 /* existential deposit */ +
+                123 + 456, /* total claimable amount */
+            )],
+        },
+        token_claims: mock::TokenClaimsConfig {
+            claims: vec![
+                (
+                    EthereumAddress([0; 20]), /* an eth address used for the first time */
+                    ClaimInfo {
+                        balance: 123,
+                        vesting: None,
+                    },
+                ),
+                (
+                    EthereumAddress([0; 20]), /* the same eth address used for the second time */
+                    ClaimInfo {
+                        balance: 456,
+                        vesting: None,
+                    },
+                ),
+            ],
+            total_claimable: Some(123 + 456),
+        },
+        ..Default::default()
+    });
+}
+
+/// This test verifies that the genesis builder allow non-conflicting keys (eth addresses)
+/// in claims.
+#[test]
+fn genesis_allows_different_eth_address() {
+    new_test_ext_with(mock::GenesisConfig {
+        balances: mock::BalancesConfig {
+            balances: vec![(
+                mock::Pot::account_id(),
+                1 /* existential deposit */ +
+                123 + 456, /* total claimable amount */
+            )],
+        },
+        token_claims: mock::TokenClaimsConfig {
+            claims: vec![
+                (
+                    EthereumAddress([0; 20]), /* an eth address used for the first time */
+                    ClaimInfo {
+                        balance: 123,
+                        vesting: None,
+                    },
+                ),
+                (
+                    EthereumAddress([1; 20]), /* another eth address, used for the first time */
+                    ClaimInfo {
+                        balance: 456,
+                        vesting: None,
+                    },
+                ),
+            ],
+            total_claimable: Some(123 + 456),
+        },
+        ..Default::default()
+    });
+}
+
 /// This test verifies that we can consume all of the claims seqentially and get to the empty
 /// claimable balance in the pot but without killing the pot account.
 #[test]
@@ -503,11 +574,11 @@ fn claiming_sequential() {
                 .expect()
                 .once()
                 .with(
+                    predicate::eq(sig(1)),
                     predicate::eq(EthereumSignatureMessageParams {
                         account_id: 42,
                         ethereum_address: *claim_eth_address,
                     }),
-                    predicate::eq(sig(1)),
                 )
                 .return_const(Some(*claim_eth_address));
             let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();

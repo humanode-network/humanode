@@ -8,7 +8,7 @@ publish = false
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-rustc-hex = { version = "2.1.0", optional = true }
+rustc-hex = { version = "2.1.0", default-features = false }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 serde = { version = "1", optional = true }
 
@@ -17,10 +17,4 @@ serde_json = "1"
 
 [features]
 default = ["std"]
-std = [
-  "codec/std",
-  "frame-support/std",
-  "frame-system/std",
-  "rustc-hex",
-  "serde",
-]
+std = ["codec/std", "frame-support/std", "frame-system/std", "rustc-hex/std", "serde"]
