@@ -123,6 +123,13 @@ pub mod pallet {
             let mut total_claimable_balance: BalanceOf<T> = Zero::zero();
 
             for (eth_address, info) in self.claims.iter() {
+                if Claims::<T>::contains_key(eth_address) {
+                    panic!(
+                        "conflicting claim found in genesis for address {}",
+                        eth_address
+                    );
+                }
+
                 Claims::<T>::insert(eth_address, info.clone());
                 total_claimable_balance =
                     total_claimable_balance.checked_add(&info.balance).unwrap();

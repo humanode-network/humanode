@@ -429,7 +429,7 @@ fn genesis_ensure_pot_balance_is_checked() {
     });
 }
 
-/// This test verifies that the genesis builder asserted the equality of the configured and computed
+/// This test verifies that the genesis builder asserts the equality of the configured and computed
 /// total claimable balances.
 #[test]
 #[should_panic = "computed total claimable balance (123) is different from the one specified at the genesis config (456)"]
@@ -477,6 +477,77 @@ fn genesis_no_total_claimable_balance_assertion_works() {
                 },
             )],
             total_claimable: None, /* don't assert */
+        },
+        ..Default::default()
+    });
+}
+
+/// This test verifies that the genesis builder does not allow conflicting keys (eth addresses)
+/// in claims.
+#[test]
+#[should_panic = "conflicting claim found in genesis for address 0x0000000000000000000000000000000000000000"]
+fn genesis_does_not_allow_same_eth_address() {
+    new_test_ext_with(mock::GenesisConfig {
+        balances: mock::BalancesConfig {
+            balances: vec![(
+                mock::Pot::account_id(),
+                1 /* existential deposit */ +
+                123 + 456, /* total claimable amount */
+            )],
+        },
+        token_claims: mock::TokenClaimsConfig {
+            claims: vec![
+                (
+                    EthereumAddress([0; 20]), /* an eth address used for the first time */
+                    ClaimInfo {
+                        balance: 123,
+                        vesting: None,
+                    },
+                ),
+                (
+                    EthereumAddress([0; 20]), /* the same eth address used for the second time */
+                    ClaimInfo {
+                        balance: 456,
+                        vesting: None,
+                    },
+                ),
+            ],
+            total_claimable: Some(123 + 456),
+        },
+        ..Default::default()
+    });
+}
+
+/// This test verifies that the genesis builder allow non-conflicting keys (eth addresses)
+/// in claims.
+#[test]
+fn genesis_allows_different_eth_address() {
+    new_test_ext_with(mock::GenesisConfig {
+        balances: mock::BalancesConfig {
+            balances: vec![(
+                mock::Pot::account_id(),
+                1 /* existential deposit */ +
+                123 + 456, /* total claimable amount */
+            )],
+        },
+        token_claims: mock::TokenClaimsConfig {
+            claims: vec![
+                (
+                    EthereumAddress([0; 20]), /* an eth address used for the first time */
+                    ClaimInfo {
+                        balance: 123,
+                        vesting: None,
+                    },
+                ),
+                (
+                    EthereumAddress([1; 20]), /* another eth address, used for the first time */
+                    ClaimInfo {
+                        balance: 456,
+                        vesting: None,
+                    },
+                ),
+            ],
+            total_claimable: Some(123 + 456),
         },
         ..Default::default()
     });
