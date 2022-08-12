@@ -39,7 +39,7 @@ pub const STARTING_POINT_NOT_DEFINED_ERROR: DispatchError = DispatchError::Other
     "vesting scheduling driver is not ready: vesting starting point not defined",
 );
 /// The error we return when the time now is before the starting point.
-pub const TIME_NOW_AFTER_THE_STARTING_POINT_ERROR: DispatchError = DispatchError::Other(
+pub const TIME_NOW_BEFORE_THE_STARTING_POINT_ERROR: DispatchError = DispatchError::Other(
     "vesting scheduling driver is not ready: time now is before the vesting starting point",
 );
 /// The error we return when there is an overflow in the calculations somewhere.
@@ -63,7 +63,7 @@ impl<T: Config, S> Adapter<T, S> {
         let starting_point = T::StartingPoint::get().ok_or(STARTING_POINT_NOT_DEFINED_ERROR)?;
         T::Now::get()
             .checked_sub(&starting_point)
-            .ok_or(TIME_NOW_AFTER_THE_STARTING_POINT_ERROR)
+            .ok_or(TIME_NOW_BEFORE_THE_STARTING_POINT_ERROR)
     }
 }
 
