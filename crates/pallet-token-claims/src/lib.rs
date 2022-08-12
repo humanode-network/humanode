@@ -189,7 +189,7 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Claim the tokens.
-        #[pallet::weight(T::WeightInfo::claim())]
+        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
         pub fn claim(
             origin: OriginFor<T>,
             ethereum_address: EthereumAddress,
