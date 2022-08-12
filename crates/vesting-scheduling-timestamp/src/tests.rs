@@ -85,6 +85,8 @@ fn compute_result(
     starting_point: <Test as Config>::Timestamp,
     now: <Test as Config>::Timestamp,
 ) -> Result<<Test as Config>::Balance, DispatchError> {
+    let lock = mocks_lock();
+
     let starting_point_context = MockStartingPoint::get_context();
     let now_context = MockNow::get_context();
 
@@ -98,6 +100,8 @@ fn compute_result(
 
     starting_point_context.checkpoint();
     now_context.checkpoint();
+
+    drop(lock);
 
     res
 }
