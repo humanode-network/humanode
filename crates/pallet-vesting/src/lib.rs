@@ -65,7 +65,7 @@ pub mod pallet {
             Schedule = Self::Schedule,
         >;
 
-        /// The weight informtation provider type.
+        /// The weight information provider type.
         type WeightInfo: WeightInfo;
     }
 
@@ -173,7 +173,7 @@ pub mod pallet {
         /// information - effectively eliminating any effect this pallet has on the given account's
         /// balance.
         ///
-        /// If the balance left under lock is non-zero we keep the readjust the lock and keep
+        /// If the balance left under lock is non-zero we readjust the lock and keep
         /// the vesting information around.
         pub fn unlock_vested_balance(who: &T::AccountId) -> DispatchResult {
             in_storage_layer(|| {

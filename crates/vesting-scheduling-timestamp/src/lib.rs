@@ -45,7 +45,7 @@ pub const TIME_NOW_AFTER_THE_STARTING_POINT_ERROR: DispatchError = DispatchError
 /// The error we return when there is an overflow in the calculations somewhere.
 pub const OVERFLOW_ERROR: DispatchError =
     DispatchError::Arithmetic(frame_support::sp_runtime::ArithmeticError::Overflow);
-/// The error we return when there is an overflow in the calculations somewhere.
+/// The error we return when there is a division by zero in the calculations somewhere.
 pub const DIVISION_BY_ZERO_ERROR: DispatchError =
     DispatchError::Arithmetic(frame_support::sp_runtime::ArithmeticError::DivisionByZero);
 
@@ -94,7 +94,7 @@ where
     }
 }
 
-/// The config for multi linear timestamp scheduling.
+/// The config for multi-linear timestamp scheduling.
 pub trait MultiLinearScheduleConfig: LinearScheduleConfig {
     /// The max amount of schedules per account.
     type MaxSchedulesPerAccount: Get<u32>;

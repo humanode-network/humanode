@@ -54,7 +54,7 @@ where
         let locked_fraction = match self.vesting.checked_sub(&progress) {
             // We don't have the locked fraction already because the vesting period is already
             // over.
-            // We guarantee that we unlock everything by making it so
+            // We guarantee that we unlock everything by returning zero.
             None => return Ok(Zero::zero()),
             Some(v) => v,
         };
