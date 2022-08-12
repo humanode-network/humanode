@@ -13,6 +13,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 // A few exports that help ease life for downstream crates.
 use codec::{alloc::string::ToString, Decode, Encode, MaxEncodedLen};
+pub use eip712_common::EthereumAddress;
 use fp_rpc::TransactionStatus;
 use frame_support::traits::LockIdentifier;
 pub use frame_support::{
@@ -39,6 +40,7 @@ use pallet_grandpa::{
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use pallet_session::historical as pallet_session_historical;
 pub use pallet_timestamp::Call as TimestampCall;
+pub use pallet_token_claims as token_claims;
 use primitives_auth_ticket::OpaqueAuthTicket;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
