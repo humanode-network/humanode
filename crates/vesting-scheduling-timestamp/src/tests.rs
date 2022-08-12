@@ -148,3 +148,46 @@ fn multi_linear_returns_time_now_before_the_starting_point_error() {
         Err(TIME_NOW_BEFORE_THE_STARTING_POINT_ERROR)
     );
 }
+
+#[test]
+fn multi_linear_scarting_point_check() {
+    let schedule = multi_linear_schedule([(3, 0, 0), (20, 20, 20), (200, 40, 20)]);
+
+    let assert_all =
+        |schedule: &MultiLinearScheduleOf<Test>, duration_since_start: u8, value: u8| {
+            for starting_point in [0, 10, 20, 0xff] {
+                let now = match starting_point.checked_add(&duration_since_start) {
+                    None => continue,
+                    Some(val) => val,
+                };
+
+                assert_eq!(
+                    compute(schedule, starting_point, now),
+                    value,
+                    "{} {}",
+                    duration_since_start,
+                    value
+                );
+            }
+        };
+
+    assert_all(&schedule, 0, 220);
+    assert_all(&schedule, 1, 220);
+    assert_all(&schedule, 2, 220);
+    assert_all(&schedule, 19, 220);
+    assert_all(&schedule, 20, 220);
+    assert_all(&schedule, 21, 219);
+    assert_all(&schedule, 22, 218);
+    assert_all(&schedule, 38, 202);
+    assert_all(&schedule, 39, 201);
+    assert_all(&schedule, 40, 200);
+    assert_all(&schedule, 41, 190);
+    assert_all(&schedule, 42, 180);
+    assert_all(&schedule, 43, 170);
+    assert_all(&schedule, 58, 20);
+    assert_all(&schedule, 59, 10);
+    assert_all(&schedule, 60, 0);
+    assert_all(&schedule, 61, 0);
+    assert_all(&schedule, 62, 0);
+    assert_all(&schedule, 0xff, 0);
+}
