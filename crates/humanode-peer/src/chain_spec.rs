@@ -5,7 +5,7 @@ use std::{collections::BTreeMap, str::FromStr};
 use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
 use hex_literal::hex;
 use humanode_runtime::{
-    opaque::SessionKeys, robonode, AccountId, BabeConfig, BalancesConfig, BioauthConfig,
+    opaque::SessionKeys, robonode, AccountId, BabeConfig, Balance, BalancesConfig, BioauthConfig,
     BootnodesConfig, ChainPropertiesConfig, EVMConfig, EthereumChainIdConfig, EthereumConfig,
     EvmAccountsMappingConfig, GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig,
     Signature, SudoConfig, SystemConfig, WASM_BINARY,
@@ -204,6 +204,12 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
     ))
 }
 
+/// The standard balance we put into genesis-endowed dev accounts.
+const DEV_ACCOUNT_BALANCE: Balance = 10u128.pow(18 + 6);
+
+/// The existential deposit of the runtime.
+const EXISTANTIAL_DEPOSIT: Balance = 500;
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
@@ -222,14 +228,22 @@ fn testnet_genesis(
             // Configure endowed accounts with initial balance of 1 << 60.
             balances: {
                 let pot_accounts = vec![
-                    humanode_runtime::TreasuryPot::account_id(),
-                    humanode_runtime::FeesPot::account_id(),
+                    (
+                        humanode_runtime::TreasuryPot::account_id(),
+                        EXISTANTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE,
+                    ),
+                    (
+                        humanode_runtime::FeesPot::account_id(),
+                        EXISTANTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE,
+                    ),
                 ];
-                endowed_accounts
-                    .iter()
-                    .chain(pot_accounts.iter())
-                    .cloned()
-                    .map(|k| (k, 1 << 60))
+                pot_accounts
+                    .into_iter()
+                    .chain(
+                        endowed_accounts
+                            .into_iter()
+                            .map(|k| (k, DEV_ACCOUNT_BALANCE)),
+                    )
                     .collect()
             },
         },
