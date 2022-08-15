@@ -11,6 +11,7 @@ use crate::{
         MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, Origin, Test,
         TestExternalitiesExt, TokenClaims,
     },
+    traits::{NoVesting, VestingInterface},
     types::{ClaimInfo, EthereumSignatureMessageParams},
     *,
 };
@@ -33,17 +34,17 @@ fn basic_setup_works() {
         // Check the claims.
         assert_eq!(<Claims<Test>>::get(&EthereumAddress::default()), None);
         assert_eq!(
-            <Claims<Test>>::get(&eth(EthAddr::NoVesting)),
+            <Claims<Test>>::get(&eth(EthAddr::Existing)),
             Some(ClaimInfo {
                 balance: 10,
-                vesting: None
+                vesting: MockVestingSchedule
             })
         );
         assert_eq!(
-            <Claims<Test>>::get(&eth(EthAddr::WithVesting)),
+            <Claims<Test>>::get(&eth(EthAddr::SecondExisting)),
             Some(ClaimInfo {
                 balance: 20,
-                vesting: Some(MockVestingSchedule)
+                vesting: MockVestingSchedule
             })
         );
 
@@ -58,65 +59,12 @@ fn basic_setup_works() {
     });
 }
 
-/// This test verifies that claiming works in the happy path (when there is no vesting).
+/// This test verifies that claiming works in the happy path.
 #[test]
-fn claiming_works_no_vesting() {
+fn claiming_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
-        assert_eq!(Balances::free_balance(42), 0);
-        let pot_account_balance_before = pot_account_balance();
-        let total_claimable_balance_before = total_claimable_balance();
-        let currency_total_issuance_before = currency_total_issuance();
-
-        // Set mock expectations.
-        let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
-        recover_signer_ctx
-            .expect()
-            .once()
-            .with(
-                predicate::eq(sig(1)),
-                predicate::eq(EthereumSignatureMessageParams {
-                    account_id: 42,
-                    ethereum_address: eth(EthAddr::NoVesting),
-                }),
-            )
-            .return_const(Some(eth(EthAddr::NoVesting)));
-        let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
-        lock_under_vesting_ctx.expect().never();
-
-        // Invoke the function under test.
-        assert_ok!(TokenClaims::claim(
-            Origin::signed(42),
-            eth(EthAddr::NoVesting),
-            sig(1),
-        ));
-
-        // Assert state changes.
-        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
-        assert_eq!(Balances::free_balance(42), 10);
-        assert_eq!(pot_account_balance_before - pot_account_balance(), 10);
-        assert_eq!(
-            total_claimable_balance_before - total_claimable_balance(),
-            10
-        );
-        assert_eq!(
-            currency_total_issuance_before - currency_total_issuance(),
-            0
-        );
-
-        // Assert mock invocations.
-        recover_signer_ctx.checkpoint();
-        lock_under_vesting_ctx.checkpoint();
-    });
-}
-
-/// This test verifies that claiming works in the happy path with vesting.
-#[test]
-fn claiming_works_with_vesting() {
-    new_test_ext().execute_with_ext(|_| {
-        // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -132,30 +80,30 @@ fn claiming_works_with_vesting() {
                 predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
-                    ethereum_address: eth(EthAddr::WithVesting),
+                    ethereum_address: eth(EthAddr::Existing),
                 }),
             )
-            .return_const(Some(eth(EthAddr::WithVesting)));
+            .return_const(Some(eth(EthAddr::Existing)));
         lock_under_vesting_ctx
             .expect()
             .once()
-            .with(predicate::eq(42), predicate::eq(20), predicate::always())
+            .with(predicate::eq(42), predicate::eq(10), predicate::always())
             .return_const(Ok(()));
 
         // Invoke the function under test.
         assert_ok!(TokenClaims::claim(
             Origin::signed(42),
-            eth(EthAddr::WithVesting),
+            eth(EthAddr::Existing),
             sig(1)
         ));
 
         // Assert state changes.
-        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
-        assert_eq!(Balances::free_balance(42), 20);
-        assert_eq!(pot_account_balance_before - pot_account_balance(), 20);
+        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert_eq!(Balances::free_balance(42), 10);
+        assert_eq!(pot_account_balance_before - pot_account_balance(), 10);
         assert_eq!(
             total_claimable_balance_before - total_claimable_balance(),
-            20
+            10
         );
         assert_eq!(
             currency_total_issuance_before - currency_total_issuance(),
@@ -174,7 +122,7 @@ fn claiming_works_with_vesting() {
 fn claim_eth_signature_recovery_failure() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -190,7 +138,7 @@ fn claim_eth_signature_recovery_failure() {
                 predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
-                    ethereum_address: eth(EthAddr::NoVesting),
+                    ethereum_address: eth(EthAddr::Existing),
                 }),
             )
             .return_const(None);
@@ -198,12 +146,12 @@ fn claim_eth_signature_recovery_failure() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::NoVesting), sig(1)),
+            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Existing), sig(1)),
             <Error<Test>>::InvalidSignature
         );
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
         assert_eq!(
@@ -227,7 +175,7 @@ fn claim_eth_signature_recovery_failure() {
 fn claim_eth_signature_recovery_invalid() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
         assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
         let pot_account_balance_before = pot_account_balance();
@@ -244,7 +192,7 @@ fn claim_eth_signature_recovery_invalid() {
                 predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
-                    ethereum_address: eth(EthAddr::NoVesting),
+                    ethereum_address: eth(EthAddr::Existing),
                 }),
             )
             .return_const(Some(eth(EthAddr::Unknown)));
@@ -252,12 +200,12 @@ fn claim_eth_signature_recovery_invalid() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::NoVesting), sig(1)),
+            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Existing), sig(1)),
             <Error<Test>>::InvalidSignature
         );
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::NoVesting)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
         assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
         assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
@@ -282,7 +230,7 @@ fn claim_eth_signature_recovery_invalid() {
 fn claim_lock_under_vesting_failure() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -298,24 +246,24 @@ fn claim_lock_under_vesting_failure() {
                 predicate::eq(sig(1)),
                 predicate::eq(EthereumSignatureMessageParams {
                     account_id: 42,
-                    ethereum_address: eth(EthAddr::WithVesting),
+                    ethereum_address: eth(EthAddr::Existing),
                 }),
             )
-            .return_const(Some(eth(EthAddr::WithVesting)));
+            .return_const(Some(eth(EthAddr::Existing)));
         lock_under_vesting_ctx
             .expect()
             .once()
-            .with(predicate::eq(42), predicate::eq(20), predicate::always())
+            .with(predicate::eq(42), predicate::eq(10), predicate::always())
             .return_const(Err(DispatchError::Other("vesting interface failed")));
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::WithVesting), sig(1)),
+            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Existing), sig(1)),
             DispatchError::Other("vesting interface failed"),
         );
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::WithVesting)));
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
         assert_eq!(
@@ -420,7 +368,7 @@ fn genesis_ensure_pot_balance_is_checked() {
                 EthereumAddress([0; 20]),
                 ClaimInfo {
                     balance: 456,
-                    vesting: None,
+                    vesting: MockVestingSchedule,
                 },
             )],
             total_claimable: Some(456),
@@ -447,7 +395,7 @@ fn genesis_ensure_total_claimable_balance_is_asserted() {
                 EthereumAddress([0; 20]),
                 ClaimInfo {
                     balance: 123, /* the only contribution to the total claimable balance */
-                    vesting: None,
+                    vesting: MockVestingSchedule,
                 },
             )],
             total_claimable: Some(456), /* the configured total claimable balance that doesn't matched the computed value */
@@ -473,7 +421,7 @@ fn genesis_no_total_claimable_balance_assertion_works() {
                 EthereumAddress([0; 20]),
                 ClaimInfo {
                     balance: 123,
-                    vesting: None,
+                    vesting: MockVestingSchedule,
                 },
             )],
             total_claimable: None, /* don't assert */
@@ -501,14 +449,14 @@ fn genesis_does_not_allow_same_eth_address() {
                     EthereumAddress([0; 20]), /* an eth address used for the first time */
                     ClaimInfo {
                         balance: 123,
-                        vesting: None,
+                        vesting: MockVestingSchedule,
                     },
                 ),
                 (
                     EthereumAddress([0; 20]), /* the same eth address used for the second time */
                     ClaimInfo {
                         balance: 456,
-                        vesting: None,
+                        vesting: MockVestingSchedule,
                     },
                 ),
             ],
@@ -536,14 +484,14 @@ fn genesis_allows_different_eth_address() {
                     EthereumAddress([0; 20]), /* an eth address used for the first time */
                     ClaimInfo {
                         balance: 123,
-                        vesting: None,
+                        vesting: MockVestingSchedule,
                     },
                 ),
                 (
                     EthereumAddress([1; 20]), /* another eth address, used for the first time */
                     ClaimInfo {
                         balance: 456,
-                        vesting: None,
+                        vesting: MockVestingSchedule,
                     },
                 ),
             ],
@@ -582,19 +530,15 @@ fn claiming_sequential() {
                 )
                 .return_const(Some(*claim_eth_address));
             let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
-
-            match claim_info.vesting {
-                Some(ref vesting) => lock_under_vesting_ctx
-                    .expect()
-                    .once()
-                    .with(
-                        predicate::eq(42),
-                        predicate::eq(claim_info.balance),
-                        predicate::eq(vesting.clone()),
-                    )
-                    .return_const(Ok(())),
-                None => lock_under_vesting_ctx.expect().never(),
-            };
+            lock_under_vesting_ctx
+                .expect()
+                .once()
+                .with(
+                    predicate::eq(42),
+                    predicate::eq(claim_info.balance),
+                    predicate::eq(claim_info.vesting.clone()),
+                )
+                .return_const(Ok(()));
 
             assert_ok!(TokenClaims::claim(
                 Origin::signed(42),
@@ -626,4 +570,135 @@ fn claiming_sequential() {
             0
         );
     });
+}
+
+/// This test verifies that [`NoVesting`] parses from JSON correctly.
+#[test]
+fn parse_no_vesting_schedule() {
+    let data = r#"{"balance":10,"vesting":null}"#;
+    let claim_info: ClaimInfo<u8, <NoVesting<Test> as VestingInterface>::Schedule> =
+        serde_json::from_str(data).unwrap();
+    assert_eq!(
+        claim_info,
+        ClaimInfo {
+            balance: 10,
+            vesting: (),
+        }
+    )
+}
+
+/// These tests ensure that [`traits::OptionalVesting`] works as expected.
+mod optional_vesting_interface {
+    use super::*;
+    use crate::traits::{self, OptionalVesting};
+
+    mockall::mock! {
+        #[derive(Debug)]
+        pub DummyValueVestingInterface {}
+        impl traits::VestingInterface for DummyValueVestingInterface {
+            type AccountId = u8;
+            type Balance = u8;
+            type Schedule = String;
+
+            fn lock_under_vesting(
+                account: &<Self as traits::VestingInterface>::AccountId,
+                balance_to_lock: <Self as traits::VestingInterface>::Balance,
+                schedule: <Self as traits::VestingInterface>::Schedule,
+            ) -> frame_support::dispatch::DispatchResult;
+        }
+    }
+
+    type TestInterface = OptionalVesting<MockDummyValueVestingInterface>;
+
+    /// Ensure the present value parses correctly.
+    #[test]
+    fn some_parses_correctly() {
+        let data = r#"{"balance":10,"vesting":"test"}"#;
+        let claim_info: ClaimInfo<u8, <TestInterface as VestingInterface>::Schedule> =
+            serde_json::from_str(data).unwrap();
+        assert_eq!(
+            claim_info,
+            ClaimInfo {
+                balance: 10,
+                vesting: Some("test".to_owned()),
+            }
+        );
+    }
+
+    /// Ensure the absent value parses correctly.
+    #[test]
+    fn none_parses_correctly() {
+        let data = r#"{"balance":10,"vesting":null}"#;
+        let claim_info: ClaimInfo<u8, <TestInterface as VestingInterface>::Schedule> =
+            serde_json::from_str(data).unwrap();
+        assert_eq!(
+            claim_info,
+            ClaimInfo {
+                balance: 10,
+                vesting: None,
+            }
+        );
+    }
+
+    /// Ensure that [`Some`] value properly evaluates to a call to the wrapped vesting interface and
+    /// passes the [`Ok`] result as-is.
+    #[test]
+    fn some_works_ok() {
+        mock::with_runtime_lock(|| {
+            let ctx = MockDummyValueVestingInterface::lock_under_vesting_context();
+            ctx.expect()
+                .once()
+                .with(
+                    predicate::eq(42),
+                    predicate::eq(10),
+                    predicate::eq("test".to_owned()),
+                )
+                .return_const(Ok(()));
+
+            assert_eq!(
+                TestInterface::lock_under_vesting(&42, 10, Some("test".to_owned())),
+                Ok(())
+            );
+
+            ctx.checkpoint();
+        })
+    }
+
+    /// Ensure that [`Some`] value properly evaluates to a call to the wrapped vesting interface and
+    /// passes the [`Err`] result as-is.
+    #[test]
+    fn some_works_err() {
+        mock::with_runtime_lock(|| {
+            let ctx = MockDummyValueVestingInterface::lock_under_vesting_context();
+            ctx.expect()
+                .once()
+                .with(
+                    predicate::eq(42),
+                    predicate::eq(10),
+                    predicate::eq("test".to_owned()),
+                )
+                .return_const(Err(DispatchError::Other("test error")));
+
+            assert_eq!(
+                TestInterface::lock_under_vesting(&42, 10, Some("test".to_owned())),
+                Err(DispatchError::Other("test error"))
+            );
+
+            ctx.checkpoint();
+        })
+    }
+
+    /// Ensure that [`None`] value does not evaluate to a call to the wrapped vesting interface at
+    /// all, and simply returns [`Ok`].
+    #[test]
+    fn none_works() {
+        mock::with_runtime_lock(|| {
+            let ctx = MockDummyValueVestingInterface::lock_under_vesting_context();
+            ctx.expect().never();
+
+            assert_eq!(TestInterface::lock_under_vesting(&42, 10, None), Ok(()));
+
+            ctx.checkpoint();
+        })
+    }
 }

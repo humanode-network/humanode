@@ -98,8 +98,8 @@ impl pallet_token_claims::Config for Test {
 }
 
 pub enum EthAddr {
-    NoVesting,
-    WithVesting,
+    Existing,
+    SecondExisting,
     Unknown,
     Other(u8),
 }
@@ -107,9 +107,9 @@ pub enum EthAddr {
 impl From<EthAddr> for u8 {
     fn from(eth_addr: EthAddr) -> Self {
         match eth_addr {
-            EthAddr::NoVesting => 1,
-            EthAddr::WithVesting => 2,
-            EthAddr::Unknown => 3,
+            EthAddr::Existing => 1,
+            EthAddr::SecondExisting => 2,
+            EthAddr::Unknown => 0xff,
             EthAddr::Other(val) => val,
         }
     }
@@ -142,8 +142,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
         pot: Default::default(),
         token_claims: TokenClaimsConfig {
             claims: [
-                (eth(EthAddr::NoVesting), 10, None),
-                (eth(EthAddr::WithVesting), 20, Some(MockVestingSchedule)),
+                (eth(EthAddr::Existing), 10, MockVestingSchedule),
+                (eth(EthAddr::SecondExisting), 20, MockVestingSchedule),
             ]
             .into_iter()
             .map(|(eth_address, balance, vesting)| {
