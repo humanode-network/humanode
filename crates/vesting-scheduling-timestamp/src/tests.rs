@@ -93,7 +93,7 @@ fn compute_result(
     starting_point_context
         .expect()
         .once()
-        .return_const(starting_point);
+        .return_const(Some(starting_point));
     now_context.expect().once().return_const(now);
 
     let res = Driver::compute_balance_under_lock(schedule);
