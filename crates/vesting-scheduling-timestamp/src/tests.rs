@@ -85,25 +85,23 @@ fn compute_result(
     starting_point: <Test as Config>::Timestamp,
     now: <Test as Config>::Timestamp,
 ) -> Result<<Test as Config>::Balance, DispatchError> {
-    let lock = mocks_lock();
+    with_mocks_lock(|| {
+        let starting_point_context = MockStartingPoint::get_context();
+        let now_context = MockNow::get_context();
 
-    let starting_point_context = MockStartingPoint::get_context();
-    let now_context = MockNow::get_context();
+        starting_point_context
+            .expect()
+            .once()
+            .return_const(Some(starting_point));
+        now_context.expect().once().return_const(now);
 
-    starting_point_context
-        .expect()
-        .once()
-        .return_const(Some(starting_point));
-    now_context.expect().once().return_const(now);
+        let res = Driver::compute_balance_under_lock(schedule);
 
-    let res = Driver::compute_balance_under_lock(schedule);
+        starting_point_context.checkpoint();
+        now_context.checkpoint();
 
-    starting_point_context.checkpoint();
-    now_context.checkpoint();
-
-    drop(lock);
-
-    res
+        res
+    })
 }
 
 fn compute(
@@ -153,22 +151,20 @@ fn multi_linear_returns_time_now_before_the_starting_point_error() {
 fn multi_linear_returns_starting_point_not_defined_error_error() {
     let schedule = multi_linear_schedule([(3, 0, 0), (10, 10, 10), (100, 20, 10)]);
 
-    let lock = mocks_lock();
+    with_mocks_lock(|| {
+        let starting_point_context = MockStartingPoint::get_context();
+        let now_context = MockNow::get_context();
 
-    let starting_point_context = MockStartingPoint::get_context();
-    let now_context = MockNow::get_context();
+        starting_point_context.expect().once().return_const(None);
+        now_context.expect().never();
 
-    starting_point_context.expect().once().return_const(None);
-    now_context.expect().never();
+        let res = Driver::compute_balance_under_lock(&schedule);
 
-    let res = Driver::compute_balance_under_lock(&schedule);
+        starting_point_context.checkpoint();
+        now_context.checkpoint();
 
-    starting_point_context.checkpoint();
-    now_context.checkpoint();
-
-    drop(lock);
-
-    assert_eq!(res, Err(STARTING_POINT_NOT_DEFINED_ERROR));
+        assert_eq!(res, Err(STARTING_POINT_NOT_DEFINED_ERROR));
+    });
 }
 
 #[test]

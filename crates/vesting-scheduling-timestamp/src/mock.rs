@@ -37,7 +37,7 @@ mock! {
     }
 }
 
-pub fn mocks_lock() -> std::sync::MutexGuard<'static, ()> {
+fn mocks_lock() -> std::sync::MutexGuard<'static, ()> {
     static MOCK_RUNTIME_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
     // Ignore the poisoning for the tests that panic.
@@ -46,4 +46,11 @@ pub fn mocks_lock() -> std::sync::MutexGuard<'static, ()> {
         Ok(guard) => guard,
         Err(poisoned) => poisoned.into_inner(),
     }
+}
+
+pub fn with_mocks_lock<R>(f: impl FnOnce() -> R) -> R {
+    let lock = mocks_lock();
+    let res = f();
+    drop(lock);
+    res
 }
