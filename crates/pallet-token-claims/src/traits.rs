@@ -1,5 +1,7 @@
 //! Traits we use and expose.
 
+use core::marker::PhantomData;
+
 use frame_support::dispatch::DispatchResult;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
@@ -56,4 +58,21 @@ pub trait VestingInterface {
         balance_to_lock: Self::Balance,
         schedule: Self::Schedule,
     ) -> DispatchResult;
+}
+
+/// A vesting interface that doesn't implement any vesting.
+pub struct NoVesting<T>(PhantomData<T>);
+
+impl<T: crate::Config> VestingInterface for NoVesting<T> {
+    type AccountId = T::AccountId;
+    type Balance = crate::BalanceOf<T>;
+    type Schedule = ();
+
+    fn lock_under_vesting(
+        _account: &Self::AccountId,
+        _balance_to_lock: Self::Balance,
+        _schedule: Self::Schedule,
+    ) -> DispatchResult {
+        Ok(())
+    }
 }

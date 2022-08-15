@@ -11,6 +11,7 @@ use crate::{
         MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, Origin, Test,
         TestExternalitiesExt, TokenClaims,
     },
+    traits::{NoVesting, VestingInterface},
     types::{ClaimInfo, EthereumSignatureMessageParams},
     *,
 };
@@ -626,4 +627,19 @@ fn claiming_sequential() {
             0
         );
     });
+}
+
+/// This test verifies that [`NoVesting`] parses from JSON correctly.
+#[test]
+fn parse_no_vesting_schedule() {
+    let data = r#"{"balance":10,"vesting":null}"#;
+    let claim_info: ClaimInfo<u8, <NoVesting<Test> as VestingInterface>::Schedule> =
+        serde_json::from_str(data).unwrap();
+    assert_eq!(
+        claim_info,
+        ClaimInfo {
+            balance: 10,
+            vesting: (),
+        }
+    )
 }
