@@ -5462,6 +5462,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-chain-start-moment"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/humanode-2022-06-01#b2eccbfe2ef7e677c3ccfe80a8e37277b02342cd"
@@ -5801,6 +5813,22 @@ dependencies = [
  "parity-scale-codec",
  "sp-api",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-vesting"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "mockall 0.11.2",
+ "once_cell",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
 ]
 
 [[package]]
@@ -10304,6 +10332,31 @@ name = "version_check"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "49874b5167b65d7193b8aba1567f5c7d93d001cafc34600cee003eda787e483f"
+
+[[package]]
+name = "vesting-schedule-linear"
+version = "0.1.0"
+dependencies = [
+ "num",
+ "num-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "vesting-scheduling-timestamp"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "mockall 0.11.2",
+ "num-traits",
+ "pallet-vesting",
+ "serde",
+ "serde_json",
+ "vesting-schedule-linear",
+]
 
 [[package]]
 name = "void"
