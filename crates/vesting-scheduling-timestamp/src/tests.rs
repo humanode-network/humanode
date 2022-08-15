@@ -150,6 +150,28 @@ fn multi_linear_returns_time_now_before_the_starting_point_error() {
 }
 
 #[test]
+fn multi_linear_returns_starting_point_not_defined_error_error() {
+    let schedule = multi_linear_schedule([(3, 0, 0), (10, 10, 10), (100, 20, 10)]);
+
+    let lock = mocks_lock();
+
+    let starting_point_context = MockStartingPoint::get_context();
+    let now_context = MockNow::get_context();
+
+    starting_point_context.expect().once().return_const(None);
+    now_context.expect().never();
+
+    let res = Driver::compute_balance_under_lock(&schedule);
+
+    starting_point_context.checkpoint();
+    now_context.checkpoint();
+
+    drop(lock);
+
+    assert_eq!(res, Err(STARTING_POINT_NOT_DEFINED_ERROR));
+}
+
+#[test]
 fn multi_linear_starting_point_check() {
     let schedule = multi_linear_schedule([(3, 0, 0), (20, 20, 20), (200, 40, 20)]);
 
