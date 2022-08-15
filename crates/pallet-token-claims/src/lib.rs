@@ -174,7 +174,7 @@ pub mod pallet {
             /// The balance that was claimed.
             balance: BalanceOf<T>,
             /// The vesting schedule.
-            vesting: Option<T::VestingSchedule>,
+            vesting: T::VestingSchedule,
         },
     }
 
@@ -228,9 +228,7 @@ pub mod pallet {
                 )?;
                 <CurrencyOf<T>>::resolve_creating(&who, funds);
 
-                if let Some(ref vesting) = vesting {
-                    T::VestingInterface::lock_under_vesting(&who, balance, vesting.clone())?;
-                }
+                T::VestingInterface::lock_under_vesting(&who, balance, vesting.clone())?;
 
                 Self::update_total_claimable_balance();
 

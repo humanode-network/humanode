@@ -16,7 +16,7 @@ pub struct ClaimInfo<Balance, Vesting> {
     /// The amount to claim.
     pub balance: Balance,
     /// The vesting configuration for the given claim.
-    pub vesting: Option<Vesting>,
+    pub vesting: Vesting,
 }
 
 /// The collection of parameters used for constructing a message that had to be signed.
