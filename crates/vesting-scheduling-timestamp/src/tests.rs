@@ -80,11 +80,11 @@ fn multi_linear_schedule(
     vec.try_into().unwrap()
 }
 
-fn compute(
+fn compute_result(
     schedule: &MultiLinearScheduleOf<Test>,
     starting_point: <Test as Config>::Timestamp,
     now: <Test as Config>::Timestamp,
-) -> <Test as Config>::Balance {
+) -> Result<<Test as Config>::Balance, DispatchError> {
     let lock = mocks_lock();
 
     let starting_point_context = MockStartingPoint::get_context();
@@ -103,7 +103,15 @@ fn compute(
 
     drop(lock);
 
-    res.unwrap()
+    res
+}
+
+fn compute(
+    schedule: &MultiLinearScheduleOf<Test>,
+    starting_point: <Test as Config>::Timestamp,
+    now: <Test as Config>::Timestamp,
+) -> <Test as Config>::Balance {
+    compute_result(schedule, starting_point, now).unwrap()
 }
 
 #[test]
@@ -135,21 +143,10 @@ fn multi_linear_logic() {
 fn multi_linear_returns_time_now_before_the_starting_point_error() {
     let schedule = multi_linear_schedule([(3, 0, 0), (10, 10, 10), (100, 20, 10)]);
 
-    let lock = mocks_lock();
-
-    let starting_point_context = MockStartingPoint::get_context();
-    let now_context = MockNow::get_context();
-
-    starting_point_context.expect().once().return_const(20);
-    now_context.expect().never();
-
-    let res = Driver::compute_balance_under_lock(&schedule);
-    assert_eq!(res, Err(TIME_NOW_BEFORE_THE_STARTING_POINT_ERROR));
-
-    starting_point_context.checkpoint();
-    now_context.checkpoint();
-
-    drop(lock);
+    assert_eq!(
+        compute_result(&schedule, 20, 10),
+        Err(TIME_NOW_BEFORE_THE_STARTING_POINT_ERROR)
+    );
 }
 
 #[test]
