@@ -76,3 +76,23 @@ impl<T: crate::Config> VestingInterface for NoVesting<T> {
         Ok(())
     }
 }
+
+/// A vesting interface that allows wrapping any mandatory vesting into an optional form.
+pub struct OptionalVesting<T>(PhantomData<T>);
+
+impl<T: VestingInterface> VestingInterface for OptionalVesting<T> {
+    type AccountId = <T as VestingInterface>::AccountId;
+    type Balance = <T as VestingInterface>::Balance;
+    type Schedule = Option<<T as VestingInterface>::Schedule>;
+
+    fn lock_under_vesting(
+        account: &Self::AccountId,
+        balance_to_lock: Self::Balance,
+        schedule: Self::Schedule,
+    ) -> DispatchResult {
+        if let Some(schedule) = schedule {
+            return T::lock_under_vesting(account, balance_to_lock, schedule);
+        }
+        Ok(())
+    }
+}

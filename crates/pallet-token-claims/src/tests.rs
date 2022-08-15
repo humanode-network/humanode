@@ -586,3 +586,119 @@ fn parse_no_vesting_schedule() {
         }
     )
 }
+
+/// These tests ensure that [`traits::OptionalVesting`] works as expected.
+mod optional_vesting_interface {
+    use super::*;
+    use crate::traits::{self, OptionalVesting};
+
+    mockall::mock! {
+        #[derive(Debug)]
+        pub DummyValueVestingInterface {}
+        impl traits::VestingInterface for DummyValueVestingInterface {
+            type AccountId = u8;
+            type Balance = u8;
+            type Schedule = String;
+
+            fn lock_under_vesting(
+                account: &<Self as traits::VestingInterface>::AccountId,
+                balance_to_lock: <Self as traits::VestingInterface>::Balance,
+                schedule: <Self as traits::VestingInterface>::Schedule,
+            ) -> frame_support::dispatch::DispatchResult;
+        }
+    }
+
+    type TestInterface = OptionalVesting<MockDummyValueVestingInterface>;
+
+    /// Ensure the present value parses correctly.
+    #[test]
+    fn some_parses_correctly() {
+        let data = r#"{"balance":10,"vesting":"test"}"#;
+        let claim_info: ClaimInfo<u8, <TestInterface as VestingInterface>::Schedule> =
+            serde_json::from_str(data).unwrap();
+        assert_eq!(
+            claim_info,
+            ClaimInfo {
+                balance: 10,
+                vesting: Some("test".to_owned()),
+            }
+        );
+    }
+
+    /// Ensure the absent value parses correctly.
+    #[test]
+    fn none_parses_correctly() {
+        let data = r#"{"balance":10,"vesting":null}"#;
+        let claim_info: ClaimInfo<u8, <TestInterface as VestingInterface>::Schedule> =
+            serde_json::from_str(data).unwrap();
+        assert_eq!(
+            claim_info,
+            ClaimInfo {
+                balance: 10,
+                vesting: None,
+            }
+        );
+    }
+
+    /// Ensure that [`Some`] value properly evaluates to a call to the wrapped vesting interface and
+    /// passes the [`Ok`] result as-is.
+    #[test]
+    fn some_works_ok() {
+        mock::with_runtime_lock(|| {
+            let ctx = MockDummyValueVestingInterface::lock_under_vesting_context();
+            ctx.expect()
+                .once()
+                .with(
+                    predicate::eq(42),
+                    predicate::eq(10),
+                    predicate::eq("test".to_owned()),
+                )
+                .return_const(Ok(()));
+
+            assert_eq!(
+                TestInterface::lock_under_vesting(&42, 10, Some("test".to_owned())),
+                Ok(())
+            );
+
+            ctx.checkpoint();
+        })
+    }
+
+    /// Ensure that [`Some`] value properly evaluates to a call to the wrapped vesting interface and
+    /// passes the [`Err`] result as-is.
+    #[test]
+    fn some_works_err() {
+        mock::with_runtime_lock(|| {
+            let ctx = MockDummyValueVestingInterface::lock_under_vesting_context();
+            ctx.expect()
+                .once()
+                .with(
+                    predicate::eq(42),
+                    predicate::eq(10),
+                    predicate::eq("test".to_owned()),
+                )
+                .return_const(Err(DispatchError::Other("test error")));
+
+            assert_eq!(
+                TestInterface::lock_under_vesting(&42, 10, Some("test".to_owned())),
+                Err(DispatchError::Other("test error"))
+            );
+
+            ctx.checkpoint();
+        })
+    }
+
+    /// Ensure that [`None`] value does not evaluate to a call to the wrapped vesting interface at
+    /// all, and simply returns [`Ok`].
+    #[test]
+    fn none_works() {
+        mock::with_runtime_lock(|| {
+            let ctx = MockDummyValueVestingInterface::lock_under_vesting_context();
+            ctx.expect().never();
+
+            assert_eq!(TestInterface::lock_under_vesting(&42, 10, None), Ok(()));
+
+            ctx.checkpoint();
+        })
+    }
+}

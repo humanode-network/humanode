@@ -57,6 +57,13 @@ pub fn runtime_lock() -> std::sync::MutexGuard<'static, ()> {
     }
 }
 
+pub fn with_runtime_lock<R>(f: impl FnOnce() -> R) -> R {
+    let lock = runtime_lock();
+    let res = f();
+    drop(lock);
+    res
+}
+
 pub trait TestExternalitiesExt {
     fn execute_with_ext<R, E>(&mut self, execute: E) -> R
     where
