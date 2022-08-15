@@ -150,7 +150,7 @@ fn multi_linear_returns_time_now_before_the_starting_point_error() {
 }
 
 #[test]
-fn multi_linear_scarting_point_check() {
+fn multi_linear_starting_point_check() {
     let schedule = multi_linear_schedule([(3, 0, 0), (20, 20, 20), (200, 40, 20)]);
 
     let assert_all =
