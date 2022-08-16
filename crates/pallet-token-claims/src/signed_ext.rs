@@ -58,7 +58,7 @@ impl<T: Config> Pallet<T> {
 
 /// Check the `claim` call for validity.
 ///
-/// The call is fee, so this check is required to ensure it will be properly verified to
+/// The call is free, so this check is required to ensure it will be properly verified to
 /// prevent chain flooding.
 #[derive(Clone, Eq, PartialEq, codec::Encode, codec::Decode, scale_info::TypeInfo)]
 #[scale_info(skip_type_params(T))]
