@@ -135,6 +135,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     storage.into()
 }
 
+/// This test verifies that claiming without vesting works in the happy path.
 #[test]
 fn claiming_without_vesting_works() {
     // Build the state from the config.
@@ -147,11 +148,36 @@ fn claiming_without_vesting_works() {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
         let (ethereum_address, signature) = test_data(b"Alice");
 
+        let total_issuance_before = Balances::total_issuance();
+
+        // Test preconditions.
+        assert!(TokenClaims::claims(ethereum_address).is_some());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+
         // Invoke the claim call.
         assert_ok!(TokenClaims::claim(
             Some(account_id("Alice")).into(),
             ethereum_address,
             signature
         ));
+
+        // Ensure the claim is gone from the state after the extrinsic is processed.
+        assert!(TokenClaims::claims(ethereum_address).is_none());
+
+        // Ensure the balance of the target account is properly adjusted.
+        assert_eq!(
+            Balances::free_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure that the balance is not locked.
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
