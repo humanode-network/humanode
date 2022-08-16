@@ -69,7 +69,7 @@ where
     T::Call: Dispatchable<Info = DispatchInfo>,
     <T as frame_system::Config>::Call: IsSubType<Call<T>>,
 {
-    const IDENTIFIER: &'static str = "";
+    const IDENTIFIER: &'static str = "CheckTokenClaim";
     type AccountId = T::AccountId;
     type Call = T::Call;
     type AdditionalSigned = ();
