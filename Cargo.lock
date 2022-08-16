@@ -3247,6 +3247,7 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "frontier-api",
+ "hex",
  "hex-literal",
  "keystore-bioauth-account-id",
  "libsecp256k1 0.7.0",
