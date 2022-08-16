@@ -10,6 +10,7 @@ use super::*;
 use crate::token_claims::types::ClaimInfo;
 
 const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
+const VESTING_BALANCE: u128 = 10u128.pow(18 + 3);
 
 fn set_timestamp(inc: UnixMilliseconds) {
     Timestamp::set(Origin::none(), inc).unwrap();
@@ -85,7 +86,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     .chain(
                         [(
                             TokenClaimsPot::account_id(),
-                            INIT_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                            VESTING_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
                         .into_iter(),
                     )
@@ -119,11 +120,11 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
             claims: vec![(
                 ethereum_address_from_seed(b"Alice"),
                 ClaimInfo {
-                    balance: INIT_BALANCE,
+                    balance: VESTING_BALANCE,
                     vesting: vec![].try_into().unwrap(),
                 },
             )],
-            total_claimable: Some(INIT_BALANCE),
+            total_claimable: Some(VESTING_BALANCE),
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1 },
         ..Default::default()
