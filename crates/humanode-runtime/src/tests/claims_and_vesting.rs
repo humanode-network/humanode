@@ -139,11 +139,15 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 fn claiming_without_vesting_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
+        // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(100);
         switch_block();
 
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
         let (ethereum_address, signature) = test_data(b"Alice");
+
+        // Invoke the claim call.
         assert_ok!(TokenClaims::claim(
             Some(account_id("Alice")).into(),
             ethereum_address,
