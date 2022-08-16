@@ -1,11 +1,20 @@
 //! Token claims.
+//!
+//! # Security
+//!
+//! This pallet requires adding [`CheckTokenClaim`] to the tuple of signed extension checkers
+//! at runtime to be utilized safely, otherwise it exposes a flooding vulnerability.
+//! There is no way to ensure this would be automatically picked up by the runtime, so double-check
+//! it at integration!
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::traits::{Currency, StorageVersion};
 
 pub use self::pallet::*;
+pub use self::signed_ext::*;
 
+mod signed_ext;
 pub mod traits;
 pub mod types;
 pub mod weights;
@@ -189,7 +198,7 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Claim the tokens.
-        #[pallet::weight(T::WeightInfo::claim())]
+        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
         pub fn claim(
             origin: OriginFor<T>,
             ethereum_address: EthereumAddress,

@@ -1,9 +1,14 @@
 //! The tests for the pallet.
 
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{
+    assert_noop, assert_ok, assert_storage_noop,
+    pallet_prelude::{InvalidTransaction, ValidTransaction},
+    unsigned::TransactionValidityError,
+    weights::{DispatchClass, DispatchInfo, Pays},
+};
 use mockall::predicate;
 use primitives_ethereum::EthereumAddress;
-use sp_runtime::DispatchError;
+use sp_runtime::{traits::SignedExtension, DispatchError};
 
 use crate::{
     mock::{
@@ -701,4 +706,159 @@ mod optional_vesting_interface {
             ctx.checkpoint();
         })
     }
+}
+
+/// This test verifies that signed extension's `validate` works in the happy path.
+#[test]
+fn signed_ext_validate_works() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert_eq!(Balances::free_balance(42), 0);
+
+        // Set mock expectations.
+        let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
+        recover_signer_ctx
+            .expect()
+            .once()
+            .with(
+                predicate::eq(sig(1)),
+                predicate::eq(EthereumSignatureMessageParams {
+                    account_id: 42,
+                    ethereum_address: eth(EthAddr::Existing),
+                }),
+            )
+            .return_const(Some(eth(EthAddr::Existing)));
+        let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
+        lock_under_vesting_ctx.expect().never();
+
+        // Invoke the function under test.
+        let normal = DispatchInfo {
+            weight: 100,
+            class: DispatchClass::Normal,
+            pays_fee: Pays::No,
+        };
+        let len = 0;
+        let ext = <CheckTokenClaim<Test>>::new();
+        assert_storage_noop!(assert_ok!(
+            ext.validate(
+                &42,
+                &mock::Call::TokenClaims(Call::claim {
+                    ethereum_address: eth(EthAddr::Existing),
+                    ethereum_signature: sig(1),
+                }),
+                &normal,
+                len
+            ),
+            ValidTransaction::default()
+        ));
+
+        // Assert mock invocations.
+        recover_signer_ctx.checkpoint();
+        lock_under_vesting_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that signed extension's `validate` properly fails when the eth signature is
+/// invalid.
+#[test]
+fn signed_ext_validate_fails_invalid_eth_signatue() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert_eq!(Balances::free_balance(42), 0);
+
+        // Set mock expectations.
+        let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
+        recover_signer_ctx
+            .expect()
+            .once()
+            .with(
+                predicate::eq(sig(1)),
+                predicate::eq(EthereumSignatureMessageParams {
+                    account_id: 42,
+                    ethereum_address: eth(EthAddr::Existing),
+                }),
+            )
+            .return_const(None);
+        let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
+        lock_under_vesting_ctx.expect().never();
+
+        // Invoke the function under test.
+        let normal = DispatchInfo {
+            weight: 100,
+            class: DispatchClass::Normal,
+            pays_fee: Pays::No,
+        };
+        let len = 0;
+        let ext = <CheckTokenClaim<Test>>::new();
+        assert_noop!(
+            ext.validate(
+                &42,
+                &mock::Call::TokenClaims(Call::claim {
+                    ethereum_address: eth(EthAddr::Existing),
+                    ethereum_signature: sig(1),
+                }),
+                &normal,
+                len
+            ),
+            TransactionValidityError::Invalid(InvalidTransaction::BadProof)
+        );
+
+        // Assert mock invocations.
+        recover_signer_ctx.checkpoint();
+        lock_under_vesting_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that signed extension's `validate` properly fails when the claim is
+/// not present in the state for the requested eth address.
+#[test]
+fn signed_ext_validate_fails_when_claim_is_absent() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
+        assert_eq!(Balances::free_balance(42), 0);
+
+        // Set mock expectations.
+        let recover_signer_ctx = MockEthereumSignatureVerifier::recover_signer_context();
+        recover_signer_ctx
+            .expect()
+            .once()
+            .with(
+                predicate::eq(sig(1)),
+                predicate::eq(EthereumSignatureMessageParams {
+                    account_id: 42,
+                    ethereum_address: eth(EthAddr::Unknown),
+                }),
+            )
+            .return_const(Some(eth(EthAddr::Unknown)));
+        let lock_under_vesting_ctx = MockVestingInterface::lock_under_vesting_context();
+        lock_under_vesting_ctx.expect().never();
+
+        // Invoke the function under test.
+        let normal = DispatchInfo {
+            weight: 100,
+            class: DispatchClass::Normal,
+            pays_fee: Pays::No,
+        };
+        let len = 0;
+        let ext = <CheckTokenClaim<Test>>::new();
+        assert_noop!(
+            ext.validate(
+                &42,
+                &mock::Call::TokenClaims(Call::claim {
+                    ethereum_address: eth(EthAddr::Unknown),
+                    ethereum_signature: sig(1),
+                }),
+                &normal,
+                len
+            ),
+            TransactionValidityError::Invalid(InvalidTransaction::Call)
+        );
+
+        // Assert mock invocations.
+        recover_signer_ctx.checkpoint();
+        lock_under_vesting_ctx.checkpoint();
+    });
 }
