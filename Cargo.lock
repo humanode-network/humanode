@@ -3170,6 +3170,7 @@ dependencies = [
  "sp-core",
  "sp-finality-grandpa",
  "sp-inherents",
+ "sp-io",
  "sp-keystore",
  "sp-panic-handler",
  "sp-runtime",

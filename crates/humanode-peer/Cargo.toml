@@ -79,6 +79,7 @@ url = "2"
 
 [dev-dependencies]
 indoc = "1.0"
+sp-io = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [build-dependencies]
 vergen = { version = "7", default-features = false, features = ["cargo", "git"] }

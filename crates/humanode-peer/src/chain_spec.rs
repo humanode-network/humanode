@@ -355,8 +355,32 @@ fn testnet_genesis(
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
+    use sp_runtime::BuildStorage;
 
     use super::*;
+
+    // This function basically just builds a genesis storage.
+    fn new_test_ext_with(genesis_storage: sp_runtime::Storage) -> sp_io::TestExternalities {
+        genesis_storage.into()
+    }
+
+    #[test]
+    fn local_testnet_config_works() {
+        new_test_ext_with(local_testnet_config().unwrap().build_storage().unwrap())
+            .execute_with(move || {});
+    }
+
+    #[test]
+    fn development_config_works() {
+        new_test_ext_with(development_config().unwrap().build_storage().unwrap())
+            .execute_with(move || {});
+    }
+
+    #[test]
+    fn benchmark_config_works() {
+        new_test_ext_with(benchmark_config().unwrap().build_storage().unwrap())
+            .execute_with(move || {});
+    }
 
     #[test]
     fn deserialize_bioauth_flow_params_extensions() {
