@@ -164,6 +164,34 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     storage.into()
 }
 
+/// This test verifies that genesis config is properly parsed with the combination of types we have configured.
+#[test]
+fn genesis_config() {
+    new_test_ext_with().execute_with(move || {
+        assert_eq!(
+            TokenClaims::claims(ethereum_address_from_seed(b"Dubai")).unwrap(),
+            ClaimInfo {
+                balance: VESTING_BALANCE,
+                vesting: vec![].try_into().unwrap(),
+            }
+        );
+
+        assert_eq!(
+            TokenClaims::claims(ethereum_address_from_seed(b"Batumi")).unwrap(),
+            ClaimInfo {
+                balance: VESTING_BALANCE,
+                vesting: vec![LinearSchedule {
+                    balance: VESTING_BALANCE,
+                    cliff: CLIFF,
+                    vesting: VESTING_DURATION,
+                }]
+                .try_into()
+                .unwrap(),
+            }
+        );
+    });
+}
+
 /// This test verifies that claiming without vesting works in the happy path.
 #[test]
 fn claiming_without_vesting_works() {
