@@ -5,6 +5,7 @@ use eip712_common_test_utils::{
     ecdsa_pair, ecdsa_sign_typed_data, ethereum_address_from_seed, U256,
 };
 use frame_support::traits::Hooks;
+use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
 use crate::token_claims::types::ClaimInfo;
@@ -86,7 +87,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     .chain(
                         [(
                             TokenClaimsPot::account_id(),
-                            VESTING_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                            2 * VESTING_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
                         .into_iter(),
                     )
@@ -117,14 +118,29 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
             bootnodes: bootnodes.try_into().unwrap(),
         },
         token_claims: TokenClaimsConfig {
-            claims: vec![(
-                ethereum_address_from_seed(b"Alice"),
-                ClaimInfo {
-                    balance: VESTING_BALANCE,
-                    vesting: vec![].try_into().unwrap(),
-                },
-            )],
-            total_claimable: Some(VESTING_BALANCE),
+            claims: vec![
+                (
+                    ethereum_address_from_seed(b"Alice"),
+                    ClaimInfo {
+                        balance: VESTING_BALANCE,
+                        vesting: vec![].try_into().unwrap(),
+                    },
+                ),
+                (
+                    ethereum_address_from_seed(b"Batumi"),
+                    ClaimInfo {
+                        balance: VESTING_BALANCE,
+                        vesting: vec![LinearSchedule {
+                            balance: VESTING_BALANCE,
+                            cliff: 1000,
+                            vesting: 6000,
+                        }]
+                        .try_into()
+                        .unwrap(),
+                    },
+                ),
+            ],
+            total_claimable: Some(2 * VESTING_BALANCE),
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1 },
         ..Default::default()
@@ -175,6 +191,65 @@ fn claiming_without_vesting_works() {
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+/// This test verifies that claiming with vesting works in the happy path.
+#[test]
+fn claiming_with_vesting_works() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(1000);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, signature) = test_data(b"Batumi");
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Test preconditions.
+        assert!(TokenClaims::claims(ethereum_address).is_some());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert!(Vesting::locks(account_id("Alice")).is_none());
+
+        // Invoke the claim call.
+        assert_ok!(TokenClaims::claim(
+            Some(account_id("Alice")).into(),
+            ethereum_address,
+            signature
+        ));
+
+        // Ensure the claim is gone from the state after the extrinsic is processed.
+        assert!(TokenClaims::claims(ethereum_address).is_none());
+
+        // Ensure the balance of the target account is properly adjusted.
+        assert_eq!(
+            Balances::free_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure that the vesting balance is locked.
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+
+        // Ensure that the vesting is armed for the given account and matches the parameters.
+        assert_eq!(
+            Vesting::locks(account_id("Alice")),
+            Some(
+                vec![LinearSchedule {
+                    balance: VESTING_BALANCE,
+                    cliff: 1000,
+                    vesting: 6000,
+                }]
+                .try_into()
+                .unwrap()
+            )
         );
 
         // Ensure total issuance did not change.
