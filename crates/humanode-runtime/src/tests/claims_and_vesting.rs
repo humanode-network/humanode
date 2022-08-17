@@ -11,7 +11,20 @@ use super::*;
 use crate::token_claims::types::ClaimInfo;
 
 const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
-const VESTING_BALANCE: u128 = 10u128.pow(18 + 3);
+const VESTING_BALANCE: u128 = 1000;
+
+const START_TIMESTAMP: u64 = 1000;
+const CLIFF: u64 = 1000;
+
+const VESTING_DURATION: u64 = 3000;
+// 2/3 from VESTING_DURATION.
+const PARTIAL_DURATION: u64 = 2000;
+
+const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
+const FULL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + VESTING_DURATION;
+
+// 2/3 from VESTING_BALANCE rounded up.
+const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 667;
 
 fn set_timestamp(inc: UnixMilliseconds) {
     Timestamp::set(Origin::none(), inc).unwrap();
@@ -132,8 +145,8 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                         balance: VESTING_BALANCE,
                         vesting: vec![LinearSchedule {
                             balance: VESTING_BALANCE,
-                            cliff: 1000,
-                            vesting: 6000,
+                            cliff: CLIFF,
+                            vesting: VESTING_DURATION,
                         }]
                         .try_into()
                         .unwrap(),
@@ -158,7 +171,7 @@ fn claiming_without_vesting_works() {
     new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
-        set_timestamp(100);
+        set_timestamp(START_TIMESTAMP);
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
@@ -205,7 +218,7 @@ fn claiming_with_vesting_works() {
     new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
-        set_timestamp(1000);
+        set_timestamp(START_TIMESTAMP);
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
@@ -244,13 +257,98 @@ fn claiming_with_vesting_works() {
             Some(
                 vec![LinearSchedule {
                     balance: VESTING_BALANCE,
-                    cliff: 1000,
-                    vesting: 6000,
+                    cliff: CLIFF,
+                    vesting: VESTING_DURATION,
                 }]
                 .try_into()
                 .unwrap()
             )
         );
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+/// This test verifies that unlocking full balance works in the happy path.
+#[test]
+fn unlock_full_balance_works() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, signature) = test_data(b"Batumi");
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Invoke the claim call for future unlocking.
+        assert_ok!(TokenClaims::claim(
+            Some(account_id("Alice")).into(),
+            ethereum_address,
+            signature
+        ));
+
+        // Run blocks with setting proper timestamp to make full unlocking.
+        set_timestamp(FULL_VESTING_TIMESTAMP);
+        switch_block();
+
+        // Invoke the unlock call.
+        assert_ok!(Vesting::unlock(Some(account_id("Alice")).into()));
+
+        // Ensure funds are unlocked.
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure the vesting is gone from the state.
+        assert!(Vesting::locks(account_id("Alice")).is_none());
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+/// This test verifies that unlocking partial balance works in the happy path.
+#[test]
+fn unlock_partial_balance_works() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, signature) = test_data(b"Batumi");
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Invoke the claim call for future unlocking.
+        assert_ok!(TokenClaims::claim(
+            Some(account_id("Alice")).into(),
+            ethereum_address,
+            signature
+        ));
+
+        // Run blocks with setting proper timestamp to make full unlocking.
+        set_timestamp(PARTIAL_VESTING_TIMESTAMP);
+        switch_block();
+
+        // Invoke the unlock call.
+        assert_ok!(Vesting::unlock(Some(account_id("Alice")).into()));
+
+        let unlocked_balance = Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
+
+        // Ensure funds are partially unlocked and rounding works as expected.
+        assert_eq!(unlocked_balance, EXPECTED_PARTIAL_UNLOCKED_FUNDS);
+
+        // Ensure the vesting still exists.
+        assert!(Vesting::locks(account_id("Alice")).is_some());
 
         // Ensure total issuance did not change.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
