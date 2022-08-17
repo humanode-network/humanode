@@ -120,7 +120,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         token_claims: TokenClaimsConfig {
             claims: vec![
                 (
-                    ethereum_address_from_seed(b"Alice"),
+                    ethereum_address_from_seed(b"Dubai"),
                     ClaimInfo {
                         balance: VESTING_BALANCE,
                         vesting: vec![].try_into().unwrap(),
@@ -162,7 +162,7 @@ fn claiming_without_vesting_works() {
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, signature) = test_data(b"Alice");
+        let (ethereum_address, signature) = test_data(b"Dubai");
 
         let total_issuance_before = Balances::total_issuance();
 
