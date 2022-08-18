@@ -15,16 +15,7 @@ const VESTING_BALANCE: u128 = 1000;
 
 const START_TIMESTAMP: u64 = 1000;
 const CLIFF: u64 = 1000;
-
 const VESTING_DURATION: u64 = 3000;
-// 2/3 from VESTING_DURATION.
-const PARTIAL_DURATION: u64 = 2000;
-
-const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
-const FULL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + VESTING_DURATION;
-
-// 2/3 from VESTING_BALANCE rounded up.
-const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 667;
 
 fn set_timestamp(inc: UnixMilliseconds) {
     Timestamp::set(Origin::none(), inc).unwrap();
@@ -317,7 +308,7 @@ fn unlock_full_balance_works() {
         ));
 
         // Run blocks with setting proper timestamp to make full unlocking.
-        set_timestamp(FULL_VESTING_TIMESTAMP);
+        set_timestamp(START_TIMESTAMP + CLIFF + VESTING_DURATION);
         switch_block();
 
         // Invoke the unlock call.
@@ -342,6 +333,12 @@ fn unlock_full_balance_works() {
 fn unlock_partial_balance_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
+        // 2/3 from VESTING_DURATION.
+        const PARTIAL_DURATION: u64 = 2000;
+        const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
+        // 2/3 from VESTING_BALANCE rounded up.
+        const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 667;
+
         // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
