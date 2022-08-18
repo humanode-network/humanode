@@ -29,7 +29,7 @@ fn switch_block() {
     AllPalletsWithSystem::on_initialize(System::block_number());
 }
 
-fn test_data(seed: &[u8]) -> (EthereumAddress, EcdsaSignature) {
+fn sign_sample_token_claim(seed: &[u8]) -> (EthereumAddress, EcdsaSignature) {
     let chain_id: [u8; 32] = U256::from(EthereumChainId::get()).into();
     let genesis_hash: [u8; 32] = System::block_hash(0).into();
     let mut verifying_contract = [0u8; 20];
@@ -190,7 +190,7 @@ fn claiming_without_vesting_works() {
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, signature) = test_data(b"Dubai");
+        let (ethereum_address, signature) = sign_sample_token_claim(b"Dubai");
 
         let total_issuance_before = Balances::total_issuance();
 
@@ -237,7 +237,7 @@ fn claiming_with_vesting_works() {
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, signature) = test_data(b"Batumi");
+        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi");
 
         let total_issuance_before = Balances::total_issuance();
 
@@ -296,7 +296,7 @@ fn unlock_full_balance_works() {
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, signature) = test_data(b"Batumi");
+        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi");
 
         let total_issuance_before = Balances::total_issuance();
 
@@ -345,7 +345,7 @@ fn unlock_partial_balance_works() {
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, signature) = test_data(b"Batumi");
+        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi");
 
         let total_issuance_before = Balances::total_issuance();
 
