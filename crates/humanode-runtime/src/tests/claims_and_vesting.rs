@@ -4,7 +4,7 @@ use eip712_common::EcdsaSignature;
 use eip712_common_test_utils::{
     ecdsa_pair, ecdsa_sign_typed_data, ethereum_address_from_seed, U256,
 };
-use frame_support::traits::Hooks;
+use frame_support::traits::{OnFinalize, OnInitialize};
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
@@ -32,14 +32,10 @@ fn set_timestamp(inc: UnixMilliseconds) {
 
 fn switch_block() {
     if System::block_number() != 0 {
-        Timestamp::on_finalize(System::block_number());
-        ChainStartMoment::on_finalize(System::block_number());
-        System::on_finalize(System::block_number());
+        AllPalletsWithSystem::on_finalize(System::block_number());
     }
     System::set_block_number(System::block_number() + 1);
-    System::on_initialize(System::block_number());
-    Timestamp::on_initialize(System::block_number());
-    ChainStartMoment::on_initialize(System::block_number());
+    AllPalletsWithSystem::on_initialize(System::block_number());
 }
 
 fn test_data(seed: &[u8]) -> (EthereumAddress, EcdsaSignature) {
