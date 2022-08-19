@@ -11,10 +11,10 @@ substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate"
 [dependencies]
 author-ext-api = { version = "0.1", path = "../author-ext-api", default-features = false }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
-crypto-utils = { version = "0.1", path = "../crypto-utils", optional = true }
+crypto-utils = { version = "0.1", path = "../crypto-utils", default-features = false, optional = true }
 eip712-account-claim = { version = "0.1", path = "../eip712-account-claim", default-features = false }
 eip712-common = { version = "0.1", path = "../eip712-common", default-features = false }
-eip712-common-test-utils = { version = "0.1", path = "../eip712-common-test-utils", optional = true }
+eip712-common-test-utils = { version = "0.1", path = "../eip712-common-test-utils", default-features = false, optional = true }
 eip712-token-claim = { version = "0.1", path = "../eip712-token-claim", default-features = false }
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id", default-features = false }
