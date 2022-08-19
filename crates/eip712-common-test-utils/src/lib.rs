@@ -10,8 +10,8 @@ pub fn ecdsa_pair(seed: &[u8]) -> ecdsa::Pair {
 }
 
 /// Sign a given message with the given ECDSA keypair.
-pub fn ecdsa_sign(pair: &ecdsa::Pair, msg: [u8; 32]) -> EcdsaSignature {
-    EcdsaSignature(pair.sign_prehashed(&msg).0)
+pub fn ecdsa_sign(pair: &ecdsa::Pair, msg: &[u8; 32]) -> EcdsaSignature {
+    EcdsaSignature(pair.sign_prehashed(msg).0)
 }
 
 /// Sign a given EIP-712 typed data JSON with the given ECDSA keypair.
@@ -20,7 +20,7 @@ pub fn ecdsa_sign_typed_data(pair: &ecdsa::Pair, type_data_json: &str) -> EcdsaS
     let msg_bytes: [u8; 32] = eth_eip_712::hash_structured_data(typed_data)
         .unwrap()
         .into();
-    ecdsa_sign(pair, msg_bytes)
+    ecdsa_sign(pair, &msg_bytes)
 }
 
 /// Create an Ethereum address from the given seed.

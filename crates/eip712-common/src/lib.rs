@@ -76,21 +76,26 @@ pub fn make_payload_hash<'a>(
     keccak_256(&buf)
 }
 
+/// Prepare the EIP-712 message.
+pub fn make_message_hash(domain: Domain<'_>, payload_hash: &[u8; 32]) -> [u8; 32] {
+    let domain_hash = make_domain_hash(domain);
+    make_eip712_message_hash(&domain_hash, payload_hash)
+}
+
+/// Extract the signer address from the signatue and the message.
+pub fn recover_signer(sig: &EcdsaSignature, msg: &[u8; 32]) -> Option<EthereumAddress> {
+    let pubkey = sp_io::crypto::secp256k1_ecdsa_recover(&sig.0, msg).ok()?;
+    Some(ecdsa_public_key_to_ethereum_address(&pubkey))
+}
+
 /// Verify EIP-712 typed signature based on provided domain and payload hash.
 pub fn verify_signature(
     signature: &EcdsaSignature,
     domain: Domain<'_>,
     payload_hash: &[u8; 32],
 ) -> Option<EthereumAddress> {
-    let domain_hash = make_domain_hash(domain);
-    let msg_hash = make_eip712_message_hash(&domain_hash, payload_hash);
+    let msg_hash = make_message_hash(domain, payload_hash);
     recover_signer(signature, &msg_hash)
-}
-
-/// Extract the signer address from the signatue and the message.
-fn recover_signer(sig: &EcdsaSignature, msg: &[u8; 32]) -> Option<EthereumAddress> {
-    let pubkey = sp_io::crypto::secp256k1_ecdsa_recover(&sig.0, msg).ok()?;
-    Some(ecdsa_public_key_to_ethereum_address(&pubkey))
 }
 
 /// Convert the ECDSA public key to Ethereum address.

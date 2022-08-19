@@ -15,17 +15,24 @@ fn hash_token_claim_data(substrate_address: &EthBytes) -> [u8; 32] {
     keccak_256(substrate_address)
 }
 
-/// Verify EIP-712 typed signature based on provided domain_separator and entire message.
-pub fn verify_token_claim(
-    signature: &EcdsaSignature,
-    domain: Domain<'_>,
-    substrate_address: &[u8],
-) -> Option<EthereumAddress> {
+/// Prepare the EIP-712 message hash.
+pub fn make_message_hash(domain: Domain<'_>, substrate_address: &[u8]) -> [u8; 32] {
     let payload_hash = make_payload_hash(
         &TOKEN_CLAIM_TYPEHASH,
         [&hash_token_claim_data(substrate_address)],
     );
-    eip712_common::verify_signature(signature, domain, &payload_hash)
+    eip712_common::make_message_hash(domain, &payload_hash)
+}
+
+/// Verify EIP-712 typed signature based on provided domain and message params and recover
+/// the signer address.
+pub fn recover_signer(
+    signature: &EcdsaSignature,
+    domain: Domain<'_>,
+    substrate_address: &[u8],
+) -> Option<EthereumAddress> {
+    let message = make_message_hash(domain, substrate_address);
+    eip712_common::recover_signer(signature, &message)
 }
 
 #[cfg(test)]
@@ -83,7 +90,7 @@ mod tests {
         let signature = test_input(&pair);
         let domain = prepare_sample_domain();
 
-        let ethereum_address = verify_token_claim(&signature, domain, &SAMPLE_ACCOUNT).unwrap();
+        let ethereum_address = recover_signer(&signature, domain, &SAMPLE_ACCOUNT).unwrap();
         assert_eq!(ethereum_address, ethereum_address_from_seed(b"Alice"));
     }
 
@@ -93,7 +100,7 @@ mod tests {
         let signature = test_input(&pair);
         let domain = prepare_sample_domain();
 
-        let ethereum_address = verify_token_claim(&signature, domain, &SAMPLE_ACCOUNT).unwrap();
+        let ethereum_address = recover_signer(&signature, domain, &SAMPLE_ACCOUNT).unwrap();
         assert_ne!(ethereum_address, ethereum_address_from_seed(b"Bob"));
     }
 
@@ -114,7 +121,7 @@ mod tests {
         let signature = hex!("3027e569de1d835350ffa4f07218d3be7298de65f12ffc767c6d80ab16ee704245e158f660817433f3748563cf83cf8a53a5ab569e7751bf158d9215f0e9b58b1b");
 
         let ethereum_address =
-            verify_token_claim(&EcdsaSignature(signature), domain, &substrate_account).unwrap();
+            recover_signer(&EcdsaSignature(signature), domain, &substrate_account).unwrap();
         assert_eq!(
             ethereum_address.0,
             hex!("6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
