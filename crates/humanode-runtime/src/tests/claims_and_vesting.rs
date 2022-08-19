@@ -1,9 +1,7 @@
 //! Tests to verify token claims and vesting logic.
 
 use eip712_common::EcdsaSignature;
-use eip712_common_test_utils::{
-    ecdsa_pair, ecdsa_sign_typed_data, ethereum_address_from_seed, U256,
-};
+use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use frame_support::{
     assert_noop, assert_ok,
     pallet_prelude::InvalidTransaction,
@@ -16,6 +14,7 @@ use vesting_schedule_linear::LinearSchedule;
 use super::*;
 use crate::{
     dev_utils::{account_id, authority_keys},
+    eip712::genesis_verifying_contract,
     opaque::SessionKeys,
     token_claims::types::ClaimInfo,
 };
@@ -39,43 +38,25 @@ fn switch_block() {
     AllPalletsWithSystem::on_initialize(System::block_number());
 }
 
-fn sign_sample_token_claim(seed: &[u8]) -> (EthereumAddress, EcdsaSignature) {
+fn sign_sample_token_claim(
+    seed: &[u8],
+    account_id: AccountId,
+) -> (EthereumAddress, EcdsaSignature) {
     let chain_id: [u8; 32] = U256::from(EthereumChainId::get()).into();
-    let genesis_hash: [u8; 32] = System::block_hash(0).into();
-    let mut verifying_contract = [0u8; 20];
-    verifying_contract.copy_from_slice(&genesis_hash[0..20]);
-
-    let type_data_json = format!(
-        r#"{{
-        "primaryType": "TokenClaim",
-        "domain": {{
-            "name": "Humanode Token Claim",
-            "version": "1",
-            "chainId": "0x{}",
-            "verifyingContract": "0x{}"
-        }},
-        "message": {{
-            "substrateAddress": "0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"
-        }},
-        "types": {{
-            "EIP712Domain": [
-                {{ "name": "name", "type": "string" }},
-                {{ "name": "version", "type": "string" }},
-                {{ "name": "chainId", "type": "uint256" }},
-                {{ "name": "verifyingContract", "type": "address" }}
-            ],
-            "TokenClaim": [
-                {{ "name": "substrateAddress", "type": "bytes" }}
-            ]
-        }}
-    }}"#,
-        hex::encode(chain_id),
-        hex::encode(verifying_contract)
-    );
+    let verifying_contract = genesis_verifying_contract();
+    let domain = eip712_common::Domain {
+        name: "Humanode Token Claim",
+        version: "1",
+        chain_id: &chain_id,
+        verifying_contract: &verifying_contract,
+    };
 
     let pair = ecdsa_pair(seed);
-    let signature = ecdsa_sign_typed_data(&pair, type_data_json.as_str());
-    (ethereum_address_from_seed(seed), signature)
+    let msg_hash = eip712_token_claim::make_message_hash(domain, account_id.as_ref());
+    (
+        ethereum_address_from_seed(seed),
+        ecdsa_sign(&pair, &msg_hash),
+    )
 }
 
 /// Build test externalities from the custom genesis.
@@ -334,7 +315,7 @@ fn claiming_without_vesting_works() {
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, signature) = sign_sample_token_claim(b"Dubai");
+        let (ethereum_address, signature) = sign_sample_token_claim(b"Dubai", account_id("Alice"));
 
         let total_issuance_before = Balances::total_issuance();
 
@@ -381,7 +362,7 @@ fn claiming_with_vesting_works() {
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi");
+        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi", account_id("Alice"));
 
         let total_issuance_before = Balances::total_issuance();
 
@@ -440,7 +421,7 @@ fn unlock_full_balance_works() {
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi");
+        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi", account_id("Alice"));
 
         let total_issuance_before = Balances::total_issuance();
 
@@ -489,7 +470,7 @@ fn unlock_partial_balance_works() {
         switch_block();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi");
+        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi", account_id("Alice"));
 
         let total_issuance_before = Balances::total_issuance();
 
@@ -526,7 +507,8 @@ fn signed_extension_check_token_claim_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, ethereum_signature) = sign_sample_token_claim(b"Batumi");
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Batumi", account_id("Alice"));
 
         let call = pallet_token_claims::Call::claim {
             ethereum_address,
@@ -587,7 +569,8 @@ fn signed_extension_check_token_claim_invalid_call() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, ethereum_signature) = sign_sample_token_claim(b"Invalid");
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Invalid", account_id("Alice"));
 
         let call = pallet_token_claims::Call::claim {
             ethereum_address,
@@ -619,7 +602,8 @@ fn signed_extension_charge_transaction_payment_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, ethereum_signature) = sign_sample_token_claim(b"Batumi");
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Batumi", account_id("Alice"));
 
         let call = pallet_token_claims::Call::claim {
             ethereum_address,
