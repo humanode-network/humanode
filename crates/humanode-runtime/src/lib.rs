@@ -71,6 +71,8 @@ mod frontier_precompiles;
 mod vesting;
 use frontier_precompiles::FrontierPrecompiles;
 
+#[cfg(test)]
+mod dev_utils;
 mod display_moment;
 pub mod eip712;
 mod find_author;

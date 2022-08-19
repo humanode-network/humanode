@@ -3,6 +3,7 @@
 use std::str::FromStr;
 
 use frame_support::{
+    assert_ok,
     dispatch::DispatchInfo,
     weights::{DispatchClass, Pays},
 };
@@ -10,6 +11,8 @@ use pallet_evm::AddressMapping;
 use sp_runtime::traits::SignedExtension;
 
 use super::*;
+use crate::dev_utils::*;
+use crate::opaque::SessionKeys;
 
 const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
 
