@@ -5,7 +5,7 @@ use eip712_common_test_utils::{
     ecdsa_pair, ecdsa_sign_typed_data, ethereum_address_from_seed, U256,
 };
 use frame_support::{
-    assert_noop,
+    assert_noop, assert_ok,
     pallet_prelude::InvalidTransaction,
     traits::{OnFinalize, OnInitialize},
     weights::{DispatchClass, DispatchInfo, Pays},
@@ -14,7 +14,11 @@ use sp_runtime::traits::SignedExtension;
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
-use crate::token_claims::types::ClaimInfo;
+use crate::{
+    dev_utils::{account_id, authority_keys},
+    opaque::SessionKeys,
+    token_claims::types::ClaimInfo,
+};
 
 const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
 const VESTING_BALANCE: u128 = 1000;
