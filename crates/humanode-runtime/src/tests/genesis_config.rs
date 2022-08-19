@@ -1,4 +1,4 @@
-//! Tests to verify GenesisConfig parsing.
+//! Tests to verify general GenesisConfig parsing.
 
 use super::*;
 
