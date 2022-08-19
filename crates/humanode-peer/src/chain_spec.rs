@@ -359,27 +359,23 @@ mod tests {
 
     use super::*;
 
-    // This function basically just builds a genesis storage.
-    fn new_test_ext_with(genesis_storage: sp_runtime::Storage) -> sp_io::TestExternalities {
-        genesis_storage.into()
+    fn assert_genesis_config(chain_spec_result: Result<ChainSpec, String>) {
+        chain_spec_result.unwrap().build_storage().unwrap();
     }
 
     #[test]
     fn local_testnet_config_works() {
-        new_test_ext_with(local_testnet_config().unwrap().build_storage().unwrap())
-            .execute_with(move || {});
+        assert_genesis_config(local_testnet_config());
     }
 
     #[test]
     fn development_config_works() {
-        new_test_ext_with(development_config().unwrap().build_storage().unwrap())
-            .execute_with(move || {});
+        assert_genesis_config(development_config());
     }
 
     #[test]
     fn benchmark_config_works() {
-        new_test_ext_with(benchmark_config().unwrap().build_storage().unwrap())
-            .execute_with(move || {});
+        assert_genesis_config(benchmark_config());
     }
 
     #[test]
