@@ -1,3 +1,9 @@
+//! The utils we share among tests and benches - generally consider them both `dev`.
+
+// The code may or may not be used depending on the feature flags - so omit the noise altogether and
+// disable the check for the entire module.
+#![allow(dead_code)]
+
 use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
 use sp_application_crypto::ByteArray;
 use sp_runtime::app_crypto::sr25519;

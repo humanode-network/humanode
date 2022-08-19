@@ -3235,6 +3235,7 @@ dependencies = [
  "crypto-utils",
  "eip712-account-claim",
  "eip712-common",
+ "eip712-common-test-utils",
  "eip712-token-claim",
  "fp-rpc",
  "fp-self-contained",
