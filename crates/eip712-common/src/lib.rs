@@ -82,7 +82,7 @@ pub fn make_message_hash(domain: Domain<'_>, payload_hash: &[u8; 32]) -> [u8; 32
     make_eip712_message_hash(&domain_hash, payload_hash)
 }
 
-/// Extract the signer address from the signatue and the message.
+/// Extract the signer address from the signature and the message.
 pub fn recover_signer(sig: &EcdsaSignature, msg: &[u8; 32]) -> Option<EthereumAddress> {
     let pubkey = sp_io::crypto::secp256k1_ecdsa_recover(&sig.0, msg).ok()?;
     Some(ecdsa_public_key_to_ethereum_address(&pubkey))

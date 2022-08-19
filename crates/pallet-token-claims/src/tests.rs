@@ -762,7 +762,7 @@ fn signed_ext_validate_works() {
 /// This test verifies that signed extension's `validate` properly fails when the eth signature is
 /// invalid.
 #[test]
-fn signed_ext_validate_fails_invalid_eth_signatue() {
+fn signed_ext_validate_fails_invalid_eth_signature() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
