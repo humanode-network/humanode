@@ -157,29 +157,28 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     storage.into()
 }
 
-/// This test verifies that `GenesisConfig` with claims is parsed in happy path.
-#[test]
-fn genesis_claims_works() {
-    let json_input = r#"{
-        "system": {
+fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> String {
+    format!(
+        r#"{{
+        "system": {{
             "code": ""
-        },
-        "bootnodes": {
+        }},
+        "bootnodes": {{
             "bootnodes": ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]
-        },
-        "bioauth": {
+        }},
+        "bioauth": {{
             "robonodePublicKey": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "consumedAuthTicketNonces": [],
             "activeAuthentications": []
-        },
-        "babe": {
+        }},
+        "babe": {{
             "authorities": [],
-            "epochConfig": {
+            "epochConfig": {{
                 "c": [1, 4],
                 "allowed_slots": "PrimaryAndSecondaryPlainSlots"
-            }
-        },
-        "balances": {
+            }}
+        }},
+        "balances": {{
             "balances": [
                 [
                     "5EYCAe5h8DABNonHVCji5trNkxqKaz1WcvryauRMm4zYYDdQ",
@@ -191,78 +190,88 @@ fn genesis_claims_works() {
                 ],
                 [
                     "5EYCAe5h8DABNonG7tbqC8bjDUw9jM1ewHJWssszZYbjkH2e",
-                    1000000000000000000000500
+                    {}
                 ]
             ]
-        },
-        "treasuryPot": {
+        }},
+        "treasuryPot": {{
             "initialState": "Initialized"
-        },
-        "feesPot": {
+        }},
+        "feesPot": {{
             "initialState": "Initialized"
-        },
-        "tokenClaimsPot": {
+        }},
+        "tokenClaimsPot": {{
             "initialState": "Initialized"
-        },
+        }},
         "transactionPayment": null,
-        "session": {
+        "session": {{
             "keys": [
                 [
                     "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
                     "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-                    {
+                    {{
                         "babe": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
                         "grandpa": "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu",
                         "im_online": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                    }
+                    }}
                 ]
             ]
-        },
-        "chainProperties": {
+        }},
+        "chainProperties": {{
             "ss58Prefix": 1
-        },
-        "ethereumChainId": {
+        }},
+        "ethereumChainId": {{
             "chainId": 1
-        },
-        "sudo": {
+        }},
+        "sudo": {{
             "key": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-        },
-        "grandpa": {
+        }},
+        "grandpa": {{
             "authorities": []
-        },
-        "ethereum": {},
-        "evm": {
-            "accounts": {}
-        },
-        "dynamicFee": {
+        }},
+        "ethereum": {{}},
+        "evm": {{
+            "accounts": {{}}
+        }},
+        "dynamicFee": {{
             "minGasPrice": "0x0"
-        },
-        "baseFee": {
+        }},
+        "baseFee": {{
             "baseFeePerGas": "0x0",
             "isActive": true,
             "elasticity": 0,
             "marker": null
-        },
-        "imOnline": {
+        }},
+        "imOnline": {{
             "keys": []
-        },
-        "evmAccountsMapping": {
+        }},
+        "evmAccountsMapping": {{
             "mappings": []
-        },
-        "tokenClaims": {
-            "claims": [
-                [
-                    "0x6be02d1d3665660d22ff9624b7be0551ee1ac91b",
-                    {
-                        "balance": 1000000000000000000000000,
-                        "vesting": [{"balance":1000000000000000000000000,"cliff":10,"vesting":10}]
-                    }
-                ]
-            ],
-            "totalClaimable": 1000000000000000000000000
-        }
+        }},
+        "tokenClaims": {}
+    }}"#,
+        token_claim_pot_balance, token_claims
+    )
+}
+
+/// This test verifies that `GenesisConfig` with claims is parsed in happy path.
+#[test]
+fn genesis_claims_works() {
+    let token_claims = r#"
+    {
+        "claims": [
+            [
+                "0x6be02d1d3665660d22ff9624b7be0551ee1ac91b",
+                {
+                    "balance": 1000000000000000000000000,
+                    "vesting": [{"balance":1000000000000000000000000,"cliff":10,"vesting":10}]
+                }
+            ]
+        ],
+        "totalClaimable": 1000000000000000000000000
     }"#;
-    let config: GenesisConfig = serde_json::from_str(json_input).unwrap();
+    let json_input = prepare_genesis_json(token_claims, 1000000000000000000000500);
+    let config: GenesisConfig = serde_json::from_str(json_input.as_str()).unwrap();
     assert_ok!(config.build_storage());
 }
 
@@ -270,219 +279,43 @@ fn genesis_claims_works() {
 #[test]
 #[should_panic = "invalid balance in the token claims pot account: got 500, expected 1000000000000000000000500"]
 fn genesis_claims_invalid_pot_balance() {
-    let json_input = r#"{
-        "system": {
-            "code": ""
-        },
-        "bootnodes": {
-            "bootnodes": ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]
-        },
-        "bioauth": {
-            "robonodePublicKey": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "consumedAuthTicketNonces": [],
-            "activeAuthentications": []
-        },
-        "babe": {
-            "authorities": [],
-            "epochConfig": {
-                "c": [1, 4],
-                "allowed_slots": "PrimaryAndSecondaryPlainSlots"
-            }
-        },
-        "balances": {
-            "balances": [
-                [
-                    "5EYCAe5h8DABNonHVCji5trNkxqKaz1WcvryauRMm4zYYDdQ",
-                    500
-                ],
-                [
-                    "5EYCAe5h8DABNogda2AhGjVZCcYAxcoVhSTMZXwWiQhVx9sY",
-                    500
-                ],
-                [
-                    "5EYCAe5h8DABNonG7tbqC8bjDUw9jM1ewHJWssszZYbjkH2e",
-                    500
-                ]
+    let token_claims = r#"
+    {
+        "claims": [
+            [
+                "0x6be02d1d3665660d22ff9624b7be0551ee1ac91b",
+                {
+                    "balance": 1000000000000000000000000,
+                    "vesting": [{"balance":1000000000000000000000000,"cliff":10,"vesting":10}]
+                }
             ]
-        },
-        "treasuryPot": {
-            "initialState": "Initialized"
-        },
-        "feesPot": {
-            "initialState": "Initialized"
-        },
-        "tokenClaimsPot": {
-            "initialState": "Initialized"
-        },
-        "transactionPayment": null,
-        "session": {
-            "keys": [
-                [
-                    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-                    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-                    {
-                        "babe": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-                        "grandpa": "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu",
-                        "im_online": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                    }
-                ]
-            ]
-        },
-        "chainProperties": {
-            "ss58Prefix": 1
-        },
-        "ethereumChainId": {
-            "chainId": 1
-        },
-        "sudo": {
-            "key": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-        },
-        "grandpa": {
-            "authorities": []
-        },
-        "ethereum": {},
-        "evm": {
-            "accounts": {}
-        },
-        "dynamicFee": {
-            "minGasPrice": "0x0"
-        },
-        "baseFee": {
-            "baseFeePerGas": "0x0",
-            "isActive": true,
-            "elasticity": 0,
-            "marker": null
-        },
-        "imOnline": {
-            "keys": []
-        },
-        "evmAccountsMapping": {
-            "mappings": []
-        },
-        "tokenClaims": {
-            "claims": [
-                [
-                    "0x6be02d1d3665660d22ff9624b7be0551ee1ac91b",
-                    {
-                        "balance": 1000000000000000000000000,
-                        "vesting": [{"balance":1000000000000000000000000,"cliff":10,"vesting":10}]
-                    }
-                ]
-            ],
-            "totalClaimable": 1000000000000000000000000
-        }
+        ],
+        "totalClaimable": 1000000000000000000000000
     }"#;
-    let config: GenesisConfig = serde_json::from_str(json_input).unwrap();
+    let json_input = prepare_genesis_json(token_claims, 500);
+    let config: GenesisConfig = serde_json::from_str(json_input.as_str()).unwrap();
     let _ = config.build_storage();
 }
 
 /// This test verifies that `GenesisConfig` with claims fails due to invalid vesting initialization with null.
 #[test]
 #[should_panic = "invalid type: null, expected a sequence"]
-fn genesis_claims_invalid_vesting_inititalization() {
-    let json_input = r#"{
-        "system": {
-            "code": ""
-        },
-        "bootnodes": {
-            "bootnodes": ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]
-        },
-        "bioauth": {
-            "robonodePublicKey": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            "consumedAuthTicketNonces": [],
-            "activeAuthentications": []
-        },
-        "babe": {
-            "authorities": [],
-            "epochConfig": {
-                "c": [1, 4],
-                "allowed_slots": "PrimaryAndSecondaryPlainSlots"
-            }
-        },
-        "balances": {
-            "balances": [
-                [
-                    "5EYCAe5h8DABNonHVCji5trNkxqKaz1WcvryauRMm4zYYDdQ",
-                    500
-                ],
-                [
-                    "5EYCAe5h8DABNogda2AhGjVZCcYAxcoVhSTMZXwWiQhVx9sY",
-                    500
-                ],
-                [
-                    "5EYCAe5h8DABNonG7tbqC8bjDUw9jM1ewHJWssszZYbjkH2e",
-                    1000000000000000000000500
-                ]
+fn genesis_claims_invalid_vesting_inititalization_with_null() {
+    let token_claims = r#"
+    {
+        "claims": [
+            [
+                "0x6be02d1d3665660d22ff9624b7be0551ee1ac91b",
+                {
+                    "balance": 1000000000000000000000000,
+                    "vesting": null
+                }
             ]
-        },
-        "treasuryPot": {
-            "initialState": "Initialized"
-        },
-        "feesPot": {
-            "initialState": "Initialized"
-        },
-        "tokenClaimsPot": {
-            "initialState": "Initialized"
-        },
-        "transactionPayment": null,
-        "session": {
-            "keys": [
-                [
-                    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-                    "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-                    {
-                        "babe": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY",
-                        "grandpa": "5FA9nQDVg267DEd8m1ZypXLBnvN7SFxYwV7ndqSYGiN9TTpu",
-                        "im_online": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-                    }
-                ]
-            ]
-        },
-        "chainProperties": {
-            "ss58Prefix": 1
-        },
-        "ethereumChainId": {
-            "chainId": 1
-        },
-        "sudo": {
-            "key": "5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"
-        },
-        "grandpa": {
-            "authorities": []
-        },
-        "ethereum": {},
-        "evm": {
-            "accounts": {}
-        },
-        "dynamicFee": {
-            "minGasPrice": "0x0"
-        },
-        "baseFee": {
-            "baseFeePerGas": "0x0",
-            "isActive": true,
-            "elasticity": 0,
-            "marker": null
-        },
-        "imOnline": {
-            "keys": []
-        },
-        "evmAccountsMapping": {
-            "mappings": []
-        },
-        "tokenClaims": {
-            "claims": [
-                [
-                    "0x6be02d1d3665660d22ff9624b7be0551ee1ac91b",
-                    {
-                        "balance": 1000000000000000000000000,
-                        "vesting": null
-                    }
-                ]
-            ],
-            "totalClaimable": 1000000000000000000000000
-        }
+        ],
+        "totalClaimable": 1000000000000000000000000
     }"#;
-    let config: GenesisConfig = serde_json::from_str(json_input).unwrap();
+    let json_input = prepare_genesis_json(token_claims, 1000000000000000000000500);
+    let config: GenesisConfig = serde_json::from_str(json_input.as_str()).unwrap();
     let _ = config.build_storage();
 }
 
