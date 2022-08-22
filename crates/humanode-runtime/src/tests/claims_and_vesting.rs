@@ -10,9 +10,7 @@ use frame_support::{
     traits::{OnFinalize, OnInitialize},
     weights::{DispatchClass, DispatchInfo, Pays},
 };
-use frame_system::offchain::{SendSignedTransaction, Signer};
 use sp_application_crypto::AppKey;
-use sp_core::offchain::{testing::TestTransactionPoolExt, TransactionPoolExt};
 use sp_keystore::{testing::KeyStore, KeystoreExt, SyncCryptoStore};
 use sp_runtime::traits::{Header, SignedExtension};
 use vesting_schedule_linear::LinearSchedule;
