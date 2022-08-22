@@ -638,28 +638,6 @@ fn signed_extension_charge_transaction_payment_works() {
     })
 }
 
-pub const TEST_KEY_TYPE_ID: KeyTypeId = KeyTypeId(*b"test");
-
-pub mod sr25519 {
-    mod app_sr25519 {
-        use sp_application_crypto::{app_crypto, sr25519};
-
-        use super::super::TEST_KEY_TYPE_ID;
-        app_crypto!(sr25519, TEST_KEY_TYPE_ID);
-    }
-
-    pub type AuthorityId = app_sr25519::Public;
-}
-
-pub struct TestAuthorityId;
-impl frame_system::offchain::AppCrypto<sp_runtime::MultiSigner, MultiSignature>
-    for TestAuthorityId
-{
-    type RuntimeAppPublic = sr25519::AuthorityId;
-    type GenericSignature = sp_core::sr25519::Signature;
-    type GenericPublic = sp_core::sr25519::Public;
-}
-
 const PHRASE: &str = "bottom drive obey lake curtain smoke basket hold race lonely fit walk";
 
 #[test]
@@ -667,7 +645,7 @@ fn dispatch_works() {
     let keystore = KeyStore::new();
     let public_id = SyncCryptoStore::sr25519_generate_new(
         &keystore,
-        sr25519::AuthorityId::ID,
+        keystore_bioauth_account_id::KeystoreBioauthAccountId::ID,
         Some(&format!("{}//Alice", PHRASE)),
     )
     .unwrap();
@@ -711,7 +689,7 @@ fn dispatch_works() {
         println!("\n{:?}\n", System::block_number());
 
         let (call, (address, signature, extra)) =
-                <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<TestAuthorityId>(
+                <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<keystore_bioauth_account_id::KeystoreBioauthAccountId>(
                     call,
                     public_id.into(),
                     alice.clone(),
