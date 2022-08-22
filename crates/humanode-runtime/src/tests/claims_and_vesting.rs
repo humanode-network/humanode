@@ -175,7 +175,7 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
                 ],
                 [
                     "5EYCAe5h8DABNonG7tbqC8bjDUw9jM1ewHJWssszZYbjkH2e",
-                    {}
+                    {token_claim_pot_balance}
                 ]
             ]
         }},
@@ -233,9 +233,8 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         "evmAccountsMapping": {{
             "mappings": []
         }},
-        "tokenClaims": {}
-    }}"#,
-        token_claim_pot_balance, token_claims
+        "tokenClaims": {token_claims}
+    }}"#
     )
 }
 
