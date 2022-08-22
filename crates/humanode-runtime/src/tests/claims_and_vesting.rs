@@ -657,16 +657,17 @@ fn dispatch_works() {
     t.register_extension(KeystoreExt(Arc::new(keystore)));
 
     t.execute_with(move || {
-
+        // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
         switch_block();
-
         System::initialize(&3, &Default::default(), &Default::default());
         let _ = System::finalize();
 
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
         let (ethereum_address, ethereum_signature) = sign_sample_token_claim(b"Dubai", account_id("Alice"));
 
+        // Create token claim call.
         let call = Call::TokenClaims(pallet_token_claims::Call::claim {
             ethereum_address,
             ethereum_signature,
@@ -679,17 +680,14 @@ fn dispatch_works() {
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
-        let alice = account_id("Alice");
-
         let (call, (address, signature, extra)) =
                 <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<keystore_bioauth_account_id::KeystoreBioauthAccountId>(
                     call,
                     public_id.into(),
-                    alice.clone(),
-                    System::account_nonce(alice),
+                    account_id("Alice"),
+                    System::account_nonce(account_id("Alice")),
                 ).unwrap();
-
-        let ext = <Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra);
+        let signed_extrinsic = <Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra);
 
         Executive::initialize_block(&Header::new(
             4,
@@ -698,8 +696,8 @@ fn dispatch_works() {
             Default::default(),
             sp_runtime::Digest::default(),
         ));
-        let r = Executive::apply_extrinsic(ext);
-        assert!(r.is_ok());
+        assert_ok!(Executive::apply_extrinsic(signed_extrinsic));
+        let _ = System::finalize();
 
         // Ensure the claim is gone from the state after the extrinsic is processed.
         assert!(TokenClaims::claims(ethereum_address).is_none());
