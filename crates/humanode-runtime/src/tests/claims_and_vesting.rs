@@ -638,15 +638,13 @@ fn signed_extension_charge_transaction_payment_works() {
     })
 }
 
-const PHRASE: &str = "bottom drive obey lake curtain smoke basket hold race lonely fit walk";
-
 #[test]
 fn dispatch_works() {
     let keystore = KeyStore::new();
     let public_id = SyncCryptoStore::sr25519_generate_new(
         &keystore,
         keystore_bioauth_account_id::KeystoreBioauthAccountId::ID,
-        Some(&format!("{}//Alice", PHRASE)),
+        Some(&format!("{}//Alice", sp_core::crypto::DEV_PHRASE)),
     )
     .unwrap();
 
