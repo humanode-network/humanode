@@ -142,6 +142,12 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     storage.into()
 }
 
+fn assert_genesis_json(token_claims: &str, token_claim_pot_balance: u128) {
+    let json_input = prepare_genesis_json(token_claims, token_claim_pot_balance);
+    let config: GenesisConfig = serde_json::from_str(json_input.as_str()).unwrap();
+    let _ = config.build_storage();
+}
+
 fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> String {
     format!(
         r#"{{
@@ -254,9 +260,7 @@ fn genesis_claims_works() {
         ],
         "totalClaimable": 1000000000000000000000000
     }"#;
-    let json_input = prepare_genesis_json(token_claims, 1000000000000000000000500);
-    let config: GenesisConfig = serde_json::from_str(json_input.as_str()).unwrap();
-    assert_ok!(config.build_storage());
+    assert_genesis_json(token_claims, 1000000000000000000000500);
 }
 
 /// This test verifies that `GenesisConfig` with claims fails due to invalid pot balance.
@@ -276,9 +280,7 @@ fn genesis_claims_invalid_pot_balance() {
         ],
         "totalClaimable": 1000000000000000000000000
     }"#;
-    let json_input = prepare_genesis_json(token_claims, 500);
-    let config: GenesisConfig = serde_json::from_str(json_input.as_str()).unwrap();
-    let _ = config.build_storage();
+    assert_genesis_json(token_claims, 500);
 }
 
 /// This test verifies that `GenesisConfig` with claims fails due to invalid vesting initialization with null.
@@ -298,9 +300,7 @@ fn genesis_claims_invalid_vesting_inititalization_with_null() {
         ],
         "totalClaimable": 1000000000000000000000000
     }"#;
-    let json_input = prepare_genesis_json(token_claims, 1000000000000000000000500);
-    let config: GenesisConfig = serde_json::from_str(json_input.as_str()).unwrap();
-    let _ = config.build_storage();
+    assert_genesis_json(token_claims, 1000000000000000000000500);
 }
 
 /// This test verifies that claiming without vesting works in the happy path.
