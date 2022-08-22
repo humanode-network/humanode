@@ -148,6 +148,17 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     storage.into()
 }
 
+fn prepare_keystore_with_alice() -> (KeyStore, sp_core::sr25519::Public) {
+    let keystore = KeyStore::new();
+    let public_id = SyncCryptoStore::sr25519_generate_new(
+        &keystore,
+        keystore_bioauth_account_id::KeystoreBioauthAccountId::ID,
+        Some(&format!("{}//Alice", sp_core::crypto::DEV_PHRASE)),
+    )
+    .unwrap();
+    (keystore, public_id)
+}
+
 fn assert_genesis_json(token_claims: &str, token_claim_pot_balance: u128) {
     let json_input = prepare_genesis_json(token_claims, token_claim_pot_balance);
     let config: GenesisConfig = serde_json::from_str(json_input.as_str()).unwrap();
@@ -640,29 +651,16 @@ fn signed_extension_charge_transaction_payment_works() {
 
 #[test]
 fn dispatch_works() {
-    let keystore = KeyStore::new();
-    let public_id = SyncCryptoStore::sr25519_generate_new(
-        &keystore,
-        keystore_bioauth_account_id::KeystoreBioauthAccountId::ID,
-        Some(&format!("{}//Alice", sp_core::crypto::DEV_PHRASE)),
-    )
-    .unwrap();
+    let (keystore, public_id) = prepare_keystore_with_alice();
 
     let mut t = new_test_ext_with();
     t.register_extension(KeystoreExt(Arc::new(keystore)));
 
     t.execute_with(move || {
 
-        println!("\n{:?}\n", System::block_number());
-
         switch_block();
         set_timestamp(START_TIMESTAMP);
         switch_block();
-
-        // System::initialize(&1, &Default::default(), &Default::default());
-        // let header = System::finalize();
-
-        println!("{:?}", System::block_number());
 
         System::initialize(&3, &Default::default(), &Default::default());
         let _ = System::finalize();
@@ -682,9 +680,6 @@ fn dispatch_works() {
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
         let alice = account_id("Alice");
-
-        println!("\n{:?}\n", ChainStartMoment::chain_start());
-        println!("\n{:?}\n", System::block_number());
 
         let (call, (address, signature, extra)) =
                 <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<keystore_bioauth_account_id::KeystoreBioauthAccountId>(
