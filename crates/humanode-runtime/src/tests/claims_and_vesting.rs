@@ -1,5 +1,7 @@
 //! Tests to verify token claims and vesting logic.
 
+use std::sync::Arc;
+
 use eip712_common::EcdsaSignature;
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use frame_support::{
@@ -8,7 +10,11 @@ use frame_support::{
     traits::{OnFinalize, OnInitialize},
     weights::{DispatchClass, DispatchInfo, Pays},
 };
-use sp_runtime::traits::SignedExtension;
+use frame_system::offchain::{SendSignedTransaction, Signer};
+use sp_application_crypto::AppKey;
+use sp_core::offchain::{testing::TestTransactionPoolExt, TransactionPoolExt};
+use sp_keystore::{testing::KeyStore, KeystoreExt, SyncCryptoStore};
+use sp_runtime::traits::{Header, SignedExtension};
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
@@ -629,5 +635,118 @@ fn signed_extension_charge_transaction_payment_works() {
 
         // Ensure total issuance did not change.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+pub const TEST_KEY_TYPE_ID: KeyTypeId = KeyTypeId(*b"test");
+
+pub mod sr25519 {
+    mod app_sr25519 {
+        use sp_application_crypto::{app_crypto, sr25519};
+
+        use super::super::TEST_KEY_TYPE_ID;
+        app_crypto!(sr25519, TEST_KEY_TYPE_ID);
+    }
+
+    pub type AuthorityId = app_sr25519::Public;
+}
+
+pub struct TestAuthorityId;
+impl frame_system::offchain::AppCrypto<sp_runtime::MultiSigner, MultiSignature>
+    for TestAuthorityId
+{
+    type RuntimeAppPublic = sr25519::AuthorityId;
+    type GenericSignature = sp_core::sr25519::Signature;
+    type GenericPublic = sp_core::sr25519::Public;
+}
+
+const PHRASE: &str = "bottom drive obey lake curtain smoke basket hold race lonely fit walk";
+
+#[test]
+fn dispatch_works() {
+    let keystore = KeyStore::new();
+    let public_id = SyncCryptoStore::sr25519_generate_new(
+        &keystore,
+        sr25519::AuthorityId::ID,
+        Some(&format!("{}//Alice", PHRASE)),
+    )
+    .unwrap();
+
+    let mut t = new_test_ext_with();
+    t.register_extension(KeystoreExt(Arc::new(keystore)));
+
+    t.execute_with(move || {
+
+        println!("\n{:?}\n", System::block_number());
+
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // System::initialize(&1, &Default::default(), &Default::default());
+        // let header = System::finalize();
+
+        println!("{:?}", System::block_number());
+
+        System::initialize(&3, &Default::default(), &Default::default());
+        let _ = System::finalize();
+
+        let (ethereum_address, ethereum_signature) = sign_sample_token_claim(b"Dubai", account_id("Alice"));
+
+        let call = Call::TokenClaims(pallet_token_claims::Call::claim {
+            ethereum_address,
+            ethereum_signature,
+        });
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Test preconditions.
+        assert!(TokenClaims::claims(ethereum_address).is_some());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+
+        let alice = account_id("Alice");
+
+        println!("\n{:?}\n", ChainStartMoment::chain_start());
+        println!("\n{:?}\n", System::block_number());
+
+        let (call, (address, signature, extra)) =
+                <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<TestAuthorityId>(
+                    call,
+                    public_id.into(),
+                    alice.clone(),
+                    System::account_nonce(alice),
+                ).unwrap();
+
+        let ext = <Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra);
+
+        Executive::initialize_block(&Header::new(
+            4,
+            H256::default(),
+            H256::default(),
+            Default::default(),
+            sp_runtime::Digest::default(),
+        ));
+        let r = Executive::apply_extrinsic(ext);
+        assert!(r.is_ok());
+
+        // Ensure the claim is gone from the state after the extrinsic is processed.
+        assert!(TokenClaims::claims(ethereum_address).is_none());
+
+        // Ensure the balance of the target account is properly adjusted.
+        assert_eq!(
+            Balances::free_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure that the balance is not locked.
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+
     })
 }
