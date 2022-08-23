@@ -341,7 +341,7 @@ fn testnet_genesis(
         token_claims_pot: Default::default(),
         token_claims: TokenClaimsConfig {
             claims: vec![(
-                EthereumAddress(hex!("6be02d1d3665660d22ff9624b7be0551ee1ac91b")),
+                EthereumAddress(hex!("bf0b5a4099f0bf6c8bc4252ebec548bae95602ea")),
                 ClaimInfo {
                     balance: DEV_ACCOUNT_BALANCE,
                     vesting: vec![].try_into().unwrap(),
