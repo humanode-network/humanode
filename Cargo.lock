@@ -3249,6 +3249,7 @@ dependencies = [
  "frontier-api",
  "hex-literal",
  "keystore-bioauth-account-id",
+ "libsecp256k1 0.7.0",
  "pallet-authorship",
  "pallet-babe",
  "pallet-balances",

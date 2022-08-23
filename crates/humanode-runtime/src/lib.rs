@@ -73,7 +73,7 @@ use frontier_precompiles::FrontierPrecompiles;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-#[cfg(any(test, feature = "runtime-benchmarks"))]
+#[cfg(test)]
 mod dev_utils;
 mod display_moment;
 pub mod eip712;
