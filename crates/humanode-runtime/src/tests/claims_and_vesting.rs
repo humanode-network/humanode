@@ -980,9 +980,14 @@ fn dispatch_claiming_fails_bad_proof() {
             TransactionValidityError::Invalid(InvalidTransaction::BadProof)
         );
         // Apply already checked extrinsic.
-        assert_noop!(
+        //
+        // We don't use assert_noop as apply invokes pre_dispatch that uses fee.
+        // As a result state is changed.
+        assert_eq!(
             Applyable::apply::<Runtime>(checked_extrinsic, &normal_dispatch_info, len),
-            TransactionValidityError::Invalid(InvalidTransaction::BadProof)
+            Err(TransactionValidityError::Invalid(
+                InvalidTransaction::BadProof
+            ))
         );
     })
 }
@@ -1016,9 +1021,12 @@ fn dispatch_claiming_fails_invalid_call() {
             TransactionValidityError::Invalid(InvalidTransaction::Call)
         );
         // Apply already checked extrinsic.
-        assert_noop!(
+        //
+        // We don't use assert_noop as apply invokes pre_dispatch that uses fee.
+        // As a result state is changed.
+        assert_eq!(
             Applyable::apply::<Runtime>(checked_extrinsic, &normal_dispatch_info, len),
-            TransactionValidityError::Invalid(InvalidTransaction::Call)
+            Err(TransactionValidityError::Invalid(InvalidTransaction::Call))
         );
     })
 }
