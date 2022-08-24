@@ -90,7 +90,7 @@ fn prepare_applyable_data(
     };
     let len = 0;
 
-    let checked_extrinsic: CheckedExtrinsic<_, _, SignedExtra, _> = CheckedExtrinsic {
+    let checked_extrinsic = CheckedExtrinsic {
         signed: CheckedSignature::Signed(account_id, extra),
         function: call,
     };
