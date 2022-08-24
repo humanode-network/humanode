@@ -873,3 +873,75 @@ fn dispatch_unlock_full_balance_works() {
         assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
+
+#[test]
+fn dispatch_unlock_partial_balance_works() {
+    new_test_ext_with().execute_with(move || {
+        // 2/3 from VESTING_DURATION.
+        const PARTIAL_DURATION: u64 = 2000;
+        const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
+        // 2/3 from VESTING_BALANCE rounded up.
+        const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 667;
+
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Batumi", account_id("Alice"));
+
+        // Invoke the direct runtime claim call for future unlocking.
+        assert_ok!(TokenClaims::claim(
+            Some(account_id("Alice")).into(),
+            ethereum_address,
+            ethereum_signature
+        ));
+
+        // Run blocks with setting proper timestamp to make full unlocking.
+        set_timestamp(PARTIAL_VESTING_TIMESTAMP);
+        switch_block();
+
+        // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::Vesting(pallet_vesting::Call::unlock {}),
+            account_id("Alice"),
+        );
+
+        // Test preconditions.
+        assert_eq!(
+            Balances::free_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert!(Vesting::locks(account_id("Alice")).is_some());
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Validate already checked extrinsic.
+        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+            &checked_extrinsic,
+            sp_runtime::transaction_validity::TransactionSource::Local,
+            &normal_dispatch_info,
+            len,
+        )));
+        // Apply already checked extrinsic.
+        assert_ok!(Applyable::apply::<Runtime>(
+            checked_extrinsic,
+            &normal_dispatch_info,
+            len
+        ));
+
+        let unlocked_balance = Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
+
+        // Ensure funds are partially unlocked and rounding works as expected.
+        assert_eq!(unlocked_balance, EXPECTED_PARTIAL_UNLOCKED_FUNDS);
+
+        // Ensure the vesting still exists.
+        assert!(Vesting::locks(account_id("Alice")).is_some());
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
