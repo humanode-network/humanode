@@ -187,6 +187,31 @@ fn assert_genesis_json(token_claims: &str, token_claim_pot_balance: u128) {
     let _ = config.build_storage();
 }
 
+fn assert_applyable_validate_all_transaction_sources(
+    checked_extrinsic: &CheckedExtrinsic<AccountId, Call, SignedExtra, H160>,
+    normal_dispatch_info: &DispatchInfo,
+    len: usize,
+) {
+    assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+        checked_extrinsic,
+        sp_runtime::transaction_validity::TransactionSource::Local,
+        normal_dispatch_info,
+        len,
+    )));
+    assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+        checked_extrinsic,
+        sp_runtime::transaction_validity::TransactionSource::InBlock,
+        normal_dispatch_info,
+        len,
+    )));
+    assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+        checked_extrinsic,
+        sp_runtime::transaction_validity::TransactionSource::External,
+        normal_dispatch_info,
+        len,
+    )));
+}
+
 fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> String {
     format!(
         r#"{{
@@ -701,13 +726,12 @@ fn dispatch_claiming_without_vesting_works() {
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
-        // Validate already checked extrinsic.
-        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+        // Validate already checked extrinsic with all possible transaction sources.
+        assert_applyable_validate_all_transaction_sources(
             &checked_extrinsic,
-            sp_runtime::transaction_validity::TransactionSource::Local,
             &normal_dispatch_info,
             len,
-        )));
+        );
         // Apply already checked extrinsic.
         assert_ok!(Applyable::apply::<Runtime>(
             checked_extrinsic,
@@ -766,13 +790,12 @@ fn dispatch_claiming_with_vesting_works() {
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
         assert!(Vesting::locks(account_id("Alice")).is_none());
 
-        // Validate already checked extrinsic.
-        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+        // Validate already checked extrinsic with all possible transaction sources.
+        assert_applyable_validate_all_transaction_sources(
             &checked_extrinsic,
-            sp_runtime::transaction_validity::TransactionSource::Local,
             &normal_dispatch_info,
             len,
-        )));
+        );
         // Apply already checked extrinsic.
         assert_ok!(Applyable::apply::<Runtime>(
             checked_extrinsic,
@@ -852,13 +875,12 @@ fn dispatch_unlock_full_balance_works() {
 
         let total_issuance_before = Balances::total_issuance();
 
-        // Validate already checked extrinsic.
-        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+        // Validate already checked extrinsic with all possible transaction sources.
+        assert_applyable_validate_all_transaction_sources(
             &checked_extrinsic,
-            sp_runtime::transaction_validity::TransactionSource::Local,
             &normal_dispatch_info,
             len,
-        )));
+        );
         // Apply already checked extrinsic.
         assert_ok!(Applyable::apply::<Runtime>(
             checked_extrinsic,
@@ -927,13 +949,12 @@ fn dispatch_unlock_partial_balance_works() {
 
         let total_issuance_before = Balances::total_issuance();
 
-        // Validate already checked extrinsic.
-        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+        // Validate already checked extrinsic with all possible transaction sources.
+        assert_applyable_validate_all_transaction_sources(
             &checked_extrinsic,
-            sp_runtime::transaction_validity::TransactionSource::Local,
             &normal_dispatch_info,
             len,
-        )));
+        );
         // Apply already checked extrinsic.
         assert_ok!(Applyable::apply::<Runtime>(
             checked_extrinsic,
@@ -1061,13 +1082,12 @@ fn dispatch_claiming_zero_balance_works() {
         assert_eq!(Balances::free_balance(account_id("Zero")), 0);
         assert_eq!(Balances::usable_balance(account_id("Zero")), 0);
 
-        // Validate already checked extrinsic.
-        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+        // Validate already checked extrinsic with all possible transaction sources.
+        assert_applyable_validate_all_transaction_sources(
             &checked_extrinsic,
-            sp_runtime::transaction_validity::TransactionSource::Local,
             &normal_dispatch_info,
             len,
-        )));
+        );
         // Apply already checked extrinsic.
         assert_ok!(Applyable::apply::<Runtime>(
             checked_extrinsic,
