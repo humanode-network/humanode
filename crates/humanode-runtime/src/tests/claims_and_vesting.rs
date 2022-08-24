@@ -1030,3 +1030,64 @@ fn dispatch_claiming_fails_invalid_call() {
         );
     })
 }
+
+/// This test verifies that claiming without vesting (dispatch call) works in the happy path with zero balance.
+#[test]
+fn dispatch_claiming_zero_balance_works() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Dubai", account_id("Zero"));
+
+        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::TokenClaims(pallet_token_claims::Call::claim {
+                ethereum_address,
+                ethereum_signature,
+            }),
+            account_id("Zero"),
+        );
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Test preconditions.
+        assert!(TokenClaims::claims(ethereum_address).is_some());
+        assert_eq!(Balances::free_balance(account_id("Zero")), 0);
+        assert_eq!(Balances::usable_balance(account_id("Zero")), 0);
+
+        // Validate already checked extrinsic.
+        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+            &checked_extrinsic,
+            sp_runtime::transaction_validity::TransactionSource::Local,
+            &normal_dispatch_info,
+            len,
+        )));
+        // Apply already checked extrinsic.
+        assert_ok!(Applyable::apply::<Runtime>(
+            checked_extrinsic,
+            &normal_dispatch_info,
+            len
+        ));
+
+        // Ensure the claim is gone from the state after the extrinsic is processed.
+        assert!(TokenClaims::claims(ethereum_address).is_none());
+
+        // Ensure the balance of the target account is properly adjusted.
+        assert_eq!(Balances::free_balance(account_id("Zero")), VESTING_BALANCE);
+
+        // Ensure that the balance is not locked.
+        assert_eq!(
+            Balances::usable_balance(account_id("Zero")),
+            VESTING_BALANCE
+        );
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
