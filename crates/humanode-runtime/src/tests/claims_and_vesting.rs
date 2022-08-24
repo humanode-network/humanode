@@ -60,7 +60,10 @@ fn sign_sample_token_claim(
     )
 }
 
-fn prepare_token_claim_applyable_args(
+// We can avoid using signed extrinsic in assumption that it's already checked. So, we can just operate
+// `CheckedExtrinsic`, `DispatchInfo` and go directly to checking the Extra using the Applyable trait
+// (both apply and validate).
+fn prepare_token_claim_applyable_data(
     account_id: AccountId,
     ethereum_address: EthereumAddress,
     ethereum_signature: EcdsaSignature,
@@ -686,7 +689,8 @@ fn dispatch_works() {
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Dubai", account_id("Alice"));
 
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_token_claim_applyable_args(
+        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_token_claim_applyable_data(
             account_id("Alice"),
             ethereum_address,
             ethereum_signature,
@@ -699,12 +703,14 @@ fn dispatch_works() {
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
+        // Validate already checked extrinsic.
         assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
             &checked_extrinsic,
             sp_runtime::transaction_validity::TransactionSource::Local,
             &normal_dispatch_info,
             len,
         )));
+        // Apply already checked extrinsic.
         assert_ok!(Applyable::apply::<Runtime>(
             checked_extrinsic,
             &normal_dispatch_info,
