@@ -953,3 +953,72 @@ fn dispatch_unlock_partial_balance_works() {
         assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
+
+/// This test verifies that dispatch claiming fails if ethereum_address
+/// doesn't correspond to submitted ethereum_signature.
+#[test]
+fn dispatch_claiming_fails_bad_proof() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::TokenClaims(pallet_token_claims::Call::claim {
+                ethereum_address: EthereumAddress::default(),
+                ethereum_signature: EcdsaSignature::default(),
+            }),
+            account_id("Alice"),
+        );
+
+        // Validate already checked extrinsic.
+        assert_noop!(
+            Applyable::validate::<Runtime>(
+                &checked_extrinsic,
+                sp_runtime::transaction_validity::TransactionSource::Local,
+                &normal_dispatch_info,
+                len,
+            ),
+            TransactionValidityError::Invalid(InvalidTransaction::BadProof)
+        );
+        // Apply already checked extrinsic.
+        assert_noop!(
+            Applyable::apply::<Runtime>(checked_extrinsic, &normal_dispatch_info, len),
+            TransactionValidityError::Invalid(InvalidTransaction::BadProof)
+        );
+    })
+}
+
+/// This test verifies that dispatch claiming fails in case not existing claim.
+#[test]
+fn dispatch_claiming_fails_invalid_call() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Invalid", account_id("Alice"));
+
+        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::TokenClaims(pallet_token_claims::Call::claim {
+                ethereum_address,
+                ethereum_signature,
+            }),
+            account_id("Alice"),
+        );
+
+        // Validate already checked extrinsic.
+        assert_noop!(
+            Applyable::validate::<Runtime>(
+                &checked_extrinsic,
+                sp_runtime::transaction_validity::TransactionSource::Local,
+                &normal_dispatch_info,
+                len,
+            ),
+            TransactionValidityError::Invalid(InvalidTransaction::Call)
+        );
+        // Apply already checked extrinsic.
+        assert_noop!(
+            Applyable::apply::<Runtime>(checked_extrinsic, &normal_dispatch_info, len),
+            TransactionValidityError::Invalid(InvalidTransaction::Call)
+        );
+    })
+}
