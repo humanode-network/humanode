@@ -678,7 +678,7 @@ fn signed_extension_charge_transaction_payment_works() {
 }
 
 #[test]
-fn dispatch_works() {
+fn dispatch_claiming_without_vesting_works() {
     new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
@@ -730,6 +730,78 @@ fn dispatch_works() {
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+#[test]
+fn dispatch_claiming_with_vesting_works() {
+    new_test_ext_with().execute_with(move || {
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Batumi", account_id("Alice"));
+
+        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_token_claim_applyable_data(
+            account_id("Alice"),
+            ethereum_address,
+            ethereum_signature,
+        );
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Test preconditions.
+        assert!(TokenClaims::claims(ethereum_address).is_some());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert!(Vesting::locks(account_id("Alice")).is_none());
+
+        // Validate already checked extrinsic.
+        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+            &checked_extrinsic,
+            sp_runtime::transaction_validity::TransactionSource::Local,
+            &normal_dispatch_info,
+            len,
+        )));
+        // Apply already checked extrinsic.
+        assert_ok!(Applyable::apply::<Runtime>(
+            checked_extrinsic,
+            &normal_dispatch_info,
+            len
+        ));
+
+        // Ensure the claim is gone from the state after the extrinsic is processed.
+        assert!(TokenClaims::claims(ethereum_address).is_none());
+
+        // Ensure the balance of the target account is properly adjusted.
+        assert_eq!(
+            Balances::free_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure that the vesting balance is locked.
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+
+        // Ensure that the vesting is armed for the given account and matches the parameters.
+        assert_eq!(
+            Vesting::locks(account_id("Alice")),
+            Some(
+                vec![LinearSchedule {
+                    balance: VESTING_BALANCE,
+                    cliff: CLIFF,
+                    vesting: VESTING_DURATION,
+                }]
+                .try_into()
+                .unwrap()
+            )
         );
 
         // Ensure total issuance did not change.
