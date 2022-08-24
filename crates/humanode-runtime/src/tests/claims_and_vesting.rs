@@ -4,7 +4,7 @@ use eip712_common::EcdsaSignature;
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
 use frame_support::{
-    assert_noop, assert_ok,
+    assert_noop, assert_ok, assert_storage_noop,
     pallet_prelude::InvalidTransaction,
     traits::{OnFinalize, OnInitialize},
     weights::{DispatchClass, DispatchInfo, Pays},
@@ -681,12 +681,12 @@ fn dispatch_works() {
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
-        assert_ok!(Applyable::validate::<Runtime>(
+        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
             &checked_extrinsic,
             sp_runtime::transaction_validity::TransactionSource::Local,
             &normal,
             len,
-        ));
+        )));
         assert_ok!(Applyable::apply::<Runtime>(checked_extrinsic, &normal, len));
 
         // Ensure the claim is gone from the state after the extrinsic is processed.
