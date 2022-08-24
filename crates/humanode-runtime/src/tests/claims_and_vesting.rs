@@ -1,18 +1,15 @@
 //! Tests to verify token claims and vesting logic.
 
-use std::sync::Arc;
-
 use eip712_common::EcdsaSignature;
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
+use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
 use frame_support::{
     assert_noop, assert_ok,
     pallet_prelude::InvalidTransaction,
     traits::{OnFinalize, OnInitialize},
     weights::{DispatchClass, DispatchInfo, Pays},
 };
-use sp_application_crypto::AppKey;
-use sp_keystore::{testing::KeyStore, KeystoreExt, SyncCryptoStore};
-use sp_runtime::traits::{Header, SignedExtension};
+use sp_runtime::traits::{Applyable, SignedExtension};
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
@@ -144,17 +141,6 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 
     // Make test externalities from the storage.
     storage.into()
-}
-
-fn prepare_keystore_with_alice() -> (KeyStore, sp_core::sr25519::Public) {
-    let keystore = KeyStore::new();
-    let public_id = SyncCryptoStore::sr25519_generate_new(
-        &keystore,
-        keystore_bioauth_account_id::KeystoreBioauthAccountId::ID,
-        Some(&format!("{}//Alice", sp_core::crypto::DEV_PHRASE)),
-    )
-    .unwrap();
-    (keystore, public_id)
 }
 
 fn assert_genesis_json(token_claims: &str, token_claim_pot_balance: u128) {
@@ -649,27 +635,44 @@ fn signed_extension_charge_transaction_payment_works() {
 
 #[test]
 fn dispatch_works() {
-    let (keystore, public_id) = prepare_keystore_with_alice();
-
-    let mut t = new_test_ext_with();
-    t.register_extension(KeystoreExt(Arc::new(keystore)));
-
-    t.execute_with(move || {
+    new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
         switch_block();
-        System::initialize(&3, &Default::default(), &Default::default());
-        let _ = System::finalize();
 
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
-        let (ethereum_address, ethereum_signature) = sign_sample_token_claim(b"Dubai", account_id("Alice"));
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Dubai", account_id("Alice"));
 
-        // Create token claim call.
         let call = Call::TokenClaims(pallet_token_claims::Call::claim {
             ethereum_address,
             ethereum_signature,
         });
+
+        let extra = (
+            frame_system::CheckSpecVersion::<Runtime>::new(),
+            frame_system::CheckTxVersion::<Runtime>::new(),
+            frame_system::CheckGenesis::<Runtime>::new(),
+            frame_system::CheckEra::<Runtime>::from(sp_runtime::generic::Era::Immortal),
+            frame_system::CheckNonce::<Runtime>::from(0),
+            frame_system::CheckWeight::<Runtime>::new(),
+            pallet_bioauth::CheckBioauthTx::<Runtime>::new(),
+            pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(0),
+            pallet_token_claims::CheckTokenClaim::<Runtime>::new(),
+        );
+
+        let normal = DispatchInfo {
+            weight: 100,
+            class: DispatchClass::Normal,
+            pays_fee: Pays::No,
+        };
+        let len = 0;
+
+        let checked_extrinsic: CheckedExtrinsic<_, _, SignedExtra, _> = CheckedExtrinsic {
+            signed: CheckedSignature::Signed(account_id("Alice"), extra),
+            function: call,
+        };
 
         let total_issuance_before = Balances::total_issuance();
 
@@ -678,24 +681,13 @@ fn dispatch_works() {
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
-        let (call, (address, signature, extra)) =
-                <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<keystore_bioauth_account_id::KeystoreBioauthAccountId>(
-                    call,
-                    public_id.into(),
-                    account_id("Alice"),
-                    System::account_nonce(account_id("Alice")),
-                ).unwrap();
-        let signed_extrinsic = <Block as BlockT>::Extrinsic::new_signed(call, address, signature, extra);
-
-        Executive::initialize_block(&Header::new(
-            4,
-            H256::default(),
-            H256::default(),
-            Default::default(),
-            sp_runtime::Digest::default(),
+        assert_ok!(Applyable::validate::<Runtime>(
+            &checked_extrinsic,
+            sp_runtime::transaction_validity::TransactionSource::Local,
+            &normal,
+            len,
         ));
-        assert_ok!(Executive::apply_extrinsic(signed_extrinsic));
-        let _ = System::finalize();
+        assert_ok!(Applyable::apply::<Runtime>(checked_extrinsic, &normal, len));
 
         // Ensure the claim is gone from the state after the extrinsic is processed.
         assert!(TokenClaims::claims(ethereum_address).is_none());
@@ -714,6 +706,5 @@ fn dispatch_works() {
 
         // Ensure total issuance did not change.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
-
     })
 }
