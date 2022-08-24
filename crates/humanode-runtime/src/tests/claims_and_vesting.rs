@@ -60,6 +60,47 @@ fn sign_sample_token_claim(
     )
 }
 
+fn prepare_token_claim_applyable_args(
+    account_id: AccountId,
+    ethereum_address: EthereumAddress,
+    ethereum_signature: EcdsaSignature,
+) -> (
+    CheckedExtrinsic<AccountId, Call, SignedExtra, H160>,
+    DispatchInfo,
+    usize,
+) {
+    let call = Call::TokenClaims(pallet_token_claims::Call::claim {
+        ethereum_address,
+        ethereum_signature,
+    });
+
+    let extra = (
+        frame_system::CheckSpecVersion::<Runtime>::new(),
+        frame_system::CheckTxVersion::<Runtime>::new(),
+        frame_system::CheckGenesis::<Runtime>::new(),
+        frame_system::CheckEra::<Runtime>::from(sp_runtime::generic::Era::Immortal),
+        frame_system::CheckNonce::<Runtime>::from(0),
+        frame_system::CheckWeight::<Runtime>::new(),
+        pallet_bioauth::CheckBioauthTx::<Runtime>::new(),
+        pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(0),
+        pallet_token_claims::CheckTokenClaim::<Runtime>::new(),
+    );
+
+    let normal_dispatch_info = DispatchInfo {
+        weight: 100,
+        class: DispatchClass::Normal,
+        pays_fee: Pays::No,
+    };
+    let len = 0;
+
+    let checked_extrinsic: CheckedExtrinsic<_, _, SignedExtra, _> = CheckedExtrinsic {
+        signed: CheckedSignature::Signed(account_id, extra),
+        function: call,
+    };
+
+    (checked_extrinsic, normal_dispatch_info, len)
+}
+
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
 fn new_test_ext_with() -> sp_io::TestExternalities {
@@ -645,34 +686,11 @@ fn dispatch_works() {
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Dubai", account_id("Alice"));
 
-        let call = Call::TokenClaims(pallet_token_claims::Call::claim {
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_token_claim_applyable_args(
+            account_id("Alice"),
             ethereum_address,
             ethereum_signature,
-        });
-
-        let extra = (
-            frame_system::CheckSpecVersion::<Runtime>::new(),
-            frame_system::CheckTxVersion::<Runtime>::new(),
-            frame_system::CheckGenesis::<Runtime>::new(),
-            frame_system::CheckEra::<Runtime>::from(sp_runtime::generic::Era::Immortal),
-            frame_system::CheckNonce::<Runtime>::from(0),
-            frame_system::CheckWeight::<Runtime>::new(),
-            pallet_bioauth::CheckBioauthTx::<Runtime>::new(),
-            pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(0),
-            pallet_token_claims::CheckTokenClaim::<Runtime>::new(),
         );
-
-        let normal = DispatchInfo {
-            weight: 100,
-            class: DispatchClass::Normal,
-            pays_fee: Pays::No,
-        };
-        let len = 0;
-
-        let checked_extrinsic: CheckedExtrinsic<_, _, SignedExtra, _> = CheckedExtrinsic {
-            signed: CheckedSignature::Signed(account_id("Alice"), extra),
-            function: call,
-        };
 
         let total_issuance_before = Balances::total_issuance();
 
@@ -684,10 +702,14 @@ fn dispatch_works() {
         assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
             &checked_extrinsic,
             sp_runtime::transaction_validity::TransactionSource::Local,
-            &normal,
+            &normal_dispatch_info,
             len,
         )));
-        assert_ok!(Applyable::apply::<Runtime>(checked_extrinsic, &normal, len));
+        assert_ok!(Applyable::apply::<Runtime>(
+            checked_extrinsic,
+            &normal_dispatch_info,
+            len
+        ));
 
         // Ensure the claim is gone from the state after the extrinsic is processed.
         assert!(TokenClaims::claims(ethereum_address).is_none());
