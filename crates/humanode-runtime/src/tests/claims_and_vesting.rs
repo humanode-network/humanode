@@ -342,9 +342,9 @@ fn genesis_claims_invalid_vesting_inititalization_with_null() {
     assert_genesis_json(token_claims, 1000000000000000000000500);
 }
 
-/// This test verifies that claiming without vesting works in the happy path.
+/// This test verifies that claiming without vesting works (direct runtime call) in the happy path.
 #[test]
-fn claiming_without_vesting_works() {
+fn direct_claiming_without_vesting_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
@@ -389,9 +389,9 @@ fn claiming_without_vesting_works() {
     })
 }
 
-/// This test verifies that claiming with vesting works in the happy path.
+/// This test verifies that claiming with vesting (direct runtime call) works in the happy path.
 #[test]
-fn claiming_with_vesting_works() {
+fn direct_claiming_with_vesting_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
@@ -448,9 +448,9 @@ fn claiming_with_vesting_works() {
     })
 }
 
-/// This test verifies that unlocking full balance works in the happy path.
+/// This test verifies that unlocking full balance (direct runtime call) works in the happy path.
 #[test]
-fn unlock_full_balance_works() {
+fn direct_unlock_full_balance_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
@@ -491,9 +491,9 @@ fn unlock_full_balance_works() {
     })
 }
 
-/// This test verifies that unlocking partial balance works in the happy path.
+/// This test verifies that unlocking partial balance works (direct runtime call) in the happy path.
 #[test]
-fn unlock_partial_balance_works() {
+fn direct_unlock_partial_balance_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // 2/3 from VESTING_DURATION.
@@ -671,8 +671,10 @@ fn signed_extension_charge_transaction_payment_works() {
     })
 }
 
+/// This test verifies that claiming without vesting (dispatch call) works in the happy path.
 #[test]
 fn dispatch_claiming_without_vesting_works() {
+    // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
@@ -733,8 +735,10 @@ fn dispatch_claiming_without_vesting_works() {
     })
 }
 
+/// This test verifies that claiming with vesting (dispatch call) works in the happy path.
 #[test]
 fn dispatch_claiming_with_vesting_works() {
+    // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
@@ -807,8 +811,10 @@ fn dispatch_claiming_with_vesting_works() {
     })
 }
 
+/// This test verifies that unlocking full balance (dispatch call) works in the happy path.
 #[test]
 fn dispatch_unlock_full_balance_works() {
+    // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
@@ -874,8 +880,10 @@ fn dispatch_unlock_full_balance_works() {
     })
 }
 
+/// This test verifies that unlocking partial balance (dispatch call) works in the happy path.
 #[test]
 fn dispatch_unlock_partial_balance_works() {
+    // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // 2/3 from VESTING_DURATION.
         const PARTIAL_DURATION: u64 = 2000;
