@@ -16,7 +16,7 @@ Under the hood, binding of variables to template takes place in [`fn write_resul
 to `TemplateData` via [`fn map_results()`](https://github.com/humanode-network/substrate/blob/master/utils/frame/benchmarking-cli/src/pallet/writer.rs#L116). `TemplateData` is then bounded to template to produce a usable _weights.rs_ file.
 [`fn write_to_result()`]() is the function that is responsible for combining template and benchmark result into usable `weights.rs`.
 
-For convenience sake, `TemplateData` is as follows and only these fields are permitted in Handlebar templates:
+For brevity, `TemplateData` is as follows and only these fields are permitted in Handlebar templates:
 
 ```rust
 // This is the final structure we will pass to the Handlebars template.
@@ -49,7 +49,7 @@ struct BenchmarkData {
 	comments: Vec<String>,
 }
 
-// This forwards some specific metadata from the `PalletCmd`
+// This forwards some specific metadata from the `PalletCmd`.
 #[derive(Serialize, Default, Debug, Clone)]
 struct CmdData {
 	steps: u32,
@@ -80,4 +80,3 @@ struct ComponentSlope {
 	error: u128,
 }
 ```
-
