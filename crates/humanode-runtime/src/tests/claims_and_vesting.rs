@@ -63,20 +63,14 @@ fn sign_sample_token_claim(
 // We can avoid using signed extrinsic in assumption that it's already checked. So, we can just operate
 // `CheckedExtrinsic`, `DispatchInfo` and go directly to checking the Extra using the Applyable trait
 // (both apply and validate).
-fn prepare_token_claim_applyable_data(
+fn prepare_applyable_data(
+    call: Call,
     account_id: AccountId,
-    ethereum_address: EthereumAddress,
-    ethereum_signature: EcdsaSignature,
 ) -> (
     CheckedExtrinsic<AccountId, Call, SignedExtra, H160>,
     DispatchInfo,
     usize,
 ) {
-    let call = Call::TokenClaims(pallet_token_claims::Call::claim {
-        ethereum_address,
-        ethereum_signature,
-    });
-
     let extra = (
         frame_system::CheckSpecVersion::<Runtime>::new(),
         frame_system::CheckTxVersion::<Runtime>::new(),
@@ -690,10 +684,12 @@ fn dispatch_claiming_without_vesting_works() {
             sign_sample_token_claim(b"Dubai", account_id("Alice"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_token_claim_applyable_data(
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::TokenClaims(pallet_token_claims::Call::claim {
+                ethereum_address,
+                ethereum_signature,
+            }),
             account_id("Alice"),
-            ethereum_address,
-            ethereum_signature,
         );
 
         let total_issuance_before = Balances::total_issuance();
@@ -750,10 +746,12 @@ fn dispatch_claiming_with_vesting_works() {
             sign_sample_token_claim(b"Batumi", account_id("Alice"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_token_claim_applyable_data(
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::TokenClaims(pallet_token_claims::Call::claim {
+                ethereum_address,
+                ethereum_signature,
+            }),
             account_id("Alice"),
-            ethereum_address,
-            ethereum_signature,
         );
 
         let total_issuance_before = Balances::total_issuance();
@@ -803,6 +801,73 @@ fn dispatch_claiming_with_vesting_works() {
                 .unwrap()
             )
         );
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+#[test]
+fn dispatch_unlock_full_balance_works() {
+    new_test_ext_with().execute_with(move || {
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Batumi", account_id("Alice"));
+
+        // Invoke the direct runtime claim call for future unlocking.
+        assert_ok!(TokenClaims::claim(
+            Some(account_id("Alice")).into(),
+            ethereum_address,
+            ethereum_signature
+        ));
+
+        // Run blocks with setting proper timestamp to make full unlocking.
+        set_timestamp(START_TIMESTAMP + CLIFF + VESTING_DURATION);
+        switch_block();
+
+        // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::Vesting(pallet_vesting::Call::unlock {}),
+            account_id("Alice"),
+        );
+
+        // Test preconditions.
+        assert_eq!(
+            Balances::free_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert!(Vesting::locks(account_id("Alice")).is_some());
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Validate already checked extrinsic.
+        assert_storage_noop!(assert_ok!(Applyable::validate::<Runtime>(
+            &checked_extrinsic,
+            sp_runtime::transaction_validity::TransactionSource::Local,
+            &normal_dispatch_info,
+            len,
+        )));
+        // Apply already checked extrinsic.
+        assert_ok!(Applyable::apply::<Runtime>(
+            checked_extrinsic,
+            &normal_dispatch_info,
+            len
+        ));
+
+        // Ensure funds are unlocked.
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+
+        // Ensure the vesting is gone from the state.
+        assert!(Vesting::locks(account_id("Alice")).is_none());
 
         // Ensure total issuance did not change.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
