@@ -60,6 +60,12 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
     }
 }
 
+impl pallet_token_claims::benchmarking::VestingInterface for vesting::TokenClaimsInterface {
+    type Data = ();
+    fn prepare() {}
+    fn verify(_: ()) {}
+}
+
 impl pallet_vesting::benchmarking::Interface for Runtime {
     fn account_id() -> <Self as frame_system::Config>::AccountId {
         AccountId::from(ALICE)

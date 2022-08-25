@@ -6,6 +6,13 @@ use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
 use crate::*;
 
+pub trait VestingInterface: traits::VestingInterface {
+    type Data;
+
+    fn prepare() -> Self::Data;
+    fn verify(data: Self::Data);
+}
+
 /// The benchmark interface into the environment.
 pub trait Interface: super::Config {
     /// Obtain an Account ID.
@@ -30,7 +37,8 @@ pub trait Interface: super::Config {
 benchmarks! {
     where_clause {
         where
-            T: Interface
+            T: Interface,
+            <T as super::Config>::VestingInterface: VestingInterface,
     }
 
     claim {
@@ -106,4 +114,11 @@ impl Interface for crate::mock::Test {
     ) -> EcdsaSignature {
         EcdsaSignature::default()
     }
+}
+
+#[cfg(test)]
+impl VestingInterface for <crate::mock::Test as super::Config>::VestingInterface {
+    type Data = ();
+    fn prepare() {}
+    fn verify(_: ()) {}
 }
