@@ -100,7 +100,7 @@ fn prepare_applyable_data(
 
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
-fn new_test_ext_with() -> sp_io::TestExternalities {
+fn new_test_ext() -> sp_io::TestExternalities {
     let authorities = vec![authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
@@ -371,7 +371,7 @@ fn genesis_claims_invalid_vesting_inititalization_with_null() {
 #[test]
 fn direct_claiming_without_vesting_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
@@ -418,7 +418,7 @@ fn direct_claiming_without_vesting_works() {
 #[test]
 fn direct_claiming_with_vesting_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
@@ -477,7 +477,7 @@ fn direct_claiming_with_vesting_works() {
 #[test]
 fn direct_unlock_full_balance_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
@@ -520,7 +520,7 @@ fn direct_unlock_full_balance_works() {
 #[test]
 fn direct_unlock_partial_balance_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // 2/3 from VESTING_DURATION.
         const PARTIAL_DURATION: u64 = 2000;
         const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
@@ -568,7 +568,7 @@ fn direct_unlock_partial_balance_works() {
 #[test]
 fn signed_extension_check_token_claim_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Batumi", account_id("Alice"));
@@ -601,7 +601,7 @@ fn signed_extension_check_token_claim_works() {
 #[test]
 fn signed_extension_check_token_claim_bad_proof() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         let call = pallet_token_claims::Call::claim {
             ethereum_address: EthereumAddress::default(),
             ethereum_signature: EcdsaSignature::default(),
@@ -630,7 +630,7 @@ fn signed_extension_check_token_claim_bad_proof() {
 #[test]
 fn signed_extension_check_token_claim_invalid_call() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Invalid", account_id("Alice"));
@@ -663,7 +663,7 @@ fn signed_extension_check_token_claim_invalid_call() {
 #[test]
 fn signed_extension_charge_transaction_payment_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Batumi", account_id("Alice"));
@@ -700,7 +700,7 @@ fn signed_extension_charge_transaction_payment_works() {
 #[test]
 fn dispatch_claiming_without_vesting_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
@@ -763,7 +763,7 @@ fn dispatch_claiming_without_vesting_works() {
 #[test]
 fn dispatch_claiming_with_vesting_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
@@ -838,7 +838,7 @@ fn dispatch_claiming_with_vesting_works() {
 #[test]
 fn dispatch_unlock_full_balance_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
@@ -906,7 +906,7 @@ fn dispatch_unlock_full_balance_works() {
 #[test]
 fn dispatch_unlock_partial_balance_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // 2/3 from VESTING_DURATION.
         const PARTIAL_DURATION: u64 = 2000;
         const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
@@ -980,7 +980,7 @@ fn dispatch_unlock_partial_balance_works() {
 #[test]
 fn dispatch_claiming_fails_bad_proof() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
@@ -1017,7 +1017,7 @@ fn dispatch_claiming_fails_bad_proof() {
 #[test]
 fn dispatch_claiming_fails_invalid_call() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Invalid", account_id("Alice"));
@@ -1056,7 +1056,7 @@ fn dispatch_claiming_fails_invalid_call() {
 #[test]
 fn dispatch_claiming_zero_balance_works() {
     // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
+    new_test_ext().execute_with(move || {
         // Run blocks to be vesting schedule ready.
         switch_block();
         set_timestamp(START_TIMESTAMP);
