@@ -921,6 +921,7 @@ fn dispatch_claiming_fails_invalid_call() {
 }
 
 /// This test verifies that claiming without vesting (dispatch call) works in the happy path with zero balance.
+/// So, we verify that the call is free in term of transaction fee.
 #[test]
 fn dispatch_claiming_zero_balance_works() {
     // Build the state from the config.
