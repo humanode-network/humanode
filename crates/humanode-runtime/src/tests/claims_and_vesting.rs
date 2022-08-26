@@ -9,7 +9,7 @@ use frame_support::{
     traits::{OnFinalize, OnInitialize},
     weights::{DispatchClass, DispatchInfo, Pays},
 };
-use sp_runtime::traits::{Applyable, SignedExtension};
+use sp_runtime::traits::Applyable;
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
