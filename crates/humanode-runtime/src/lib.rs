@@ -1291,8 +1291,9 @@ impl_runtime_apis! {
             list_benchmark!(list, extra, pallet_balances, Balances);
             list_benchmark!(list, extra, pallet_timestamp, Timestamp);
             list_benchmark!(list, extra, pallet_bioauth, Bioauth);
-            list_benchmark!(list, extra, pallet_token_claims, TokenClaims);
-            list_benchmark!(list, extra, pallet_vesting, Vesting);
+            // TODO(#447): re-add token-claims and vesting benches
+            // list_benchmark!(list, extra, pallet_token_claims, TokenClaims);
+            // list_benchmark!(list, extra, pallet_vesting, Vesting);
 
             let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -1336,8 +1337,9 @@ impl_runtime_apis! {
             add_benchmark!(params, batches, pallet_balances, Balances);
             add_benchmark!(params, batches, pallet_timestamp, Timestamp);
             add_benchmark!(params, batches, pallet_bioauth, Bioauth);
-            add_benchmark!(params, batches, pallet_token_claims, TokenClaims);
-            add_benchmark!(params, batches, pallet_vesting, Vesting);
+            // TODO(#447): re-add token-claims and vesting benches
+            // add_benchmark!(params, batches, pallet_token_claims, TokenClaims);
+            // add_benchmark!(params, batches, pallet_vesting, Vesting);
 
             Ok(batches)
         }
