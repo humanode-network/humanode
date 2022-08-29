@@ -891,25 +891,18 @@ fn dispatch_validate_claiming_fails_bad_proof() {
 fn pre_dispatch_post_claiming_fails_bad_proof() {
     // Build the state from the config.
     new_test_ext().execute_with(move || {
+        // Prepare token claim call.
+        let call = Call::TokenClaims(pallet_token_claims::Call::claim {
+            ethereum_address: EthereumAddress::default(),
+            ethereum_signature: EcdsaSignature::default(),
+        });
+
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (signed_extra, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::TokenClaims(pallet_token_claims::Call::claim {
-                ethereum_address: EthereumAddress::default(),
-                ethereum_signature: EcdsaSignature::default(),
-            }),
-            account_id("Alice"),
-        );
+        let (signed_extra, checked_extrinsic, normal_dispatch_info, len) =
+            prepare_applyable_data(call.clone(), account_id("Alice"));
 
         assert_eq!(
-            signed_extra.pre_dispatch(
-                &account_id("Alice"),
-                &Call::TokenClaims(pallet_token_claims::Call::claim {
-                    ethereum_address: EthereumAddress::default(),
-                    ethereum_signature: EcdsaSignature::default(),
-                }),
-                &normal_dispatch_info,
-                len,
-            ),
+            signed_extra.pre_dispatch(&account_id("Alice"), &call, &normal_dispatch_info, len,),
             Err(TransactionValidityError::Invalid(
                 InvalidTransaction::BadProof
             ))
@@ -1000,25 +993,18 @@ fn pre_dispatch_post_claiming_fails_invalid_call() {
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Invalid", account_id("Alice"));
 
+        // Prepare token claim call.
+        let call = Call::TokenClaims(pallet_token_claims::Call::claim {
+            ethereum_address,
+            ethereum_signature,
+        });
+
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (signed_extra, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::TokenClaims(pallet_token_claims::Call::claim {
-                ethereum_address,
-                ethereum_signature,
-            }),
-            account_id("Alice"),
-        );
+        let (signed_extra, checked_extrinsic, normal_dispatch_info, len) =
+            prepare_applyable_data(call.clone(), account_id("Alice"));
 
         assert_eq!(
-            signed_extra.pre_dispatch(
-                &account_id("Alice"),
-                &Call::TokenClaims(pallet_token_claims::Call::claim {
-                    ethereum_address,
-                    ethereum_signature,
-                }),
-                &normal_dispatch_info,
-                len,
-            ),
+            signed_extra.pre_dispatch(&account_id("Alice"), &call, &normal_dispatch_info, len,),
             Err(TransactionValidityError::Invalid(InvalidTransaction::Call))
         );
 
