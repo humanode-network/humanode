@@ -991,6 +991,74 @@ fn dispatch_claiming_fails_invalid_call() {
     })
 }
 
+/// This test verifies that pre/dispatch/post claiming fails in case not existing claim..
+#[test]
+fn pre_dispatch_post_claiming_fails_invalid_call() {
+    // Build the state from the config.
+    new_test_ext().execute_with(move || {
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, ethereum_signature) =
+            sign_sample_token_claim(b"Invalid", account_id("Alice"));
+
+        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
+        let (signed_extra, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::TokenClaims(pallet_token_claims::Call::claim {
+                ethereum_address,
+                ethereum_signature,
+            }),
+            account_id("Alice"),
+        );
+
+        assert_eq!(
+            signed_extra.pre_dispatch(
+                &account_id("Alice"),
+                &Call::TokenClaims(pallet_token_claims::Call::claim {
+                    ethereum_address,
+                    ethereum_signature,
+                }),
+                &normal_dispatch_info,
+                len,
+            ),
+            Err(TransactionValidityError::Invalid(InvalidTransaction::Call))
+        );
+
+        let res = checked_extrinsic
+            .function
+            .dispatch(Some(account_id("Alice")).into())
+            .unwrap_err();
+
+        assert_eq!(
+            res,
+            DispatchErrorWithPostInfo {
+                post_info: PostDispatchInfo {
+                    actual_weight: None,
+                    pays_fee: Pays::Yes
+                },
+                error: sp_runtime::DispatchError::Module(ModuleError {
+                    index: 27,
+                    error: [1u8, 0u8, 0u8, 0u8],
+                    message: Some("NoClaim")
+                }),
+            }
+        );
+
+        let post_info = res.post_info;
+
+        // We expect getting Ok(()) as the default implementation return Ok(()).
+        // According to the substrate docs it is dangerous to return an error here.
+        // Additionally, we pass None to post_dispatch as pre_dispatch return an TransactionValidityError before.
+        //
+        // https://github.com/paritytech/substrate/blob/9428b0ea492d405f320753fcd93bc59ebb3bf33b/primitives/runtime/src/traits.rs#L1332
+        assert_ok!(SignedExtra::post_dispatch(
+            None,
+            &normal_dispatch_info,
+            &post_info,
+            len,
+            &Err(res.error),
+        ));
+    })
+}
+
 /// This test verifies that claiming without vesting (dispatch call) works in the happy path with zero balance.
 /// So, we verify that the call is free in term of transaction fee.
 #[test]
