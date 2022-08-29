@@ -11,7 +11,7 @@ use frame_support::{
 };
 use sp_runtime::{
     traits::{Applyable, SignedExtension},
-    DispatchError, DispatchErrorWithPostInfo, ModuleError,
+    DispatchErrorWithPostInfo, ModuleError,
 };
 use vesting_schedule_linear::LinearSchedule;
 
