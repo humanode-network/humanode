@@ -3,6 +3,7 @@
 use std::str::FromStr;
 
 use frame_support::{
+    assert_ok,
     dispatch::DispatchInfo,
     weights::{DispatchClass, Pays},
 };
@@ -10,6 +11,8 @@ use pallet_evm::AddressMapping;
 use sp_runtime::traits::SignedExtension;
 
 use super::*;
+use crate::dev_utils::*;
+use crate::opaque::SessionKeys;
 
 const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
 
@@ -26,9 +29,16 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                 let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
                 endowed_accounts
                     .iter()
-                    .chain(pot_accounts.iter())
                     .cloned()
+                    .chain(pot_accounts.into_iter())
                     .map(|k| (k, INIT_BALANCE))
+                    .chain(
+                        [(
+                            TokenClaimsPot::account_id(),
+                            <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                        )]
+                        .into_iter(),
+                    )
                     .collect()
             },
         },

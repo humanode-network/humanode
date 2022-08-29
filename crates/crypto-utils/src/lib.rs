@@ -1,5 +1,7 @@
 //! Various crypto helper functions.
 
+#![cfg_attr(not(feature = "std"), no_std)]
+
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
