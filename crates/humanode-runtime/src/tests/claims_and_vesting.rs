@@ -7,9 +7,12 @@ use frame_support::{
     assert_noop, assert_ok, assert_storage_noop,
     pallet_prelude::InvalidTransaction,
     traits::{OnFinalize, OnInitialize},
-    weights::{DispatchClass, DispatchInfo, Pays},
+    weights::{DispatchClass, DispatchInfo, Pays, PostDispatchInfo},
 };
-use sp_runtime::traits::Applyable;
+use sp_runtime::{
+    traits::{Applyable, SignedExtension},
+    DispatchError, DispatchErrorWithPostInfo, ModuleError,
+};
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
@@ -67,6 +70,7 @@ fn prepare_applyable_data(
     call: Call,
     account_id: AccountId,
 ) -> (
+    SignedExtra,
     CheckedExtrinsic<AccountId, Call, SignedExtra, H160>,
     DispatchInfo,
     usize,
@@ -91,11 +95,11 @@ fn prepare_applyable_data(
     let len = 0;
 
     let checked_extrinsic = CheckedExtrinsic {
-        signed: CheckedSignature::Signed(account_id, extra),
+        signed: CheckedSignature::Signed(account_id, extra.clone()),
         function: call,
     };
 
-    (checked_extrinsic, normal_dispatch_info, len)
+    (extra, checked_extrinsic, normal_dispatch_info, len)
 }
 
 /// Build test externalities from the custom genesis.
@@ -579,7 +583,7 @@ fn dispatch_claiming_without_vesting_works() {
             sign_sample_token_claim(b"Dubai", account_id("Alice"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
@@ -642,7 +646,7 @@ fn dispatch_claiming_with_vesting_works() {
             sign_sample_token_claim(b"Batumi", account_id("Alice"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
@@ -728,7 +732,7 @@ fn dispatch_unlock_full_balance_works() {
         switch_block();
 
         // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::Vesting(pallet_vesting::Call::unlock {}),
             account_id("Alice"),
         );
@@ -802,7 +806,7 @@ fn dispatch_unlock_partial_balance_works() {
         switch_block();
 
         // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::Vesting(pallet_vesting::Call::unlock {}),
             account_id("Alice"),
         );
@@ -843,14 +847,14 @@ fn dispatch_unlock_partial_balance_works() {
     })
 }
 
-/// This test verifies that dispatch claiming fails if ethereum_address
+/// This test verifies that dispatch validate claiming fails if ethereum_address
 /// doesn't correspond to submitted ethereum_signature.
 #[test]
-fn dispatch_claiming_fails_bad_proof() {
+fn dispatch_validate_claiming_fails_bad_proof() {
     // Build the state from the config.
     new_test_ext().execute_with(move || {
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address: EthereumAddress::default(),
                 ethereum_signature: EcdsaSignature::default(),
@@ -881,6 +885,73 @@ fn dispatch_claiming_fails_bad_proof() {
     })
 }
 
+/// This test verifies that pre/dispatch/post claiming fails if ethereum_address
+/// doesn't correspond to submitted ethereum_signature.
+#[test]
+fn pre_dispatch_post_claiming_fails_bad_proof() {
+    // Build the state from the config.
+    new_test_ext().execute_with(move || {
+        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
+        let (signed_extra, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::TokenClaims(pallet_token_claims::Call::claim {
+                ethereum_address: EthereumAddress::default(),
+                ethereum_signature: EcdsaSignature::default(),
+            }),
+            account_id("Alice"),
+        );
+
+        assert_eq!(
+            signed_extra.pre_dispatch(
+                &account_id("Alice"),
+                &Call::TokenClaims(pallet_token_claims::Call::claim {
+                    ethereum_address: EthereumAddress::default(),
+                    ethereum_signature: EcdsaSignature::default(),
+                }),
+                &normal_dispatch_info,
+                len,
+            ),
+            Err(TransactionValidityError::Invalid(
+                InvalidTransaction::BadProof
+            ))
+        );
+
+        let res = checked_extrinsic
+            .function
+            .dispatch(Some(account_id("Alice")).into())
+            .unwrap_err();
+
+        assert_eq!(
+            res,
+            DispatchErrorWithPostInfo {
+                post_info: PostDispatchInfo {
+                    actual_weight: None,
+                    pays_fee: Pays::Yes
+                },
+                error: sp_runtime::DispatchError::Module(ModuleError {
+                    index: 27,
+                    error: [0u8; 4],
+                    message: Some("InvalidSignature")
+                }),
+            }
+        );
+
+        let post_info = res.post_info;
+
+        // We expect getting Ok(()) as the default implementation return Ok(()).
+        // According to the substrate docs it is dangerous to return an error here.
+        // Additionally, we pass None to post_dispatch as pre_dispatch return an TransactionValidityError before.
+        //
+        // https://github.com/paritytech/substrate/blob/9428b0ea492d405f320753fcd93bc59ebb3bf33b/primitives/runtime/src/traits.rs#L1332
+        assert_ok!(SignedExtra::post_dispatch(
+            None,
+            &normal_dispatch_info,
+            &post_info,
+            len,
+            &Err(res.error),
+        ));
+    })
+}
+
 /// This test verifies that dispatch claiming fails in case not existing claim.
 #[test]
 fn dispatch_claiming_fails_invalid_call() {
@@ -891,7 +962,7 @@ fn dispatch_claiming_fails_invalid_call() {
             sign_sample_token_claim(b"Invalid", account_id("Alice"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
@@ -936,7 +1007,7 @@ fn dispatch_claiming_zero_balance_works() {
             sign_sample_token_claim(b"Dubai", account_id("Zero"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
