@@ -7,12 +7,9 @@ use frame_support::{
     assert_noop, assert_ok, assert_storage_noop,
     pallet_prelude::InvalidTransaction,
     traits::{OnFinalize, OnInitialize},
-    weights::{DispatchClass, DispatchInfo, Pays, PostDispatchInfo},
+    weights::{DispatchClass, DispatchInfo, Pays},
 };
-use sp_runtime::{
-    traits::{Applyable, SignedExtension},
-    DispatchErrorWithPostInfo, ModuleError,
-};
+use sp_runtime::traits::Applyable;
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
