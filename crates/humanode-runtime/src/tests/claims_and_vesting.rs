@@ -887,7 +887,7 @@ fn dispatch_claiming_fails_when_eth_signature_invalid() {
 
 /// This test verifies that dispatch claiming fails in case not existing claim.
 #[test]
-fn dispatch_claiming_fails_invalid_call() {
+fn dispatch_claiming_fails_when_no_claim() {
     // Build the state from the config.
     new_test_ext().execute_with(move || {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
