@@ -885,66 +885,6 @@ fn dispatch_validate_claiming_fails_bad_proof() {
     })
 }
 
-/// This test verifies that pre/dispatch/post claiming fails if ethereum_address
-/// doesn't correspond to submitted ethereum_signature.
-#[test]
-fn pre_dispatch_post_claiming_fails_bad_proof() {
-    // Build the state from the config.
-    new_test_ext().execute_with(move || {
-        // Prepare token claim call.
-        let call = Call::TokenClaims(pallet_token_claims::Call::claim {
-            ethereum_address: EthereumAddress::default(),
-            ethereum_signature: EcdsaSignature::default(),
-        });
-
-        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (signed_extra, checked_extrinsic, normal_dispatch_info, len) =
-            prepare_applyable_data(call.clone(), account_id("Alice"));
-
-        assert_eq!(
-            signed_extra.pre_dispatch(&account_id("Alice"), &call, &normal_dispatch_info, len,),
-            Err(TransactionValidityError::Invalid(
-                InvalidTransaction::BadProof
-            ))
-        );
-
-        let res = checked_extrinsic
-            .function
-            .dispatch(Some(account_id("Alice")).into())
-            .unwrap_err();
-
-        assert_eq!(
-            res,
-            DispatchErrorWithPostInfo {
-                post_info: PostDispatchInfo {
-                    actual_weight: None,
-                    pays_fee: Pays::Yes
-                },
-                error: sp_runtime::DispatchError::Module(ModuleError {
-                    index: 27,
-                    error: [0u8; 4],
-                    message: Some("InvalidSignature")
-                }),
-            }
-        );
-
-        let post_info = res.post_info;
-
-        // We expect getting Ok(()) as the default implementation return Ok(()).
-        // According to the substrate docs it is dangerous to return an error here.
-        // Additionally, we pass None to post_dispatch as pre_dispatch return an TransactionValidityError before.
-        //
-        // https://github.com/paritytech/substrate/blob/9428b0ea492d405f320753fcd93bc59ebb3bf33b/primitives/runtime/src/traits.rs#L1332
-        assert_ok!(SignedExtra::post_dispatch(
-            None,
-            &normal_dispatch_info,
-            &post_info,
-            len,
-            &Err(res.error),
-        ));
-    })
-}
-
 /// This test verifies that dispatch claiming fails in case not existing claim.
 #[test]
 fn dispatch_claiming_fails_invalid_call() {
