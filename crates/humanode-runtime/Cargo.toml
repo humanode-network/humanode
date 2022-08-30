@@ -47,7 +47,7 @@ frame-system-benchmarking = { default-features = false, optional = true, git = "
 frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 frame-try-runtime = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
 hex-literal = { version = "0.3", optional = true }
-libsecp256k1 = { version = "0.7.0", features = ["hmac", "static-context"], optional = true }
+libsecp256k1 = { version = "0.7.0", default-features = false }
 pallet-authorship = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
@@ -109,7 +109,8 @@ runtime-benchmarks = [
   "pallet-token-claims/runtime-benchmarks",
   "pallet-vesting/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
-  "libsecp256k1",
+  "libsecp256k1/hmac",
+  "libsecp256k1/static-context",
 ]
 std = [
   "author-ext-api/std",
