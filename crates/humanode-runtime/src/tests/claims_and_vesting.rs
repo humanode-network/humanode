@@ -607,6 +607,49 @@ fn direct_claiming_fails_when_eth_signature_invalid() {
     })
 }
 
+/// This test verifies that direct claiming fails in case not existing claim.
+#[test]
+fn direct_claiming_fails_when_no_claim() {
+    // Build the state from the config.
+    new_test_ext().execute_with(move || {
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, signature) =
+            sign_sample_token_claim(b"Invalid", account_id("Alice"));
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Test preconditions.
+        assert!(TokenClaims::claims(ethereum_address).is_none());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+
+        // Invoke the claim call.
+        assert_noop!(
+            TokenClaims::claim(
+                Some(account_id("Alice")).into(),
+                ethereum_address,
+                signature
+            ),
+            sp_runtime::DispatchError::Module(ModuleError {
+                index: 27,
+                error: [1u8, 0u8, 0u8, 0u8],
+                message: Some("NoClaim")
+            })
+        );
+
+        // Ensure claims related state hasn't been changed.
+        assert!(TokenClaims::claims(ethereum_address).is_none());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
 /// This test verifies that claiming without vesting (dispatch call) works in the happy path.
 #[test]
 fn dispatch_claiming_without_vesting_works() {
