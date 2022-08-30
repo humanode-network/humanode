@@ -9,7 +9,7 @@ use frame_support::{
     traits::{OnFinalize, OnInitialize},
     weights::{DispatchClass, DispatchInfo, Pays},
 };
-use sp_runtime::traits::Applyable;
+use sp_runtime::{traits::Applyable, ModuleError};
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
@@ -564,6 +564,49 @@ fn direct_unlock_partial_balance_works() {
     })
 }
 
+/// This test verifies that direct claiming fails if ethereum_address
+/// doesn't correspond to submitted ethereum_signature.
+#[test]
+fn direct_claiming_fails_when_eth_signature_invalid() {
+    // Build the state from the config.
+    new_test_ext().execute_with(move || {
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, _) = sign_sample_token_claim(b"Dubai", account_id("Alice"));
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Test preconditions.
+        assert!(TokenClaims::claims(ethereum_address).is_some());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+
+        // Invoke the claim call.
+        assert_noop!(
+            TokenClaims::claim(
+                Some(account_id("Alice")).into(),
+                ethereum_address,
+                EcdsaSignature::default()
+            ),
+            sp_runtime::DispatchError::Module(ModuleError {
+                index: 27,
+                error: [0u8; 4],
+                message: Some("InvalidSignature")
+            })
+        );
+
+        // Ensure claims related state hasn't been changed.
+        assert!(TokenClaims::claims(ethereum_address).is_some());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
 /// This test verifies that claiming without vesting (dispatch call) works in the happy path.
 #[test]
 fn dispatch_claiming_without_vesting_works() {
@@ -840,44 +883,6 @@ fn dispatch_unlock_partial_balance_works() {
 
         // Ensure total issuance did not change.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
-    })
-}
-
-/// This test verifies that dispatch claiming fails if ethereum_address
-/// doesn't correspond to submitted ethereum_signature.
-#[test]
-fn dispatch_claiming_fails_when_eth_signature_invalid() {
-    // Build the state from the config.
-    new_test_ext().execute_with(move || {
-        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::TokenClaims(pallet_token_claims::Call::claim {
-                ethereum_address: EthereumAddress::default(),
-                ethereum_signature: EcdsaSignature::default(),
-            }),
-            account_id("Alice"),
-        );
-
-        // Validate already checked extrinsic.
-        assert_noop!(
-            Applyable::validate::<Runtime>(
-                &checked_extrinsic,
-                sp_runtime::transaction_validity::TransactionSource::Local,
-                &normal_dispatch_info,
-                len,
-            ),
-            TransactionValidityError::Invalid(InvalidTransaction::BadProof)
-        );
-        // Apply already checked extrinsic.
-        //
-        // We don't use assert_noop as apply invokes pre_dispatch that uses fee.
-        // As a result state is changed.
-        assert_eq!(
-            Applyable::apply::<Runtime>(checked_extrinsic, &normal_dispatch_info, len),
-            Err(TransactionValidityError::Invalid(
-                InvalidTransaction::BadProof
-            ))
-        );
     })
 }
 
