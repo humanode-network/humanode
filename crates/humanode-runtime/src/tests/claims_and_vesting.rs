@@ -67,7 +67,6 @@ fn prepare_applyable_data(
     call: Call,
     account_id: AccountId,
 ) -> (
-    SignedExtra,
     CheckedExtrinsic<AccountId, Call, SignedExtra, H160>,
     DispatchInfo,
     usize,
@@ -92,11 +91,11 @@ fn prepare_applyable_data(
     let len = 0;
 
     let checked_extrinsic = CheckedExtrinsic {
-        signed: CheckedSignature::Signed(account_id, extra.clone()),
+        signed: CheckedSignature::Signed(account_id, extra),
         function: call,
     };
 
-    (extra, checked_extrinsic, normal_dispatch_info, len)
+    (checked_extrinsic, normal_dispatch_info, len)
 }
 
 /// Build test externalities from the custom genesis.
@@ -580,7 +579,7 @@ fn dispatch_claiming_without_vesting_works() {
             sign_sample_token_claim(b"Dubai", account_id("Alice"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
@@ -643,7 +642,7 @@ fn dispatch_claiming_with_vesting_works() {
             sign_sample_token_claim(b"Batumi", account_id("Alice"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
@@ -729,7 +728,7 @@ fn dispatch_unlock_full_balance_works() {
         switch_block();
 
         // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
-        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::Vesting(pallet_vesting::Call::unlock {}),
             account_id("Alice"),
         );
@@ -803,7 +802,7 @@ fn dispatch_unlock_partial_balance_works() {
         switch_block();
 
         // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
-        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::Vesting(pallet_vesting::Call::unlock {}),
             account_id("Alice"),
         );
@@ -851,7 +850,7 @@ fn dispatch_claiming_fails_when_eth_signature_invalid() {
     // Build the state from the config.
     new_test_ext().execute_with(move || {
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address: EthereumAddress::default(),
                 ethereum_signature: EcdsaSignature::default(),
@@ -892,7 +891,7 @@ fn dispatch_claiming_fails_when_no_claim() {
             sign_sample_token_claim(b"Invalid", account_id("Alice"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
@@ -937,7 +936,7 @@ fn dispatch_claiming_zero_balance_works() {
             sign_sample_token_claim(b"Dubai", account_id("Zero"));
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
-        let (_, checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             Call::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
