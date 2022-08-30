@@ -355,8 +355,28 @@ fn testnet_genesis(
 #[cfg(test)]
 mod tests {
     use indoc::indoc;
+    use sp_runtime::BuildStorage;
 
     use super::*;
+
+    fn assert_genesis_config(chain_spec_result: Result<ChainSpec, String>) {
+        chain_spec_result.unwrap().build_storage().unwrap();
+    }
+
+    #[test]
+    fn local_testnet_config_works() {
+        assert_genesis_config(local_testnet_config());
+    }
+
+    #[test]
+    fn development_config_works() {
+        assert_genesis_config(development_config());
+    }
+
+    #[test]
+    fn benchmark_config_works() {
+        assert_genesis_config(benchmark_config());
+    }
 
     #[test]
     fn deserialize_bioauth_flow_params_extensions() {
