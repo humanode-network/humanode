@@ -976,6 +976,44 @@ fn dispatch_unlock_partial_balance_works() {
     })
 }
 
+/// This test verifies that dispatch claiming fails if ethereum_address
+/// doesn't correspond to submitted ethereum_signature.
+#[test]
+fn dispatch_claiming_fails_when_eth_signature_invalid() {
+    // Build the state from the config.
+    new_test_ext().execute_with(move || {
+        // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            Call::TokenClaims(pallet_token_claims::Call::claim {
+                ethereum_address: EthereumAddress::default(),
+                ethereum_signature: EcdsaSignature::default(),
+            }),
+            account_id("Alice"),
+        );
+
+        // Validate already checked extrinsic.
+        assert_noop!(
+            Applyable::validate::<Runtime>(
+                &checked_extrinsic,
+                sp_runtime::transaction_validity::TransactionSource::Local,
+                &normal_dispatch_info,
+                len,
+            ),
+            TransactionValidityError::Invalid(InvalidTransaction::BadProof)
+        );
+        // Apply already checked extrinsic.
+        //
+        // We don't use assert_noop as apply invokes pre_dispatch that uses fee.
+        // As a result state is changed.
+        assert_eq!(
+            Applyable::apply::<Runtime>(checked_extrinsic, &normal_dispatch_info, len),
+            Err(TransactionValidityError::Invalid(
+                InvalidTransaction::BadProof
+            ))
+        );
+    })
+}
+
 /// This test verifies that dispatch claiming fails in case not existing claim.
 #[test]
 fn dispatch_claiming_fails_when_no_claim() {
