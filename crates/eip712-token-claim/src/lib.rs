@@ -127,4 +127,28 @@ mod tests {
             hex!("6be02d1d3665660d22ff9624b7be0551ee1ac91b"),
         );
     }
+
+    /// This test contains the data obtained from MetaMask browser extension via an injected web3
+    /// interface.
+    /// It validates that the real-world external ecosystem works properly with our code.
+    #[test]
+    fn real_world_case2() {
+        let chain_id: [u8; 32] = U256::from(1).into();
+        let domain = Domain {
+            name: "Humanode Token Claim",
+            version: "1",
+            chain_id: &chain_id,
+            verifying_contract: &hex!("54b5684eb338f816175b3e85320272668972eb9a"),
+        };
+        let substrate_account =
+            hex!("187ede276bc2cfc2ab2cc194ad6470239aec2a39ef20c3a7d852db547675b572");
+        let signature = hex!("5a6fec72e04256c6dad01896f107ad0e2c9f6d77e5d78a75db08af3636497a4a20b715871cfdb22dcff9363e25bbdc1d140d4aaf1dcb14f2ca1478715ebc9dd21c");
+
+        let ethereum_address =
+            recover_signer(&EcdsaSignature(signature), domain, &substrate_account).unwrap();
+        assert_eq!(
+            ethereum_address.0,
+            hex!("d0d56d9b522677605af6ae771203d3216916304d"),
+        );
+    }
 }
