@@ -41,10 +41,10 @@ impl<C: SubstrateCli> Runner<C> {
         let runtime_handle = tokio::runtime::Handle::current();
         let config = command.create_humanode_configuration(cli, runtime_handle)?;
 
-        let humanode_ss58_prefix = get_ss58_prefix(&config.substrate.chain_spec.properties())?;
+        let humanode_ss58_format = get_ss58_format(&config.substrate.chain_spec.properties())?;
 
-        // Regardless of whether our ss58 prefix is registered or not, we are setting a default prefix here.
-        sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(humanode_ss58_prefix));
+        // Regardless of whether our ss58 format is registered or not, we are setting a default format here.
+        sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(humanode_ss58_format));
 
         Ok(Self {
             config,
@@ -116,16 +116,16 @@ impl<C: SubstrateCli> Runner<C> {
     }
 }
 
-/// A helper function to get SS58Prefix.
-fn get_ss58_prefix(properties: &Properties) -> Result<u16> {
-    let value = match properties.get("SS58Prefix") {
+/// A helper function to get ss58Format.
+fn get_ss58_format(properties: &Properties) -> Result<u16> {
+    let value = match properties.get("ss58Format") {
         Some(value) => value,
         // Use default 42 SS58Prefix if it's not set.
         None => return Ok(42),
     };
     let value = value
         .as_u64()
-        .ok_or("SS58Prefix should be u16")
+        .ok_or("Ss58Format should be u16")
         .map_err(application_error)?;
     value.try_into().map_err(application_error)
 }
