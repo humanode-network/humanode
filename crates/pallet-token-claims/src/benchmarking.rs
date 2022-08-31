@@ -45,6 +45,7 @@ benchmarks! {
         let account_id = <T as Interface>::account_id_to_claim_to();
         let ethereum_address = <T as  Interface>::ethereum_address();
         let ethereum_signature = <T as  Interface>::create_ecdsa_signature(&account_id, &ethereum_address);
+        let vesting = <T as super::Config>::VestingInterface::prepare();
 
         // We assume the genesis has the corresponding claim; crash the bench if it doesn't.
         let claim_info = Claims::<T>::get(ethereum_address).unwrap();
@@ -89,6 +90,8 @@ benchmarks! {
 
             drop(mock_runtime_guard);
         }
+
+        <T as super::Config>::VestingInterface::verify(vesting);
     }
 
     impl_benchmark_test_suite!(

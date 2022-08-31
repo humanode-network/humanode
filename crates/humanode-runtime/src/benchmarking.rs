@@ -1,8 +1,12 @@
 //! The benchmarking utilities.
 
 use eip712_common::{keccak_256, EcdsaSignature, EthereumAddress};
+use frame_support::traits::{OnFinalize, OnInitialize};
+use sp_runtime::traits::{One, Zero};
 
 use super::*;
+
+const START_TIMESTAMP: UnixMilliseconds = 1000;
 
 const ALICE: [u8; 32] =
     hex_literal::hex!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d");
@@ -27,6 +31,24 @@ fn alice_sign(msg_hash: &[u8; 32]) -> EcdsaSignature {
     ecdsa_signature[0..64].copy_from_slice(&sig.serialize()[..]);
     ecdsa_signature[64] = recovery_id.serialize();
     EcdsaSignature(ecdsa_signature)
+}
+
+fn switch_block<
+    T: frame_system::Config + pallet_timestamp::Config + pallet_chain_start_moment::Config,
+>() {
+    if frame_system::Pallet::<T>::block_number() != Zero::zero() {
+        pallet_timestamp::Pallet::<T>::on_finalize(frame_system::Pallet::<T>::block_number());
+        pallet_chain_start_moment::Pallet::<T>::on_finalize(
+            frame_system::Pallet::<T>::block_number(),
+        );
+        frame_system::Pallet::<T>::on_finalize(frame_system::Pallet::<T>::block_number());
+    }
+    frame_system::Pallet::<T>::set_block_number(
+        frame_system::Pallet::<T>::block_number() + One::one(),
+    );
+    frame_system::Pallet::<T>::on_initialize(frame_system::Pallet::<T>::block_number());
+    pallet_timestamp::Pallet::<T>::on_initialize(frame_system::Pallet::<T>::block_number());
+    pallet_chain_start_moment::Pallet::<T>::on_initialize(frame_system::Pallet::<T>::block_number());
 }
 
 impl pallet_token_claims::benchmarking::Interface for Runtime {
@@ -62,7 +84,11 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
 
 impl pallet_token_claims::benchmarking::VestingInterface for vesting::TokenClaimsInterface {
     type Data = ();
-    fn prepare() {}
+    fn prepare() {
+        switch_block::<Runtime>();
+        pallet_timestamp::Pallet::<Runtime>::set(Origin::none(), START_TIMESTAMP).unwrap();
+        switch_block::<Runtime>();
+    }
     fn verify(_: ()) {}
 }
 
