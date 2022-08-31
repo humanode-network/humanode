@@ -1,6 +1,7 @@
 //! The benchmarking utilities.
 
 use eip712_common::{keccak_256, EcdsaSignature, EthereumAddress};
+use frame_support::dispatch::DispatchResult;
 use frame_support::traits::{OnFinalize, OnInitialize};
 use sp_runtime::traits::{One, Zero};
 
@@ -89,7 +90,9 @@ impl pallet_token_claims::benchmarking::VestingInterface for vesting::TokenClaim
         pallet_timestamp::Pallet::<Runtime>::set(Origin::none(), START_TIMESTAMP).unwrap();
         switch_block::<Runtime>();
     }
-    fn verify(_: ()) {}
+    fn verify(_: ()) -> DispatchResult {
+        Ok(())
+    }
 }
 
 impl pallet_vesting::benchmarking::Interface for Runtime {

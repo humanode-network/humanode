@@ -1,6 +1,7 @@
 //! The benchmarks for the pallet.
 
 use frame_benchmarking::benchmarks;
+use frame_support::dispatch::DispatchResult;
 use frame_system::RawOrigin;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
@@ -10,7 +11,7 @@ pub trait VestingInterface: traits::VestingInterface {
     type Data;
 
     fn prepare() -> Self::Data;
-    fn verify(data: Self::Data);
+    fn verify(data: Self::Data) -> DispatchResult;
 }
 
 /// The benchmark interface into the environment.
@@ -123,5 +124,7 @@ impl Interface for crate::mock::Test {
 impl VestingInterface for <crate::mock::Test as super::Config>::VestingInterface {
     type Data = ();
     fn prepare() {}
-    fn verify(_: ()) {}
+    fn verify(_: ()) -> DispatchResult {
+        Ok(())
+    }
 }
