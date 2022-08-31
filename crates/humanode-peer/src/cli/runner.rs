@@ -118,14 +118,14 @@ impl<C: SubstrateCli> Runner<C> {
 
 /// A helper function to get SS58Prefix.
 fn get_ss58_prefix(properties: &Properties) -> Result<u16> {
-    let value = match properties.get("SS58Prefix") {
+    let value = match properties.get("ss58Format") {
         Some(value) => value,
         // Use default 42 SS58Prefix if it's not set.
         None => return Ok(42),
     };
     let value = value
         .as_u64()
-        .ok_or("SS58Prefix should be u16")
+        .ok_or("Ss58Format should be u16")
         .map_err(application_error)?;
     value.try_into().map_err(application_error)
 }
