@@ -86,10 +86,6 @@ vergen = { version = "7", default-features = false, features = ["cargo", "git"] 
 
 [features]
 default = ["wasmtime"]
-runtime-benchmarks = [
-  "wasmtime",
-  "humanode-runtime/runtime-benchmarks",
-  "frame-benchmarking/runtime-benchmarks",
-]
+runtime-benchmarks = ["wasmtime", "humanode-runtime/runtime-benchmarks", "frame-benchmarking/runtime-benchmarks"]
 try-runtime = ["humanode-runtime/try-runtime", "try-runtime-cli"]
 wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]

@@ -91,14 +91,14 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
 impl pallet_token_claims::benchmarking::VestingInterface for vesting::TokenClaimsInterface {
     type Data = ();
 
-    fn prepare() {
+    fn prepare() -> Self::Data {
         // Run blocks to be vesting schedule ready.
         switch_block::<Runtime>();
         pallet_timestamp::Pallet::<Runtime>::set(Origin::none(), START_TIMESTAMP).unwrap();
         switch_block::<Runtime>();
     }
 
-    fn verify(_: ()) -> DispatchResult {
+    fn verify(_data: Self::Data) -> DispatchResult {
         Ok(())
     }
 }
@@ -130,7 +130,7 @@ impl pallet_vesting::benchmarking::SchedulingDriver for vesting::SchedulingDrive
         switch_block::<Runtime>();
     }
 
-    fn process(data: Self::Data) -> Self::Data {
+    fn process(_data: Self::Data) -> Self::Data {
         // Run blocks with setting proper timestamp to make full unlocking.
         pallet_timestamp::Pallet::<Runtime>::set(
             Origin::none(),
@@ -140,7 +140,7 @@ impl pallet_vesting::benchmarking::SchedulingDriver for vesting::SchedulingDrive
         switch_block::<Runtime>();
     }
 
-    fn verify(data: Self::Data) -> DispatchResult {
+    fn verify(_data: Self::Data) -> DispatchResult {
         Ok(())
     }
 }
