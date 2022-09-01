@@ -95,6 +95,7 @@ jobs:
         uses: Swatinem/rust-cache@v2
         with:
           shared-key: ${{ matrix.plan.platform.cacheKey }}-${{ matrix.plan.mode.cargoCacheKey }}
+        if: "!matrix.plan.platform.isOnSelfHostedRunner"
 
       - name: Print build environment info
         run: |
