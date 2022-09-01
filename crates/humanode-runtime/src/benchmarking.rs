@@ -1,13 +1,19 @@
 //! The benchmarking utilities.
 
 use eip712_common::{keccak_256, EcdsaSignature, EthereumAddress};
-use frame_support::dispatch::DispatchResult;
-use frame_support::traits::{OnFinalize, OnInitialize};
+use frame_support::{
+    dispatch::DispatchResult,
+    sp_runtime::DispatchError,
+    traits::{OnFinalize, OnInitialize},
+};
 use sp_runtime::traits::{One, Zero};
 
 use super::*;
 
 const START_TIMESTAMP: UnixMilliseconds = 1000;
+const VESTING_BALANCE: u128 = 1000;
+const CLIFF: UnixMilliseconds = 1000;
+const VESTING_DURATION: UnixMilliseconds = 3000;
 
 const ALICE: [u8; 32] =
     hex_literal::hex!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d");
@@ -106,11 +112,36 @@ impl pallet_vesting::benchmarking::Interface for Runtime {
     fn schedule() -> <Self as pallet_vesting::Config>::Schedule {
         use vesting_schedule_linear::LinearSchedule;
         vec![LinearSchedule {
-            balance: 100,
-            cliff: 10 * 24 * 60 * 60 * 1000,   // 10 days
-            vesting: 10 * 24 * 60 * 60 * 1000, // 10 days
+            balance: VESTING_BALANCE,
+            cliff: CLIFF,
+            vesting: VESTING_DURATION,
         }]
         .try_into()
         .unwrap()
+    }
+}
+
+impl pallet_vesting::benchmarking::SchedulingDriver for vesting::SchedulingDriver {
+    type Data = ();
+
+    fn prepare() -> Self::Data {
+        // Run blocks to be vesting schedule ready.
+        switch_block::<Runtime>();
+        pallet_timestamp::Pallet::<Runtime>::set(Origin::none(), START_TIMESTAMP).unwrap();
+        switch_block::<Runtime>();
+    }
+
+    fn process(data: Self::Data) -> Self::Data {
+        // Run blocks with setting proper timestamp to make full unlocking.
+        pallet_timestamp::Pallet::<Runtime>::set(
+            Origin::none(),
+            START_TIMESTAMP + CLIFF + VESTING_DURATION,
+        )
+        .unwrap();
+        switch_block::<Runtime>();
+    }
+
+    fn verify(data: Self::Data) -> DispatchResult {
+        Ok(())
     }
 }
