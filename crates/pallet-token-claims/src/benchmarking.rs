@@ -1,7 +1,7 @@
 //! The benchmarks for the pallet.
 
 use frame_benchmarking::benchmarks;
-use frame_support::dispatch::DispatchResult;
+use frame_support::{assert_ok, dispatch::DispatchResult};
 use frame_system::RawOrigin;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
@@ -46,7 +46,6 @@ benchmarks! {
         let account_id = <T as Interface>::account_id_to_claim_to();
         let ethereum_address = <T as  Interface>::ethereum_address();
         let ethereum_signature = <T as  Interface>::create_ecdsa_signature(&account_id, &ethereum_address);
-        let vesting = <T as super::Config>::VestingInterface::prepare();
 
         // We assume the genesis has the corresponding claim; crash the bench if it doesn't.
         let claim_info = Claims::<T>::get(ethereum_address).unwrap();
@@ -63,11 +62,10 @@ benchmarks! {
             let recover_signer_ctx = mock::MockEthereumSignatureVerifier::recover_signer_context();
             recover_signer_ctx.expect().times(1..).return_const(Some(ethereum_address));
 
-            let lock_under_vesting_ctx = mock::MockVestingInterface::lock_under_vesting_context();
-            lock_under_vesting_ctx.expect().times(1..).return_const(Ok(()));
-
-            (mock_runtime_guard, recover_signer_ctx, lock_under_vesting_ctx)
+            (mock_runtime_guard, recover_signer_ctx)
         };
+
+        let vesting = <T as super::Config>::VestingInterface::prepare();
 
         let origin = RawOrigin::Signed(account_id.clone());
 
@@ -82,17 +80,16 @@ benchmarks! {
             <CurrencyOf<T>>::total_issuance(),
         );
 
+        assert_ok!(<T as super::Config>::VestingInterface::verify(vesting));
+
         #[cfg(test)]
         {
-            let (mock_runtime_guard, recover_signer_ctx, lock_under_vesting_ctx) = test_data;
+            let (mock_runtime_guard, recover_signer_ctx) = test_data;
 
             recover_signer_ctx.checkpoint();
-            lock_under_vesting_ctx.checkpoint();
 
             drop(mock_runtime_guard);
         }
-
-        <T as super::Config>::VestingInterface::verify(vesting);
     }
 
     impl_benchmark_test_suite!(
@@ -122,9 +119,20 @@ impl Interface for crate::mock::Test {
 
 #[cfg(test)]
 impl VestingInterface for <crate::mock::Test as super::Config>::VestingInterface {
-    type Data = ();
-    fn prepare() {}
-    fn verify(_: ()) -> DispatchResult {
+    type Data = mock::__mock_MockVestingInterface_VestingInterface::__lock_under_vesting::Context;
+
+    fn prepare() -> Self::Data {
+        let lock_under_vesting_ctx = mock::MockVestingInterface::lock_under_vesting_context();
+        lock_under_vesting_ctx
+            .expect()
+            .times(1..)
+            .return_const(Ok(()));
+
+        lock_under_vesting_ctx
+    }
+
+    fn verify(lock_under_vesting_ctx: Self::Data) -> DispatchResult {
+        lock_under_vesting_ctx.checkpoint();
         Ok(())
     }
 }

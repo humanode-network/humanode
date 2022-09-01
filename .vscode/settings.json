@@ -2,10 +2,15 @@
   "editor.formatOnSave": true,
   "rust-analyzer.checkOnSave.command": "clippy",
   "[rust]": {
-    "editor.rulers": [100]
+    "editor.rulers": [
+      100
+    ]
   },
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
-  "rust-analyzer.cargo.buildScripts.enable": false
+  "rust-analyzer.cargo.buildScripts.enable": false,
+  "rust-analyzer.cargo.features": [
+    "runtime-benchmarks"
+  ]
 }
