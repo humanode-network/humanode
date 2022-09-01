@@ -372,7 +372,7 @@ impl pallet_chain_start_moment::Config for Runtime {
 
 impl pallet_authorship::Config for Runtime {
     type FindAuthor = find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>;
-    type UncleGenerations = ConstU32<5>;
+    type UncleGenerations = ConstU32<0>;
     type FilterUncle = ();
     type EventHandler = (ImOnline,);
 }
@@ -697,8 +697,9 @@ construct_runtime!(
         ChainStartMoment: pallet_chain_start_moment,
         Bootnodes: pallet_bootnodes,
         Bioauth: pallet_bioauth,
+        // Must be before session.
         Babe: pallet_babe,
-        // Authorship must be before other pallets that rely on the data it captures.
+        // Authorship must be before session.
         Authorship: pallet_authorship,
         Balances: pallet_balances,
         TreasuryPot: pallet_pot::<Instance1>,
