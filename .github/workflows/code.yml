@@ -69,6 +69,11 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         if: runner.os == 'Windows'
 
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ matrix.plan.platform.cacheKey }}-${{ matrix.plan.mode.cargoCacheKey }}
+
       - name: Print build environment info
         run: |
           set -x
