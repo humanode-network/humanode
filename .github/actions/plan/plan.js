@@ -7,6 +7,7 @@ const allPlatforms = {
     name: "Ubuntu",
     os: "ubuntu-20.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
+    isOnSelfHostedRunner: false,
     essential: true,
     env: {},
     cacheKey: "ubuntu-amd64",
@@ -16,6 +17,7 @@ const allPlatforms = {
     name: "Windows",
     os: "windows-latest",
     buildEnvScript: buildEnvScriptPath("windows.sh"),
+    isOnSelfHostedRunner: false,
     essential: false,
     env: {
       CARGO_INCREMENTAL: "0"
@@ -27,6 +29,7 @@ const allPlatforms = {
     name: "macOS (amd64)",
     os: "macos-latest",
     buildEnvScript: buildEnvScriptPath("macos.sh"),
+    isOnSelfHostedRunner: false,
     essential: false,
     env: {},
     cacheKey: "macos-amd64",
@@ -36,6 +39,7 @@ const allPlatforms = {
     name: "macOS (aarch64)",
     os: ["self-hosted", "macOS", "aarch64"],
     buildEnvScript: buildEnvScriptPath("macos.sh"),
+    isOnSelfHostedRunner: true,
     essential: false,
     env: {},
     cacheKey: "macos-aarch64",
