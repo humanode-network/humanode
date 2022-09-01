@@ -10,11 +10,16 @@ use frame_system::RawOrigin;
 
 use crate::*;
 
+/// The benchmark interface into the scheduling driver related environment.
 pub trait SchedulingDriver: traits::SchedulingDriver {
+    /// The data type that is used at scheduling driver environment.
     type Data;
 
+    /// Prepare scheduling driver environment.
     fn prepare() -> Self::Data;
+    /// Process scheduling driver environment.
     fn process(data: Self::Data) -> Self::Data;
+    /// Verify scheduling driver environment.
     fn verify(data: Self::Data) -> DispatchResult;
 }
 
