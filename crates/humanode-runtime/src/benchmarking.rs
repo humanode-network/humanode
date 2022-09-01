@@ -3,7 +3,6 @@
 use eip712_common::{keccak_256, EcdsaSignature, EthereumAddress};
 use frame_support::{
     dispatch::DispatchResult,
-    sp_runtime::DispatchError,
     traits::{OnFinalize, OnInitialize},
 };
 use sp_runtime::traits::{One, Zero};
