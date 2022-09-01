@@ -85,11 +85,14 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
 
 impl pallet_token_claims::benchmarking::VestingInterface for vesting::TokenClaimsInterface {
     type Data = ();
+
     fn prepare() {
+        // Run blocks to be vesting schedule ready.
         switch_block::<Runtime>();
         pallet_timestamp::Pallet::<Runtime>::set(Origin::none(), START_TIMESTAMP).unwrap();
         switch_block::<Runtime>();
     }
+
     fn verify(_: ()) -> DispatchResult {
         Ok(())
     }
