@@ -99,7 +99,7 @@ pub fn new_partial(
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
             EffectiveFullBlockImport,
-            inherents::Creator,
+            inherents::Creator<FullClient>,
             Arc<FrontierBackend>,
             Option<Telemetry>,
         ),
@@ -180,6 +180,7 @@ pub fn new_partial(
     let inherent_data_providers_creator = inherents::Creator {
         raw_slot_duration,
         eth_target_gas_price,
+        client: Arc::clone(&client),
     };
 
     let import_queue = sc_consensus_babe::import_queue(
@@ -188,7 +189,7 @@ pub fn new_partial(
         Some(Box::new(grandpa_block_import)),
         Arc::clone(&client),
         select_chain.clone(),
-        inherent_data_providers_creator.clone(),
+        inherents::ForImport(inherent_data_providers_creator.clone()),
         &task_manager.spawn_essential_handle(),
         config.prometheus_registry(),
         sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
@@ -433,7 +434,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         block_import,
         sync_oracle: Arc::clone(&network),
         justification_sync_link: Arc::clone(&network),
-        create_inherent_data_providers: inherent_data_providers_creator,
+        create_inherent_data_providers: inherents::ForProduction(inherent_data_providers_creator),
         force_authoring,
         backoff_authoring_blocks,
         babe_link,

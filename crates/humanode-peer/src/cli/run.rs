@@ -196,6 +196,7 @@ pub async fn run() -> sc_cli::Result<()> {
         None => {
             let runner = root.create_humanode_runner(&root.run)?;
             sc_cli::print_node_infos::<Root>(&runner.config().substrate);
+            print_build_info();
             runner
                 .run_node(|config| async move {
                     service::new_full(config)
@@ -205,4 +206,17 @@ pub async fn run() -> sc_cli::Result<()> {
                 .await
         }
     }
+}
+
+/// Print the extended version information.
+fn print_build_info() {
+    tracing::info!("   Build info - commit sha: {}", crate::build_info::GIT_SHA);
+    tracing::info!(
+        "   Build info - cargo profile: {}",
+        crate::build_info::CARGO_PROFILE
+    );
+    tracing::info!(
+        "   Build info - cargo features: {}",
+        crate::build_info::CARGO_FEATURES
+    );
 }
