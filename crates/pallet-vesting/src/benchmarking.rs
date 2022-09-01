@@ -46,16 +46,17 @@ benchmarks! {
     unlock {
         let account_id = <T as Interface>::account_id();
         let schedule = <T as Interface>::schedule();
+        let init_balance = <CurrencyOf<T>>::total_balance(&account_id);
 
         let imbalance = <CurrencyOf<T>>::deposit_creating(&account_id, 1000u32.into());
-        assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), 1000u32.into());
-        assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_ok());
+        assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), init_balance + 1000u32.into());
+        assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, init_balance + 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_ok());
 
         let scheduling_driver = <T as super::Config>::SchedulingDriver::prepare();
 
         <Pallet<T>>::lock_under_vesting(&account_id, schedule)?;
-        assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), 1000u32.into());
-        assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_err());
+        assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), init_balance + 1000u32.into());
+        assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, init_balance + 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_err());
 
         let scheduling_driver = <T as super::Config>::SchedulingDriver::process(scheduling_driver);
 
@@ -64,8 +65,8 @@ benchmarks! {
     }: _(origin)
     verify {
         assert_eq!(Schedules::<T>::get(&account_id), None);
-        assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), 1000u32.into());
-        assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_ok());
+        assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), init_balance + 1000u32.into());
+        assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, init_balance + 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_ok());
 
         assert_ok!(<T as super::Config>::SchedulingDriver::verify(scheduling_driver));
 
