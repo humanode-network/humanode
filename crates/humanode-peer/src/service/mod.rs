@@ -99,7 +99,7 @@ pub fn new_partial(
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
             EffectiveFullBlockImport,
-            inherents::Creator,
+            inherents::Creator<FullClient>,
             Arc<FrontierBackend>,
             Option<Telemetry>,
         ),
@@ -180,6 +180,7 @@ pub fn new_partial(
     let inherent_data_providers_creator = inherents::Creator {
         raw_slot_duration,
         eth_target_gas_price,
+        client: Arc::clone(&client),
     };
 
     let import_queue = sc_consensus_babe::import_queue(
