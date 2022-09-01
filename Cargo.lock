@@ -3152,6 +3152,7 @@ dependencies = [
  "sc-client-api",
  "sc-consensus",
  "sc-consensus-babe",
+ "sc-consensus-uncles",
  "sc-executor",
  "sc-finality-grandpa",
  "sc-network",
@@ -3165,6 +3166,7 @@ dependencies = [
  "serde_json",
  "sha3 0.10.1",
  "sp-application-crypto",
+ "sp-authorship",
  "sp-consensus",
  "sp-consensus-babe",
  "sp-core",
@@ -7527,6 +7529,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-consensus-uncles"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=master#438f40dc262ac32a4afd600d8d76214897a0f1a6"
+dependencies = [
+ "sc-client-api",
+ "sp-authorship",
+ "sp-runtime",
+ "thiserror",
+]
+
+[[package]]
 name = "sc-executor"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=master#438f40dc262ac32a4afd600d8d76214897a0f1a6"
@@ -10109,7 +10122,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
  "digest 0.10.3",
- "rand 0.8.5",
+ "rand 0.4.6",
  "static_assertions",
 ]
 
