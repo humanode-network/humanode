@@ -16,6 +16,15 @@ pub struct Creator<Client> {
     pub client: Arc<Client>,
 }
 
+/// Inherent data providers, common for both [`sp_inherents::CreateInherentDataProviders`]
+/// implementations.
+type InherentDataProviders = (
+    sp_timestamp::InherentDataProvider,
+    sp_consensus_babe::inherents::InherentDataProvider,
+    sp_authorship::InherentDataProvider<<super::Block as Block>::Header>,
+    pallet_dynamic_fee::InherentDataProvider,
+);
+
 /// The inherents creator for block production.
 #[derive(Debug, Clone)]
 pub struct ForProduction<T>(pub T);
@@ -30,12 +39,7 @@ where
     Client: Send + Sync,
     Client: ProvideUncles<super::Block>,
 {
-    type InherentDataProviders = (
-        sp_timestamp::InherentDataProvider,
-        sp_consensus_babe::inherents::InherentDataProvider,
-        sp_authorship::InherentDataProvider<<super::Block as Block>::Header>,
-        pallet_dynamic_fee::InherentDataProvider,
-    );
+    type InherentDataProviders = InherentDataProviders;
 
     async fn create_inherent_data_providers(
         &self,
@@ -67,12 +71,7 @@ where
     Client: Send + Sync,
     Client: ProvideUncles<super::Block>,
 {
-    type InherentDataProviders = (
-        sp_timestamp::InherentDataProvider,
-        sp_consensus_babe::inherents::InherentDataProvider,
-        sp_authorship::InherentDataProvider<<super::Block as Block>::Header>,
-        pallet_dynamic_fee::InherentDataProvider,
-    );
+    type InherentDataProviders = InherentDataProviders;
 
     async fn create_inherent_data_providers(
         &self,
