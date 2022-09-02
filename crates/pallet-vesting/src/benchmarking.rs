@@ -15,11 +15,11 @@ pub trait SchedulingDriver: traits::SchedulingDriver {
     /// The data type that is used at scheduling driver environment.
     type Data;
 
-    /// Prepare scheduling driver environment.
-    fn prepare() -> Self::Data;
-    /// Process scheduling driver environment.
-    fn process(data: Self::Data) -> Self::Data;
-    /// Verify scheduling driver environment.
+    //// Initialize the scheduling driver environment to a state where vesting creation is possible.
+    fn prepare_init() -> Self::Data;
+    /// Advance the scheduling driver environment to a state where unlocking is possible.
+    fn prepare_advance(data: Self::Data) -> Self::Data;
+    /// Verify scheduling driver environment after the benchmark.
     fn verify(data: Self::Data) -> DispatchResult;
 }
 
@@ -52,13 +52,13 @@ benchmarks! {
         assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), init_balance + 1000u32.into());
         assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, init_balance + 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_ok());
 
-        let scheduling_driver = <T as super::Config>::SchedulingDriver::prepare();
+        let scheduling_driver = <T as super::Config>::SchedulingDriver::prepare_init();
 
         <Pallet<T>>::lock_under_vesting(&account_id, schedule)?;
         assert_eq!(<CurrencyOf<T>>::free_balance(&account_id), init_balance + 1000u32.into());
         assert!(<CurrencyOf<T>>::ensure_can_withdraw(&account_id, init_balance + 1000u32.into(), WithdrawReasons::empty(), 0u32.into()).is_err());
 
-        let scheduling_driver = <T as super::Config>::SchedulingDriver::process(scheduling_driver);
+        let scheduling_driver = <T as super::Config>::SchedulingDriver::prepare_advance(scheduling_driver);
 
         let origin = RawOrigin::Signed(account_id.clone());
 
@@ -99,7 +99,7 @@ impl SchedulingDriver for <crate::mock::Test as super::Config>::SchedulingDriver
         mock::__mock_MockSchedulingDriver_SchedulingDriver::__compute_balance_under_lock::Context,
     );
 
-    fn prepare() -> Self::Data {
+    fn prepare_init() -> Self::Data {
         let mock_runtime_guard = mock::runtime_lock();
 
         let compute_balance_under_lock_ctx =
@@ -112,7 +112,7 @@ impl SchedulingDriver for <crate::mock::Test as super::Config>::SchedulingDriver
         (mock_runtime_guard, compute_balance_under_lock_ctx)
     }
 
-    fn process(data: Self::Data) -> Self::Data {
+    fn prepare_advance(data: Self::Data) -> Self::Data {
         let (mock_runtime_guard, compute_balance_under_lock_ctx) = data;
 
         compute_balance_under_lock_ctx
