@@ -10,7 +10,7 @@ use frame_system::RawOrigin;
 
 use crate::*;
 
-/// The benchmark interface into the scheduling driver related environment.
+/// The benchmarking extension for the scheduling driver.
 pub trait SchedulingDriver: traits::SchedulingDriver {
     /// The data to be passed from `prepare_init` to `verify` flow.
     type Data;
