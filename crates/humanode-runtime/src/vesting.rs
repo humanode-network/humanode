@@ -51,17 +51,17 @@ impl vesting_scheduling_timestamp::MultiLinearScheduleConfig for Runtime {
 
 pub type Schedule = vesting_scheduling_timestamp::MultiLinearScheduleOf<Runtime>;
 
-pub type Driver = vesting_scheduling_timestamp::Adapter<Runtime, Schedule>;
+type WrappedSchedulingDriver = vesting_scheduling_timestamp::Adapter<Runtime, Schedule>;
 
 pub enum SchedulingDriver {}
 
 impl pallet_vesting::traits::SchedulingDriver for SchedulingDriver {
-    type Balance = <Driver as pallet_vesting::traits::SchedulingDriver>::Balance;
-    type Schedule = <Driver as pallet_vesting::traits::SchedulingDriver>::Schedule;
+    type Balance = <WrappedSchedulingDriver as pallet_vesting::traits::SchedulingDriver>::Balance;
+    type Schedule = <WrappedSchedulingDriver as pallet_vesting::traits::SchedulingDriver>::Schedule;
 
     fn compute_balance_under_lock(
         schedule: &Self::Schedule,
     ) -> Result<Self::Balance, DispatchError> {
-        Driver::compute_balance_under_lock(schedule)
+        WrappedSchedulingDriver::compute_balance_under_lock(schedule)
     }
 }
