@@ -115,6 +115,8 @@ impl SchedulingDriver for <crate::mock::Test as super::Config>::SchedulingDriver
     fn prepare_advance(data: Self::Data) -> Self::Data {
         let (mock_runtime_guard, compute_balance_under_lock_ctx) = data;
 
+        compute_balance_under_lock_ctx.checkpoint();
+
         compute_balance_under_lock_ctx
             .expect()
             .times(1..)
