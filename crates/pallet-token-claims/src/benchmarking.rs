@@ -1,10 +1,22 @@
 //! The benchmarks for the pallet.
 
 use frame_benchmarking::benchmarks;
+use frame_support::{assert_ok, dispatch::DispatchResult};
 use frame_system::RawOrigin;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
 use crate::*;
+
+/// The benchmarking extension for the vesting interface.
+pub trait VestingInterface: traits::VestingInterface {
+    /// The data to be passed from `prepare` to `verify`.
+    type Data;
+
+    /// Prepare vesting interface environment.
+    fn prepare() -> Self::Data;
+    /// Verify vesting interface environment,
+    fn verify(data: Self::Data) -> DispatchResult;
+}
 
 /// The benchmark interface into the environment.
 pub trait Interface: super::Config {
@@ -30,7 +42,8 @@ pub trait Interface: super::Config {
 benchmarks! {
     where_clause {
         where
-            T: Interface
+            T: Interface,
+            <T as super::Config>::VestingInterface: VestingInterface,
     }
 
     claim {
@@ -53,11 +66,10 @@ benchmarks! {
             let recover_signer_ctx = mock::MockEthereumSignatureVerifier::recover_signer_context();
             recover_signer_ctx.expect().times(1..).return_const(Some(ethereum_address));
 
-            let lock_under_vesting_ctx = mock::MockVestingInterface::lock_under_vesting_context();
-            lock_under_vesting_ctx.expect().times(1..).return_const(Ok(()));
-
-            (mock_runtime_guard, recover_signer_ctx, lock_under_vesting_ctx)
+            (mock_runtime_guard, recover_signer_ctx)
         };
+
+        let vesting = <T as super::Config>::VestingInterface::prepare();
 
         let origin = RawOrigin::Signed(account_id.clone());
 
@@ -72,12 +84,13 @@ benchmarks! {
             <CurrencyOf<T>>::total_issuance(),
         );
 
+        assert_ok!(<T as super::Config>::VestingInterface::verify(vesting));
+
         #[cfg(test)]
         {
-            let (mock_runtime_guard, recover_signer_ctx, lock_under_vesting_ctx) = test_data;
+            let (mock_runtime_guard, recover_signer_ctx) = test_data;
 
             recover_signer_ctx.checkpoint();
-            lock_under_vesting_ctx.checkpoint();
 
             drop(mock_runtime_guard);
         }
@@ -105,5 +118,25 @@ impl Interface for crate::mock::Test {
         _ethereum_address: &EthereumAddress,
     ) -> EcdsaSignature {
         EcdsaSignature::default()
+    }
+}
+
+#[cfg(test)]
+impl VestingInterface for <crate::mock::Test as super::Config>::VestingInterface {
+    type Data = mock::__mock_MockVestingInterface_VestingInterface::__lock_under_vesting::Context;
+
+    fn prepare() -> Self::Data {
+        let lock_under_vesting_ctx = mock::MockVestingInterface::lock_under_vesting_context();
+        lock_under_vesting_ctx
+            .expect()
+            .times(1..)
+            .return_const(Ok(()));
+
+        lock_under_vesting_ctx
+    }
+
+    fn verify(lock_under_vesting_ctx: Self::Data) -> DispatchResult {
+        lock_under_vesting_ctx.checkpoint();
+        Ok(())
     }
 }
