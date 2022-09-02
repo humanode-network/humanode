@@ -7,7 +7,7 @@ use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
 use crate::*;
 
-/// The benchmark interface into the vesting interface related environment.
+/// The benchmarking extension for the vesting interface.
 pub trait VestingInterface: traits::VestingInterface {
     /// The data to be passed from `prepare` to `verify`.
     type Data;
