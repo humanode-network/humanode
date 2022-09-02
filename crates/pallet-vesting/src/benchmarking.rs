@@ -15,7 +15,7 @@ pub trait SchedulingDriver: traits::SchedulingDriver {
     /// The data to be passed from `prepare_init` to `verify` flow.
     type Data;
 
-    //// Initialize the scheduling driver environment to a state where vesting creation is possible.
+    /// Initialize the scheduling driver environment to a state where vesting creation is possible.
     fn prepare_init() -> Self::Data;
     /// Advance the scheduling driver environment to a state where unlocking is possible.
     fn prepare_advance(data: Self::Data) -> Self::Data;
