@@ -12,7 +12,7 @@ use crate::*;
 
 /// The benchmark interface into the scheduling driver related environment.
 pub trait SchedulingDriver: traits::SchedulingDriver {
-    /// The data type that is used at scheduling driver environment.
+    /// The data to be passed from `prepare_init` to `verify` flow.
     type Data;
 
     //// Initialize the scheduling driver environment to a state where vesting creation is possible.
