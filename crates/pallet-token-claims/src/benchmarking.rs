@@ -9,7 +9,7 @@ use crate::*;
 
 /// The benchmark interface into the vesting interface related environment.
 pub trait VestingInterface: traits::VestingInterface {
-    /// The data type that is used at vesting interface environment.
+    /// The data to be passed from `prepare` to `verify`.
     type Data;
 
     /// Prepare vesting interface environment.
