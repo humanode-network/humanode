@@ -24,6 +24,7 @@ jobs:
     runs-on: ubuntu-20.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+    permissions: {}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -47,6 +48,7 @@ jobs:
     runs-on: ${{ matrix.plan.platform.os }}
     env: ${{ matrix.plan.platform.env }}
     timeout-minutes: 50
+    permissions: {}
     steps:
 
       - name: Job config
@@ -93,6 +95,7 @@ jobs:
     name: End-to-end tests
     runs-on: ubuntu-20.04
     timeout-minutes: 50
+    permissions: {}
     steps:
 
       - name: Checkout
@@ -118,6 +121,7 @@ jobs:
     name: ${{ matrix.util.name }}
     runs-on: ubuntu-20.04
     timeout-minutes: 20
+    permissions: {}
     steps:
 
       - name: Checkout
