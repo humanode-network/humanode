@@ -14,6 +14,8 @@ jobs:
   taplo:
     name: taplo
     runs-on: ubuntu-20.04
+    permissions:
+      contents: read
     steps:
 
       - name: Checkout
@@ -27,6 +29,8 @@ jobs:
   cargo-sort:
     name: cargo-sort
     runs-on: ubuntu-20.04
+    permissions:
+      contents: read
     steps:
 
       - name: Checkout
