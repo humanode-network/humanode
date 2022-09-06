@@ -76,7 +76,7 @@ impl RpcUrlResolver {
         tunnel_name: &str,
         ws_rpc_endpoint_port: Option<u16>,
     ) -> Result<String, String> {
-        let mut attempts_left = 10;
+        let mut attempts_left = 100;
         let res = loop {
             let tunnel_name = std::borrow::Cow::Owned(tunnel_name.to_owned());
             let result = self
