@@ -84,27 +84,27 @@ impl RpcUrlResolver {
                 .call(&ngrok_api::data::request::TunnelInfo, (tunnel_name,))
                 .await;
 
-            match result {
+            let err = match result {
                 Ok(res) => break res,
-                Err(ngrok_api::client::Error::BadStatus(status)) if status == 404 => {
-                    // retry
-                }
-                Err(ngrok_api::client::Error::Reqwest(reqwest_error))
-                    if reqwest_error.is_redirect()
-                        || reqwest_error.is_status()
-                        || reqwest_error.is_timeout()
-                        || reqwest_error.is_request()
-                        || reqwest_error.is_connect()
-                        || reqwest_error.is_body()
-                        || reqwest_error.is_decode() =>
-                {
-                    // retry
-                }
-                Err(err) => return Err(err.to_string()),
+                Err(err) => match err {
+                    ngrok_api::client::Error::BadStatus(status) if status == 404 => err,
+                    ngrok_api::client::Error::Reqwest(ref reqwest_error)
+                        if reqwest_error.is_redirect()
+                            || reqwest_error.is_status()
+                            || reqwest_error.is_timeout()
+                            || reqwest_error.is_request()
+                            || reqwest_error.is_connect()
+                            || reqwest_error.is_body()
+                            || reqwest_error.is_decode() =>
+                    {
+                        err
+                    }
+                    err => return Err(format!("unable to detect the RPC URL from ngrok: {}", err)),
+                },
             };
 
             if attempts_left <= 0 {
-                return Err("ngrok did not start the tunnel in time".to_owned());
+                return Err(format!("ngrok did not start the tunnel in time: {}", err));
             }
             attempts_left -= 1;
             tokio::time::sleep(std::time::Duration::from_millis(500)).await;
