@@ -76,24 +76,38 @@ impl RpcUrlResolver {
         tunnel_name: &str,
         ws_rpc_endpoint_port: Option<u16>,
     ) -> Result<String, String> {
-        let mut attempts_left = 10;
+        let mut attempts_left = 100;
         let res = loop {
             let tunnel_name = std::borrow::Cow::Owned(tunnel_name.to_owned());
             let result = self
                 .ngrok_client
                 .call(&ngrok_api::data::request::TunnelInfo, (tunnel_name,))
                 .await;
-            match result {
+
+            let err = match result {
                 Ok(res) => break res,
-                Err(ngrok_api::client::Error::BadStatus(status)) if status == 404 => {
-                    if attempts_left <= 0 {
-                        return Err("ngrok did not start the tunnel in time".to_owned());
+                Err(err) => match err {
+                    ngrok_api::client::Error::BadStatus(status) if status == 404 => err,
+                    ngrok_api::client::Error::Reqwest(ref reqwest_error)
+                        if reqwest_error.is_redirect()
+                            || reqwest_error.is_status()
+                            || reqwest_error.is_timeout()
+                            || reqwest_error.is_request()
+                            || reqwest_error.is_connect()
+                            || reqwest_error.is_body()
+                            || reqwest_error.is_decode() =>
+                    {
+                        err
                     }
-                    attempts_left -= 1;
-                    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
-                }
-                Err(err) => return Err(err.to_string()),
+                    err => return Err(format!("unable to detect the RPC URL from ngrok: {}", err)),
+                },
+            };
+
+            if attempts_left <= 0 {
+                return Err(format!("ngrok did not start the tunnel in time: {}", err));
             }
+            attempts_left -= 1;
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
         };
         let mut public_url = res.public_url;
         if let Some(ws_rpc_endpoint_port) = ws_rpc_endpoint_port {
