@@ -83,17 +83,31 @@ impl RpcUrlResolver {
                 .ngrok_client
                 .call(&ngrok_api::data::request::TunnelInfo, (tunnel_name,))
                 .await;
+
             match result {
                 Ok(res) => break res,
                 Err(ngrok_api::client::Error::BadStatus(status)) if status == 404 => {
-                    if attempts_left <= 0 {
-                        return Err("ngrok did not start the tunnel in time".to_owned());
-                    }
-                    attempts_left -= 1;
-                    tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                    // retry
+                }
+                Err(ngrok_api::client::Error::Reqwest(reqwest_error))
+                    if reqwest_error.is_redirect()
+                        || reqwest_error.is_status()
+                        || reqwest_error.is_timeout()
+                        || reqwest_error.is_request()
+                        || reqwest_error.is_connect()
+                        || reqwest_error.is_body()
+                        || reqwest_error.is_decode() =>
+                {
+                    // retry
                 }
                 Err(err) => return Err(err.to_string()),
+            };
+
+            if attempts_left <= 0 {
+                return Err("ngrok did not start the tunnel in time".to_owned());
             }
+            attempts_left -= 1;
+            tokio::time::sleep(std::time::Duration::from_millis(500)).await;
         };
         let mut public_url = res.public_url;
         if let Some(ws_rpc_endpoint_port) = ws_rpc_endpoint_port {
