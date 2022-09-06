@@ -9,7 +9,7 @@ pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-
 primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01", default-features = false }
+fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071", default-features = false }
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 
 [dev-dependencies]
@@ -25,10 +25,4 @@ sp-runtime = { default-features = false, git = "https://github.com/humanode-netw
 
 [features]
 default = ["std"]
-std = [
-  "codec/std",
-  "fp-evm/std",
-  "sp-std/std",
-  "pallet-evm-accounts-mapping/std",
-  "primitives-ethereum/std",
-]
+std = ["codec/std", "fp-evm/std", "sp-std/std", "pallet-evm-accounts-mapping/std", "primitives-ethereum/std"]
