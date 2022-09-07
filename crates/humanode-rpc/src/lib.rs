@@ -21,7 +21,7 @@ use sc_client_api::{
     backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
 };
-use sc_consensus_babe::{Config, Epoch};
+use sc_consensus_babe::{BabeConfiguration, Epoch};
 use sc_consensus_babe_rpc::{Babe, BabeApiServer};
 use sc_consensus_epochs::SharedEpochChanges;
 use sc_finality_grandpa::{
@@ -59,7 +59,7 @@ pub struct BioauthDeps<VKE, VSF> {
 /// Extra dependencies for BABE.
 pub struct BabeDeps {
     /// BABE protocol config.
-    pub babe_config: Config,
+    pub babe_config: BabeConfiguration,
     /// BABE pending epoch changes.
     pub babe_shared_epoch_changes: SharedEpochChanges<Block, Epoch>,
     /// The keystore that manages the keys of the node.

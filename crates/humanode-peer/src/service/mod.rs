@@ -163,7 +163,7 @@ pub fn new_partial(
     )?;
 
     let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
-        sc_consensus_babe::Config::get(&*client)?,
+        sc_consensus_babe::configuration(&*client)?,
         grandpa_block_import.clone(),
         Arc::clone(&client),
     )?;
