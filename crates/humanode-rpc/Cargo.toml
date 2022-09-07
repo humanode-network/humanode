@@ -20,7 +20,7 @@ fc-rpc = { default-features = false, git = "https://github.com/humanode-network/
 fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
 fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
 fp-storage = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
-jsonrpsee = { version = "0.13.0", features = ["server", "macros"] }
+jsonrpsee = { version = "0.15.1", features = ["server", "macros"] }
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "master" }
 sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "master" }
