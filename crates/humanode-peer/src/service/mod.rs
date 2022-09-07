@@ -316,7 +316,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             &config,
             task_manager.spawn_handle(),
             Arc::clone(&client),
-            Arc::clone(&network),
+            Arc::clone(&network) as _,
         );
     }
 
@@ -419,7 +419,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     }
 
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
-        network: Arc::clone(&network),
+        network: Arc::clone(&network) as _,
         client: Arc::clone(&client),
         keystore: keystore_container.sync_keystore(),
         task_manager: &mut task_manager,
