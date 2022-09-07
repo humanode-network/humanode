@@ -4,7 +4,7 @@ use frame_support::{
     assert_noop, assert_ok, assert_storage_noop,
     pallet_prelude::{InvalidTransaction, ValidTransaction},
     unsigned::TransactionValidityError,
-    weights::{DispatchClass, DispatchInfo, Pays},
+    weights::{DispatchClass, DispatchInfo, Pays, Weight},
 };
 use mockall::predicate;
 use primitives_ethereum::EthereumAddress;
@@ -734,7 +734,7 @@ fn signed_ext_validate_works() {
 
         // Invoke the function under test.
         let normal = DispatchInfo {
-            weight: 100,
+            weight: Weight::from_ref_time(100),
             class: DispatchClass::Normal,
             pays_fee: Pays::No,
         };
@@ -786,7 +786,7 @@ fn signed_ext_validate_fails_invalid_eth_signature() {
 
         // Invoke the function under test.
         let normal = DispatchInfo {
-            weight: 100,
+            weight: Weight::from_ref_time(100),
             class: DispatchClass::Normal,
             pays_fee: Pays::No,
         };
@@ -838,7 +838,7 @@ fn signed_ext_validate_fails_when_claim_is_absent() {
 
         // Invoke the function under test.
         let normal = DispatchInfo {
-            weight: 100,
+            weight: Weight::from_ref_time(100),
             class: DispatchClass::Normal,
             pays_fee: Pays::No,
         };

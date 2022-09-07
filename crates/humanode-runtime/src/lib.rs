@@ -1170,14 +1170,13 @@ impl_runtime_apis! {
             let config = if estimate {
                 let mut config = <Runtime as pallet_evm::Config>::config().clone();
                 config.estimate = true;
-                Some(config)
+                config
             } else {
-                None
+                <Runtime as pallet_evm::Config>::config().clone()
             };
 
             let is_transactional = false;
             let validate = true;
-            let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
             <Runtime as pallet_evm::Config>::Runner::call(
                 from,
                 to,
@@ -1190,7 +1189,7 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 validate,
-                evm_config,
+                &config,
             ).map_err(|err| err.error.into())
         }
 
@@ -1208,14 +1207,13 @@ impl_runtime_apis! {
             let config = if estimate {
                 let mut config = <Runtime as pallet_evm::Config>::config().clone();
                 config.estimate = true;
-                Some(config)
+                config
             } else {
-                None
+                <Runtime as pallet_evm::Config>::config().clone()
             };
 
             let is_transactional = false;
             let validate = true;
-            let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
             <Runtime as pallet_evm::Config>::Runner::create(
                 from,
                 data,
@@ -1227,7 +1225,7 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 validate,
-                evm_config,
+                &config,
             ).map_err(|err| err.error.into())
         }
 

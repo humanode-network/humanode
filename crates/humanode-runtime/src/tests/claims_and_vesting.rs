@@ -7,7 +7,7 @@ use frame_support::{
     assert_noop, assert_ok, assert_storage_noop,
     pallet_prelude::InvalidTransaction,
     traits::{OnFinalize, OnInitialize},
-    weights::{DispatchClass, DispatchInfo, Pays},
+    weights::{DispatchClass, DispatchInfo, Pays, Weight},
 };
 use sp_runtime::{traits::Applyable, ModuleError};
 use vesting_schedule_linear::LinearSchedule;
@@ -84,7 +84,7 @@ fn prepare_applyable_data(
     );
 
     let normal_dispatch_info = DispatchInfo {
-        weight: 100,
+        weight: Weight::from_ref_time(100),
         class: DispatchClass::Normal,
         pays_fee: Pays::No,
     };
