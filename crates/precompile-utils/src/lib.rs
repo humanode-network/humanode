@@ -21,7 +21,7 @@ use fp_evm::{
     PrecompileOutput,
 };
 use frame_support::{
-    dispatch::{Dispatchable, GetDispatchInfo, PostDispatchInfo},
+    dispatch::{Dispatchable, GetDispatchInfo, PostDispatchInfo, Weight},
     traits::Get,
 };
 use pallet_evm::{GasWeightMapping, Log};
@@ -227,16 +227,16 @@ where
 {
     /// Cost of a Substrate DB write in gas.
     pub fn db_write_gas_cost() -> u64 {
-        <Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+        <Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(Weight::from_ref_time(
             <Runtime as frame_system::Config>::DbWeight::get().write,
-        )
+        ))
     }
 
     /// Cost of a Substrate DB read in gas.
     pub fn db_read_gas_cost() -> u64 {
-        <Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(
+        <Runtime as pallet_evm::Config>::GasWeightMapping::weight_to_gas(Weight::from_ref_time(
             <Runtime as frame_system::Config>::DbWeight::get().read,
-        )
+        ))
     }
 }
 

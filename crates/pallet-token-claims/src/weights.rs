@@ -10,6 +10,6 @@ pub trait WeightInfo {
 
 impl WeightInfo for () {
     fn claim() -> Weight {
-        0
+        Weight::zero()
     }
 }
