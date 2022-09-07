@@ -96,6 +96,11 @@ pub struct EvmDeps {
     pub eth_overrides: Arc<OverrideHandle<Block>>,
     /// Cache for Ethereum block data.
     pub eth_block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
+    /// A multiplier to allow larger gas limit in non-transactional execution.
+    ///
+    /// When using eth_call/eth_estimateGas, the maximum allowed gas limit will be
+    /// block.gas_limit * execute_gas_limit_multiplier.
+    pub eth_execute_gas_limit_multiplier: u64,
 }
 
 /// RPC subsystem dependencies.
@@ -241,6 +246,7 @@ where
         eth_fee_history_cache,
         eth_overrides,
         eth_block_data_cache,
+        eth_execute_gas_limit_multiplier,
     } = evm;
 
     io.merge(System::new(Arc::clone(&client), Arc::clone(&pool), deny_unsafe).into_rpc())?;
@@ -307,6 +313,7 @@ where
             Arc::clone(&eth_block_data_cache),
             eth_fee_history_cache,
             eth_fee_history_limit,
+            eth_execute_gas_limit_multiplier,
         )
         .into_rpc(),
     )?;

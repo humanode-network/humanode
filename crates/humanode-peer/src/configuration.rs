@@ -68,4 +68,10 @@ pub struct EthereumRpc {
 
     /// Maximum fee history cache size.
     pub fee_history_limit: u64,
+
+    /// A multiplier to allow larger gas limit in non-transactional execution.
+    ///
+    /// When using eth_call/eth_estimateGas, the maximum allowed gas limit will be
+    /// block.gas_limit * execute_gas_limit_multiplier.
+    pub execute_gas_limit_multiplier: u64,
 }
