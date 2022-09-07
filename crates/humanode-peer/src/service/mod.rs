@@ -492,7 +492,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             Duration::from_millis(humanode_runtime::SLOT_DURATION),
             Arc::clone(&client),
             backend,
-            Arc::clone(&frontier_backend),
+            frontier_backend,
             // retry_times: usize,
             3,
             // sync_from: <Block::Header as HeaderT>::Number,
@@ -512,12 +512,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             eth_fee_history_cache,
             eth_fee_history_limit,
         ),
-    );
-
-    task_manager.spawn_essential_handle().spawn(
-        "frontier-schema-cache-task",
-        Some("evm"),
-        EthTask::ethereum_schema_cache_task(Arc::clone(&client), frontier_backend),
     );
 
     // Spawn Frontier EthFilterApi maintenance task.
