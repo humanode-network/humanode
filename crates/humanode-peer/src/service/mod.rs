@@ -168,7 +168,10 @@ pub fn new_partial(
         Arc::clone(&client),
     )?;
 
-    let frontier_backend = Arc::new(frontier::open_backend(config)?);
+    let frontier_backend = Arc::new(FrontierBackend::open(
+        &config.database,
+        &frontier::db_config_dir(config),
+    )?);
     let frontier_block_import = FrontierBlockImport::new(
         babe_block_import,
         Arc::clone(&client),
