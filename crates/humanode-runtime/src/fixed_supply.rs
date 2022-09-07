@@ -4,6 +4,7 @@
 use core::marker::PhantomData;
 
 use frame_support::traits::{Currency, OnUnbalanced};
+use sp_runtime::traits::UniqueSaturatedInto;
 
 use super::*;
 
@@ -15,6 +16,7 @@ where
     T: pallet_evm::Config,
     C: Currency<<T as frame_system::Config>::AccountId>,
     OU: OnUnbalanced<<C as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance>,
+    U256: UniqueSaturatedInto<<C as Currency<<T as frame_system::Config>::AccountId>>::Balance>,
 {
     type LiquidityInfo =
         Option<<C as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance>;
