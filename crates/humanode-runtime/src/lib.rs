@@ -215,7 +215,7 @@ parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
     /// We allow for 2 seconds of compute with a 6 second average block time.
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
-        ::with_sensible_defaults(2 * WEIGHT_PER_SECOND, NORMAL_DISPATCH_RATIO);
+        ::with_sensible_defaults(WEIGHT_PER_SECOND.saturating_mul(2), NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
     pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
@@ -544,9 +544,9 @@ impl
         disable_strategy: sp_staking::offence::DisableStrategy,
     ) -> Weight {
         if disable_strategy == sp_staking::offence::DisableStrategy::Never {
-            return 0;
+            return Weight::zero();
         }
-        let mut weight: Weight = 0;
+        let mut weight: Weight = Weight::zero();
         let weights = <Runtime as frame_system::Config>::DbWeight::get();
         for details in offenders {
             let (_offender, identity) = &details.offender;
