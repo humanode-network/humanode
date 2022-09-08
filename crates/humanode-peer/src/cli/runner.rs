@@ -121,7 +121,7 @@ fn get_ss58_format(properties: &Properties) -> Result<u16> {
     let value = match properties.get("ss58Format") {
         Some(value) => value,
         // Use default 42 SS58Prefix if it's not set.
-        None => return Ok(42),
+        None => return Ok(crate::chain_spec::SS58_PREFIX),
     };
     let value = value
         .as_u64()
