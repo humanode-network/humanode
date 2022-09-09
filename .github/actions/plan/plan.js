@@ -87,7 +87,7 @@ const codeModes = {
   runBenchmark: {
     name: "test-run pallet benchmarks",
     cargoCommand: "run",
-    cargoArgs: "--release --features runtime-benchmarks,wasmtime benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 1 --repeat 0 --external-repeat 0",
+    cargoArgs: "--release --features runtime-benchmarks,wasmtime benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 2 --repeat 0 --external-repeat 0",
     cargoCacheKey: "run-benchmark",
   },
 };
@@ -159,7 +159,7 @@ const build = () => {
 }
 
 const evalMatrix = (dimensions, includes) => {
-  const evalNext = (allVariants, key, values) => allVariants.flatMap((variant) => values.map(value => ({...variant, [key]: value })))
+  const evalNext = (allVariants, key, values) => allVariants.flatMap((variant) => values.map(value => ({ ...variant, [key]: value })))
   const dimensionKeys = Object.keys(dimensions)
   const evaluated = dimensionKeys.reduce((allVariants, dimensionKey) => evalNext(allVariants, dimensionKey, dimensions[dimensionKey]), [{}])
   return [...evaluated, ...includes]
