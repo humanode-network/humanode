@@ -258,7 +258,9 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         "tokenClaimsPot": {{
             "initialState": "Initialized"
         }},
-        "transactionPayment": null,
+        "transactionPayment": {{
+            "multiplier": "1000000000000000000"
+        }},
         "session": {{
             "keys": [
                 [
@@ -293,7 +295,6 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         }},
         "baseFee": {{
             "baseFeePerGas": "0x0",
-            "isActive": true,
             "elasticity": 0,
             "marker": null
         }},

@@ -51,7 +51,9 @@ fn works() {
         "tokenClaimsPot": {
             "initialState": "Initialized"
         },
-        "transactionPayment": null,
+        "transactionPayment": {
+            "multiplier": "1000000000000000000"
+        },
         "session": {
             "keys": [
                 [
@@ -86,7 +88,6 @@ fn works() {
         },
         "baseFee": {
             "baseFeePerGas": "0x0",
-            "isActive": true,
             "elasticity": 0,
             "marker": null
         },
