@@ -66,7 +66,24 @@ class FeaturePropagationError < ValidationError
   def initialize(package, offences)
     @package = package
     @offences = offences
-    super("Package \"#{package}\" missing some required propagated features: #{JSON.pretty_generate(offences)}")
+
+    super(self.class.format_message(package, offences))
+  end
+
+  def self.format_message(package, offences)
+    message = ["Package \"#{package}\" missing some required propagated features:"]
+    offences.each do |feature, deps|
+      message << "  #{feature} = ["
+
+      deps.each do |dep|
+        message << "    \"#{dep}\","
+      end
+
+      message << '  ]'
+    end
+    message << "\n"
+
+    message.join("\n")
   end
 end
 
