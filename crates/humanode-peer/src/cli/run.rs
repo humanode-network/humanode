@@ -165,6 +165,14 @@ pub async fn run() -> sc_cli::Result<()> {
                 }
             })
         }
+        Some(Subcommand::FrontierDb(cmd)) => {
+            let runner = root.create_humanode_runner(cmd)?;
+            runner.sync_run(|config| {
+                let PartialComponents { client, other, .. } = service::new_partial(&config)?;
+                let frontier_backend = other.4;
+                cmd.run(client, frontier_backend)
+            })
+        }
         #[cfg(feature = "try-runtime")]
         Some(Subcommand::TryRuntime(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;

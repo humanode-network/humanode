@@ -21,8 +21,9 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 
 anyhow = "1"
 async-trait = "0.1"
-clap = { version = "3.1.6", features = ["derive"] }
+clap = { version = "3.2", features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "3.0.0" }
+fc-cli = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
 fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
 fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
 fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
