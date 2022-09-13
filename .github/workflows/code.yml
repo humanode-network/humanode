@@ -108,6 +108,14 @@ jobs:
       - name: Set up polkadot tools
         run: yarn install --frozen-lockfile
 
+      - name: Install rust toolchain
+        run: rustup show
+        timeout-minutes: 10
+
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 10
+
       - name: Build binaries
         run: cargo build --release
 
