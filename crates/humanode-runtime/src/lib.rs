@@ -553,9 +553,8 @@ impl
             match identity {
                 pallet_humanode_session::Identification::Bioauth(authentication) => {
                     let has_deathenticated = Bioauth::deauthenticate(&authentication.public_key);
-                    weight = weight.saturating_add(
-                        weights.reads_writes(1, if has_deathenticated { 1 } else { 0 }),
-                    );
+                    weight = weight
+                        .saturating_add(weights.reads_writes(1, u64::from(has_deathenticated)));
                 }
                 pallet_humanode_session::Identification::Bootnode(..) => {
                     // Never slash the bootnodes.

@@ -29,7 +29,7 @@ pub fn extract_and_print_keys(
     // Convert into Ethereum-style address.
     let mut m = [0u8; 64];
     m.copy_from_slice(&public_key.serialize()[1..65]);
-    let account = H160::from(H256::from_slice(Keccak256::digest(&m).as_slice()));
+    let account = H160::from(H256::from_slice(Keccak256::digest(m).as_slice()));
 
     println!("Address:      {:?}", account);
     println!("Mnemonic:     {}", mnemonic.phrase());
