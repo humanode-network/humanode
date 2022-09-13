@@ -1,0 +1,108 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'json'
+
+# A small debug tool.
+def pj(*val)
+  val.each { |item| puts JSON.pretty_generate(item) }
+end
+
+SHOULD_CACHE_METADATA = ENV['FEATURES_CHECK_CACHE_METADATA'] == 'true'
+CACHE_PATH = 'metadata-cache.json'
+
+def read_metadata_with_cache
+  File.read(CACHE_PATH)
+rescue StandardError
+  data = `cargo metadata --format-version 1`
+  File.write(CACHE_PATH, data)
+  data
+end
+
+metadata_content = SHOULD_CACHE_METADATA ? read_metadata_with_cache : `cargo metadata --format-version 1`
+
+METADATA = JSON.parse(metadata_content)
+
+workspace_packages = METADATA['packages'].filter { |package| METADATA['workspace_members'].include?(package['id']) }
+
+def find_deps(package)
+  # 1. Find the resolver node.
+  node = METADATA['resolve']['nodes'].find { |e_node| e_node['id'] == package['id'] }
+
+  # 2. Go from the resovler node to the dependencies.
+  node['deps'].each_with_object({}) do |dep, hash|
+    dep_package = METADATA['packages'].find { |e_package| e_package['id'] == dep['pkg'] }
+    hash[dep['name']] = {
+      dep: dep,
+      package: dep_package
+    }
+  end
+end
+
+REQUIRES_PROPAGATION = %w[
+  std
+  runtime-benchmarks
+  try-runtime
+].freeze
+
+def list_expected_propagated_features(feature, package, deps)
+  deps_with_feature = deps.filter { |_name, dep| dep[:package]['features'].keys.include?(feature) }
+  deps_with_feature.map do |ref_name, dep|
+    renamed_dep = package['dependencies'].find { |direct_dep| direct_dep['rename'] == ref_name }
+
+    # If we can find this dep with a rename corresponding to this ref name -
+    # then the is the name we use.
+    # Otherwise just use the raw crate name.
+    name = renamed_dep ? ref_name : dep[:package]['name']
+
+    "#{name}/#{feature}"
+  end
+end
+
+class ValidationError < StandardError; end
+
+# Raised when one or more features propagation issues are found for a package.
+class FeaturePropagationError < ValidationError
+  def initialize(package, offences)
+    @package = package
+    @offences = offences
+    super("Package \"#{package}\" missing some required propagated features: #{JSON.pretty_generate(offences)}")
+  end
+end
+
+def check_features_propagation!(package)
+  # Step 1: find dependencies.
+  deps = find_deps(package)
+
+  # Step 2: if deps has one of propagated features, we must propagate it.
+  offences = REQUIRES_PROPAGATION.each_with_object({}) do |feature, hash|
+    expected = list_expected_propagated_features(feature, package, deps)
+    actual = package['features'][feature] || []
+
+    missing = expected - actual
+
+    hash[feature] = missing unless missing.empty?
+  end
+
+  raise FeaturePropagationError.new(package['name'], offences) unless offences.empty?
+end
+
+def check_features!(package)
+  check_features_propagation!(package)
+end
+
+errors = {}
+workspace_packages.each do |workspace_package|
+  check_features!(workspace_package)
+rescue ValidationError => e
+  errors[workspace_package['name']] = e
+end
+
+return if errors.empty?
+
+warn 'Errors were detected:'
+errors.each do |_package, error|
+  puts error
+end
+
+exit 1
