@@ -19,7 +19,7 @@ fn lock_under_vesting_works() {
         Balances::make_free_balance_be(&42, 1000);
 
         // Check test preconditions.
-        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert!(<Schedules<Test>>::get(42).is_none());
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 1000);
 
@@ -41,7 +41,7 @@ fn lock_under_vesting_works() {
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 900);
-        assert!(<Schedules<Test>>::get(&42).is_some());
+        assert!(<Schedules<Test>>::get(42).is_some());
         assert_eq!(System::events().len(), 1);
         System::assert_has_event(mock::Event::Vesting(Event::Locked {
             who: 42,
@@ -62,7 +62,7 @@ fn lock_under_vesting_works_with_zero() {
         Balances::make_free_balance_be(&42, 1000);
 
         // Check test preconditions.
-        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert!(<Schedules<Test>>::get(42).is_none());
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 1000);
 
@@ -84,7 +84,7 @@ fn lock_under_vesting_works_with_zero() {
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 1000);
-        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert!(<Schedules<Test>>::get(42).is_none());
         assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::Event::Vesting(Event::Locked {
             who: 42,
@@ -106,10 +106,10 @@ fn lock_under_vesting_conflicts_with_existing_lock() {
         // Prepare the test state.
         Balances::make_free_balance_be(&42, 1000);
         <Pallet<Test>>::set_lock(&42, 100);
-        <Schedules<Test>>::insert(&42, MockSchedule);
+        <Schedules<Test>>::insert(42, MockSchedule);
 
         // Check test preconditions.
-        let schedule_before = <Schedules<Test>>::get(&42).unwrap();
+        let schedule_before = <Schedules<Test>>::get(42).unwrap();
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 900);
 
@@ -130,7 +130,7 @@ fn lock_under_vesting_conflicts_with_existing_lock() {
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 900);
-        assert_eq!(<Schedules<Test>>::get(&42).unwrap(), schedule_before);
+        assert_eq!(<Schedules<Test>>::get(42).unwrap(), schedule_before);
         assert_eq!(System::events().len(), 0);
 
         // Assert mock invocations.
@@ -149,7 +149,7 @@ fn lock_under_vesting_can_lock_balance_greater_than_free_balance() {
         Balances::make_free_balance_be(&42, 1000);
 
         // Check test preconditions.
-        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert!(<Schedules<Test>>::get(42).is_none());
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 1000);
 
@@ -171,7 +171,7 @@ fn lock_under_vesting_can_lock_balance_greater_than_free_balance() {
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 0);
-        assert!(<Schedules<Test>>::get(&42).is_some());
+        assert!(<Schedules<Test>>::get(42).is_some());
         assert_eq!(System::events().len(), 1);
         System::assert_has_event(mock::Event::Vesting(Event::Locked {
             who: 42,
@@ -192,10 +192,10 @@ fn unlock_works_full() {
         // Prepare the test state.
         Balances::make_free_balance_be(&42, 1000);
         <Pallet<Test>>::set_lock(&42, 100);
-        <Schedules<Test>>::insert(&42, MockSchedule);
+        <Schedules<Test>>::insert(42, MockSchedule);
 
         // Check test preconditions.
-        assert!(<Schedules<Test>>::get(&42).is_some());
+        assert!(<Schedules<Test>>::get(42).is_some());
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 900);
 
@@ -217,7 +217,7 @@ fn unlock_works_full() {
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 1000);
-        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert!(<Schedules<Test>>::get(42).is_none());
         assert_eq!(System::events().len(), 1);
         System::assert_has_event(mock::Event::Vesting(Event::FullyUnlocked { who: 42 }));
 
@@ -234,10 +234,10 @@ fn unlock_works_partial() {
         // Prepare the test state.
         Balances::make_free_balance_be(&42, 1000);
         <Pallet<Test>>::set_lock(&42, 100);
-        <Schedules<Test>>::insert(&42, MockSchedule);
+        <Schedules<Test>>::insert(42, MockSchedule);
 
         // Check test preconditions.
-        let schedule_before = <Schedules<Test>>::get(&42).unwrap();
+        let schedule_before = <Schedules<Test>>::get(42).unwrap();
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 900);
 
@@ -259,7 +259,7 @@ fn unlock_works_partial() {
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 910);
-        assert_eq!(<Schedules<Test>>::get(&42).unwrap(), schedule_before);
+        assert_eq!(<Schedules<Test>>::get(42).unwrap(), schedule_before);
         assert_eq!(System::events().len(), 1);
         System::assert_has_event(mock::Event::Vesting(Event::PartiallyUnlocked {
             who: 42,
@@ -279,10 +279,10 @@ fn unlock_computation_failure() {
         // Prepare the test state.
         Balances::make_free_balance_be(&42, 1000);
         <Pallet<Test>>::set_lock(&42, 100);
-        <Schedules<Test>>::insert(&42, MockSchedule);
+        <Schedules<Test>>::insert(42, MockSchedule);
 
         // Check test preconditions.
-        let schedule_before = <Schedules<Test>>::get(&42).unwrap();
+        let schedule_before = <Schedules<Test>>::get(42).unwrap();
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 900);
 
@@ -307,7 +307,7 @@ fn unlock_computation_failure() {
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 900);
-        assert_eq!(<Schedules<Test>>::get(&42).unwrap(), schedule_before);
+        assert_eq!(<Schedules<Test>>::get(42).unwrap(), schedule_before);
         assert_eq!(System::events().len(), 0);
 
         // Assert mock invocations.
@@ -324,7 +324,7 @@ fn unlock_no_vesting_error() {
         Balances::make_free_balance_be(&42, 1000);
 
         // Check test preconditions.
-        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert!(<Schedules<Test>>::get(42).is_none());
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 1000);
 
@@ -345,7 +345,7 @@ fn unlock_no_vesting_error() {
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 1000);
-        assert!(<Schedules<Test>>::get(&42).is_none());
+        assert!(<Schedules<Test>>::get(42).is_none());
         assert_eq!(System::events().len(), 0);
 
         // Assert mock invocations.

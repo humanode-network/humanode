@@ -20,7 +20,7 @@ where
     {
         let data = data.as_ref();
         let signature = signature.as_slice().try_into().map_err(|_| ())?;
-        Ok(T::Pair::verify(&signature, &data, &self.0))
+        Ok(T::Pair::verify(&signature, data, &self.0))
     }
 }
 
