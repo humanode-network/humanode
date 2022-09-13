@@ -207,7 +207,7 @@ impl system::Config for Test {
     type BlockLength = ();
     type DbWeight = ();
     type Origin = Origin;
-    type Call = Call;
+    type RuntimeCall = RuntimeCall;
     type Index = u64;
     type BlockNumber = BlockNumber;
     type Hash = H256;
@@ -215,7 +215,7 @@ impl system::Config for Test {
     type AccountId = u64;
     type Lookup = IdentityLookup<Self::AccountId>;
     type Header = Header;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type BlockHashCount = ConstU64<250>;
     type Version = ();
     type PalletInfo = PalletInfo;
@@ -253,7 +253,7 @@ impl core::fmt::Display for DisplayMoment {
 }
 
 impl pallet_bioauth::Config for Test {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type RobonodePublicKey = MockVerifier;
     type RobonodeSignature = Vec<u8>;
     type ValidatorPublicKey = ValidatorPublicKey;
