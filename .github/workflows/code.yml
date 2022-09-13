@@ -131,6 +131,8 @@ jobs:
         util:
           - name: Require fork dependencies
             run: utils/checks/require-fork-deps
+          - name: Check features
+            run: utils/checks/features
       fail-fast: false
     name: ${{ matrix.util.name }}
     runs-on: ubuntu-20.04
