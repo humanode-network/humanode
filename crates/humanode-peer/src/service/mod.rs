@@ -13,7 +13,7 @@ use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
-use sc_client_api::{BlockBackend, BlockchainEvents, ExecutorProvider};
+use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
@@ -195,7 +195,6 @@ pub fn new_partial(
         inherents::ForImport(inherent_data_providers_creator.clone()),
         &task_manager.spawn_essential_handle(),
         config.prometheus_registry(),
-        sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
         telemetry.as_ref().map(|x| x.handle()),
     )?;
     Ok(PartialComponents {
@@ -274,7 +273,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         .ok_or_else(|| ServiceError::Other("Ethereum RPC config is not set".into()))?;
 
     let role = config.role.clone();
-    let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
     let name = config.network.node_name.clone();
     let keystore = Some(keystore_container.sync_keystore());
     let enable_grandpa = !config.disable_grandpa;
@@ -443,7 +441,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         force_authoring,
         backoff_authoring_blocks,
         babe_link,
-        can_author_with,
         block_proposal_slot_portion: SlotProportion::new(0.5),
         max_block_proposal_slot_portion: None,
         telemetry: telemetry.as_ref().map(|x| x.handle()),
