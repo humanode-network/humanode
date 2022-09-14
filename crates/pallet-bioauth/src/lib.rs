@@ -5,8 +5,8 @@
 #![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
+use frame_support::dispatch::DispatchInfo;
 use frame_support::traits::{IsSubType, StorageVersion};
-use frame_support::weights::DispatchInfo;
 use frame_support::{traits::ConstU32, WeakBoundedVec};
 pub use pallet::*;
 use scale_info::TypeInfo;

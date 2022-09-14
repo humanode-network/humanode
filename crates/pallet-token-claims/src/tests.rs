@@ -2,9 +2,10 @@
 
 use frame_support::{
     assert_noop, assert_ok, assert_storage_noop,
+    dispatch::{DispatchClass, DispatchInfo, Pays},
     pallet_prelude::{InvalidTransaction, ValidTransaction},
     unsigned::TransactionValidityError,
-    weights::{DispatchClass, DispatchInfo, Pays, Weight},
+    weights::Weight,
 };
 use mockall::predicate;
 use primitives_ethereum::EthereumAddress;

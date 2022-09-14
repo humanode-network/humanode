@@ -5,9 +5,10 @@ use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_see
 use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
 use frame_support::{
     assert_noop, assert_ok, assert_storage_noop,
+    dispatch::{DispatchClass, DispatchInfo, Pays},
     pallet_prelude::InvalidTransaction,
     traits::{OnFinalize, OnInitialize},
-    weights::{DispatchClass, DispatchInfo, Pays, Weight},
+    weights::Weight,
 };
 use sp_runtime::{traits::Applyable, ModuleError};
 use vesting_schedule_linear::LinearSchedule;

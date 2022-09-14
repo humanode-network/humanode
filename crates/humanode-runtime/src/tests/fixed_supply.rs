@@ -4,8 +4,8 @@ use std::str::FromStr;
 
 use frame_support::{
     assert_ok,
-    dispatch::DispatchInfo,
-    weights::{DispatchClass, Pays, Weight},
+    dispatch::{DispatchClass, DispatchInfo, Pays},
+    weights::Weight,
 };
 use pallet_evm::AddressMapping;
 use sp_runtime::traits::SignedExtension;

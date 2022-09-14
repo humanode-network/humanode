@@ -3,12 +3,11 @@
 use core::marker::PhantomData;
 
 use frame_support::{
-    dispatch::Dispatchable,
+    dispatch::{DispatchInfo, Dispatchable},
     pallet_prelude::*,
     sp_runtime,
     traits::IsSubType,
     unsigned::{TransactionValidity, TransactionValidityError},
-    weights::DispatchInfo,
 };
 use sp_runtime::traits::{DispatchInfoOf, SignedExtension};
 
