@@ -63,7 +63,7 @@ impl<'de> Deserialize<'de> for EthereumAddress {
 
             let ch = result.map_err(|err| match err {
                 rustc_hex::FromHexError::InvalidHexCharacter(ch, idx) => {
-                    serde::de::Error::custom(&format_args!(
+                    serde::de::Error::custom(format_args!(
                         "invalid character '{}' at position {}, expected 0-9 or a-z or A-Z",
                         ch, idx
                     ))

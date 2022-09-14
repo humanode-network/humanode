@@ -37,16 +37,16 @@ fn currency_total_issuance() -> BalanceOf<Test> {
 fn basic_setup_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check the claims.
-        assert_eq!(<Claims<Test>>::get(&EthereumAddress::default()), None);
+        assert_eq!(<Claims<Test>>::get(EthereumAddress::default()), None);
         assert_eq!(
-            <Claims<Test>>::get(&eth(EthAddr::Existing)),
+            <Claims<Test>>::get(eth(EthAddr::Existing)),
             Some(ClaimInfo {
                 balance: 10,
                 vesting: MockVestingSchedule
             })
         );
         assert_eq!(
-            <Claims<Test>>::get(&eth(EthAddr::SecondExisting)),
+            <Claims<Test>>::get(eth(EthAddr::SecondExisting)),
             Some(ClaimInfo {
                 balance: 20,
                 vesting: MockVestingSchedule
@@ -69,7 +69,7 @@ fn basic_setup_works() {
 fn claiming_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -103,7 +103,7 @@ fn claiming_works() {
         ));
 
         // Assert state changes.
-        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert!(!<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 10);
         assert_eq!(pot_account_balance_before - pot_account_balance(), 10);
         assert_eq!(
@@ -127,7 +127,7 @@ fn claiming_works() {
 fn claim_eth_signature_recovery_failure() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -156,7 +156,7 @@ fn claim_eth_signature_recovery_failure() {
         );
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
         assert_eq!(
@@ -180,8 +180,8 @@ fn claim_eth_signature_recovery_failure() {
 fn claim_eth_signature_recovery_invalid() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
-        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
+        assert!(!<Claims<Test>>::contains_key(eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -210,8 +210,8 @@ fn claim_eth_signature_recovery_invalid() {
         );
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
-        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
+        assert!(!<Claims<Test>>::contains_key(eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
         assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
         assert_eq!(
@@ -235,7 +235,7 @@ fn claim_eth_signature_recovery_invalid() {
 fn claim_lock_under_vesting_failure() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -268,7 +268,7 @@ fn claim_lock_under_vesting_failure() {
         );
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
         assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
         assert_eq!(
@@ -291,7 +291,7 @@ fn claim_lock_under_vesting_failure() {
 fn claim_non_existing() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
+        assert!(!<Claims<Test>>::contains_key(eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -320,7 +320,7 @@ fn claim_non_existing() {
         );
 
         // Assert state changes.
-        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
+        assert!(!<Claims<Test>>::contains_key(eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
         assert_eq!(pot_account_balance_before - pot_account_balance(), 0);
         assert_eq!(
@@ -713,7 +713,7 @@ mod optional_vesting_interface {
 fn signed_ext_validate_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Set mock expectations.
@@ -765,7 +765,7 @@ fn signed_ext_validate_works() {
 fn signed_ext_validate_fails_invalid_eth_signature() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(<Claims<Test>>::contains_key(&eth(EthAddr::Existing)));
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Set mock expectations.
@@ -817,7 +817,7 @@ fn signed_ext_validate_fails_invalid_eth_signature() {
 fn signed_ext_validate_fails_when_claim_is_absent() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert!(!<Claims<Test>>::contains_key(&eth(EthAddr::Unknown)));
+        assert!(!<Claims<Test>>::contains_key(eth(EthAddr::Unknown)));
         assert_eq!(Balances::free_balance(42), 0);
 
         // Set mock expectations.
