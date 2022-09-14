@@ -743,7 +743,7 @@ fn signed_ext_validate_works() {
         assert_storage_noop!(assert_ok!(
             ext.validate(
                 &42,
-                &mock::Call::TokenClaims(Call::claim {
+                &mock::RuntimeCall::TokenClaims(Call::claim {
                     ethereum_address: eth(EthAddr::Existing),
                     ethereum_signature: sig(1),
                 }),
@@ -795,7 +795,7 @@ fn signed_ext_validate_fails_invalid_eth_signature() {
         assert_noop!(
             ext.validate(
                 &42,
-                &mock::Call::TokenClaims(Call::claim {
+                &mock::RuntimeCall::TokenClaims(Call::claim {
                     ethereum_address: eth(EthAddr::Existing),
                     ethereum_signature: sig(1),
                 }),
@@ -847,7 +847,7 @@ fn signed_ext_validate_fails_when_claim_is_absent() {
         assert_noop!(
             ext.validate(
                 &42,
-                &mock::Call::TokenClaims(Call::claim {
+                &mock::RuntimeCall::TokenClaims(Call::claim {
                     ethereum_address: eth(EthAddr::Unknown),
                     ethereum_signature: sig(1),
                 }),

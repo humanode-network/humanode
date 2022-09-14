@@ -64,10 +64,10 @@ fn sign_sample_token_claim(
 // `CheckedExtrinsic`, `DispatchInfo` and go directly to checking the Extra using the Applyable trait
 // (both apply and validate).
 fn prepare_applyable_data(
-    call: Call,
+    call: RuntimeCall,
     account_id: AccountId,
 ) -> (
-    CheckedExtrinsic<AccountId, Call, SignedExtra, H160>,
+    CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>,
     DispatchInfo,
     usize,
 ) {
@@ -188,7 +188,7 @@ fn assert_genesis_json(token_claims: &str, token_claim_pot_balance: u128) {
 }
 
 fn assert_applyable_validate_all_transaction_sources(
-    checked_extrinsic: &CheckedExtrinsic<AccountId, Call, SignedExtra, H160>,
+    checked_extrinsic: &CheckedExtrinsic<AccountId, RuntimeCall, SignedExtra, H160>,
     normal_dispatch_info: &DispatchInfo,
     len: usize,
 ) {
@@ -714,7 +714,7 @@ fn dispatch_claiming_without_vesting_works() {
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::TokenClaims(pallet_token_claims::Call::claim {
+            RuntimeCall::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
             }),
@@ -777,7 +777,7 @@ fn dispatch_claiming_with_vesting_works() {
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::TokenClaims(pallet_token_claims::Call::claim {
+            RuntimeCall::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
             }),
@@ -863,7 +863,7 @@ fn dispatch_unlock_full_balance_works() {
 
         // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::Vesting(pallet_vesting::Call::unlock {}),
+            RuntimeCall::Vesting(pallet_vesting::Call::unlock {}),
             account_id("Alice"),
         );
 
@@ -937,7 +937,7 @@ fn dispatch_unlock_partial_balance_works() {
 
         // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::Vesting(pallet_vesting::Call::unlock {}),
+            RuntimeCall::Vesting(pallet_vesting::Call::unlock {}),
             account_id("Alice"),
         );
 
@@ -985,7 +985,7 @@ fn dispatch_claiming_fails_when_eth_signature_invalid() {
     new_test_ext().execute_with(move || {
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::TokenClaims(pallet_token_claims::Call::claim {
+            RuntimeCall::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address: EthereumAddress::default(),
                 ethereum_signature: EcdsaSignature::default(),
             }),
@@ -1026,7 +1026,7 @@ fn dispatch_claiming_fails_when_no_claim() {
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::TokenClaims(pallet_token_claims::Call::claim {
+            RuntimeCall::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
             }),
@@ -1071,7 +1071,7 @@ fn dispatch_claiming_zero_balance_works() {
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            Call::TokenClaims(pallet_token_claims::Call::claim {
+            RuntimeCall::TokenClaims(pallet_token_claims::Call::claim {
                 ethereum_address,
                 ethereum_signature,
             }),
