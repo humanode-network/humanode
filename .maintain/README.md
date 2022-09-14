@@ -22,61 +22,61 @@ For brevity, `TemplateData` is as follows and only these fields are permitted in
 // This is the final structure we will pass to the Handlebars template.
 #[derive(Serialize, Default, Debug, Clone)]
 struct TemplateData {
-	args: Vec<String>,
-	date: String,
-	version: String,
-	pallet: String,
-	instance: String,
-	header: String,
-	cmd: CmdData,
-	benchmarks: Vec<BenchmarkData>,
+  args: Vec<String>,
+  date: String,
+  version: String,
+  pallet: String,
+  instance: String,
+  header: String,
+  cmd: CmdData,
+  benchmarks: Vec<BenchmarkData>,
 }
 
 // This was the final data we have about each benchmark.
 #[derive(Serialize, Default, Debug, Clone)]
 struct BenchmarkData {
-	name: String,
-	components: Vec<Component>,
-	#[serde(serialize_with = "string_serialize")]
-	base_weight: u128,
-	#[serde(serialize_with = "string_serialize")]
-	base_reads: u128,
-	#[serde(serialize_with = "string_serialize")]
-	base_writes: u128,
-	component_weight: Vec<ComponentSlope>,
-	component_reads: Vec<ComponentSlope>,
-	component_writes: Vec<ComponentSlope>,
-	comments: Vec<String>,
+  name: String,
+  components: Vec<Component>,
+  #[serde(serialize_with = "string_serialize")]
+  base_weight: u128,
+  #[serde(serialize_with = "string_serialize")]
+  base_reads: u128,
+  #[serde(serialize_with = "string_serialize")]
+  base_writes: u128,
+  component_weight: Vec<ComponentSlope>,
+  component_reads: Vec<ComponentSlope>,
+  component_writes: Vec<ComponentSlope>,
+  comments: Vec<String>,
 }
 
 // This forwards some specific metadata from the `PalletCmd`.
 #[derive(Serialize, Default, Debug, Clone)]
 struct CmdData {
-	steps: u32,
-	repeat: u32,
-	lowest_range_values: Vec<u32>,
-	highest_range_values: Vec<u32>,
-	execution: String,
-	wasm_execution: String,
-	chain: String,
-	db_cache: u32,
-	analysis_choice: String,
+  steps: u32,
+  repeat: u32,
+  lowest_range_values: Vec<u32>,
+  highest_range_values: Vec<u32>,
+  execution: String,
+  wasm_execution: String,
+  chain: String,
+  db_cache: u32,
+  analysis_choice: String,
 }
 
 // This encodes the component name and whether that component is used.
 #[derive(Serialize, Debug, Clone, Eq, PartialEq)]
 struct Component {
-	name: String,
-	is_used: bool,
+  name: String,
+  is_used: bool,
 }
 
 // This encodes the slope of some benchmark related to a component.
 #[derive(Serialize, Debug, Clone, Eq, PartialEq)]
 struct ComponentSlope {
-	name: String,
-	#[serde(serialize_with = "string_serialize")]
-	slope: u128,
-	#[serde(serialize_with = "string_serialize")]
-	error: u128,
+  name: String,
+  #[serde(serialize_with = "string_serialize")]
+  slope: u128,
+  #[serde(serialize_with = "string_serialize")]
+  error: u128,
 }
 ```
