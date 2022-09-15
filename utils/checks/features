@@ -31,11 +31,27 @@ def find_deps(package)
 
   # 2. Go from the resovler node to the dependencies.
   node['deps'].each_with_object({}) do |dep, hash|
+    # Simply find the package information by correlating the package id.
     dep_package = METADATA['packages'].find { |e_package| e_package['id'] == dep['pkg'] }
-    hash[dep['name']] = {
+
+    # Find the dependency taking the possibility of a package rename into
+    # account.
+    dependency = package['dependencies'].find do |e_dependency|
+      e_dependency['rename'] == dep['name'] || e_dependency['name'] == dep_package['name']
+    end
+
+    # Figure out the actual dep name that will be used in the features
+    # propagation.
+    dep_name = dependency['rename'] || dep_package['name']
+
+    value = {
       dep: dep,
-      package: dep_package
+      package: dep_package,
+      dependency: dependency,
+      dep_name: dep_name
     }
+
+    hash[dep_name] = value
   end
 end
 
@@ -45,16 +61,11 @@ REQUIRES_PROPAGATION = %w[
   try-runtime
 ].freeze
 
-def list_expected_propagated_features(feature, package, deps)
-  deps_with_feature = deps.filter { |_name, dep| dep[:package]['features'].keys.include?(feature) }
-  deps_with_feature.map do |ref_name, dep|
-    renamed_dep = package['dependencies'].find { |direct_dep| direct_dep['rename'] == ref_name }
-
-    # If we can find this dep with a rename corresponding to this ref name -
-    # then the is the name we use.
-    # Otherwise just use the raw crate name.
-    name = renamed_dep ? ref_name : dep[:package]['name']
-
+def list_expected_propagated_features(feature, _package, deps)
+  deps_with_feature = deps.filter do |_name, dep|
+    dep[:package]['features'].keys.include?(feature)
+  end
+  deps_with_feature.map do |name, _dep|
     "#{name}/#{feature}"
   end
 end
