@@ -61,9 +61,29 @@ REQUIRES_PROPAGATION = %w[
   try-runtime
 ].freeze
 
+def package_feature_enabled_by(package, enabled_by, what)
+  features = package['features'] || {}
+  enabled_featues = features[enabled_by] || []
+
+  return true if enabled_featues.include?(what)
+  return true if enabled_featues.any? { |e| package_feature_enabled_by(package, e, what) }
+
+  false
+end
+
 def list_expected_propagated_features(feature, _package, deps)
   deps_with_feature = deps.filter do |_name, dep|
-    dep[:package]['features'].keys.include?(feature)
+    # If the package does not contain the feature we can't possible need to
+    # specify the feature, so skip it.
+    next false unless dep[:package]['features'].keys.include?(feature)
+
+    # If the package has the feature enabled by default, and the package is
+    # using the feature by default - also skip it, as we don't need to specify
+    # the feature.
+    default_enabled = dep[:dependency]['uses_default_features']
+    next false if default_enabled && package_feature_enabled_by(dep[:package], 'default', feature)
+
+    true
   end
   deps_with_feature.map do |name, _dep|
     "#{name}/#{feature}"
