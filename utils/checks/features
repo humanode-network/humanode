@@ -5,7 +5,7 @@ require 'json'
 
 # A small debug tool.
 def pj(*val)
-  val.each { |item| puts JSON.pretty_generate(item) }
+  val.each { |item| warn JSON.pretty_generate(item) }
 end
 
 SHOULD_CACHE_METADATA = ENV['FEATURES_CHECK_CACHE_METADATA'] == 'true'
@@ -117,7 +117,7 @@ end
 
 return if errors.empty?
 
-warn 'Errors were detected:'
+puts 'Issues were detected:'
 errors.each do |_package, error|
   puts error
 end
