@@ -7,4 +7,5 @@ FROM ${BASE}
 RUN apt-get update \
   && apt-get install -y \
   clang \
+  protobuf-compiler \
   && rm -rf /var/lib/apt/lists/*
