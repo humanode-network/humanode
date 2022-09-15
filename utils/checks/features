@@ -55,12 +55,6 @@ def find_deps(package)
   end
 end
 
-REQUIRES_PROPAGATION = %w[
-  std
-  runtime-benchmarks
-  try-runtime
-].freeze
-
 def package_feature_enabled_by(package, enabled_by, what)
   features = package['features'] || {}
   enabled_featues = features[enabled_by] || []
@@ -118,14 +112,26 @@ class FeaturePropagationError < ValidationError
   end
 end
 
+PROPAGATED_FEATURES = {
+  'std' => { propagate_if_missing: true },
+  'runtime-benchmarks' => { propagate_if_missing: false },
+  'try-runtime' => { propagate_if_missing: false }
+}
+
 def check_features_propagation!(package)
   # Step 1: find dependencies.
   deps = find_deps(package)
 
   # Step 2: if deps has one of propagated features, we must propagate it.
-  offences = REQUIRES_PROPAGATION.each_with_object({}) do |feature, hash|
+  offences = PROPAGATED_FEATURES.each_with_object({}) do |(feature, params), hash|
+    features = package['features']
+
+    # If the package does not have a feature and we are told not to propagate
+    # the feature if it is missing - then do not do any checks.
+    next if !params[:propagate_if_missing] && !features.keys.include?(feature)
+
     expected = list_expected_propagated_features(feature, package, deps)
-    actual = package['features'][feature] || []
+    actual = features[feature] || []
 
     missing = expected - actual
 
