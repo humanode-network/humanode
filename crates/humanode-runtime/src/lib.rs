@@ -515,14 +515,11 @@ impl pallet_bootnodes::Config for Runtime {
     type MaxBootnodes = ConstU32<16>;
 }
 
-parameter_types! {
-    pub MaxSessionValidators: u32 = <<Runtime as pallet_bootnodes::Config>::MaxBootnodes as Get<u32>>::get() + <<Runtime as pallet_bioauth::Config>::MaxAuthentications as Get<u32>>::get();
-}
-
 impl pallet_humanode_session::Config for Runtime {
     type ValidatorPublicKeyOf = IdentityValidatorIdOf;
     type BootnodeIdOf = sp_runtime::traits::Identity;
-    type MaxSessionValidators = MaxSessionValidators;
+    type MaxBootnodeValidators = <Runtime as pallet_bootnodes::Config>::MaxBootnodes;
+    type MaxBioauthValidators = <Runtime as pallet_bioauth::Config>::MaxAuthentications;
 }
 
 pub struct OffenceSlasher;
