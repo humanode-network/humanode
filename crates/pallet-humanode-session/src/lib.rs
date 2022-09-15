@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::StorageVersion;
+use frame_support::traits::{Get, StorageVersion};
 pub use pallet::*;
 use sp_runtime::traits::Convert;
 use sp_std::prelude::*;
@@ -45,10 +45,11 @@ pub mod pallet {
         /// The type for converting the key that bootnodes use into the key that session requires.
         type BootnodeIdOf: Convert<<Self as pallet_bootnodes::Config>::BootnodeId, Self::AccountId>;
 
-        /// The max total amount of session validators.
-        ///
-        /// This should be an upper bound to fit both the bootnodes, and the bioauth validators.
-        type MaxSessionValidators: Get<u32>;
+        /// The max amount of bootnodes contributing to the session validators.
+        type MaxBootnodeValidators: Get<u32>;
+
+        /// The max amount of bioauth-powered session validators.
+        type MaxBioauthValidators: Get<u32>;
     }
 
     #[pallet::pallet]
@@ -130,6 +131,7 @@ impl<T: Config> Pallet<T> {
     fn next_authorities() -> impl Iterator<Item = IdentificationTupleFor<T>> {
         let bootnodes = <pallet_bootnodes::Pallet<T>>::bootnodes()
             .into_iter()
+            .take(T::MaxBootnodeValidators::get().try_into().unwrap())
             .map(|id| {
                 (
                     T::BootnodeIdOf::convert(id.clone()),
@@ -140,6 +142,7 @@ impl<T: Config> Pallet<T> {
         let bioauth_active_authentications = <pallet_bioauth::Pallet<T>>::active_authentications()
             .into_inner()
             .into_iter()
+            .take(T::MaxBioauthValidators::get().try_into().unwrap())
             .filter_map(|authentication| {
                 T::ValidatorPublicKeyOf::convert(authentication.public_key.clone())
                     .map(|account_id| (account_id, Identification::Bioauth(authentication)))
