@@ -366,6 +366,10 @@ pub mod pallet {
         NonceAlreadyUsed,
         /// This public key has already been used.
         PublicKeyAlreadyUsed,
+        /// The ConsumedAuthTicketNonces storage has reached the limit as WeakBoundedVec.
+        TooManyNonces,
+        /// The ActiveAuthentications storage has reached the limit as WeakBoundedVec.
+        TooManyAuthentications,
     }
 
     #[derive(Debug)]
@@ -474,7 +478,7 @@ pub mod pallet {
                                     auth_ticket.nonce,
                                     Some("bioauth::authenticate::auth_ticket_nonce"),
                                 ))
-                                .unwrap();
+                                .map_err(|_| Error::<T>::TooManyNonces)?;
 
                             let authentication = Authentication {
                                 public_key: public_key.clone(),
@@ -485,7 +489,9 @@ pub mod pallet {
                             let before_hook_data =
                                 <T as Config>::BeforeAuthHook::hook(&authentication)?;
 
-                            active_authentications.try_push(authentication).unwrap();
+                            active_authentications
+                                .try_push(authentication)
+                                .map_err(|_| Error::<T>::TooManyAuthentications)?;
 
                             // Issue an update to the external validators set.
                             Self::issue_validators_set_update(active_authentications.as_slice());
