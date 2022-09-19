@@ -468,24 +468,14 @@ pub mod pallet {
 
                             // Update internal state.
                             let current_moment = T::CurrentMoment::now();
-                            let mut updated_consumed_auth_ticket_nonces =
-                                consumed_auth_ticket_nonces.clone().into_inner();
 
-                            updated_consumed_auth_ticket_nonces.push(
-                                BoundedAuthTicketNonce::force_from(
+                            consumed_auth_ticket_nonces
+                                .try_push(BoundedAuthTicketNonce::force_from(
                                     auth_ticket.nonce,
                                     Some("bioauth::authenticate::auth_ticket_nonce"),
-                                ),
-                            );
+                                ))
+                                .unwrap();
 
-                            *consumed_auth_ticket_nonces =
-                                WeakBoundedVec::<_, T::MaxNonces>::force_from(
-                                    updated_consumed_auth_ticket_nonces,
-                                    Some("bioauth::authenticate::nonces"),
-                                );
-
-                            let mut updated_active_authentications =
-                                active_authentications.clone().into_inner();
                             let authentication = Authentication {
                                 public_key: public_key.clone(),
                                 expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
@@ -495,13 +485,7 @@ pub mod pallet {
                             let before_hook_data =
                                 <T as Config>::BeforeAuthHook::hook(&authentication)?;
 
-                            updated_active_authentications.push(authentication);
-
-                            *active_authentications =
-                                WeakBoundedVec::<_, T::MaxAuthentications>::force_from(
-                                    updated_active_authentications,
-                                    Some("bioauth::authentication::authentications"),
-                                );
+                            active_authentications.try_push(authentication).unwrap();
 
                             // Issue an update to the external validators set.
                             Self::issue_validators_set_update(active_authentications.as_slice());
