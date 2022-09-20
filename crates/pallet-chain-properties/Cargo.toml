@@ -6,21 +6,16 @@ publish = false
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 
 [dev-dependencies]
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 
 [features]
 default = ["std"]
-std = [
-  "codec/std",
-  "scale-info/std",
-  "frame-support/std",
-  "frame-system/std",
-]
+std = ["codec/std", "scale-info/std", "frame-support/std", "frame-system/std"]
 try-runtime = ["frame-support/try-runtime"]

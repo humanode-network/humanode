@@ -5,8 +5,8 @@ edition = "2021"
 publish = false
 
 [dependencies]
-sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 thiserror = "1"
 
 [features]

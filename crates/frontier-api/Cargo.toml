@@ -7,8 +7,8 @@ publish = false
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false }
 pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
-sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 
 [features]
 default = ["std"]
