@@ -23,21 +23,21 @@ anyhow = "1"
 async-trait = "0.1"
 clap = { version = "3.2", features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "3.0.0" }
-fc-cli = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
-fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
-fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
-fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
-fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
-fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
+fc-cli = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
 fdlimit = "0.2"
-fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
+fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
 frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21", optional = true }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.3"
 libsecp256k1 = "0.6"
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "substrate-1a15071" }
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 qr2term = "0.2"
 reqwest = "0.11"
