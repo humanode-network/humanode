@@ -60,6 +60,7 @@ pallet-evm-precompile-sha3fips = { default-features = false, git = "https://gith
 pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-multisig = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-offences = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
 pallet-session = { default-features = false, features = [
@@ -105,6 +106,7 @@ runtime-benchmarks = [
   "pallet-bioauth/runtime-benchmarks",
   "pallet-balances/runtime-benchmarks",
   "pallet-ethereum/runtime-benchmarks",
+  "pallet-multisig/runtime-benchmarks",
   "pallet-timestamp/runtime-benchmarks",
   "pallet-token-claims/runtime-benchmarks",
   "pallet-vesting/runtime-benchmarks",
@@ -149,6 +151,7 @@ std = [
   "pallet-dynamic-fee/std",
   "pallet-grandpa/std",
   "pallet-im-online/std",
+  "pallet-multisig/std",
   "pallet-offences/std",
   "pallet-pot/std",
   "pallet-randomness-collective-flip/std",
@@ -192,6 +195,7 @@ try-runtime = [
   "pallet-grandpa/try-runtime",
   "pallet-humanode-session/try-runtime",
   "pallet-im-online/try-runtime",
+  "pallet-multisig/try-runtime",
   "pallet-offences/try-runtime",
   "pallet-pot/try-runtime",
   "pallet-randomness-collective-flip/try-runtime",
