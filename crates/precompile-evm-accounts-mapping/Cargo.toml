@@ -9,26 +9,20 @@ pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-
 primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01", default-features = false }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21", default-features = false }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 
 [dev-dependencies]
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 hex-literal = "0.3"
 mockall = "0.10"
 primitive-types = "0.11"
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 
 [features]
 default = ["std"]
-std = [
-  "codec/std",
-  "fp-evm/std",
-  "sp-std/std",
-  "pallet-evm-accounts-mapping/std",
-  "primitives-ethereum/std",
-]
+std = ["codec/std", "fp-evm/std", "sp-std/std", "pallet-evm-accounts-mapping/std", "primitives-ethereum/std"]

@@ -4,8 +4,8 @@ use std::str::FromStr;
 
 use frame_support::{
     assert_ok,
-    dispatch::DispatchInfo,
-    weights::{DispatchClass, Pays},
+    dispatch::{DispatchClass, DispatchInfo, Pays},
+    weights::Weight,
 };
 use pallet_evm::AddressMapping;
 use sp_runtime::traits::SignedExtension;
@@ -127,7 +127,7 @@ fn total_issuance_transaction_payment_validate() {
         }
         .into();
         let normal = DispatchInfo {
-            weight: 10,
+            weight: Weight::from_ref_time(10),
             class: DispatchClass::Normal,
             pays_fee: Pays::Yes,
         };

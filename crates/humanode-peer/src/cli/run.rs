@@ -147,22 +147,34 @@ pub async fn run() -> sc_cli::Result<()> {
                         cmd.run::<Block, service::ExecutorDispatch>(config.substrate)
                     }
                     BenchmarkCmd::Block(cmd) => {
-                        let PartialComponents { client, .. } = service::new_partial(&config)?;
-                        cmd.run(client)
+                        let partial = service::new_partial(&config)?;
+                        cmd.run(partial.client)
                     }
+                    #[cfg(not(feature = "runtime-benchmarks"))]
+                    BenchmarkCmd::Storage(_) => Err(
+                        "Storage benchmarking can be enabled with `--features runtime-benchmarks`."
+                            .into(),
+                    ),
+                    #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Storage(cmd) => {
-                        let PartialComponents {
-                            client, backend, ..
-                        } = service::new_partial(&config)?;
-                        let db = backend.expose_db();
-                        let storage = backend.expose_storage();
+                        let partial = service::new_partial(&config)?;
+                        let db = partial.backend.expose_db();
+                        let storage = partial.backend.expose_storage();
 
-                        cmd.run(config.substrate, client, db, storage)
+                        cmd.run(config.substrate, partial.client, db, storage)
                     }
                     _ => {
                         Err("Currently we don't support the rest BenchmarkCmd subcommands.".into())
                     }
                 }
+            })
+        }
+        Some(Subcommand::FrontierDb(cmd)) => {
+            let runner = root.create_humanode_runner(cmd)?;
+            runner.sync_run(|config| {
+                let partial = service::new_partial(&config)?;
+                let frontier_backend = partial.other.4;
+                cmd.run(partial.client, frontier_backend)
             })
         }
         #[cfg(feature = "try-runtime")]

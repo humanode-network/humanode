@@ -5,8 +5,8 @@
 #![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
+use frame_support::dispatch::DispatchInfo;
 use frame_support::traits::{IsSubType, StorageVersion};
-use frame_support::weights::DispatchInfo;
 use frame_support::{traits::ConstU32, WeakBoundedVec};
 pub use pallet::*;
 use scale_info::TypeInfo;
@@ -200,7 +200,7 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config: frame_system::Config {
         /// Because this pallet emits events, it depends on the runtime's definition of an event.
-        type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+        type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
         /// The type of the robonode signature.
         type RobonodeSignature: Member + Parameter;
@@ -728,11 +728,11 @@ impl<T: Config + Send + Sync> Debug for CheckBioauthTx<T> {
 
 impl<T: Config + Send + Sync> SignedExtension for CheckBioauthTx<T>
 where
-    T::Call: Dispatchable<Info = DispatchInfo>,
-    <T as frame_system::Config>::Call: IsSubType<Call<T>>,
+    T::RuntimeCall: Dispatchable<Info = DispatchInfo>,
+    <T as frame_system::Config>::RuntimeCall: IsSubType<Call<T>>,
 {
     type AccountId = T::AccountId;
-    type Call = T::Call;
+    type Call = T::RuntimeCall;
     type AdditionalSigned = ();
     type Pre = ();
     const IDENTIFIER: &'static str = "CheckBioauthTx";
@@ -744,8 +744,8 @@ where
     fn pre_dispatch(
         self,
         who: &T::AccountId,
-        call: &T::Call,
-        info: &DispatchInfoOf<T::Call>,
+        call: &T::RuntimeCall,
+        info: &DispatchInfoOf<T::RuntimeCall>,
         len: usize,
     ) -> Result<Self::Pre, TransactionValidityError> {
         self.validate(who, call, info, len).map(|_| ())

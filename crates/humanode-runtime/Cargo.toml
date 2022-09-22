@@ -6,7 +6,7 @@ publish = false
 
 [build-dependencies]
 # See https://github.com/paritytech/substrate/pull/10284
-substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 
 [dependencies]
 author-ext-api = { version = "0.1", path = "../author-ext-api", default-features = false }
@@ -37,54 +37,54 @@ vesting-scheduling-timestamp = { version = "0.1", path = "../vesting-scheduling-
 
 chrono = { version = "0.4.19", default-features = false }
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
-fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
-frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-frame-try-runtime = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "master" }
+fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-try-runtime = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 hex-literal = { version = "0.3", optional = true }
 libsecp256k1 = { version = "0.7.0", default-features = false }
-pallet-authorship = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
-pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
-pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
-pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
-pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
-pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-06-01" }
-pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-multisig = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-offences = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+pallet-authorship = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
+pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-multisig = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-offences = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 pallet-session = { default-features = false, features = [
   "historical",
-], git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+], git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 serde = { version = "1", features = ["derive"], optional = true }
-sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-application-crypto = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-consensus-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-staking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
-sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-application-crypto = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-consensus-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-staking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 static_assertions = { version = "1.1.0", default-features = false }
 
 [dev-dependencies]
@@ -93,7 +93,7 @@ eip712-common-test-utils = { version = "0.1", path = "../eip712-common-test-util
 
 hex = "0.4"
 serde_json = "1"
-sp-io = { git = "https://github.com/humanode-network/substrate", branch = "master" }
+sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 
 [features]
 default = ["std"]
@@ -101,7 +101,7 @@ runtime-benchmarks = [
   "hex-literal",
   "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
-  "frame-system-benchmarking",
+  "frame-system-benchmarking/runtime-benchmarks",
   "frame-system/runtime-benchmarks",
   "pallet-bioauth/runtime-benchmarks",
   "pallet-balances/runtime-benchmarks",

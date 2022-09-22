@@ -3,7 +3,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::Decode;
-use sp_std::prelude::*;
 
 sp_api::decl_runtime_apis! {
     /// Runtime API for the transaction converter.

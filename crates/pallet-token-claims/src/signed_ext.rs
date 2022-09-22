@@ -3,12 +3,11 @@
 use core::marker::PhantomData;
 
 use frame_support::{
-    dispatch::Dispatchable,
+    dispatch::{DispatchInfo, Dispatchable},
     pallet_prelude::*,
     sp_runtime,
     traits::IsSubType,
     unsigned::{TransactionValidity, TransactionValidityError},
-    weights::DispatchInfo,
 };
 use sp_runtime::traits::{DispatchInfoOf, SignedExtension};
 
@@ -66,12 +65,12 @@ pub struct CheckTokenClaim<T: Config + Send + Sync>(PhantomData<T>);
 
 impl<T: Config + Send + Sync> SignedExtension for CheckTokenClaim<T>
 where
-    T::Call: Dispatchable<Info = DispatchInfo>,
-    <T as frame_system::Config>::Call: IsSubType<Call<T>>,
+    T::RuntimeCall: Dispatchable<Info = DispatchInfo>,
+    <T as frame_system::Config>::RuntimeCall: IsSubType<Call<T>>,
 {
     const IDENTIFIER: &'static str = "CheckTokenClaim";
     type AccountId = T::AccountId;
-    type Call = T::Call;
+    type Call = T::RuntimeCall;
     type AdditionalSigned = ();
     type Pre = ();
 

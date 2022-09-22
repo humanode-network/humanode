@@ -215,7 +215,7 @@ parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
     /// We allow for 2 seconds of compute with a 6 second average block time.
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
-        ::with_sensible_defaults(2 * WEIGHT_PER_SECOND, NORMAL_DISPATCH_RATIO);
+        ::with_sensible_defaults(WEIGHT_PER_SECOND.saturating_mul(2), NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
     pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
@@ -233,7 +233,7 @@ impl frame_system::Config for Runtime {
     /// The identifier used to distinguish between accounts.
     type AccountId = AccountId;
     /// The aggregated dispatch type that is available for extrinsics.
-    type Call = Call;
+    type RuntimeCall = RuntimeCall;
     /// The lookup mechanism to get account ID from whatever is passed in dispatchers.
     type Lookup = AccountIdLookup<AccountId, ()>;
     /// The index type for storing how many extrinsics an account has signed.
@@ -247,7 +247,7 @@ impl frame_system::Config for Runtime {
     /// The header type.
     type Header = generic::Header<BlockNumber, BlakeTwo256>;
     /// The ubiquitous event type.
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     /// The ubiquitous origin type.
     type Origin = Origin;
     /// Maximum number of block number to block hash mappings to keep (oldest pruned first).
@@ -316,7 +316,7 @@ impl sp_runtime::traits::Convert<AccountId, Option<BioauthId>> for IdentityValid
 }
 
 impl pallet_session::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type ValidatorId = BioauthId;
     type ValidatorIdOf = IdentityValidatorIdOf;
     type ShouldEndSession = Babe;
@@ -333,8 +333,7 @@ impl pallet_session::historical::Config for Runtime {
 }
 
 impl pallet_grandpa::Config for Runtime {
-    type Event = Event;
-    type Call = Call;
+    type RuntimeEvent = RuntimeEvent;
 
     type KeyOwnerProofSystem = Historical;
 
@@ -388,19 +387,19 @@ type PotInstanceFees = pallet_pot::Instance2;
 type PotInstanceTokenClaims = pallet_pot::Instance3;
 
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type PalletId = TreasuryPotPalletId;
     type Currency = Balances;
 }
 
 impl pallet_pot::Config<PotInstanceFees> for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type PalletId = FeesPotPalletId;
     type Currency = Balances;
 }
 
 impl pallet_pot::Config<PotInstanceTokenClaims> for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type PalletId = TokenClaimsPotPalletId;
     type Currency = Balances;
 }
@@ -412,7 +411,7 @@ impl pallet_balances::Config for Runtime {
     /// The type for recording an account's balance.
     type Balance = Balance;
     /// The ubiquitous event type.
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type DustRemoval = TreasuryPot;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
@@ -420,6 +419,7 @@ impl pallet_balances::Config for Runtime {
 }
 
 impl pallet_transaction_payment::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, FeesPot>;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = IdentityFee<Balance>;
@@ -428,8 +428,8 @@ impl pallet_transaction_payment::Config for Runtime {
 }
 
 impl pallet_sudo::Config for Runtime {
-    type Event = Event;
-    type Call = Call;
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
 }
 
 pub struct PrimitiveAuthTicketConverter;
@@ -479,7 +479,7 @@ const TIMESTAMP_DAY: UnixMilliseconds = 24 * TIMESTAMP_HOUR;
 const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * TIMESTAMP_DAY;
 
 impl pallet_bioauth::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type RobonodePublicKey = robonode::PublicKey;
     type RobonodeSignature = Vec<u8>;
     type ValidatorPublicKey = BioauthId;
@@ -541,9 +541,9 @@ impl
         disable_strategy: sp_staking::offence::DisableStrategy,
     ) -> Weight {
         if disable_strategy == sp_staking::offence::DisableStrategy::Never {
-            return 0;
+            return Weight::zero();
         }
-        let mut weight: Weight = 0;
+        let mut weight: Weight = Weight::zero();
         let weights = <Runtime as frame_system::Config>::DbWeight::get();
         for details in offenders {
             let (_offender, identity) = &details.offender;
@@ -564,7 +564,7 @@ impl
 
 impl pallet_im_online::Config for Runtime {
     type AuthorityId = ImOnlineId;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
     type ReportUnresponsiveness = Offences;
@@ -576,7 +576,7 @@ impl pallet_im_online::Config for Runtime {
 }
 
 impl pallet_offences::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
     type OnOffenceHandler = OffenceSlasher;
 }
@@ -594,7 +594,7 @@ impl pallet_evm::Config for Runtime {
     type WithdrawOrigin = EnsureAddressTruncated;
     type AddressMapping = HashedAddressMapping<BlakeTwo256>;
     type Currency = Balances;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = FrontierPrecompiles<Self>;
     type PrecompilesValue = PrecompilesValue;
@@ -607,7 +607,7 @@ impl pallet_evm::Config for Runtime {
 }
 
 impl pallet_ethereum::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 }
 
@@ -621,6 +621,7 @@ impl pallet_dynamic_fee::Config for Runtime {
 
 parameter_types! {
     pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
+    pub DefaultElasticity: Permill = Permill::from_parts(125_000);
 }
 
 pub struct BaseFeeThreshold;
@@ -637,10 +638,10 @@ impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
 }
 
 impl pallet_base_fee::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Threshold = BaseFeeThreshold;
-    type IsActive = ConstBool<true>;
     type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
+    type DefaultElasticity = DefaultElasticity;
 }
 
 impl pallet_chain_properties::Config for Runtime {}
@@ -648,7 +649,7 @@ impl pallet_chain_properties::Config for Runtime {}
 impl pallet_ethereum_chain_id::Config for Runtime {}
 
 impl pallet_evm_accounts_mapping::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Verifier = eip712::AccountClaimVerifier;
 }
 
@@ -657,7 +658,7 @@ parameter_types! {
 }
 
 impl pallet_token_claims::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PotAccountId = TokenClaimsPotAccountId;
     type VestingSchedule = <Self as pallet_vesting::Config>::Schedule;
@@ -671,7 +672,7 @@ parameter_types! {
 }
 
 impl pallet_vesting::Config for Runtime {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type LockId = VestingLockId;
     type Schedule = vesting::Schedule;
@@ -680,8 +681,8 @@ impl pallet_vesting::Config for Runtime {
 }
 
 impl pallet_multisig::Config for Runtime {
-    type Event = Event;
-    type Call = Call;
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
     type Currency = Balances;
     type DepositBase = ConstU128<1>;
     type DepositFactor = ConstU128<1>;
@@ -752,9 +753,9 @@ pub type SignedExtra = (
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
-    fp_self_contained::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+    fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// The payload being signed in transactions.
-pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
+pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
@@ -765,14 +766,14 @@ pub type Executive = frame_executive::Executive<
     AllPalletsWithSystem,
 >;
 
-impl frame_system::offchain::CreateSignedTransaction<Call> for Runtime {
+impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
     fn create_transaction<C: frame_system::offchain::AppCrypto<Self::Public, Self::Signature>>(
-        call: Call,
+        call: RuntimeCall,
         public: <Signature as sp_runtime::traits::Verify>::Signer,
         account: AccountId,
         nonce: Index,
     ) -> Option<(
-        Call,
+        RuntimeCall,
         <UncheckedExtrinsic as sp_runtime::traits::Extrinsic>::SignaturePayload,
     )> {
         let tip = 0;
@@ -813,25 +814,25 @@ impl frame_system::offchain::SigningTypes for Runtime {
 
 impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
 where
-    Call: From<C>,
+    RuntimeCall: From<C>,
 {
     type Extrinsic = UncheckedExtrinsic;
-    type OverarchingCall = Call;
+    type OverarchingCall = RuntimeCall;
 }
 
-impl fp_self_contained::SelfContainedCall for Call {
+impl fp_self_contained::SelfContainedCall for RuntimeCall {
     type SignedInfo = H160;
 
     fn is_self_contained(&self) -> bool {
         match self {
-            Call::Ethereum(call) => call.is_self_contained(),
+            RuntimeCall::Ethereum(call) => call.is_self_contained(),
             _ => false,
         }
     }
 
     fn check_self_contained(&self) -> Option<Result<Self::SignedInfo, TransactionValidityError>> {
         match self {
-            Call::Ethereum(call) => call.check_self_contained(),
+            RuntimeCall::Ethereum(call) => call.check_self_contained(),
             _ => None,
         }
     }
@@ -839,11 +840,11 @@ impl fp_self_contained::SelfContainedCall for Call {
     fn validate_self_contained(
         &self,
         info: &Self::SignedInfo,
-        dispatch_info: &DispatchInfoOf<Call>,
+        dispatch_info: &DispatchInfoOf<RuntimeCall>,
         len: usize,
     ) -> Option<TransactionValidity> {
         match self {
-            Call::Ethereum(call) => call.validate_self_contained(info, dispatch_info, len),
+            RuntimeCall::Ethereum(call) => call.validate_self_contained(info, dispatch_info, len),
             _ => None,
         }
     }
@@ -851,9 +852,13 @@ impl fp_self_contained::SelfContainedCall for Call {
     fn pre_dispatch_self_contained(
         &self,
         info: &Self::SignedInfo,
+        dispatch_info: &DispatchInfoOf<RuntimeCall>,
+        len: usize,
     ) -> Option<Result<(), TransactionValidityError>> {
         match self {
-            Call::Ethereum(call) => call.pre_dispatch_self_contained(info),
+            RuntimeCall::Ethereum(call) => {
+                call.pre_dispatch_self_contained(info, dispatch_info, len)
+            }
             _ => None,
         }
     }
@@ -863,9 +868,11 @@ impl fp_self_contained::SelfContainedCall for Call {
         info: Self::SignedInfo,
     ) -> Option<sp_runtime::DispatchResultWithInfo<PostDispatchInfoOf<Self>>> {
         match self {
-            call @ Call::Ethereum(pallet_ethereum::Call::transact { .. }) => Some(call.dispatch(
-                Origin::from(pallet_ethereum::RawOrigin::EthereumTransaction(info)),
-            )),
+            call @ RuntimeCall::Ethereum(pallet_ethereum::Call::transact { .. }) => {
+                Some(call.dispatch(Origin::from(
+                    pallet_ethereum::RawOrigin::EthereumTransaction(info),
+                )))
+            }
             _ => None,
         }
     }
@@ -970,7 +977,7 @@ impl_runtime_apis! {
                 .map_err(|err| author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err.to_string()))?;
             let session_call = pallet_session::Call::set_keys::<Runtime> { keys, proof: vec![] };
             let (call, (address, signature, extra)) =
-                <Runtime as frame_system::offchain::CreateSignedTransaction<Call>>::create_transaction::<KeystoreBioauthAccountId>(
+                <Runtime as frame_system::offchain::CreateSignedTransaction<RuntimeCall>>::create_transaction::<KeystoreBioauthAccountId>(
                     session_call.into(),
                     public_id.into(),
                     account_id.clone(),
@@ -1070,19 +1077,20 @@ impl_runtime_apis! {
 
 
     impl sp_consensus_babe::BabeApi<Block> for Runtime {
-        fn configuration() -> sp_consensus_babe::BabeGenesisConfiguration {
+        fn configuration() -> sp_consensus_babe::BabeConfiguration {
+            let epoch_config = Babe::epoch_config().unwrap_or(BABE_GENESIS_EPOCH_CONFIG);
             // The choice of `c` parameter (where `1 - c` represents the
             // probability of a slot being empty), is done in accordance to the
             // slot duration and expected target block time, for safely
             // resisting network delays of maximum two seconds.
             // <https://research.web3.foundation/en/latest/polkadot/BABE/Babe/#6-practical-results>
-            sp_consensus_babe::BabeGenesisConfiguration {
+            sp_consensus_babe::BabeConfiguration {
                 slot_duration: Babe::slot_duration(),
                 epoch_length: <Self as pallet_babe::Config>::EpochDuration::get(),
-                c: BABE_GENESIS_EPOCH_CONFIG.c,
-                genesis_authorities: Babe::authorities().to_vec(),
+                c: epoch_config.c,
+                authorities: Babe::authorities().to_vec(),
                 randomness: Babe::randomness(),
-                allowed_slots: BABE_GENESIS_EPOCH_CONFIG.allowed_slots,
+                allowed_slots: epoch_config.allowed_slots,
             }
         }
 
@@ -1178,6 +1186,7 @@ impl_runtime_apis! {
             };
 
             let is_transactional = false;
+            let validate = true;
             <Runtime as pallet_evm::Config>::Runner::call(
                 from,
                 to,
@@ -1189,6 +1198,7 @@ impl_runtime_apis! {
                 nonce,
                 access_list.unwrap_or_default(),
                 is_transactional,
+                validate,
                 &config,
             ).map_err(|err| err.error.into())
         }
@@ -1213,6 +1223,7 @@ impl_runtime_apis! {
             };
 
             let is_transactional = false;
+            let validate = true;
             <Runtime as pallet_evm::Config>::Runner::create(
                 from,
                 data,
@@ -1223,6 +1234,7 @@ impl_runtime_apis! {
                 nonce,
                 access_list.unwrap_or_default(),
                 is_transactional,
+                validate,
                 &config,
             ).map_err(|err| err.error.into())
         }
@@ -1255,7 +1267,7 @@ impl_runtime_apis! {
             xts: Vec<<Block as BlockT>::Extrinsic>,
         ) -> Vec<EthereumTransaction> {
             xts.into_iter().filter_map(|xt| match xt.0.function {
-                Call::Ethereum(transact { transaction }) => Some(transaction),
+                RuntimeCall::Ethereum(transact { transaction }) => Some(transaction),
                 _ => None
             }).collect::<Vec<EthereumTransaction>>()
         }
@@ -1278,6 +1290,17 @@ impl_runtime_apis! {
             len: u32,
         ) -> pallet_transaction_payment::FeeDetails<Balance> {
             TransactionPayment::query_fee_details(uxt, len)
+        }
+    }
+
+    impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentCallApi<Block, Balance, RuntimeCall>
+        for Runtime
+    {
+        fn query_call_info(call: RuntimeCall, len: u32) -> pallet_transaction_payment::RuntimeDispatchInfo<Balance> {
+            TransactionPayment::query_call_info(call, len)
+        }
+        fn query_call_fee_details(call: RuntimeCall, len: u32) -> pallet_transaction_payment::FeeDetails<Balance> {
+            TransactionPayment::query_call_fee_details(call, len)
         }
     }
 

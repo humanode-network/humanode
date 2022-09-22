@@ -40,7 +40,7 @@ impl frame_system::Config for Test {
     type BlockLength = ();
     type DbWeight = ();
     type Origin = Origin;
-    type Call = Call;
+    type RuntimeCall = RuntimeCall;
     type Index = u64;
     type BlockNumber = u64;
     type Hash = H256;
@@ -48,7 +48,7 @@ impl frame_system::Config for Test {
     type AccountId = u64;
     type Lookup = IdentityLookup<u64>;
     type Header = Header;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type BlockHashCount = ConstU64<250>;
     type Version = ();
     type PalletInfo = PalletInfo;
@@ -63,7 +63,7 @@ impl frame_system::Config for Test {
 
 impl pallet_balances::Config for Test {
     type Balance = u64;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
     type ExistentialDeposit = ConstU64<1>;
     type AccountStore = System;
@@ -78,7 +78,7 @@ parameter_types! {
 }
 
 impl pallet_pot::Config for Test {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PalletId = PotPalletId;
 }
@@ -88,7 +88,7 @@ parameter_types! {
 }
 
 impl pallet_token_claims::Config for Test {
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type Currency = Balances;
     type PotAccountId = PotAccountId;
     type VestingSchedule = MockVestingSchedule;

@@ -48,6 +48,9 @@ pub enum Subcommand {
     #[clap(subcommand)]
     Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 
+    /// Db meta columns information.
+    FrontierDb(fc_cli::FrontierDbCmd),
+
     /// Try some command against runtime state.
     #[cfg(feature = "try-runtime")]
     TryRuntime(try_runtime_cli::TryRuntimeCmd),
@@ -65,5 +68,6 @@ impl CliConfigurationExt for sc_cli::ImportBlocksCmd {}
 impl CliConfigurationExt for sc_cli::PurgeChainCmd {}
 impl CliConfigurationExt for sc_cli::RevertCmd {}
 impl CliConfigurationExt for frame_benchmarking_cli::BenchmarkCmd {}
+impl CliConfigurationExt for fc_cli::FrontierDbCmd {}
 #[cfg(feature = "try-runtime")]
 impl CliConfigurationExt for try_runtime_cli::TryRuntimeCmd {}

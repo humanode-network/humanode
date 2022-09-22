@@ -21,7 +21,7 @@ use sc_client_api::{
     backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
 };
-use sc_consensus_babe::{Config, Epoch};
+use sc_consensus_babe::{BabeConfiguration, Epoch};
 use sc_consensus_babe_rpc::{Babe, BabeApiServer};
 use sc_consensus_epochs::SharedEpochChanges;
 use sc_finality_grandpa::{
@@ -59,7 +59,7 @@ pub struct BioauthDeps<VKE, VSF> {
 /// Extra dependencies for BABE.
 pub struct BabeDeps {
     /// BABE protocol config.
-    pub babe_config: Config,
+    pub babe_config: BabeConfiguration,
     /// BABE pending epoch changes.
     pub babe_shared_epoch_changes: SharedEpochChanges<Block, Epoch>,
     /// The keystore that manages the keys of the node.
@@ -96,6 +96,11 @@ pub struct EvmDeps {
     pub eth_overrides: Arc<OverrideHandle<Block>>,
     /// Cache for Ethereum block data.
     pub eth_block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
+    /// A multiplier to allow larger gas limit in non-transactional execution.
+    ///
+    /// When using eth_call/eth_estimateGas, the maximum allowed gas limit will be
+    /// block.gas_limit * execute_gas_limit_multiplier.
+    pub eth_execute_gas_limit_multiplier: u64,
 }
 
 /// RPC subsystem dependencies.
@@ -241,6 +246,7 @@ where
         eth_fee_history_cache,
         eth_overrides,
         eth_block_data_cache,
+        eth_execute_gas_limit_multiplier,
     } = evm;
 
     io.merge(System::new(Arc::clone(&client), Arc::clone(&pool), deny_unsafe).into_rpc())?;
@@ -307,6 +313,7 @@ where
             Arc::clone(&eth_block_data_cache),
             eth_fee_history_cache,
             eth_fee_history_limit,
+            eth_execute_gas_limit_multiplier,
         )
         .into_rpc(),
     )?;

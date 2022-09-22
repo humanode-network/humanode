@@ -13,7 +13,7 @@ use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
-use sc_client_api::{BlockBackend, BlockchainEvents, ExecutorProvider};
+use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
@@ -163,12 +163,15 @@ pub fn new_partial(
     )?;
 
     let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
-        sc_consensus_babe::Config::get(&*client)?,
+        sc_consensus_babe::configuration(&*client)?,
         grandpa_block_import.clone(),
         Arc::clone(&client),
     )?;
 
-    let frontier_backend = Arc::new(frontier::open_backend(config)?);
+    let frontier_backend = Arc::new(FrontierBackend::open(
+        &config.database,
+        &frontier::db_config_dir(config),
+    )?);
     let frontier_block_import = FrontierBlockImport::new(
         babe_block_import,
         Arc::clone(&client),
@@ -192,7 +195,6 @@ pub fn new_partial(
         inherents::ForImport(inherent_data_providers_creator.clone()),
         &task_manager.spawn_essential_handle(),
         config.prometheus_registry(),
-        sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone()),
         telemetry.as_ref().map(|x| x.handle()),
     )?;
     Ok(PartialComponents {
@@ -271,7 +273,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         .ok_or_else(|| ServiceError::Other("Ethereum RPC config is not set".into()))?;
 
     let role = config.role.clone();
-    let can_author_with = sp_consensus::CanAuthorWithNativeVersion::new(client.executor().clone());
     let name = config.network.node_name.clone();
     let keystore = Some(keystore_container.sync_keystore());
     let enable_grandpa = !config.disable_grandpa;
@@ -313,7 +314,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             &config,
             task_manager.spawn_handle(),
             Arc::clone(&client),
-            Arc::clone(&network),
+            Arc::clone(&network) as _,
         );
     }
 
@@ -401,6 +402,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     eth_fee_history_cache: Arc::clone(&eth_fee_history_cache),
                     eth_overrides: Arc::clone(&eth_overrides),
                     eth_block_data_cache: Arc::clone(&eth_block_data_cache),
+                    eth_execute_gas_limit_multiplier: ethereum_rpc_config
+                        .execute_gas_limit_multiplier,
                 },
                 subscription_task_executor,
             })?)
@@ -414,7 +417,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     }
 
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
-        network: Arc::clone(&network),
+        network: Arc::clone(&network) as _,
         client: Arc::clone(&client),
         keystore: keystore_container.sync_keystore(),
         task_manager: &mut task_manager,
@@ -438,7 +441,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         force_authoring,
         backoff_authoring_blocks,
         babe_link,
-        can_author_with,
         block_proposal_slot_portion: SlotProportion::new(0.5),
         max_block_proposal_slot_portion: None,
         telemetry: telemetry.as_ref().map(|x| x.handle()),
@@ -490,7 +492,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             Duration::from_millis(humanode_runtime::SLOT_DURATION),
             Arc::clone(&client),
             backend,
-            Arc::clone(&frontier_backend),
+            frontier_backend,
             // retry_times: usize,
             3,
             // sync_from: <Block::Header as HeaderT>::Number,
@@ -510,12 +512,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             eth_fee_history_cache,
             eth_fee_history_limit,
         ),
-    );
-
-    task_manager.spawn_essential_handle().spawn(
-        "frontier-schema-cache-task",
-        Some("evm"),
-        EthTask::ethereum_schema_cache_task(Arc::clone(&client), frontier_backend),
     );
 
     // Spawn Frontier EthFilterApi maintenance task.

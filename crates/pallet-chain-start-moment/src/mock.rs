@@ -36,7 +36,7 @@ impl frame_system::Config for Test {
     type BlockLength = ();
     type DbWeight = ();
     type Origin = Origin;
-    type Call = Call;
+    type RuntimeCall = RuntimeCall;
     type Index = u64;
     type BlockNumber = u64;
     type Hash = H256;
@@ -44,7 +44,7 @@ impl frame_system::Config for Test {
     type AccountId = u64;
     type Lookup = IdentityLookup<u64>;
     type Header = Header;
-    type Event = Event;
+    type RuntimeEvent = RuntimeEvent;
     type BlockHashCount = ConstU64<250>;
     type Version = ();
     type PalletInfo = PalletInfo;

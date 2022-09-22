@@ -2,9 +2,10 @@
 
 use frame_support::{
     assert_noop, assert_ok, assert_storage_noop,
+    dispatch::{DispatchClass, DispatchInfo, Pays},
     pallet_prelude::{InvalidTransaction, ValidTransaction},
     unsigned::TransactionValidityError,
-    weights::{DispatchClass, DispatchInfo, Pays},
+    weights::Weight,
 };
 use mockall::predicate;
 use primitives_ethereum::EthereumAddress;
@@ -734,7 +735,7 @@ fn signed_ext_validate_works() {
 
         // Invoke the function under test.
         let normal = DispatchInfo {
-            weight: 100,
+            weight: Weight::from_ref_time(100),
             class: DispatchClass::Normal,
             pays_fee: Pays::No,
         };
@@ -743,7 +744,7 @@ fn signed_ext_validate_works() {
         assert_storage_noop!(assert_ok!(
             ext.validate(
                 &42,
-                &mock::Call::TokenClaims(Call::claim {
+                &mock::RuntimeCall::TokenClaims(Call::claim {
                     ethereum_address: eth(EthAddr::Existing),
                     ethereum_signature: sig(1),
                 }),
@@ -786,7 +787,7 @@ fn signed_ext_validate_fails_invalid_eth_signature() {
 
         // Invoke the function under test.
         let normal = DispatchInfo {
-            weight: 100,
+            weight: Weight::from_ref_time(100),
             class: DispatchClass::Normal,
             pays_fee: Pays::No,
         };
@@ -795,7 +796,7 @@ fn signed_ext_validate_fails_invalid_eth_signature() {
         assert_noop!(
             ext.validate(
                 &42,
-                &mock::Call::TokenClaims(Call::claim {
+                &mock::RuntimeCall::TokenClaims(Call::claim {
                     ethereum_address: eth(EthAddr::Existing),
                     ethereum_signature: sig(1),
                 }),
@@ -838,7 +839,7 @@ fn signed_ext_validate_fails_when_claim_is_absent() {
 
         // Invoke the function under test.
         let normal = DispatchInfo {
-            weight: 100,
+            weight: Weight::from_ref_time(100),
             class: DispatchClass::Normal,
             pays_fee: Pays::No,
         };
@@ -847,7 +848,7 @@ fn signed_ext_validate_fails_when_claim_is_absent() {
         assert_noop!(
             ext.validate(
                 &42,
-                &mock::Call::TokenClaims(Call::claim {
+                &mock::RuntimeCall::TokenClaims(Call::claim {
                     ethereum_address: eth(EthAddr::Unknown),
                     ethereum_signature: sig(1),
                 }),
