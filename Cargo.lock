@@ -3405,6 +3405,7 @@ dependencies = [
  "pallet-grandpa",
  "pallet-humanode-session",
  "pallet-im-online",
+ "pallet-multisig",
  "pallet-offences",
  "pallet-pot",
  "pallet-randomness-collective-flip",
@@ -5812,6 +5813,21 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-staking",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-multisig"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/humanode-2022-09-21#006dbc01304b9d3644f3fc4c1bf0e610acd3ad90"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-io",
+ "sp-runtime",
  "sp-std",
 ]
 

@@ -19,8 +19,8 @@ use frame_support::traits::LockIdentifier;
 pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
-        ConstBool, ConstU128, ConstU32, ConstU64, ConstU8, FindAuthor, Get, KeyOwnerProofSystem,
-        Randomness,
+        ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get,
+        KeyOwnerProofSystem, Randomness,
     },
     weights::{
         constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
@@ -680,6 +680,16 @@ impl pallet_vesting::Config for Runtime {
     type WeightInfo = ();
 }
 
+impl pallet_multisig::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+    type Currency = Balances;
+    type DepositBase = ConstU128<1>;
+    type DepositFactor = ConstU128<1>;
+    type MaxSignatories = ConstU16<128>;
+    type WeightInfo = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -719,6 +729,7 @@ construct_runtime!(
         EvmAccountsMapping: pallet_evm_accounts_mapping,
         TokenClaims: pallet_token_claims,
         Vesting: pallet_vesting,
+        Multisig: pallet_multisig,
     }
 );
 
@@ -1313,6 +1324,7 @@ impl_runtime_apis! {
             list_benchmark!(list, extra, pallet_bioauth, Bioauth);
             list_benchmark!(list, extra, pallet_token_claims, TokenClaims);
             list_benchmark!(list, extra, pallet_vesting, Vesting);
+            list_benchmark!(list, extra, pallet_multisig, Multisig);
 
             let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -1358,6 +1370,7 @@ impl_runtime_apis! {
             add_benchmark!(params, batches, pallet_bioauth, Bioauth);
             add_benchmark!(params, batches, pallet_token_claims, TokenClaims);
             add_benchmark!(params, batches, pallet_vesting, Vesting);
+            add_benchmark!(params, batches, pallet_multisig, Multisig);
 
             Ok(batches)
         }
