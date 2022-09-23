@@ -367,7 +367,7 @@ pub mod pallet {
         PublicKeyAlreadyUsed,
         /// The ConsumedAuthTicketNonces storage has reached the limit as BoundedVec.
         TooManyNonces,
-        /// The bounded number of bytes at the nonce has reached the limit.
+        /// The number of bytes at the nonce has reached the bounded limit.
         TooManyBytesInNonce,
         /// The ActiveAuthentications storage has reached the limit as BoundedVec.
         TooManyAuthentications,
