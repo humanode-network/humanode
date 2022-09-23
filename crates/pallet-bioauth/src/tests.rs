@@ -2,7 +2,7 @@ use std::ops::Div;
 
 use frame_support::{
     assert_err, assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, traits::ConstU32,
-    WeakBoundedVec,
+    BoundedVec,
 };
 use mockall::predicate;
 
@@ -37,17 +37,15 @@ fn block_to_process_moment(moment: UnixMilliseconds) -> BlockNumber {
 
 fn make_bounded_active_authentications(
     authentications: Vec<Authentication<ValidatorPublicKey, UnixMilliseconds>>,
-) -> WeakBoundedVec<
-    Authentication<ValidatorPublicKey, UnixMilliseconds>,
-    ConstU32<MAX_AUTHENTICATIONS>,
-> {
-    WeakBoundedVec::<_, ConstU32<MAX_AUTHENTICATIONS>>::try_from(authentications).unwrap()
+) -> BoundedVec<Authentication<ValidatorPublicKey, UnixMilliseconds>, ConstU32<MAX_AUTHENTICATIONS>>
+{
+    BoundedVec::<_, ConstU32<MAX_AUTHENTICATIONS>>::try_from(authentications).unwrap()
 }
 
 fn make_bounded_consumed_auth_nonces(
     auth_nonces: Vec<Vec<u8>>,
-) -> WeakBoundedVec<pallet_bioauth::BoundedAuthTicketNonce, ConstU32<MAX_NONCES>> {
-    WeakBoundedVec::<_, ConstU32<MAX_NONCES>>::try_from(
+) -> BoundedVec<pallet_bioauth::BoundedAuthTicketNonce, ConstU32<MAX_NONCES>> {
+    BoundedVec::<_, ConstU32<MAX_NONCES>>::try_from(
         auth_nonces
             .iter()
             .cloned()

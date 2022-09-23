@@ -7,7 +7,7 @@
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::dispatch::DispatchInfo;
 use frame_support::traits::{IsSubType, StorageVersion};
-use frame_support::{traits::ConstU32, WeakBoundedVec};
+use frame_support::{traits::ConstU32, BoundedVec};
 pub use pallet::*;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -106,7 +106,7 @@ pub const AUTH_TICKET_NONCE_MAX_BYTES: u32 = 256;
 pub type AuthTicketNonce = Vec<u8>;
 
 /// The nonce type in this pallet with bounded number of bytes at the nonce.
-pub type BoundedAuthTicketNonce = WeakBoundedVec<u8, ConstU32<AUTH_TICKET_NONCE_MAX_BYTES>>;
+pub type BoundedAuthTicketNonce = BoundedVec<u8, ConstU32<AUTH_TICKET_NONCE_MAX_BYTES>>;
 
 /// The auth ticket passed to us from the robonode.
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -188,7 +188,7 @@ impl<BeforeHookData> AfterAuthHook<BeforeHookData> for () {
 pub mod pallet {
     use codec::MaxEncodedLen;
     use frame_support::{
-        pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery, WeakBoundedVec,
+        pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery, BoundedVec,
     };
     use frame_system::pallet_prelude::*;
     use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit, DispatchError};
@@ -281,14 +281,14 @@ pub mod pallet {
     #[pallet::storage]
     #[pallet::getter(fn consumed_auth_ticket_nonces)]
     pub type ConsumedAuthTicketNonces<T: Config> =
-        StorageValue<_, WeakBoundedVec<BoundedAuthTicketNonce, T::MaxNonces>, ValueQuery>;
+        StorageValue<_, BoundedVec<BoundedAuthTicketNonce, T::MaxNonces>, ValueQuery>;
 
     /// A list of all active authentications.
     #[pallet::storage]
     #[pallet::getter(fn active_authentications)]
     pub type ActiveAuthentications<T: Config> = StorageValue<
         _,
-        WeakBoundedVec<Authentication<T::ValidatorPublicKey, T::Moment>, T::MaxAuthentications>,
+        BoundedVec<Authentication<T::ValidatorPublicKey, T::Moment>, T::MaxAuthentications>,
         ValueQuery,
     >;
 
@@ -315,7 +315,7 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
-            let bounded_consumed_auth_ticket_nonces = WeakBoundedVec::<_, T::MaxNonces>::try_from(
+            let bounded_consumed_auth_ticket_nonces = BoundedVec::<_, T::MaxNonces>::try_from(
                 self.consumed_auth_ticket_nonces
                     .iter()
                     .cloned()
@@ -328,11 +328,10 @@ pub mod pallet {
             )
             .expect("Initial nonces must be less than T::MaxNonces");
 
-            let bounded_active_authentications =
-                WeakBoundedVec::<_, T::MaxAuthentications>::try_from(
-                    self.active_authentications.clone(),
-                )
-                .expect("Initial authentications must be less than T::MaxAuthentications");
+            let bounded_active_authentications = BoundedVec::<_, T::MaxAuthentications>::try_from(
+                self.active_authentications.clone(),
+            )
+            .expect("Initial authentications must be less than T::MaxAuthentications");
 
             <RobonodePublicKey<T>>::put(&self.robonode_public_key);
             <ConsumedAuthTicketNonces<T>>::put(bounded_consumed_auth_ticket_nonces);
@@ -366,9 +365,11 @@ pub mod pallet {
         NonceAlreadyUsed,
         /// This public key has already been used.
         PublicKeyAlreadyUsed,
-        /// The ConsumedAuthTicketNonces storage has reached the limit as WeakBoundedVec.
+        /// The ConsumedAuthTicketNonces storage has reached the limit as BoundedVec.
         TooManyNonces,
-        /// The ActiveAuthentications storage has reached the limit as WeakBoundedVec.
+        /// The bounded number of bytes at the nonce has reached the limit.
+        TooManyBytesInNonce,
+        /// The ActiveAuthentications storage has reached the limit as BoundedVec.
         TooManyAuthentications,
     }
 
@@ -474,10 +475,10 @@ pub mod pallet {
                             let current_moment = T::CurrentMoment::now();
 
                             consumed_auth_ticket_nonces
-                                .try_push(BoundedAuthTicketNonce::force_from(
-                                    auth_ticket.nonce,
-                                    Some("bioauth::authenticate::auth_ticket_nonce"),
-                                ))
+                                .try_push(
+                                    BoundedAuthTicketNonce::try_from(auth_ticket.nonce)
+                                        .map_err(|_| Error::<T>::TooManyBytesInNonce)?,
+                                )
                                 .map_err(|_| Error::<T>::TooManyNonces)?;
 
                             let authentication = Authentication {
@@ -519,7 +520,7 @@ pub mod pallet {
         ) -> DispatchResult {
             ensure_root(origin)?;
             <RobonodePublicKey<T>>::put(&robonode_public_key);
-            <ActiveAuthentications<T>>::put(WeakBoundedVec::default());
+            <ActiveAuthentications<T>>::put(BoundedVec::default());
             Ok(())
         }
     }
@@ -541,12 +542,11 @@ pub mod pallet {
             let update_required =
                 possibly_expired_authentications_len != active_authentications.len();
             if update_required {
-                // We use force_from and None as a resulted active authentications Vec
+                // We use truncate_from as a resulted active authentications Vec
                 // can't become bigger than it was. Just filtering was done before.
                 let bounded_active_authentications =
-                    WeakBoundedVec::<_, T::MaxAuthentications>::force_from(
+                    BoundedVec::<_, T::MaxAuthentications>::truncate_from(
                         active_authentications.clone(),
-                        None,
                     );
                 Self::issue_validators_set_update(active_authentications.as_slice());
                 <ActiveAuthentications<T>>::put(bounded_active_authentications);

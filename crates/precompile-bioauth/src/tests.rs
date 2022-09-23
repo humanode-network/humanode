@@ -1,4 +1,4 @@
-use frame_support::{traits::ConstU32, WeakBoundedVec};
+use frame_support::{traits::ConstU32, BoundedVec};
 use pallet_evm::ExitSucceed;
 use precompile_utils::{Bytes, EvmDataWriter};
 
@@ -11,11 +11,11 @@ type TestAuthentication = pallet_bioauth::Authentication<
 
 fn make_bounded_authentications(
     authentications: Vec<pallet_bioauth::Authentication<ValidatorPublicKey, UnixMilliseconds>>,
-) -> WeakBoundedVec<
+) -> BoundedVec<
     pallet_bioauth::Authentication<ValidatorPublicKey, UnixMilliseconds>,
     ConstU32<MAX_AUTHENTICATIONS>,
 > {
-    WeakBoundedVec::<_, ConstU32<MAX_AUTHENTICATIONS>>::try_from(authentications).unwrap()
+    BoundedVec::<_, ConstU32<MAX_AUTHENTICATIONS>>::try_from(authentications).unwrap()
 }
 
 #[test]
