@@ -168,13 +168,13 @@ pub async fn run() -> sc_cli::Result<()> {
                         // TODO: Requires a NO_OP extrinsic from any pallets.
                         // Otherwise, integrate pallet::Remark
                         unimplemented!();
-                    },
+                    }
                     BenchmarkCmd::Extrinsic(cmd) => {
-						let partial = service::new_partial(&config)?;
+                        let partial = service::new_partial(&config)?;
                         unimplemented!();
-                    },
+                    }
                     BenchmarkCmd::Machine(cmd) => {
-                       cmd.run(&config.substrate, SUBSTRATE_REFERENCE_HARDWARE.clone())
+                        cmd.run(&config.substrate, SUBSTRATE_REFERENCE_HARDWARE.clone())
                     }
                 }
             })
