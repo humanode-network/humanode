@@ -163,8 +163,18 @@ pub async fn run() -> sc_cli::Result<()> {
 
                         cmd.run(config.substrate, partial.client, db, storage)
                     }
-                    _ => {
-                        Err("Currently we don't support the rest BenchmarkCmd subcommands.".into())
+                    BenchmarkCmd::Overhead(cmd) => {
+                        let partial = service::new_partial(&config)?;
+                        // TODO: Requires a NO_OP extrinsic from any pallets.
+                        // Otherwise, integrate pallet::Remark
+                        unimplemented!();
+                    },
+                    BenchmarkCmd::Extrinsic(cmd) => {
+						let partial = service::new_partial(&config)?;
+                        unimplemented!();
+                    },
+                    BenchmarkCmd::Machine(cmd) => {
+                       cmd.run(&config.substrate, SUBSTRATE_REFERENCE_HARDWARE.clone())
                     }
                 }
             })
