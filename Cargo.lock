@@ -1799,6 +1799,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "eth-personal-sign-common"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "primitives-ethereum",
+ "sp-core-hashing-proc-macro",
+ "sp-io",
+]
+
+[[package]]
 name = "ethabi"
 version = "6.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
