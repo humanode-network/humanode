@@ -1636,6 +1636,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "eip191-common"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "primitives-ethereum",
+ "serde_json",
+ "sp-core-hashing-proc-macro",
+ "sp-io",
+]
+
+[[package]]
 name = "eip712-account-claim"
 version = "0.1.0"
 dependencies = [
@@ -1796,16 +1807,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2d2f06b9cac1506ece98fe3231e3cc9c4410ec3d5b1f24ae1c8946f0742cdefc"
 dependencies = [
  "version_check",
-]
-
-[[package]]
-name = "eth-personal-sign-common"
-version = "0.1.0"
-dependencies = [
- "hex",
- "primitives-ethereum",
- "sp-core-hashing-proc-macro",
- "sp-io",
 ]
 
 [[package]]
