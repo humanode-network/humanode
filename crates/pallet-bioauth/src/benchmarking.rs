@@ -91,9 +91,9 @@ where
         expiry,
     );
 
-    let weakly_bounded_active_auths =
+    let bounded_active_auths =
         BoundedVec::<_, Runtime::MaxAuthentications>::try_from(active_auths).unwrap();
-    ActiveAuthentications::<Runtime>::put(weakly_bounded_active_auths);
+    ActiveAuthentications::<Runtime>::put(bounded_active_auths);
 }
 
 /// Populate the [`ConsumedAuthTicketNonces`] storage with generated data.
@@ -103,9 +103,9 @@ fn populate_consumed_auth_ticket_nonces<Runtime: pallet::Config>(count: u32) {
         let nonce = make_nonce("consumed_nonce", i);
         consumed_nonces.push(BoundedAuthTicketNonce::try_from(nonce).unwrap());
     }
-    let weakly_bounded_consumed_nonces =
+    let bounded_consumed_nonces =
         BoundedVec::<_, Runtime::MaxNonces>::try_from(consumed_nonces).unwrap();
-    ConsumedAuthTicketNonces::<Runtime>::put(weakly_bounded_consumed_nonces);
+    ConsumedAuthTicketNonces::<Runtime>::put(bounded_consumed_nonces);
 }
 
 benchmarks! {
@@ -193,8 +193,8 @@ benchmarks! {
         let mut active_auths = make_authentications("active", active_auth_count as usize, future_expiry);
         auths.append(&mut active_auths);
 
-        let weakly_bound_auths = BoundedVec::try_from(auths).unwrap();
-        ActiveAuthentications::<T>::put(weakly_bound_auths);
+        let bounded_auths = BoundedVec::try_from(auths).unwrap();
+        ActiveAuthentications::<T>::put(bounded_auths);
 
         // Capture this state for comparison.
         let active_authentications_before_len = ActiveAuthentications::<T>::get().len();
