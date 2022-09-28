@@ -5,9 +5,11 @@
 #![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
-use frame_support::dispatch::DispatchInfo;
-use frame_support::traits::{IsSubType, StorageVersion};
-use frame_support::{traits::ConstU32, BoundedVec};
+use frame_support::{
+    dispatch::DispatchInfo,
+    traits::{ConstU32, IsSubType, StorageVersion},
+    BoundedVec,
+};
 pub use pallet::*;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
@@ -16,9 +18,7 @@ use sp_runtime::{
     traits::{DispatchInfoOf, Dispatchable, SignedExtension},
     transaction_validity::{TransactionValidity, TransactionValidityError},
 };
-use sp_std::fmt::Debug;
-use sp_std::marker::PhantomData;
-use sp_std::prelude::*;
+use sp_std::{fmt::Debug, marker::PhantomData, prelude::*};
 
 #[cfg(feature = "runtime-benchmarks")]
 pub mod benchmarking;
