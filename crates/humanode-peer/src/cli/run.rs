@@ -5,8 +5,10 @@ use std::sync::Arc;
 use frame_benchmarking_cli::*;
 use humanode_runtime::Block;
 use sc_service::PartialComponents;
+use sp_keyring::Sr25519Keyring;
 
 use super::{bioauth, Root, Subcommand};
+use crate::benchmarking::{inherent_benchmark_data, TransferKeepAliveBuilder};
 use crate::service;
 
 /// Parse command line arguments and run the requested operation.
@@ -171,7 +173,18 @@ pub async fn run() -> sc_cli::Result<()> {
                     }
                     BenchmarkCmd::Extrinsic(cmd) => {
                         let partial = service::new_partial(&config)?;
-                        unimplemented!();
+                        let ext_factory =
+                            ExtrinsicFactory(vec![Box::new(TransferKeepAliveBuilder::new(
+                                partial.client.clone(),
+                                Sr25519Keyring::Bob.to_account_id(),
+                                500,
+                            ))]);
+                        cmd.run(
+                            partial.client,
+                            inherent_benchmark_data()?,
+                            Vec::new(),
+                            &ext_factory,
+                        )
                     }
                     BenchmarkCmd::Machine(cmd) => {
                         cmd.run(&config.substrate, SUBSTRATE_REFERENCE_HARDWARE.clone())
