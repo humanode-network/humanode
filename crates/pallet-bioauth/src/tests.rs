@@ -1031,8 +1031,12 @@ fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
 #[test]
 fn genesis_build() {
     // Prepare some sample data and a config.
-    let consumed_auth_ticket_nonces = vec![b"nonce1".to_vec(), b"nonce2".to_vec()];
-    let active_authentications = vec![
+    let consumed_auth_ticket_nonces = BoundedVec::try_from(vec![
+        BoundedVec::try_from(b"nonce1".to_vec()).unwrap(),
+        BoundedVec::try_from(b"nonce2".to_vec()).unwrap(),
+    ])
+    .unwrap();
+    let active_authentications = BoundedVec::try_from(vec![
         Authentication {
             public_key: bounded(b"key1"),
             expires_at: 123,
@@ -1041,7 +1045,8 @@ fn genesis_build() {
             public_key: bounded(b"key2"),
             expires_at: 456,
         },
-    ];
+    ])
+    .unwrap();
     let config = pallet_bioauth::GenesisConfig {
         robonode_public_key: MockVerifier::A,
         consumed_auth_ticket_nonces: consumed_auth_ticket_nonces.clone(),
@@ -1064,7 +1069,7 @@ fn genesis_build() {
         // Assert the state.
         assert_eq!(Bioauth::robonode_public_key(), MockVerifier::A);
         assert_eq!(
-            Bioauth::consumed_auth_ticket_nonces().into_inner(),
+            Bioauth::consumed_auth_ticket_nonces(),
             consumed_auth_ticket_nonces
         );
         assert_eq!(Bioauth::active_authentications(), active_authentications);

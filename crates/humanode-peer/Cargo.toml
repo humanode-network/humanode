@@ -33,6 +33,7 @@ fdlimit = "0.2"
 fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
 frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21", optional = true }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.3"

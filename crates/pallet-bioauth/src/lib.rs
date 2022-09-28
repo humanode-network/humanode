@@ -295,8 +295,9 @@ pub mod pallet {
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         pub robonode_public_key: T::RobonodePublicKey,
-        pub consumed_auth_ticket_nonces: Vec<AuthTicketNonce>,
-        pub active_authentications: Vec<Authentication<T::ValidatorPublicKey, T::Moment>>,
+        pub consumed_auth_ticket_nonces: BoundedVec<BoundedAuthTicketNonce, T::MaxNonces>,
+        pub active_authentications:
+            BoundedVec<Authentication<T::ValidatorPublicKey, T::Moment>, T::MaxAuthentications>,
     }
 
     // The default value for the genesis config type.
@@ -315,27 +316,9 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
-            let bounded_consumed_auth_ticket_nonces = BoundedVec::<_, T::MaxNonces>::try_from(
-                self.consumed_auth_ticket_nonces
-                    .iter()
-                    .cloned()
-                    .map(|nonce| {
-                        BoundedAuthTicketNonce::try_from(nonce).expect(
-                            "Initial nonce len must be less than AUTH_TICKET_NONCE_MAX_BYTES",
-                        )
-                    })
-                    .collect::<Vec<_>>(),
-            )
-            .expect("Initial nonces must be less than T::MaxNonces");
-
-            let bounded_active_authentications = BoundedVec::<_, T::MaxAuthentications>::try_from(
-                self.active_authentications.clone(),
-            )
-            .expect("Initial authentications must be less than T::MaxAuthentications");
-
             <RobonodePublicKey<T>>::put(&self.robonode_public_key);
-            <ConsumedAuthTicketNonces<T>>::put(bounded_consumed_auth_ticket_nonces);
-            <ActiveAuthentications<T>>::put(bounded_active_authentications);
+            <ConsumedAuthTicketNonces<T>>::put(self.consumed_auth_ticket_nonces.clone());
+            <ActiveAuthentications<T>>::put(self.active_authentications.clone());
 
             <Pallet<T>>::issue_validators_set_init(&self.active_authentications);
         }
