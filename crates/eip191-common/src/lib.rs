@@ -2,21 +2,27 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use numtoa::NumToA;
 pub use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 pub use sp_core_hashing_proc_macro::keccak_256 as const_keccak_256;
 pub use sp_io::hashing::keccak_256;
+use sp_std::vec;
 
 /// Prepare the eth personal sign message.
-pub fn make_personal_message_hash(message: &str) -> [u8; 32] {
-    keccak_256(
-        format!(
-            "{}{}{}",
-            "\x19Ethereum Signed Message:\n",
-            message.len(),
-            message
-        )
-        .as_bytes(),
-    )
+pub fn make_personal_message_hash(message: &[u8]) -> [u8; 32] {
+    let mut buf = vec![];
+    buf.extend_from_slice("\x19Ethereum Signed Message:\n".as_bytes());
+    buf.extend_from_slice(usize_as_string_bytes(message.len()).as_slice());
+    buf.extend_from_slice(message);
+    keccak_256(&buf)
+}
+
+/// A helper function to represent message len as string bytes.
+///
+/// https://crates.io/crates/numtoa.
+fn usize_as_string_bytes(message_len: usize) -> Vec<u8> {
+    let mut buffer = [0u8; 20];
+    message_len.numtoa(10, &mut buffer).to_vec()
 }
 
 /// Extract the signer address from the signature and the message.
@@ -26,7 +32,7 @@ pub fn recover_signer(sig: &EcdsaSignature, msg: &[u8; 32]) -> Option<EthereumAd
 }
 
 /// Verify signature based on provided message.
-pub fn verify_signature(signature: &EcdsaSignature, message: &str) -> Option<EthereumAddress> {
+pub fn verify_signature(signature: &EcdsaSignature, message: &[u8]) -> Option<EthereumAddress> {
     let msg_hash = make_personal_message_hash(message);
     recover_signer(signature, &msg_hash)
 }
@@ -58,7 +64,7 @@ mod tests {
                     .try_into()
                     .unwrap(),
             ),
-            message,
+            message.as_bytes(),
         );
 
         assert_eq!(
@@ -86,7 +92,7 @@ mod tests {
                     .try_into()
                     .unwrap(),
             ),
-            message,
+            message.as_bytes(),
         );
 
         assert_eq!(
