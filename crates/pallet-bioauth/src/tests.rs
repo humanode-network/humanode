@@ -2,7 +2,7 @@ use std::ops::Div;
 
 use frame_support::{
     assert_err, assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, traits::ConstU32,
-    WeakBoundedVec,
+    BoundedVec,
 };
 use mockall::predicate;
 
@@ -37,17 +37,15 @@ fn block_to_process_moment(moment: UnixMilliseconds) -> BlockNumber {
 
 fn make_bounded_active_authentications(
     authentications: Vec<Authentication<ValidatorPublicKey, UnixMilliseconds>>,
-) -> WeakBoundedVec<
-    Authentication<ValidatorPublicKey, UnixMilliseconds>,
-    ConstU32<MAX_AUTHENTICATIONS>,
-> {
-    WeakBoundedVec::<_, ConstU32<MAX_AUTHENTICATIONS>>::try_from(authentications).unwrap()
+) -> BoundedVec<Authentication<ValidatorPublicKey, UnixMilliseconds>, ConstU32<MAX_AUTHENTICATIONS>>
+{
+    BoundedVec::<_, ConstU32<MAX_AUTHENTICATIONS>>::try_from(authentications).unwrap()
 }
 
 fn make_bounded_consumed_auth_nonces(
     auth_nonces: Vec<Vec<u8>>,
-) -> WeakBoundedVec<pallet_bioauth::BoundedAuthTicketNonce, ConstU32<MAX_NONCES>> {
-    WeakBoundedVec::<_, ConstU32<MAX_NONCES>>::try_from(
+) -> BoundedVec<pallet_bioauth::BoundedAuthTicketNonce, ConstU32<MAX_NONCES>> {
+    BoundedVec::<_, ConstU32<MAX_NONCES>>::try_from(
         auth_nonces
             .iter()
             .cloned()
@@ -430,6 +428,151 @@ fn authentication_when_previous_one_has_been_expired() {
                 b"alice_auth_ticket_nonce".to_vec(),
                 b"new_alice_auth_ticket_nonce".to_vec()
             ]
+        );
+    });
+}
+
+/// This test prevents authentication when the authentications limit has been reached as BoundedVec.
+#[test]
+fn too_many_authentications() {
+    new_test_ext().execute_with(|| {
+        // Prepare the test precondition.
+        let expires_at = CHAIN_START + 2 * SLOT_DURATION;
+
+        let mut active_authentications = vec![];
+
+        for authentication in 0..MAX_AUTHENTICATIONS {
+            let public_key = bounded(format!("pk_{}", authentication).as_bytes());
+            active_authentications.push(Authentication {
+                public_key,
+                expires_at,
+            });
+        }
+
+        let bounded_active_authentications =
+            make_bounded_active_authentications(active_authentications);
+
+        <ActiveAuthentications<Test>>::put(bounded_active_authentications);
+
+        // Prepare the test input.
+        let input = make_input(
+            bounded(b"alice_pk"),
+            b"alice_auth_ticket_nonce",
+            b"should_be_valid",
+        );
+
+        // Set up mock expectations.
+        let current_moment = CHAIN_START + SLOT_DURATION;
+
+        with_mock_validator_set_updater(|mock| {
+            mock.expect_update_validators_set().never();
+        });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().once().with().return_const(current_moment);
+        });
+        with_mock_before_auth_hook_provider(|mock| {
+            mock.expect_hook()
+                .once()
+                .with(predicate::function(move |authentication| {
+                    authentication
+                        == &Authentication {
+                            public_key: bounded(b"alice_pk"),
+                            expires_at: current_moment + AUTHENTICATIONS_EXPIRE_AFTER,
+                        }
+                }))
+                .return_const(Ok(()));
+        });
+        with_mock_after_auth_hook_provider(|mock| {
+            mock.expect_hook().never();
+        });
+
+        // Make test.
+        assert_noop!(
+            Bioauth::authenticate(Origin::none(), input),
+            Error::<Test>::TooManyAuthentications
+        );
+    });
+}
+
+/// This test prevents authentication when the consumed auth ticket nonces
+/// limit has been reached as BoundedVec.
+#[test]
+fn too_many_nonces() {
+    new_test_ext().execute_with(|| {
+        // Prepare the test precondition.
+        let mut consumed_auth_ticket_nonces = vec![];
+
+        for nonce in 0..MAX_NONCES {
+            consumed_auth_ticket_nonces
+                .push(format!("auth_ticket_nonce_{}", nonce).as_bytes().to_vec());
+        }
+
+        let bounded_consumed_auth_ticket_nonces =
+            make_bounded_consumed_auth_nonces(consumed_auth_ticket_nonces);
+
+        <ConsumedAuthTicketNonces<Test>>::put(bounded_consumed_auth_ticket_nonces);
+
+        // Prepare the test input.
+        let input = make_input(
+            bounded(b"alice_pk"),
+            b"alice_auth_ticket_nonce",
+            b"should_be_valid",
+        );
+
+        // Set up mock expectations.
+        let current_moment = CHAIN_START + SLOT_DURATION;
+
+        with_mock_validator_set_updater(|mock| {
+            mock.expect_update_validators_set().never();
+        });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().once().with().return_const(current_moment);
+        });
+        with_mock_before_auth_hook_provider(|mock| {
+            mock.expect_hook().never();
+        });
+        with_mock_after_auth_hook_provider(|mock| {
+            mock.expect_hook().never();
+        });
+
+        // Make test.
+        assert_noop!(
+            Bioauth::authenticate(Origin::none(), input),
+            Error::<Test>::TooManyNonces
+        );
+    });
+}
+
+/// This test prevents authentication when the number of bytes at the nonce has reached the limit.
+#[test]
+fn too_many_bytes_in_nonce() {
+    new_test_ext().execute_with(|| {
+        // Prepare the test precondition.
+        let invalid_nonce = vec![1u8; (AUTH_TICKET_NONCE_MAX_BYTES + 1).try_into().unwrap()];
+
+        // Prepare the test input.
+        let input = make_input(bounded(b"alice_pk"), &invalid_nonce, b"should_be_valid");
+
+        // Set up mock expectations.
+        let current_moment = CHAIN_START + SLOT_DURATION;
+
+        with_mock_validator_set_updater(|mock| {
+            mock.expect_update_validators_set().never();
+        });
+        with_mock_current_moment_provider(|mock| {
+            mock.expect_now().once().with().return_const(current_moment);
+        });
+        with_mock_before_auth_hook_provider(|mock| {
+            mock.expect_hook().never();
+        });
+        with_mock_after_auth_hook_provider(|mock| {
+            mock.expect_hook().never();
+        });
+
+        // Make test.
+        assert_noop!(
+            Bioauth::authenticate(Origin::none(), input),
+            Error::<Test>::TooManyBytesInNonce
         );
     });
 }
@@ -888,8 +1031,12 @@ fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
 #[test]
 fn genesis_build() {
     // Prepare some sample data and a config.
-    let consumed_auth_ticket_nonces = vec![b"nonce1".to_vec(), b"nonce2".to_vec()];
-    let active_authentications = vec![
+    let consumed_auth_ticket_nonces = BoundedVec::try_from(vec![
+        BoundedVec::try_from(b"nonce1".to_vec()).unwrap(),
+        BoundedVec::try_from(b"nonce2".to_vec()).unwrap(),
+    ])
+    .unwrap();
+    let active_authentications = BoundedVec::try_from(vec![
         Authentication {
             public_key: bounded(b"key1"),
             expires_at: 123,
@@ -898,7 +1045,8 @@ fn genesis_build() {
             public_key: bounded(b"key2"),
             expires_at: 456,
         },
-    ];
+    ])
+    .unwrap();
     let config = pallet_bioauth::GenesisConfig {
         robonode_public_key: MockVerifier::A,
         consumed_auth_ticket_nonces: consumed_auth_ticket_nonces.clone(),
@@ -921,7 +1069,7 @@ fn genesis_build() {
         // Assert the state.
         assert_eq!(Bioauth::robonode_public_key(), MockVerifier::A);
         assert_eq!(
-            Bioauth::consumed_auth_ticket_nonces().into_inner(),
+            Bioauth::consumed_auth_ticket_nonces(),
             consumed_auth_ticket_nonces
         );
         assert_eq!(Bioauth::active_authentications(), active_authentications);

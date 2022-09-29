@@ -3261,6 +3261,7 @@ dependencies = [
  "fp-evm",
  "frame-benchmarking",
  "frame-benchmarking-cli",
+ "frame-support",
  "futures",
  "hex",
  "hex-literal",
