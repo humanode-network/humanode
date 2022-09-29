@@ -2,6 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use frame_benchmarking_cli::ExtrinsicBuilder;
+use frame_system::Call as SystemCall;
 use humanode_runtime::BalancesCall;
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
@@ -16,6 +17,41 @@ use crate::service::FullClient;
 pub type Signature = MultiSignature;
 pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
 pub type Balance = u128;
+
+/// Generates `System::Remark` extrinsics for the benchmarks.
+///
+/// Note: Should only be used for benchmarking.
+pub struct RemarkBuilder {
+    client: Arc<FullClient>,
+}
+
+impl RemarkBuilder {
+    pub fn new(client: Arc<FullClient>) -> Self {
+        Self { client }
+    }
+}
+
+impl ExtrinsicBuilder for RemarkBuilder {
+    fn pallet(&self) -> &str {
+        "system"
+    }
+
+    fn extrinsic(&self) -> &str {
+        "remark"
+    }
+
+    fn build(&self, nonce: u32) -> std::result::Result<OpaqueExtrinsic, &'static str> {
+        let acc = Sr25519Keyring::Alice.pair();
+        let extrinsic: OpaqueExtrinsic = create_extrinsic(
+            self.client.as_ref(),
+            acc,
+            SystemCall::remark { remark: vec![] },
+            Some(nonce),
+        )
+        .into();
+        Ok(extrinsic)
+    }
+}
 
 /// Generates `Balances::TransferKeepAlive` extrinsics for the benchmarks.
 ///

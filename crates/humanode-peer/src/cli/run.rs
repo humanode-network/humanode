@@ -8,7 +8,7 @@ use sc_service::PartialComponents;
 use sp_keyring::Sr25519Keyring;
 
 use super::{bioauth, Root, Subcommand};
-use crate::benchmarking::{inherent_benchmark_data, TransferKeepAliveBuilder};
+use crate::benchmarking::{inherent_benchmark_data, RemarkBuilder, TransferKeepAliveBuilder};
 use crate::service;
 
 /// Parse command line arguments and run the requested operation.
@@ -167,18 +167,25 @@ pub async fn run() -> sc_cli::Result<()> {
                     }
                     BenchmarkCmd::Overhead(cmd) => {
                         let partial = service::new_partial(&config)?;
-                        // TODO: Requires a NO_OP extrinsic from any pallets.
-                        // Otherwise, integrate pallet::Remark
-                        unimplemented!();
+                        let ext_builder = RemarkBuilder::new(partial.client.clone());
+                        cmd.run(
+                            config.substrate,
+                            partial.client,
+                            inherent_benchmark_data()?,
+                            Vec::new(),
+                            &ext_builder,
+                        )
                     }
                     BenchmarkCmd::Extrinsic(cmd) => {
                         let partial = service::new_partial(&config)?;
-                        let ext_factory =
-                            ExtrinsicFactory(vec![Box::new(TransferKeepAliveBuilder::new(
+                        let ext_factory = ExtrinsicFactory(vec![
+                            Box::new(RemarkBuilder::new(partial.client.clone())),
+                            Box::new(TransferKeepAliveBuilder::new(
                                 partial.client.clone(),
                                 Sr25519Keyring::Bob.to_account_id(),
                                 500,
-                            ))]);
+                            )),
+                        ]);
                         cmd.run(
                             partial.client,
                             inherent_benchmark_data()?,
