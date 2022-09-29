@@ -12,6 +12,8 @@ substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate"
 author-ext-api = { version = "0.1", path = "../author-ext-api", default-features = false }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
 crypto-utils = { version = "0.1", path = "../crypto-utils", default-features = false, optional = true }
+eip191-crypto = { version = "0.1", path = "../eip191-crypto", default-features = false }
+eip191-token-claim = { version = "0.1", path = "../eip191-token-claim", default-features = false }
 eip712-account-claim = { version = "0.1", path = "../eip712-account-claim", default-features = false }
 eip712-common = { version = "0.1", path = "../eip712-common", default-features = false }
 eip712-common-test-utils = { version = "0.1", path = "../eip712-common-test-utils", default-features = false, optional = true }
@@ -117,6 +119,8 @@ runtime-benchmarks = [
 std = [
   "author-ext-api/std",
   "bioauth-flow-api/std",
+  "eip191-crypto/std",
+  "eip191-token-claim/std",
   "eip712-account-claim/std",
   "eip712-common/std",
   "eip712-token-claim/std",

@@ -1636,7 +1636,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "eip191-common"
+name = "eip191-crypto"
 version = "0.1.0"
 dependencies = [
  "hex",
@@ -1649,14 +1649,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "eip191-message-builder"
+name = "eip191-token-claim"
 version = "0.1.0"
 dependencies = [
  "hex",
- "primitives-ethereum",
  "serde_json",
- "sp-core-hashing-proc-macro",
- "sp-io",
+ "sp-std",
 ]
 
 [[package]]
@@ -3392,6 +3390,8 @@ dependencies = [
  "bioauth-flow-api",
  "chrono",
  "crypto-utils",
+ "eip191-crypto",
+ "eip191-token-claim",
  "eip712-account-claim",
  "eip712-common",
  "eip712-common-test-utils",

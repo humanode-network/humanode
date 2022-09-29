@@ -1,5 +1,5 @@
 [package]
-name = "eip191-common"
+name = "eip191-crypto"
 version = "0.1.0"
 edition = "2021"
 
