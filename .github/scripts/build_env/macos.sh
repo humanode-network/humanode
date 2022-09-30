@@ -37,3 +37,5 @@ EOF
 
   cat ./.cargo/config.toml
 fi
+
+.github/scripts/protoc.sh
