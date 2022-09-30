@@ -167,7 +167,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     }
                     BenchmarkCmd::Overhead(cmd) => {
                         let partial = service::new_partial(&config)?;
-                        let ext_builder = RemarkBuilder::new(partial.client.clone());
+                        let ext_builder = RemarkBuilder::new(Arc::clone(&partial.client));
                         cmd.run(
                             config.substrate,
                             partial.client,
@@ -179,9 +179,9 @@ pub async fn run() -> sc_cli::Result<()> {
                     BenchmarkCmd::Extrinsic(cmd) => {
                         let partial = service::new_partial(&config)?;
                         let ext_factory = ExtrinsicFactory(vec![
-                            Box::new(RemarkBuilder::new(partial.client.clone())),
+                            Box::new(RemarkBuilder::new(Arc::clone(&partial.client))),
                             Box::new(TransferKeepAliveBuilder::new(
-                                partial.client.clone(),
+                                Arc::clone(&partial.client),
                                 Sr25519Keyring::Bob.to_account_id(),
                                 500,
                             )),

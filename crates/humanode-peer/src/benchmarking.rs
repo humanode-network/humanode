@@ -1,3 +1,7 @@
+//! Setup code for [`super::command`] which would otherwise bloat that module.
+//!
+//! Should only be used for benchmarking as it may break in other contexts.
+
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -14,14 +18,15 @@ use sp_runtime::{
 use crate::service::create_extrinsic;
 use crate::service::FullClient;
 
-pub type Signature = MultiSignature;
-pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
-pub type Balance = u128;
+type Signature = MultiSignature;
+type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
+type Balance = u128;
 
 /// Generates `System::Remark` extrinsics for the benchmarks.
 ///
 /// Note: Should only be used for benchmarking.
 pub struct RemarkBuilder {
+    /// A shared full client instance
     client: Arc<FullClient>,
 }
 
