@@ -112,6 +112,9 @@ jobs:
         run: rustup show
         timeout-minutes: 10
 
+      - name: Prepare the build environment
+        run: .github/scripts/build_env/ubuntu.sh
+
       - name: Cache
         uses: Swatinem/rust-cache@v2
         timeout-minutes: 10
