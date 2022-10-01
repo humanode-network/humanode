@@ -22,3 +22,5 @@ rustflags = ["-C", "link-arg=-fuse-ld=${MOLD_PATH}"]
 EOF
 
 cat ./.cargo/config.toml
+
+.github/scripts/protoc.sh
