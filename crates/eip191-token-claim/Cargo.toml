@@ -1,0 +1,18 @@
+[package]
+name = "eip191-token-claim"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+hex = { version = "0.4", default-features = false }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+
+[dev-dependencies]
+eip191-crypto = { version = "0.1", path = "../eip191-crypto" }
+primitives-ethereum = { version = "0.1", path = "../primitives-ethereum" }
+
+hex-literal = "0.3"
+
+[features]
+default = ["std"]
+std = ["hex/std", "sp-std/std"]

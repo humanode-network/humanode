@@ -1,6 +1,5 @@
 //! Tests to verify token claims and vesting logic.
 
-use eip712_common::EcdsaSignature;
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
 use frame_support::{
@@ -10,13 +9,14 @@ use frame_support::{
     traits::{OnFinalize, OnInitialize},
     weights::Weight,
 };
+use primitives_ethereum::EcdsaSignature;
 use sp_runtime::{traits::Applyable, ModuleError};
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
 use crate::{
     dev_utils::{account_id, authority_keys},
-    eip712::genesis_verifying_contract,
+    eth_sig::genesis_verifying_contract,
     opaque::SessionKeys,
     token_claims::types::ClaimInfo,
 };

@@ -1636,6 +1636,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "eip191-crypto"
+version = "0.1.0"
+dependencies = [
+ "hex",
+ "numtoa",
+ "primitives-ethereum",
+ "sp-core-hashing-proc-macro",
+ "sp-io",
+ "sp-std",
+]
+
+[[package]]
+name = "eip191-token-claim"
+version = "0.1.0"
+dependencies = [
+ "eip191-crypto",
+ "hex",
+ "hex-literal",
+ "primitives-ethereum",
+ "sp-std",
+]
+
+[[package]]
 name = "eip712-account-claim"
 version = "0.1.0"
 dependencies = [
@@ -3369,6 +3392,8 @@ dependencies = [
  "bioauth-flow-api",
  "chrono",
  "crypto-utils",
+ "eip191-crypto",
+ "eip191-token-claim",
  "eip712-account-claim",
  "eip712-common",
  "eip712-common-test-utils",
@@ -3421,6 +3446,7 @@ dependencies = [
  "precompile-bioauth",
  "precompile-evm-accounts-mapping",
  "primitives-auth-ticket",
+ "primitives-ethereum",
  "robonode-crypto",
  "scale-info",
  "serde",
@@ -5414,6 +5440,12 @@ checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
 dependencies = [
  "libc",
 ]
+
+[[package]]
+name = "numtoa"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6aa2c4e539b869820a2b82e1aef6ff40aa85e65decdd5185e83fb4b1249cd00f"
 
 [[package]]
 name = "object"

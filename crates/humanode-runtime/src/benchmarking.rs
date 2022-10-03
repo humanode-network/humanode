@@ -1,10 +1,11 @@
 //! The benchmarking utilities.
 
-use eip712_common::{keccak_256, EcdsaSignature, EthereumAddress};
+use eip712_common::keccak_256;
 use frame_support::{
     dispatch::DispatchResult,
     traits::{OnFinalize, OnInitialize},
 };
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 use sp_runtime::traits::{One, Zero};
 
 use super::*;
@@ -74,8 +75,8 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
             panic!("bad ethereum address");
         }
 
-        let chain_id: [u8; 32] = U256::from(crate::eip712::ETHEREUM_MAINNET_CHAIN_ID).into();
-        let verifying_contract = crate::eip712::genesis_verifying_contract();
+        let chain_id: [u8; 32] = U256::from(crate::eth_sig::ETHEREUM_MAINNET_CHAIN_ID).into();
+        let verifying_contract = crate::eth_sig::genesis_verifying_contract();
         let domain = eip712_common::Domain {
             name: "Humanode Token Claim",
             version: "1",

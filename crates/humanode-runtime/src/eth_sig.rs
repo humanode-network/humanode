@@ -1,6 +1,6 @@
-//! Various EIP-712 implementations.
+//! Various EIP-712 and EIP-191 related implementations.
 
-use eip712_common::{EcdsaSignature, EthereumAddress};
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
 use super::*;
 
@@ -30,7 +30,7 @@ impl pallet_evm_accounts_mapping::SignedClaimVerifier for AccountClaimVerifier {
     }
 }
 
-/// The verifier for the EIP-712 signature of the token claim message.
+/// The verifier for the EIP-712 and EIP-191 signatures of the token claim message.
 pub enum TokenClaimVerifier {}
 
 pub(crate) const ETHEREUM_MAINNET_CHAIN_ID: u32 = 1;
@@ -50,6 +50,22 @@ impl pallet_token_claims::traits::EthereumSignatureVerifier for TokenClaimVerifi
             chain_id: &chain_id,
             verifying_contract: &verifying_contract,
         };
-        eip712_token_claim::recover_signer(signature, domain, message_params.account_id.as_ref())
+        if let Some(ethereum_address) = eip712_token_claim::recover_signer(
+            signature,
+            domain,
+            message_params.account_id.as_ref(),
+        ) {
+            if ethereum_address == message_params.ethereum_address {
+                return Some(ethereum_address);
+            }
+        }
+
+        let genesis_hash: [u8; 32] = System::block_hash(0).into();
+        let eip191_message = eip191_token_claim::Message {
+            substrate_address: message_params.account_id.as_ref(),
+            genesis_hash: &genesis_hash,
+        };
+
+        eip191_crypto::recover_signer(signature, eip191_message.prepare_message().as_slice())
     }
 }
