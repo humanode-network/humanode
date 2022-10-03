@@ -33,6 +33,9 @@ mod tests {
 
     use super::*;
 
+    /// This test contains the data obtained from MetaMask browser extension via an injected web3
+    /// interface.
+    /// It validates that the real-world external ecosystem works properly with our code.
     #[test]
     fn real_world_case() {
         let substrate_address =
