@@ -30,7 +30,7 @@ impl pallet_evm_accounts_mapping::SignedClaimVerifier for AccountClaimVerifier {
     }
 }
 
-/// The verifier for the EIP-712 signature of the token claim message.
+/// The verifier for the EIP-712 and EIP-191 signatures of the token claim message.
 pub enum TokenClaimVerifier {}
 
 pub(crate) const ETHEREUM_MAINNET_CHAIN_ID: u32 = 1;
