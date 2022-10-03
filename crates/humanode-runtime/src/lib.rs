@@ -76,7 +76,7 @@ mod benchmarking;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
-pub mod eip;
+pub mod eth_sig;
 mod find_author;
 mod fixed_supply;
 pub mod robonode;
@@ -650,7 +650,7 @@ impl pallet_ethereum_chain_id::Config for Runtime {}
 
 impl pallet_evm_accounts_mapping::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Verifier = eip::AccountClaimVerifier;
+    type Verifier = eth_sig::AccountClaimVerifier;
 }
 
 parameter_types! {
@@ -663,7 +663,7 @@ impl pallet_token_claims::Config for Runtime {
     type PotAccountId = TokenClaimsPotAccountId;
     type VestingSchedule = <Self as pallet_vesting::Config>::Schedule;
     type VestingInterface = vesting::TokenClaimsInterface;
-    type EthereumSignatureVerifier = eip::TokenClaimVerifier;
+    type EthereumSignatureVerifier = eth_sig::TokenClaimVerifier;
     type WeightInfo = ();
 }
 

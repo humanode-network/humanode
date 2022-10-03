@@ -16,7 +16,7 @@ use vesting_schedule_linear::LinearSchedule;
 use super::*;
 use crate::{
     dev_utils::{account_id, authority_keys},
-    eip::genesis_verifying_contract,
+    eth_sig::genesis_verifying_contract,
     opaque::SessionKeys,
     token_claims::types::ClaimInfo,
 };
