@@ -1,4 +1,4 @@
-//! Common logic for eth personal sign message construction and signature verification.
+//! Common logic for EIP-191 message construction and signature verification.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 

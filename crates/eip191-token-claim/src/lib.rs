@@ -1,4 +1,4 @@
-//! E.
+//! EIP-191 token claim message builder.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -13,7 +13,7 @@ pub struct Message<'a> {
 }
 
 impl<'a> Message<'a> {
-    /// Prepare token claim message.
+    /// Prepare EIP-191 token claim message.
     pub fn prepare_message(&self) -> Vec<u8> {
         let mut buf = vec![];
         buf.extend_from_slice("I hereby sign that I claim HMND to ".as_bytes());
