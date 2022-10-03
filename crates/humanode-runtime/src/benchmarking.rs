@@ -1,10 +1,11 @@
 //! The benchmarking utilities.
 
-use eip712_common::{keccak_256, EcdsaSignature, EthereumAddress};
+use eip712_common::keccak_256;
 use frame_support::{
     dispatch::DispatchResult,
     traits::{OnFinalize, OnInitialize},
 };
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 use sp_runtime::traits::{One, Zero};
 
 use super::*;
