@@ -5,7 +5,13 @@ edition = "2021"
 
 [dependencies]
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+hex = { version = "0.4", default-features = false }
+
+[dev-dependencies]
+eip191-crypto = { version = "0.1", path = "../eip191-crypto" }
+
+hex-literal = "0.3"
 
 [features]
 default = ["std"]
-std = ["sp-std/std"]
+std = ["hex/std", "sp-std/std"]

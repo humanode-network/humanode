@@ -1651,6 +1651,9 @@ dependencies = [
 name = "eip191-token-claim"
 version = "0.1.0"
 dependencies = [
+ "eip191-crypto",
+ "hex",
+ "hex-literal",
  "sp-std",
 ]
 
