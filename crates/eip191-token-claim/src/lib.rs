@@ -24,3 +24,37 @@ impl<'a> Message<'a> {
         buf
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use eip191_crypto::EcdsaSignature;
+    use hex_literal::hex;
+
+    use super::*;
+
+    #[test]
+    fn real_world_case() {
+        let substrate_address =
+            hex!("1e38cdd099576380ca4df726fa8b740d3ae6b159e71cd5ef7aa621f5bd01d653");
+        let genesis_hash = hex!("bed15072ffa35432da5d20c33920b3afc2ab850e864a26b684e7f6caed6a1479");
+
+        let token_claim_message = Message {
+            substrate_address: &substrate_address,
+            genesis_hash: &genesis_hash,
+        };
+
+        let signature = hex!("f76b13746bb661fb6a1242b5591d4442a88a09c1600c5ccb77e7083f37b7d17e6b975bbdd88e186870fcadd464dcff0a4b4f6d32e4a51291d4b1f543ea588ae11c");
+
+        let ethereum_address = eip191_crypto::recover_signer(
+            &EcdsaSignature(signature),
+            token_claim_message.prepare_message().as_slice(),
+        )
+        .unwrap();
+
+        assert_eq!(
+            ethereum_address.0,
+            hex!("f24ff3a9cf04c71dbc94d0b566f7a27b94566cac"),
+        );
+    }
+}
