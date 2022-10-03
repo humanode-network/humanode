@@ -3,9 +3,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use numtoa::NumToA;
-pub use primitives_ethereum::{EcdsaSignature, EthereumAddress};
-pub use sp_core_hashing_proc_macro::keccak_256 as const_keccak_256;
-pub use sp_io::hashing::keccak_256;
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
+use sp_io::hashing::keccak_256;
 use sp_std::{vec, vec::Vec};
 
 /// Extract the signer address from the signature and the message.
@@ -35,7 +34,7 @@ fn usize_as_string_bytes(message_len: usize) -> Vec<u8> {
 /// Convert the ECDSA public key to Ethereum address.
 fn ecdsa_public_key_to_ethereum_address(pubkey: &[u8; 64]) -> EthereumAddress {
     let mut address = [0u8; 20];
-    address.copy_from_slice(&sp_io::hashing::keccak_256(pubkey)[12..]);
+    address.copy_from_slice(&keccak_256(pubkey)[12..]);
     EthereumAddress(address)
 }
 
