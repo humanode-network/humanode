@@ -26,7 +26,7 @@ fn make_personal_message_hash(message: &[u8]) -> [u8; 32] {
 
 /// A helper function to represent message len as string bytes.
 ///
-/// https://crates.io/crates/numtoa.
+/// <https://crates.io/crates/numtoa>.
 fn usize_as_string_bytes(message_len: usize) -> Vec<u8> {
     let mut buffer = [0u8; 20];
     message_len.numtoa(10, &mut buffer).to_vec()
