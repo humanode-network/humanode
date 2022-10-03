@@ -1642,7 +1642,6 @@ dependencies = [
  "hex",
  "numtoa",
  "primitives-ethereum",
- "serde_json",
  "sp-core-hashing-proc-macro",
  "sp-io",
  "sp-std",
@@ -1652,8 +1651,6 @@ dependencies = [
 name = "eip191-token-claim"
 version = "0.1.0"
 dependencies = [
- "hex",
- "serde_json",
  "sp-std",
 ]
 
