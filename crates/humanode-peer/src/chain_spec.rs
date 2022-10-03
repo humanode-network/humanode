@@ -3,6 +3,7 @@
 use std::{collections::BTreeMap, str::FromStr};
 
 use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
+use frame_support::BoundedVec;
 use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, token_claims::types::ClaimInfo, AccountId, BabeConfig, Balance,
@@ -290,8 +291,8 @@ fn testnet_genesis(
         },
         bioauth: BioauthConfig {
             robonode_public_key,
-            consumed_auth_ticket_nonces: vec![],
-            active_authentications: vec![],
+            consumed_auth_ticket_nonces: BoundedVec::default(),
+            active_authentications: BoundedVec::default(),
         },
         chain_properties: ChainPropertiesConfig {
             ss58_prefix: SS58_PREFIX,
