@@ -186,13 +186,13 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 const REPORT_LONGEVITY: u64 = 3 * EPOCH_DURATION_IN_BLOCKS as u64;
 
 // Consensus related constants.
-pub const MAX_AUTHENTICATIONS: u32 = 20 * 1024;
+pub const MAX_AUTHENTICATIONS: u32 = 3 * 1024;
 pub const MAX_AUTHORITIES: u32 = MAX_AUTHENTICATIONS;
-pub const MAX_NONCES: u32 = 2000 * MAX_AUTHENTICATIONS;
+pub const MAX_NONCES: u32 = 10000 * MAX_AUTHENTICATIONS;
 
 // ImOnline related constants.
 // TODO(#311): set proper values
-pub const MAX_KEYS: u32 = 20 * 1024;
+pub const MAX_KEYS: u32 = 10 * 1024;
 pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
 pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
 
