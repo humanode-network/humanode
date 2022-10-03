@@ -1654,6 +1654,7 @@ dependencies = [
  "eip191-crypto",
  "hex",
  "hex-literal",
+ "primitives-ethereum",
  "sp-std",
 ]
 

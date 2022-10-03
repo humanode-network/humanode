@@ -9,6 +9,7 @@ sp-std = { default-features = false, git = "https://github.com/humanode-network/
 
 [dev-dependencies]
 eip191-crypto = { version = "0.1", path = "../eip191-crypto" }
+primitives-ethereum = { version = "0.1", path = "../primitives-ethereum" }
 
 hex-literal = "0.3"
 

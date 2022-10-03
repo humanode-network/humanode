@@ -28,8 +28,8 @@ impl<'a> Message<'a> {
 #[cfg(test)]
 mod tests {
 
-    use eip191_crypto::EcdsaSignature;
     use hex_literal::hex;
+    use primitives_ethereum::EcdsaSignature;
 
     use super::*;
 
