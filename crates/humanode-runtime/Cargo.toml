@@ -33,6 +33,7 @@ pallet-vesting = { version = "0.1", path = "../pallet-vesting", default-features
 precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-features = false }
 precompile-evm-accounts-mapping = { version = "0.1", path = "../precompile-evm-accounts-mapping", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
+primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 vesting-schedule-linear = { version = "0.1", path = "../vesting-schedule-linear", default-features = false }
 vesting-scheduling-timestamp = { version = "0.1", path = "../vesting-scheduling-timestamp", default-features = false }
@@ -128,6 +129,7 @@ std = [
   "precompile-bioauth/std",
   "precompile-evm-accounts-mapping/std",
   "primitives-auth-ticket/std",
+  "primitives-ethereum/std",
   "chrono/std",
   "codec/std",
   "scale-info/std",

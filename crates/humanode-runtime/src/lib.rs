@@ -13,7 +13,6 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 // A few exports that help ease life for downstream crates.
 use codec::{alloc::string::ToString, Decode, Encode, MaxEncodedLen};
-pub use eip712_common::EthereumAddress;
 use fp_rpc::TransactionStatus;
 use frame_support::traits::LockIdentifier;
 pub use frame_support::{
@@ -42,6 +41,7 @@ use pallet_session::historical as pallet_session_historical;
 pub use pallet_timestamp::Call as TimestampCall;
 pub use pallet_token_claims as token_claims;
 use primitives_auth_ticket::OpaqueAuthTicket;
+pub use primitives_ethereum::EthereumAddress;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -76,7 +76,7 @@ mod benchmarking;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
-pub mod eip712;
+pub mod eip;
 mod find_author;
 mod fixed_supply;
 pub mod robonode;
@@ -650,7 +650,7 @@ impl pallet_ethereum_chain_id::Config for Runtime {}
 
 impl pallet_evm_accounts_mapping::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type Verifier = eip712::AccountClaimVerifier;
+    type Verifier = eip::AccountClaimVerifier;
 }
 
 parameter_types! {
@@ -663,7 +663,7 @@ impl pallet_token_claims::Config for Runtime {
     type PotAccountId = TokenClaimsPotAccountId;
     type VestingSchedule = <Self as pallet_vesting::Config>::Schedule;
     type VestingInterface = vesting::TokenClaimsInterface;
-    type EthereumSignatureVerifier = eip712::TokenClaimVerifier;
+    type EthereumSignatureVerifier = eip::TokenClaimVerifier;
     type WeightInfo = ();
 }
 

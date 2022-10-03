@@ -1,6 +1,6 @@
-//! Various EIP-712 implementations.
+//! Various EIP-712 and EIP-191 related implementations.
 
-use eip712_common::{EcdsaSignature, EthereumAddress};
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
 use super::*;
 
