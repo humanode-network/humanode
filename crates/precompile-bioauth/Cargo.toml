@@ -29,13 +29,19 @@ sp-io = { default-features = false, git = "https://github.com/humanode-network/s
 [features]
 default = ["std"]
 std = [
-  "serde",
   "codec/std",
   "fp-evm/std",
-  "scale-info/std",
   "frame-support/std",
   "frame-system/std",
-  "sp-std/std",
-  "sp-runtime/std",
+  "getrandom/std",
+  "num_enum/std",
   "pallet-bioauth/std",
+  "pallet-evm/std",
+  "precompile-utils/std",
+  "scale-info/std",
+  "serde",
+  "sp-core/std",
+  "sp-io/std",
+  "sp-runtime/std",
+  "sp-std/std",
 ]

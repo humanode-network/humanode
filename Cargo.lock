@@ -1934,6 +1934,7 @@ version = "0.35.0"
 source = "git+https://github.com/rust-blockchain/evm?branch=master#51b8c2ce3104265e1fd5bb0fe5cdfd2e0938239c"
 dependencies = [
  "auto_impl",
+ "environmental",
  "ethereum",
  "evm-core 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
  "evm-gasometer 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
@@ -1943,6 +1944,7 @@ dependencies = [
  "primitive-types",
  "rlp",
  "scale-info",
+ "serde",
  "sha3 0.10.5",
 ]
 
@@ -1974,6 +1976,7 @@ dependencies = [
  "parity-scale-codec",
  "primitive-types",
  "scale-info",
+ "serde",
 ]
 
 [[package]]
@@ -1992,6 +1995,7 @@ name = "evm-gasometer"
 version = "0.35.0"
 source = "git+https://github.com/rust-blockchain/evm?branch=master#51b8c2ce3104265e1fd5bb0fe5cdfd2e0938239c"
 dependencies = [
+ "environmental",
  "evm-core 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
  "evm-runtime 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
  "primitive-types",
@@ -2014,6 +2018,7 @@ version = "0.35.0"
 source = "git+https://github.com/rust-blockchain/evm?branch=master#51b8c2ce3104265e1fd5bb0fe5cdfd2e0938239c"
 dependencies = [
  "auto_impl",
+ "environmental",
  "evm-core 0.35.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
  "primitive-types",
  "sha3 0.10.5",
@@ -5427,6 +5432,7 @@ version = "0.5.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3b0498641e53dd6ac1a4f22547548caa6864cc4933784319cd1775271c5a46ce"
 dependencies = [
+ "proc-macro-crate",
  "proc-macro2 1.0.43",
  "quote 1.0.21",
  "syn 1.0.100",
