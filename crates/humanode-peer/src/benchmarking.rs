@@ -18,8 +18,11 @@ use sp_runtime::{
 use crate::service::create_extrinsic;
 use crate::service::FullClient;
 
+/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 type Signature = MultiSignature;
+/// A way to identify an account on the chain. This is equivalent to public key of transaction signing scheme
 type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
+/// Balance of an account
 type Balance = u128;
 
 /// Generates `System::Remark` extrinsics for the benchmarks.
@@ -62,12 +65,16 @@ impl ExtrinsicBuilder for RemarkBuilder {
 ///
 /// Note: Should only be used for benchmarking.
 pub struct TransferKeepAliveBuilder {
+    /// A shared full client instance
     client: Arc<FullClient>,
+    /// Destination account to receive
     dest: AccountId,
+    /// Value of the transfer
     value: Balance,
 }
 
 impl TransferKeepAliveBuilder {
+    /// Creates a new [`Self`] from the given client
     pub fn new(client: Arc<FullClient>, dest: AccountId, value: Balance) -> Self {
         Self {
             client,
