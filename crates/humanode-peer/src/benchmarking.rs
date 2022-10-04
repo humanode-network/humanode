@@ -100,7 +100,7 @@ impl ExtrinsicBuilder for TransferKeepAliveBuilder {
             acc,
             BalancesCall::transfer_keep_alive {
                 dest: self.dest.clone().into(),
-                value: self.value.into(),
+                value: self.value,
             },
             Some(nonce),
         )
