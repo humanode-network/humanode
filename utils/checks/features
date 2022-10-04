@@ -113,7 +113,7 @@ class FeaturePropagationError < ValidationError
 end
 
 PROPAGATED_FEATURES = {
-  'std' => { propagate_if_missing: true },
+  'std' => { propagate_if_missing: false },
   'runtime-benchmarks' => { propagate_if_missing: false },
   'try-runtime' => { propagate_if_missing: false }
 }
