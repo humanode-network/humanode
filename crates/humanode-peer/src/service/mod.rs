@@ -460,7 +460,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         observer_enabled: false,
         keystore,
         local_role: role,
-        telemetry: None,
+        telemetry: telemetry.as_ref().map(|x| x.handle()),
         protocol_name: grandpa_protocol_name,
     };
 
@@ -472,7 +472,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
             prometheus_registry,
             shared_voter_state: SharedVoterState::empty(),
-            telemetry: None,
+            telemetry: telemetry.as_ref().map(|x| x.handle()),
         };
 
         task_manager.spawn_essential_handle().spawn_blocking(
