@@ -8,6 +8,7 @@ use sc_service::PartialComponents;
 use sp_keyring::Sr25519Keyring;
 
 use super::{bioauth, Root, Subcommand};
+#[cfg(feature = "runtime-benchmarks")]
 use crate::benchmarking::{inherent_benchmark_data, RemarkBuilder, TransferKeepAliveBuilder};
 use crate::service;
 
@@ -165,6 +166,11 @@ pub async fn run() -> sc_cli::Result<()> {
 
                         cmd.run(config.substrate, partial.client, db, storage)
                     }
+                    #[cfg(not(feature = "runtime-benchmarks"))]
+                    BenchmarkCmd::Overhead(_) => Err(
+                        "Overhead benchmarking can be enabled with `--features runtime-benchmarks.`".into()
+                    ),
+                    #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Overhead(cmd) => {
                         let partial = service::new_partial(&config)?;
                         let ext_builder = RemarkBuilder::new(Arc::clone(&partial.client));
@@ -175,7 +181,12 @@ pub async fn run() -> sc_cli::Result<()> {
                             Vec::new(),
                             &ext_builder,
                         )
-                    }
+                    },
+                    #[cfg(not(feature = "runtime-benchmarks"))]
+                    BenchmarkCmd::Extrinsic(_) => Err(
+                        "Extrinsic benchmarking can be enabled with `--features runtime-benchmarks.`".into()
+                    ),
+                    #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Extrinsic(cmd) => {
                         let partial = service::new_partial(&config)?;
                         let ext_factory = ExtrinsicFactory(vec![

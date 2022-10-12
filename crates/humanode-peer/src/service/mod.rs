@@ -576,7 +576,8 @@ fn init_dev_bioauth_keystore_keys<Keystore: sp_keystore::SyncCryptoStore + ?Size
 ///
 /// The transaction will be signed by `sender`.
 ///
-/// Note: Should only be used for benchmark or tests
+/// Note: Should only be used for benchmark
+#[cfg(feature = "runtime-benchmarks")]
 pub fn create_extrinsic(
     client: &FullClient,
     sender: sp_core::sr25519::Pair,
@@ -645,8 +646,7 @@ pub fn create_extrinsic(
 }
 
 /// Fetch the nonce of the given `account` from the chain state.
-///
-/// Note: Should only be used for benchmarking and tests
+#[cfg(feature = "runtime-benchmarks")]
 fn fetch_nonce(client: &FullClient, account: sp_core::sr25519::Pair) -> u32 {
     let best_hash = client.chain_info().best_hash;
     client

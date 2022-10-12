@@ -1,6 +1,7 @@
 //! The Humanode Peer implementation, main executable entrypoint.
 
 mod api_versions;
+#[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 mod build_info;
 mod chain_spec;
