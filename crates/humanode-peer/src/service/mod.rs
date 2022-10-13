@@ -25,6 +25,7 @@ use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_api::ProvideRuntimeApi;
 #[cfg(feature = "runtime-benchmarks")]
 use sp_core::{Encode, Pair};
+#[cfg(feature = "runtime-benchmarks")]
 use sp_runtime::{generic, SaturatedConversion};
 use tracing::*;
 
