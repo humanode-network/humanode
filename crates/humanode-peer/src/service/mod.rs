@@ -11,6 +11,7 @@ use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
+#[cfg(feature = "runtime-benchmarks")]
 use frame_system_rpc_runtime_api::AccountNonceApi;
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
@@ -20,7 +21,9 @@ pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
+#[cfg(feature = "runtime-benchmarks")]
 use sp_api::ProvideRuntimeApi;
+#[cfg(feature = "runtime-benchmarks")]
 use sp_core::{Encode, Pair};
 use sp_runtime::{generic, SaturatedConversion};
 use tracing::*;
