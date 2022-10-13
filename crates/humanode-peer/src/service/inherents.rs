@@ -51,6 +51,23 @@ where
 
         let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
+        let revive_timestamp: u64 = std::env::var("REVIVE_TIMESTAMP").expect("REVIVE_TIMESTAMP not set").parse().expect("REVIVE_TIMESTAMP should be u64");
+ 		let fork_timestamp: u64 = std::env::var("FORK_TIMESTAMP").expect("FORK_TIMESTAMP not set").parse().expect("FORK_TIMESTAMP should be u64");
+ 		const WARP_FACTOR: u64 = 12;
+
+ 		let time_since_revival = timestamp.timestamp().saturating_sub(revive_timestamp);
+ 		let warped_timestamp = fork_timestamp + WARP_FACTOR * time_since_revival;
+
+         tracing::debug!(target: "babe", message = format!("timestamp warped: {:?} to {:?} ({:?} since revival)",
+         timestamp.timestamp(),
+         warped_timestamp,
+         time_since_revival)
+     );
+
+        let timestamp = timestamp.timestamp().min(warped_timestamp.into());
+
+        let timestamp = sp_timestamp::InherentDataProvider::new(timestamp);
+
         let slot =
             sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
                 *timestamp,
@@ -79,6 +96,23 @@ where
         _extra_args: (),
     ) -> Result<Self::InherentDataProviders, Box<dyn std::error::Error + Send + Sync>> {
         let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
+
+        let revive_timestamp: u64 = std::env::var("REVIVE_TIMESTAMP").expect("REVIVE_TIMESTAMP not set").parse().expect("REVIVE_TIMESTAMP should be u64");
+ 		let fork_timestamp: u64 = std::env::var("FORK_TIMESTAMP").expect("FORK_TIMESTAMP not set").parse().expect("FORK_TIMESTAMP should be u64");
+ 		const WARP_FACTOR: u64 = 12;
+
+ 		let time_since_revival = timestamp.timestamp().saturating_sub(revive_timestamp);
+ 		let warped_timestamp = fork_timestamp + WARP_FACTOR * time_since_revival;
+
+         tracing::debug!(target: "babe", message = format!("timestamp warped: {:?} to {:?} ({:?} since revival)",
+         timestamp.timestamp(),
+         warped_timestamp,
+         time_since_revival)
+     );
+
+        let timestamp = timestamp.timestamp().min(warped_timestamp.into());
+
+        let timestamp = sp_timestamp::InherentDataProvider::new(timestamp);
 
         let slot =
             sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
