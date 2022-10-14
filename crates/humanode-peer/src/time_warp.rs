@@ -1,6 +1,6 @@
 use sp_timestamp::Timestamp;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TimeWarp {
     pub revive_timestamp: Timestamp,
     pub fork_timestamp: Timestamp,
@@ -14,8 +14,8 @@ impl TimeWarp {
         let warped_timestamp = self.fork_timestamp + self.warp_factor * time_since_revival;
 
         tracing::debug!(target: "time-warp", message = format!("timestamp warped: {:?} to {:?} ({:?} since revival)",
-            timestamp,
-            warped_timestamp,
+            timestamp.as_millis(),
+            warped_timestamp.as_millis(),
             time_since_revival)
         );
 
@@ -23,4 +23,8 @@ impl TimeWarp {
 
         sp_timestamp::InherentDataProvider::new(timestamp)
     }
+}
+
+pub fn current_timestamp() -> Timestamp {
+    sp_timestamp::InherentDataProvider::from_system_time().timestamp()
 }
