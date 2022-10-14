@@ -8,8 +8,8 @@ mod configuration;
 mod qrcode;
 mod rpc_url;
 mod service;
-mod validator_key;
 mod time_warp;
+mod validator_key;
 
 #[tokio::main]
 async fn main() -> sc_cli::Result<()> {
