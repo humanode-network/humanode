@@ -4,6 +4,7 @@ use sc_client_api::ProvideUncles;
 use sc_service::Arc;
 use sp_core::U256;
 use sp_runtime::traits::Block;
+
 use crate::time_warp::TimeWarp;
 
 /// Create inherent data providers for block creation.
@@ -13,7 +14,7 @@ pub struct Creator<Client> {
     pub raw_slot_duration: sp_consensus_babe::SlotDuration,
     /// Ethereum gas target price.
     pub eth_target_gas_price: u64,
-    /// Time warp humanode peer mode.
+    /// Time warp peer mode.
     pub time_warp: Option<TimeWarp>,
     /// Client.
     pub client: Arc<Client>,
@@ -54,7 +55,7 @@ where
 
         let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
-        let timestamp = if let Some(time_warp) = self.0.time_warp {
+        let timestamp = if let Some(time_warp) = &self.0.time_warp {
             time_warp.apply_time_warp(timestamp.timestamp())
         } else {
             timestamp
@@ -89,7 +90,7 @@ where
     ) -> Result<Self::InherentDataProviders, Box<dyn std::error::Error + Send + Sync>> {
         let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
-        let timestamp = if let Some(time_warp) = self.0.time_warp {
+        let timestamp = if let Some(time_warp) = &self.0.time_warp {
             time_warp.apply_time_warp(timestamp.timestamp())
         } else {
             timestamp
@@ -117,6 +118,7 @@ impl<Client> Clone for Creator<Client> {
         Self {
             raw_slot_duration: self.raw_slot_duration,
             eth_target_gas_price: self.eth_target_gas_price,
+            time_warp: self.time_warp.clone(),
             client: Arc::clone(&self.client),
         }
     }
