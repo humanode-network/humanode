@@ -2,6 +2,9 @@
 
 use sp_timestamp::Timestamp;
 
+/// Reasonable default warp factor for 6s block time production.
+pub const DEFAULT_WARP_FACTOR: u64 = 12;
+
 /// Time warp mode to simulate time acceleration.
 #[derive(Debug, Clone)]
 pub struct TimeWarp {
