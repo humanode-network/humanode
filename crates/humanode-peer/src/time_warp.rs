@@ -22,13 +22,21 @@ impl TimeWarp {
         let time_since_revival = timestamp.saturating_sub(self.revive_timestamp.into());
         let warped_timestamp = self.fork_timestamp + self.warp_factor * time_since_revival;
 
-        tracing::debug!(target: "time-warp", message = format!("timestamp warped: {:?} to {:?} ({:?} since revival)",
-            timestamp.as_millis(),
-            warped_timestamp.as_millis(),
-            time_since_revival)
-        );
+        let timestamp = if warped_timestamp < timestamp {
+            tracing::debug!(target: "time-warp", message = format!("timestamp warped: {:?} to {:?} ({:?} since revival)",
+                timestamp.as_millis(),
+                warped_timestamp.as_millis(),
+                time_since_revival)
+            );
 
-        let timestamp = timestamp.min(warped_timestamp);
+            warped_timestamp
+        } else {
+            tracing::debug!(target: "time-warp", message = format!("real timestamp has been reached: {:?}",
+                timestamp.as_millis())
+            );
+
+            timestamp
+        };
 
         sp_timestamp::InherentDataProvider::new(timestamp)
     }
