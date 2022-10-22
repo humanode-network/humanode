@@ -4,6 +4,19 @@
 //! One invariant of BABE is that you have to produce at least one block every epoch_duration slots.
 //! In case the network doesn't do it we get the following error during producing the block for
 //! next epoch: "Import failed: Unexpected epoch change".
+//!
+//! Instruction to recover the network.
+//!
+//! 1. Extract the time of the last block that was finalized before the chain bricked (FORK_TIMESTAMP).
+//!
+//! 2. Revert the peer's data blocks to the latest finalized block (./humanode-peer revert).
+//!
+//! 3. Define the time in the future when the warp is going to be started (i.e. most validators will be running).
+//! In other words, it's REVIVE_TIMESTAMP (by default, it's timestamp of running the peer binary).
+//!
+//! 4. Run the peer in time warp mode by passing --fork-timestamp and --revive-timestam info.
+//!
+//! 5. When the correct timestamp has been reached switch the peer to usual running mode.
 
 use sp_timestamp::Timestamp;
 
