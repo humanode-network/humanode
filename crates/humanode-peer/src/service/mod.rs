@@ -352,6 +352,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let babe_shared_epoch_changes = babe_link.epoch_changes().clone();
 
         let keystore = keystore_container.sync_keystore();
+        let chain_spec = config.chain_spec.cloned_box();
         let select_chain = select_chain.clone();
 
         let eth_filter_pool = eth_filter_pool.clone();
@@ -373,6 +374,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 deny_unsafe,
                 graph: Arc::clone(pool.pool()),
                 network: Arc::clone(&network),
+                chain_spec: chain_spec.cloned_box(),
                 author_ext: humanode_rpc::AuthorExtDeps {
                     author_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
                 },
