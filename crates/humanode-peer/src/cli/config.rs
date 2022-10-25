@@ -64,14 +64,16 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         let time_warp = self
             .time_warp_params()
             .map(|params| {
-                params.fork_timestamp.map(|fork_timestamp| TimeWarp {
-                    revive_timestamp: params
-                        .revive_timestamp
-                        .unwrap_or_else(|| current_timestamp().into())
-                        .into(),
-                    fork_timestamp: fork_timestamp.into(),
-                    warp_factor: params.warp_factor.unwrap_or(DEFAULT_WARP_FACTOR),
-                })
+                params
+                    .time_warp_fork_timestamp
+                    .map(|fork_timestamp| TimeWarp {
+                        revive_timestamp: params
+                            .time_warp_revive_timestamp
+                            .unwrap_or_else(|| current_timestamp().into())
+                            .into(),
+                        fork_timestamp: fork_timestamp.into(),
+                        warp_factor: params.time_warp_factor.unwrap_or(DEFAULT_WARP_FACTOR),
+                    })
             })
             .unwrap_or(None);
 

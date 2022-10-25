@@ -88,13 +88,13 @@ pub struct EthereumRpcParams {
 pub struct TimeWarpParams {
     /// The time in the future when the warp is going to be started.
     #[clap(long)]
-    pub revive_timestamp: Option<u64>,
+    pub time_warp_revive_timestamp: Option<u64>,
 
     /// The time of the last block that was finalized before the chain bricked.
     #[clap(long)]
-    pub fork_timestamp: Option<u64>,
+    pub time_warp_fork_timestamp: Option<u64>,
 
     /// Warp factor that is going to be adopted.
     #[clap(long)]
-    pub warp_factor: Option<u64>,
+    pub time_warp_factor: Option<u64>,
 }
