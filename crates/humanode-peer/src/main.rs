@@ -8,6 +8,7 @@ mod configuration;
 mod qrcode;
 mod rpc_url;
 mod service;
+mod time_warp;
 mod validator_key;
 
 #[tokio::main]
