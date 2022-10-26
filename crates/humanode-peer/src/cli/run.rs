@@ -196,7 +196,7 @@ pub async fn run() -> sc_cli::Result<()> {
                             Box::new(RemarkBuilder::new(Arc::clone(&partial.client))),
                             Box::new(TransferKeepAliveBuilder::new(
                                 Arc::clone(&partial.client),
-                                Sr25519Keyring::Bob.to_account_id(),
+                                Sr25519Keyring::Alice.to_account_id(),
                                 EXISTENTIAL_DEPOSIT,
                             )),
                         ]);
