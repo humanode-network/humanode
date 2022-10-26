@@ -3,7 +3,7 @@
 use std::sync::Arc;
 
 use frame_benchmarking_cli::*;
-use humanode_runtime::Block;
+use humanode_runtime::{Block, EXISTENTIAL_DEPOSIT};
 use sc_service::PartialComponents;
 #[cfg(feature = "runtime-benchmarks")]
 use sp_keyring::Sr25519Keyring;
@@ -195,7 +195,7 @@ pub async fn run() -> sc_cli::Result<()> {
                             Box::new(TransferKeepAliveBuilder::new(
                                 Arc::clone(&partial.client),
                                 Sr25519Keyring::Bob.to_account_id(),
-                                500,
+                                EXISTENTIAL_DEPOSIT,
                             )),
                         ]);
                         cmd.run(

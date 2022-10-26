@@ -6,8 +6,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use frame_benchmarking_cli::ExtrinsicBuilder;
-use frame_system::Call as SystemCall;
-use humanode_runtime::BalancesCall;
+use humanode_runtime::{BalancesCall, SystemCall};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{

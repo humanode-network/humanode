@@ -14,6 +14,8 @@ use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 #[cfg(feature = "runtime-benchmarks")]
 use frame_system_rpc_runtime_api::AccountNonceApi;
 use futures::StreamExt;
+#[cfg(feature = "runtime-benchmarks")]
+use humanode_runtime::BLOCK_HASH_COUNT;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
