@@ -61,21 +61,18 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 execute_gas_limit_multiplier: params.execute_gas_limit_multiplier,
             });
 
-        let time_warp = self
-            .time_warp_params()
-            .map(|params| {
-                params
-                    .time_warp_fork_timestamp
-                    .map(|fork_timestamp| TimeWarp {
-                        revive_timestamp: params
-                            .time_warp_revive_timestamp
-                            .unwrap_or_else(|| current_timestamp().into())
-                            .into(),
-                        fork_timestamp: fork_timestamp.into(),
-                        warp_factor: params.time_warp_factor.unwrap_or(DEFAULT_WARP_FACTOR),
-                    })
-            })
-            .and_then(|time_warp| time_warp);
+        let time_warp = self.time_warp_params().and_then(|params| {
+            params
+                .time_warp_fork_timestamp
+                .map(|fork_timestamp| TimeWarp {
+                    revive_timestamp: params
+                        .time_warp_revive_timestamp
+                        .unwrap_or_else(|| current_timestamp().into())
+                        .into(),
+                    fork_timestamp: fork_timestamp.into(),
+                    warp_factor: params.time_warp_factor.unwrap_or(DEFAULT_WARP_FACTOR),
+                })
+        });
 
         Ok(Configuration {
             substrate,
