@@ -109,6 +109,7 @@ pub fn new_partial(
     let Configuration {
         substrate: config,
         evm: evm_config,
+        time_warp: time_warp_config,
         ..
     } = config;
 
@@ -184,6 +185,7 @@ pub fn new_partial(
         raw_slot_duration,
         eth_target_gas_price,
         client: Arc::clone(&client),
+        time_warp: time_warp_config.clone(),
     };
 
     let import_queue = sc_consensus_babe::import_queue(
@@ -242,6 +244,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         bioauth_flow: bioauth_flow_config,
         evm: _evm_config,
         ethereum_rpc: ethereum_rpc_config,
+        ..
     } = config;
 
     let grandpa_protocol_name = sc_finality_grandpa::protocol_standard_name(
