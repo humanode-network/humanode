@@ -75,7 +75,7 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                         warp_factor: params.time_warp_factor.unwrap_or(DEFAULT_WARP_FACTOR),
                     })
             })
-            .unwrap_or(None);
+            .and_then(|time_warp| time_warp);
 
         Ok(Configuration {
             substrate,
