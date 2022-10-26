@@ -3,7 +3,9 @@
 use std::sync::Arc;
 
 use frame_benchmarking_cli::*;
-use humanode_runtime::{Block, EXISTENTIAL_DEPOSIT};
+use humanode_runtime::Block;
+#[cfg(feature = "runtime-benchmarks")]
+use humanode_runtime::EXISTENTIAL_DEPOSIT;
 use sc_service::PartialComponents;
 #[cfg(feature = "runtime-benchmarks")]
 use sp_keyring::Sr25519Keyring;
