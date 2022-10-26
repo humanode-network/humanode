@@ -47,13 +47,13 @@ impl TimeWarp {
             tracing::debug!(target: "time-warp", message = format!("timestamp warped: {:?} to {:?} ({:?} since revival)",
                 timestamp.as_millis(),
                 warped_timestamp.as_millis(),
-                time_since_revival)
+                time_since_revival).as_str()
             );
 
             warped_timestamp
         } else {
             tracing::debug!(target: "time-warp", message = format!("real timestamp has been reached: {:?}",
-                timestamp.as_millis())
+                timestamp.as_millis()).as_str()
             );
 
             timestamp
