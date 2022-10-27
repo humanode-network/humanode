@@ -12,12 +12,13 @@
 //!
 //! 2. Revert the peer's data blocks to the latest finalized block by running `./humanode-peer revert`.
 //!
-//! 3. Define the time in the future when the warp is going to be started (i.e. most validators will be running).
+//! 3. Define the time in the future when the warp is going to be started.
 //! In other words, it's `REVIVE_TIMESTAMP` (by default, timestamp of exact the peer binary run).
 //!
 //! 4. Define `WARP_FACTOR` that is going to be adopted to do time warp.
 //!
-//! 5. Run the peer in time warp mode by passing `--fork-timestamp`, `--revive-timestamp`, `--warp-factor`.
+//! 5. Run the peer in time warp mode by passing `--time-warp-fork-timestamp`, `--time-warp-revive-timestamp`,
+//! `--time-warp-factor`.
 //!
 //! 6. When the correct timestamp has been reached switch the peer to usual running mode.
 
