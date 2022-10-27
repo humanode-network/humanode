@@ -20,6 +20,7 @@ use jsonrpsee::RpcModule;
 use sc_client_api::{
     backend::{AuxStore, Backend, StateBackend, StorageProvider},
     client::BlockchainEvents,
+    BlockBackend,
 };
 use sc_consensus_babe::{BabeConfiguration, Epoch};
 use sc_consensus_babe_rpc::{Babe, BabeApiServer};
@@ -30,6 +31,7 @@ use sc_finality_grandpa::{
 use sc_finality_grandpa_rpc::{Grandpa, GrandpaApiServer};
 use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
+use sc_rpc_spec_v2::chain_spec::{ChainSpec, ChainSpecApiServer};
 use sc_transaction_pool::{ChainApi, Pool};
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::{Encode, ProvideRuntimeApi};
@@ -115,6 +117,8 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub graph: Arc<Pool<A>>,
     /// Network service
     pub network: Arc<NetworkService<Block, Hash>>,
+    /// A copy of the chain spec.
+    pub chain_spec: Box<dyn sc_chain_spec::ChainSpec>,
     /// AuthorExt specific dependencies.
     pub author_ext: AuthorExtDeps<VKE>,
     /// Bioauth specific dependencies.
@@ -171,7 +175,8 @@ pub fn create<C, P, BE, VKE, VSF, A, SC>(
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
     BE: Backend<Block> + 'static,
-    C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+    BE::State: StateBackend<sp_runtime::traits::HashFor<Block>>,
+    C: ProvideRuntimeApi<Block> + BlockBackend<Block> + StorageProvider<Block, BE> + AuxStore,
     C: BlockchainEvents<Block>,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
     C: Send + Sync + 'static,
@@ -205,6 +210,7 @@ where
         deny_unsafe,
         graph,
         network,
+        chain_spec,
         author_ext,
         bioauth,
         babe,
@@ -248,6 +254,15 @@ where
         eth_block_data_cache,
         eth_execute_gas_limit_multiplier,
     } = evm;
+
+    let chain_name = chain_spec.name().to_string();
+    let genesis_hash = client
+        .block_hash(0)
+        .ok()
+        .flatten()
+        .expect("Genesis block exists; qed");
+    let properties = chain_spec.properties();
+    io.merge(ChainSpec::new(chain_name, genesis_hash, properties).into_rpc())?;
 
     io.merge(System::new(Arc::clone(&client), Arc::clone(&pool), deny_unsafe).into_rpc())?;
 

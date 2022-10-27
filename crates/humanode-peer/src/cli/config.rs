@@ -7,6 +7,7 @@ use crate::{
     chain_spec::Extensions,
     configuration::{self, Configuration},
     rpc_url::RpcUrl,
+    time_warp::{current_timestamp, TimeWarp, DEFAULT_WARP_FACTOR},
 };
 
 /// An extension to the [`sc_cli::CliConfiguration`] to enable us to pass custom params.
@@ -60,11 +61,25 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 execute_gas_limit_multiplier: params.execute_gas_limit_multiplier,
             });
 
+        let time_warp = self.time_warp_params().and_then(|params| {
+            params
+                .time_warp_fork_timestamp
+                .map(|fork_timestamp| TimeWarp {
+                    revive_timestamp: params
+                        .time_warp_revive_timestamp
+                        .unwrap_or_else(|| current_timestamp().into())
+                        .into(),
+                    fork_timestamp: fork_timestamp.into(),
+                    warp_factor: params.time_warp_factor.unwrap_or(DEFAULT_WARP_FACTOR),
+                })
+        });
+
         Ok(Configuration {
             substrate,
             bioauth_flow,
             evm,
             ethereum_rpc,
+            time_warp,
         })
     }
 
@@ -80,6 +95,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
 
     /// Provide the Ethereum RPC params.
     fn ethereum_rpc_params(&self) -> Option<&params::EthereumRpcParams> {
+        None
+    }
+
+    /// Provide the time warp related params, if available.
+    fn time_warp_params(&self) -> Option<&params::TimeWarpParams> {
         None
     }
 }

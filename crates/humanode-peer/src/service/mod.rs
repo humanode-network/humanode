@@ -109,6 +109,7 @@ pub fn new_partial(
     let Configuration {
         substrate: config,
         evm: evm_config,
+        time_warp: time_warp_config,
         ..
     } = config;
 
@@ -184,6 +185,7 @@ pub fn new_partial(
         raw_slot_duration,
         eth_target_gas_price,
         client: Arc::clone(&client),
+        time_warp: time_warp_config.clone(),
     };
 
     let import_queue = sc_consensus_babe::import_queue(
@@ -242,6 +244,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         bioauth_flow: bioauth_flow_config,
         evm: _evm_config,
         ethereum_rpc: ethereum_rpc_config,
+        ..
     } = config;
 
     let grandpa_protocol_name = sc_finality_grandpa::protocol_standard_name(
@@ -352,6 +355,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let babe_shared_epoch_changes = babe_link.epoch_changes().clone();
 
         let keystore = keystore_container.sync_keystore();
+        let chain_spec = config.chain_spec.cloned_box();
         let select_chain = select_chain.clone();
 
         let eth_filter_pool = eth_filter_pool.clone();
@@ -373,6 +377,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 deny_unsafe,
                 graph: Arc::clone(pool.pool()),
                 network: Arc::clone(&network),
+                chain_spec: chain_spec.cloned_box(),
                 author_ext: humanode_rpc::AuthorExtDeps {
                     author_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
                 },
