@@ -3368,6 +3368,7 @@ dependencies = [
  "pallet-transaction-payment-rpc",
  "primitives-frontier",
  "robonode-client",
+ "sc-chain-spec",
  "sc-client-api",
  "sc-consensus-babe",
  "sc-consensus-babe-rpc",
@@ -3377,6 +3378,7 @@ dependencies = [
  "sc-network",
  "sc-rpc",
  "sc-rpc-api",
+ "sc-rpc-spec-v2",
  "sc-transaction-pool",
  "sc-transaction-pool-api",
  "sp-api",
@@ -8217,6 +8219,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-rpc-spec-v2"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/humanode-2022-09-21#006dbc01304b9d3644f3fc4c1bf0e610acd3ad90"
+dependencies = [
+ "hex",
+ "jsonrpsee",
+ "sc-chain-spec",
+]
+
+[[package]]
 name = "sc-service"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/humanode-2022-09-21#006dbc01304b9d3644f3fc4c1bf0e610acd3ad90"
@@ -10422,7 +10434,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
  "digest 0.10.5",
- "rand 0.8.5",
+ "rand 0.4.6",
  "static_assertions",
 ]
 

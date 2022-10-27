@@ -2,7 +2,10 @@
 
 use std::borrow::Cow;
 
-use crate::rpc_url::{RpcUrl, RpcUrlResolver};
+use crate::{
+    rpc_url::{RpcUrl, RpcUrlResolver},
+    time_warp::TimeWarp,
+};
 
 /// Peer configuration, including both standard substrate configuration and our custom extensions.
 pub struct Configuration {
@@ -20,6 +23,10 @@ pub struct Configuration {
 
     /// Ethereum RPC configuration.
     pub ethereum_rpc: Option<EthereumRpc>,
+
+    /// Time warp mode configuration.
+    /// If not defined, time warp mode isn't enabled.
+    pub time_warp: Option<TimeWarp>,
 }
 
 /// Bioauth flow configuration parameters.
