@@ -56,3 +56,11 @@ pub mod babe {
     };
     pub const MAX_AUTHORITIES: u32 = super::bioauth::MAX_AUTHENTICATIONS;
 }
+
+/// ImOnline constants.
+pub mod im_online {
+    // TODO(#311): set proper values
+    pub const MAX_KEYS: u32 = 10 * 1024;
+    pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
+    pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
+}
