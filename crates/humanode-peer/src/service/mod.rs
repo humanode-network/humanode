@@ -11,7 +11,6 @@ use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
-use frame_system_rpc_runtime_api::AccountNonceApi;
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockBackend, BlockchainEvents};
@@ -20,9 +19,6 @@ pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
-use sp_api::ProvideRuntimeApi;
-use sp_core::Pair;
-use sp_runtime::generic;
 use tracing::*;
 
 use crate::configuration::Configuration;
@@ -570,13 +566,4 @@ fn init_dev_bioauth_keystore_keys<Keystore: sp_keystore::SyncCryptoStore + ?Size
         )?;
     }
     Ok(())
-}
-
-/// Fetch the nonce of the given `account` from the chain state.
-pub fn fetch_nonce(client: &FullClient, account: sp_core::sr25519::Pair) -> u32 {
-    let best_hash = client.chain_info().best_hash;
-    client
-        .runtime_api()
-        .account_nonce(&generic::BlockId::Hash(best_hash), account.public().into())
-        .expect("Fetching account nonce failed")
 }

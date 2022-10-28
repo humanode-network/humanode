@@ -6,9 +6,11 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use frame_benchmarking_cli::ExtrinsicBuilder;
+use frame_system_rpc_runtime_api::AccountNonceApi;
 use humanode_runtime::BLOCK_HASH_COUNT;
 use humanode_runtime::{BalancesCall, SystemCall};
 use sc_client_api::BlockBackend;
+use sp_api::ProvideRuntimeApi;
 use sp_core::{Encode, Pair};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
@@ -18,7 +20,7 @@ use sp_runtime::{
     MultiSignature, OpaqueExtrinsic, SaturatedConversion,
 };
 
-use crate::service::{fetch_nonce, FullClient};
+use crate::service::FullClient;
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 type Signature = MultiSignature;
@@ -192,4 +194,13 @@ pub fn create_extrinsic(
         humanode_runtime::Signature::Sr25519(signature),
         extra,
     )
+}
+
+/// Fetch the nonce of the given `account` from the chain state.
+fn fetch_nonce(client: &FullClient, account: sp_core::sr25519::Pair) -> u32 {
+    let best_hash = client.chain_info().best_hash;
+    client
+        .runtime_api()
+        .account_nonce(&generic::BlockId::Hash(best_hash), account.public().into())
+        .expect("Fetching account nonce failed")
 }
