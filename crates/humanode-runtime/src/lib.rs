@@ -73,6 +73,7 @@ use frontier_precompiles::FrontierPrecompiles;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+mod constants;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
@@ -162,22 +163,12 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
         allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
     };
 
-// NOTE: Currently it is not possible to change the slot duration after the chain has started.
-//       Attempting to do so will brick block production.
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
-pub const SECS_PER_BLOCK: u64 = MILLISECS_PER_BLOCK / 1000;
-
-// These time units are defined in number of blocks.
-pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
-pub const HOURS: BlockNumber = MINUTES * 60;
-pub const DAYS: BlockNumber = HOURS * 24;
-
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
-pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
+pub const SLOT_DURATION: u64 = constants::time::MILLISECS_PER_BLOCK;
+pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * constants::time::MINUTES;
 // NOTE: Currently it is not possible to change the epoch duration after the chain has started.
 //       Attempting to do so will brick block production.
 pub const EPOCH_DURATION_IN_SLOTS: u64 = {
-    const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
+    const SLOT_FILL_RATE: f64 = constants::time::MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
     (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 };
@@ -282,7 +273,7 @@ impl pallet_randomness_collective_flip::Config for Runtime {}
 
 impl pallet_babe::Config for Runtime {
     type EpochDuration = ConstU64<EPOCH_DURATION_IN_SLOTS>;
-    type ExpectedBlockTime = ConstU64<MILLISECS_PER_BLOCK>;
+    type ExpectedBlockTime = ConstU64<{ constants::time::MILLISECS_PER_BLOCK }>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
 
