@@ -84,6 +84,15 @@ pub mod robonode;
 #[cfg(test)]
 mod tests;
 
+pub use constants::{
+    babe::{
+        BABE_GENESIS_EPOCH_CONFIG, EPOCH_DURATION_IN_BLOCKS, EPOCH_DURATION_IN_SLOTS,
+        MAX_AUTHORITIES, SLOT_DURATION,
+    },
+    bioauth::{AUTHENTICATIONS_EXPIRE_AFTER, MAX_AUTHENTICATIONS, MAX_NONCES},
+    block_time::MILLISECS_PER_BLOCK,
+};
+
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -153,32 +162,8 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     state_version: 1,
 };
 
-// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
-pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
-
-/// The BABE epoch configuration at genesis.
-pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
-    sp_consensus_babe::BabeEpochConfiguration {
-        c: PRIMARY_PROBABILITY,
-        allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
-    };
-
-pub const SLOT_DURATION: u64 = constants::block_time::MILLISECS_PER_BLOCK;
-pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * constants::block_time::MINUTES;
-// NOTE: Currently it is not possible to change the epoch duration after the chain has started.
-//       Attempting to do so will brick block production.
-pub const EPOCH_DURATION_IN_SLOTS: u64 = {
-    const SLOT_FILL_RATE: f64 =
-        constants::block_time::MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
-
-    (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
-};
-
 /// The longevity, in blocks, that an equivocation report is valid for.
 const REPORT_LONGEVITY: u64 = 3 * EPOCH_DURATION_IN_BLOCKS as u64;
-
-// Consensus related constants.
-pub const MAX_AUTHORITIES: u32 = constants::bioauth::MAX_AUTHENTICATIONS;
 
 // ImOnline related constants.
 // TODO(#311): set proper values
@@ -187,10 +172,8 @@ pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
 pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
 
 // Constants conditions.
-static_assertions::const_assert!(MAX_KEYS >= constants::bioauth::MAX_AUTHENTICATIONS);
-static_assertions::const_assert!(
-    MAX_PEER_IN_HEARTBEATS >= 3 * constants::bioauth::MAX_AUTHENTICATIONS
-);
+static_assertions::const_assert!(MAX_KEYS >= MAX_AUTHENTICATIONS);
+static_assertions::const_assert!(MAX_PEER_IN_HEARTBEATS >= 3 * MAX_AUTHENTICATIONS);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -274,7 +257,7 @@ impl pallet_randomness_collective_flip::Config for Runtime {}
 
 impl pallet_babe::Config for Runtime {
     type EpochDuration = ConstU64<EPOCH_DURATION_IN_SLOTS>;
-    type ExpectedBlockTime = ConstU64<{ constants::block_time::MILLISECS_PER_BLOCK }>;
+    type ExpectedBlockTime = ConstU64<MILLISECS_PER_BLOCK>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
 
@@ -475,11 +458,10 @@ impl pallet_bioauth::Config for Runtime {
     type Moment = UnixMilliseconds;
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
-    type AuthenticationsExpireAfter =
-        ConstU64<{ constants::bioauth::AUTHENTICATIONS_EXPIRE_AFTER }>;
+    type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
     type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
-    type MaxAuthentications = ConstU32<{ constants::bioauth::MAX_AUTHENTICATIONS }>;
-    type MaxNonces = ConstU32<{ constants::bioauth::MAX_NONCES }>;
+    type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
+    type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
 }
