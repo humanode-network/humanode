@@ -64,3 +64,8 @@ pub mod im_online {
     pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
     pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
 }
+
+/// Equivocation constants.
+pub mod equivocation {
+    pub const REPORT_LONGEVITY: u64 = 3 * super::babe::EPOCH_DURATION_IN_BLOCKS as u64;
+}

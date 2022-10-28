@@ -91,6 +91,7 @@ pub use constants::{
     },
     bioauth::{AUTHENTICATIONS_EXPIRE_AFTER, MAX_AUTHENTICATIONS, MAX_NONCES},
     block_time::MILLISECS_PER_BLOCK,
+    equivocation::REPORT_LONGEVITY,
     im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
 };
 
@@ -162,9 +163,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     transaction_version: 1,
     state_version: 1,
 };
-
-/// The longevity, in blocks, that an equivocation report is valid for.
-const REPORT_LONGEVITY: u64 = 3 * EPOCH_DURATION_IN_BLOCKS as u64;
 
 // Constants conditions.
 static_assertions::const_assert!(MAX_KEYS >= MAX_AUTHENTICATIONS);
