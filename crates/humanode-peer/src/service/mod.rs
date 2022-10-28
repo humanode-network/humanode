@@ -11,11 +11,8 @@ use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
-#[cfg(feature = "runtime-benchmarks")]
 use frame_system_rpc_runtime_api::AccountNonceApi;
 use futures::StreamExt;
-#[cfg(feature = "runtime-benchmarks")]
-use humanode_runtime::BLOCK_HASH_COUNT;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
@@ -23,12 +20,9 @@ pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
 use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
 use sc_telemetry::{Telemetry, TelemetryWorker};
-#[cfg(feature = "runtime-benchmarks")]
 use sp_api::ProvideRuntimeApi;
-#[cfg(feature = "runtime-benchmarks")]
-use sp_core::{Encode, Pair};
-#[cfg(feature = "runtime-benchmarks")]
-use sp_runtime::{generic, SaturatedConversion};
+use sp_core::Pair;
+use sp_runtime::generic;
 use tracing::*;
 
 use crate::configuration::Configuration;
@@ -578,82 +572,8 @@ fn init_dev_bioauth_keystore_keys<Keystore: sp_keystore::SyncCryptoStore + ?Size
     Ok(())
 }
 
-/// Create a transaction using the given `call`
-///
-/// The transaction will be signed by `sender`.
-///
-/// Note: Should only be used for benchmark
-#[cfg(feature = "runtime-benchmarks")]
-pub fn create_extrinsic(
-    client: &FullClient,
-    sender: sp_core::sr25519::Pair,
-    function: impl Into<humanode_runtime::RuntimeCall>,
-    maybe_nonce: Option<u32>,
-) -> humanode_runtime::UncheckedExtrinsic {
-    let function = function.into();
-    let genesis_hash = client
-        .block_hash(0)
-        .ok()
-        .flatten()
-        .expect("Genesis block exists; qed");
-    let best_hash = client.chain_info().best_hash;
-    let best_block = client.chain_info().best_number;
-    let nonce = maybe_nonce.unwrap_or_else(|| fetch_nonce(client, sender.clone()));
-
-    // Get the biggest period possible that satisfies 2^(k - 1) < BlockHashCount.
-    let block_hash_count = 2400u32;
-    let period = block_hash_count
-        .checked_next_power_of_two()
-        .map(|c| c / 2)
-        .unwrap_or(2) as u64;
-
-    let tip = 0;
-    let extra: humanode_runtime::SignedExtra = (
-        frame_system::CheckSpecVersion::<humanode_runtime::Runtime>::new(),
-        frame_system::CheckTxVersion::<humanode_runtime::Runtime>::new(),
-        frame_system::CheckGenesis::<humanode_runtime::Runtime>::new(),
-        frame_system::CheckEra::<humanode_runtime::Runtime>::from(generic::Era::mortal(
-            period,
-            best_block.saturated_into(),
-        )),
-        frame_system::CheckNonce::<humanode_runtime::Runtime>::from(nonce),
-        frame_system::CheckWeight::<humanode_runtime::Runtime>::new(),
-        pallet_bioauth::CheckBioauthTx::<humanode_runtime::Runtime>::new(),
-        pallet_transaction_payment::ChargeTransactionPayment::<humanode_runtime::Runtime>::from(
-            tip,
-        ),
-        pallet_token_claims::CheckTokenClaim::<humanode_runtime::Runtime>::new(),
-    );
-
-    let raw_payload = humanode_runtime::SignedPayload::from_raw(
-        function.clone(),
-        extra.clone(),
-        (
-            humanode_runtime::VERSION.spec_version,
-            humanode_runtime::VERSION.transaction_version,
-            genesis_hash,
-            best_hash,
-            (),
-            (),
-            (),
-            (),
-            (),
-        ),
-    );
-
-    let signature = raw_payload.using_encoded(|e| sender.sign(e));
-
-    humanode_runtime::UncheckedExtrinsic::new_signed(
-        function,
-        sp_runtime::AccountId32::from(sender.public()).into(),
-        humanode_runtime::Signature::Sr25519(signature),
-        extra,
-    )
-}
-
 /// Fetch the nonce of the given `account` from the chain state.
-#[cfg(feature = "runtime-benchmarks")]
-fn fetch_nonce(client: &FullClient, account: sp_core::sr25519::Pair) -> u32 {
+pub fn fetch_nonce(client: &FullClient, account: sp_core::sr25519::Pair) -> u32 {
     let best_hash = client.chain_info().best_hash;
     client
         .runtime_api()

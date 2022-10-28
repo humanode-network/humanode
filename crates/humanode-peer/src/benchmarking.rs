@@ -6,16 +6,19 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use frame_benchmarking_cli::ExtrinsicBuilder;
+use humanode_runtime::BLOCK_HASH_COUNT;
 use humanode_runtime::{BalancesCall, SystemCall};
+use sc_client_api::BlockBackend;
+use sp_core::{Encode, Pair};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{
+    generic,
     traits::{IdentifyAccount, Verify},
-    MultiSignature, OpaqueExtrinsic,
+    MultiSignature, OpaqueExtrinsic, SaturatedConversion,
 };
 
-use crate::service::create_extrinsic;
-use crate::service::FullClient;
+use crate::service::{fetch_nonce, FullClient};
 
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 type Signature = MultiSignature;
@@ -119,4 +122,74 @@ pub fn inherent_benchmark_data() -> sc_cli::Result<InherentData> {
         .provide_inherent_data(&mut inherent_data)
         .map_err(|e| format!("creating inherent data: {:?}", e))?;
     Ok(inherent_data)
+}
+
+/// Create a transaction using the given call.
+///
+/// The transaction will be signed by the `sender`.
+pub fn create_extrinsic(
+    client: &FullClient,
+    sender: sp_core::sr25519::Pair,
+    function: impl Into<humanode_runtime::RuntimeCall>,
+    maybe_nonce: Option<u32>,
+) -> humanode_runtime::UncheckedExtrinsic {
+    let function = function.into();
+    let genesis_hash = client
+        .block_hash(0)
+        .ok()
+        .flatten()
+        .expect("Genesis block exists; qed");
+    let best_hash = client.chain_info().best_hash;
+    let best_block = client.chain_info().best_number;
+    let nonce = maybe_nonce.unwrap_or_else(|| fetch_nonce(client, sender.clone()));
+
+    // Get the biggest period possible that satisfies 2^(k - 1) < BlockHashCount.
+    let block_hash_count = BLOCK_HASH_COUNT;
+    let period = block_hash_count
+        .checked_next_power_of_two()
+        .map(|c| c / 2)
+        .unwrap_or(2) as u64;
+
+    let tip = 0;
+    let extra: humanode_runtime::SignedExtra = (
+        frame_system::CheckSpecVersion::<humanode_runtime::Runtime>::new(),
+        frame_system::CheckTxVersion::<humanode_runtime::Runtime>::new(),
+        frame_system::CheckGenesis::<humanode_runtime::Runtime>::new(),
+        frame_system::CheckEra::<humanode_runtime::Runtime>::from(generic::Era::mortal(
+            period,
+            best_block.saturated_into(),
+        )),
+        frame_system::CheckNonce::<humanode_runtime::Runtime>::from(nonce),
+        frame_system::CheckWeight::<humanode_runtime::Runtime>::new(),
+        pallet_bioauth::CheckBioauthTx::<humanode_runtime::Runtime>::new(),
+        pallet_transaction_payment::ChargeTransactionPayment::<humanode_runtime::Runtime>::from(
+            tip,
+        ),
+        pallet_token_claims::CheckTokenClaim::<humanode_runtime::Runtime>::new(),
+    );
+
+    let raw_payload = humanode_runtime::SignedPayload::from_raw(
+        function.clone(),
+        extra.clone(),
+        (
+            humanode_runtime::VERSION.spec_version,
+            humanode_runtime::VERSION.transaction_version,
+            genesis_hash,
+            best_hash,
+            (),
+            (),
+            (),
+            (),
+            (),
+        ),
+    );
+
+    let signature = raw_payload.using_encoded(|e| sender.sign(e));
+
+    humanode_runtime::UncheckedExtrinsic::new_signed(
+        function,
+        sp_runtime::AccountId32::from(sender.public()).into(),
+        humanode_runtime::Signature::Sr25519(signature),
+        extra,
+    )
 }
