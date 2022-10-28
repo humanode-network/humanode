@@ -163,12 +163,13 @@ pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
         allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
     };
 
-pub const SLOT_DURATION: u64 = constants::time::MILLISECS_PER_BLOCK;
-pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * constants::time::MINUTES;
+pub const SLOT_DURATION: u64 = constants::block_time::MILLISECS_PER_BLOCK;
+pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * constants::block_time::MINUTES;
 // NOTE: Currently it is not possible to change the epoch duration after the chain has started.
 //       Attempting to do so will brick block production.
 pub const EPOCH_DURATION_IN_SLOTS: u64 = {
-    const SLOT_FILL_RATE: f64 = constants::time::MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
+    const SLOT_FILL_RATE: f64 =
+        constants::block_time::MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
     (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
 };
@@ -273,7 +274,7 @@ impl pallet_randomness_collective_flip::Config for Runtime {}
 
 impl pallet_babe::Config for Runtime {
     type EpochDuration = ConstU64<EPOCH_DURATION_IN_SLOTS>;
-    type ExpectedBlockTime = ConstU64<{ constants::time::MILLISECS_PER_BLOCK }>;
+    type ExpectedBlockTime = ConstU64<{ constants::block_time::MILLISECS_PER_BLOCK }>;
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
 
@@ -463,11 +464,7 @@ impl pallet_bioauth::CurrentMoment<UnixMilliseconds> for CurrentMoment {
     }
 }
 
-const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
-const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
-const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
-const TIMESTAMP_DAY: UnixMilliseconds = 24 * TIMESTAMP_HOUR;
-const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * TIMESTAMP_DAY;
+const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * constants::timestamp::TIMESTAMP_DAY;
 
 impl pallet_bioauth::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;

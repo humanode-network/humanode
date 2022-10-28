@@ -1,7 +1,7 @@
 //! A set of constant values used in humanode runtime.
 
-/// Time.
-pub mod time {
+/// Block related time.
+pub mod block_time {
     use crate::BlockNumber;
 
     // NOTE: Currently it is not possible to change the slot duration after the chain has started.
@@ -11,4 +11,14 @@ pub mod time {
 
     // These time units are defined in number of blocks.
     pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
+}
+
+/// Timestamp related time.
+pub mod timestamp {
+    use crate::UnixMilliseconds;
+
+    pub const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
+    pub const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
+    pub const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
+    pub const TIMESTAMP_DAY: UnixMilliseconds = 24 * TIMESTAMP_HOUR;
 }
