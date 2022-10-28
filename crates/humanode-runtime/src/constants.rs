@@ -22,3 +22,12 @@ pub mod timestamp {
     pub const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
     pub const TIMESTAMP_DAY: UnixMilliseconds = 24 * TIMESTAMP_HOUR;
 }
+
+/// Bioath constants.
+pub mod bioauth {
+    use crate::UnixMilliseconds;
+
+    pub const MAX_AUTHENTICATIONS: u32 = 3 * 1024;
+    pub const MAX_NONCES: u32 = 10000 * MAX_AUTHENTICATIONS;
+    pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * super::timestamp::TIMESTAMP_DAY;
+}

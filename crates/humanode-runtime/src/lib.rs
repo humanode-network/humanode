@@ -178,9 +178,7 @@ pub const EPOCH_DURATION_IN_SLOTS: u64 = {
 const REPORT_LONGEVITY: u64 = 3 * EPOCH_DURATION_IN_BLOCKS as u64;
 
 // Consensus related constants.
-pub const MAX_AUTHENTICATIONS: u32 = 3 * 1024;
-pub const MAX_AUTHORITIES: u32 = MAX_AUTHENTICATIONS;
-pub const MAX_NONCES: u32 = 10000 * MAX_AUTHENTICATIONS;
+pub const MAX_AUTHORITIES: u32 = constants::bioauth::MAX_AUTHENTICATIONS;
 
 // ImOnline related constants.
 // TODO(#311): set proper values
@@ -189,8 +187,10 @@ pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
 pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
 
 // Constants conditions.
-static_assertions::const_assert!(MAX_KEYS >= MAX_AUTHENTICATIONS);
-static_assertions::const_assert!(MAX_PEER_IN_HEARTBEATS >= 3 * MAX_AUTHENTICATIONS);
+static_assertions::const_assert!(MAX_KEYS >= constants::bioauth::MAX_AUTHENTICATIONS);
+static_assertions::const_assert!(
+    MAX_PEER_IN_HEARTBEATS >= 3 * constants::bioauth::MAX_AUTHENTICATIONS
+);
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -464,8 +464,6 @@ impl pallet_bioauth::CurrentMoment<UnixMilliseconds> for CurrentMoment {
     }
 }
 
-const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * constants::timestamp::TIMESTAMP_DAY;
-
 impl pallet_bioauth::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RobonodePublicKey = robonode::PublicKey;
@@ -477,10 +475,11 @@ impl pallet_bioauth::Config for Runtime {
     type Moment = UnixMilliseconds;
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
-    type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
+    type AuthenticationsExpireAfter =
+        ConstU64<{ constants::bioauth::AUTHENTICATIONS_EXPIRE_AFTER }>;
     type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
-    type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
-    type MaxNonces = ConstU32<MAX_NONCES>;
+    type MaxAuthentications = ConstU32<{ constants::bioauth::MAX_AUTHENTICATIONS }>;
+    type MaxNonces = ConstU32<{ constants::bioauth::MAX_NONCES }>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
 }
