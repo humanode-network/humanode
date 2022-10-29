@@ -73,6 +73,7 @@ use frontier_precompiles::FrontierPrecompiles;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
+mod constants;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
@@ -82,6 +83,17 @@ mod fixed_supply;
 pub mod robonode;
 #[cfg(test)]
 mod tests;
+
+pub use constants::{
+    babe::{
+        BABE_GENESIS_EPOCH_CONFIG, EPOCH_DURATION_IN_BLOCKS, EPOCH_DURATION_IN_SLOTS,
+        MAX_AUTHORITIES, SLOT_DURATION,
+    },
+    bioauth::{AUTHENTICATIONS_EXPIRE_AFTER, MAX_AUTHENTICATIONS, MAX_NONCES},
+    block_time::MILLISECS_PER_BLOCK,
+    equivocation::REPORT_LONGEVITY,
+    im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
+};
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -151,50 +163,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     transaction_version: 1,
     state_version: 1,
 };
-
-// 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
-pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
-
-/// The BABE epoch configuration at genesis.
-pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
-    sp_consensus_babe::BabeEpochConfiguration {
-        c: PRIMARY_PROBABILITY,
-        allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
-    };
-
-// NOTE: Currently it is not possible to change the slot duration after the chain has started.
-//       Attempting to do so will brick block production.
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
-pub const SECS_PER_BLOCK: u64 = MILLISECS_PER_BLOCK / 1000;
-
-// These time units are defined in number of blocks.
-pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
-pub const HOURS: BlockNumber = MINUTES * 60;
-pub const DAYS: BlockNumber = HOURS * 24;
-
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
-pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * MINUTES;
-// NOTE: Currently it is not possible to change the epoch duration after the chain has started.
-//       Attempting to do so will brick block production.
-pub const EPOCH_DURATION_IN_SLOTS: u64 = {
-    const SLOT_FILL_RATE: f64 = MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
-
-    (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
-};
-
-/// The longevity, in blocks, that an equivocation report is valid for.
-const REPORT_LONGEVITY: u64 = 3 * EPOCH_DURATION_IN_BLOCKS as u64;
-
-// Consensus related constants.
-pub const MAX_AUTHENTICATIONS: u32 = 3 * 1024;
-pub const MAX_AUTHORITIES: u32 = MAX_AUTHENTICATIONS;
-pub const MAX_NONCES: u32 = 10000 * MAX_AUTHENTICATIONS;
-
-// ImOnline related constants.
-// TODO(#311): set proper values
-pub const MAX_KEYS: u32 = 10 * 1024;
-pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
-pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
 
 // Constants conditions.
 static_assertions::const_assert!(MAX_KEYS >= MAX_AUTHENTICATIONS);
@@ -471,12 +439,6 @@ impl pallet_bioauth::CurrentMoment<UnixMilliseconds> for CurrentMoment {
         pallet_timestamp::Pallet::<Runtime>::now()
     }
 }
-
-const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
-const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
-const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
-const TIMESTAMP_DAY: UnixMilliseconds = 24 * TIMESTAMP_HOUR;
-const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * TIMESTAMP_DAY;
 
 impl pallet_bioauth::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
