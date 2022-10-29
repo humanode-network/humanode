@@ -24,5 +24,6 @@ runtime-benchmarks = [
   "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
   "frame-system/runtime-benchmarks",
+  "pallet-balances/runtime-benchmarks",
 ]
-std = ["codec/std", "frame-benchmarking/std", "frame-support/std", "frame-system/std", "serde"]
+std = ["codec/std", "frame-benchmarking/std", "frame-support/std", "frame-system/std", "scale-info/std", "serde"]

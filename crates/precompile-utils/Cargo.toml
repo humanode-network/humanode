@@ -36,10 +36,14 @@ hex-literal = "0.3.1"
 default = ["std"]
 std = [
   "codec/std",
+  "evm/std",
   "fp-evm/std",
   "frame-support/std",
   "frame-system/std",
+  "log/std",
+  "num_enum/std",
   "pallet-evm/std",
+  "sha3/std",
   "sp-core/std",
   "sp-io/std",
   "sp-std/std",

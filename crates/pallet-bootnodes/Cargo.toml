@@ -22,15 +22,23 @@ sp-io = { default-features = false, git = "https://github.com/humanode-network/s
 
 [features]
 default = ["std"]
-runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+runtime-benchmarks = [
+  "frame-benchmarking/runtime-benchmarks",
+  "frame-support/runtime-benchmarks",
+  "frame-system/runtime-benchmarks",
+  "sp-runtime/runtime-benchmarks",
+]
 std = [
-  "serde",
   "codec/std",
-  "scale-info/std",
+  "frame-benchmarking/std",
   "frame-support/std",
   "frame-system/std",
-  "frame-benchmarking/std",
-  "sp-std/std",
+  "scale-info/std",
+  "serde",
+  "sp-api/std",
+  "sp-core/std",
+  "sp-io/std",
   "sp-runtime/std",
+  "sp-std/std",
 ]
-try-runtime = ["frame-support/try-runtime"]
+try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime"]

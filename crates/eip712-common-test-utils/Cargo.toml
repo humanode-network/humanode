@@ -4,15 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-eip712-common = { default-features = false, version = "0.1", path = "../eip712-common" }
-primitives-ethereum = { default-features = false, version = "0.1", path = "../primitives-ethereum" }
+eip712-common = { version = "0.1", path = "../eip712-common" }
+primitives-ethereum = { version = "0.1", path = "../primitives-ethereum" }
 
-eth-eip-712 = { package = "eip-712", version = "=0.1.0", optional = true }
+eth-eip-712 = { package = "eip-712", version = "=0.1.0" }
 hex-literal = "0.3"
-secp256k1 = { version = "0.24", optional = true }
-serde_json = { version = "1", optional = true }
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
-
-[features]
-default = ["std"]
-std = ["eth-eip-712", "secp256k1", "serde_json", "eip712-common/std", "primitives-ethereum/std", "sp-core/std"]
+secp256k1 = { version = "0.24" }
+serde_json = { version = "1" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
