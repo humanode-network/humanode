@@ -46,7 +46,7 @@ Use `cargo run --help` to see cargo options; use `cargo run -- --help` to see `h
 1. Fork the repository, clone your fork, create a branch for your changes.
 2. Write your code, commit the changes.
 3. Create a pull request.
-4. Tell us about your new contribution at [chat](https://link.humanode.io/chat) (optional, but will speed up the process).
+4. Tell us about your new contribution in the [chat](https://link.humanode.io/chat) (optional, but will speed up the process).
 5. We will review and give you feedback on the PR; you will have to apply changes to your PR accordingly.
 6. Once we are happy with the proposed changes we will merge your code into the main development branch.
 
