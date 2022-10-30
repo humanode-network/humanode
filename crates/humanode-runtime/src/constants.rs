@@ -11,6 +11,7 @@ pub mod block_time {
 
     // These time units are defined in number of blocks.
     pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
+    pub const HOURS: BlockNumber = MINUTES * 60;
 }
 
 /// Timestamp related time.
@@ -42,10 +43,10 @@ pub mod babe {
     pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
         sp_consensus_babe::BabeEpochConfiguration {
             c: PRIMARY_PROBABILITY,
-            allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryPlainSlots,
+            allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryVRFSlots,
         };
     pub const SLOT_DURATION: u64 = super::block_time::MILLISECS_PER_BLOCK;
-    pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 10 * super::block_time::MINUTES;
+    pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 4 * super::block_time::HOURS;
     // NOTE: Currently it is not possible to change the epoch duration after the chain has started.
     //       Attempting to do so will brick block production.
     pub const EPOCH_DURATION_IN_SLOTS: u64 = {
