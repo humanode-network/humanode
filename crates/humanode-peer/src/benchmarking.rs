@@ -8,26 +8,15 @@ use std::time::Duration;
 use frame_benchmarking_cli::ExtrinsicBuilder;
 use frame_system_rpc_runtime_api::AccountNonceApi;
 use humanode_runtime::BLOCK_HASH_COUNT;
-use humanode_runtime::{BalancesCall, SystemCall};
+use humanode_runtime::{AccountId, Balance, BalancesCall, SystemCall};
 use sc_client_api::BlockBackend;
 use sp_api::ProvideRuntimeApi;
 use sp_core::{Encode, Pair};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{
-    generic,
-    traits::{IdentifyAccount, Verify},
-    MultiSignature, OpaqueExtrinsic, SaturatedConversion,
-};
+use sp_runtime::{generic, OpaqueExtrinsic, SaturatedConversion};
 
 use crate::service::FullClient;
-
-/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-type Signature = MultiSignature;
-/// A way to identify an account on the chain. This is equivalent to public key of transaction signing scheme.
-type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
-/// Balance of an account.
-type Balance = u128;
 
 /// Generates `System::Remark` extrinsics for the benchmarks.
 ///
