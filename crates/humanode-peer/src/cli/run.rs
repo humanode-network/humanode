@@ -176,7 +176,9 @@ pub async fn run() -> sc_cli::Result<()> {
                     #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Overhead(cmd) => {
                         let partial = service::new_partial(&config)?;
-                        let ext_builder = RemarkBuilder::new(Arc::clone(&partial.client));
+                        let ext_builder = RemarkBuilder {
+                            client: Arc::clone(&partial.client),
+                        };
                         cmd.run(
                             config.substrate,
                             partial.client,
@@ -193,12 +195,14 @@ pub async fn run() -> sc_cli::Result<()> {
                     BenchmarkCmd::Extrinsic(cmd) => {
                         let partial = service::new_partial(&config)?;
                         let ext_factory = ExtrinsicFactory(vec![
-                            Box::new(RemarkBuilder::new(Arc::clone(&partial.client))),
-                            Box::new(TransferKeepAliveBuilder::new(
-                                Arc::clone(&partial.client),
-                                Sr25519Keyring::Alice.to_account_id(),
-                                EXISTENTIAL_DEPOSIT,
-                            )),
+                            Box::new(RemarkBuilder {
+                                client: Arc::clone(&partial.client)
+                            }),
+                            Box::new(TransferKeepAliveBuilder {
+                                client: Arc::clone(&partial.client),
+                                dest: Sr25519Keyring::Alice.to_account_id(),
+                                value: EXISTENTIAL_DEPOSIT,
+                            })
                         ]);
                         cmd.run(
                             partial.client,

@@ -23,14 +23,7 @@ use crate::service::FullClient;
 /// Note: Should only be used for benchmarking.
 pub struct RemarkBuilder {
     /// A shared full client instance.
-    client: Arc<FullClient>,
-}
-
-impl RemarkBuilder {
-    /// Creates a new [`Self`] from the given Client.
-    pub fn new(client: Arc<FullClient>) -> Self {
-        Self { client }
-    }
+    pub client: Arc<FullClient>,
 }
 
 impl ExtrinsicBuilder for RemarkBuilder {
@@ -60,22 +53,11 @@ impl ExtrinsicBuilder for RemarkBuilder {
 /// Note: Should only be used for benchmarking.
 pub struct TransferKeepAliveBuilder {
     /// A shared full client instance.
-    client: Arc<FullClient>,
+    pub client: Arc<FullClient>,
     /// Destination account to receive.
-    dest: AccountId,
+    pub dest: AccountId,
     /// Value of the transfer.
-    value: Balance,
-}
-
-impl TransferKeepAliveBuilder {
-    /// Creates a new [`Self`] from the given Client.
-    pub fn new(client: Arc<FullClient>, dest: AccountId, value: Balance) -> Self {
-        Self {
-            client,
-            dest,
-            value,
-        }
-    }
+    pub value: Balance,
 }
 
 impl ExtrinsicBuilder for TransferKeepAliveBuilder {
