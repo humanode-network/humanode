@@ -5,8 +5,10 @@ use std::sync::Arc;
 use frame_benchmarking_cli::*;
 use humanode_runtime::Block;
 #[cfg(feature = "runtime-benchmarks")]
-use humanode_runtime::EXISTENTIAL_DEPOSIT;
+use humanode_runtime::Runtime;
 use sc_service::PartialComponents;
+#[cfg(feature = "runtime-benchmarks")]
+use sp_core::Get;
 #[cfg(feature = "runtime-benchmarks")]
 use sp_keyring::Sr25519Keyring;
 
@@ -194,6 +196,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Extrinsic(cmd) => {
                         let partial = service::new_partial(&config)?;
+                        let existential_deposit = <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
                         let ext_factory = ExtrinsicFactory(vec![
                             Box::new(RemarkBuilder {
                                 client: Arc::clone(&partial.client)
@@ -201,7 +204,7 @@ pub async fn run() -> sc_cli::Result<()> {
                             Box::new(TransferKeepAliveBuilder {
                                 client: Arc::clone(&partial.client),
                                 dest: Sr25519Keyring::Alice.to_account_id(),
-                                value: EXISTENTIAL_DEPOSIT,
+                                value: existential_deposit,
                             })
                         ]);
                         cmd.run(

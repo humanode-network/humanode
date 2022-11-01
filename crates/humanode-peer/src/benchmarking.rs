@@ -7,11 +7,10 @@ use std::time::Duration;
 
 use frame_benchmarking_cli::ExtrinsicBuilder;
 use frame_system_rpc_runtime_api::AccountNonceApi;
-use humanode_runtime::BLOCK_HASH_COUNT;
-use humanode_runtime::{AccountId, Balance, BalancesCall, SystemCall};
+use humanode_runtime::{AccountId, Balance, BalancesCall, Runtime, SystemCall};
 use sc_client_api::BlockBackend;
 use sp_api::ProvideRuntimeApi;
-use sp_core::{Encode, Pair};
+use sp_core::{Encode, Get, Pair};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic, OpaqueExtrinsic, SaturatedConversion};
@@ -117,7 +116,7 @@ pub fn create_extrinsic(
     let nonce = maybe_nonce.unwrap_or_else(|| fetch_nonce(client, sender.clone()));
 
     // Get the biggest period possible that satisfies 2^(k - 1) < BlockHashCount.
-    let block_hash_count = BLOCK_HASH_COUNT;
+    let block_hash_count = <<Runtime as frame_system::Config>::BlockHashCount as Get<u32>>::get();
     let period = block_hash_count
         .checked_next_power_of_two()
         .map(|c| c / 2)

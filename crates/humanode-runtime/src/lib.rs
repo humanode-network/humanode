@@ -197,12 +197,6 @@ pub const MAX_KEYS: u32 = 10 * 1024;
 pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
 pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
 
-// Frame System config constants
-pub const BLOCK_HASH_COUNT: u32 = 2400;
-
-// Balances config constants
-pub const EXISTENTIAL_DEPOSIT: u128 = 500;
-
 // Constants conditions.
 static_assertions::const_assert!(MAX_KEYS >= MAX_AUTHENTICATIONS);
 static_assertions::const_assert!(MAX_PEER_IN_HEARTBEATS >= 3 * MAX_AUTHENTICATIONS);
@@ -258,7 +252,7 @@ impl frame_system::Config for Runtime {
     /// The ubiquitous origin type.
     type Origin = Origin;
     /// Maximum number of block number to block hash mappings to keep (oldest pruned first).
-    type BlockHashCount = ConstU32<BLOCK_HASH_COUNT>;
+    type BlockHashCount = ConstU32<2400>;
     /// The weight of database operations that the runtime can invoke.
     type DbWeight = RocksDbWeight;
     /// Version of the runtime.
@@ -420,7 +414,7 @@ impl pallet_balances::Config for Runtime {
     /// The ubiquitous event type.
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = TreasuryPot;
-    type ExistentialDeposit = ConstU128<EXISTENTIAL_DEPOSIT>;
+    type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
     type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
