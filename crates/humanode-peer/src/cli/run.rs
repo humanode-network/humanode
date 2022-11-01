@@ -9,8 +9,6 @@ use humanode_runtime::Runtime;
 use sc_service::PartialComponents;
 #[cfg(feature = "runtime-benchmarks")]
 use sp_core::Get;
-#[cfg(feature = "runtime-benchmarks")]
-use sp_keyring::Sr25519Keyring;
 
 use super::{bioauth, Root, Subcommand};
 #[cfg(feature = "runtime-benchmarks")]
@@ -203,7 +201,7 @@ pub async fn run() -> sc_cli::Result<()> {
                             }),
                             Box::new(TransferKeepAliveBuilder {
                                 client: Arc::clone(&partial.client),
-                                dest: Sr25519Keyring::Alice.to_account_id(),
+                                dest: sp_keyring::Sr25519Keyring::Alice.to_account_id(),
                                 value: existential_deposit,
                             })
                         ]);
