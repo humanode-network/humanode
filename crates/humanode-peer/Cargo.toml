@@ -98,10 +98,21 @@ vergen = { version = "7", default-features = false, features = ["cargo", "git"] 
 [features]
 default = ["wasmtime"]
 runtime-benchmarks = [
-  "wasmtime",
-  "humanode-runtime/runtime-benchmarks",
-  "frame-benchmarking/runtime-benchmarks",
   "frame-benchmarking-cli/runtime-benchmarks",
+  "frame-benchmarking/runtime-benchmarks",
+  "frame-support/runtime-benchmarks",
+  "humanode-runtime/runtime-benchmarks",
+  "pallet-bioauth/runtime-benchmarks",
+  "pallet-im-online/runtime-benchmarks",
+  "sc-service/runtime-benchmarks",
+  "sp-runtime/runtime-benchmarks",
+  "wasmtime",
 ]
-try-runtime = ["humanode-runtime/try-runtime", "try-runtime-cli"]
+try-runtime = [
+  "frame-support/try-runtime",
+  "humanode-runtime/try-runtime",
+  "pallet-bioauth/try-runtime",
+  "pallet-im-online/try-runtime",
+  "try-runtime-cli",
+]
 wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]

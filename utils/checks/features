@@ -1,0 +1,162 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'json'
+
+# A small debug tool.
+def pj(*val)
+  val.each { |item| warn JSON.pretty_generate(item) }
+end
+
+SHOULD_CACHE_METADATA = ENV['FEATURES_CHECK_CACHE_METADATA'] == 'true'
+CACHE_PATH = 'metadata-cache.json'
+
+def read_metadata_with_cache
+  File.read(CACHE_PATH)
+rescue StandardError
+  data = `cargo metadata --format-version 1`
+  File.write(CACHE_PATH, data)
+  data
+end
+
+metadata_content = SHOULD_CACHE_METADATA ? read_metadata_with_cache : `cargo metadata --format-version 1`
+
+METADATA = JSON.parse(metadata_content)
+
+workspace_packages = METADATA['packages'].filter { |package| METADATA['workspace_members'].include?(package['id']) }
+
+def find_deps(package)
+  # 1. Find the resolver node.
+  node = METADATA['resolve']['nodes'].find { |e_node| e_node['id'] == package['id'] }
+
+  # 2. Go from the resovler node to the dependencies.
+  node['deps'].each_with_object({}) do |dep, hash|
+    # Simply find the package information by correlating the package id.
+    dep_package = METADATA['packages'].find { |e_package| e_package['id'] == dep['pkg'] }
+
+    # Find the dependency taking the possibility of a package rename into
+    # account.
+    dependency = package['dependencies'].find do |e_dependency|
+      e_dependency['rename'] == dep['name'] || e_dependency['name'] == dep_package['name']
+    end
+
+    # Figure out the actual dep name that will be used in the features
+    # propagation.
+    dep_name = dependency['rename'] || dep_package['name']
+
+    value = {
+      dep: dep,
+      package: dep_package,
+      dependency: dependency,
+      dep_name: dep_name
+    }
+
+    hash[dep_name] = value
+  end
+end
+
+def package_feature_enabled_by(package, enabled_by, what)
+  features = package['features'] || {}
+  enabled_featues = features[enabled_by] || []
+
+  return true if enabled_featues.include?(what)
+  return true if enabled_featues.any? { |e| package_feature_enabled_by(package, e, what) }
+
+  false
+end
+
+def list_expected_propagated_features(feature, _package, deps)
+  deps_with_feature = deps.filter do |_name, dep|
+    # If the package does not contain the feature we can't possible need to
+    # specify the feature, so skip it.
+    next false unless dep[:package]['features'].keys.include?(feature)
+
+    # If the package has the feature enabled by default, and the package is
+    # using the feature by default - also skip it, as we don't need to specify
+    # the feature.
+    default_enabled = dep[:dependency]['uses_default_features']
+    next false if default_enabled && package_feature_enabled_by(dep[:package], 'default', feature)
+
+    true
+  end
+  deps_with_feature.map do |name, _dep|
+    "#{name}/#{feature}"
+  end
+end
+
+class ValidationError < StandardError; end
+
+# Raised when one or more features propagation issues are found for a package.
+class FeaturePropagationError < ValidationError
+  def initialize(package, offences)
+    @package = package
+    @offences = offences
+
+    super(self.class.format_message(package, offences))
+  end
+
+  def self.format_message(package, offences)
+    message = ["Package \"#{package}\" missing some required propagated features:"]
+    offences.each do |feature, deps|
+      message << "  #{feature} = ["
+
+      deps.each do |dep|
+        message << "    \"#{dep}\","
+      end
+
+      message << '  ]'
+    end
+    message << "\n"
+
+    message.join("\n")
+  end
+end
+
+PROPAGATED_FEATURES = {
+  'std' => { propagate_if_missing: false },
+  'runtime-benchmarks' => { propagate_if_missing: false },
+  'try-runtime' => { propagate_if_missing: false }
+}
+
+def check_features_propagation!(package)
+  # Step 1: find dependencies.
+  deps = find_deps(package)
+
+  # Step 2: if deps has one of propagated features, we must propagate it.
+  offences = PROPAGATED_FEATURES.each_with_object({}) do |(feature, params), hash|
+    features = package['features']
+
+    # If the package does not have a feature and we are told not to propagate
+    # the feature if it is missing - then do not do any checks.
+    next if !params[:propagate_if_missing] && !features.keys.include?(feature)
+
+    expected = list_expected_propagated_features(feature, package, deps)
+    actual = features[feature] || []
+
+    missing = expected - actual
+
+    hash[feature] = missing unless missing.empty?
+  end
+
+  raise FeaturePropagationError.new(package['name'], offences) unless offences.empty?
+end
+
+def check_features!(package)
+  check_features_propagation!(package)
+end
+
+errors = {}
+workspace_packages.each do |workspace_package|
+  check_features!(workspace_package)
+rescue ValidationError => e
+  errors[workspace_package['name']] = e
+end
+
+return if errors.empty?
+
+puts 'Issues were detected:'
+errors.each do |_package, error|
+  puts error
+end
+
+exit 1

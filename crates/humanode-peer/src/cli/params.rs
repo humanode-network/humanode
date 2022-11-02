@@ -82,3 +82,19 @@ pub struct EthereumRpcParams {
     #[clap(long, default_value = "10")]
     pub execute_gas_limit_multiplier: u64,
 }
+
+/// Shared CLI parameters used to configure time warp mode.
+#[derive(Debug, clap::Parser, Clone)]
+pub struct TimeWarpParams {
+    /// The time in the future when the warp is going to be started.
+    #[clap(long, requires = "time-warp-fork-timestamp")]
+    pub time_warp_revive_timestamp: Option<u64>,
+
+    /// The time of the last block that was finalized before the chain bricked.
+    #[clap(long)]
+    pub time_warp_fork_timestamp: Option<u64>,
+
+    /// Warp factor that is going to be adopted.
+    #[clap(long, requires = "time-warp-fork-timestamp")]
+    pub time_warp_factor: Option<u64>,
+}

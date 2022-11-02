@@ -22,6 +22,7 @@ fp-rpc = { default-features = false, git = "https://github.com/humanode-network/
 fp-storage = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
 jsonrpsee = { version = "0.15.1", features = ["server", "macros"] }
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sc-chain-spec = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 sc-consensus-babe-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
@@ -31,6 +32,7 @@ sc-finality-grandpa-rpc = { git = "https://github.com/humanode-network/substrate
 sc-network = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sc-rpc-spec-v2 = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
