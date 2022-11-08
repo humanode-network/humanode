@@ -104,6 +104,7 @@ runtime-benchmarks = [
   "humanode-runtime/runtime-benchmarks",
   "pallet-bioauth/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
+  "pallet-token-claims/runtime-benchmarks",
   "sc-service/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
   "wasmtime",
