@@ -179,10 +179,11 @@ pub async fn run() -> sc_cli::Result<()> {
                         let ext_builder = RemarkBuilder {
                             client: Arc::clone(&partial.client),
                         };
+                        let inherents = inherent_benchmark_data(&config)?;
                         cmd.run(
                             config.substrate,
                             partial.client,
-                            inherent_benchmark_data()?,
+                            inherents,
                             Vec::new(),
                             &ext_builder,
                         )
@@ -205,9 +206,10 @@ pub async fn run() -> sc_cli::Result<()> {
                                 value: existential_deposit,
                             })
                         ]);
+                        let inherents = inherent_benchmark_data(&config)?;
                         cmd.run(
                             partial.client,
-                            inherent_benchmark_data()?,
+                            inherents,
                             Vec::new(),
                             &ext_factory,
                         )

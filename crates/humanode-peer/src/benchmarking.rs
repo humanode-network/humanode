@@ -7,14 +7,16 @@ use std::time::Duration;
 
 use frame_benchmarking_cli::ExtrinsicBuilder;
 use frame_system_rpc_runtime_api::AccountNonceApi;
-use humanode_runtime::{AccountId, Balance, BalancesCall, Runtime, SystemCall};
+use humanode_runtime::{AccountId, Balance, BalancesCall, Runtime, SystemCall, opaque::Block};
 use sc_client_api::BlockBackend;
 use sp_api::ProvideRuntimeApi;
-use sp_core::{Encode, Get, Pair};
+use sp_core::{Encode, Get, Pair, U256};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{generic, OpaqueExtrinsic, SaturatedConversion};
+use sp_runtime::{generic, OpaqueExtrinsic, SaturatedConversion, traits::Block as BlockT};
 
+
+use crate::configuration::Configuration;
 use crate::service::FullClient;
 
 /// Generates `System::Remark` extrinsics for the benchmarks.
@@ -85,14 +87,20 @@ impl ExtrinsicBuilder for TransferKeepAliveBuilder {
 }
 
 /// Generates inherent data for the `benchmark overhead` command.
-pub fn inherent_benchmark_data() -> sc_cli::Result<InherentData> {
+pub fn inherent_benchmark_data(config: &Configuration) -> sc_cli::Result<InherentData> {
     let mut inherent_data = InherentData::new();
     let d = Duration::from_millis(0);
     let timestamp = sp_timestamp::InherentDataProvider::new(d.into());
-
     timestamp
         .provide_inherent_data(&mut inherent_data)
-        .map_err(|e| format!("creating inherent data: {:?}", e))?;
+        .map_err(|e| format!("creating timestamp inherent data: {:?}", e))?;
+
+    let dynamic_fees =
+        pallet_dynamic_fee::InherentDataProvider(U256::from(config.evm.target_gas_price));
+    dynamic_fees
+        .provide_inherent_data(&mut inherent_data)
+        .map_err(|e| format!("creating dynamic fee inherent data: {:?}", e))?;
+
     Ok(inherent_data)
 }
 
