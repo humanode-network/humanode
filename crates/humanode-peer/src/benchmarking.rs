@@ -7,14 +7,16 @@ use std::time::Duration;
 
 use frame_benchmarking_cli::ExtrinsicBuilder;
 use frame_system_rpc_runtime_api::AccountNonceApi;
-use humanode_runtime::{AccountId, Balance, BalancesCall, Runtime, SystemCall, opaque::Block};
+use humanode_runtime::{
+    opaque::Block, AccountId, Balance, BalancesCall, Runtime, SystemCall, SLOT_DURATION,
+};
 use sc_client_api::BlockBackend;
 use sp_api::ProvideRuntimeApi;
+use sp_consensus_babe::SlotDuration;
 use sp_core::{Encode, Get, Pair, U256};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{generic, OpaqueExtrinsic, SaturatedConversion, traits::Block as BlockT};
-
+use sp_runtime::{generic, traits::Block as BlockT, OpaqueExtrinsic, SaturatedConversion};
 
 use crate::configuration::Configuration;
 use crate::service::FullClient;
@@ -89,18 +91,32 @@ impl ExtrinsicBuilder for TransferKeepAliveBuilder {
 /// Generates inherent data for the `benchmark overhead` command.
 pub fn inherent_benchmark_data(config: &Configuration) -> sc_cli::Result<InherentData> {
     let mut inherent_data = InherentData::new();
+
     let d = Duration::from_millis(0);
     let timestamp = sp_timestamp::InherentDataProvider::new(d.into());
     timestamp
         .provide_inherent_data(&mut inherent_data)
         .map_err(|e| format!("creating timestamp inherent data: {:?}", e))?;
 
+    let uncles =
+        sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
+    uncles
+        .provide_inherent_data(&mut inherent_data)
+        .map_err(|e| format!("creating uncles inherent data: {:?}", e))?;
+
+    let slot_duration = SlotDuration::from_millis(SLOT_DURATION);
+    let slot = sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
+        *timestamp,
+        slot_duration,
+    );
+    slot.provide_inherent_data(&mut inherent_data)
+        .map_err(|e| format!("creating slot inherent data: {:?}", e))?;
+
     let dynamic_fees =
         pallet_dynamic_fee::InherentDataProvider(U256::from(config.evm.target_gas_price));
     dynamic_fees
         .provide_inherent_data(&mut inherent_data)
         .map_err(|e| format!("creating dynamic fee inherent data: {:?}", e))?;
-
     Ok(inherent_data)
 }
 
