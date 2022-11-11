@@ -101,7 +101,9 @@ runtime-benchmarks = [
   "frame-benchmarking-cli/runtime-benchmarks",
   "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
+  "frame-system/runtime-benchmarks",
   "humanode-runtime/runtime-benchmarks",
+  "pallet-balances/runtime-benchmarks",
   "pallet-bioauth/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
   "pallet-token-claims/runtime-benchmarks",
@@ -111,9 +113,12 @@ runtime-benchmarks = [
 ]
 try-runtime = [
   "frame-support/try-runtime",
+  "frame-system/try-runtime",
   "humanode-runtime/try-runtime",
+  "pallet-balances/try-runtime",
   "pallet-bioauth/try-runtime",
   "pallet-im-online/try-runtime",
+  "pallet-transaction-payment/try-runtime",
   "try-runtime-cli",
 ]
 wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]
