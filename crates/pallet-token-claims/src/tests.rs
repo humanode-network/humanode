@@ -709,7 +709,7 @@ mod optional_vesting_interface {
     }
 }
 
-/// This test verifies that adding claiming signed by sudo account works in the happy path.
+/// This test verifies that adding claim signed by sudo account works in the happy path.
 #[test]
 fn adding_claim_works() {
     new_test_ext().execute_with_ext(|_| {
@@ -752,6 +752,28 @@ fn adding_claim_works() {
         assert_eq!(
             currency_total_issuance_before - currency_total_issuance(),
             0
+        );
+    });
+}
+
+/// This test verifies that adding claim signed by account different from sudo fails.
+#[test]
+fn adding_claim_not_sudo() {
+    new_test_ext().execute_with_ext(|_| {
+        let new_claim_info = ClaimInfo {
+            balance: 30,
+            vesting: MockVestingSchedule,
+        };
+
+        // Invoke the function under test.
+        assert_noop!(
+            TokenClaims::add_claim(
+                Origin::signed(42),
+                eth(EthAddr::New),
+                new_claim_info,
+                FUNDS_PROVIDER,
+            ),
+            DispatchError::BadOrigin
         );
     });
 }
