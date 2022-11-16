@@ -239,12 +239,13 @@ pub mod pallet {
             }
 
             with_storage_layer(move || {
-                <CurrencyOf<T>>::transfer(
+                let funds = <CurrencyOf<T>>::withdraw(
                     &funds_provider,
-                    &T::PotAccountId::get(),
                     claim_info.balance,
+                    WithdrawReasons::TRANSFER,
                     ExistenceRequirement::KeepAlive,
                 )?;
+                <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
 
                 Claims::<T>::insert(ethereum_address, claim_info);
 
@@ -271,21 +272,23 @@ pub mod pallet {
                 } = <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
 
                 if old_balance < claim_info.balance {
-                    <CurrencyOf<T>>::transfer(
+                    let funds = <CurrencyOf<T>>::withdraw(
                         &funds_provider,
-                        &T::PotAccountId::get(),
                         claim_info.balance - old_balance,
+                        WithdrawReasons::TRANSFER,
                         ExistenceRequirement::KeepAlive,
                     )?;
+                    <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
                 }
 
                 if old_balance > claim_info.balance {
-                    <CurrencyOf<T>>::transfer(
+                    let funds = <CurrencyOf<T>>::withdraw(
                         &T::PotAccountId::get(),
-                        &funds_provider,
                         old_balance - claim_info.balance,
+                        WithdrawReasons::TRANSFER,
                         ExistenceRequirement::KeepAlive,
                     )?;
+                    <CurrencyOf<T>>::resolve_creating(&funds_provider, funds);
                 }
 
                 Claims::<T>::insert(ethereum_address, claim_info);
