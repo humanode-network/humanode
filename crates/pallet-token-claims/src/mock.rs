@@ -103,7 +103,7 @@ impl pallet_sudo::Config for Test {
     type RuntimeCall = RuntimeCall;
 }
 
-pub const SUDO_ACCOUNT: u64 = 5234;
+pub const SUDO_ACCOUNT: u64 = 1111;
 pub const FUNDS_PROVIDER: u64 = 1001;
 
 pub enum EthAddr {
