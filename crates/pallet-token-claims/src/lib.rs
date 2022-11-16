@@ -41,6 +41,8 @@ type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSched
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
+    use core::cmp::Ordering;
+
     #[cfg(feature = "std")]
     use frame_support::sp_runtime::traits::{CheckedAdd, Zero};
     use frame_support::{
@@ -250,6 +252,48 @@ pub mod pallet {
             <Pallet<T>>::update_total_claimable_balance();
 
             Ok(())
+        }
+
+        /// Change claim.
+        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
+        pub fn change_claim(
+            origin: OriginFor<T>,
+            ethereum_address: EthereumAddress,
+            claim_info: ClaimInfoOf<T>,
+            funds_provider: T::AccountId,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            with_storage_layer(move || {
+                let ClaimInfo {
+                    balance: old_balance,
+                    vesting: _,
+                } = <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
+
+                if old_balance < claim_info.balance {
+                    <CurrencyOf<T>>::transfer(
+                        &funds_provider,
+                        &T::PotAccountId::get(),
+                        claim_info.balance - old_balance,
+                        ExistenceRequirement::KeepAlive,
+                    )?;
+                }
+
+                if old_balance > claim_info.balance {
+                    <CurrencyOf<T>>::transfer(
+                        &T::PotAccountId::get(),
+                        &funds_provider,
+                        old_balance - claim_info.balance,
+                        ExistenceRequirement::KeepAlive,
+                    )?;
+                }
+
+                Claims::<T>::insert(ethereum_address, claim_info);
+
+                <Pallet<T>>::update_total_claimable_balance();
+
+                Ok(())
+            })
         }
     }
 
