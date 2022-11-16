@@ -240,18 +240,20 @@ pub mod pallet {
                 return Err(Error::<T>::ConflictingEthereumAddress.into());
             }
 
-            <CurrencyOf<T>>::transfer(
-                &funds_provider,
-                &T::PotAccountId::get(),
-                claim_info.balance,
-                ExistenceRequirement::KeepAlive,
-            )?;
+            with_storage_layer(move || {
+                <CurrencyOf<T>>::transfer(
+                    &funds_provider,
+                    &T::PotAccountId::get(),
+                    claim_info.balance,
+                    ExistenceRequirement::KeepAlive,
+                )?;
 
-            Claims::<T>::insert(ethereum_address, claim_info);
+                Claims::<T>::insert(ethereum_address, claim_info);
 
-            <Pallet<T>>::update_total_claimable_balance();
+                <Pallet<T>>::update_total_claimable_balance();
 
-            Ok(())
+                Ok(())
+            })
         }
 
         /// Change claim.
