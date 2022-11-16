@@ -727,16 +727,29 @@ fn adding_claim_works() {
             vesting: MockVestingSchedule,
         };
 
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            TokenClaims::add_claim(
+                Origin::signed(42),
+                eth(EthAddr::New),
+                new_claim_info.clone(),
+                FUNDS_PROVIDER,
+            ),
+            DispatchError::BadOrigin
+        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::add_claim(
             Origin::root(),
             eth(EthAddr::New),
-            new_claim_info,
+            new_claim_info.clone(),
             FUNDS_PROVIDER,
         ));
 
         // Assert state changes.
-        assert!(<Claims<Test>>::contains_key(eth(EthAddr::New)));
+        assert_eq!(
+            <Claims<Test>>::get(eth(EthAddr::New)).unwrap(),
+            new_claim_info
+        );
         assert_eq!(
             total_claimable_balance() - total_claimable_balance_before,
             claimed_balance
@@ -756,28 +769,6 @@ fn adding_claim_works() {
     });
 }
 
-/// This test verifies that adding claim signed by account different from sudo fails.
-#[test]
-fn adding_claim_not_sudo() {
-    new_test_ext().execute_with_ext(|_| {
-        let new_claim_info = ClaimInfo {
-            balance: 30,
-            vesting: MockVestingSchedule,
-        };
-
-        // Invoke the function under test.
-        assert_noop!(
-            TokenClaims::add_claim(
-                Origin::signed(42),
-                eth(EthAddr::New),
-                new_claim_info,
-                FUNDS_PROVIDER,
-            ),
-            DispatchError::BadOrigin
-        );
-    });
-}
-
 /// This test verifies that adding claim with conflicting ethereum address fails.
 #[test]
 fn adding_claim_conflicting_eth_address() {
@@ -787,6 +778,16 @@ fn adding_claim_conflicting_eth_address() {
             vesting: MockVestingSchedule,
         };
 
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            TokenClaims::add_claim(
+                Origin::signed(42),
+                eth(EthAddr::New),
+                new_claim_info.clone(),
+                FUNDS_PROVIDER,
+            ),
+            DispatchError::BadOrigin
+        );
         // Invoke the function under test.
         assert_noop!(
             TokenClaims::add_claim(

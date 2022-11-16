@@ -41,8 +41,6 @@ type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSched
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use core::cmp::Ordering;
-
     #[cfg(feature = "std")]
     use frame_support::sp_runtime::traits::{CheckedAdd, Zero};
     use frame_support::{
