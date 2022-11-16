@@ -15,7 +15,7 @@ use crate::{
     mock::{
         eth, new_test_ext, new_test_ext_with, sig, Balances, EthAddr,
         MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, Origin, Test,
-        TestExternalitiesExt, TokenClaims,
+        TestExternalitiesExt, TokenClaims, FUNDS_PROVIDER,
     },
     traits::{NoVesting, VestingInterface},
     types::{ClaimInfo, EthereumSignatureMessageParams},
@@ -707,6 +707,53 @@ mod optional_vesting_interface {
             ctx.checkpoint();
         })
     }
+}
+
+/// This test verifies that adding claiming signed by sudo account works in the happy path.
+#[test]
+fn adding_claim_works() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(!<Claims<Test>>::contains_key(eth(EthAddr::New)));
+
+        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let pot_account_balance_before = pot_account_balance();
+        let total_claimable_balance_before = total_claimable_balance();
+        let currency_total_issuance_before = currency_total_issuance();
+
+        let claimed_balance = 30;
+        let new_claim_info = ClaimInfo {
+            balance: claimed_balance,
+            vesting: MockVestingSchedule,
+        };
+
+        // Invoke the function under test.
+        assert_ok!(TokenClaims::add_claim(
+            Origin::root(),
+            eth(EthAddr::New),
+            new_claim_info,
+            FUNDS_PROVIDER,
+        ));
+
+        // Assert state changes.
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::New)));
+        assert_eq!(
+            total_claimable_balance() - total_claimable_balance_before,
+            claimed_balance
+        );
+        assert_eq!(
+            pot_account_balance() - pot_account_balance_before,
+            claimed_balance
+        );
+        assert_eq!(
+            funds_provider_balance_before - Balances::free_balance(FUNDS_PROVIDER),
+            claimed_balance
+        );
+        assert_eq!(
+            currency_total_issuance_before - currency_total_issuance(),
+            0
+        );
+    });
 }
 
 /// This test verifies that signed extension's `validate` works in the happy path.

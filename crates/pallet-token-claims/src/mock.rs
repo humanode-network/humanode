@@ -30,6 +30,7 @@ frame_support::construct_runtime!(
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         Pot: pallet_pot::{Pallet, Config<T>, Event<T>},
+        Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
         TokenClaims: pallet_token_claims::{Pallet, Call, Storage, Config<T>, Event<T>},
     }
 );
@@ -97,9 +98,18 @@ impl pallet_token_claims::Config for Test {
     type WeightInfo = ();
 }
 
+impl pallet_sudo::Config for Test {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+}
+
+pub const SUDO_ACCOUNT: u64 = 5234;
+pub const FUNDS_PROVIDER: u64 = 1001;
+
 pub enum EthAddr {
     Existing,
     SecondExisting,
+    New,
     Unknown,
     Other(u8),
 }
@@ -109,6 +119,7 @@ impl From<EthAddr> for u8 {
         match eth_addr {
             EthAddr::Existing => 1,
             EthAddr::SecondExisting => 2,
+            EthAddr::New => 3,
             EthAddr::Unknown => 0xff,
             EthAddr::Other(val) => val,
         }
@@ -133,11 +144,14 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
     let genesis_config = GenesisConfig {
         system: Default::default(),
         balances: BalancesConfig {
-            balances: vec![(
-                Pot::account_id(),
-                30 /* tokens sum */ +
+            balances: vec![
+                (
+                    Pot::account_id(),
+                    30 /* tokens sum */ +
                 1, /* existential deposit */
-            )],
+                ),
+                (FUNDS_PROVIDER, 1000),
+            ],
         },
         pot: Default::default(),
         token_claims: TokenClaimsConfig {
@@ -154,6 +168,9 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
             })
             .collect(),
             total_claimable: Some(30),
+        },
+        sudo: SudoConfig {
+            key: Some(SUDO_ACCOUNT),
         },
     };
     new_test_ext_with(genesis_config)

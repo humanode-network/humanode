@@ -5980,6 +5980,7 @@ dependencies = [
  "once_cell",
  "pallet-balances",
  "pallet-pot",
+ "pallet-sudo",
  "parity-scale-codec",
  "primitives-ethereum",
  "scale-info",

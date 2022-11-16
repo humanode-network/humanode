@@ -230,12 +230,20 @@ pub mod pallet {
             origin: OriginFor<T>,
             ethereum_address: EthereumAddress,
             claim_info: ClaimInfoOf<T>,
+            funds_provider: T::AccountId,
         ) -> DispatchResult {
             ensure_root(origin)?;
 
             if <Claims<T>>::contains_key(ethereum_address) {
                 return Err(Error::<T>::ConflictingEthereumAddress.into());
             }
+
+            <CurrencyOf<T>>::transfer(
+                &funds_provider,
+                &T::PotAccountId::get(),
+                claim_info.balance,
+                ExistenceRequirement::KeepAlive,
+            )?;
 
             Claims::<T>::insert(ethereum_address, claim_info);
 
