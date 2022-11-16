@@ -239,6 +239,8 @@ pub mod pallet {
 
             Claims::<T>::insert(ethereum_address, claim_info);
 
+            <Pallet<T>>::update_total_claimable_balance();
+
             Ok(())
         }
     }
