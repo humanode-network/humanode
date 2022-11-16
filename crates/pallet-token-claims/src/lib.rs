@@ -185,6 +185,22 @@ pub mod pallet {
             /// The vesting schedule.
             vesting: T::VestingSchedule,
         },
+        /// Claim were added.
+        ClaimAdded {
+            /// The ethereum address used for token claiming.
+            ethereum_address: EthereumAddress,
+            /// The claim info that was claimed.
+            claim: ClaimInfoOf<T>,
+        },
+        /// Claim were changed.
+        ClaimChanged {
+            /// The ethereum address used for token claiming.
+            ethereum_address: EthereumAddress,
+            /// An old claim info.
+            old_claim: ClaimInfoOf<T>,
+            /// A new claim info.
+            new_claim: ClaimInfoOf<T>,
+        },
     }
 
     #[pallet::error]
@@ -247,9 +263,14 @@ pub mod pallet {
                 )?;
                 <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
 
-                Claims::<T>::insert(ethereum_address, claim_info);
+                Claims::<T>::insert(ethereum_address, claim_info.clone());
 
                 <Pallet<T>>::update_total_claimable_balance();
+
+                Self::deposit_event(Event::ClaimAdded {
+                    ethereum_address,
+                    claim: claim_info,
+                });
 
                 Ok(())
             })
@@ -266,34 +287,37 @@ pub mod pallet {
             ensure_root(origin)?;
 
             with_storage_layer(move || {
-                let ClaimInfo {
-                    balance: old_balance,
-                    vesting: _,
-                } = <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
+                let old_claim = <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
 
-                if old_balance < claim_info.balance {
+                if old_claim.balance < claim_info.balance {
                     let funds = <CurrencyOf<T>>::withdraw(
                         &funds_provider,
-                        claim_info.balance - old_balance,
+                        claim_info.balance - old_claim.balance,
                         WithdrawReasons::TRANSFER,
                         ExistenceRequirement::KeepAlive,
                     )?;
                     <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
                 }
 
-                if old_balance > claim_info.balance {
+                if old_claim.balance > claim_info.balance {
                     let funds = <CurrencyOf<T>>::withdraw(
                         &T::PotAccountId::get(),
-                        old_balance - claim_info.balance,
+                        old_claim.balance - claim_info.balance,
                         WithdrawReasons::TRANSFER,
                         ExistenceRequirement::KeepAlive,
                     )?;
                     <CurrencyOf<T>>::resolve_creating(&funds_provider, funds);
                 }
 
-                Claims::<T>::insert(ethereum_address, claim_info);
+                Claims::<T>::insert(ethereum_address, claim_info.clone());
 
                 <Pallet<T>>::update_total_claimable_balance();
+
+                Self::deposit_event(Event::ClaimChanged {
+                    ethereum_address,
+                    old_claim,
+                    new_claim: claim_info,
+                });
 
                 Ok(())
             })
