@@ -801,6 +801,99 @@ fn adding_claim_conflicting_eth_address() {
     });
 }
 
+/// This test verifies that chaning claim signed by sudo account works in the happy path.
+#[test]
+fn changing_claim_works() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
+
+        let old_balance = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap().balance;
+        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let pot_account_balance_before = pot_account_balance();
+        let total_claimable_balance_before = total_claimable_balance();
+        let currency_total_issuance_before = currency_total_issuance();
+
+        let new_claimed_balance = 30;
+        let new_claim_info = ClaimInfo {
+            balance: new_claimed_balance,
+            vesting: MockVestingSchedule,
+        };
+
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            TokenClaims::change_claim(
+                Origin::signed(42),
+                eth(EthAddr::Existing),
+                new_claim_info.clone(),
+                FUNDS_PROVIDER,
+            ),
+            DispatchError::BadOrigin
+        );
+        // Invoke the function under test.
+        assert_ok!(TokenClaims::change_claim(
+            Origin::root(),
+            eth(EthAddr::Existing),
+            new_claim_info.clone(),
+            FUNDS_PROVIDER,
+        ));
+
+        // Assert state changes.
+        assert_eq!(
+            <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap(),
+            new_claim_info
+        );
+        assert_eq!(
+            total_claimable_balance() - total_claimable_balance_before,
+            new_claimed_balance - old_balance
+        );
+        assert_eq!(
+            pot_account_balance() - pot_account_balance_before,
+            new_claimed_balance - old_balance
+        );
+        assert_eq!(
+            funds_provider_balance_before - Balances::free_balance(FUNDS_PROVIDER),
+            new_claimed_balance - old_balance
+        );
+        assert_eq!(
+            currency_total_issuance_before - currency_total_issuance(),
+            0
+        );
+    });
+}
+
+/// This test verifies that changing claim fails if the claim doesn't exist.
+#[test]
+fn changing_claim_no_claim() {
+    new_test_ext().execute_with_ext(|_| {
+        let new_claim_info = ClaimInfo {
+            balance: 30,
+            vesting: MockVestingSchedule,
+        };
+
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            TokenClaims::change_claim(
+                Origin::signed(42),
+                eth(EthAddr::New),
+                new_claim_info.clone(),
+                FUNDS_PROVIDER,
+            ),
+            DispatchError::BadOrigin
+        );
+        // Invoke the function under test.
+        assert_noop!(
+            TokenClaims::change_claim(
+                Origin::root(),
+                eth(EthAddr::New),
+                new_claim_info,
+                FUNDS_PROVIDER,
+            ),
+            Error::<Test>::NoClaim
+        );
+    });
+}
+
 /// This test verifies that signed extension's `validate` works in the happy path.
 #[test]
 fn signed_ext_validate_works() {
