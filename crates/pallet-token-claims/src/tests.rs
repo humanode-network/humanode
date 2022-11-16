@@ -778,6 +778,28 @@ fn adding_claim_not_sudo() {
     });
 }
 
+/// This test verifies that adding claim with conflicting ethereum address fails.
+#[test]
+fn adding_claim_conflicting_eth_address() {
+    new_test_ext().execute_with_ext(|_| {
+        let new_claim_info = ClaimInfo {
+            balance: 30,
+            vesting: MockVestingSchedule,
+        };
+
+        // Invoke the function under test.
+        assert_noop!(
+            TokenClaims::add_claim(
+                Origin::root(),
+                eth(EthAddr::Existing),
+                new_claim_info,
+                FUNDS_PROVIDER,
+            ),
+            Error::<Test>::ConflictingEthereumAddress
+        );
+    });
+}
+
 /// This test verifies that signed extension's `validate` works in the happy path.
 #[test]
 fn signed_ext_validate_works() {
