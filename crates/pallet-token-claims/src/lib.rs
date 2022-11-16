@@ -193,6 +193,8 @@ pub mod pallet {
         InvalidSignature,
         /// No claim was found.
         NoClaim,
+        /// Conflicting ethereum address.
+        ConflictingEthereumAddress,
     }
 
     #[pallet::call]
@@ -220,6 +222,24 @@ pub mod pallet {
             }
 
             Self::process_claim(who, ethereum_address)
+        }
+
+        /// Add claim.
+        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
+        pub fn add_claim(
+            origin: OriginFor<T>,
+            ethereum_address: EthereumAddress,
+            claim_info: ClaimInfoOf<T>,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            if <Claims<T>>::contains_key(ethereum_address) {
+                return Err(Error::<T>::ConflictingEthereumAddress.into());
+            }
+
+            Claims::<T>::insert(ethereum_address, claim_info);
+
+            Ok(())
         }
     }
 
