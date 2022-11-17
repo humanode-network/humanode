@@ -289,24 +289,30 @@ pub mod pallet {
             with_storage_layer(move || {
                 let old_claim = <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
 
-                if old_claim.balance < claim_info.balance {
-                    let funds = <CurrencyOf<T>>::withdraw(
-                        &funds_provider,
-                        claim_info.balance - old_claim.balance,
-                        WithdrawReasons::TRANSFER,
-                        ExistenceRequirement::KeepAlive,
-                    )?;
-                    <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
+                use frame_support::sp_runtime::traits::{CheckedSub, Zero};
+
+                if let Some(increase) = claim_info.balance.checked_sub(&old_claim.balance) {
+                    if !increase.is_zero() {
+                        let funds = <CurrencyOf<T>>::withdraw(
+                            &funds_provider,
+                            increase,
+                            WithdrawReasons::TRANSFER,
+                            ExistenceRequirement::KeepAlive,
+                        )?;
+                        <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
+                    }
                 }
 
-                if old_claim.balance > claim_info.balance {
-                    let funds = <CurrencyOf<T>>::withdraw(
-                        &T::PotAccountId::get(),
-                        old_claim.balance - claim_info.balance,
-                        WithdrawReasons::TRANSFER,
-                        ExistenceRequirement::KeepAlive,
-                    )?;
-                    <CurrencyOf<T>>::resolve_creating(&funds_provider, funds);
+                if let Some(decrease) = old_claim.balance.checked_sub(&claim_info.balance) {
+                    if !decrease.is_zero() {
+                        let funds = <CurrencyOf<T>>::withdraw(
+                            &T::PotAccountId::get(),
+                            decrease,
+                            WithdrawReasons::TRANSFER,
+                            ExistenceRequirement::KeepAlive,
+                        )?;
+                        <CurrencyOf<T>>::resolve_creating(&funds_provider, funds);
+                    }
                 }
 
                 Claims::<T>::insert(ethereum_address, claim_info.clone());
