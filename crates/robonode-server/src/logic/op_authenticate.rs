@@ -157,7 +157,7 @@ where
         // If the results set is empty - this means that this person was not
         // found in the system.
         let found = results.first().ok_or(Error::PersonNotFound)?;
-        if found.match_level != MATCH_LEVEL {
+        if found.match_level < MATCH_LEVEL {
             return Err(Error::InternalErrorDbSearchMatchLevelMismatch);
         }
 

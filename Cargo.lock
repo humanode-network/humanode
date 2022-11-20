@@ -3448,6 +3448,7 @@ dependencies = [
  "pallet-token-claims",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-utility",
  "pallet-vesting",
  "parity-scale-codec",
  "precompile-bioauth",
@@ -6030,6 +6031,22 @@ dependencies = [
  "parity-scale-codec",
  "sp-api",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-utility"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/humanode-2022-09-21#006dbc01304b9d3644f3fc4c1bf0e610acd3ad90"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -10435,7 +10452,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
  "digest 0.10.5",
- "rand 0.4.6",
+ "rand 0.8.5",
  "static_assertions",
 ]
 

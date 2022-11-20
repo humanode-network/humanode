@@ -649,6 +649,13 @@ impl pallet_multisig::Config for Runtime {
     type WeightInfo = ();
 }
 
+impl pallet_utility::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type RuntimeCall = RuntimeCall;
+    type PalletsOrigin = OriginCaller;
+    type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -689,6 +696,7 @@ construct_runtime!(
         TokenClaims: pallet_token_claims = 27,
         Vesting: pallet_vesting = 28,
         Multisig: pallet_multisig = 29,
+        Utility: pallet_utility = 30,
     }
 );
 
@@ -1284,6 +1292,7 @@ impl_runtime_apis! {
             list_benchmark!(list, extra, pallet_token_claims, TokenClaims);
             list_benchmark!(list, extra, pallet_vesting, Vesting);
             list_benchmark!(list, extra, pallet_multisig, Multisig);
+            list_benchmark!(list, extra, pallet_utility, Utility);
 
             let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -1330,6 +1339,7 @@ impl_runtime_apis! {
             add_benchmark!(params, batches, pallet_token_claims, TokenClaims);
             add_benchmark!(params, batches, pallet_vesting, Vesting);
             add_benchmark!(params, batches, pallet_multisig, Multisig);
+            add_benchmark!(params, batches, pallet_utility, Utility);
 
             Ok(batches)
         }
