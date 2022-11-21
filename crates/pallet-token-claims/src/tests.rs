@@ -762,10 +762,7 @@ fn adding_claim_works() {
             funds_provider_balance_before - Balances::free_balance(FUNDS_PROVIDER),
             claimed_balance
         );
-        assert_eq!(
-            currency_total_issuance_before - currency_total_issuance(),
-            0
-        );
+        assert_eq!(currency_total_issuance_before, currency_total_issuance());
     });
 }
 
@@ -813,9 +810,9 @@ fn adding_claim_conflicting_eth_address() {
     });
 }
 
-/// This test verifies that chaning claim signed by sudo account works in the happy path.
+/// This test verifies that changing claim with balance increase signed by sudo account works in the happy path.
 #[test]
-fn changing_claim_works() {
+fn changing_claim_balance_increase_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
@@ -867,10 +864,117 @@ fn changing_claim_works() {
             funds_provider_balance_before - Balances::free_balance(FUNDS_PROVIDER),
             new_claimed_balance - old_balance
         );
-        assert_eq!(
-            currency_total_issuance_before - currency_total_issuance(),
-            0
+        assert_eq!(currency_total_issuance_before, currency_total_issuance());
+    });
+}
+
+/// This test verifies that changing claim with balance decrease signed by sudo account works in the happy path.
+#[test]
+fn changing_claim_balance_decrease_works() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
+
+        let old_balance = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap().balance;
+        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let pot_account_balance_before = pot_account_balance();
+        let total_claimable_balance_before = total_claimable_balance();
+        let currency_total_issuance_before = currency_total_issuance();
+
+        let new_claimed_balance = 5;
+        let new_claim_info = ClaimInfo {
+            balance: new_claimed_balance,
+            vesting: MockVestingSchedule,
+        };
+
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            TokenClaims::change_claim(
+                Origin::signed(42),
+                eth(EthAddr::Existing),
+                new_claim_info.clone(),
+                FUNDS_PROVIDER,
+            ),
+            DispatchError::BadOrigin
         );
+        // Invoke the function under test.
+        assert_ok!(TokenClaims::change_claim(
+            Origin::root(),
+            eth(EthAddr::Existing),
+            new_claim_info.clone(),
+            FUNDS_PROVIDER,
+        ));
+
+        // Assert state changes.
+        assert_eq!(
+            <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap(),
+            new_claim_info
+        );
+        assert_eq!(
+            total_claimable_balance_before - total_claimable_balance(),
+            old_balance - new_claimed_balance,
+        );
+        assert_eq!(
+            pot_account_balance_before - pot_account_balance(),
+            old_balance - new_claimed_balance,
+        );
+        assert_eq!(
+            Balances::free_balance(FUNDS_PROVIDER) - funds_provider_balance_before,
+            old_balance - new_claimed_balance
+        );
+        assert_eq!(currency_total_issuance_before, currency_total_issuance());
+    });
+}
+
+/// This test verifies that changing claim with balance not changing signed by sudo account works in the happy path.
+#[test]
+fn changing_claim_balance_not_changing_works() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
+
+        let old_balance = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap().balance;
+        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let pot_account_balance_before = pot_account_balance();
+        let total_claimable_balance_before = total_claimable_balance();
+        let currency_total_issuance_before = currency_total_issuance();
+
+        let new_claimed_balance = old_balance;
+        let new_claim_info = ClaimInfo {
+            balance: new_claimed_balance,
+            vesting: MockVestingSchedule,
+        };
+
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            TokenClaims::change_claim(
+                Origin::signed(42),
+                eth(EthAddr::Existing),
+                new_claim_info.clone(),
+                FUNDS_PROVIDER,
+            ),
+            DispatchError::BadOrigin
+        );
+        // Invoke the function under test.
+        assert_ok!(TokenClaims::change_claim(
+            Origin::root(),
+            eth(EthAddr::Existing),
+            new_claim_info.clone(),
+            FUNDS_PROVIDER,
+        ));
+
+        // Assert state changes.
+        assert_eq!(
+            <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap(),
+            new_claim_info
+        );
+        assert_eq!(total_claimable_balance_before, total_claimable_balance(),);
+        assert_eq!(pot_account_balance_before, pot_account_balance(),);
+        assert_eq!(
+            Balances::free_balance(FUNDS_PROVIDER),
+            funds_provider_balance_before
+        );
+        assert_eq!(currency_total_issuance_before, currency_total_issuance());
     });
 }
 
