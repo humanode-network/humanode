@@ -1022,6 +1022,29 @@ fn changing_claim_no_claim() {
     });
 }
 
+/// This test verifies that changing claim fails if there is not enough funds in the funds provider.
+#[test]
+fn changing_claim_funds_provider_underflow() {
+    new_test_ext().execute_with_ext(|_| {
+        let current_claim_balance = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap().balance;
+        let new_claim_info = ClaimInfo {
+            balance: Balances::free_balance(FUNDS_PROVIDER) + current_claim_balance + 1,
+            vesting: MockVestingSchedule,
+        };
+
+        // Invoke the function under test.
+        assert_noop!(
+            TokenClaims::change_claim(
+                Origin::root(),
+                eth(EthAddr::Existing),
+                new_claim_info,
+                FUNDS_PROVIDER,
+            ),
+            Error::<Test>::FundsProviderUnderflow
+        );
+    });
+}
+
 /// This test verifies that signed extension's `validate` works in the happy path.
 #[test]
 fn signed_ext_validate_works() {
