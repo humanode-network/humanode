@@ -177,6 +177,7 @@ pub async fn run() -> sc_cli::Result<()> {
                 cmd.run(partial.client, frontier_backend)
             })
         }
+        Some(Subcommand::ExportEmbeddedRuntime(cmd)) => cmd.run().await,
         #[cfg(feature = "try-runtime")]
         Some(Subcommand::TryRuntime(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
