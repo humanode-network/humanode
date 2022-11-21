@@ -810,6 +810,28 @@ fn adding_claim_conflicting_eth_address() {
     });
 }
 
+/// This test verifies that adding claim fails if there is not enough funds in the funds provider.
+#[test]
+fn adding_claim_funds_provider_underflow() {
+    new_test_ext().execute_with_ext(|_| {
+        let new_claim_info = ClaimInfo {
+            balance: Balances::free_balance(FUNDS_PROVIDER) + 1,
+            vesting: MockVestingSchedule,
+        };
+
+        // Invoke the function under test.
+        assert_noop!(
+            TokenClaims::add_claim(
+                Origin::root(),
+                eth(EthAddr::New),
+                new_claim_info,
+                FUNDS_PROVIDER,
+            ),
+            Error::<Test>::FundsProviderUnderflow
+        );
+    });
+}
+
 /// This test verifies that changing claim with balance increase signed by sudo account works in the happy path.
 #[test]
 fn changing_claim_balance_increase_works() {
