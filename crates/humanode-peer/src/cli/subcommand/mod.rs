@@ -6,6 +6,7 @@ use super::CliConfigurationExt;
 
 pub mod bioauth;
 pub mod ethereum;
+pub mod export_embedded_runtime;
 
 /// Humanode peer subcommands.
 #[derive(Debug, clap::Subcommand)]
@@ -50,6 +51,9 @@ pub enum Subcommand {
 
     /// Db meta columns information.
     FrontierDb(fc_cli::FrontierDbCmd),
+
+    /// Export the runtime WASM code embedded in this binary.
+    ExportEmbeddedRuntime(export_embedded_runtime::ExportEmbeddedRuntimeCmd),
 
     /// Try some command against runtime state.
     #[cfg(feature = "try-runtime")]
