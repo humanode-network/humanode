@@ -769,9 +769,9 @@ fn adding_claim_works() {
     });
 }
 
-/// This test verifies that adding claim with conflicting ethereum address fails.
+/// This test verifies that adding claim signed by account different from sudo fails.
 #[test]
-fn adding_claim_conflicting_eth_address() {
+fn adding_claim_not_sudo() {
     new_test_ext().execute_with_ext(|_| {
         let new_claim_info = ClaimInfo {
             balance: 30,
@@ -783,11 +783,23 @@ fn adding_claim_conflicting_eth_address() {
             TokenClaims::add_claim(
                 Origin::signed(42),
                 eth(EthAddr::New),
-                new_claim_info.clone(),
+                new_claim_info,
                 FUNDS_PROVIDER,
             ),
             DispatchError::BadOrigin
         );
+    });
+}
+
+/// This test verifies that adding claim with conflicting ethereum address fails.
+#[test]
+fn adding_claim_conflicting_eth_address() {
+    new_test_ext().execute_with_ext(|_| {
+        let new_claim_info = ClaimInfo {
+            balance: 30,
+            vesting: MockVestingSchedule,
+        };
+
         // Invoke the function under test.
         assert_noop!(
             TokenClaims::add_claim(
@@ -862,9 +874,9 @@ fn changing_claim_works() {
     });
 }
 
-/// This test verifies that changing claim fails if the claim doesn't exist.
+/// This test verifies that changing claim signed by account different from sudo fails.
 #[test]
-fn changing_claim_no_claim() {
+fn changing_claim_not_sudo() {
     new_test_ext().execute_with_ext(|_| {
         let new_claim_info = ClaimInfo {
             balance: 30,
@@ -876,11 +888,23 @@ fn changing_claim_no_claim() {
             TokenClaims::change_claim(
                 Origin::signed(42),
                 eth(EthAddr::New),
-                new_claim_info.clone(),
+                new_claim_info,
                 FUNDS_PROVIDER,
             ),
             DispatchError::BadOrigin
         );
+    });
+}
+
+/// This test verifies that changing claim fails if the claim doesn't exist.
+#[test]
+fn changing_claim_no_claim() {
+    new_test_ext().execute_with_ext(|_| {
+        let new_claim_info = ClaimInfo {
+            balance: 30,
+            vesting: MockVestingSchedule,
+        };
+
         // Invoke the function under test.
         assert_noop!(
             TokenClaims::change_claim(
