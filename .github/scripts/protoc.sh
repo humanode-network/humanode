@@ -13,6 +13,9 @@ case "$PROTOBUF_PLATFORM" in
 "macosx-"*"-x86_64")
   PROTOBUF_PLATFORM="osx-x86_64"
   ;;
+"macosx-"*"-universal"*)
+  PROTOBUF_PLATFORM="osx-universal_binary"
+  ;;
 "linux-aarch64")
   PROTOBUF_PLATFORM="linux-aarch_64"
   ;;
