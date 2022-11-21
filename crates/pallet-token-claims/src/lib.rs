@@ -187,6 +187,8 @@ pub mod pallet {
         },
         /// Claim were added.
         ClaimAdded {
+            // /// Who added the claim.
+            // who: T::AccountId,
             /// The ethereum address used for token claiming.
             ethereum_address: EthereumAddress,
             /// The claim info that was claimed.
@@ -194,6 +196,8 @@ pub mod pallet {
         },
         /// Claim were changed.
         ClaimChanged {
+            // /// Who changed the claim.
+            // who: T::AccountId,
             /// The ethereum address used for token claiming.
             ethereum_address: EthereumAddress,
             /// An old claim info.
@@ -301,9 +305,7 @@ pub mod pallet {
                         )?;
                         <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
                     }
-                }
-
-                if let Some(decrease) = old_claim.balance.checked_sub(&claim_info.balance) {
+                } else if let Some(decrease) = old_claim.balance.checked_sub(&claim_info.balance) {
                     if !decrease.is_zero() {
                         let funds = <CurrencyOf<T>>::withdraw(
                             &T::PotAccountId::get(),
