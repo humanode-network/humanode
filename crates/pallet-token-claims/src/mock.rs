@@ -30,7 +30,6 @@ frame_support::construct_runtime!(
         System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
         Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
         Pot: pallet_pot::{Pallet, Config<T>, Event<T>},
-        Sudo: pallet_sudo::{Pallet, Call, Storage, Config<T>, Event<T>},
         TokenClaims: pallet_token_claims::{Pallet, Call, Storage, Config<T>, Event<T>},
     }
 );
@@ -98,12 +97,6 @@ impl pallet_token_claims::Config for Test {
     type WeightInfo = ();
 }
 
-impl pallet_sudo::Config for Test {
-    type RuntimeEvent = RuntimeEvent;
-    type RuntimeCall = RuntimeCall;
-}
-
-pub const SUDO_ACCOUNT: u64 = 1111;
 pub const FUNDS_PROVIDER: u64 = 1001;
 
 pub enum EthAddr {
@@ -168,9 +161,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
             })
             .collect(),
             total_claimable: Some(30),
-        },
-        sudo: SudoConfig {
-            key: Some(SUDO_ACCOUNT),
         },
     };
     new_test_ext_with(genesis_config)
