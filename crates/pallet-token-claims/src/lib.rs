@@ -186,8 +186,6 @@ pub mod pallet {
         },
         /// Claim were added.
         ClaimAdded {
-            // /// Who added the claim.
-            // who: T::AccountId,
             /// The ethereum address used for token claiming.
             ethereum_address: EthereumAddress,
             /// The claim info that was claimed.
@@ -195,8 +193,6 @@ pub mod pallet {
         },
         /// Claim were changed.
         ClaimChanged {
-            // /// Who changed the claim.
-            // who: T::AccountId,
             /// The ethereum address used for token claiming.
             ethereum_address: EthereumAddress,
             /// An old claim info.
