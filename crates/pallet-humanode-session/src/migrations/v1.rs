@@ -56,14 +56,11 @@ pub fn migrate<T: Config>() -> Weight {
     weight
 }
 
-#[cfg(feature = "try-runtime")]
-use frame_support::traits::OnRuntimeUpgradeHelpersExt;
-
 /// Check the state before the migration.
 ///
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
-pub fn pre_migrate<T: Config>() {
+pub fn pre_migrate<T: Config>() -> Vec<u8> {
     // Ensure the new identities don't exist yet (i.e. we have clear space to migrate).
     assert_eq!(<SessionIdentities<T>>::iter().next(), None);
 
@@ -72,14 +69,14 @@ pub fn pre_migrate<T: Config>() {
         .count()
         .try_into()
         .unwrap();
-    <Pallet<T>>::set_temp_storage(identities_count, "identities_count");
+    identities_count.encode()
 }
 
 /// Check the state after the migration.
 ///
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
-pub fn post_migrate<T: Config>() {
+pub fn post_migrate<T: Config>(state: Vec<u8>) {
     // Ensure version is updated correctly.
     let onchain = <Pallet<T>>::on_chain_storage_version();
     assert_eq!(onchain, 1);
@@ -89,6 +86,6 @@ pub fn post_migrate<T: Config>() {
 
     // Ensure the identities count matches.
     let new_identities_count: u64 = <SessionIdentities<T>>::iter().count().try_into().unwrap();
-    let old_identities_count: u64 = <Pallet<T>>::get_temp_storage("identities_count").unwrap();
+    let old_identities_count: u64 = codec::Decode::decode(&mut &*state).unwrap();
     assert_eq!(new_identities_count, old_identities_count);
 }
