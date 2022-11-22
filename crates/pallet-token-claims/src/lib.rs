@@ -247,7 +247,7 @@ pub mod pallet {
             Self::process_claim(who, ethereum_address)
         }
 
-        /// Add claim.
+        /// Add a new claim.
         #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
         pub fn add_claim(
             origin: OriginFor<T>,
@@ -286,7 +286,7 @@ pub mod pallet {
             })
         }
 
-        /// Change claim.
+        /// Change an existing claim.
         #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
         pub fn change_claim(
             origin: OriginFor<T>,
