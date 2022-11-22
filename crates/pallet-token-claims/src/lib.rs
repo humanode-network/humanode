@@ -274,7 +274,8 @@ pub mod pallet {
                 )
                 .map_err(|_| Error::<T>::FundsProviderUnderflow)?;
 
-                <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
+                <CurrencyOf<T>>::resolve_into_existing(&T::PotAccountId::get(), funds)
+                    .map_err(|_| Error::<T>::ClaimsPotOverflow)?;
 
                 Claims::<T>::insert(ethereum_address, claim_info.clone());
 
@@ -314,7 +315,8 @@ pub mod pallet {
                         )
                         .map_err(|_| Error::<T>::FundsProviderUnderflow)?;
 
-                        <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
+                        <CurrencyOf<T>>::resolve_into_existing(&T::PotAccountId::get(), funds)
+                            .map_err(|_| Error::<T>::ClaimsPotOverflow)?;
                     }
                 } else if let Some(decrease) = old_claim.balance.checked_sub(&claim_info.balance) {
                     let funds = <CurrencyOf<T>>::withdraw(
@@ -325,7 +327,8 @@ pub mod pallet {
                     )
                     .map_err(|_| Error::<T>::ClaimsPotUnderflow)?;
 
-                    <CurrencyOf<T>>::resolve_creating(&funds_provider, funds);
+                    <CurrencyOf<T>>::resolve_into_existing(&funds_provider, funds)
+                        .map_err(|_| Error::<T>::FundsProviderOverflow)?;
                 }
 
                 Claims::<T>::insert(ethereum_address, claim_info.clone());
