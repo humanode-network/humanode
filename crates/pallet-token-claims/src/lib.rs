@@ -41,7 +41,7 @@ type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSched
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::sp_runtime::traits::{CheckedAdd, CheckedSub, Zero};
+    use frame_support::sp_runtime::traits::{CheckedAdd, Zero};
     use frame_support::{
         pallet_prelude::{ValueQuery, *},
         sp_runtime::traits::Saturating,
@@ -265,15 +265,15 @@ pub mod pallet {
                 return Err(Error::<T>::ConflictingEthereumAddress.into());
             }
 
-            Self::validate_balances(&funds_provider, &claim_info.balance, true)?;
-
             with_storage_layer(move || {
                 let funds = <CurrencyOf<T>>::withdraw(
                     &funds_provider,
                     claim_info.balance,
                     WithdrawReasons::TRANSFER,
                     ExistenceRequirement::KeepAlive,
-                )?;
+                )
+                .map_err(|_| Error::<T>::FundsProviderUnderflow)?;
+
                 <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
 
                 Claims::<T>::insert(ethereum_address, claim_info.clone());
@@ -306,25 +306,25 @@ pub mod pallet {
 
                 if let Some(increase) = claim_info.balance.checked_sub(&old_claim.balance) {
                     if !increase.is_zero() {
-                        Self::validate_balances(&funds_provider, &increase, true)?;
-
                         let funds = <CurrencyOf<T>>::withdraw(
                             &funds_provider,
                             increase,
                             WithdrawReasons::TRANSFER,
                             ExistenceRequirement::KeepAlive,
-                        )?;
+                        )
+                        .map_err(|_| Error::<T>::FundsProviderUnderflow)?;
+
                         <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
                     }
                 } else if let Some(decrease) = old_claim.balance.checked_sub(&claim_info.balance) {
-                    Self::validate_balances(&funds_provider, &decrease, false)?;
-
                     let funds = <CurrencyOf<T>>::withdraw(
                         &T::PotAccountId::get(),
                         decrease,
                         WithdrawReasons::TRANSFER,
                         ExistenceRequirement::KeepAlive,
-                    )?;
+                    )
+                    .map_err(|_| Error::<T>::ClaimsPotUnderflow)?;
+
                     <CurrencyOf<T>>::resolve_creating(&funds_provider, funds);
                 }
 
@@ -377,37 +377,6 @@ pub mod pallet {
                 <CurrencyOf<T>>::free_balance(&T::PotAccountId::get())
                     .saturating_sub(<CurrencyOf<T>>::minimum_balance()),
             );
-        }
-
-        fn validate_balances(
-            funds_provider: &T::AccountId,
-            new_balance: &BalanceOf<T>,
-            is_increase_pot: bool,
-        ) -> DispatchResult {
-            let pot_account_balance =
-                <CurrencyOf<T>>::free_balance(&<T as Config>::PotAccountId::get());
-
-            let funds_provider_balance = <CurrencyOf<T>>::free_balance(funds_provider);
-
-            if is_increase_pot {
-                funds_provider_balance
-                    .checked_sub(new_balance)
-                    .ok_or(Error::<T>::FundsProviderUnderflow)?;
-
-                pot_account_balance
-                    .checked_add(new_balance)
-                    .ok_or(Error::<T>::ClaimsPotOverflow)?;
-            } else {
-                pot_account_balance
-                    .checked_sub(new_balance)
-                    .ok_or(Error::<T>::ClaimsPotUnderflow)?;
-
-                funds_provider_balance
-                    .checked_add(new_balance)
-                    .ok_or(Error::<T>::FundsProviderOverflow)?;
-            }
-
-            Ok(())
         }
     }
 }
