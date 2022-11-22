@@ -727,6 +727,9 @@ fn adding_claim_works() {
             vesting: MockVestingSchedule,
         };
 
+        // Set block number to enable events.
+        mock::System::set_block_number(1);
+
         // Non-sudo accounts are not allowed.
         assert_noop!(
             TokenClaims::add_claim(
@@ -763,6 +766,10 @@ fn adding_claim_works() {
             claimed_balance
         );
         assert_eq!(currency_total_issuance_before, currency_total_issuance());
+        mock::System::assert_has_event(mock::RuntimeEvent::TokenClaims(Event::ClaimAdded {
+            ethereum_address: eth(EthAddr::New),
+            claim: new_claim_info,
+        }));
     });
 }
 
@@ -839,7 +846,7 @@ fn changing_claim_balance_increase_works() {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
 
-        let old_balance = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap().balance;
+        let old_claim = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap();
         let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -850,6 +857,9 @@ fn changing_claim_balance_increase_works() {
             balance: new_claimed_balance,
             vesting: MockVestingSchedule,
         };
+
+        // Set block number to enable events.
+        mock::System::set_block_number(1);
 
         // Non-sudo accounts are not allowed.
         assert_noop!(
@@ -876,17 +886,22 @@ fn changing_claim_balance_increase_works() {
         );
         assert_eq!(
             total_claimable_balance() - total_claimable_balance_before,
-            new_claimed_balance - old_balance
+            new_claimed_balance - old_claim.balance
         );
         assert_eq!(
             pot_account_balance() - pot_account_balance_before,
-            new_claimed_balance - old_balance
+            new_claimed_balance - old_claim.balance
         );
         assert_eq!(
             funds_provider_balance_before - Balances::free_balance(FUNDS_PROVIDER),
-            new_claimed_balance - old_balance
+            new_claimed_balance - old_claim.balance
         );
         assert_eq!(currency_total_issuance_before, currency_total_issuance());
+        mock::System::assert_has_event(mock::RuntimeEvent::TokenClaims(Event::ClaimChanged {
+            ethereum_address: eth(EthAddr::Existing),
+            old_claim,
+            new_claim: new_claim_info,
+        }));
     });
 }
 
@@ -897,7 +912,7 @@ fn changing_claim_balance_decrease_works() {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
 
-        let old_balance = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap().balance;
+        let old_claim = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap();
         let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
@@ -908,6 +923,9 @@ fn changing_claim_balance_decrease_works() {
             balance: new_claimed_balance,
             vesting: MockVestingSchedule,
         };
+
+        // Set block number to enable events.
+        mock::System::set_block_number(1);
 
         // Non-sudo accounts are not allowed.
         assert_noop!(
@@ -934,17 +952,22 @@ fn changing_claim_balance_decrease_works() {
         );
         assert_eq!(
             total_claimable_balance_before - total_claimable_balance(),
-            old_balance - new_claimed_balance,
+            old_claim.balance - new_claimed_balance,
         );
         assert_eq!(
             pot_account_balance_before - pot_account_balance(),
-            old_balance - new_claimed_balance,
+            old_claim.balance - new_claimed_balance,
         );
         assert_eq!(
             Balances::free_balance(FUNDS_PROVIDER) - funds_provider_balance_before,
-            old_balance - new_claimed_balance
+            old_claim.balance - new_claimed_balance
         );
         assert_eq!(currency_total_issuance_before, currency_total_issuance());
+        mock::System::assert_has_event(mock::RuntimeEvent::TokenClaims(Event::ClaimChanged {
+            ethereum_address: eth(EthAddr::Existing),
+            old_claim,
+            new_claim: new_claim_info,
+        }));
     });
 }
 
@@ -955,17 +978,20 @@ fn changing_claim_balance_not_changing_works() {
         // Check test preconditions.
         assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
 
-        let old_balance = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap().balance;
+        let old_claim = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap();
         let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
         let currency_total_issuance_before = currency_total_issuance();
 
-        let new_claimed_balance = old_balance;
+        let new_claimed_balance = old_claim.balance;
         let new_claim_info = ClaimInfo {
             balance: new_claimed_balance,
             vesting: MockVestingSchedule,
         };
+
+        // Set block number to enable events.
+        mock::System::set_block_number(1);
 
         // Non-sudo accounts are not allowed.
         assert_noop!(
@@ -997,6 +1023,11 @@ fn changing_claim_balance_not_changing_works() {
             funds_provider_balance_before
         );
         assert_eq!(currency_total_issuance_before, currency_total_issuance());
+        mock::System::assert_has_event(mock::RuntimeEvent::TokenClaims(Event::ClaimChanged {
+            ethereum_address: eth(EthAddr::Existing),
+            old_claim,
+            new_claim: new_claim_info,
+        }));
     });
 }
 
