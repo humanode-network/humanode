@@ -317,17 +317,15 @@ pub mod pallet {
                         <CurrencyOf<T>>::resolve_creating(&T::PotAccountId::get(), funds);
                     }
                 } else if let Some(decrease) = old_claim.balance.checked_sub(&claim_info.balance) {
-                    if !decrease.is_zero() {
-                        Self::validate_balances(&funds_provider, &decrease, false)?;
+                    Self::validate_balances(&funds_provider, &decrease, false)?;
 
-                        let funds = <CurrencyOf<T>>::withdraw(
-                            &T::PotAccountId::get(),
-                            decrease,
-                            WithdrawReasons::TRANSFER,
-                            ExistenceRequirement::KeepAlive,
-                        )?;
-                        <CurrencyOf<T>>::resolve_creating(&funds_provider, funds);
-                    }
+                    let funds = <CurrencyOf<T>>::withdraw(
+                        &T::PotAccountId::get(),
+                        decrease,
+                        WithdrawReasons::TRANSFER,
+                        ExistenceRequirement::KeepAlive,
+                    )?;
+                    <CurrencyOf<T>>::resolve_creating(&funds_provider, funds);
                 }
 
                 Claims::<T>::insert(ethereum_address, claim_info.clone());
