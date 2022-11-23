@@ -41,7 +41,6 @@ type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSched
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    #[cfg(feature = "std")]
     use frame_support::sp_runtime::traits::{CheckedAdd, Zero};
     use frame_support::{
         pallet_prelude::{ValueQuery, *},
@@ -185,6 +184,22 @@ pub mod pallet {
             /// The vesting schedule.
             vesting: T::VestingSchedule,
         },
+        /// Claim were added.
+        ClaimAdded {
+            /// The ethereum address used for token claiming.
+            ethereum_address: EthereumAddress,
+            /// The claim info that was claimed.
+            claim: ClaimInfoOf<T>,
+        },
+        /// Claim were changed.
+        ClaimChanged {
+            /// The ethereum address used for token claiming.
+            ethereum_address: EthereumAddress,
+            /// An old claim info.
+            old_claim: ClaimInfoOf<T>,
+            /// A new claim info.
+            new_claim: ClaimInfoOf<T>,
+        },
     }
 
     #[pallet::error]
@@ -193,6 +208,16 @@ pub mod pallet {
         InvalidSignature,
         /// No claim was found.
         NoClaim,
+        /// Conflicting ethereum address.
+        ConflictingEthereumAddress,
+        /// Pot balance is too high.
+        ClaimsPotOverflow,
+        /// Pot balance is too low.
+        ClaimsPotUnderflow,
+        /// Funds provider balance is too high.
+        FundsProviderOverflow,
+        /// Funds provider balance is too low.
+        FundsProviderUnderflow,
     }
 
     #[pallet::call]
@@ -220,6 +245,100 @@ pub mod pallet {
             }
 
             Self::process_claim(who, ethereum_address)
+        }
+
+        /// Add a new claim.
+        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
+        pub fn add_claim(
+            origin: OriginFor<T>,
+            ethereum_address: EthereumAddress,
+            claim_info: ClaimInfoOf<T>,
+            funds_provider: T::AccountId,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            if <Claims<T>>::contains_key(ethereum_address) {
+                return Err(Error::<T>::ConflictingEthereumAddress.into());
+            }
+
+            with_storage_layer(move || {
+                let funds = <CurrencyOf<T>>::withdraw(
+                    &funds_provider,
+                    claim_info.balance,
+                    WithdrawReasons::TRANSFER,
+                    ExistenceRequirement::KeepAlive,
+                )
+                .map_err(|_| Error::<T>::FundsProviderUnderflow)?;
+
+                <CurrencyOf<T>>::resolve_into_existing(&T::PotAccountId::get(), funds)
+                    .map_err(|_| Error::<T>::ClaimsPotOverflow)?;
+
+                Claims::<T>::insert(ethereum_address, claim_info.clone());
+
+                <Pallet<T>>::update_total_claimable_balance();
+
+                Self::deposit_event(Event::ClaimAdded {
+                    ethereum_address,
+                    claim: claim_info,
+                });
+
+                Ok(())
+            })
+        }
+
+        /// Change an existing claim.
+        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
+        pub fn change_claim(
+            origin: OriginFor<T>,
+            ethereum_address: EthereumAddress,
+            claim_info: ClaimInfoOf<T>,
+            funds_provider: T::AccountId,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            with_storage_layer(move || {
+                let old_claim = <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
+
+                use frame_support::sp_runtime::traits::{CheckedSub, Zero};
+
+                if let Some(increase) = claim_info.balance.checked_sub(&old_claim.balance) {
+                    if !increase.is_zero() {
+                        let funds = <CurrencyOf<T>>::withdraw(
+                            &funds_provider,
+                            increase,
+                            WithdrawReasons::TRANSFER,
+                            ExistenceRequirement::KeepAlive,
+                        )
+                        .map_err(|_| Error::<T>::FundsProviderUnderflow)?;
+
+                        <CurrencyOf<T>>::resolve_into_existing(&T::PotAccountId::get(), funds)
+                            .map_err(|_| Error::<T>::ClaimsPotOverflow)?;
+                    }
+                } else if let Some(decrease) = old_claim.balance.checked_sub(&claim_info.balance) {
+                    let funds = <CurrencyOf<T>>::withdraw(
+                        &T::PotAccountId::get(),
+                        decrease,
+                        WithdrawReasons::TRANSFER,
+                        ExistenceRequirement::KeepAlive,
+                    )
+                    .map_err(|_| Error::<T>::ClaimsPotUnderflow)?;
+
+                    <CurrencyOf<T>>::resolve_into_existing(&funds_provider, funds)
+                        .map_err(|_| Error::<T>::FundsProviderOverflow)?;
+                }
+
+                Claims::<T>::insert(ethereum_address, claim_info.clone());
+
+                <Pallet<T>>::update_total_claimable_balance();
+
+                Self::deposit_event(Event::ClaimChanged {
+                    ethereum_address,
+                    old_claim,
+                    new_claim: claim_info,
+                });
+
+                Ok(())
+            })
         }
     }
 

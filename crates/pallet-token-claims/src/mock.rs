@@ -97,9 +97,12 @@ impl pallet_token_claims::Config for Test {
     type WeightInfo = ();
 }
 
+pub const FUNDS_PROVIDER: u64 = 1001;
+
 pub enum EthAddr {
     Existing,
     SecondExisting,
+    New,
     Unknown,
     Other(u8),
 }
@@ -109,6 +112,7 @@ impl From<EthAddr> for u8 {
         match eth_addr {
             EthAddr::Existing => 1,
             EthAddr::SecondExisting => 2,
+            EthAddr::New => 3,
             EthAddr::Unknown => 0xff,
             EthAddr::Other(val) => val,
         }
@@ -133,11 +137,14 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
     let genesis_config = GenesisConfig {
         system: Default::default(),
         balances: BalancesConfig {
-            balances: vec![(
-                Pot::account_id(),
-                30 /* tokens sum */ +
+            balances: vec![
+                (
+                    Pot::account_id(),
+                    30 /* tokens sum */ +
                 1, /* existential deposit */
-            )],
+                ),
+                (FUNDS_PROVIDER, 1000),
+            ],
         },
         pot: Default::default(),
         token_claims: TokenClaimsConfig {
