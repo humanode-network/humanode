@@ -70,7 +70,7 @@ where
         let dynamic_fee =
             pallet_dynamic_fee::InherentDataProvider(U256::from(self.0.eth_target_gas_price));
 
-        Ok((timestamp, slot, uncles, dynamic_fee))
+        Ok((slot, timestamp, uncles, dynamic_fee))
     }
 }
 
@@ -109,7 +109,7 @@ where
         let dynamic_fee =
             pallet_dynamic_fee::InherentDataProvider(U256::from(self.0.eth_target_gas_price));
 
-        Ok((timestamp, slot, uncles, dynamic_fee))
+        Ok((slot, timestamp, uncles, dynamic_fee))
     }
 }
 
