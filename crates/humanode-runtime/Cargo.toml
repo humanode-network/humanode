@@ -38,8 +38,8 @@ vesting-scheduling-timestamp = { version = "0.1", path = "../vesting-scheduling-
 
 chrono = { version = "0.4.19", default-features = false }
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
-fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
+fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
+fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
 frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
@@ -52,13 +52,13 @@ libsecp256k1 = { version = "0.7.0", default-features = false }
 pallet-authorship = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
-pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
-pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
-pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
-pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
-pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
+pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
+pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
+pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
+pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
+pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
+pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 pallet-multisig = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
