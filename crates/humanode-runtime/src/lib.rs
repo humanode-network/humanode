@@ -543,11 +543,13 @@ impl pallet_offences::Config for Runtime {
 parameter_types! {
     pub BlockGasLimit: U256 = U256::from(u32::max_value());
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
+    pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
 }
 
 impl pallet_evm::Config for Runtime {
     type FeeCalculator = BaseFee;
-    type GasWeightMapping = ();
+    type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+    type WeightPerGas = WeightPerGas;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
     type CallOrigin = EnsureAddressTruncated;
     type WithdrawOrigin = EnsureAddressTruncated;
