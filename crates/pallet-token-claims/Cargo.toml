@@ -42,3 +42,4 @@ std = [
   "scale-info/std",
   "serde",
 ]
+try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime"]

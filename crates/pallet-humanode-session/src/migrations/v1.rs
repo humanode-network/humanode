@@ -3,6 +3,8 @@
 use frame_support::pallet_prelude::*;
 use frame_support::storage_alias;
 use frame_support::{dispatch::GetStorageVersion, sp_tracing::info, traits::Get, weights::Weight};
+#[cfg(feature = "try-runtime")]
+use sp_std::vec::Vec;
 
 use crate::IdentificationFor;
 use crate::{Config, CurrentSessionIndex, Pallet, SessionIdentities};
