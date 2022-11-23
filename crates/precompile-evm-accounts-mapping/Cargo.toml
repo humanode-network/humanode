@@ -17,7 +17,6 @@ frame-support = { default-features = false, git = "https://github.com/humanode-n
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 hex-literal = "0.3"
 mockall = "0.10"
-primitive-types = "0.11"
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }

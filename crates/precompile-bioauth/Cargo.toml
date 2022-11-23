@@ -22,7 +22,6 @@ sp-std = { default-features = false, git = "https://github.com/humanode-network/
 
 [dev-dependencies]
 mockall = "0.10"
-primitive-types = "0.11"
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 
