@@ -29,7 +29,7 @@ const CLIFF: u64 = 1000;
 const VESTING_DURATION: u64 = 3000;
 
 fn set_timestamp(inc: UnixMilliseconds) {
-    Timestamp::set(Origin::none(), inc).unwrap();
+    Timestamp::set(RuntimeOrigin::none(), inc).unwrap();
 }
 
 fn switch_block() {

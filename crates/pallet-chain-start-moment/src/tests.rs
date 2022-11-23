@@ -3,7 +3,7 @@ use frame_support::traits::Hooks;
 use crate::mock::*;
 
 fn set_timestamp(inc: UnixMilliseconds) {
-    Timestamp::set(Origin::none(), inc).unwrap();
+    Timestamp::set(RuntimeOrigin::none(), inc).unwrap();
 }
 
 fn switch_block() {

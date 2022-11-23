@@ -14,8 +14,8 @@ use sp_runtime::{traits::SignedExtension, DispatchError};
 use crate::{
     mock::{
         eth, new_test_ext, new_test_ext_with, sig, Balances, EthAddr,
-        MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, Origin, Test,
-        TestExternalitiesExt, TokenClaims,
+        MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, RuntimeOrigin,
+        Test, TestExternalitiesExt, TokenClaims,
     },
     traits::{NoVesting, VestingInterface},
     types::{ClaimInfo, EthereumSignatureMessageParams},
@@ -98,7 +98,7 @@ fn claiming_works() {
 
         // Invoke the function under test.
         assert_ok!(TokenClaims::claim(
-            Origin::signed(42),
+            RuntimeOrigin::signed(42),
             eth(EthAddr::Existing),
             sig(1)
         ));
@@ -152,7 +152,7 @@ fn claim_eth_signature_recovery_failure() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Existing), sig(1)),
+            TokenClaims::claim(RuntimeOrigin::signed(42), eth(EthAddr::Existing), sig(1)),
             <Error<Test>>::InvalidSignature
         );
 
@@ -206,7 +206,7 @@ fn claim_eth_signature_recovery_invalid() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Existing), sig(1)),
+            TokenClaims::claim(RuntimeOrigin::signed(42), eth(EthAddr::Existing), sig(1)),
             <Error<Test>>::InvalidSignature
         );
 
@@ -264,7 +264,7 @@ fn claim_lock_under_vesting_failure() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Existing), sig(1)),
+            TokenClaims::claim(RuntimeOrigin::signed(42), eth(EthAddr::Existing), sig(1)),
             DispatchError::Other("vesting interface failed"),
         );
 
@@ -316,7 +316,7 @@ fn claim_non_existing() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Unknown), sig(1)),
+            TokenClaims::claim(RuntimeOrigin::signed(42), eth(EthAddr::Unknown), sig(1)),
             <Error<Test>>::NoClaim,
         );
 
@@ -547,7 +547,7 @@ fn claiming_sequential() {
                 .return_const(Ok(()));
 
             assert_ok!(TokenClaims::claim(
-                Origin::signed(42),
+                RuntimeOrigin::signed(42),
                 *claim_eth_address,
                 sig(1),
             ));
