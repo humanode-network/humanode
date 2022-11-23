@@ -194,6 +194,7 @@ std = [
   "sp-session/std",
   "sp-staking/std",
   "sp-std/std",
+  "sp-tracing/std",
   "sp-transaction-pool/std",
   "sp-version/std",
   "vesting-schedule-linear/std",

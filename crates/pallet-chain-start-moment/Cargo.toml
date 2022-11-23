@@ -17,4 +17,4 @@ sp-core = { git = "https://github.com/humanode-network/substrate", branch = "loc
 [features]
 default = ["std"]
 std = ["codec/std", "scale-info/std", "frame-support/std", "frame-system/std"]
-try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime"]
+try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime", "pallet-timestamp/try-runtime"]
