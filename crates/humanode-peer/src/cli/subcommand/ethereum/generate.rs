@@ -8,11 +8,11 @@ use super::utils::extract_and_print_keys;
 #[derive(Debug, clap::Parser)]
 pub struct GenerateAccountCmd {
     /// Generate 24 words mnemonic instead of 12.
-    #[clap(long, short = 'w')]
+    #[arg(long, short = 'w')]
     w24: bool,
 
     /// The account index to use in the derivation path.
-    #[clap(long = "account-index", short = 'a')]
+    #[arg(long = "account-index", short = 'a')]
     account_index: Option<u32>,
 }
 

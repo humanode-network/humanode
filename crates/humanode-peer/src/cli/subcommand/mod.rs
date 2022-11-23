@@ -12,7 +12,7 @@ pub mod export_embedded_runtime;
 #[derive(Debug, clap::Subcommand)]
 pub enum Subcommand {
     /// Key management cli utilities
-    #[clap(subcommand)]
+    #[command(subcommand)]
     Key(sc_cli::KeySubcommand),
 
     /// Build a chain specification.
@@ -37,16 +37,16 @@ pub enum Subcommand {
     Revert(sc_cli::RevertCmd),
 
     /// Biometric authentication related subcommands.
-    #[clap(subcommand)]
+    #[command(subcommand)]
     Bioauth(bioauth::BioauthCmd),
 
     /// Ethereum related subcommands.
-    #[clap(subcommand)]
+    #[command(subcommand)]
     Ethereum(ethereum::EthereumCmd),
 
     /// The custom benchmark subcommmand benchmarking runtime pallets.
-    #[clap(name = "benchmark", about = "Benchmark runtime pallets.")]
-    #[clap(subcommand)]
+    #[command(name = "benchmark", about = "Benchmark runtime pallets.")]
+    #[command(subcommand)]
     Benchmark(frame_benchmarking_cli::BenchmarkCmd),
 
     /// Db meta columns information.

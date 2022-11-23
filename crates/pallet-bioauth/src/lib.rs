@@ -187,9 +187,7 @@ impl<BeforeHookData> AfterAuthHook<BeforeHookData> for () {
 #[frame_support::pallet]
 pub mod pallet {
     use codec::MaxEncodedLen;
-    use frame_support::{
-        pallet_prelude::*, sp_tracing::error, storage::types::ValueQuery, BoundedVec,
-    };
+    use frame_support::{pallet_prelude::*, sp_tracing, storage::types::ValueQuery, BoundedVec};
     use frame_system::pallet_prelude::*;
     use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit, DispatchError};
 
@@ -581,7 +579,7 @@ pub mod pallet {
 
             let auth_ticket =
                 Self::extract_auth_ticket_checked(transaction.clone()).map_err(|error| {
-                    error!(message = "Auth Ticket could not be extracted", ?error);
+                    sp_tracing::error!(message = "Auth Ticket could not be extracted", ?error);
                     // Use bad proof error code, as the extraction.
                     TransactionValidityError::Invalid(match error {
                         AuthTicketExtractionError::UnableToValidateSignature
@@ -603,7 +601,7 @@ pub mod pallet {
                 &auth_ticket,
             )
             .map_err(|err| {
-                error!(message = "Authentication attemption failed", error = ?err);
+                sp_tracing::error!(message = "Authentication attemption failed", error = ?err);
 
                 TransactionValidityError::Invalid(match err {
                     AuthenticationAttemptValidationError::NonceConflict => {

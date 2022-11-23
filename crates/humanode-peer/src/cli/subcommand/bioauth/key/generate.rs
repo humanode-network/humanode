@@ -9,11 +9,11 @@ use super::KeystoreBioauthPair;
 #[derive(Debug, clap::Parser)]
 pub struct GenerateKeyCmd {
     /// The number of words in the phrase to generate. One of 12 (default), 15, 18, 21 and 24.
-    #[clap(long)]
+    #[arg(long)]
     words: Option<usize>,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub output_scheme: OutputTypeFlag,
 }
 

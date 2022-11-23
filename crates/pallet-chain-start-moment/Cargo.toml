@@ -6,14 +6,15 @@ publish = false
 
 [dependencies]
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 
 [dev-dependencies]
-pallet-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+pallet-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 
 [features]
 default = ["std"]
 std = ["codec/std", "scale-info/std", "frame-support/std", "frame-system/std"]
+try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime", "pallet-timestamp/try-runtime"]

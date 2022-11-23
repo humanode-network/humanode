@@ -5,7 +5,7 @@ use mockall::predicate;
 
 use crate::{
     mock::{
-        new_test_ext, Balances, MockSchedule, MockSchedulingDriver, Origin, System, Test,
+        new_test_ext, Balances, MockSchedule, MockSchedulingDriver, RuntimeOrigin, System, Test,
         TestExternalitiesExt, Vesting,
     },
     *,
@@ -214,7 +214,7 @@ fn unlock_works_full() {
         System::set_block_number(1);
 
         // Invoke the function under test.
-        assert_ok!(Vesting::unlock(Origin::signed(42)));
+        assert_ok!(Vesting::unlock(RuntimeOrigin::signed(42)));
 
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
@@ -258,7 +258,7 @@ fn unlock_works_partial() {
         System::set_block_number(1);
 
         // Invoke the function under test.
-        assert_ok!(Vesting::unlock(Origin::signed(42)));
+        assert_ok!(Vesting::unlock(RuntimeOrigin::signed(42)));
 
         // Assert state changes.
         assert_eq!(Balances::free_balance(&42), 1000);
@@ -304,7 +304,7 @@ fn unlock_computation_failure() {
 
         // Invoke the function under test.
         assert_noop!(
-            Vesting::unlock(Origin::signed(42)),
+            Vesting::unlock(RuntimeOrigin::signed(42)),
             DispatchError::Other("compute_balance_under failed")
         );
 
@@ -342,7 +342,7 @@ fn unlock_no_vesting_error() {
 
         // Invoke the function under test.
         assert_noop!(
-            Vesting::unlock(Origin::signed(42)),
+            Vesting::unlock(RuntimeOrigin::signed(42)),
             <Error<Test>>::NoVesting,
         );
 

@@ -184,7 +184,7 @@ where
     /// If successful returns the used gas using the Runtime GasWeightMapping.
     pub fn try_dispatch<RuntimeCall>(
         handle: &mut impl PrecompileHandleExt,
-        origin: <Runtime::RuntimeCall as Dispatchable>::Origin,
+        origin: <Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin,
         call: RuntimeCall,
     ) -> EvmResult<()>
     where

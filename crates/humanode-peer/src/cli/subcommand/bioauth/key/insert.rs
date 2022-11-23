@@ -15,15 +15,15 @@ use crate::cli::CliConfigurationExt;
 #[derive(Debug, clap::Parser)]
 pub struct InsertKeyCmd {
     /// The secret key uri (mnemonic).
-    #[clap(long)]
+    #[arg(long)]
     pub suri: String,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub shared_params: SharedParams,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub keystore_params: KeystoreParams,
 }
 

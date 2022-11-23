@@ -14,8 +14,8 @@ use sp_runtime::{traits::SignedExtension, DispatchError};
 use crate::{
     mock::{
         eth, new_test_ext, new_test_ext_with, sig, Balances, EthAddr,
-        MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, Origin, Test,
-        TestExternalitiesExt, TokenClaims, FUNDS_PROVIDER,
+        MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, RuntimeOrigin,
+        Test, TestExternalitiesExt, TokenClaims, FUNDS_PROVIDER,
     },
     traits::{NoVesting, VestingInterface},
     types::{ClaimInfo, EthereumSignatureMessageParams},
@@ -98,7 +98,7 @@ fn claiming_works() {
 
         // Invoke the function under test.
         assert_ok!(TokenClaims::claim(
-            Origin::signed(42),
+            RuntimeOrigin::signed(42),
             eth(EthAddr::Existing),
             sig(1)
         ));
@@ -152,7 +152,7 @@ fn claim_eth_signature_recovery_failure() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Existing), sig(1)),
+            TokenClaims::claim(RuntimeOrigin::signed(42), eth(EthAddr::Existing), sig(1)),
             <Error<Test>>::InvalidSignature
         );
 
@@ -206,7 +206,7 @@ fn claim_eth_signature_recovery_invalid() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Existing), sig(1)),
+            TokenClaims::claim(RuntimeOrigin::signed(42), eth(EthAddr::Existing), sig(1)),
             <Error<Test>>::InvalidSignature
         );
 
@@ -264,7 +264,7 @@ fn claim_lock_under_vesting_failure() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Existing), sig(1)),
+            TokenClaims::claim(RuntimeOrigin::signed(42), eth(EthAddr::Existing), sig(1)),
             DispatchError::Other("vesting interface failed"),
         );
 
@@ -316,7 +316,7 @@ fn claim_non_existing() {
 
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::claim(Origin::signed(42), eth(EthAddr::Unknown), sig(1)),
+            TokenClaims::claim(RuntimeOrigin::signed(42), eth(EthAddr::Unknown), sig(1)),
             <Error<Test>>::NoClaim,
         );
 
@@ -547,7 +547,7 @@ fn claiming_sequential() {
                 .return_const(Ok(()));
 
             assert_ok!(TokenClaims::claim(
-                Origin::signed(42),
+                RuntimeOrigin::signed(42),
                 *claim_eth_address,
                 sig(1),
             ));
@@ -733,7 +733,7 @@ fn adding_claim_works() {
         // Non-sudo accounts are not allowed.
         assert_noop!(
             TokenClaims::add_claim(
-                Origin::signed(42),
+                RuntimeOrigin::signed(42),
                 eth(EthAddr::New),
                 new_claim_info.clone(),
                 FUNDS_PROVIDER,
@@ -742,7 +742,7 @@ fn adding_claim_works() {
         );
         // Invoke the function under test.
         assert_ok!(TokenClaims::add_claim(
-            Origin::root(),
+            RuntimeOrigin::root(),
             eth(EthAddr::New),
             new_claim_info.clone(),
             FUNDS_PROVIDER,
@@ -785,7 +785,7 @@ fn adding_claim_not_sudo() {
         // Non-sudo accounts are not allowed.
         assert_noop!(
             TokenClaims::add_claim(
-                Origin::signed(42),
+                RuntimeOrigin::signed(42),
                 eth(EthAddr::New),
                 new_claim_info,
                 FUNDS_PROVIDER,
@@ -807,7 +807,7 @@ fn adding_claim_conflicting_eth_address() {
         // Invoke the function under test.
         assert_noop!(
             TokenClaims::add_claim(
-                Origin::root(),
+                RuntimeOrigin::root(),
                 eth(EthAddr::Existing),
                 new_claim_info,
                 FUNDS_PROVIDER,
@@ -829,7 +829,7 @@ fn adding_claim_funds_provider_underflow() {
         // Invoke the function under test.
         assert_noop!(
             TokenClaims::add_claim(
-                Origin::root(),
+                RuntimeOrigin::root(),
                 eth(EthAddr::New),
                 new_claim_info,
                 FUNDS_PROVIDER,
@@ -864,7 +864,7 @@ fn changing_claim_balance_increase_works() {
         // Non-sudo accounts are not allowed.
         assert_noop!(
             TokenClaims::change_claim(
-                Origin::signed(42),
+                RuntimeOrigin::signed(42),
                 eth(EthAddr::Existing),
                 new_claim_info.clone(),
                 FUNDS_PROVIDER,
@@ -873,7 +873,7 @@ fn changing_claim_balance_increase_works() {
         );
         // Invoke the function under test.
         assert_ok!(TokenClaims::change_claim(
-            Origin::root(),
+            RuntimeOrigin::root(),
             eth(EthAddr::Existing),
             new_claim_info.clone(),
             FUNDS_PROVIDER,
@@ -930,7 +930,7 @@ fn changing_claim_balance_decrease_works() {
         // Non-sudo accounts are not allowed.
         assert_noop!(
             TokenClaims::change_claim(
-                Origin::signed(42),
+                RuntimeOrigin::signed(42),
                 eth(EthAddr::Existing),
                 new_claim_info.clone(),
                 FUNDS_PROVIDER,
@@ -939,7 +939,7 @@ fn changing_claim_balance_decrease_works() {
         );
         // Invoke the function under test.
         assert_ok!(TokenClaims::change_claim(
-            Origin::root(),
+            RuntimeOrigin::root(),
             eth(EthAddr::Existing),
             new_claim_info.clone(),
             FUNDS_PROVIDER,
@@ -996,7 +996,7 @@ fn changing_claim_balance_not_changing_works() {
         // Non-sudo accounts are not allowed.
         assert_noop!(
             TokenClaims::change_claim(
-                Origin::signed(42),
+                RuntimeOrigin::signed(42),
                 eth(EthAddr::Existing),
                 new_claim_info.clone(),
                 FUNDS_PROVIDER,
@@ -1005,7 +1005,7 @@ fn changing_claim_balance_not_changing_works() {
         );
         // Invoke the function under test.
         assert_ok!(TokenClaims::change_claim(
-            Origin::root(),
+            RuntimeOrigin::root(),
             eth(EthAddr::Existing),
             new_claim_info.clone(),
             FUNDS_PROVIDER,
@@ -1043,7 +1043,7 @@ fn changing_claim_not_sudo() {
         // Non-sudo accounts are not allowed.
         assert_noop!(
             TokenClaims::change_claim(
-                Origin::signed(42),
+                RuntimeOrigin::signed(42),
                 eth(EthAddr::New),
                 new_claim_info,
                 FUNDS_PROVIDER,
@@ -1065,7 +1065,7 @@ fn changing_claim_no_claim() {
         // Invoke the function under test.
         assert_noop!(
             TokenClaims::change_claim(
-                Origin::root(),
+                RuntimeOrigin::root(),
                 eth(EthAddr::New),
                 new_claim_info,
                 FUNDS_PROVIDER,
@@ -1088,7 +1088,7 @@ fn changing_claim_funds_provider_underflow() {
         // Invoke the function under test.
         assert_noop!(
             TokenClaims::change_claim(
-                Origin::root(),
+                RuntimeOrigin::root(),
                 eth(EthAddr::Existing),
                 new_claim_info,
                 FUNDS_PROVIDER,
