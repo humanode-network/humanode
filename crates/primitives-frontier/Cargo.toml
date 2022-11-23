@@ -7,8 +7,8 @@ publish = false
 [dependencies]
 frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 
-fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
-pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-09-21" }
-sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
-sp-blockchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
+pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.32" }
+sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-blockchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
