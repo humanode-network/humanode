@@ -23,8 +23,8 @@ pub struct Creator<Client> {
 /// Inherent data providers, common for both [`sp_inherents::CreateInherentDataProviders`]
 /// implementations.
 type InherentDataProviders = (
-    sp_timestamp::InherentDataProvider,
     sp_consensus_babe::inherents::InherentDataProvider,
+    sp_timestamp::InherentDataProvider,
     sp_authorship::InherentDataProvider<<super::Block as Block>::Header>,
     pallet_dynamic_fee::InherentDataProvider,
 );
