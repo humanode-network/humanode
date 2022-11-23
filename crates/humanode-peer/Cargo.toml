@@ -105,6 +105,7 @@ try-runtime = [
   "frame-support/try-runtime",
   "humanode-runtime/try-runtime",
   "pallet-bioauth/try-runtime",
+  "pallet-dynamic-fee/try-runtime",
   "pallet-im-online/try-runtime",
   "try-runtime-cli",
 ]
