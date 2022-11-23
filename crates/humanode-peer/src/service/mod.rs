@@ -302,7 +302,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             bioauth_keys::OneOfOneSelector,
         ));
 
-    let (network, system_rpc_tx, network_starter) =
+    let (network, system_rpc_tx, tx_handler_controller, network_starter) =
         sc_service::build_network(sc_service::BuildNetworkParams {
             config: &config,
             client: Arc::clone(&client),
@@ -431,6 +431,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         rpc_builder: rpc_extensions_builder,
         backend: Arc::clone(&backend),
         system_rpc_tx,
+        tx_handler_controller,
         config,
         telemetry: telemetry.as_mut(),
     })?;
