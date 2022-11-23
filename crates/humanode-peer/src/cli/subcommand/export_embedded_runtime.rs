@@ -8,7 +8,7 @@ use tokio::io::AsyncWriteExt;
 #[derive(Debug, clap::Parser)]
 pub struct ExportEmbeddedRuntimeCmd {
     /// Specify the output path.
-    #[clap(long, short = 'o')]
+    #[arg(long, short = 'o')]
     out: Option<PathBuf>,
 }
 

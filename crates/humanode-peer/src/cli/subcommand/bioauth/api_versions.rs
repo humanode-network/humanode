@@ -9,7 +9,7 @@ use crate::{api_versions, cli::CliConfigurationExt};
 #[derive(Debug, clap::Parser)]
 pub struct ApiVersionsCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub shared_params: SharedParams,
 }
 

@@ -8,11 +8,11 @@ use super::utils::extract_and_print_keys;
 #[derive(Debug, clap::Parser)]
 pub struct InspectAccountCmd {
     /// Specify the mnemonic.
-    #[clap(long, short = 'm')]
+    #[arg(long, short = 'm')]
     mnemonic: String,
 
     /// The account index to use in the derivation path.
-    #[clap(long = "account-index", short = 'a')]
+    #[arg(long = "account-index", short = 'a')]
     account_index: Option<u32>,
 }
 

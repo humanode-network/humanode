@@ -9,11 +9,11 @@ use crate::chain_spec;
 #[derive(Debug, clap::Parser)]
 pub struct Root {
     /// Additional subcommands.
-    #[clap(subcommand)]
+    #[command(subcommand)]
     pub subcommand: Option<Subcommand>,
 
     /// The `run` command used to run a node.
-    #[clap(flatten)]
+    #[command(flatten)]
     pub run: super::RunCmd,
 }
 

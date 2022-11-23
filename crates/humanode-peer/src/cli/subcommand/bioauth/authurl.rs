@@ -12,11 +12,11 @@ use crate::{
 #[derive(Debug, clap::Parser)]
 pub struct AuthUrlCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub base: Box<sc_cli::RunCmd>,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub bioauth_flow_params: params::BioauthFlowParams,
 }
 

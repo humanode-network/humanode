@@ -9,11 +9,11 @@ use super::KeystoreBioauthPair;
 #[derive(Debug, clap::Parser)]
 pub struct InspectKeyCmd {
     /// The secret key uri (mnemonic).
-    #[clap(long, short = 'm')]
+    #[arg(long, short = 'm')]
     suri: String,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub output_scheme: OutputTypeFlag,
 }
 

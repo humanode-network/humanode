@@ -7,9 +7,9 @@ edition = "2021"
 primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
 
 numtoa = { version = "0.2", default-features = false }
-sp-core-hashing-proc-macro = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
-sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+sp-core-hashing-proc-macro = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 
 [dev-dependencies]
 hex = "0.4"

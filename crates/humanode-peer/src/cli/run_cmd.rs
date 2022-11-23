@@ -7,23 +7,23 @@ use super::{params, CliConfigurationExt, SubstrateCliConfigurationProvider};
 #[derive(Debug, clap::Parser, Clone)]
 pub struct RunCmd {
     /// The base command.
-    #[clap(flatten)]
+    #[command(flatten)]
     pub base: sc_cli::RunCmd,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub bioauth_flow_params: params::BioauthFlowParams,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub evm_params: params::EvmParams,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub ethereum_rpc_params: params::EthereumRpcParams,
 
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
-    #[clap(flatten)]
+    #[command(flatten)]
     pub time_warp_params: params::TimeWarpParams,
 }
 

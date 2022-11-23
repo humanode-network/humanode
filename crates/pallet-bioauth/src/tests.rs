@@ -117,7 +117,7 @@ fn authentication_with_empty_state() {
         });
 
         // Ensure that authentication call is processed successfully.
-        assert_ok!(Bioauth::authenticate(Origin::none(), input));
+        assert_ok!(Bioauth::authenticate(RuntimeOrigin::none(), input));
 
         // Ensure that the state of ActiveAuthentications has been updated.
         assert_eq!(
@@ -410,7 +410,7 @@ fn authentication_when_previous_one_has_been_expired() {
         });
 
         // Make test and ensure that authentication call is processed successfully.
-        assert_ok!(Bioauth::authenticate(Origin::none(), input));
+        assert_ok!(Bioauth::authenticate(RuntimeOrigin::none(), input));
 
         // Ensure that the last authentication has been added to the ActiveAuthentications.
         assert_eq!(
@@ -488,7 +488,7 @@ fn too_many_authentications() {
 
         // Make test.
         assert_noop!(
-            Bioauth::authenticate(Origin::none(), input),
+            Bioauth::authenticate(RuntimeOrigin::none(), input),
             Error::<Test>::TooManyAuthentications
         );
     });
@@ -537,7 +537,7 @@ fn too_many_nonces() {
 
         // Make test.
         assert_noop!(
-            Bioauth::authenticate(Origin::none(), input),
+            Bioauth::authenticate(RuntimeOrigin::none(), input),
             Error::<Test>::TooManyNonces
         );
     });
@@ -571,7 +571,7 @@ fn too_many_bytes_in_nonce() {
 
         // Make test.
         assert_noop!(
-            Bioauth::authenticate(Origin::none(), input),
+            Bioauth::authenticate(RuntimeOrigin::none(), input),
             Error::<Test>::TooManyBytesInNonce
         );
     });
@@ -586,7 +586,7 @@ fn authentication_with_invalid_signature() {
 
         // Make test.
         assert_noop!(
-            Bioauth::authenticate(Origin::none(), input),
+            Bioauth::authenticate(RuntimeOrigin::none(), input),
             Error::<Test>::AuthTicketSignatureInvalid
         );
     });
@@ -630,7 +630,7 @@ fn authentication_with_conlicting_nonce() {
 
         // Make test and ensure the expected error is thrown when no value is present.
         assert_noop!(
-            Bioauth::authenticate(Origin::none(), input),
+            Bioauth::authenticate(RuntimeOrigin::none(), input),
             Error::<Test>::NonceAlreadyUsed,
         );
     });
@@ -698,7 +698,7 @@ fn authentication_with_conlicting_nonce_after_expiration() {
 
         // Ensure the expected error is thrown when conflicting nonce is used.
         assert_noop!(
-            Bioauth::authenticate(Origin::none(), input),
+            Bioauth::authenticate(RuntimeOrigin::none(), input),
             Error::<Test>::NonceAlreadyUsed,
         );
     });
@@ -742,7 +742,7 @@ fn authentication_with_concurrent_conflicting_public_keys() {
 
         // Make test and ensure the expected error is thrown when conflicting public keys is used.
         assert_noop!(
-            Bioauth::authenticate(Origin::none(), input),
+            Bioauth::authenticate(RuntimeOrigin::none(), input),
             Error::<Test>::PublicKeyAlreadyUsed,
         );
     });
@@ -783,7 +783,7 @@ fn authentication_denied_by_before_hook() {
 
         // Ensure that authentication call is denied.
         assert_err!(
-            Bioauth::authenticate(Origin::none(), input),
+            Bioauth::authenticate(RuntimeOrigin::none(), input),
             sp_runtime::DispatchError::CannotLookup
         );
 
@@ -820,7 +820,10 @@ fn set_robonode_public_key_updates_key() {
         let input = MockVerifier::B;
 
         // Execute the key change.
-        assert_ok!(Bioauth::set_robonode_public_key(Origin::root(), input));
+        assert_ok!(Bioauth::set_robonode_public_key(
+            RuntimeOrigin::root(),
+            input
+        ));
 
         // Ensure the key has changed.
         assert_eq!(Bioauth::robonode_public_key(), MockVerifier::B);
@@ -862,11 +865,11 @@ fn set_robonode_public_key_checks_the_origin() {
 
         // Attempt key changes with various origins.
         assert_err!(
-            Bioauth::set_robonode_public_key(Origin::none(), input.clone()),
+            Bioauth::set_robonode_public_key(RuntimeOrigin::none(), input.clone()),
             sp_runtime::DispatchError::BadOrigin
         );
         assert_err!(
-            Bioauth::set_robonode_public_key(Origin::signed(123), input),
+            Bioauth::set_robonode_public_key(RuntimeOrigin::signed(123), input),
             sp_runtime::DispatchError::BadOrigin
         );
 
