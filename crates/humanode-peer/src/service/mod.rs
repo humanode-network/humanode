@@ -170,6 +170,7 @@ pub fn new_partial(
     )?;
 
     let frontier_backend = Arc::new(FrontierBackend::open(
+        Arc::clone(&client),
         &config.database,
         &frontier::db_config_dir(config),
     )?);
