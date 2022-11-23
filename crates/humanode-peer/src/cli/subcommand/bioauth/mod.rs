@@ -8,7 +8,7 @@ pub mod key;
 #[derive(Debug, clap::Subcommand)]
 pub enum BioauthCmd {
     /// Bioauth key utilities.
-    #[clap(subcommand)]
+    #[command(subcommand)]
     Key(key::KeyCmd),
     /// Web App URL with bound RPC URL.
     AuthUrl(authurl::AuthUrlCmd),
