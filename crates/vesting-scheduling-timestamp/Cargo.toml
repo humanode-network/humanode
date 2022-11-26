@@ -8,7 +8,7 @@ publish = false
 pallet-vesting = { version = "0.1", path = "../pallet-vesting", default-features = false }
 vesting-schedule-linear = { version = "0.1", path = "../vesting-schedule-linear", default-features = false }
 
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-09-21" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 num-traits = { version = "0.2", default-features = false }
 serde = { version = "1", optional = true }
 

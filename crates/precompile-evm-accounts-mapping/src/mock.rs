@@ -41,7 +41,7 @@ impl system::Config for Test {
     type BlockWeights = ();
     type BlockLength = ();
     type DbWeight = ();
-    type Origin = Origin;
+    type RuntimeOrigin = RuntimeOrigin;
     type RuntimeCall = RuntimeCall;
     type Index = u64;
     type BlockNumber = BlockNumber;
@@ -83,7 +83,7 @@ mock! {
     impl PrecompileHandle for PrecompileHandle {
         fn call(
             &mut self,
-            to: primitive_types::H160,
+            to: sp_core::H160,
             transfer: Option<Transfer>,
             input: Vec<u8>,
             gas_limit: Option<u64>,
@@ -95,9 +95,9 @@ mock! {
 
         fn remaining_gas(&self) -> u64;
 
-        fn log(&mut self, address: primitive_types::H160, topics: Vec<primitive_types::H256>, data: Vec<u8>) -> Result<(), ExitError>;
+        fn log(&mut self, address: sp_core::H160, topics: Vec<sp_core::H256>, data: Vec<u8>) -> Result<(), ExitError>;
 
-        fn code_address(&self) -> primitive_types::H160;
+        fn code_address(&self) -> sp_core::H160;
 
         fn input(&self) -> &[u8];
 

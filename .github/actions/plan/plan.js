@@ -90,6 +90,12 @@ const codeModes = {
     cargoArgs: "--release --features runtime-benchmarks,wasmtime benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 2 --repeat 0 --external-repeat 0",
     cargoCacheKey: "run-benchmark",
   },
+  buildTryRuntime: {
+    name: "build with try-runtime",
+    cargoCommand: "build",
+    cargoArgs: "--features try-runtime",
+    cargoCacheKey: "try-runtime",
+  },
 };
 
 const buildModes = {

@@ -95,7 +95,7 @@ impl pallet_token_claims::benchmarking::VestingInterface for vesting::TokenClaim
     fn prepare() -> Self::Data {
         // Run blocks to be vesting schedule ready.
         switch_block::<Runtime>();
-        pallet_timestamp::Pallet::<Runtime>::set(Origin::none(), START_TIMESTAMP).unwrap();
+        pallet_timestamp::Pallet::<Runtime>::set(RuntimeOrigin::none(), START_TIMESTAMP).unwrap();
         switch_block::<Runtime>();
     }
 
@@ -127,14 +127,14 @@ impl pallet_vesting::benchmarking::SchedulingDriver for vesting::SchedulingDrive
     fn prepare_init() -> Self::Data {
         // Run blocks to be vesting schedule ready.
         switch_block::<Runtime>();
-        pallet_timestamp::Pallet::<Runtime>::set(Origin::none(), START_TIMESTAMP).unwrap();
+        pallet_timestamp::Pallet::<Runtime>::set(RuntimeOrigin::none(), START_TIMESTAMP).unwrap();
         switch_block::<Runtime>();
     }
 
     fn prepare_advance(_data: Self::Data) -> Self::Data {
         // Run blocks with setting proper timestamp to make full unlocking.
         pallet_timestamp::Pallet::<Runtime>::set(
-            Origin::none(),
+            RuntimeOrigin::none(),
             START_TIMESTAMP + CLIFF + VESTING_DURATION,
         )
         .unwrap();

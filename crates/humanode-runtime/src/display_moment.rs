@@ -1,6 +1,6 @@
 //! DisplayMoment implementation to display timestamp.
 
-use chrono::{TimeZone, Utc};
+use chrono::{LocalResult, TimeZone, Utc};
 
 use crate::UnixMilliseconds;
 
@@ -15,8 +15,11 @@ impl From<UnixMilliseconds> for DisplayMoment {
 
 impl core::fmt::Display for DisplayMoment {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let dt = Utc.timestamp_millis(self.0 as i64);
-        write!(f, "{}", dt)
+        match Utc.timestamp_millis_opt(self.0 as i64) {
+            LocalResult::None => write!(f, "[invalid milliseconds {}]", self.0),
+            LocalResult::Single(dt) => write!(f, "{}", dt),
+            LocalResult::Ambiguous(_, _) => unreachable!(),
+        }
     }
 }
 

@@ -145,7 +145,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         if !cfg!(feature = "runtime-benchmarks") {
                             return Err(
                                 "Runtime benchmarking wasn't enabled when building the node. \
-							You can enable it with `--features runtime-benchmarks`."
+                                    You can enable it with `--features runtime-benchmarks`."
                                     .into(),
                             );
                         }
@@ -228,6 +228,7 @@ pub async fn run() -> sc_cli::Result<()> {
                 cmd.run(partial.client, frontier_backend)
             })
         }
+        Some(Subcommand::ExportEmbeddedRuntime(cmd)) => cmd.run().await,
         #[cfg(feature = "try-runtime")]
         Some(Subcommand::TryRuntime(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
@@ -254,7 +255,7 @@ pub async fn run() -> sc_cli::Result<()> {
         }
         #[cfg(not(feature = "try-runtime"))]
         Some(Subcommand::TryRuntime) => Err("TryRuntime wasn't enabled when building the node. \
-				You can enable it with `--features try-runtime`."
+                You can enable it with `--features try-runtime`."
             .into()),
         None => {
             let runner = root.create_humanode_runner(&root.run)?;
