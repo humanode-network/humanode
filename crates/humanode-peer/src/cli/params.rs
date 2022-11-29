@@ -21,7 +21,7 @@ pub struct BioauthFlowParams {
 
     /// The URL to pass to the web app to connect to the node RPC.
     /// If not passed, a URL with `localhost` and the HTTP RPC port will be used.
-    #[arg(long, value_name = "RPC_URL", conflicts_with_all = &["rpc-url-scheme-preference", "rpc-url-ngrok-detect", "rpc-url-unset"])]
+    #[arg(long, value_name = "RPC_URL", conflicts_with_all = &["rpc_url_scheme_preference", "rpc_url_ngrok_detect", "rpc_url_unset"])]
     pub rpc_url: Option<String>,
 
     /// What RPC URL scheme to prefer.
@@ -30,16 +30,16 @@ pub struct BioauthFlowParams {
         value_enum,
         value_name = "RPC_URL_SCHEME_PREFERENCE",
         default_value = "no-preference",
-        conflicts_with_all = &["rpc-url", "rpc-url-unset"]
+        conflicts_with_all = &["rpc_url", "rpc_url_unset"]
     )]
     pub rpc_url_scheme_preference: RpcUrlSchemePreference,
 
     /// Detect RPC URL from ngrok.
-    #[arg(long, conflicts_with_all = &["rpc-url", "rpc-url-unset"])]
+    #[arg(long, conflicts_with_all = &["rpc_url", "rpc_url_unset"])]
     pub rpc_url_ngrok_detect: bool,
 
     /// Explicitly unset the RPC URL.
-    #[arg(long, conflicts_with_all = &["rpc-url", "rpc-url-scheme-preference", "rpc-url-ngrok-detect"])]
+    #[arg(long, conflicts_with_all = &["rpc_url", "rpc_url_scheme_preference", "rpc_url_ngrok_detect"])]
     pub rpc_url_unset: bool,
 
     /// The tunnel name at ngrok to detect RPC URL from, if ngrok is used to detect the RPC URL.
@@ -87,7 +87,7 @@ pub struct EthereumRpcParams {
 #[derive(Debug, clap::Parser, Clone)]
 pub struct TimeWarpParams {
     /// The time in the future when the warp is going to be started.
-    #[arg(long, requires = "time-warp-fork-timestamp")]
+    #[arg(long, requires = "time_warp_fork_timestamp")]
     pub time_warp_revive_timestamp: Option<u64>,
 
     /// The time of the last block that was finalized before the chain bricked.
@@ -95,6 +95,6 @@ pub struct TimeWarpParams {
     pub time_warp_fork_timestamp: Option<u64>,
 
     /// Warp factor that is going to be adopted.
-    #[arg(long, requires = "time-warp-fork-timestamp")]
+    #[arg(long, requires = "time_warp_fork_timestamp")]
     pub time_warp_factor: Option<u64>,
 }

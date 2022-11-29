@@ -5,6 +5,7 @@ use super::{params, CliConfigurationExt, SubstrateCliConfigurationProvider};
 /// The `run` command used to run a node.
 /// Expands the [`sc_cli::RunCmd`] with Humanode options.
 #[derive(Debug, clap::Parser, Clone)]
+#[group(skip)]
 pub struct RunCmd {
     /// The base command.
     #[command(flatten)]
