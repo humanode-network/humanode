@@ -3,7 +3,7 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-# This test ensures we have an adequate and working halp command.
+# This test ensures we have an adequate and working help command.
 # It also serves as a snapshot test for the help text, so we can track when
 # the help text changes.
 
