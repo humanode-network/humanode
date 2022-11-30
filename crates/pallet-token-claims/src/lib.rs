@@ -318,8 +318,6 @@ pub mod pallet {
                 <CurrencyOf<T>>::resolve_into_existing(&funds_provider, funds)
                     .map_err(|_| Error::<T>::FundsProviderOverflow)?;
 
-                Claims::<T>::remove(ethereum_address);
-
                 <Pallet<T>>::update_total_claimable_balance();
 
                 Self::deposit_event(Event::ClaimRemoved {
