@@ -248,7 +248,7 @@ fn testnet_genesis(
             code: wasm_binary.to_vec(),
         },
         balances: BalancesConfig {
-            // Configure endowed accounts with initial balance of 1 << 60.
+            // Configure endowed accounts with initial balance.
             balances: {
                 let pot_accounts = vec![
                     (
