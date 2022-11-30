@@ -193,6 +193,13 @@ pub mod pallet {
             /// The claim info that was claimed.
             claim: ClaimInfoOf<T>,
         },
+        /// Claim were removed.
+        ClaimRemoved {
+            /// The ethereum address used for token claiming.
+            ethereum_address: EthereumAddress,
+            /// The claim info that was claimed.
+            claim: ClaimInfoOf<T>,
+        },
         /// Claim were changed.
         ClaimChanged {
             /// The ethereum address used for token claiming.
@@ -280,6 +287,42 @@ pub mod pallet {
                 <Pallet<T>>::update_total_claimable_balance();
 
                 Self::deposit_event(Event::ClaimAdded {
+                    ethereum_address,
+                    claim: claim_info,
+                });
+
+                Ok(())
+            })
+        }
+
+        /// Remove an existing claim.
+        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
+        pub fn remove_claim(
+            origin: OriginFor<T>,
+            ethereum_address: EthereumAddress,
+            funds_provider: T::AccountId,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            with_storage_layer(move || {
+                let claim_info = <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
+
+                let funds = <CurrencyOf<T>>::withdraw(
+                    &T::PotAccountId::get(),
+                    claim_info.balance,
+                    WithdrawReasons::TRANSFER,
+                    ExistenceRequirement::KeepAlive,
+                )
+                .map_err(|_| Error::<T>::ClaimsPotUnderflow)?;
+
+                <CurrencyOf<T>>::resolve_into_existing(&funds_provider, funds)
+                    .map_err(|_| Error::<T>::FundsProviderOverflow)?;
+
+                Claims::<T>::remove(ethereum_address);
+
+                <Pallet<T>>::update_total_claimable_balance();
+
+                Self::deposit_event(Event::ClaimRemoved {
                     ethereum_address,
                     claim: claim_info,
                 });
