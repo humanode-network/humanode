@@ -839,6 +839,60 @@ fn adding_claim_funds_provider_underflow() {
     });
 }
 
+/// This test verifies that removing claim signed by sudo account works in the happy path.
+#[test]
+fn removing_claim_works() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
+
+        let claim = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap();
+        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let pot_account_balance_before = pot_account_balance();
+        let total_claimable_balance_before = total_claimable_balance();
+        let currency_total_issuance_before = currency_total_issuance();
+
+        // Set block number to enable events.
+        mock::System::set_block_number(1);
+
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            TokenClaims::remove_claim(
+                RuntimeOrigin::signed(42),
+                eth(EthAddr::Existing),
+                FUNDS_PROVIDER,
+            ),
+            DispatchError::BadOrigin
+        );
+        // Invoke the function under test.
+        assert_ok!(TokenClaims::remove_claim(
+            RuntimeOrigin::root(),
+            eth(EthAddr::Existing),
+            FUNDS_PROVIDER,
+        ));
+
+        // Assert state changes.
+        assert!(!<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
+        assert_eq!(
+            total_claimable_balance_before - total_claimable_balance(),
+            claim.balance
+        );
+        assert_eq!(
+            pot_account_balance_before - pot_account_balance(),
+            claim.balance
+        );
+        assert_eq!(
+            Balances::free_balance(FUNDS_PROVIDER) - funds_provider_balance_before,
+            claim.balance
+        );
+        assert_eq!(currency_total_issuance_before, currency_total_issuance());
+        mock::System::assert_has_event(mock::RuntimeEvent::TokenClaims(Event::ClaimRemoved {
+            ethereum_address: eth(EthAddr::Existing),
+            claim,
+        }));
+    });
+}
+
 /// This test verifies that changing claim with balance increase signed by sudo account works in the happy path.
 #[test]
 fn changing_claim_balance_increase_works() {
