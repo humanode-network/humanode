@@ -909,6 +909,18 @@ fn removing_claim_not_sudo() {
     });
 }
 
+/// This test verifies that removing claim fails if the claim doesn't exist.
+#[test]
+fn removing_claim_no_claim() {
+    new_test_ext().execute_with_ext(|_| {
+        // Invoke the function under test.
+        assert_noop!(
+            TokenClaims::remove_claim(RuntimeOrigin::root(), eth(EthAddr::New), FUNDS_PROVIDER,),
+            Error::<Test>::NoClaim
+        );
+    });
+}
+
 /// This test verifies that changing claim with balance increase signed by sudo account works in the happy path.
 #[test]
 fn changing_claim_balance_increase_works() {
