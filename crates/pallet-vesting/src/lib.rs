@@ -154,7 +154,14 @@ pub mod pallet {
 
                 // Check if we're locking zero balance.
                 if computed_locked_balance == Zero::zero() {
-                    // If we do - skip changing the schedule.
+                    // Remove the schedule.
+                    <Schedules<T>>::remove(account_id.clone());
+
+                    // Remove the balance lock.
+                    <CurrencyOf<T> as LockableCurrency<T::AccountId>>::remove_lock(
+                        T::LockId::get(),
+                        &account_id,
+                    );
 
                     // Send the unlock event.
                     Self::deposit_event(Event::FullyUnlocked { who: account_id });
