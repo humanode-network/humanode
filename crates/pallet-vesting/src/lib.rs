@@ -129,7 +129,7 @@ pub mod pallet {
         }
 
         /// Update a vesting schedule.
-        #[pallet::weight(T::WeightInfo::unlock())]
+        #[pallet::weight(T::WeightInfo::update_schedule())]
         pub fn update_schedule(
             origin: OriginFor<T>,
             account_id: T::AccountId,
