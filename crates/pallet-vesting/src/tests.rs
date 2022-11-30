@@ -1,6 +1,6 @@
 //! The tests for the pallet.
 
-use frame_support::{assert_noop, assert_ok, sp_runtime::DispatchError};
+use frame_support::{assert_noop, assert_ok, assert_storage_noop, sp_runtime::DispatchError};
 use mockall::predicate;
 
 use crate::{
@@ -529,6 +529,142 @@ fn update_vesting_not_sudo_error() {
         );
 
         assert_eq!(System::events().len(), 0);
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that `evaluate_lock` works in the happy path when the logic evaluates
+/// to unlock the whole balance.
+#[test]
+fn evaluate_lock_works_full() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare the test state.
+        Balances::make_free_balance_be(&42, 1000);
+        <Pallet<Test>>::set_lock(&42, 100);
+        <Schedules<Test>>::insert(42, MockSchedule);
+
+        // Check test preconditions.
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 900);
+
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(MockSchedule))
+            .return_const(Ok(0));
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_storage_noop! {
+            assert_eq!(Vesting::evaluate_lock(&42), Ok(0))
+        }
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that `evaluate_lock` works in the happy path when the logic evaluates
+/// to unlock a fraction of the balance.
+#[test]
+fn evaluate_lock_works_partial() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare the test state.
+        Balances::make_free_balance_be(&42, 1000);
+        <Pallet<Test>>::set_lock(&42, 100);
+        <Schedules<Test>>::insert(42, MockSchedule);
+
+        // Check test preconditions.
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 900);
+
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(MockSchedule))
+            .return_const(Ok(90));
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_storage_noop! {
+            assert_eq!(Vesting::evaluate_lock(&42), Ok(90))
+        }
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
+
+/// This test verifies the `evaluate_lock` behaviour when it is called for an account that does not
+/// have vesting.
+#[test]
+fn evaluate_lock_no_vesting_error() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare the test state.
+        Balances::make_free_balance_be(&42, 1000);
+
+        // Check test preconditions.
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 1000);
+
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx.expect().never();
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_noop!(Vesting::evaluate_lock(&42), api::EvaluationError::NoVesting);
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
+
+/// This test verifies the `evaluate_lock` behaviour when the scheduling driver computation fails.
+#[test]
+fn evaluate_lock_computation_failure() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare the test state.
+        Balances::make_free_balance_be(&42, 1000);
+        <Pallet<Test>>::set_lock(&42, 100);
+        <Schedules<Test>>::insert(42, MockSchedule);
+
+        // Check test preconditions.
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 900);
+
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(MockSchedule))
+            .return_const(Err(DispatchError::Other("compute_balance_under failed")));
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_noop!(
+            Vesting::evaluate_lock(&42),
+            api::EvaluationError::Computation(DispatchError::Other("compute_balance_under failed"))
+        );
 
         // Assert mock invocations.
         compute_balance_under_lock_ctx.checkpoint();

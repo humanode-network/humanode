@@ -7,6 +7,7 @@ use frame_support::traits::{Currency, LockIdentifier, LockableCurrency, StorageV
 pub use self::logic::*;
 pub use self::pallet::*;
 
+pub mod api;
 mod logic;
 pub mod traits;
 pub mod weights;
@@ -199,6 +200,19 @@ pub mod pallet {
 
                 Ok(())
             })
+        }
+
+        /// Evaluate the vesting logic and compute the locked balance.
+        /// Intended for implementing the [`api::VestingEvaluationApi`].
+        pub fn evaluate_lock(who: &T::AccountId) -> Result<BalanceOf<T>, api::EvaluationError> {
+            let schedule = <Schedules<T>>::get(who).ok_or(api::EvaluationError::NoVesting)?;
+
+            // Compute the new locked balance.
+            let computed_locked_balance =
+                T::SchedulingDriver::compute_balance_under_lock(&schedule)
+                    .map_err(api::EvaluationError::Computation)?;
+
+            Ok(computed_locked_balance)
         }
     }
 }
