@@ -58,7 +58,7 @@ pub mod babe {
     pub const MAX_AUTHORITIES: u32 = super::bioauth::MAX_AUTHENTICATIONS;
 }
 
-/// ImOnline constants.
+/// `ImOnline` constants.
 pub mod im_online {
     // TODO(#311): set proper values
     pub const MAX_KEYS: u32 = 10 * 1024;

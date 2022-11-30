@@ -1,4 +1,4 @@
-//! Inherent data providers creator used at Babe import_queue and start_babe.
+//! Inherent data providers creator used at Babe `import_queue` and `start_babe`.
 
 use sc_client_api::ProvideUncles;
 use sc_service::Arc;

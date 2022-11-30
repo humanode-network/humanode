@@ -24,7 +24,7 @@ use sp_runtime::{app_crypto::sr25519, traits::Verify};
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
 
-/// Extensions for ChainSpec.
+/// Extensions for `ChainSpec`.
 #[derive(
     Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension, Default,
 )]

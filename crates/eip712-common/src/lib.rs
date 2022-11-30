@@ -6,7 +6,7 @@ pub use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 pub use sp_core_hashing_proc_macro::keccak_256 as const_keccak_256;
 pub use sp_io::hashing::keccak_256;
 
-/// EIP712Domain typehash.
+/// `EIP712Domain` typehash.
 const EIP712_DOMAIN_TYPEHASH: [u8; 32] = const_keccak_256!(
     b"EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"
 );
@@ -49,7 +49,7 @@ pub struct Domain<'a> {
     pub verifying_contract: &'a EthAddress,
 }
 
-/// Prepare a hash for EIP712Domain data type.
+/// Prepare a hash for `EIP712Domain` data type.
 fn make_domain_hash(domain: Domain<'_>) -> [u8; 32] {
     let mut buf = [0u8; 160];
     buf[0..32].copy_from_slice(&EIP712_DOMAIN_TYPEHASH);

@@ -7,9 +7,9 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
     /// A function to calculate required weights for authenticate call.
     fn authenticate() -> Weight;
-    /// A function to calculate required weights for set_robonode_public_key call.
+    /// A function to calculate required weights for `set_robonode_public_key` call.
     fn set_robonode_public_key() -> Weight;
-    /// A function to calculate required weights for on_initialize hook.
+    /// A function to calculate required weights for `on_initialize` hook.
     fn on_initialize(update_required: bool) -> Weight;
 }
 

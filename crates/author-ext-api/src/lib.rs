@@ -6,7 +6,7 @@ use codec::{Decode, Encode};
 use scale_info::{prelude::string::String, TypeInfo};
 use sp_std::prelude::*;
 
-/// An error that can occur during signed set_keys extrinsic creation.
+/// An error that can occur during signed `set_keys` extrinsic creation.
 #[derive(Debug, PartialEq, Eq, Decode, Encode, TypeInfo)]
 pub enum CreateSignedSetKeysExtrinsicError {
     /// Unable to decode session keys.
