@@ -57,7 +57,7 @@ impl<'de> Deserialize<'de> for EthereumAddress {
         let mut iter = rustc_hex::FromHexIter::new(s);
 
         let mut to_fill = [0u8; 20];
-        for slot in to_fill.iter_mut() {
+        for slot in &mut to_fill {
             // We check the length above, so this must work.
             let result = iter.next().unwrap();
 
