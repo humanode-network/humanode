@@ -893,6 +893,22 @@ fn removing_claim_works() {
     });
 }
 
+/// This test verifies that removing claim signed by account different from sudo fails.
+#[test]
+fn removing_claim_not_sudo() {
+    new_test_ext().execute_with_ext(|_| {
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            TokenClaims::remove_claim(
+                RuntimeOrigin::signed(42),
+                eth(EthAddr::Existing),
+                FUNDS_PROVIDER,
+            ),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
 /// This test verifies that changing claim with balance increase signed by sudo account works in the happy path.
 #[test]
 fn changing_claim_balance_increase_works() {
