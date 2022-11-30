@@ -54,16 +54,36 @@ pub fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) 
 pub const SS58_PREFIX: u16 = 5234;
 /// Default ethereum chain id.
 pub const ETH_CHAIN_ID: u64 = 5234;
+/// The development robonode public key.
+pub const DEFAULT_DEV_ROBONODE_PUBLIC_KEY: [u8; 32] =
+    hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab");
+
+/// Provide the dev robonode public key.
+///
+/// This fn cosults undocumented `DEV_ROBONODE_PUBLIC_KEY` env var and attempts to use that first
+/// to allow for the key override. This override mechanism is useful during development, and is
+/// intended only for development.
+fn dev_robonode_public_key(default: &'static [u8]) -> Result<robonode::PublicKey, String> {
+    match std::env::var("DEV_ROBONODE_PUBLIC_KEY") {
+        Ok(val) => {
+            let val = hex::decode(val)
+                .map_err(|err| format!("robonode public key in not in hex format: {:?}", err))?;
+            robonode::PublicKey::from_bytes(&val)
+        }
+        Err(std::env::VarError::NotPresent) => robonode::PublicKey::from_bytes(default),
+        Err(std::env::VarError::NotUnicode(val)) => {
+            return Err(format!("invalid robonode public key: {:?}", val))
+        }
+    }
+    .map_err(|err| format!("unable to parse robonode public key: {:?}", err))
+}
 
 /// A configuration for local testnet.
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
         WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
 
-    let robonode_public_key = robonode::PublicKey::from_bytes(
-        &hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab")[..],
-    )
-    .map_err(|err| format!("{:?}", err))?;
+    let robonode_public_key = dev_robonode_public_key(&DEFAULT_DEV_ROBONODE_PUBLIC_KEY)?;
 
     Ok(ChainSpec::from_genesis(
         // Name
@@ -116,10 +136,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 pub fn development_config() -> Result<ChainSpec, String> {
     let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
-    let robonode_public_key = robonode::PublicKey::from_bytes(
-        &hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab")[..],
-    )
-    .map_err(|err| format!("{:?}", err))?;
+    let robonode_public_key = dev_robonode_public_key(&DEFAULT_DEV_ROBONODE_PUBLIC_KEY)?;
 
     Ok(ChainSpec::from_genesis(
         // Name
@@ -167,10 +184,9 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
     // Public key is taken from the first entry of https://ed25519.cr.yp.to/python/sign.input
     // Must be compatible with secret key provided in AuthTicketSigner trait implemented for
     // Runtime in crates/humanode-runtime/src/lib.rs.
-    let robonode_public_key = robonode::PublicKey::from_bytes(
-        &hex!("d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a")[..],
-    )
-    .map_err(|err| format!("{:?}", err))?;
+    let robonode_public_key = dev_robonode_public_key(&hex!(
+        "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
+    ))?;
 
     Ok(ChainSpec::from_genesis(
         // Name
