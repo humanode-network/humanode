@@ -99,6 +99,15 @@ pub mod pallet {
             /// Who had the vesting.
             who: T::AccountId,
         },
+        /// Vesting schedule has been updated.
+        VestingUpdated {
+            /// Account with locked balance that got updated schedule.
+            account_id: T::AccountId,
+            /// An old vesting schedule.
+            old_schedule: T::Schedule,
+            /// A new vesting schedule.
+            new_schedule: T::Schedule,
+        },
     }
 
     #[pallet::error]
@@ -117,6 +126,50 @@ pub mod pallet {
         pub fn unlock(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
             Self::unlock_vested_balance(&who)
+        }
+
+        /// Update a vesting schedule.
+        #[pallet::weight(T::WeightInfo::unlock())]
+        pub fn update_schedule(
+            origin: OriginFor<T>,
+            account_id: T::AccountId,
+            new_schedule: T::Schedule,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            in_storage_layer(|| {
+                let old_schedule =
+                    <Schedules<T>>::take(&account_id).ok_or(<Error<T>>::NoVesting)?;
+
+                // Compute the new locked balance.
+                let computed_locked_balance =
+                    T::SchedulingDriver::compute_balance_under_lock(&new_schedule)?;
+
+                // Send the update vesting event.
+                Self::deposit_event(Event::VestingUpdated {
+                    account_id: account_id.clone(),
+                    old_schedule,
+                    new_schedule: new_schedule.clone(),
+                });
+
+                // Check if we're locking zero balance.
+                if computed_locked_balance == Zero::zero() {
+                    // If we do - skip changing the schedule.
+
+                    // Send the unlock event.
+                    Self::deposit_event(Event::FullyUnlocked { who: account_id });
+
+                    return Ok(());
+                }
+
+                // Update the schedule.
+                <Schedules<T>>::insert(account_id.clone(), new_schedule);
+
+                // Set the lock.
+                Self::set_lock(&account_id, computed_locked_balance);
+
+                Ok(())
+            })
         }
     }
 
