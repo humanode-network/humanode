@@ -26,9 +26,13 @@ type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 /// The balance from a given config.
 type BalanceOf<T> = <CurrencyOf<T> as Currency<AccountIdOf<T>>>::Balance;
 
+/// The possible vesting action options.
 enum VestingAction {
+    /// Apply lock under vested balance.
     Lock,
+    /// Update existing vesting.
     Update,
+    /// Unlock the vested balance.
     Unlock,
 }
 
@@ -133,7 +137,9 @@ pub mod pallet {
             Self::unlock_vested_balance(&who, schedule)
         }
 
-        /// Update a vesting schedule.
+        /// Update existing vesting according to the new provided schedule.
+        ///
+        /// Sudo-level operation.
         #[pallet::weight(T::WeightInfo::update_schedule())]
         pub fn update_schedule(
             origin: OriginFor<T>,
@@ -146,20 +152,6 @@ pub mod pallet {
     }
 
     impl<T: Config> Pallet<T> {
-        pub fn update_vesting_schedule(
-            who: &T::AccountId,
-            new_schedule: T::Schedule,
-        ) -> DispatchResult {
-            in_storage_layer(|| {
-                // Check if a given account already has vesting engaged.
-                if !<Schedules<T>>::contains_key(who) {
-                    return Err(<Error<T>>::NoVesting.into());
-                }
-
-                Self::process_vesting_schedule(who, new_schedule, VestingAction::Update)
-            })
-        }
-
         /// Lock the balance at the given account under the specified vesting schedule.
         ///
         /// The amount to lock depends on the actual schedule and will be computed on the fly.
@@ -193,6 +185,28 @@ pub mod pallet {
             })
         }
 
+        /// Update the existing vesting according to the new schedule.
+        ///
+        /// If the balance left under lock is zero based on new provided schedule, the lock is
+        /// removed along with the vesting information - effectively eliminating any effect this
+        /// pallet has on the given account's balance.
+        ///
+        /// If the balance left under lock is non-zero we readjust the lock, update the schedule
+        /// at storage and keep the vesting information around.
+        pub fn update_vesting_schedule(
+            who: &T::AccountId,
+            new_schedule: T::Schedule,
+        ) -> DispatchResult {
+            in_storage_layer(|| {
+                // Check if a given account already has vesting engaged.
+                if !<Schedules<T>>::contains_key(who) {
+                    return Err(<Error<T>>::NoVesting.into());
+                }
+
+                Self::process_vesting_schedule(who, new_schedule, VestingAction::Update)
+            })
+        }
+
         pub(crate) fn set_lock(who: &T::AccountId, balance_to_lock: BalanceOf<T>) {
             debug_assert!(
                 balance_to_lock != Zero::zero(),
@@ -208,12 +222,13 @@ pub mod pallet {
             );
         }
 
+        /// A helper function to process provided vesting schedule according to the corresponding vesting action.
         fn process_vesting_schedule(
             who: &T::AccountId,
             schedule: T::Schedule,
             vesting_action: VestingAction,
         ) -> DispatchResult {
-            // Compute the new locked balance.
+            // Compute the locked balance.
             let computed_locked_balance =
                 T::SchedulingDriver::compute_balance_under_lock(&schedule)?;
 
