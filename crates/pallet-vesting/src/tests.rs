@@ -395,7 +395,7 @@ fn update_vesting_works_partial_unlock() {
         assert_eq!(Balances::usable_balance(&42), 950);
         assert!(<Schedules<Test>>::get(42).is_some());
         assert_eq!(System::events().len(), 2);
-        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdate {
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdated {
             account_id: 42,
             new_schedule: MockSchedule,
         }));
@@ -447,7 +447,7 @@ fn update_vesting_works_full_unlock() {
         assert_eq!(Balances::usable_balance(&42), 1000);
         assert!(<Schedules<Test>>::get(42).is_none());
         assert_eq!(System::events().len(), 2);
-        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdate {
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdated {
             account_id: 42,
             new_schedule: MockSchedule,
         }));

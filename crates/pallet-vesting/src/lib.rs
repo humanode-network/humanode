@@ -100,7 +100,7 @@ pub mod pallet {
             who: T::AccountId,
         },
         /// Vesting schedule has been updated.
-        VestingUpdate {
+        VestingUpdated {
             /// Account with locked balance that got updated schedule.
             account_id: T::AccountId,
             /// A new vesting schedule.
@@ -252,7 +252,7 @@ pub mod pallet {
 
             if is_update {
                 // Send the event announcing the update.
-                Self::deposit_event(Event::VestingUpdate {
+                Self::deposit_event(Event::VestingUpdated {
                     account_id: who.clone(),
                     new_schedule: schedule,
                 });
