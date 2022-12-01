@@ -26,6 +26,12 @@ type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 /// The balance from a given config.
 type BalanceOf<T> = <CurrencyOf<T> as Currency<AccountIdOf<T>>>::Balance;
 
+enum VestingAction {
+    Lock,
+    Update,
+    Unlock,
+}
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -100,11 +106,9 @@ pub mod pallet {
             who: T::AccountId,
         },
         /// Vesting schedule has been updated.
-        VestingUpdated {
+        VestingUpdate {
             /// Account with locked balance that got updated schedule.
             account_id: T::AccountId,
-            /// An old vesting schedule.
-            old_schedule: T::Schedule,
             /// A new vesting schedule.
             new_schedule: T::Schedule,
         },
@@ -125,7 +129,8 @@ pub mod pallet {
         #[pallet::weight(T::WeightInfo::unlock())]
         pub fn unlock(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            Self::unlock_vested_balance(&who)
+            let schedule = <Schedules<T>>::get(&who).ok_or(<Error<T>>::NoVesting)?;
+            Self::unlock_vested_balance(&who, schedule)
         }
 
         /// Update a vesting schedule.
@@ -136,51 +141,25 @@ pub mod pallet {
             new_schedule: T::Schedule,
         ) -> DispatchResult {
             ensure_root(origin)?;
-
-            in_storage_layer(|| {
-                let old_schedule =
-                    <Schedules<T>>::take(&account_id).ok_or(<Error<T>>::NoVesting)?;
-
-                // Compute the new locked balance.
-                let computed_locked_balance =
-                    T::SchedulingDriver::compute_balance_under_lock(&new_schedule)?;
-
-                // Send the update vesting event.
-                Self::deposit_event(Event::VestingUpdated {
-                    account_id: account_id.clone(),
-                    old_schedule,
-                    new_schedule: new_schedule.clone(),
-                });
-
-                // Check if we're locking zero balance.
-                if computed_locked_balance == Zero::zero() {
-                    // Remove the schedule.
-                    <Schedules<T>>::remove(account_id.clone());
-
-                    // Remove the balance lock.
-                    <CurrencyOf<T> as LockableCurrency<T::AccountId>>::remove_lock(
-                        T::LockId::get(),
-                        &account_id,
-                    );
-
-                    // Send the unlock event.
-                    Self::deposit_event(Event::FullyUnlocked { who: account_id });
-
-                    return Ok(());
-                }
-
-                // Update the schedule.
-                <Schedules<T>>::insert(account_id.clone(), new_schedule);
-
-                // Set the lock.
-                Self::set_lock(&account_id, computed_locked_balance);
-
-                Ok(())
-            })
+            Self::update_vesting_schedule(&account_id, new_schedule)
         }
     }
 
     impl<T: Config> Pallet<T> {
+        pub fn update_vesting_schedule(
+            who: &T::AccountId,
+            new_schedule: T::Schedule,
+        ) -> DispatchResult {
+            in_storage_layer(|| {
+                // Check if a given account already has vesting engaged.
+                if !<Schedules<T>>::contains_key(who) {
+                    return Err(<Error<T>>::NoVesting.into());
+                }
+
+                Self::process_vesting_schedule(who, new_schedule, VestingAction::Update)
+            })
+        }
+
         /// Lock the balance at the given account under the specified vesting schedule.
         ///
         /// The amount to lock depends on the actual schedule and will be computed on the fly.
@@ -196,34 +175,7 @@ pub mod pallet {
                     return Err(<Error<T>>::VestingAlreadyEngaged.into());
                 }
 
-                // Compute the locked balance.
-                let computed_locked_balance =
-                    T::SchedulingDriver::compute_balance_under_lock(&schedule)?;
-
-                // Send the event announcing the lock.
-                Self::deposit_event(Event::Locked {
-                    who: who.clone(),
-                    schedule: schedule.clone(),
-                    balance_under_lock: computed_locked_balance,
-                });
-
-                // Check if we're locking zero balance.
-                if computed_locked_balance == Zero::zero() {
-                    // If we do - skip creating the schedule and locking altogether.
-
-                    // Send the unlock event.
-                    Self::deposit_event(Event::FullyUnlocked { who: who.clone() });
-
-                    return Ok(());
-                }
-
-                // Store the schedule.
-                <Schedules<T>>::insert(who, schedule);
-
-                // Set the lock.
-                Self::set_lock(who, computed_locked_balance);
-
-                Ok(())
+                Self::process_vesting_schedule(who, schedule.clone(), VestingAction::Lock)
             })
         }
 
@@ -235,43 +187,9 @@ pub mod pallet {
         ///
         /// If the balance left under lock is non-zero we readjust the lock and keep
         /// the vesting information around.
-        pub fn unlock_vested_balance(who: &T::AccountId) -> DispatchResult {
+        pub fn unlock_vested_balance(who: &T::AccountId, schedule: T::Schedule) -> DispatchResult {
             in_storage_layer(|| {
-                let schedule = <Schedules<T>>::get(who).ok_or(<Error<T>>::NoVesting)?;
-
-                // Compute the new locked balance.
-                let computed_locked_balance =
-                    T::SchedulingDriver::compute_balance_under_lock(&schedule)?;
-
-                // If we ended up locking the whole balance we are done with the vesting.
-                // Clean up the state and unlock the whole balance.
-                if computed_locked_balance == Zero::zero() {
-                    // Remove the schedule.
-                    <Schedules<T>>::remove(who);
-
-                    // Remove the balance lock.
-                    <CurrencyOf<T> as LockableCurrency<T::AccountId>>::remove_lock(
-                        T::LockId::get(),
-                        who,
-                    );
-
-                    // Dispatch the event.
-                    Self::deposit_event(Event::FullyUnlocked { who: who.clone() });
-
-                    // We're done!
-                    return Ok(());
-                }
-
-                // Set the lock to the updated value.
-                Self::set_lock(who, computed_locked_balance);
-
-                // Dispatch the event.
-                Self::deposit_event(Event::PartiallyUnlocked {
-                    who: who.clone(),
-                    balance_left_under_lock: computed_locked_balance,
-                });
-
-                Ok(())
+                Self::process_vesting_schedule(who, schedule, VestingAction::Unlock)
             })
         }
 
@@ -288,6 +206,77 @@ pub mod pallet {
                 balance_to_lock,
                 WithdrawReasons::all(),
             );
+        }
+
+        fn process_vesting_schedule(
+            who: &T::AccountId,
+            schedule: T::Schedule,
+            vesting_action: VestingAction,
+        ) -> DispatchResult {
+            // Compute the new locked balance.
+            let computed_locked_balance =
+                T::SchedulingDriver::compute_balance_under_lock(&schedule)?;
+
+            match vesting_action {
+                VestingAction::Lock => {
+                    // Send the event announcing the lock.
+                    Self::deposit_event(Event::Locked {
+                        who: who.clone(),
+                        schedule: schedule.clone(),
+                        balance_under_lock: computed_locked_balance,
+                    });
+                }
+                VestingAction::Update => {
+                    // Send the event announcing the update.
+                    Self::deposit_event(Event::VestingUpdate {
+                        account_id: who.clone(),
+                        new_schedule: schedule.clone(),
+                    });
+                }
+                VestingAction::Unlock => {}
+            }
+
+            // Check if we're locking zero balance.
+            if computed_locked_balance == Zero::zero() {
+                match vesting_action {
+                    VestingAction::Lock => {}
+                    _ => {
+                        // Remove the schedule.
+                        <Schedules<T>>::remove(who);
+
+                        // Remove the balance lock.
+                        <CurrencyOf<T> as LockableCurrency<T::AccountId>>::remove_lock(
+                            T::LockId::get(),
+                            who,
+                        );
+                    }
+                }
+
+                // Dispatch the event.
+                Self::deposit_event(Event::FullyUnlocked { who: who.clone() });
+
+                // We're done!
+                return Ok(());
+            }
+
+            // Set the lock to the updated value.
+            Self::set_lock(who, computed_locked_balance);
+
+            match vesting_action {
+                VestingAction::Lock => {
+                    // Store the new schedule.
+                    <Schedules<T>>::insert(who, schedule);
+                }
+                _ => {
+                    // Dispatch the partial unlock event.
+                    Self::deposit_event(Event::PartiallyUnlocked {
+                        who: who.clone(),
+                        balance_left_under_lock: computed_locked_balance,
+                    });
+                }
+            }
+
+            Ok(())
         }
     }
 }
