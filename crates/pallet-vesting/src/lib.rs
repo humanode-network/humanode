@@ -123,8 +123,7 @@ pub mod pallet {
         #[pallet::weight(T::WeightInfo::unlock())]
         pub fn unlock(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
-            let schedule = <Schedules<T>>::get(&who).ok_or(<Error<T>>::NoVesting)?;
-            Self::unlock_vested_balance(&who, schedule)
+            Self::unlock_vested_balance(&who)
         }
 
         /// Update existing vesting according to the new provided schedule.
@@ -196,8 +195,11 @@ pub mod pallet {
         ///
         /// If the balance left under lock is non-zero we readjust the lock and keep
         /// the vesting information around.
-        pub fn unlock_vested_balance(who: &T::AccountId, schedule: T::Schedule) -> DispatchResult {
-            in_storage_layer(|| Self::process_existing_vesting(who, schedule, false))
+        pub fn unlock_vested_balance(who: &T::AccountId) -> DispatchResult {
+            in_storage_layer(|| {
+                let schedule = <Schedules<T>>::get(who).ok_or(<Error<T>>::NoVesting)?;
+                Self::process_existing_vesting(who, schedule, false)
+            })
         }
 
         /// Update the existing vesting according to the new schedule.
