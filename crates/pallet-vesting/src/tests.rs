@@ -359,7 +359,7 @@ fn unlock_no_vesting_error() {
 
 /// This test verifies that `update_schedule` works in the happy path (with non-zero balance).
 #[test]
-fn update_vesting_works_non_zero_balance() {
+fn update_vesting_works_partial_unlock() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare the test state.
         Balances::make_free_balance_be(&42, 1000);
@@ -411,7 +411,7 @@ fn update_vesting_works_non_zero_balance() {
 
 /// This test verifies that `update_schedule` works in the happy path (with zero balance).
 #[test]
-fn update_vesting_works_zero_balance() {
+fn update_vesting_works_full_unlock() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare the test state.
         Balances::make_free_balance_be(&42, 1000);
