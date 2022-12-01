@@ -169,7 +169,7 @@ fn total_issuance_evm_withdraw() {
         // Check total issuance before making evm withdraw.
         let total_issuance_before = Balances::total_issuance();
 
-        let bob_evm = evm_truncated_address(account_id("Bob"));
+        let bob_evm = substrate_account_to_evm_account(account_id("Bob"));
         let hashed_bob_evm =
             <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
 
@@ -197,7 +197,7 @@ fn total_issuance_evm_call() {
         // Check total issuance before making evm call.
         let total_issuance_before = Balances::total_issuance();
 
-        let bob_evm = evm_truncated_address(account_id("Bob"));
+        let bob_evm = substrate_account_to_evm_account(account_id("Bob"));
         let hashed_bob_evm =
             <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
 
@@ -236,7 +236,7 @@ fn total_issuance_evm_create() {
         // Check total issuance before making evm create.
         let total_issuance_before = Balances::total_issuance();
 
-        let bob_evm = evm_truncated_address(account_id("Bob"));
+        let bob_evm = substrate_account_to_evm_account(account_id("Bob"));
         let hashed_bob_evm =
             <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
 

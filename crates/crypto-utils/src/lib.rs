@@ -4,7 +4,7 @@ use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
-    app_crypto::{Pair, Public},
+    app_crypto::{sp_core::H160, Pair, Public},
     traits::IdentifyAccount,
 };
 
@@ -36,4 +36,27 @@ where
         get_from_seed::<GrandpaId>(seed),
         get_from_seed::<ImOnlineId>(seed),
     )
+}
+
+/// Convert an account ID to an EVM address via a truncation logic.
+pub fn substrate_account_to_evm_account<AccountId>(account_id: AccountId) -> H160
+where
+    AccountId: AsRef<[u8]>,
+{
+    H160::from_slice(&account_id.as_ref()[0..20])
+}
+
+/// Get an EVM account from the seed.
+///
+/// Note:
+/// - this is not the address we'd get via the truncation of the Substrate account generated
+///   from the same seed
+/// - this would be the address the Ethereum account hasher would produce if invoked with the same
+///   seed ("//<seed>"), i.e. using the default Substrate base key and the `//` derivation rule.
+pub fn get_evm_account_from_seed(seed: &str) -> H160 {
+    use frame_support::crypto::ecdsa::ECDSAExt;
+    get_from_seed::<sp_runtime::app_crypto::ecdsa::Public>(seed)
+        .to_eth_address()
+        .unwrap() // seed is guaraneed to work
+        .into()
 }
