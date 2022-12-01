@@ -394,10 +394,14 @@ fn update_vesting_works_non_zero_balance() {
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 950);
         assert!(<Schedules<Test>>::get(42).is_some());
-        assert_eq!(System::events().len(), 1);
+        assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdate {
             account_id: 42,
             new_schedule: MockSchedule,
+        }));
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
+            who: 42,
+            balance_left_under_lock: 50,
         }));
 
         // Assert mock invocations.
