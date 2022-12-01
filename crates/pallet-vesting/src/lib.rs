@@ -282,7 +282,16 @@ pub mod pallet {
                     // Store the new schedule.
                     <Schedules<T>>::insert(who, schedule);
                 }
-                _ => {
+                VestingAction::Update => {
+                    // Update the schedule.
+                    <Schedules<T>>::insert(who, schedule);
+                    // Dispatch the partial unlock event.
+                    Self::deposit_event(Event::PartiallyUnlocked {
+                        who: who.clone(),
+                        balance_left_under_lock: computed_locked_balance,
+                    });
+                }
+                VestingAction::Unlock => {
                     // Dispatch the partial unlock event.
                     Self::deposit_event(Event::PartiallyUnlocked {
                         who: who.clone(),
