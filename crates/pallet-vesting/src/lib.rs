@@ -167,7 +167,34 @@ pub mod pallet {
                     return Err(<Error<T>>::VestingAlreadyEngaged.into());
                 }
 
-                Self::process_vesting_schedule(who, schedule.clone(), VestingAction::Lock)
+                // Compute the locked balance.
+                let computed_locked_balance =
+                    T::SchedulingDriver::compute_balance_under_lock(&schedule)?;
+
+                // Send the event announcing the lock.
+                Self::deposit_event(Event::Locked {
+                    who: who.clone(),
+                    schedule: schedule.clone(),
+                    balance_under_lock: computed_locked_balance,
+                });
+
+                // Check if we're locking zero balance.
+                if computed_locked_balance == Zero::zero() {
+                    // If we do - skip creating the schedule and locking altogether.
+
+                    // Send the unlock event.
+                    Self::deposit_event(Event::FullyUnlocked { who: who.clone() });
+
+                    return Ok(());
+                }
+
+                // Store the schedule.
+                <Schedules<T>>::insert(who, schedule);
+
+                // Set the lock.
+                Self::set_lock(who, computed_locked_balance);
+
+                Ok(())
             })
         }
 
