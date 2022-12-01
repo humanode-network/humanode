@@ -50,6 +50,11 @@ pub fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) 
     authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>(seed)
 }
 
+/// Generate an account ID from EVM address.
+pub fn substrate_account_to_evm_account(account_id: AccountId) -> H160 {
+    crypto_utils::substrate_account_to_evm_account(account_id)
+}
+
 /// The default Humanode ss58 prefix.
 pub const SS58_PREFIX: u16 = 5234;
 /// Default ethereum chain id.
@@ -320,15 +325,11 @@ fn testnet_genesis(
             accounts: {
                 let mut map = BTreeMap::new();
                 map.insert(
-                    // H160 address of Alice dev account
-                    // Derived from SS58 (42 prefix) address
-                    // SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
-                    // hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
+                    // H160 address of Alice dev accountd
                     // Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
-                    H160::from(hex!("d43593c715fdd31c61141abd04a99fd6822c8558")),
+                    substrate_account_to_evm_account(account_id("Alice")),
                     fp_evm::GenesisAccount {
-                        balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
-                            .expect("internal U256 is valid; qed"),
+                        balance: U256::from(EXISTANTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE * 20),
                         code: Default::default(),
                         nonce: Default::default(),
                         storage: Default::default(),

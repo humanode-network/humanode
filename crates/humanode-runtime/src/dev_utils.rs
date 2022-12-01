@@ -5,7 +5,6 @@
 #![allow(dead_code)]
 
 use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
-use sp_application_crypto::ByteArray;
 use sp_runtime::app_crypto::sr25519;
 
 use super::*;
@@ -24,6 +23,6 @@ pub fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) 
 }
 
 /// A helper function to get a corresponding EVM truncated address for provided AccountId.
-pub fn evm_truncated_address(account_id: AccountId) -> H160 {
-    H160::from_slice(&account_id.as_slice()[0..20])
+pub fn substrate_account_to_evm_account(account_id: AccountId) -> H160 {
+    crypto_utils::substrate_account_to_evm_account(account_id)
 }
