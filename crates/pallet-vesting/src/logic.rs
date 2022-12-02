@@ -126,6 +126,7 @@ impl<T: Config> Pallet<T> {
         }
     }
 
+    /// Remove the lock and emit a [`Event::FullyUnlocked`] event.
     fn execute_full_unlock(who: &T::AccountId) {
         // Remove the balance lock.
         <CurrencyOf<T> as LockableCurrency<T::AccountId>>::remove_lock(T::LockId::get(), who);
@@ -134,6 +135,7 @@ impl<T: Config> Pallet<T> {
         Self::deposit_event(Event::FullyUnlocked { who: who.clone() });
     }
 
+    /// Set the lock and emit a [`Event::PartiallyUnlocked`] event.
     fn execute_partial_unlock(who: &T::AccountId, balance_left_under_lock: BalanceOf<T>) {
         // Set the lock to the updated value.
         Self::set_lock(who, balance_left_under_lock);
@@ -145,6 +147,9 @@ impl<T: Config> Pallet<T> {
         });
     }
 
+    /// Set the lock.
+    ///
+    /// It is an implementation detail of [`execute_partial_unlock`], but also used in tests.
     pub(crate) fn set_lock(who: &T::AccountId, balance_to_lock: BalanceOf<T>) {
         debug_assert!(
             balance_to_lock != Zero::zero(),
