@@ -1,4 +1,4 @@
-//! DisplayMoment implementation to display timestamp.
+//! `DisplayMoment` implementation to display timestamp.
 
 use chrono::{LocalResult, TimeZone, Utc};
 

@@ -130,7 +130,7 @@ pub mod pallet {
         fn build(&self) {
             let mut total_claimable_balance: BalanceOf<T> = Zero::zero();
 
-            for (eth_address, info) in self.claims.iter() {
+            for (eth_address, info) in &self.claims {
                 if Claims::<T>::contains_key(eth_address) {
                     panic!(
                         "conflicting claim found in genesis for address {}",

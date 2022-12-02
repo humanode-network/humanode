@@ -2,7 +2,7 @@
 //!
 //! ## The issue's root cause.
 //!
-//! One invariant of BABE is that you have to produce at least one block every epoch_duration slots.
+//! One invariant of BABE is that you have to produce at least one block every `epoch_duration` slots.
 //! In case the network doesn't do it we get the following error during producing the block for
 //! next epoch: "Import failed: Unexpected epoch change".
 //!

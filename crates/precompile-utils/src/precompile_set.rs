@@ -88,9 +88,9 @@ impl<const N: u64> Get<H160> for AddressU64<N> {
 
 // INDIVIDUAL PRECOMPILE(SET)
 
-/// A fragment of a PrecompileSet. Should be implemented as is it
-/// was a PrecompileSet containing only the precompile(set) it wraps.
-/// They can be combined into a real PrecompileSet using `PrecompileSetBuilder`.
+/// A fragment of a `PrecompileSet`. Should be implemented as is it
+/// was a `PrecompileSet` containing only the precompile(set) it wraps.
+/// They can be combined into a real `PrecompileSet` using `PrecompileSetBuilder`.
 pub trait PrecompileSetFragment {
     /// Instanciate the fragment.
     fn new() -> Self;
@@ -277,7 +277,7 @@ where
     }
 }
 
-/// Wraps an inner PrecompileSet with all its addresses starting with
+/// Wraps an inner `PrecompileSet` with all its addresses starting with
 /// a common prefix.
 /// Type parameters allow to define:
 /// - A: The common prefix
@@ -509,7 +509,7 @@ impl<R, P: PrecompileSetFragment> PrecompileSet for PrecompileSetBuilder<R, P> {
 }
 
 impl<R: pallet_evm::Config, P: PrecompileSetFragment> PrecompileSetBuilder<R, P> {
-    /// Create a new instance of the PrecompileSet.
+    /// Create a new instance of the `PrecompileSet`.
     pub fn new() -> Self {
         Self {
             inner: P::new(),
@@ -517,7 +517,7 @@ impl<R: pallet_evm::Config, P: PrecompileSetFragment> PrecompileSetBuilder<R, P>
         }
     }
 
-    /// Return the list of addresses contained in this PrecompileSet.
+    /// Return the list of addresses contained in this `PrecompileSet`.
     pub fn used_addresses() -> impl Iterator<Item = R::AccountId> {
         Self::new()
             .inner
