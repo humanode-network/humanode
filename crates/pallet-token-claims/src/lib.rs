@@ -195,7 +195,7 @@ pub mod pallet {
         },
         /// Claim were removed.
         ClaimRemoved {
-            /// The ethereum address removed.
+            /// The ethereum address that was removed.
             ethereum_address: EthereumAddress,
             /// The claim info that was removed.
             claim: ClaimInfoOf<T>,
