@@ -51,7 +51,7 @@ pub type EvmResult<T = ()> = Result<T, PrecompileFailure>;
 /// state (this state is only kept in a single transaction and is lost afterward).
 pub trait StatefulPrecompile {
     /// Instanciate the precompile.
-    /// Will be called once when building the PrecompileSet at the start of each
+    /// Will be called once when building the `PrecompileSet` at the start of each
     /// Ethereum transaction.
     fn new() -> Self;
 
@@ -69,7 +69,7 @@ pub fn error<T: Into<alloc::borrow::Cow<'static, str>>>(text: T) -> PrecompileFa
     }
 }
 
-/// Builder for PrecompileOutput.
+/// Builder for `PrecompileOutput`.
 #[derive(Clone, Debug)]
 pub struct LogsBuilder {
     address: H160,
@@ -151,7 +151,7 @@ impl LogsBuilder {
     }
 }
 
-/// Extension trait allowing to record logs into a PrecompileHandle.
+/// Extension trait allowing to record logs into a `PrecompileHandle`.
 pub trait LogExt {
     fn record(self, handle: &mut impl PrecompileHandle) -> EvmResult;
 
@@ -181,7 +181,7 @@ where
 {
     /// Try to dispatch a Substrate call.
     /// Return an error if there are not enough gas, or if the call fails.
-    /// If successful returns the used gas using the Runtime GasWeightMapping.
+    /// If successful returns the used gas using the Runtime `GasWeightMapping`.
     pub fn try_dispatch<RuntimeCall>(
         handle: &mut impl PrecompileHandleExt,
         origin: <Runtime::RuntimeCall as Dispatchable>::RuntimeOrigin,

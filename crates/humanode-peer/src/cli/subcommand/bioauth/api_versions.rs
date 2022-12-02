@@ -1,4 +1,4 @@
-//! ApiVersions subcommand logic.
+//! `ApiVersions` subcommand logic.
 
 use sc_cli::{CliConfiguration, SharedParams};
 use serde_json::json;

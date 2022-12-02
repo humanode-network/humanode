@@ -1,4 +1,4 @@
-//! Tests to verify general GenesisConfig parsing.
+//! Tests to verify general `GenesisConfig` parsing.
 
 use frame_support::assert_ok;
 

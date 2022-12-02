@@ -44,7 +44,7 @@ mod tests {
 
     /// This test contains the data obtained from Metamask/eth-sig-util.
     ///
-    /// https://github.com/MetaMask/eth-sig-util/blob/8a470650074174f5338308d2acbd97caf5542434/src/personal-sign.test.ts#L88
+    /// <https://github.com/MetaMask/eth-sig-util/blob/8a470650074174f5338308d2acbd97caf5542434/src/personal-sign.test.ts#L88>
     #[test]
     fn valid_signature() {
         let message = "hello world";
@@ -68,9 +68,9 @@ mod tests {
     }
 
     /// This test contains the data obtained from MetaMask browser extension via an injected web3
-    /// interface using personal_sign API.
+    /// interface using `personal_sign` API.
     ///
-    /// https://metamask.github.io/test-dapp/.
+    /// <https://metamask.github.io/test-dapp/>
     ///
     /// It validates that the real-world external ecosystem works properly with our code.
     #[test]

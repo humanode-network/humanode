@@ -57,12 +57,12 @@ pub(crate) type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
-/// Full type for GrandpaBlockImport.
+/// Full type for `GrandpaBlockImport`.
 type FullGrandpa =
     sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
-/// Full type for BabeBlockImport.
+/// Full type for `BabeBlockImport`.
 type FullBabe = sc_consensus_babe::BabeBlockImport<Block, FullClient, FullGrandpa>;
-/// Full type for FrontierBlockImport.
+/// Full type for `FrontierBlockImport`.
 type FullFrontier = FrontierBlockImport<Block, FullBabe, FullClient>;
 /// Whatever we currently use as the block import.
 type EffectiveFullBlockImport = FullFrontier;

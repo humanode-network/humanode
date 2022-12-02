@@ -23,7 +23,7 @@ pub fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) 
     authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>(seed)
 }
 
-/// A helper function to get a corresponding EVM truncated address for provided AccountId.
+/// A helper function to get a corresponding EVM truncated address for provided `AccountId`.
 pub fn evm_truncated_address(account_id: AccountId) -> H160 {
     H160::from_slice(&account_id.as_slice()[0..20])
 }
