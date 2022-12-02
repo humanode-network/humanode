@@ -6,13 +6,32 @@ use super::*;
 use crate::traits::SchedulingDriver;
 
 /// An operation on a vesting schedule that's undergo.
-pub enum Operation<Balance> {
+pub enum Operation<'a, T: Config> {
     /// Vesting is being initialized.
-    Init(Effect<Balance>),
+    Init {
+        /// Effect of the initialization.
+        effect: Effect<BalanceOf<T>>,
+        /// A schedule the initialization is conducted with.
+        schedule: T::Schedule,
+        /// An account the vesting it applied to.
+        who: &'a T::AccountId,
+    },
     /// Vesting schedule is being updated.
-    Update(Effect<Balance>),
+    Update {
+        /// Effect of the update.
+        effect: Effect<BalanceOf<T>>,
+        /// An updated schedule the update operation is conducted with.
+        schedule: T::Schedule,
+        /// An account the vesting it updated for.
+        who: &'a T::AccountId,
+    },
     /// Balance is being unlocked.
-    Unlock(Effect<Balance>),
+    Unlock {
+        /// Effect of the unlock.
+        effect: Effect<BalanceOf<T>>,
+        /// An account the unlock is performed for.
+        who: &'a T::AccountId,
+    },
 }
 
 /// The effect of the schedule computation.
@@ -54,32 +73,53 @@ impl<T: Config> Pallet<T> {
         Ok(Effect::from_new_balance_under_lock(computed_locked_balance))
     }
 
-    /// Apply the effect of a schedule based on the operation.
-    pub(super) fn apply_operation(
-        op: Operation<BalanceOf<T>>,
-        who: &T::AccountId,
-        schedule: T::Schedule,
-    ) {
+    /// Apply the effect of a schedule in the context of an operation.
+    pub(super) fn apply_effect(op: Operation<'_, T>) {
         match op {
-            Operation::Init(Effect::FullUnlock) => {
+            Operation::Init {
+                effect: Effect::FullUnlock,
+                who,
+                ..
+            } => {
                 Self::execute_full_unlock(who);
             }
-            Operation::Init(Effect::PartialUnlock(balance_left_under_lock))
-            | Operation::Update(Effect::PartialUnlock(balance_left_under_lock)) => {
+            Operation::Init {
+                effect: Effect::PartialUnlock(balance_left_under_lock),
+                schedule,
+                who,
+            }
+            | Operation::Update {
+                effect: Effect::PartialUnlock(balance_left_under_lock),
+                schedule,
+                who,
+            } => {
                 // Store the intitial or updated schedule.
                 <Schedules<T>>::insert(who, schedule);
 
                 // Set the lock.
                 Self::execute_partial_unlock(who, balance_left_under_lock);
             }
-            Operation::Update(Effect::FullUnlock) | Operation::Unlock(Effect::FullUnlock) => {
+            Operation::Update {
+                effect: Effect::FullUnlock,
+                who,
+                ..
+            }
+            | Operation::Unlock {
+                effect: Effect::FullUnlock,
+                who,
+                ..
+            } => {
                 // Remove the schedule.
                 <Schedules<T>>::remove(who);
 
                 // Remove the lock and emit the unlock event.
                 Self::execute_full_unlock(who);
             }
-            Operation::Unlock(Effect::PartialUnlock(balance_left_under_lock)) => {
+            Operation::Unlock {
+                effect: Effect::PartialUnlock(balance_left_under_lock),
+                who,
+                ..
+            } => {
                 // Set the lock.
                 Self::execute_partial_unlock(who, balance_left_under_lock)
             }

@@ -129,7 +129,7 @@ pub mod pallet {
 
             in_storage_layer(|| {
                 let effect = Self::compute_effect(&schedule)?;
-                Self::apply_effect(Operation::Unlock(effect), &who, schedule);
+                Self::apply_effect(Operation::Unlock { effect, who: &who });
                 Ok(())
             })
         }
@@ -149,7 +149,11 @@ pub mod pallet {
                 let old_schedule = <Schedules<T>>::get(&account_id).ok_or(<Error<T>>::NoVesting)?;
 
                 let effect = Self::compute_effect(&new_schedule)?;
-                Self::apply_effect(Operation::Update(effect), &account_id, new_schedule.clone());
+                Self::apply_effect(Operation::Update {
+                    effect,
+                    schedule: new_schedule.clone(),
+                    who: &account_id,
+                });
 
                 // Send the event announcing the update.
                 Self::deposit_event(Event::VestingUpdated {
@@ -188,7 +192,11 @@ pub mod pallet {
                     balance_under_lock: effect.effective_balance_under_lock(),
                 });
 
-                Self::apply_effect(Operation::Init(effect), who, schedule.clone());
+                Self::apply_effect(Operation::Init {
+                    effect,
+                    schedule,
+                    who,
+                });
 
                 Ok(())
             })
