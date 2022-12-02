@@ -855,15 +855,6 @@ fn removing_claim_works() {
         // Set block number to enable events.
         mock::System::set_block_number(1);
 
-        // Non-sudo accounts are not allowed.
-        assert_noop!(
-            TokenClaims::remove_claim(
-                RuntimeOrigin::signed(42),
-                eth(EthAddr::Existing),
-                FUNDS_CONSUMER,
-            ),
-            DispatchError::BadOrigin
-        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::remove_claim(
             RuntimeOrigin::root(),
