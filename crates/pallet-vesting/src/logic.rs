@@ -129,7 +129,7 @@ impl<T: Config> Pallet<T> {
 
     /// Set the lock.
     ///
-    /// It is an implementation detail of [`execute_partial_unlock`], but also used in tests.
+    /// It is an implementation detail of [`Self::execute_partial_unlock`], but also used in tests.
     pub(crate) fn set_lock(who: &T::AccountId, balance_to_lock: BalanceOf<T>) {
         debug_assert!(
             balance_to_lock != Zero::zero(),
