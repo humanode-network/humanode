@@ -289,8 +289,6 @@ impl frame_system::Config for Runtime {
     type MaxConsumers = ConstU32<16>;
 }
 
-impl pallet_randomness_collective_flip::Config for Runtime {}
-
 impl pallet_babe::Config for Runtime {
     type EpochDuration = ConstU64<EPOCH_DURATION_IN_SLOTS>;
     type ExpectedBlockTime = ConstU64<MILLISECS_PER_BLOCK>;
@@ -713,7 +711,6 @@ construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic
     {
         System: frame_system = 0,
-        RandomnessCollectiveFlip: pallet_randomness_collective_flip = 1,
         Timestamp: pallet_timestamp = 2,
         ChainStartMoment: pallet_chain_start_moment = 3,
         Bootnodes: pallet_bootnodes = 4,
