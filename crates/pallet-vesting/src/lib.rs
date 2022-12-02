@@ -185,6 +185,9 @@ pub mod pallet {
                 Self::deposit_event(Event::Locked {
                     who: who.clone(),
                     schedule: schedule.clone(),
+                    // Note that we emit this event even if the locked balance is zero.
+                    // The rationale for this is we indicate that the lock invocation was successful
+                    // yet no balance was locked.
                     balance_under_lock: effect.effective_balance_under_lock(),
                 });
 
