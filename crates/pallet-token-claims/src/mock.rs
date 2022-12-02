@@ -97,8 +97,7 @@ impl pallet_token_claims::Config for Test {
     type WeightInfo = ();
 }
 
-pub const FUNDS_PROVIDER: u64 = 1001;
-pub const FUNDS_CONSUMER: u64 = 1111;
+pub const FUNDS_TREASURY: u64 = 1001;
 
 pub enum EthAddr {
     Existing,
@@ -144,8 +143,7 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
                     30 /* tokens sum */ +
                 1, /* existential deposit */
                 ),
-                (FUNDS_PROVIDER, 1000),
-                (FUNDS_CONSUMER, 1000),
+                (FUNDS_TREASURY, 1000),
             ],
         },
         pot: Default::default(),
