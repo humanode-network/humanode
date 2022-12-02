@@ -227,6 +227,8 @@ pub mod pallet {
         FundsProviderOverflow,
         /// Funds provider balance is too low.
         FundsProviderUnderflow,
+        /// Funds consumer balance is too high.
+        FundsConsumerOverflow,
     }
 
     #[pallet::call]
@@ -300,7 +302,7 @@ pub mod pallet {
         pub fn remove_claim(
             origin: OriginFor<T>,
             ethereum_address: EthereumAddress,
-            funds_provider: T::AccountId,
+            funds_consumer: T::AccountId,
         ) -> DispatchResult {
             ensure_root(origin)?;
 
@@ -315,8 +317,8 @@ pub mod pallet {
                 )
                 .map_err(|_| Error::<T>::ClaimsPotUnderflow)?;
 
-                <CurrencyOf<T>>::resolve_into_existing(&funds_provider, funds)
-                    .map_err(|_| Error::<T>::FundsProviderOverflow)?;
+                <CurrencyOf<T>>::resolve_into_existing(&funds_consumer, funds)
+                    .map_err(|_| Error::<T>::FundsConsumerOverflow)?;
 
                 <Pallet<T>>::update_total_claimable_balance();
 

@@ -15,7 +15,7 @@ use crate::{
     mock::{
         eth, new_test_ext, new_test_ext_with, sig, Balances, EthAddr,
         MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, RuntimeOrigin,
-        Test, TestExternalitiesExt, TokenClaims, FUNDS_PROVIDER,
+        Test, TestExternalitiesExt, TokenClaims, FUNDS_CONSUMER, FUNDS_PROVIDER,
     },
     traits::{NoVesting, VestingInterface},
     types::{ClaimInfo, EthereumSignatureMessageParams},
@@ -847,7 +847,7 @@ fn removing_claim_works() {
         assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
 
         let claim = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap();
-        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let funds_consumer_balance_before = Balances::free_balance(FUNDS_CONSUMER);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
         let currency_total_issuance_before = currency_total_issuance();
@@ -860,7 +860,7 @@ fn removing_claim_works() {
             TokenClaims::remove_claim(
                 RuntimeOrigin::signed(42),
                 eth(EthAddr::Existing),
-                FUNDS_PROVIDER,
+                FUNDS_CONSUMER,
             ),
             DispatchError::BadOrigin
         );
@@ -868,7 +868,7 @@ fn removing_claim_works() {
         assert_ok!(TokenClaims::remove_claim(
             RuntimeOrigin::root(),
             eth(EthAddr::Existing),
-            FUNDS_PROVIDER,
+            FUNDS_CONSUMER,
         ));
 
         // Assert state changes.
@@ -882,7 +882,7 @@ fn removing_claim_works() {
             claim.balance
         );
         assert_eq!(
-            Balances::free_balance(FUNDS_PROVIDER) - funds_provider_balance_before,
+            Balances::free_balance(FUNDS_CONSUMER) - funds_consumer_balance_before,
             claim.balance
         );
         assert_eq!(currency_total_issuance_before, currency_total_issuance());
@@ -902,7 +902,7 @@ fn removing_claim_not_sudo() {
             TokenClaims::remove_claim(
                 RuntimeOrigin::signed(42),
                 eth(EthAddr::Existing),
-                FUNDS_PROVIDER,
+                FUNDS_CONSUMER,
             ),
             DispatchError::BadOrigin
         );
@@ -915,7 +915,7 @@ fn removing_claim_no_claim() {
     new_test_ext().execute_with_ext(|_| {
         // Invoke the function under test.
         assert_noop!(
-            TokenClaims::remove_claim(RuntimeOrigin::root(), eth(EthAddr::New), FUNDS_PROVIDER,),
+            TokenClaims::remove_claim(RuntimeOrigin::root(), eth(EthAddr::New), FUNDS_CONSUMER,),
             Error::<Test>::NoClaim
         );
     });
