@@ -407,6 +407,7 @@ fn update_vesting_works_partial_unlock() {
             account_id: 42,
             old_schedule: MockSchedule,
             new_schedule: MockSchedule,
+            balance_under_lock: 50,
         }));
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
             who: 42,
@@ -460,6 +461,7 @@ fn update_vesting_works_full_unlock() {
             account_id: 42,
             old_schedule: MockSchedule,
             new_schedule: MockSchedule,
+            balance_under_lock: 0,
         }));
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::FullyUnlocked {
             who: 42,

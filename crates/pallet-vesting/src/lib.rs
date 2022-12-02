@@ -106,6 +106,8 @@ pub mod pallet {
             old_schedule: T::Schedule,
             /// The new vesting schedule.
             new_schedule: T::Schedule,
+            /// The balance that is locked under vesting with new schedule.
+            balance_under_lock: BalanceOf<T>,
         },
     }
 
@@ -149,6 +151,7 @@ pub mod pallet {
                 let old_schedule = <Schedules<T>>::get(&account_id).ok_or(<Error<T>>::NoVesting)?;
 
                 let effect = Self::compute_effect(&new_schedule)?;
+                let balance_under_lock = effect.effective_balance_under_lock();
                 Self::apply_effect(Operation::Update(effect, new_schedule.clone(), &account_id));
 
                 // Send the event announcing the update.
@@ -156,6 +159,7 @@ pub mod pallet {
                     account_id,
                     old_schedule,
                     new_schedule,
+                    balance_under_lock,
                 });
 
                 Ok(())
