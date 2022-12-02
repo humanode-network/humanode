@@ -74,6 +74,9 @@ impl<T: Config> Pallet<T> {
     }
 
     /// Apply the effect of a schedule in the context of an operation.
+    ///
+    /// This function encapsulates all the logic of applying the effects of the locked balance
+    /// computation.
     pub(super) fn apply_effect(op: Operation<'_, T>) {
         match op {
             Operation::Init {
