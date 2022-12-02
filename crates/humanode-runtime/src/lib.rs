@@ -47,7 +47,10 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_api::impl_runtime_apis;
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::{crypto::KeyTypeId, OpaqueMetadata, H160, H256, U256};
+use sp_core::{
+    crypto::{AccountId32, KeyTypeId},
+    OpaqueMetadata, H160, H256, U256,
+};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 use sp_runtime::{
@@ -98,9 +101,52 @@ pub type BlockNumber = u32;
 /// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
 pub type Signature = MultiSignature;
 
-/// Some way of identifying an account on the chain. We intentionally make it equivalent
-/// to the public key of our transaction signing scheme.
-pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
+/// Some way of identifying an account on the chain.
+///
+/// We do not define this type via signing scheme because we effectively need this type to be able
+/// to hold the values that are beyond the standard signing facilities.
+/// Overall, the [`AccountId`] type must be sufficient to hold the following kinds of addresses
+/// (non-exhaustive list):
+///
+/// - all the standard [`Signature`] account identifiers:
+///     - the Ed25519 public key
+///     - the Sr25519 public key
+///     - the Blake2 hash of the compressed ECDSA public key
+/// - pot account addresses - they are still addresses but can't be a subject to signing because
+///   they don't belong to an asymmetric keypair at all;
+/// - multisig account address - this is an address type that is driven by the multisig pallet, and
+///   also technically does not correspond to an asymmetric keypair;
+/// - EVM addresses - the addresses used by EVM, of which we have to possible variants:
+///   - EVM ECDSA addresses - these are the last 20 bytes of the Keccak (`keccak_256`) hash of
+///     the uncompressed ECDSA public key, as used in Ethereum; this has nothing to do with
+///     the [`sp_runtime::MultiSigner::Ecdsa`] - because that one is built differently, however
+///     the underlying asymmetric keypair can be the same. The signatures won't match however,
+///     because for the [`MultiSignature::Ecdsa`] variant, [`MultiSignature::verify`] computes
+///     the message to verify the signature against in a different way to how Ethereum does it -
+///     Substrate uses Blake2 and Ethereum uses Keccak;
+///   - EVM code address - this in an address for an EVM smart contract, which can be any 20 bytes
+///     really; it is usually constructed using the last 20 bytes of using the Keccak hash somehow
+///     obtained from of the contract code, the address of whoever creates the contract and some
+///     salt/nonce; note that there are currently multiple simultaneously supported algorithms for
+///     how the contract addresses can be constructed by the EVM, and new might be introduced in
+///     the future.
+///   Both of the 20-byte EVM address types are stored with a certain format in a wider 32-byte
+///   [`AccountId32`] type, that enables us to distinguish them from other address types; there's
+///   a certain chance that a non-EVM address would just so happen to be matching the EVM address
+///   encoding format we use for EVM accounts, which would mess things up.
+///
+/// We acknowledge that there is largely a limitation of the Substrate's core architecture that does
+/// not permit for a more explicit value kind differentiation.
+/// Although we can alter the [`AccountId`] to be a more explicit enum, and tweak
+/// the [`frame_system::Config::Lookup`] the amount of work at the surrounding ecosystem
+/// (i.e. Polkadot.js) is beyond the reasonable effort for us now.
+pub type AccountId = AccountId32;
+
+// Ensure that the `AccountId` it equivalent to the public key of our transaction signing scheme.
+static_assertions::assert_type_eq_all!(
+    AccountId,
+    <<Signature as Verify>::Signer as IdentifyAccount>::AccountId
+);
 
 /// Consensus identity used to tie the consensus signatures to the bioauth identity
 /// via session pallet's key ownership logic.
