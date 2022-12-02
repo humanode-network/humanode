@@ -42,11 +42,15 @@ fn lock_under_vesting_works() {
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 900);
         assert!(<Schedules<Test>>::get(42).is_some());
-        assert_eq!(System::events().len(), 1);
+        assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::Locked {
             who: 42,
             schedule: MockSchedule,
             balance_under_lock: 100,
+        }));
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
+            who: 42,
+            balance_left_under_lock: 100,
         }));
 
         // Assert mock invocations.
@@ -174,11 +178,15 @@ fn lock_under_vesting_can_lock_balance_greater_than_free_balance() {
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 0);
         assert!(<Schedules<Test>>::get(42).is_some());
-        assert_eq!(System::events().len(), 1);
+        assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::Locked {
             who: 42,
             schedule: MockSchedule,
             balance_under_lock: 1100,
+        }));
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
+            who: 42,
+            balance_left_under_lock: 1100,
         }));
 
         // Assert mock invocations.
@@ -350,6 +358,176 @@ fn unlock_no_vesting_error() {
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 1000);
         assert!(<Schedules<Test>>::get(42).is_none());
+        assert_eq!(System::events().len(), 0);
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that `update_schedule` works in the happy path (with non-zero balance).
+#[test]
+fn update_vesting_works_partial_unlock() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare the test state.
+        Balances::make_free_balance_be(&42, 1000);
+        <Pallet<Test>>::set_lock(&42, 100);
+        <Schedules<Test>>::insert(42, MockSchedule);
+
+        // Check test preconditions.
+        assert!(<Schedules<Test>>::get(42).is_some());
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 900);
+
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(MockSchedule))
+            .return_const(Ok(50));
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_ok!(Vesting::update_schedule(
+            RuntimeOrigin::root(),
+            42,
+            MockSchedule
+        ));
+
+        // Assert state changes.
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 950);
+        assert!(<Schedules<Test>>::get(42).is_some());
+        assert_eq!(System::events().len(), 2);
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdated {
+            account_id: 42,
+            old_schedule: MockSchedule,
+            new_schedule: MockSchedule,
+            balance_under_lock: 50,
+        }));
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
+            who: 42,
+            balance_left_under_lock: 50,
+        }));
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that `update_schedule` works in the happy path (with zero balance).
+#[test]
+fn update_vesting_works_full_unlock() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare the test state.
+        Balances::make_free_balance_be(&42, 1000);
+        <Pallet<Test>>::set_lock(&42, 100);
+        <Schedules<Test>>::insert(42, MockSchedule);
+
+        // Check test preconditions.
+        assert!(<Schedules<Test>>::get(42).is_some());
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 900);
+
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(MockSchedule))
+            .return_const(Ok(0));
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_ok!(Vesting::update_schedule(
+            RuntimeOrigin::root(),
+            42,
+            MockSchedule
+        ));
+
+        // Assert state changes.
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 1000);
+        assert!(<Schedules<Test>>::get(42).is_none());
+        assert_eq!(System::events().len(), 2);
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdated {
+            account_id: 42,
+            old_schedule: MockSchedule,
+            new_schedule: MockSchedule,
+            balance_under_lock: 0,
+        }));
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::FullyUnlocked {
+            who: 42,
+        }));
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
+
+/// This test verifies the `update_schedule` behaviour when it is called for an account that does not
+/// have vesting.
+#[test]
+fn update_vesting_no_vesting_error() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare the test state.
+        Balances::make_free_balance_be(&42, 1000);
+
+        // Check test preconditions.
+        assert!(<Schedules<Test>>::get(42).is_none());
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 1000);
+
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx.expect().never();
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_noop!(
+            Vesting::update_schedule(RuntimeOrigin::root(), 42, MockSchedule),
+            <Error<Test>>::NoVesting,
+        );
+
+        // Assert state changes.
+        assert_eq!(Balances::free_balance(&42), 1000);
+        assert_eq!(Balances::usable_balance(&42), 1000);
+        assert!(<Schedules<Test>>::get(42).is_none());
+        assert_eq!(System::events().len(), 0);
+
+        // Assert mock invocations.
+        compute_balance_under_lock_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that `update_schedule` signed by account different from sudo fails.
+#[test]
+fn update_vesting_not_sudo_error() {
+    new_test_ext().execute_with_ext(|_| {
+        // Set mock expectations.
+        let compute_balance_under_lock_ctx =
+            MockSchedulingDriver::compute_balance_under_lock_context();
+        compute_balance_under_lock_ctx.expect().never();
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            Vesting::update_schedule(RuntimeOrigin::signed(10), 42, MockSchedule),
+            DispatchError::BadOrigin,
+        );
+
         assert_eq!(System::events().len(), 0);
 
         // Assert mock invocations.

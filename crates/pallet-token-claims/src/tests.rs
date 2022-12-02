@@ -730,16 +730,6 @@ fn adding_claim_works() {
         // Set block number to enable events.
         mock::System::set_block_number(1);
 
-        // Non-sudo accounts are not allowed.
-        assert_noop!(
-            TokenClaims::add_claim(
-                RuntimeOrigin::signed(42),
-                eth(EthAddr::New),
-                new_claim_info.clone(),
-                FUNDS_PROVIDER,
-            ),
-            DispatchError::BadOrigin
-        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::add_claim(
             RuntimeOrigin::root(),
@@ -861,16 +851,6 @@ fn changing_claim_balance_increase_works() {
         // Set block number to enable events.
         mock::System::set_block_number(1);
 
-        // Non-sudo accounts are not allowed.
-        assert_noop!(
-            TokenClaims::change_claim(
-                RuntimeOrigin::signed(42),
-                eth(EthAddr::Existing),
-                new_claim_info.clone(),
-                FUNDS_PROVIDER,
-            ),
-            DispatchError::BadOrigin
-        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::change_claim(
             RuntimeOrigin::root(),
@@ -927,16 +907,6 @@ fn changing_claim_balance_decrease_works() {
         // Set block number to enable events.
         mock::System::set_block_number(1);
 
-        // Non-sudo accounts are not allowed.
-        assert_noop!(
-            TokenClaims::change_claim(
-                RuntimeOrigin::signed(42),
-                eth(EthAddr::Existing),
-                new_claim_info.clone(),
-                FUNDS_PROVIDER,
-            ),
-            DispatchError::BadOrigin
-        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::change_claim(
             RuntimeOrigin::root(),
@@ -993,16 +963,6 @@ fn changing_claim_balance_not_changing_works() {
         // Set block number to enable events.
         mock::System::set_block_number(1);
 
-        // Non-sudo accounts are not allowed.
-        assert_noop!(
-            TokenClaims::change_claim(
-                RuntimeOrigin::signed(42),
-                eth(EthAddr::Existing),
-                new_claim_info.clone(),
-                FUNDS_PROVIDER,
-            ),
-            DispatchError::BadOrigin
-        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::change_claim(
             RuntimeOrigin::root(),
