@@ -42,11 +42,15 @@ fn lock_under_vesting_works() {
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 900);
         assert!(<Schedules<Test>>::get(42).is_some());
-        assert_eq!(System::events().len(), 1);
+        assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::Locked {
             who: 42,
             schedule: MockSchedule,
             balance_under_lock: 100,
+        }));
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
+            who: 42,
+            balance_left_under_lock: 100,
         }));
 
         // Assert mock invocations.
@@ -174,11 +178,15 @@ fn lock_under_vesting_can_lock_balance_greater_than_free_balance() {
         assert_eq!(Balances::free_balance(&42), 1000);
         assert_eq!(Balances::usable_balance(&42), 0);
         assert!(<Schedules<Test>>::get(42).is_some());
-        assert_eq!(System::events().len(), 1);
+        assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::Locked {
             who: 42,
             schedule: MockSchedule,
             balance_under_lock: 1100,
+        }));
+        System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
+            who: 42,
+            balance_left_under_lock: 1100,
         }));
 
         // Assert mock invocations.
@@ -397,6 +405,7 @@ fn update_vesting_works_partial_unlock() {
         assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdated {
             account_id: 42,
+            old_schedule: MockSchedule,
             new_schedule: MockSchedule,
         }));
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
@@ -449,6 +458,7 @@ fn update_vesting_works_full_unlock() {
         assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdated {
             account_id: 42,
+            old_schedule: MockSchedule,
             new_schedule: MockSchedule,
         }));
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::FullyUnlocked {
