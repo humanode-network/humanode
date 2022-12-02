@@ -63,7 +63,6 @@ pallet-grandpa = { default-features = false, git = "https://github.com/humanode-
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 pallet-multisig = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 pallet-offences = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 pallet-session = { default-features = false, features = [
   "historical",
 ], git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
@@ -167,7 +166,6 @@ std = [
   "pallet-multisig/std",
   "pallet-offences/std",
   "pallet-pot/std",
-  "pallet-randomness-collective-flip/std",
   "pallet-session/std",
   "pallet-sudo/std",
   "pallet-timestamp/std",
@@ -224,7 +222,6 @@ try-runtime = [
   "pallet-multisig/try-runtime",
   "pallet-offences/try-runtime",
   "pallet-pot/try-runtime",
-  "pallet-randomness-collective-flip/try-runtime",
   "pallet-session/try-runtime",
   "pallet-sudo/try-runtime",
   "pallet-timestamp/try-runtime",
