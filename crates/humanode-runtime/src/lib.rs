@@ -189,7 +189,7 @@ pub mod opaque {
     }
 }
 
-// https://substrate.dev/docs/en/knowledgebase/runtime/upgrades#runtime-versioning
+// https://docs.substrate.io/build/upgrade-the-runtime
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("humanode"),
