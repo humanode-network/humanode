@@ -125,7 +125,11 @@ fn get_ss58_format(properties: &Properties) -> Result<u16> {
     };
     let value = value
         .as_u64()
-        .ok_or("Ss58Format should be u16")
+        .ok_or("ss58 format must be a number")
         .map_err(application_error)?;
-    value.try_into().map_err(application_error)
+    value
+        .try_into()
+        .ok()
+        .ok_or("ss58 format must be a u16")
+        .map_err(application_error)
 }
