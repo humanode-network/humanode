@@ -48,7 +48,7 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         let evm = {
             let params = self.evm_params();
             configuration::Evm {
-                target_gas_price: params.map(|p| p.target_gas_price).unwrap_or(1),
+                target_gas_price: params.map_or(1, |p| p.target_gas_price),
             }
         };
 
