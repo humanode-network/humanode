@@ -120,12 +120,15 @@ impl<C: SubstrateCli> Runner<C> {
 fn get_ss58_format(properties: &Properties) -> Result<u16> {
     let value = match properties.get("ss58Format") {
         Some(value) => value,
-        // Use default Humanode SS58Prefix if it's not set.
+        // Use default Humanode ss58 prefix if a custom value is not set.
         None => return Ok(crate::chain_spec::SS58_PREFIX),
     };
     let value = value
         .as_u64()
-        .ok_or("Ss58Format should be u16")
+        .ok_or("ss58 format must be a number")
         .map_err(application_error)?;
-    value.try_into().map_err(application_error)
+    value
+        .try_into()
+        .map_err(|err| format!("ss58 format must be a u16: {}", err))
+        .map_err(application_error)
 }
