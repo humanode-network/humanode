@@ -17,11 +17,6 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 pub type BalanceOf<T, I = ()> =
     <<T as Config<I>>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
-/// The positive imbalance accessor.
-pub type PositiveImbalanceOf<T, I = ()> = <<T as Config<I>>::Currency as Currency<
-    <T as frame_system::Config>::AccountId,
->>::PositiveImbalance;
-
 /// The negative implanace accessor.
 pub type NegativeImbalanceOf<T, I = ()> = <<T as Config<I>>::Currency as Currency<
     <T as frame_system::Config>::AccountId,
