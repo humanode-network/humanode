@@ -189,7 +189,7 @@ pub mod opaque {
     }
 }
 
-// https://substrate.dev/docs/en/knowledgebase/runtime/upgrades#runtime-versioning
+// https://docs.substrate.io/build/upgrade-the-runtime
 #[sp_version::runtime_version]
 pub const VERSION: RuntimeVersion = RuntimeVersion {
     spec_name: create_runtime_str!("humanode"),
@@ -200,7 +200,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 101,
+    spec_version: 102,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -552,9 +552,9 @@ impl
             let (_offender, identity) = &details.offender;
             match identity {
                 pallet_humanode_session::Identification::Bioauth(authentication) => {
-                    let has_deathenticated = Bioauth::deauthenticate(&authentication.public_key);
+                    let has_deauthenticated = Bioauth::deauthenticate(&authentication.public_key);
                     weight = weight
-                        .saturating_add(weights.reads_writes(1, u64::from(has_deathenticated)));
+                        .saturating_add(weights.reads_writes(1, u64::from(has_deauthenticated)));
                 }
                 pallet_humanode_session::Identification::Bootnode(..) => {
                     // Never slash the bootnodes.
