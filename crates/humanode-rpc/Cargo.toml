@@ -10,9 +10,7 @@ author-ext-rpc = { version = "0.1", path = "../author-ext-rpc" }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
 bioauth-flow-rpc = { version = "0.1", path = "../bioauth-flow-rpc" }
 bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
-frontier-api = { version = "0.1", path = "../frontier-api" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
-primitives-frontier = { version = "0.1", path = "../primitives-frontier" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
 fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }

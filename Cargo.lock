@@ -2769,16 +2769,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "frontier-api"
-version = "0.1.0"
-dependencies = [
- "pallet-ethereum",
- "parity-scale-codec",
- "sp-api",
- "sp-std",
-]
-
-[[package]]
 name = "fs2"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3409,11 +3399,9 @@ dependencies = [
  "fc-rpc-core",
  "fp-rpc",
  "fp-storage",
- "frontier-api",
  "humanode-runtime",
  "jsonrpsee",
  "pallet-transaction-payment-rpc",
- "primitives-frontier",
  "robonode-client",
  "sc-chain-spec",
  "sc-client-api",
@@ -3461,7 +3449,6 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
- "frontier-api",
  "hex",
  "hex-literal",
  "keystore-bioauth-account-id",
@@ -6456,18 +6443,6 @@ dependencies = [
  "scale-info",
  "serde",
  "serde_json",
-]
-
-[[package]]
-name = "primitives-frontier"
-version = "0.1.0"
-dependencies = [
- "fp-rpc",
- "frontier-api",
- "pallet-ethereum",
- "sp-api",
- "sp-blockchain",
- "sp-runtime",
 ]
 
 [[package]]
