@@ -1316,6 +1316,12 @@ impl_runtime_apis! {
         }
     }
 
+    impl pallet_vesting::api::VestingEvaluationApi<Block, AccountId, Balance> for Runtime {
+        fn evaluate_lock(account: &AccountId) -> Result<Balance, pallet_vesting::api::EvaluationError> {
+            Vesting::evaluate_lock(account)
+        }
+    }
+
     #[cfg(feature = "runtime-benchmarks")]
     impl frame_benchmarking::Benchmark<Block> for Runtime {
         fn benchmark_metadata(extra: bool) -> (
