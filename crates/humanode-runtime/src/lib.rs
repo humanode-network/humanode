@@ -791,10 +791,11 @@ impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
         let tip = 0;
         // Take the biggest period possible. In case of having overflow,
         // will use 0 as `sp_runtime::generic::Era::mortal` claps the value where lower bound is 4.
-        let period: u64 = <Self::BlockHashCount as Get<Self::BlockNumber>>::get()
+        let period = <Self::BlockHashCount as Get<Self::BlockNumber>>::get()
             .checked_next_power_of_two()
             .map(|c| c / 2)
-            .unwrap_or_default();
+            .unwrap_or_default()
+            .into();
         let current_block = System::block_number()
             .saturated_into::<u64>()
             // The `System::block_number` is initialized with `n+1`,
