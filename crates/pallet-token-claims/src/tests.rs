@@ -1,5 +1,8 @@
 //! The tests for the pallet.
 
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use frame_support::{
     assert_noop, assert_ok, assert_storage_noop,
     dispatch::{DispatchClass, DispatchInfo, Pays},
