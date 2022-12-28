@@ -1,5 +1,8 @@
 //! Tests to verify token claims and vesting logic.
 
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
 use frame_support::{
