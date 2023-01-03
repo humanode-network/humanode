@@ -154,7 +154,10 @@ where
                         return Some(Err(revert("precompile is called with too high nesting")));
                     }
 
-                    *recursion_level += 1;
+                    *recursion_level = match recursion_level.checked_add(1) {
+                        Some(v) => v,
+                        None => return Some(Err(revert("couldn't check precompile nesting"))),
+                    }
                 }
                 // We don't hold the borrow and are in single-threaded code, thus we should
                 // not be able to fail borrowing in nested calls.
@@ -168,7 +171,10 @@ where
         if R::recursion_limit().is_some() {
             match self.current_recursion_level.try_borrow_mut() {
                 Ok(mut recursion_level) => {
-                    *recursion_level -= 1;
+                    *recursion_level = match recursion_level.checked_sub(1) {
+                        Some(v) => v,
+                        None => return Some(Err(revert("couldn't check precompile nesting"))),
+                    }
                 }
                 // We don't hold the borrow and are in single-threaded code, thus we should
                 // not be able to fail borrowing in nested calls.
@@ -241,7 +247,10 @@ where
                         return Some(Err(revert("precompile is called with too high nesting")));
                     }
 
-                    *recursion_level += 1;
+                    *recursion_level = match recursion_level.checked_add(1) {
+                        Some(v) => v,
+                        None => return Some(Err(revert("couldn't check precompile nesting"))),
+                    }
                 }
                 // We don't hold the borrow and are in single-threaded code, thus we should
                 // not be able to fail borrowing in nested calls.
@@ -255,7 +264,10 @@ where
         if R::recursion_limit().is_some() {
             match self.current_recursion_level.try_borrow_mut() {
                 Ok(mut recursion_level) => {
-                    *recursion_level -= 1;
+                    *recursion_level = match recursion_level.checked_sub(1) {
+                        Some(v) => v,
+                        None => return Some(Err(revert("couldn't check precompile nesting"))),
+                    }
                 }
                 // We don't hold the borrow and are in single-threaded code, thus we should
                 // not be able to fail borrowing in nested calls.
@@ -329,7 +341,10 @@ where
                         return Some(Err(revert("precompile is called with too high nesting")));
                     }
 
-                    *recursion_level += 1;
+                    *recursion_level = match recursion_level.checked_add(1) {
+                        Some(v) => v,
+                        None => return Some(Err(revert("couldn't check precompile nesting"))),
+                    }
                 }
                 // We don't hold the borrow and are in single-threaded code, thus we should
                 // not be able to fail borrowing in nested calls.
@@ -348,7 +363,10 @@ where
                         None => return Some(Err(revert("couldn't retreive precompile nesting"))),
                     };
 
-                    *recursion_level -= 1;
+                    *recursion_level = match recursion_level.checked_sub(1) {
+                        Some(v) => v,
+                        None => return Some(Err(revert("couldn't check precompile nesting"))),
+                    }
                 }
                 // We don't hold the borrow and are in single-threaded code, thus we should
                 // not be able to fail borrowing in nested calls.
