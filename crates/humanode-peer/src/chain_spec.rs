@@ -24,7 +24,7 @@ use sp_runtime::{app_crypto::sr25519, traits::Verify};
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
 
-/// Extensions for ChainSpec.
+/// Extensions for `ChainSpec`.
 #[derive(
     Debug, Clone, PartialEq, Serialize, Deserialize, ChainSpecGroup, ChainSpecExtension, Default,
 )]
@@ -54,16 +54,36 @@ pub fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) 
 pub const SS58_PREFIX: u16 = 5234;
 /// Default ethereum chain id.
 pub const ETH_CHAIN_ID: u64 = 5234;
+/// The development robonode public key.
+pub const DEFAULT_DEV_ROBONODE_PUBLIC_KEY: [u8; 32] =
+    hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab");
+
+/// Provide the dev robonode public key.
+///
+/// This fn cosults undocumented `DEV_ROBONODE_PUBLIC_KEY` env var and attempts to use that first
+/// to allow for the key override. This override mechanism is useful during development, and is
+/// intended only for development.
+fn dev_robonode_public_key(default: &'static [u8]) -> Result<robonode::PublicKey, String> {
+    match std::env::var("DEV_ROBONODE_PUBLIC_KEY") {
+        Ok(val) => {
+            let val = hex::decode(val)
+                .map_err(|err| format!("robonode public key in not in hex format: {:?}", err))?;
+            robonode::PublicKey::from_bytes(&val)
+        }
+        Err(std::env::VarError::NotPresent) => robonode::PublicKey::from_bytes(default),
+        Err(std::env::VarError::NotUnicode(val)) => {
+            return Err(format!("invalid robonode public key: {:?}", val))
+        }
+    }
+    .map_err(|err| format!("unable to parse robonode public key: {:?}", err))
+}
 
 /// A configuration for local testnet.
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
     let wasm_binary =
         WASM_BINARY.ok_or_else(|| "Development wasm binary not available".to_string())?;
 
-    let robonode_public_key = robonode::PublicKey::from_bytes(
-        &hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab")[..],
-    )
-    .map_err(|err| format!("{:?}", err))?;
+    let robonode_public_key = dev_robonode_public_key(&DEFAULT_DEV_ROBONODE_PUBLIC_KEY)?;
 
     Ok(ChainSpec::from_genesis(
         // Name
@@ -116,10 +136,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 pub fn development_config() -> Result<ChainSpec, String> {
     let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
-    let robonode_public_key = robonode::PublicKey::from_bytes(
-        &hex!("5dde03934419252d13336e5a5881f5b1ef9ea47084538eb229f86349e7f394ab")[..],
-    )
-    .map_err(|err| format!("{:?}", err))?;
+    let robonode_public_key = dev_robonode_public_key(&DEFAULT_DEV_ROBONODE_PUBLIC_KEY)?;
 
     Ok(ChainSpec::from_genesis(
         // Name
@@ -167,10 +184,9 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
     // Public key is taken from the first entry of https://ed25519.cr.yp.to/python/sign.input
     // Must be compatible with secret key provided in AuthTicketSigner trait implemented for
     // Runtime in crates/humanode-runtime/src/lib.rs.
-    let robonode_public_key = robonode::PublicKey::from_bytes(
-        &hex!("d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a")[..],
-    )
-    .map_err(|err| format!("{:?}", err))?;
+    let robonode_public_key = dev_robonode_public_key(&hex!(
+        "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a"
+    ))?;
 
     Ok(ChainSpec::from_genesis(
         // Name
@@ -215,10 +231,10 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
 const DEV_ACCOUNT_BALANCE: Balance = 10u128.pow(18 + 6);
 
 /// The existential deposit of the runtime.
-const EXISTANTIAL_DEPOSIT: Balance = 500;
+const EXISTENTIAL_DEPOSIT: Balance = 500;
 
 /// The initial pot accounts balance for testnet genesis.
-const INITIAL_POT_ACCOUNT_BALANCE: Balance = EXISTANTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE;
+const INITIAL_POT_ACCOUNT_BALANCE: Balance = EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE;
 
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
@@ -235,7 +251,7 @@ fn testnet_genesis(
             code: wasm_binary.to_vec(),
         },
         balances: BalancesConfig {
-            // Configure endowed accounts with initial balance of 1 << 60.
+            // Configure endowed accounts with initial balance.
             balances: {
                 let pot_accounts = vec![
                     (
@@ -312,8 +328,7 @@ fn testnet_genesis(
                     // SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
                     // hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
                     // Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
-                    H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
-                        .expect("internal H160 is valid; qed"),
+                    H160::from(hex!("d43593c715fdd31c61141abd04a99fd6822c8558")),
                     fp_evm::GenesisAccount {
                         balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
                             .expect("internal U256 is valid; qed"),
@@ -329,8 +344,7 @@ fn testnet_genesis(
                     // A proper private key should be used to allow testing EVM as Ethereum developer
                     // For example, use it at Metamask, Remix, Truffle configuration, etc
                     // We don't have a good converter between Substrate and Ethereum private keys for now.
-                    H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
-                        .expect("internal H160 is valid; qed"),
+                    H160::from(hex!("6be02d1d3665660d22ff9624b7be0551ee1ac91b")),
                     fp_evm::GenesisAccount {
                         balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
                             .expect("internal U256 is valid; qed"),

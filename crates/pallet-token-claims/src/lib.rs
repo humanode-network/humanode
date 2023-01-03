@@ -130,7 +130,7 @@ pub mod pallet {
         fn build(&self) {
             let mut total_claimable_balance: BalanceOf<T> = Zero::zero();
 
-            for (eth_address, info) in self.claims.iter() {
+            for (eth_address, info) in &self.claims {
                 if Claims::<T>::contains_key(eth_address) {
                     panic!(
                         "conflicting claim found in genesis for address {}",
@@ -144,7 +144,9 @@ pub mod pallet {
             }
 
             // Ensure that our pot account has exactly the right balance.
-            let expected_pot_balance = <CurrencyOf<T>>::minimum_balance() + total_claimable_balance;
+            let expected_pot_balance = <CurrencyOf<T>>::minimum_balance()
+                .checked_add(&total_claimable_balance)
+                .unwrap();
             let pot_account_id = T::PotAccountId::get();
             let actual_pot_balance = <CurrencyOf<T>>::free_balance(&pot_account_id);
             if actual_pot_balance != expected_pot_balance {
@@ -191,6 +193,13 @@ pub mod pallet {
             /// The claim info that was claimed.
             claim: ClaimInfoOf<T>,
         },
+        /// Claim were removed.
+        ClaimRemoved {
+            /// The ethereum address that was removed.
+            ethereum_address: EthereumAddress,
+            /// The claim info that was removed.
+            claim: ClaimInfoOf<T>,
+        },
         /// Claim were changed.
         ClaimChanged {
             /// The ethereum address used for token claiming.
@@ -218,6 +227,8 @@ pub mod pallet {
         FundsProviderOverflow,
         /// Funds provider balance is too low.
         FundsProviderUnderflow,
+        /// Funds consumer balance is too high.
+        FundsConsumerOverflow,
     }
 
     #[pallet::call]
@@ -278,6 +289,40 @@ pub mod pallet {
                 <Pallet<T>>::update_total_claimable_balance();
 
                 Self::deposit_event(Event::ClaimAdded {
+                    ethereum_address,
+                    claim: claim_info,
+                });
+
+                Ok(())
+            })
+        }
+
+        /// Remove an existing claim.
+        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
+        pub fn remove_claim(
+            origin: OriginFor<T>,
+            ethereum_address: EthereumAddress,
+            funds_consumer: T::AccountId,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            with_storage_layer(move || {
+                let claim_info = <Claims<T>>::take(ethereum_address).ok_or(<Error<T>>::NoClaim)?;
+
+                let funds = <CurrencyOf<T>>::withdraw(
+                    &T::PotAccountId::get(),
+                    claim_info.balance,
+                    WithdrawReasons::TRANSFER,
+                    ExistenceRequirement::KeepAlive,
+                )
+                .map_err(|_| Error::<T>::ClaimsPotUnderflow)?;
+
+                <CurrencyOf<T>>::resolve_into_existing(&funds_consumer, funds)
+                    .map_err(|_| Error::<T>::FundsConsumerOverflow)?;
+
+                <Pallet<T>>::update_total_claimable_balance();
+
+                Self::deposit_event(Event::ClaimRemoved {
                     ethereum_address,
                     claim: claim_info,
                 });

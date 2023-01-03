@@ -435,7 +435,7 @@ fn authentication_when_previous_one_has_been_expired() {
     });
 }
 
-/// This test prevents authentication when the authentications limit has been reached as BoundedVec.
+/// This test prevents authentication when the authentications limit has been reached as `BoundedVec`.
 #[test]
 fn too_many_authentications() {
     new_test_ext().execute_with(|| {
@@ -498,7 +498,7 @@ fn too_many_authentications() {
 }
 
 /// This test prevents authentication when the consumed auth ticket nonces
-/// limit has been reached as BoundedVec.
+/// limit has been reached as `BoundedVec`.
 #[test]
 fn too_many_nonces() {
     new_test_ext().execute_with(|| {
@@ -893,7 +893,7 @@ fn set_robonode_public_key_checks_the_origin() {
     });
 }
 
-/// This test verifies SignedExt logic for transaction processing with empty state.
+/// This test verifies `SignedExt` logic for transaction processing with empty state.
 #[test]
 fn signed_ext_check_bioauth_tx_permits_empty_state() {
     new_test_ext().execute_with(|| {
@@ -920,7 +920,7 @@ fn signed_ext_check_bioauth_tx_permits_empty_state() {
     })
 }
 
-/// This test verifies SignedExt logic for transaction processing that contains invalid signature.
+/// This test verifies `SignedExt` logic for transaction processing that contains invalid signature.
 #[test]
 fn signed_ext_check_bioauth_tx_deny_invalid_signature() {
     new_test_ext().execute_with(|| {
@@ -938,7 +938,7 @@ fn signed_ext_check_bioauth_tx_deny_invalid_signature() {
     })
 }
 
-/// This test verifies SignedExt logic for transaction processing with conflicting nonce.
+/// This test verifies `SignedExt` logic for transaction processing with conflicting nonce.
 #[test]
 fn signed_ext_check_bioauth_tx_denies_conlicting_nonce() {
     new_test_ext().execute_with(|| {
@@ -985,7 +985,7 @@ fn signed_ext_check_bioauth_tx_denies_conlicting_nonce() {
     })
 }
 
-/// This test verifies SignedExt logic for transaction processing with conflicting public keys.
+/// This test verifies `SignedExt` logic for transaction processing with conflicting public keys.
 #[test]
 fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
     new_test_ext().execute_with(|| {

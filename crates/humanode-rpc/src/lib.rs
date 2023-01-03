@@ -42,7 +42,7 @@ use sp_consensus_babe::BabeApi;
 use sp_keystore::SyncCryptoStorePtr;
 use sp_runtime::traits::BlakeTwo256;
 
-/// Extra dependencies for AuthorExt.
+/// Extra dependencies for `AuthorExt`.
 pub struct AuthorExtDeps<VKE> {
     /// Extracts the currently used author validator key.
     pub author_validator_key_extractor: VKE,

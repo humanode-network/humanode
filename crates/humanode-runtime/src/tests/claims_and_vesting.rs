@@ -569,8 +569,8 @@ fn direct_unlock_partial_balance_works() {
     })
 }
 
-/// This test verifies that direct claiming fails if ethereum_address
-/// doesn't correspond to submitted ethereum_signature.
+/// This test verifies that direct claiming fails if `ethereum_address`
+/// doesn't correspond to submitted `ethereum_signature`.
 #[test]
 fn direct_claiming_fails_when_eth_signature_invalid() {
     // Build the state from the config.
@@ -981,8 +981,8 @@ fn dispatch_unlock_partial_balance_works() {
     })
 }
 
-/// This test verifies that dispatch claiming fails if ethereum_address
-/// doesn't correspond to submitted ethereum_signature.
+/// This test verifies that dispatch claiming fails if `ethereum_address`
+/// doesn't correspond to submitted `ethereum_signature`.
 #[test]
 fn dispatch_claiming_fails_when_eth_signature_invalid() {
     // Build the state from the config.

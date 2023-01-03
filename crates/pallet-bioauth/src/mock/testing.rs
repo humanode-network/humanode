@@ -110,7 +110,7 @@ impl crate::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater 
     {
         MOCK_VALIDATOR_SET_UPDATER.with(|val| {
             val.borrow_mut()
-                .update_validators_set(validator_public_keys.cloned().collect())
+                .update_validators_set(validator_public_keys.copied().collect())
         });
     }
 
@@ -121,7 +121,7 @@ impl crate::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater 
     {
         MOCK_VALIDATOR_SET_UPDATER.with(|val| {
             val.borrow_mut()
-                .init_validators_set(validator_public_keys.cloned().collect())
+                .init_validators_set(validator_public_keys.copied().collect())
         });
     }
 }

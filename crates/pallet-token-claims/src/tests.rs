@@ -18,7 +18,7 @@ use crate::{
     mock::{
         eth, new_test_ext, new_test_ext_with, sig, Balances, EthAddr,
         MockEthereumSignatureVerifier, MockVestingInterface, MockVestingSchedule, RuntimeOrigin,
-        Test, TestExternalitiesExt, TokenClaims, FUNDS_PROVIDER,
+        Test, TestExternalitiesExt, TokenClaims, TREASURY,
     },
     traits::{NoVesting, VestingInterface},
     types::{ClaimInfo, EthereumSignatureMessageParams},
@@ -719,7 +719,7 @@ fn adding_claim_works() {
         // Check test preconditions.
         assert!(!<Claims<Test>>::contains_key(eth(EthAddr::New)));
 
-        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let funds_provider_balance_before = Balances::free_balance(TREASURY);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
         let currency_total_issuance_before = currency_total_issuance();
@@ -733,22 +733,12 @@ fn adding_claim_works() {
         // Set block number to enable events.
         mock::System::set_block_number(1);
 
-        // Non-sudo accounts are not allowed.
-        assert_noop!(
-            TokenClaims::add_claim(
-                RuntimeOrigin::signed(42),
-                eth(EthAddr::New),
-                new_claim_info.clone(),
-                FUNDS_PROVIDER,
-            ),
-            DispatchError::BadOrigin
-        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::add_claim(
             RuntimeOrigin::root(),
             eth(EthAddr::New),
             new_claim_info.clone(),
-            FUNDS_PROVIDER,
+            TREASURY,
         ));
 
         // Assert state changes.
@@ -765,7 +755,7 @@ fn adding_claim_works() {
             claimed_balance
         );
         assert_eq!(
-            funds_provider_balance_before - Balances::free_balance(FUNDS_PROVIDER),
+            funds_provider_balance_before - Balances::free_balance(TREASURY),
             claimed_balance
         );
         assert_eq!(currency_total_issuance_before, currency_total_issuance());
@@ -791,7 +781,7 @@ fn adding_claim_not_sudo() {
                 RuntimeOrigin::signed(42),
                 eth(EthAddr::New),
                 new_claim_info,
-                FUNDS_PROVIDER,
+                TREASURY,
             ),
             DispatchError::BadOrigin
         );
@@ -813,7 +803,7 @@ fn adding_claim_conflicting_eth_address() {
                 RuntimeOrigin::root(),
                 eth(EthAddr::Existing),
                 new_claim_info,
-                FUNDS_PROVIDER,
+                TREASURY,
             ),
             Error::<Test>::ConflictingEthereumAddress
         );
@@ -825,7 +815,7 @@ fn adding_claim_conflicting_eth_address() {
 fn adding_claim_funds_provider_underflow() {
     new_test_ext().execute_with_ext(|_| {
         let new_claim_info = ClaimInfo {
-            balance: Balances::free_balance(FUNDS_PROVIDER) + 1,
+            balance: Balances::free_balance(TREASURY) + 1,
             vesting: MockVestingSchedule,
         };
 
@@ -835,9 +825,78 @@ fn adding_claim_funds_provider_underflow() {
                 RuntimeOrigin::root(),
                 eth(EthAddr::New),
                 new_claim_info,
-                FUNDS_PROVIDER,
+                TREASURY,
             ),
             Error::<Test>::FundsProviderUnderflow
+        );
+    });
+}
+
+/// This test verifies that removing claim signed by sudo account works in the happy path.
+#[test]
+fn removing_claim_works() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
+
+        let claim = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap();
+        let funds_consumer_balance_before = Balances::free_balance(TREASURY);
+        let pot_account_balance_before = pot_account_balance();
+        let total_claimable_balance_before = total_claimable_balance();
+        let currency_total_issuance_before = currency_total_issuance();
+
+        // Set block number to enable events.
+        mock::System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_ok!(TokenClaims::remove_claim(
+            RuntimeOrigin::root(),
+            eth(EthAddr::Existing),
+            TREASURY,
+        ));
+
+        // Assert state changes.
+        assert!(!<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
+        assert_eq!(
+            total_claimable_balance_before - total_claimable_balance(),
+            claim.balance
+        );
+        assert_eq!(
+            pot_account_balance_before - pot_account_balance(),
+            claim.balance
+        );
+        assert_eq!(
+            Balances::free_balance(TREASURY) - funds_consumer_balance_before,
+            claim.balance
+        );
+        assert_eq!(currency_total_issuance_before, currency_total_issuance());
+        mock::System::assert_has_event(mock::RuntimeEvent::TokenClaims(Event::ClaimRemoved {
+            ethereum_address: eth(EthAddr::Existing),
+            claim,
+        }));
+    });
+}
+
+/// This test verifies that removing claim signed by account different from sudo fails.
+#[test]
+fn removing_claim_not_sudo() {
+    new_test_ext().execute_with_ext(|_| {
+        // Non-sudo accounts are not allowed.
+        assert_noop!(
+            TokenClaims::remove_claim(RuntimeOrigin::signed(42), eth(EthAddr::Existing), TREASURY,),
+            DispatchError::BadOrigin
+        );
+    });
+}
+
+/// This test verifies that removing claim fails if the claim doesn't exist.
+#[test]
+fn removing_claim_no_claim() {
+    new_test_ext().execute_with_ext(|_| {
+        // Invoke the function under test.
+        assert_noop!(
+            TokenClaims::remove_claim(RuntimeOrigin::root(), eth(EthAddr::New), TREASURY,),
+            Error::<Test>::NoClaim
         );
     });
 }
@@ -850,7 +909,7 @@ fn changing_claim_balance_increase_works() {
         assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
 
         let old_claim = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap();
-        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let funds_provider_balance_before = Balances::free_balance(TREASURY);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
         let currency_total_issuance_before = currency_total_issuance();
@@ -864,22 +923,12 @@ fn changing_claim_balance_increase_works() {
         // Set block number to enable events.
         mock::System::set_block_number(1);
 
-        // Non-sudo accounts are not allowed.
-        assert_noop!(
-            TokenClaims::change_claim(
-                RuntimeOrigin::signed(42),
-                eth(EthAddr::Existing),
-                new_claim_info.clone(),
-                FUNDS_PROVIDER,
-            ),
-            DispatchError::BadOrigin
-        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::change_claim(
             RuntimeOrigin::root(),
             eth(EthAddr::Existing),
             new_claim_info.clone(),
-            FUNDS_PROVIDER,
+            TREASURY,
         ));
 
         // Assert state changes.
@@ -896,7 +945,7 @@ fn changing_claim_balance_increase_works() {
             new_claimed_balance - old_claim.balance
         );
         assert_eq!(
-            funds_provider_balance_before - Balances::free_balance(FUNDS_PROVIDER),
+            funds_provider_balance_before - Balances::free_balance(TREASURY),
             new_claimed_balance - old_claim.balance
         );
         assert_eq!(currency_total_issuance_before, currency_total_issuance());
@@ -916,7 +965,7 @@ fn changing_claim_balance_decrease_works() {
         assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
 
         let old_claim = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap();
-        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let funds_provider_balance_before = Balances::free_balance(TREASURY);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
         let currency_total_issuance_before = currency_total_issuance();
@@ -930,22 +979,12 @@ fn changing_claim_balance_decrease_works() {
         // Set block number to enable events.
         mock::System::set_block_number(1);
 
-        // Non-sudo accounts are not allowed.
-        assert_noop!(
-            TokenClaims::change_claim(
-                RuntimeOrigin::signed(42),
-                eth(EthAddr::Existing),
-                new_claim_info.clone(),
-                FUNDS_PROVIDER,
-            ),
-            DispatchError::BadOrigin
-        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::change_claim(
             RuntimeOrigin::root(),
             eth(EthAddr::Existing),
             new_claim_info.clone(),
-            FUNDS_PROVIDER,
+            TREASURY,
         ));
 
         // Assert state changes.
@@ -962,7 +1001,7 @@ fn changing_claim_balance_decrease_works() {
             old_claim.balance - new_claimed_balance,
         );
         assert_eq!(
-            Balances::free_balance(FUNDS_PROVIDER) - funds_provider_balance_before,
+            Balances::free_balance(TREASURY) - funds_provider_balance_before,
             old_claim.balance - new_claimed_balance
         );
         assert_eq!(currency_total_issuance_before, currency_total_issuance());
@@ -982,7 +1021,7 @@ fn changing_claim_balance_not_changing_works() {
         assert!(<Claims<Test>>::contains_key(eth(EthAddr::Existing)));
 
         let old_claim = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap();
-        let funds_provider_balance_before = Balances::free_balance(FUNDS_PROVIDER);
+        let funds_provider_balance_before = Balances::free_balance(TREASURY);
         let pot_account_balance_before = pot_account_balance();
         let total_claimable_balance_before = total_claimable_balance();
         let currency_total_issuance_before = currency_total_issuance();
@@ -996,22 +1035,12 @@ fn changing_claim_balance_not_changing_works() {
         // Set block number to enable events.
         mock::System::set_block_number(1);
 
-        // Non-sudo accounts are not allowed.
-        assert_noop!(
-            TokenClaims::change_claim(
-                RuntimeOrigin::signed(42),
-                eth(EthAddr::Existing),
-                new_claim_info.clone(),
-                FUNDS_PROVIDER,
-            ),
-            DispatchError::BadOrigin
-        );
         // Invoke the function under test.
         assert_ok!(TokenClaims::change_claim(
             RuntimeOrigin::root(),
             eth(EthAddr::Existing),
             new_claim_info.clone(),
-            FUNDS_PROVIDER,
+            TREASURY,
         ));
 
         // Assert state changes.
@@ -1022,7 +1051,7 @@ fn changing_claim_balance_not_changing_works() {
         assert_eq!(total_claimable_balance_before, total_claimable_balance(),);
         assert_eq!(pot_account_balance_before, pot_account_balance(),);
         assert_eq!(
-            Balances::free_balance(FUNDS_PROVIDER),
+            Balances::free_balance(TREASURY),
             funds_provider_balance_before
         );
         assert_eq!(currency_total_issuance_before, currency_total_issuance());
@@ -1049,7 +1078,7 @@ fn changing_claim_not_sudo() {
                 RuntimeOrigin::signed(42),
                 eth(EthAddr::New),
                 new_claim_info,
-                FUNDS_PROVIDER,
+                TREASURY,
             ),
             DispatchError::BadOrigin
         );
@@ -1071,7 +1100,7 @@ fn changing_claim_no_claim() {
                 RuntimeOrigin::root(),
                 eth(EthAddr::New),
                 new_claim_info,
-                FUNDS_PROVIDER,
+                TREASURY,
             ),
             Error::<Test>::NoClaim
         );
@@ -1084,7 +1113,7 @@ fn changing_claim_funds_provider_underflow() {
     new_test_ext().execute_with_ext(|_| {
         let current_claim_balance = <Claims<Test>>::get(eth(EthAddr::Existing)).unwrap().balance;
         let new_claim_info = ClaimInfo {
-            balance: Balances::free_balance(FUNDS_PROVIDER) + current_claim_balance + 1,
+            balance: Balances::free_balance(TREASURY) + current_claim_balance + 1,
             vesting: MockVestingSchedule,
         };
 
@@ -1094,7 +1123,7 @@ fn changing_claim_funds_provider_underflow() {
                 RuntimeOrigin::root(),
                 eth(EthAddr::Existing),
                 new_claim_info,
-                FUNDS_PROVIDER,
+                TREASURY,
             ),
             Error::<Test>::FundsProviderUnderflow
         );

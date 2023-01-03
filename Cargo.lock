@@ -3488,7 +3488,6 @@ dependencies = [
  "pallet-multisig",
  "pallet-offences",
  "pallet-pot",
- "pallet-randomness-collective-flip",
  "pallet-session",
  "pallet-sudo",
  "pallet-timestamp",
@@ -5783,20 +5782,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-randomness-collective-flip"
-version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/humanode-2022-11-23#5ea6d95309aaccfa399c5f72e5a14a4b7c6c4ca1"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "safe-mix",
- "scale-info",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-session"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/humanode-2022-11-23#5ea6d95309aaccfa399c5f72e5a14a4b7c6c4ca1"
@@ -5942,6 +5927,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-api",
  "sp-core",
 ]
 
@@ -7217,15 +7203,6 @@ checksum = "3e75f6a532d0fd9f7f13144f392b6ad56a32696bfcd9c78f797f16bbb6f072d6"
 
 [[package]]
 name = "rustc_version"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "138e3e0acb6c9fb258b19b67cb8abd63c00679d2851805ea151465464fe9030a"
-dependencies = [
- "semver 0.9.0",
-]
-
-[[package]]
-name = "rustc_version"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bfa0f585226d2e68097d4f95d113b15b83a82e819ab25717ec0590d9584ef366"
@@ -7325,15 +7302,6 @@ name = "ryu"
 version = "1.0.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4501abdff3ae82a1c1b477a17252eb69cee9e66eb915c1abaa4f44d873df9f09"
-
-[[package]]
-name = "safe-mix"
-version = "1.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6d3d055a2582e6b00ed7a31c1524040aa391092bf636328350813f3a0605215c"
-dependencies = [
- "rustc_version 0.2.3",
-]
 
 [[package]]
 name = "safemem"
@@ -8521,15 +8489,6 @@ dependencies = [
 
 [[package]]
 name = "semver"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d7eb9ef2c18661902cc47e535f9bc51b78acd254da71d375c2f6720d9a40403"
-dependencies = [
- "semver-parser",
-]
-
-[[package]]
-name = "semver"
 version = "1.0.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e25dfac463d778e353db5be2449d1cce89bd6fd23c9f1ea21310ce6e5a1b29c4"
@@ -8838,7 +8797,7 @@ dependencies = [
  "curve25519-dalek 4.0.0-pre.1",
  "rand_core 0.6.4",
  "ring",
- "rustc_version 0.4.0",
+ "rustc_version",
  "sha2 0.10.6",
  "subtle 2.4.1",
 ]
