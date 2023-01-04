@@ -789,11 +789,14 @@ impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
         <UncheckedExtrinsic as sp_runtime::traits::Extrinsic>::SignaturePayload,
     )> {
         let tip = 0;
-        // take the biggest period possible.
+        // Take the biggest period possible, considering the number of cached block hashes.
+        // In case of overflow we pass default (`0`) and let `sp_runtime::generic::Era::mortal`
+        // clamp the value to the appropriate lower bound.
         let period = <Self::BlockHashCount as Get<Self::BlockNumber>>::get()
             .checked_next_power_of_two()
             .map(|c| c / 2)
-            .unwrap_or(2) as u64;
+            .unwrap_or_default()
+            .into();
         let current_block = System::block_number()
             .saturated_into::<u64>()
             // The `System::block_number` is initialized with `n+1`,
