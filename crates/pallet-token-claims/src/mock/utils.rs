@@ -1,5 +1,8 @@
 //! Mock utils.
 
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{Deserialize, Serialize};
 use mockall::mock;

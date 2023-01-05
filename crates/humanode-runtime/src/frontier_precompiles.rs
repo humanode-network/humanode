@@ -20,9 +20,9 @@ where
     R: pallet_evm::Config,
 {
     pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-        sp_std::vec![1, 2, 3, 4, 5, 1024, 1025, 2048, 2049]
+        sp_std::vec![1_u64, 2, 3, 4, 5, 1024, 1025, 2048, 2049]
             .into_iter()
-            .map(|x| hash(x as u64))
+            .map(hash)
             .collect()
     }
 }

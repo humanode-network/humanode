@@ -76,7 +76,7 @@ impl RpcUrlResolver {
         tunnel_name: &str,
         ws_rpc_endpoint_port: Option<u16>,
     ) -> Result<String, String> {
-        let mut attempts_left = 100;
+        let mut attempts_left = 100_i32;
         let res = loop {
             let tunnel_name = std::borrow::Cow::Owned(tunnel_name.to_owned());
             let result = self
@@ -106,7 +106,9 @@ impl RpcUrlResolver {
             if attempts_left <= 0 {
                 return Err(format!("ngrok did not start the tunnel in time: {}", err));
             }
-            attempts_left -= 1;
+            attempts_left = attempts_left
+                .checked_sub(1)
+                .expect("internal number of left attempts is valid; qed");
             tokio::time::sleep(std::time::Duration::from_millis(500)).await;
         };
         let mut public_url = res.public_url;

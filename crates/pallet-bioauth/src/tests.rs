@@ -1,3 +1,6 @@
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use std::ops::Div;
 
 use frame_support::{
