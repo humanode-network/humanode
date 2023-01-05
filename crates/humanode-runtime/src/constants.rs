@@ -1,5 +1,13 @@
 //! A set of constant values used in humanode runtime.
 
+// We allow math related clippy lints as all constants here have been checked manually.
+#![allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss,
+    clippy::integer_arithmetic
+)]
+
 /// Block related time.
 pub mod block_time {
     use crate::BlockNumber;
@@ -70,3 +78,9 @@ pub mod im_online {
 pub mod equivocation {
     pub const REPORT_LONGEVITY: u64 = 3 * super::babe::EPOCH_DURATION_IN_BLOCKS as u64;
 }
+
+// Constants conditions.
+static_assertions::const_assert!(im_online::MAX_KEYS >= bioauth::MAX_AUTHENTICATIONS);
+static_assertions::const_assert!(
+    im_online::MAX_PEER_IN_HEARTBEATS >= 3 * bioauth::MAX_AUTHENTICATIONS
+);

@@ -42,7 +42,8 @@ pub fn migrate<T: Config>() -> Weight {
 
     // Move the old identites to the new ones, but one session forward.
     <CurrentSessionIdentities<T>>::translate(|key, old: IdentificationFor<T>| {
-        <SessionIdentities<T>>::insert(session_index + 1, key, old);
+        // u32 is big enough for this oveflow to be practicly impossible.
+        <SessionIdentities<T>>::insert(session_index.checked_add(1).unwrap(), key, old);
         // Read the old value, insert one new value, and drop the old one.
         weight = weight.saturating_add(T::DbWeight::get().reads_writes(1, 2));
         None
