@@ -366,9 +366,18 @@ pub fn call_cost(value: U256, config: &evm::Config) -> u64 {
     let is_call_or_staticcall = true;
     let new_account = true;
 
+    // u64 is big enough for transaction cost related operations.
+    // So, this oveflow is practicly impossible.
     address_access_cost(is_cold, config.gas_call, config)
-        + xfer_cost(is_call_or_callcode, transfers_value)
-        + new_cost(is_call_or_staticcall, new_account, transfers_value, config)
+        .checked_add(xfer_cost(is_call_or_callcode, transfers_value))
+        .unwrap()
+        .checked_add(new_cost(
+            is_call_or_staticcall,
+            new_account,
+            transfers_value,
+            config,
+        ))
+        .unwrap()
 }
 
 impl<T: PrecompileHandle> PrecompileHandleExt for T {

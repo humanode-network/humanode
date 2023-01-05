@@ -1,3 +1,6 @@
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use std::sync::Arc;
 
 use facetec_api_client::ServerError;

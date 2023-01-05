@@ -1,3 +1,6 @@
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use frame_support::traits::Get;
 
 use crate::{self as pallet_chain_properties, mock::*};

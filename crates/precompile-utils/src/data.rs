@@ -110,7 +110,15 @@ impl<'a> EvmDataReader<'a> {
 
     /// Check the input has at least the correct amount of arguments before the end (32 bytes values).
     pub fn expect_arguments(&self, args: usize) -> EvmResult {
-        if self.input.len() >= self.cursor + args * 32 {
+        if self.input.len()
+            >= self
+                .cursor
+                .checked_add(
+                    args.checked_mul(32)
+                        .ok_or_else(|| revert("input doesn't match expected length"))?,
+                )
+                .ok_or_else(|| revert("input doesn't match expected length"))?
+        {
             Ok(())
         } else {
             Err(revert("input doesn't match expected length"))
@@ -156,7 +164,12 @@ impl<'a> EvmDataReader<'a> {
 
     /// Read remaining bytes
     pub fn read_till_end(&mut self) -> EvmResult<&[u8]> {
-        let range = self.move_cursor(self.input.len() - self.cursor)?;
+        let range = self.move_cursor(
+            self.input
+                .len()
+                .checked_sub(self.cursor)
+                .ok_or_else(|| revert("tried to parse raw bytes out of bounds"))?,
+        )?;
 
         let data = self
             .input
@@ -244,14 +257,15 @@ impl EvmDataWriter {
     fn bake_offsets(output: &mut Vec<u8>, offsets: Vec<OffsetDatum>) {
         for mut offset_datum in offsets {
             let offset_position = offset_datum.offset_position;
-            let offset_position_end = offset_position + 32;
+            // usize is big enough for this oveflow to be practicly impossible.
+            let offset_position_end = offset_position.checked_add(32).unwrap();
 
             // The offset is the distance between the start of the data and the
             // start of the pointed data (start of a struct, length of an array).
             // Offsets in inner data are relative to the start of their respective "container".
             // However in arrays the "container" is actually the item itself instead of the whole
             // array, which is corrected by `offset_shift`.
-            let free_space_offset = output.len() - offset_datum.offset_shift;
+            let free_space_offset = output.len().checked_sub(offset_datum.offset_shift).unwrap();
 
             // Override dummy offset to the offset it will be in the final output.
             U256::from(free_space_offset)
@@ -412,13 +426,15 @@ macro_rules! impl_evmdata_for_uints {
 						)))?;
 
 					let mut buffer = [0u8; core::mem::size_of::<Self>()];
-					buffer.copy_from_slice(&data[32 - core::mem::size_of::<Self>()..]);
+					buffer.copy_from_slice(&data[32_usize.checked_sub(core::mem::size_of::<Self>())
+                        .ok_or_else(|| revert(alloc::format!("tried to parse {} out of bounds", core::any::type_name::<Self>())))?..]);
 					Ok(Self::from_be_bytes(buffer))
 				}
 
 				fn write(writer: &mut EvmDataWriter, value: Self) {
 					let mut buffer = [0u8; 32];
-					buffer[32 - core::mem::size_of::<Self>()..].copy_from_slice(&value.to_be_bytes());
+					buffer[32_usize.checked_sub(core::mem::size_of::<Self>()).unwrap()..]
+                        .copy_from_slice(&value.to_be_bytes());
 					writer.data.extend_from_slice(&buffer);
 				}
 
@@ -518,8 +534,11 @@ impl<T: EvmData> EvmData for Vec<T> {
 
             inner_writer = inner_writer.write_raw_bytes(&item_writer.data);
             for mut offset_datum in item_writer.offset_data {
-                offset_datum.offset_shift += 32;
-                offset_datum.offset_position += shift;
+                // usize is big enough for this oveflow to be practicly impossible.
+                offset_datum.offset_shift = offset_datum.offset_shift.checked_add(32).unwrap();
+                // usize is big enough for this oveflow to be practicly impossible.
+                offset_datum.offset_position =
+                    offset_datum.offset_position.checked_add(shift).unwrap();
                 inner_writer.offset_data.push(offset_datum);
             }
         }
@@ -563,9 +582,10 @@ impl EvmData for Bytes {
         // Leave it as is if a multiple of 32, otherwise pad to next
         // multiple or 32.
         let chunks = length / 32;
+        // usize is big enough for this oveflow to be practicly impossible.
         let padded_size = match length % 32 {
-            0 => chunks * 32,
-            _ => (chunks + 1) * 32,
+            0 => chunks.checked_mul(32).unwrap(),
+            _ => chunks.checked_add(1).unwrap().checked_mul(32).unwrap(),
         };
 
         let mut value = value.0.to_vec();
