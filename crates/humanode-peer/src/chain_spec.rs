@@ -233,6 +233,9 @@ const DEV_ACCOUNT_BALANCE: Balance = 10u128.pow(18 + 6);
 /// The existential deposit of the runtime.
 const EXISTENTIAL_DEPOSIT: Balance = 500;
 
+/// The initial pot accounts balance for testnet genesis.
+const INITIAL_POT_ACCOUNT_BALANCE: Balance = EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE;
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
@@ -253,15 +256,15 @@ fn testnet_genesis(
                 let pot_accounts = vec![
                     (
                         humanode_runtime::TreasuryPot::account_id(),
-                        EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE,
+                        INITIAL_POT_ACCOUNT_BALANCE,
                     ),
                     (
                         humanode_runtime::FeesPot::account_id(),
-                        EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE,
+                        INITIAL_POT_ACCOUNT_BALANCE,
                     ),
                     (
                         humanode_runtime::TokenClaimsPot::account_id(),
-                        EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE,
+                        INITIAL_POT_ACCOUNT_BALANCE,
                     ),
                 ];
                 pot_accounts

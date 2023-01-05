@@ -1,3 +1,6 @@
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use frame_support::traits::ConstU32;
 use mockall::mock;
 use vesting_schedule_linear::traits::SimpleFracScaler;

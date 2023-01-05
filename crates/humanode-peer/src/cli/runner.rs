@@ -17,6 +17,8 @@ where
     F: Future<Output = std::result::Result<(), E>>,
     E: std::error::Error + Send + Sync + 'static,
 {
+    // Allow integer arithmetic for tokio select macro.
+    #![allow(clippy::integer_arithmetic)]
     tokio::select! {
         res = future => res?,
         _ = tokio::signal::ctrl_c() => {

@@ -1,3 +1,6 @@
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 #[cfg(feature = "runtime-benchmarks")]
 pub(crate) mod benchmarking;
 
