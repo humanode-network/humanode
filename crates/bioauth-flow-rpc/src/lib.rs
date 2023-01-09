@@ -565,3 +565,6 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(err: T) ->
         }),
     )))
 }
+
+/// A helper function.
+fn into_rpc_error() {}
