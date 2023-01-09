@@ -12,7 +12,8 @@ impl Sequence {
 
     /// Increment the sequence value.
     pub fn inc(&mut self) {
-        self.0 += 1;
+        // u64 is big enough for this oveflow to be practicly impossible.
+        self.0 = self.0.checked_add(1).unwrap();
     }
 
     /// Obtain the current value of the sequence.

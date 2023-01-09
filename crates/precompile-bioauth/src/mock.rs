@@ -1,3 +1,6 @@
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use codec::{Decode, Encode, MaxEncodedLen};
 use fp_evm::{Context, ExitError, ExitReason, PrecompileHandle, Transfer};
 use frame_support::traits::{ConstU16, ConstU32, ConstU64};

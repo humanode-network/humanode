@@ -1,5 +1,8 @@
 //! The benchmarking utilities.
 
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use eip712_common::keccak_256;
 use frame_support::{
     dispatch::DispatchResult,

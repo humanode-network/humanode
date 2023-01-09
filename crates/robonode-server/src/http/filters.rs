@@ -13,6 +13,9 @@ use crate::{
     },
 };
 
+/// Json body content length limit in bytes.
+const JSON_BODY_LENGTH_LIMIT: u64 = 1024 * 1024 * 16;
+
 /// Pass the [`Arc`] to the handler.
 fn with_arc<T>(
     val: Arc<T>,
@@ -30,7 +33,7 @@ where
 {
     // When accepting a body, we want a JSON body
     // (and to reject huge payloads)...
-    warp::body::content_length_limit(1024 * 1024 * 16).and(warp::body::json::<T>())
+    warp::body::content_length_limit(JSON_BODY_LENGTH_LIMIT).and(warp::body::json::<T>())
 }
 
 /// The root mount point with all the routes.

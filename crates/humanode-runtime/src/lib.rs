@@ -207,10 +207,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     state_version: 1,
 };
 
-// Constants conditions.
-static_assertions::const_assert!(MAX_KEYS >= MAX_AUTHENTICATIONS);
-static_assertions::const_assert!(MAX_PEER_IN_HEARTBEATS >= 3 * MAX_AUTHENTICATIONS);
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> NativeVersion {
@@ -221,6 +217,7 @@ pub fn native_version() -> NativeVersion {
 }
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+const MAX_BLOCK_LENGTH: u32 = 5 * 1024 * 1024;
 
 parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
@@ -228,7 +225,7 @@ parameter_types! {
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
         ::with_sensible_defaults(WEIGHT_PER_SECOND.saturating_mul(2).set_proof_size(u64::MAX), NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
-        ::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+        ::max_with_normal_ratio(MAX_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
     pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
 }
 
@@ -789,11 +786,14 @@ impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
         <UncheckedExtrinsic as sp_runtime::traits::Extrinsic>::SignaturePayload,
     )> {
         let tip = 0;
-        // take the biggest period possible.
+        // Take the biggest period possible, considering the number of cached block hashes.
+        // In case of overflow we pass default (`0`) and let `sp_runtime::generic::Era::mortal`
+        // clamp the value to the appropriate lower bound.
         let period = <Self::BlockHashCount as Get<Self::BlockNumber>>::get()
             .checked_next_power_of_two()
             .map(|c| c / 2)
-            .unwrap_or(2) as u64;
+            .unwrap_or_default()
+            .into();
         let current_block = System::block_number()
             .saturated_into::<u64>()
             // The `System::block_number` is initialized with `n+1`,

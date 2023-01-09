@@ -1,5 +1,8 @@
 //! The mock for the pallet.
 
+// Allow simple integer_arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use frame_support::{
     parameter_types, sp_io,
     traits::{ConstU32, ConstU64},
