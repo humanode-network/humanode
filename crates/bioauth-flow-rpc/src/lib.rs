@@ -25,6 +25,8 @@ use sp_blockchain::HeaderBackend;
 use sp_runtime::transaction_validity::InvalidTransaction;
 use tracing::*;
 
+mod errors;
+
 /// Signer provides signatures for the data.
 #[async_trait::async_trait]
 pub trait Signer<S> {
@@ -271,11 +273,7 @@ where
                     message = "Unable to extract own key at bioauth flow RPC",
                     ?error
                 );
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::ValidatorKeyExtraction as _).code(),
-                    "Unable to extract own key".to_owned(),
-                    None::<()>,
-                )))
+                errors::ValidatorError::ValidatorKeyExtraction.into()
             })
     }
     /// Return the opaque liveness data and corresponding signature.
@@ -283,11 +281,7 @@ where
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
         let validator_key =
             self.validator_public_key()?
-                .ok_or_else(|| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
-                    "Validator key not available".to_owned(),
-                    None::<()>,
-                ))))?;
+                .ok_or_else(|| errors::ValidatorError::MissingValidatorKey)?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {
@@ -565,6 +559,3 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(err: T) ->
         }),
     )))
 }
-
-/// A helper function.
-fn into_rpc_error() {}
