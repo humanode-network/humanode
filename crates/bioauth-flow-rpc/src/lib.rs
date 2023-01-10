@@ -273,7 +273,7 @@ where
                     message = "Unable to extract own key at bioauth flow RPC",
                     ?error
                 );
-                errors::ValidatorError::ValidatorKeyExtraction.into()
+                errors::ValidatorKeyError::ValidatorKeyExtraction.into()
             })
     }
     /// Return the opaque liveness data and corresponding signature.
@@ -281,7 +281,7 @@ where
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
         let validator_key =
             self.validator_public_key()?
-                .ok_or_else(|| errors::ValidatorError::MissingValidatorKey)?;
+                .ok_or_else(|| errors::ValidatorKeyError::MissingValidatorKey)?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {

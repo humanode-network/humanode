@@ -9,19 +9,21 @@ use crate::ApiErrorCode;
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub enum ValidatorError {
+pub enum ValidatorKeyError {
     MissingValidatorKey,
     ValidatorKeyExtraction,
 }
 
-impl From<ValidatorError> for JsonRpseeError {
-    fn from(validator_err: ValidatorError) -> Self {
+impl From<ValidatorKeyError> for JsonRpseeError {
+    fn from(validator_err: ValidatorKeyError) -> Self {
         let (code, data): (ApiErrorCode, Option<Value>) = match validator_err {
-            ValidatorError::MissingValidatorKey => (
+            ValidatorKeyError::MissingValidatorKey => (
                 ApiErrorCode::MissingValidatorKey,
                 Some(serde_json::json!({ "validator key not available": true })),
             ),
-            ValidatorError::ValidatorKeyExtraction => (ApiErrorCode::ValidatorKeyExtraction, None),
+            ValidatorKeyError::ValidatorKeyExtraction => {
+                (ApiErrorCode::ValidatorKeyExtraction, None)
+            }
         };
 
         JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
