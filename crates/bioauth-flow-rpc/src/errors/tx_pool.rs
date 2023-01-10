@@ -4,33 +4,36 @@ use jsonrpsee::{
     core::Error as JsonRpseeError,
     types::error::{CallError, ErrorCode, ErrorObject},
 };
-use serde::Serialize;
 
 use super::ApiErrorCode;
 
 /// The transaction pool error kinds.
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[derive(Debug, thiserror::Error)]
 pub enum TransactionPoolError {
     /// Auth ticket signature was not valid.
+    #[error("invalid auth ticket signature")]
     AuthTicketSignatureInvalid,
     /// We were unable to parse the auth ticket (although its signature was supposed to be
     /// validated by now).
+    #[error("unable to parse auth ticket")]
     UnableToParseAuthTicket,
     /// The nonce was already seen by the system.
+    #[error("nonce already used")]
     NonceAlreadyUsed,
     /// The active authentication issued by this ticket is still on.
+    #[error("already authenticated")]
     AlreadyAuthenticated,
     /// The transaction failed with custom error.
+    #[error("custom transaction pool error: {0}")]
     Other(String),
 }
 
 impl From<TransactionPoolError> for JsonRpseeError {
-    fn from(tx_pool_err: TransactionPoolError) -> Self {
+    fn from(err: TransactionPoolError) -> Self {
         JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
             ErrorCode::ServerError(ApiErrorCode::Transaction as _).code(),
-            "Transaction Pool Error",
-            Some(tx_pool_err),
+            err.to_string(),
+            None::<()>,
         )))
     }
 }
