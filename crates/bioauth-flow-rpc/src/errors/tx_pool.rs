@@ -4,7 +4,7 @@ use jsonrpsee::{
 };
 use serde::Serialize;
 
-use crate::ApiErrorCode;
+use super::ApiErrorCode;
 
 /// The error kinds that we expose in the RPC that originate from the transaction pool.
 #[derive(Debug, Serialize)]

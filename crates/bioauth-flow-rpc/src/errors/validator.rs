@@ -4,20 +4,21 @@ use jsonrpsee::{
 };
 use serde_json::Value;
 
-use crate::ApiErrorCode;
+use super::ApiErrorCode;
 
 #[derive(Debug)]
 pub enum ValidatorKeyError {
-    MissingValidatorKey(ValidatorKeyNotAvailable),
+    MissingValidatorKey,
     ValidatorKeyExtraction,
 }
 
 impl From<ValidatorKeyError> for JsonRpseeError {
     fn from(validator_err: ValidatorKeyError) -> Self {
         let (code, data): (ApiErrorCode, Option<Value>) = match validator_err {
-            ValidatorKeyError::MissingValidatorKey(details) => {
-                (ApiErrorCode::MissingValidatorKey, Some(details.into()))
-            }
+            ValidatorKeyError::MissingValidatorKey => (
+                ApiErrorCode::MissingValidatorKey,
+                Some(serde_json::json!({ "validator key not available": true })),
+            ),
             ValidatorKeyError::ValidatorKeyExtraction => {
                 (ApiErrorCode::ValidatorKeyExtraction, None)
             }
@@ -28,14 +29,5 @@ impl From<ValidatorKeyError> for JsonRpseeError {
             "Validator Key Error",
             data,
         )))
-    }
-}
-
-#[derive(Debug)]
-pub struct ValidatorKeyNotAvailable;
-
-impl From<ValidatorKeyNotAvailable> for Value {
-    fn from(_: ValidatorKeyNotAvailable) -> Self {
-        serde_json::json!({ "validator key not available": true })
     }
 }

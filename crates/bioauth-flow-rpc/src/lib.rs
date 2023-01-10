@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{TransactionPoolError, ValidatorKeyError, ValidatorKeyNotAvailable};
+use errors::{ApiErrorCode, RobonodeError, TransactionPoolError, ValidatorKeyError};
 use jsonrpsee::{
     core::{Error as JsonRpseeError, RpcResult},
     proc_macros::rpc,
@@ -65,34 +65,6 @@ where
 
 /// The parameters necessary to initialize the FaceTec Device SDK.
 type FacetecDeviceSdkParams = Map<String, Value>;
-
-/// The RPC error context we provide to trigger the face capture logic again,
-/// effectively requesting a retry of the same request with a new liveness data.
-#[derive(Debug)]
-struct ShouldRetry;
-
-impl From<ShouldRetry> for Value {
-    fn from(_: ShouldRetry) -> Self {
-        serde_json::json!({ "shouldRetry": true })
-    }
-}
-
-/// Custom rpc error codes.
-#[derive(Debug, Clone, Copy)]
-enum ApiErrorCode {
-    /// Signer has failed.
-    Signer = 100,
-    /// Request to robonode has failed.
-    Robonode = 200,
-    /// Call to runtime api has failed.
-    RuntimeApi = 300,
-    /// Authenticate transaction has failed.
-    Transaction = 400,
-    /// Validator key is not available.
-    MissingValidatorKey = 500,
-    /// Validator key extraction has failed.
-    ValidatorKeyExtraction = 600,
-}
 
 /// The bioauth status as used in the RPC.
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -250,7 +222,7 @@ where
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
         let validator_key =
             self.validator_public_key()?
-                .ok_or(ValidatorKeyError::MissingValidatorKey(ValidatorKeyNotAvailable))?;
+                .ok_or(ValidatorKeyError::MissingValidatorKey)?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {
@@ -369,11 +341,7 @@ where
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
-        let public_key = self.validator_public_key()?.ok_or_else(|| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-            ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
-            "Validator key not available".to_string(),
-            None::<()>,
-        ))))?;
+        let public_key = self.validator_public_key()?.ok_or(ValidatorKeyError::MissingValidatorKey)?;
         self.robonode_client
             .as_ref()
             .enroll(EnrollRequest {
@@ -383,18 +351,12 @@ where
             })
             .await
             .map_err(|err| {
-                let data: Option<Value>= match err {
+                match err {
                     robonode_client::Error::Call(
                         robonode_client::EnrollError::FaceScanRejected
-                    ) => Some(ShouldRetry.into()),
-                    _ => None,
-                };
-
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                    format!("Request to the robonode failed: {}", err),
-                    data,
-                )))
+                    ) => RobonodeError::ShouldRetry,
+                    _ => RobonodeError::Other(err.to_string()),
+                }
             })?;
 
         info!("Bioauth flow - enrolling complete");
@@ -418,18 +380,12 @@ where
             })
             .await
             .map_err(|err| {
-                let data: Option<Value>= match err {
+                match err {
                     robonode_client::Error::Call(
                         robonode_client::AuthenticateError::FaceScanRejected
-                    ) => Some(ShouldRetry.into()),
-                    _ => None,
-                };
-
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                    format!("Request to the robonode failed: {}", err),
-                    data,
-                )))
+                    ) => RobonodeError::ShouldRetry,
+                    _ => RobonodeError::Other(err.to_string()),
+                }
             })?;
 
         info!("Bioauth flow - authentication complete");
@@ -467,7 +423,7 @@ where
     }
 }
 
-/// Convert a transaction pool error into a human-readable
+/// Convert a transaction pool error into a bioauth flow related error.
 fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
     err: T,
 ) -> TransactionPoolError {

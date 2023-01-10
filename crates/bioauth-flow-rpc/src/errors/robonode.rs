@@ -4,12 +4,12 @@ use jsonrpsee::{
 };
 use serde_json::Value;
 
-use crate::ApiErrorCode;
+use super::ApiErrorCode;
 
 #[derive(Debug)]
 pub enum RobonodeError {
-    ShouldRetry(ShouldRetryDetails),
-    Other,
+    ShouldRetry,
+    Other(String),
 }
 
 impl From<RobonodeError> for JsonRpseeError {
@@ -17,8 +17,8 @@ impl From<RobonodeError> for JsonRpseeError {
         let code = ApiErrorCode::Robonode;
 
         let data: Option<Value> = match robonode_err {
-            RobonodeError::ShouldRetry(details) => Some(details.into()),
-            RobonodeError::Other => None,
+            RobonodeError::ShouldRetry => Some(serde_json::json!({ "shouldRetry": true })),
+            RobonodeError::Other(_) => None,
         };
 
         JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
@@ -26,14 +26,5 @@ impl From<RobonodeError> for JsonRpseeError {
             "Robonode Error",
             data,
         )))
-    }
-}
-
-#[derive(Debug)]
-pub struct ShouldRetryDetails;
-
-impl From<ShouldRetryDetails> for Value {
-    fn from(_: ShouldRetryDetails) -> Self {
-        serde_json::json!({ "shouldRetry": true })
     }
 }
