@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{ApiErrorCode, RobonodeError, TransactionPoolError, ValidatorKeyError};
+use errors::{ApiErrorCode, RobonodeError, SignerError, TransactionPoolError, ValidatorKeyError};
 use jsonrpsee::{
     core::{Error as JsonRpseeError, RpcResult},
     proc_macros::rpc,
@@ -227,11 +227,7 @@ where
 
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {
             tracing::error!(message = "Signing failed", ?error);
-            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::Signer as _).code(),
-                "Signing failed".to_owned(),
-                None::<()>,
-            )))
+            SignerError::SigningFailed
         })?;
 
         Ok((opaque_liveness_data, signature))
