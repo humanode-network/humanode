@@ -1,3 +1,5 @@
+//! The validator related error kinds.
+
 use jsonrpsee::{
     core::Error as JsonRpseeError,
     types::error::{CallError, ErrorCode, ErrorObject},
@@ -6,9 +8,12 @@ use serde_json::Value;
 
 use super::ApiErrorCode;
 
+/// The validator related error kinds.
 #[derive(Debug)]
 pub enum ValidatorKeyError {
+    /// Validator key not available.
     MissingValidatorKey,
+    /// Unable to extract validator key.
     ValidatorKeyExtraction,
 }
 

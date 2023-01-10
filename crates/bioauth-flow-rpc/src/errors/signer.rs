@@ -1,3 +1,5 @@
+//! The signer related error kinds.
+
 use jsonrpsee::{
     core::Error as JsonRpseeError,
     types::error::{CallError, ErrorCode, ErrorObject},
@@ -5,8 +7,10 @@ use jsonrpsee::{
 
 use super::ApiErrorCode;
 
+/// The signer related error kinds.
 #[derive(Debug)]
 pub enum SignerError {
+    /// Signing process failed.
     SigningFailed,
 }
 

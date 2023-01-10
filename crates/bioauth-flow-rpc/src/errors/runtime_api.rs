@@ -1,3 +1,5 @@
+//! The runtime api error kinds.
+
 use jsonrpsee::{
     core::Error as JsonRpseeError,
     types::error::{CallError, ErrorCode, ErrorObject},
@@ -5,9 +7,12 @@ use jsonrpsee::{
 
 use super::ApiErrorCode;
 
+/// The runtime api error kinds.
 #[derive(Debug)]
 pub enum RuntimeApiError {
+    /// Unable to get status from the runtime.
     BioauthStatus(String),
+    /// Error creating authentication extrinsic.
     CreatingAuthExtrinsic(String),
 }
 

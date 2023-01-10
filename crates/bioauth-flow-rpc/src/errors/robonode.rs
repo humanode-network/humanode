@@ -1,3 +1,5 @@
+//! The robonode related error kinds.
+
 use jsonrpsee::{
     core::Error as JsonRpseeError,
     types::error::{CallError, ErrorCode, ErrorObject},
@@ -6,9 +8,13 @@ use serde_json::Value;
 
 use super::ApiErrorCode;
 
+/// The robonode related error kinds.
 #[derive(Debug)]
 pub enum RobonodeError {
+    /// The error to trigger the face capture logic again,
+    /// effectively requesting a retry of the same request with a new liveness data.
     ShouldRetry,
+    /// The request to the robonode failed with custom error.
     Other(String),
 }
 

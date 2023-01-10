@@ -1,3 +1,5 @@
+//! All bioauth flow related error kinds that we expose in the RPC.
+
 pub mod robonode;
 pub mod runtime_api;
 pub mod signer;
