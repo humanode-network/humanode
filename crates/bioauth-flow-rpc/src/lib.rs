@@ -9,12 +9,10 @@ use std::sync::Arc;
 
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{ApiErrorCode, RobonodeError, SignerError, TransactionPoolError, ValidatorKeyError};
-use jsonrpsee::{
-    core::{Error as JsonRpseeError, RpcResult},
-    proc_macros::rpc,
-    types::error::{CallError, ErrorCode, ErrorObject},
+use errors::{
+    RobonodeError, RuntimeApiError, SignerError, TransactionPoolError, ValidatorKeyError,
 };
+use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
 use rpc_deny_unsafe::DenyUnsafe;
@@ -286,11 +284,7 @@ where
             .as_ref()
             .get_facetec_device_sdk_params()
             .await
-            .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                format!("Request to the robonode failed: {}", err),
-                None::<()>,
-            ))))?;
+            .map_err(|err| RobonodeError::Other(err.to_string()))?;
         Ok(res)
     }
 
@@ -300,11 +294,7 @@ where
             .as_ref()
             .get_facetec_session_token()
             .await
-            .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                format!("Request to the robonode failed: {}", err),
-                None::<()>,
-            ))))?;
+            .map_err(|err| RobonodeError::Other(err.to_string()))?;
         Ok(res.session_token)
     }
 
@@ -321,11 +311,7 @@ where
             .client
             .runtime_api()
             .bioauth_status(&at, &own_key)
-            .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                format!("Unable to get status from the runtime: {}", err),
-                None::<()>,
-            ))))?;
+            .map_err(|err| RuntimeApiError::BioauthStatus(err.to_string()))?;
 
         Ok(status.into())
     }
@@ -398,11 +384,7 @@ where
                 response.auth_ticket.into(),
                 response.auth_ticket_signature.into(),
             )
-            .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                    format!("Error creating auth extrinsic: {}", err),
-                    None::<()>,
-                ))))?;
+            .map_err(|err| RuntimeApiError::CreatingAuthExtrinsic(err.to_string()))?;
 
         self.pool
             .submit_and_watch(

@@ -1,9 +1,11 @@
 pub mod robonode;
+pub mod runtime_api;
 pub mod signer;
 pub mod tx_pool;
 pub mod validator;
 
 pub use robonode::*;
+pub use runtime_api::*;
 pub use signer::*;
 pub use tx_pool::*;
 pub use validator::*;
