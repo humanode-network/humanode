@@ -9,6 +9,7 @@ use std::sync::Arc;
 
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
+use errors::{ValidatorKeyError, ValidatorKeyNotAvailable};
 use jsonrpsee::{
     core::{Error as JsonRpseeError, RpcResult},
     proc_macros::rpc,
@@ -273,7 +274,7 @@ where
                     message = "Unable to extract own key at bioauth flow RPC",
                     ?error
                 );
-                errors::ValidatorKeyError::ValidatorKeyExtraction.into()
+                ValidatorKeyError::ValidatorKeyExtraction.into()
             })
     }
     /// Return the opaque liveness data and corresponding signature.
@@ -281,7 +282,7 @@ where
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
         let validator_key =
             self.validator_public_key()?
-                .ok_or_else(|| errors::ValidatorKeyError::MissingValidatorKey)?;
+                .ok_or(ValidatorKeyError::MissingValidatorKey(ValidatorKeyNotAvailable))?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {
