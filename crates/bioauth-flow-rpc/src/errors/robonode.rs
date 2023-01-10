@@ -14,9 +14,11 @@ pub enum RobonodeError {
 
 impl From<RobonodeError> for JsonRpseeError {
     fn from(robonode_err: RobonodeError) -> Self {
-        let (code, data): (ApiErrorCode, Option<Value>) = match robonode_err {
-            RobonodeError::ShouldRetry(details) => (ApiErrorCode::Robonode, Some(details.into())),
-            RobonodeError::Other => (ApiErrorCode::Robonode, None),
+        let code = ApiErrorCode::Robonode;
+
+        let data: Option<Value> = match robonode_err {
+            RobonodeError::ShouldRetry(details) => Some(details.into()),
+            RobonodeError::Other => None,
         };
 
         JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
