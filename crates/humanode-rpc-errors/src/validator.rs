@@ -14,8 +14,8 @@ pub enum ValidatorKeyError {
     /// Validator key not available.
     #[error("validator key not available")]
     MissingValidatorKey,
-    /// Unable to extract validator key.
-    #[error("unable to extract validator key")]
+    /// Unable to extract own key.
+    #[error("unable to extract own key")]
     ValidatorKeyExtraction,
 }
 
