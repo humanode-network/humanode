@@ -23,6 +23,9 @@ pub enum TransactionPoolError {
     /// The active authentication issued by this ticket is still on.
     #[error("already authenticated")]
     AlreadyAuthenticated,
+    /// The inability to pay some fees (e.g. account balance too low).
+    #[error("no funds")]
+    NoFunds,
     /// The transaction failed with custom error.
     #[error("custom transaction pool error: {0}")]
     Other(String),

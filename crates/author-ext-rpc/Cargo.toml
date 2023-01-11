@@ -7,6 +7,7 @@ publish = false
 [dependencies]
 author-ext-api = { version = "0.1", path = "../author-ext-api" }
 bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
+humanode-rpc-errors = { version = "0.1", path = "../humanode-rpc-errors" }
 rpc-deny-unsafe = { path = "../rpc-deny-unsafe" }
 
 jsonrpsee = { version = "0.15.1", features = ["server", "macros"] }

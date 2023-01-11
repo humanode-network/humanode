@@ -5,30 +5,18 @@ use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
+use humanode_rpc_errors::{RuntimeApiError, TransactionPoolError, ValidatorKeyError};
 use jsonrpsee::{
-    core::{async_trait, Error as JsonRpseeError, RpcResult},
+    core::{async_trait, RpcResult},
     proc_macros::rpc,
-    types::error::{CallError, ErrorCode, ErrorObject},
 };
 use rpc_deny_unsafe::DenyUnsafe;
-use sc_transaction_pool_api::{error::IntoPoolError, TransactionPool as TransactionPoolT};
+use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
 use sp_api::{BlockT, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_core::Bytes;
+use sp_runtime::transaction_validity::InvalidTransaction;
 use tracing::*;
-
-/// Custom rpc error codes.
-#[derive(Debug, Clone, Copy)]
-enum ApiErrorCode {
-    /// Call to runtime api has failed.
-    RuntimeApi = 300,
-    /// Set_keys transaction has failed.
-    Transaction = 400,
-    /// Validator key is not available.
-    MissingValidatorKey = 500,
-    /// Validator key extraction has failed.
-    ValidatorKeyExtraction = 600,
-}
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
@@ -89,11 +77,7 @@ where
                 message = "Unable to extract own key at author extension RPC",
                 ?error
             );
-            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::ValidatorKeyExtraction as _).code(),
-                "Unable to extract own key".to_owned(),
-                None::<()>,
-            )))
+            ValidatorKeyError::ValidatorKeyExtraction.into()
         })
     }
 }
@@ -124,13 +108,9 @@ where
 
         info!("Author extension - setting keys in progress");
 
-        let validator_key = self.validator_public_key()?.ok_or_else(|| {
-            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
-                "Validator key not available".to_owned(),
-                None::<()>,
-            )))
-        })?;
+        let validator_key = self
+            .validator_public_key()?
+            .ok_or(ValidatorKeyError::MissingValidatorKey)?;
 
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
@@ -138,27 +118,13 @@ where
             .client
             .runtime_api()
             .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
-            .map_err(|err| {
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                    format!("Runtime error: {}", err),
-                    None::<()>,
-                )))
-            })?
+            .map_err(|err| RuntimeApiError::Runtime(err.to_string()))?
             .map_err(|err| match err {
                 author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => {
-                    JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                        ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                        format!("Error during session keys decoding: {}", err),
-                        None::<()>,
-                    )))
+                    RuntimeApiError::SessionKeysDecoding(err)
                 }
                 author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation => {
-                    JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                        ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                        "Error during the creation of the signed set keys extrinsic".to_owned(),
-                        None::<()>,
-                    )))
+                    RuntimeApiError::CreatingSignedSetKeys
                 }
             })?;
 
@@ -169,17 +135,7 @@ where
                 signed_set_keys_extrinsic,
             )
             .await
-            .map_err(|e| {
-                let message = e.into_pool_error().map_or_else(
-                    |err| format!("Transaction pool error: {}", err),
-                    |err| format!("Unexpected transaction pool error: {}", err),
-                );
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::Transaction as _).code(),
-                    message,
-                    None::<()>,
-                )))
-            })?;
+            .map_err(map_txpool_error)?;
 
         info!("Author extension - setting keys transaction complete");
 
@@ -187,14 +143,32 @@ where
     }
 
     async fn get_validator_public_key(&self) -> RpcResult<ValidatorKeyExtractor::PublicKeyType> {
-        let validator_public_key = self.validator_public_key()?.ok_or_else(|| {
-            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
-                "Validator key not available".to_owned(),
-                None::<()>,
-            )))
-        })?;
+        let validator_public_key = self
+            .validator_public_key()?
+            .ok_or(ValidatorKeyError::MissingValidatorKey)?;
 
         Ok(validator_public_key)
+    }
+}
+
+/// Convert a transaction pool error into an author ext related error.
+fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
+    err: T,
+) -> TransactionPoolError {
+    let err = match err.into_pool_error() {
+        Ok(err) => err,
+        Err(err) => {
+            // This is not a Transaction Pool API Error, but it may be a kind of wrapper type
+            // error (i.e. Transaction Pool Error, without the API bit).
+            return TransactionPoolError::Other(err.to_string());
+        }
+    };
+
+    use sc_transaction_pool_api::error::Error;
+    match err {
+        // Provide some custom-tweaked error messages for a few select cases:
+        Error::InvalidTransaction(InvalidTransaction::Payment) => TransactionPoolError::NoFunds,
+        // For the rest cases, fallback to the native error rendering.
+        err => TransactionPoolError::Other(err.to_string()),
     }
 }

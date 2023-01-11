@@ -16,6 +16,15 @@ pub enum RuntimeApiError {
     /// Error creating authentication extrinsic.
     #[error("error creating authentication extrinsic: {0}")]
     CreatingAuthExtrinsic(String),
+    /// The runtime itself error.
+    #[error("runtime error: {0}")]
+    Runtime(String),
+    /// The error during session keys decoding.
+    #[error("error during session keys decoding: {0}")]
+    SessionKeysDecoding(String),
+    /// The error during the creation of the signed set keys extrinsic.
+    #[error("error during the creation of the signed set keys extrinsic")]
+    CreatingSignedSetKeys,
 }
 
 impl From<RuntimeApiError> for JsonRpseeError {
