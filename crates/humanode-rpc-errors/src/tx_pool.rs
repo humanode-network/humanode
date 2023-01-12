@@ -27,7 +27,7 @@ pub enum TransactionPoolError {
     #[error("no funds")]
     NoFunds,
     /// The native transaction pool error.
-    #[error("native transaction pool error: {0}")]
+    #[error("transaction pool error: {0}")]
     Native(String),
     /// The unexpected transaction pool error.
     #[error("unexpected transaction pool error: {0}")]
@@ -41,5 +41,96 @@ impl From<TransactionPoolError> for JsonRpseeError {
             err.to_string(),
             None::<()>,
         )))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn expected_auth_ticket_signature_invalid_error() {
+        let error: JsonRpseeError = TransactionPoolError::AuthTicketSignatureInvalid.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"invalid auth ticket signature\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn expected_unable_to_parse_auth_ticket_error() {
+        let error: JsonRpseeError = TransactionPoolError::UnableToParseAuthTicket.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"unable to parse auth ticket\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn expected_nonce_already_used_error() {
+        let error: JsonRpseeError = TransactionPoolError::NonceAlreadyUsed.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"nonce already used\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn expected_already_authenticated_error() {
+        let error: JsonRpseeError = TransactionPoolError::AlreadyAuthenticated.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"already authenticated\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn expected_no_funds_error() {
+        let error: JsonRpseeError = TransactionPoolError::NoFunds.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"no funds\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn expected_native_error() {
+        let error: JsonRpseeError = TransactionPoolError::Native("test".to_string()).into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"transaction pool error: test\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn expected_unexpected_error() {
+        let error: JsonRpseeError = TransactionPoolError::Unexpected("test".to_string()).into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message =
+            "{\"code\":400,\"message\":\"unexpected transaction pool error: test\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
     }
 }
