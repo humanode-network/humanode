@@ -118,7 +118,7 @@ where
             .client
             .runtime_api()
             .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
-            .map_err(|err| RuntimeApiError::Runtime(err.to_string()))?
+            .map_err(|err| RuntimeApiError::Native(err.to_string()))?
             .map_err(|err| match err {
                 author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => {
                     RuntimeApiError::SessionKeysDecoding(err)
