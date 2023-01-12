@@ -23,9 +23,6 @@ pub enum TransactionPoolError {
     /// The active authentication issued by this ticket is still on.
     #[error("already authenticated")]
     AlreadyAuthenticated,
-    /// The inability to pay some fees (e.g. account balance too low).
-    #[error("no funds")]
-    NoFunds,
     /// The native transaction pool error.
     #[error("transaction pool error: {0}")]
     Native(String),
@@ -91,18 +88,6 @@ mod tests {
         let error: ErrorObject = error.into();
 
         let expected_error_message = "{\"code\":400,\"message\":\"already authenticated\"}";
-        assert_eq!(
-            expected_error_message,
-            serde_json::to_string(&error).unwrap()
-        );
-    }
-
-    #[test]
-    fn expected_no_funds_error() {
-        let error: JsonRpseeError = TransactionPoolError::NoFunds.into();
-        let error: ErrorObject = error.into();
-
-        let expected_error_message = "{\"code\":400,\"message\":\"no funds\"}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()

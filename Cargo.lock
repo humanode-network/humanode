@@ -363,14 +363,15 @@ version = "0.1.0"
 dependencies = [
  "author-ext-api",
  "bioauth-keys",
- "humanode-rpc-errors",
  "jsonrpsee",
  "rpc-deny-unsafe",
  "sc-transaction-pool-api",
+ "serde_json",
  "sp-api",
  "sp-blockchain",
  "sp-core",
  "sp-runtime",
+ "thiserror",
  "tracing",
 ]
 
@@ -504,7 +505,6 @@ dependencies = [
  "async-trait",
  "bioauth-flow-api",
  "bioauth-keys",
- "humanode-rpc-errors",
  "jsonrpsee",
  "pallet-bioauth",
  "primitives-liveness-data",
@@ -516,6 +516,7 @@ dependencies = [
  "sp-api",
  "sp-blockchain",
  "sp-runtime",
+ "thiserror",
  "tokio",
  "tracing",
 ]
@@ -3426,15 +3427,6 @@ dependencies = [
  "sp-keystore",
  "sp-runtime",
  "substrate-frame-rpc-system",
-]
-
-[[package]]
-name = "humanode-rpc-errors"
-version = "0.1.0"
-dependencies = [
- "jsonrpsee",
- "serde_json",
- "thiserror",
 ]
 
 [[package]]

@@ -9,7 +9,7 @@ use std::sync::Arc;
 
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use humanode_rpc_errors::{
+use errors::{
     RobonodeError, RuntimeApiError, SignerError, TransactionPoolError, ValidatorKeyError,
 };
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
@@ -23,6 +23,8 @@ use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_runtime::transaction_validity::InvalidTransaction;
 use tracing::*;
+
+mod errors;
 
 /// Signer provides signatures for the data.
 #[async_trait::async_trait]

@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use humanode_rpc_errors::{RuntimeApiError, TransactionPoolError, ValidatorKeyError};
+use errors::{RuntimeApiError, TransactionPoolError, ValidatorKeyError};
 use jsonrpsee::{
     core::{async_trait, RpcResult},
     proc_macros::rpc,
@@ -17,6 +17,8 @@ use sp_blockchain::HeaderBackend;
 use sp_core::Bytes;
 use sp_runtime::transaction_validity::InvalidTransaction;
 use tracing::*;
+
+mod errors;
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
