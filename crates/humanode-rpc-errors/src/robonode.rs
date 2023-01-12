@@ -36,3 +36,34 @@ impl From<RobonodeError> for JsonRpseeError {
         )))
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn expected_should_retry_error() {
+        let error: JsonRpseeError = RobonodeError::ShouldRetry.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":200,\"message\":\"request to the robonode failed\",\"data\":{\"shouldRetry\":true}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn expected_other_error() {
+        let error: JsonRpseeError = RobonodeError::Other("test".to_string()).into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message =
+            "{\"code\":200,\"message\":\"request to the robonode failed with custom error: test\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+}
