@@ -160,7 +160,7 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
         Err(err) => {
             // This is not a Transaction Pool API Error, but it may be a kind of wrapper type
             // error (i.e. Transaction Pool Error, without the API bit).
-            return TransactionPoolError::Other(err.to_string());
+            return TransactionPoolError::Unexpected(err.to_string());
         }
     };
 
@@ -169,6 +169,6 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
         // Provide some custom-tweaked error messages for a few select cases:
         Error::InvalidTransaction(InvalidTransaction::Payment) => TransactionPoolError::NoFunds,
         // For the rest cases, fallback to the native error rendering.
-        err => TransactionPoolError::Other(err.to_string()),
+        err => TransactionPoolError::Native(err.to_string()),
     }
 }

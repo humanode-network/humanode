@@ -26,9 +26,12 @@ pub enum TransactionPoolError {
     /// The inability to pay some fees (e.g. account balance too low).
     #[error("no funds")]
     NoFunds,
-    /// The transaction failed with custom error.
-    #[error("custom transaction pool error: {0}")]
-    Other(String),
+    /// The native transaction pool error.
+    #[error("native transaction pool error: {0}")]
+    Native(String),
+    /// The unexpected transaction pool error.
+    #[error("unexpected transaction pool error: {0}")]
+    Unexpected(String),
 }
 
 impl From<TransactionPoolError> for JsonRpseeError {
