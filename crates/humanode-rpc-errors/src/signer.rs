@@ -24,3 +24,21 @@ impl From<SignerError> for JsonRpseeError {
         )))
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn expected_signer_error() {
+        let error: JsonRpseeError = SignerError::SigningFailed.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":100,\"message\":\"signing failed\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+}

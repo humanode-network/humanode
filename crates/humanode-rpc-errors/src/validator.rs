@@ -45,7 +45,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn expected_validator_key_extraction() {
+    fn expected_validator_key_extraction_error() {
         let error: JsonRpseeError = ValidatorKeyError::ValidatorKeyExtraction.into();
         let error: ErrorObject = error.into();
 
@@ -57,7 +57,7 @@ mod tests {
     }
 
     #[test]
-    fn expected_missing_validator_key() {
+    fn expected_missing_validator_key_error() {
         let error: JsonRpseeError = ValidatorKeyError::MissingValidatorKey.into();
         let error: ErrorObject = error.into();
 
