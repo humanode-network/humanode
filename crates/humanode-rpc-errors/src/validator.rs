@@ -38,3 +38,33 @@ impl From<ValidatorKeyError> for JsonRpseeError {
         )))
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use super::*;
+
+    #[test]
+    fn expected_validator_key_extraction() {
+        let error: JsonRpseeError = ValidatorKeyError::ValidatorKeyExtraction.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":600,\"message\":\"unable to extract own key\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn expected_missing_validator_key() {
+        let error: JsonRpseeError = ValidatorKeyError::MissingValidatorKey.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":500,\"message\":\"validator key not available\",\"data\":{\"validator key not available\":true}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+}
