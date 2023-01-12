@@ -24,7 +24,7 @@ impl From<ValidatorKeyError> for JsonRpseeError {
         let (code, data): (ApiErrorCode, Option<Value>) = match err {
             ValidatorKeyError::MissingValidatorKey => (
                 ApiErrorCode::MissingValidatorKey,
-                Some(serde_json::json!({ "validator key not available": true })),
+                Some(serde_json::json!({ "validatorKeyNotAvailable": true })),
             ),
             ValidatorKeyError::ValidatorKeyExtraction => {
                 (ApiErrorCode::ValidatorKeyExtraction, None)
@@ -61,7 +61,7 @@ mod tests {
         let error: JsonRpseeError = ValidatorKeyError::MissingValidatorKey.into();
         let error: ErrorObject = error.into();
 
-        let expected_error_message = "{\"code\":500,\"message\":\"validator key not available\",\"data\":{\"validator key not available\":true}}";
+        let expected_error_message = "{\"code\":500,\"message\":\"validator key not available\",\"data\":{\"validatorKeyNotAvailable\":true}}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
