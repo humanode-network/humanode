@@ -11,6 +11,7 @@ pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-data" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 rpc-deny-unsafe = { path = "../rpc-deny-unsafe" }
+rpc-validator-key-logic = { version = "0.1", path = "../rpc-validator-key-logic" }
 
 anyhow = "1"
 async-trait = "0.1"

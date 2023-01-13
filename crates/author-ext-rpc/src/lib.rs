@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{RuntimeApiError, TransactionPoolError, ValidatorKeyError};
+use errors::{RuntimeApiError, TransactionPoolError};
 use jsonrpsee::{
     core::{async_trait, RpcResult},
     proc_macros::rpc,
@@ -66,24 +66,6 @@ impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
     }
 }
 
-impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
-    AuthorExt<ValidatorKeyExtractor, Client, Block, TransactionPool>
-where
-    ValidatorKeyExtractor: KeyExtractorT,
-    ValidatorKeyExtractor::Error: std::fmt::Debug,
-{
-    /// Try to extract the validator key.
-    fn validator_public_key(&self) -> RpcResult<Option<ValidatorKeyExtractor::PublicKeyType>> {
-        self.validator_key_extractor.extract_key().map_err(|error| {
-            tracing::error!(
-                message = "Unable to extract own key at author extension RPC",
-                ?error
-            );
-            ValidatorKeyError::ValidatorKeyExtraction.into()
-        })
-    }
-}
-
 #[async_trait]
 impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
     AuthorExtServer<ValidatorKeyExtractor::PublicKeyType>
@@ -110,9 +92,8 @@ where
 
         info!("Author extension - setting keys in progress");
 
-        let validator_key = self
-            .validator_public_key()?
-            .ok_or(ValidatorKeyError::MissingValidatorKey)?;
+        let validator_key =
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
 
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
@@ -145,9 +126,8 @@ where
     }
 
     async fn get_validator_public_key(&self) -> RpcResult<ValidatorKeyExtractor::PublicKeyType> {
-        let validator_public_key = self
-            .validator_public_key()?
-            .ok_or(ValidatorKeyError::MissingValidatorKey)?;
+        let validator_public_key =
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
 
         Ok(validator_public_key)
     }

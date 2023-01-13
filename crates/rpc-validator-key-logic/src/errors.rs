@@ -6,7 +6,14 @@ use jsonrpsee::{
 };
 use serde_json::Value;
 
-use super::ApiErrorCode;
+/// Custom rpc error codes.
+#[derive(Debug, Clone, Copy)]
+pub enum ApiErrorCode {
+    /// Validator key is not available.
+    MissingValidatorKey = 500,
+    /// Validator key extraction has failed.
+    ValidatorKeyExtraction = 600,
+}
 
 /// The validator related error kinds.
 #[derive(Debug, thiserror::Error)]

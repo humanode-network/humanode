@@ -365,6 +365,7 @@ dependencies = [
  "bioauth-keys",
  "jsonrpsee",
  "rpc-deny-unsafe",
+ "rpc-validator-key-logic",
  "sc-transaction-pool-api",
  "serde_json",
  "sp-api",
@@ -510,6 +511,7 @@ dependencies = [
  "primitives-liveness-data",
  "robonode-client",
  "rpc-deny-unsafe",
+ "rpc-validator-key-logic",
  "sc-transaction-pool-api",
  "serde",
  "serde_json",
@@ -7144,6 +7146,17 @@ name = "rpc-deny-unsafe"
 version = "0.1.0"
 dependencies = [
  "sc-rpc-api",
+]
+
+[[package]]
+name = "rpc-validator-key-logic"
+version = "0.1.0"
+dependencies = [
+ "bioauth-keys",
+ "jsonrpsee",
+ "serde_json",
+ "thiserror",
+ "tracing",
 ]
 
 [[package]]

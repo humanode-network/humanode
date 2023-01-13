@@ -9,9 +9,7 @@ use std::sync::Arc;
 
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{
-    RobonodeError, RuntimeApiError, SignerError, TransactionPoolError, ValidatorKeyError,
-};
+use errors::{RobonodeError, RuntimeApiError, SignerError, TransactionPoolError};
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
@@ -203,24 +201,10 @@ where
     <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
 {
-    /// Try to extract the validator key.
-    fn validator_public_key(&self) -> RpcResult<Option<ValidatorKeyExtractor::PublicKeyType>> {
-        self.validator_key_extractor
-            .extract_key()
-            .map_err(|error| {
-                tracing::error!(
-                    message = "Unable to extract own key at bioauth flow RPC",
-                    ?error
-                );
-                ValidatorKeyError::ValidatorKeyExtraction.into()
-            })
-    }
     /// Return the opaque liveness data and corresponding signature.
     async fn sign(&self, liveness_data: &LivenessData) -> RpcResult<(OpaqueLivenessData, Vec<u8>)> {
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
-        let validator_key =
-            self.validator_public_key()?
-                .ok_or(ValidatorKeyError::MissingValidatorKey)?;
+        let validator_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {
@@ -299,9 +283,10 @@ where
     }
 
     async fn status(&self) -> RpcResult<BioauthStatus<Timestamp>> {
-        let own_key = match self.validator_public_key()? {
-            Some(v) => v,
-            None => return Ok(BioauthStatus::Unknown),
+        let own_key = match rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor) {
+            Ok(v) => v,
+            Err(rpc_validator_key_logic::ValidatorKeyError::MissingValidatorKey) => return Ok(BioauthStatus::Unknown),
+            Err(err) => return Err(err.into()),
         };
 
         // Extract an id of the last imported block.
@@ -323,7 +308,7 @@ where
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
 
-        let public_key = self.validator_public_key()?.ok_or(ValidatorKeyError::MissingValidatorKey)?;
+        let public_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
         self.robonode_client
             .as_ref()
             .enroll(EnrollRequest {
