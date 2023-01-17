@@ -139,12 +139,14 @@ pub fn create_extrinsic(
     let best_block = client.chain_info().best_number;
     let nonce = maybe_nonce.unwrap_or_else(|| fetch_nonce(client, sender.clone()));
 
-    // Get the biggest period possible that satisfies 2^(k - 1) < BlockHashCount.
-    let block_hash_count = <<Runtime as frame_system::Config>::BlockHashCount as Get<u32>>::get();
-    let period = block_hash_count
+    // Take the biggest period possible, considering the number of cached block hashes.
+    // In case of overflow we pass default (`0`) and let `sp_runtime::generic::Era::mortal`
+    // clamp the value to the appropriate lower bound.
+    let period = <<Runtime as frame_system::Config>::BlockHashCount as Get<u32>>::get()
         .checked_next_power_of_two()
         .map(|c| c / 2)
-        .unwrap_or(2) as u64;
+        .unwrap_or_default()
+        .into();
 
     let tip = 0;
     let extra: humanode_runtime::SignedExtra = (
