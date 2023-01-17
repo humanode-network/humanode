@@ -52,7 +52,7 @@ pub type KeystoreBioauthId = keystore_bioauth_account_id::KeystoreBioauthAccount
 /// Executor type.
 type Executor = NativeElseWasmExecutor<ExecutorDispatch>;
 /// Full node client type.
-type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
+pub(crate) type FullClient = sc_service::TFullClient<Block, RuntimeApi, Executor>;
 /// Full node backend type.
 type FullBackend = sc_service::TFullBackend<Block>;
 /// Full node select chain type.

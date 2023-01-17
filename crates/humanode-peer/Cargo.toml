@@ -17,6 +17,7 @@ humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id" }
 ngrok-api = { version = "0.1", path = "../ngrok-api" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
+pallet-token-claims = { version = "0.1", path = "../pallet-token-claims" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
 anyhow = "1"
@@ -34,12 +35,16 @@ fp-evm = { default-features = false, git = "https://github.com/humanode-network/
 frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23", optional = true }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+frame-system = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+frame-system-rpc-runtime-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.3"
 libsecp256k1 = "0.6"
+pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 qr2term = "0.2"
 reqwest = "0.11"
 sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
@@ -62,6 +67,7 @@ sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "lo
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha3 = "0.10"
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-authorship = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
@@ -69,6 +75,7 @@ sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", bra
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-keyring = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-panic-handler = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
@@ -94,19 +101,26 @@ runtime-benchmarks = [
   "frame-benchmarking-cli/runtime-benchmarks",
   "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
+  "frame-system/runtime-benchmarks",
   "humanode-runtime/runtime-benchmarks",
+  "pallet-balances/runtime-benchmarks",
   "pallet-bioauth/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
+  "pallet-token-claims/runtime-benchmarks",
   "sc-service/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
   "wasmtime",
 ]
 try-runtime = [
   "frame-support/try-runtime",
+  "frame-system/try-runtime",
   "humanode-runtime/try-runtime",
+  "pallet-balances/try-runtime",
   "pallet-bioauth/try-runtime",
   "pallet-dynamic-fee/try-runtime",
   "pallet-im-online/try-runtime",
+  "pallet-transaction-payment/try-runtime",
+  "pallet-token-claims/try-runtime",
   "try-runtime-cli",
 ]
 wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]
