@@ -121,6 +121,8 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub chain_spec: Box<dyn sc_chain_spec::ChainSpec>,
     /// AuthorExt specific dependencies.
     pub author_ext: AuthorExtDeps<VKE>,
+    /// Is the node in authority role.
+    pub is_authority: bool,
     /// Bioauth specific dependencies.
     pub bioauth: BioauthDeps<VKE, VSF>,
     /// BABE specific dependencies.
@@ -212,6 +214,7 @@ where
         network,
         chain_spec,
         author_ext,
+        is_authority,
         bioauth,
         babe,
         grandpa,
@@ -323,8 +326,7 @@ where
             Vec::new(),
             Arc::clone(&eth_overrides),
             Arc::clone(&eth_backend),
-            // Is authority.
-            true,
+            is_authority,
             Arc::clone(&eth_block_data_cache),
             eth_fee_history_cache,
             eth_fee_history_limit,

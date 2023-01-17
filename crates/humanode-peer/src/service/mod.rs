@@ -331,6 +331,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
+        let is_authority = role.is_authority();
         let bioauth_validator_key_extractor = Arc::clone(&account_validator_key_extractor);
         let bioauth_validator_signer_factory = {
             let keystore = keystore_container.keystore();
@@ -382,6 +383,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 author_ext: humanode_rpc::AuthorExtDeps {
                     author_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
                 },
+                is_authority,
                 bioauth: humanode_rpc::BioauthDeps {
                     robonode_client: Arc::clone(&robonode_client),
                     bioauth_validator_signer_factory: Arc::clone(&bioauth_validator_signer_factory),

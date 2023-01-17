@@ -1,3 +1,6 @@
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use frame_support::traits::Hooks;
 
 use crate::mock::*;

@@ -2,7 +2,7 @@
 
 use std::marker::PhantomData;
 
-use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
+use sp_application_crypto::{AppKey, CryptoTypePublicPair};
 use sp_keystore::SyncCryptoStorePtr;
 
 pub mod traits;
@@ -53,7 +53,7 @@ impl<Id, Selector> KeyExtractor<Id, Selector> {
 
 impl<Id, Selector> traits::KeyExtractor for KeyExtractor<Id, Selector>
 where
-    Id: AppPublic,
+    Id: for<'a> TryFrom<&'a [u8]> + AppKey,
     Selector: KeySelector<Id>,
 {
     type Error = KeyExtractorError<Selector::Error>;
@@ -76,7 +76,7 @@ where
         );
 
         let matching_keys =
-            matching_crypto_public_keys.filter_map(|bytes| Id::from_slice(&bytes).ok());
+            matching_crypto_public_keys.filter_map(|bytes| Id::try_from(&bytes).ok());
 
         let key = self
             .selector
