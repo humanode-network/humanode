@@ -39,7 +39,7 @@ where
 /// The root mount point with all the routes.
 pub fn root<L>(
     logic: Arc<L>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_authenticate::Request>
         + LogicOp<op_enroll::Request>
@@ -68,7 +68,7 @@ where
 /// POST /enroll with JSON body.
 fn enroll<L>(
     logic: Arc<L>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_enroll::Request> + Send + Sync,
     L::Error: Into<error::Logic>,
@@ -83,7 +83,7 @@ where
 /// POST /authenticate with JSON body.
 fn authenticate<L>(
     logic: Arc<L>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_authenticate::Request> + Send + Sync,
     L::Error: Into<error::Logic>,
@@ -99,7 +99,7 @@ where
 /// GET /facetec-session-token.
 fn get_facetec_session_token<L>(
     logic: Arc<L>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_get_facetec_session_token::Request> + Send + Sync,
     L::Error: Into<error::Logic>,
@@ -114,7 +114,7 @@ where
 /// GET /facetec-device-sdk-params.
 fn get_facetec_device_sdk_params<L>(
     logic: Arc<L>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_get_facetec_device_sdk_params::Request> + Send + Sync,
     L::Error: Into<error::Logic>,
@@ -129,7 +129,7 @@ where
 /// GET /public-key.
 fn get_public_key<L>(
     logic: Arc<L>,
-) -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone
+) -> impl Filter<Extract = (impl warp::Reply,), Error = warp::Rejection> + Clone
 where
     L: LogicOp<op_get_public_key::Request> + Send + Sync,
     L::Error: Into<error::Logic>,
