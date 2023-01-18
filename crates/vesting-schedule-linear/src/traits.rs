@@ -99,7 +99,7 @@ mod tests {
 
         for (value, nom, denom, expected) in tests {
             let actual = <SimpleFracScaler<u8, u8, u8>>::frac_scale(&value, &nom, &denom);
-            assert_eq!(actual, expected, "u8 {} {} {}", value, nom, denom);
+            assert_eq!(actual, expected, "u8 {value} {nom} {denom}");
         }
     }
 
@@ -132,7 +132,7 @@ mod tests {
 
         for (value, nom, denom, expected) in tests {
             let actual = <SimpleFracScaler<u16, u8, u8>>::frac_scale(&value, &nom, &denom);
-            assert_eq!(actual, expected, "u16 u8 {} {} {}", value, nom, denom);
+            assert_eq!(actual, expected, "u16 u8 {value} {nom} {denom}");
         }
     }
 
@@ -156,11 +156,7 @@ mod tests {
         for (value, nom, denom, expected) in tests {
             let actual =
                 <SimpleFracScaler<num::BigUint, u128, u64>>::frac_scale(&value, &nom, &denom);
-            assert_eq!(
-                actual, expected,
-                "BigUint u128 u64 {} {} {}",
-                value, nom, denom
-            );
+            assert_eq!(actual, expected, "BigUint u128 u64 {value} {nom} {denom}");
         }
     }
 }

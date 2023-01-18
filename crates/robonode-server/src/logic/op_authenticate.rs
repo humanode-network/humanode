@@ -205,7 +205,7 @@ where
 
 /// Make an key to store the temporary scan at.
 fn make_tmp_external_database_ref_id(execution_id: uuid::Uuid, sequence_value: u64) -> String {
-    format!("tmp-{}-{}", execution_id, sequence_value)
+    format!("tmp-{execution_id}-{sequence_value}")
 }
 
 /// Make an authentication nonce.

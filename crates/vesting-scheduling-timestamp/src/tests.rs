@@ -182,9 +182,7 @@ fn multi_linear_starting_point_check() {
                 assert_eq!(
                     compute(schedule, starting_point, now),
                     value,
-                    "{} {}",
-                    duration_since_start,
-                    value
+                    "{duration_since_start} {value}"
                 );
             }
         };

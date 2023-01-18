@@ -132,10 +132,7 @@ pub mod pallet {
 
             for (eth_address, info) in &self.claims {
                 if Claims::<T>::contains_key(eth_address) {
-                    panic!(
-                        "conflicting claim found in genesis for address {}",
-                        eth_address
-                    );
+                    panic!("conflicting claim found in genesis for address {eth_address}");
                 }
 
                 Claims::<T>::insert(eth_address, info.clone());
@@ -151,8 +148,7 @@ pub mod pallet {
             let actual_pot_balance = <CurrencyOf<T>>::free_balance(&pot_account_id);
             if actual_pot_balance != expected_pot_balance {
                 panic!(
-                    "invalid balance in the token claims pot account: got {:?}, expected {:?}",
-                    actual_pot_balance, expected_pot_balance
+                    "invalid balance in the token claims pot account: got {actual_pot_balance:?}, expected {expected_pot_balance:?}"
                 );
             }
 
@@ -161,8 +157,7 @@ pub mod pallet {
             if let Some(expected_total_claimable_balance) = self.total_claimable {
                 if expected_total_claimable_balance != total_claimable_balance {
                     panic!(
-                        "computed total claimable balance ({:?}) is different from the one specified at the genesis config ({:?})",
-                        total_claimable_balance, expected_total_claimable_balance
+                        "computed total claimable balance ({total_claimable_balance:?}) is different from the one specified at the genesis config ({expected_total_claimable_balance:?})"
                     );
                 }
             }

@@ -57,7 +57,7 @@ impl RpcUrlResolver {
             RpcUrl::LocalhostWithPort {
                 rpc_endpoint_port,
                 scheme,
-            } => Ok(format!("{}://localhost:{}", scheme, rpc_endpoint_port).into()),
+            } => Ok(format!("{scheme}://localhost:{rpc_endpoint_port}").into()),
             RpcUrl::DetectFromNgrok {
                 tunnel_name,
                 ws_rpc_endpoint_port,
@@ -99,12 +99,12 @@ impl RpcUrlResolver {
                     {
                         err
                     }
-                    err => return Err(format!("unable to detect the RPC URL from ngrok: {}", err)),
+                    err => return Err(format!("unable to detect the RPC URL from ngrok: {err}")),
                 },
             };
 
             if attempts_left <= 0 {
-                return Err(format!("ngrok did not start the tunnel in time: {}", err));
+                return Err(format!("ngrok did not start the tunnel in time: {err}"));
             }
             attempts_left = attempts_left
                 .checked_sub(1)
@@ -116,7 +116,7 @@ impl RpcUrlResolver {
             if res
                 .config
                 .addr
-                .ends_with(&format!(":{}", ws_rpc_endpoint_port))
+                .ends_with(&format!(":{ws_rpc_endpoint_port}"))
             {
                 public_url = public_url.replacen("https", "wss", 1);
             }
