@@ -543,7 +543,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let webapp_qrcode = bioauth_flow_config
         .qrcode_params()
         .await
-        .and_then(|(webapp_url, rpc_url)| crate::qrcode::WebApp::new(webapp_url, &rpc_url));
+        .and_then(|(webapp_url, rpc_url)| crate::qrcode::WebApp::new(webapp_url, rpc_url));
 
     match &webapp_qrcode {
         Ok(ref qrcode) => qrcode.print(),

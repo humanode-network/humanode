@@ -110,9 +110,9 @@ fn total_issuance_dust_removal() {
         // Check total issuance after making transfer.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
         // Check that the account is dead.
-        assert!(!frame_system::Account::<Runtime>::contains_key(
-            &account_id("Bob")
-        ));
+        assert!(!frame_system::Account::<Runtime>::contains_key(account_id(
+            "Bob"
+        )));
     })
 }
 

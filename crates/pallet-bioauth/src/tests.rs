@@ -445,7 +445,7 @@ fn too_many_authentications() {
         let mut active_authentications = vec![];
 
         for authentication in 0..MAX_AUTHENTICATIONS {
-            let public_key = bounded(format!("pk_{}", authentication).as_bytes());
+            let public_key = bounded(format!("pk_{authentication}").as_bytes());
             active_authentications.push(Authentication {
                 public_key,
                 expires_at,
@@ -507,7 +507,7 @@ fn too_many_nonces() {
 
         for nonce in 0..MAX_NONCES {
             consumed_auth_ticket_nonces
-                .push(format!("auth_ticket_nonce_{}", nonce).as_bytes().to_vec());
+                .push(format!("auth_ticket_nonce_{nonce}").as_bytes().to_vec());
         }
 
         let bounded_consumed_auth_ticket_nonces =

@@ -187,7 +187,7 @@ async fn expect_error_body_response(
 
 fn root_with_error_handler(
     logic: MockLogic,
-) -> impl Filter<Extract = impl warp::Reply, Error = std::convert::Infallible> + Clone {
+) -> impl Filter<Extract = (impl warp::Reply,), Error = std::convert::Infallible> + Clone {
     root(Arc::new(logic)).recover(rejection::handle)
 }
 

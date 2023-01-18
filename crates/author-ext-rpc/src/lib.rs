@@ -141,7 +141,7 @@ where
             .map_err(|err| {
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                     ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                    format!("Runtime error: {}", err),
+                    format!("Runtime error: {err}"),
                     None::<()>,
                 )))
             })?
@@ -149,7 +149,7 @@ where
                 author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => {
                     JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                         ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                        format!("Error during session keys decoding: {}", err),
+                        format!("Error during session keys decoding: {err}"),
                         None::<()>,
                     )))
                 }
@@ -171,8 +171,8 @@ where
             .await
             .map_err(|e| {
                 let message = e.into_pool_error().map_or_else(
-                    |err| format!("Transaction pool error: {}", err),
-                    |err| format!("Unexpected transaction pool error: {}", err),
+                    |err| format!("Transaction pool error: {err}"),
+                    |err| format!("Unexpected transaction pool error: {err}"),
                 );
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                     ErrorCode::ServerError(ApiErrorCode::Transaction as _).code(),
