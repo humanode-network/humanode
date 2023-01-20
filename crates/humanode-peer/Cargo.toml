@@ -24,79 +24,79 @@ anyhow = "1"
 async-trait = "0.1"
 clap = { version = "4.0", features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "3.0.0" }
-fc-cli = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
-fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
-fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
-fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
-fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
-fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
+fc-cli = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.36" }
+fc-consensus = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.36" }
+fc-db = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.36" }
+fc-mapping-sync = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.36" }
+fc-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.36" }
+fc-rpc-core = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.36" }
 fdlimit = "0.2"
-fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
-frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23", optional = true }
-frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-frame-system = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-frame-system-rpc-runtime-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.36" }
+frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36", optional = true }
+frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+frame-support = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+frame-system = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+frame-system-rpc-runtime-api = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.3"
 libsecp256k1 = "0.6"
-pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/humanode-2022-11-23" }
-pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "polkadot-v0.9.36" }
+pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
 qr2term = "0.2"
 reqwest = "0.11"
-sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-chain-spec = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-chain-spec-derive = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-consensus-uncles = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-network = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-service = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-telemetry = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-chain-spec = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-chain-spec-derive = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-consensus-uncles = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-network = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-service = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-telemetry = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha3 = "0.10"
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-authorship = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-keyring = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-panic-handler = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-authorship = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-keyring = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-panic-handler = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
 thiserror = "1"
 tiny-bip39 = "0.8"
 tiny-hderive = "0.3.0"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
-try-runtime-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23", optional = true }
+try-runtime-cli = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36", optional = true }
 url = "2"
 
 [dev-dependencies]
 indoc = "1.0"
-sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-io = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
 
 [build-dependencies]
 vergen = { version = "7", default-features = false, features = ["cargo", "git"] }
 
 [features]
-default = ["wasmtime"]
+default = []
 runtime-benchmarks = [
   "frame-benchmarking-cli/runtime-benchmarks",
   "frame-benchmarking/runtime-benchmarks",
@@ -109,7 +109,6 @@ runtime-benchmarks = [
   "pallet-token-claims/runtime-benchmarks",
   "sc-service/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
-  "wasmtime",
 ]
 try-runtime = [
   "frame-support/try-runtime",
@@ -123,4 +122,3 @@ try-runtime = [
   "pallet-token-claims/try-runtime",
   "try-runtime-cli",
 ]
-wasmtime = ["sc-cli/wasmtime", "sc-executor/wasmtime", "sc-service/wasmtime"]

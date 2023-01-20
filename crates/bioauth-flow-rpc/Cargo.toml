@@ -15,11 +15,11 @@ rpc-deny-unsafe = { path = "../rpc-deny-unsafe" }
 anyhow = "1"
 async-trait = "0.1"
 jsonrpsee = { version = "0.15.1", features = ["server", "macros"] }
-sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
 serde = "1"
 serde_json = "1"
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
 tokio = "1"
 tracing = "0.1"
