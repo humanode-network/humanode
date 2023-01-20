@@ -67,15 +67,15 @@ fn dev_robonode_public_key(default: &'static [u8]) -> Result<robonode::PublicKey
     match std::env::var("DEV_ROBONODE_PUBLIC_KEY") {
         Ok(val) => {
             let val = hex::decode(val)
-                .map_err(|err| format!("robonode public key in not in hex format: {:?}", err))?;
+                .map_err(|err| format!("robonode public key in not in hex format: {err:?}"))?;
             robonode::PublicKey::from_bytes(&val)
         }
         Err(std::env::VarError::NotPresent) => robonode::PublicKey::from_bytes(default),
         Err(std::env::VarError::NotUnicode(val)) => {
-            return Err(format!("invalid robonode public key: {:?}", val))
+            return Err(format!("invalid robonode public key: {val:?}"))
         }
     }
-    .map_err(|err| format!("unable to parse robonode public key: {:?}", err))
+    .map_err(|err| format!("unable to parse robonode public key: {err:?}"))
 }
 
 /// A configuration for local testnet.

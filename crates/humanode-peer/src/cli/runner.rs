@@ -131,6 +131,6 @@ fn get_ss58_format(properties: &Properties) -> Result<u16> {
         .map_err(application_error)?;
     value
         .try_into()
-        .map_err(|err| format!("ss58 format must be a u16: {}", err))
+        .map_err(|err| format!("ss58 format must be a u16: {err}"))
         .map_err(application_error)
 }

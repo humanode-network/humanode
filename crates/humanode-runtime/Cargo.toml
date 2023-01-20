@@ -16,7 +16,6 @@ eip191-token-claim = { version = "0.1", path = "../eip191-token-claim", default-
 eip712-account-claim = { version = "0.1", path = "../eip712-account-claim", default-features = false }
 eip712-common = { version = "0.1", path = "../eip712-common", default-features = false }
 eip712-token-claim = { version = "0.1", path = "../eip712-token-claim", default-features = false }
-frontier-api = { version = "0.1", path = "../frontier-api", default-features = false }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id", default-features = false }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
 pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
@@ -141,7 +140,6 @@ std = [
   "frame-system-rpc-runtime-api/std",
   "frame-system/std",
   "frame-try-runtime/std",
-  "frontier-api/std",
   "keystore-bioauth-account-id/std",
   "libsecp256k1/std",
   "pallet-authorship/std",

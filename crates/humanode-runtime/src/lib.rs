@@ -27,6 +27,7 @@ pub use frame_support::{
     },
     ConsensusEngineId, PalletId, StorageValue, WeakBoundedVec,
 };
+pub use frame_system::Call as SystemCall;
 use keystore_bioauth_account_id::KeystoreBioauthAccountId;
 pub use pallet_balances::Call as BalancesCall;
 use pallet_bioauth::AuthTicket;

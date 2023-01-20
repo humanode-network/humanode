@@ -68,7 +68,7 @@ where
     <T as std::str::FromStr>::Err: std::fmt::Display,
 {
     let val = maybe_env(key)?;
-    let val = val.ok_or_else(|| format!("env variable {} is not set", key))?;
+    let val = val.ok_or_else(|| format!("env variable {key} is not set"))?;
     Ok(val)
 }
 
@@ -84,12 +84,12 @@ where
         Ok(val) => val,
         Err(VarError::NotPresent) => return Ok(None),
         Err(VarError::NotUnicode(err)) => {
-            format!("{} env var is not a valid unicode string: {:?}", key, err)
+            format!("{key} env var is not a valid unicode string: {err:?}")
         }
     };
     let val = val
         .parse()
-        .map_err(|err| format!("{} env var is not valid: {}", key, err))?;
+        .map_err(|err| format!("{key} env var is not valid: {err}"))?;
     Ok(Some(val))
 }
 

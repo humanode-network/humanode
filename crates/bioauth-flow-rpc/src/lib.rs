@@ -357,7 +357,7 @@ where
             .await
             .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                 ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                format!("Request to the robonode failed: {}", err),
+                format!("Request to the robonode failed: {err}"),
                 None::<()>,
             ))))?;
         Ok(res)
@@ -371,7 +371,7 @@ where
             .await
             .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                 ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                format!("Request to the robonode failed: {}", err),
+                format!("Request to the robonode failed: {err}"),
                 None::<()>,
             ))))?;
         Ok(res.session_token)
@@ -392,7 +392,7 @@ where
             .bioauth_status(&at, &own_key)
             .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                 ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                format!("Unable to get status from the runtime: {}", err),
+                format!("Unable to get status from the runtime: {err}"),
                 None::<()>,
             ))))?;
 
@@ -429,7 +429,7 @@ where
 
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                     ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                    format!("Request to the robonode failed: {}", err),
+                    format!("Request to the robonode failed: {err}"),
                     data,
                 )))
             })?;
@@ -464,7 +464,7 @@ where
 
                 JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                     ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                    format!("Request to the robonode failed: {}", err),
+                    format!("Request to the robonode failed: {err}"),
                     data,
                 )))
             })?;
@@ -485,7 +485,7 @@ where
             )
             .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                     ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                    format!("Error creating auth extrinsic: {}", err),
+                    format!("Error creating auth extrinsic: {err}"),
                     None::<()>,
                 ))))?;
 
@@ -515,7 +515,7 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(err: T) ->
             // error (i.e. Transaction Pool Error, without the API bit).
             return JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                 code.code(),
-                format!("Transaction failed: {}", err),
+                format!("Transaction failed: {err}"),
                 None::<()>,
             )));
         }
@@ -550,7 +550,7 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(err: T) ->
         err => {
             return JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
                 code.code(),
-                format!("Transaction failed: {}", err),
+                format!("Transaction failed: {err}"),
                 None::<()>,
             )))
         }

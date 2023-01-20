@@ -102,7 +102,7 @@ jobs:
         with:
           shared-key: ${{ matrix.plan.platform.cacheKey }}-${{ matrix.plan.mode.cargoCacheKey }}
         if: "!matrix.plan.platform.isOnSelfHostedRunner"
-        timeout-minutes: 10
+        timeout-minutes: 15
 
       - name: Print build environment info
         run: |
