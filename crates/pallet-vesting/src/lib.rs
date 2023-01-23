@@ -124,6 +124,7 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Unlock the vested balance according to the schedule.
+        #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::unlock())]
         pub fn unlock(origin: OriginFor<T>) -> DispatchResult {
             let who = ensure_signed(origin)?;
@@ -140,6 +141,7 @@ pub mod pallet {
         /// Update existing vesting with the provided schedule.
         ///
         /// Root-level operation.
+        #[pallet::call_index(1)]
         #[pallet::weight(T::WeightInfo::update_schedule())]
         pub fn update_schedule(
             origin: OriginFor<T>,

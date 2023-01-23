@@ -229,6 +229,7 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Claim the tokens.
+        #[pallet::call_index(0)]
         #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
         pub fn claim(
             origin: OriginFor<T>,
@@ -254,6 +255,7 @@ pub mod pallet {
         }
 
         /// Add a new claim.
+        #[pallet::call_index(1)]
         #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
         pub fn add_claim(
             origin: OriginFor<T>,
@@ -293,6 +295,7 @@ pub mod pallet {
         }
 
         /// Remove an existing claim.
+        #[pallet::call_index(2)]
         #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
         pub fn remove_claim(
             origin: OriginFor<T>,
@@ -327,6 +330,7 @@ pub mod pallet {
         }
 
         /// Change an existing claim.
+        #[pallet::call_index(3)]
         #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
         pub fn change_claim(
             origin: OriginFor<T>,
