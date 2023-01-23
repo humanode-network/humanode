@@ -9,7 +9,7 @@ author-ext-api = { version = "0.1", path = "../author-ext-api" }
 bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
 rpc-deny-unsafe = { path = "../rpc-deny-unsafe" }
 
-jsonrpsee = { version = "0.15.1", features = ["server", "macros"] }
+jsonrpsee = { version = "0.16.2", features = ["server", "macros"] }
 sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
