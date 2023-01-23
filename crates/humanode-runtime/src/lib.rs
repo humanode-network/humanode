@@ -691,7 +691,7 @@ impl pallet_multisig::Config for Runtime {
     type Currency = Balances;
     type DepositBase = ConstU128<1>;
     type DepositFactor = ConstU128<1>;
-    type MaxSignatories = ConstU16<128>;
+    type MaxSignatories = ConstU32<128>;
     type WeightInfo = ();
 }
 
