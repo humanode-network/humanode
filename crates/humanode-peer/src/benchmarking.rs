@@ -94,14 +94,12 @@ pub fn inherent_benchmark_data(config: &Configuration) -> sc_cli::Result<Inheren
 
     let d = Duration::from_millis(0);
     let timestamp = sp_timestamp::InherentDataProvider::new(d.into());
-    timestamp
-        .provide_inherent_data(&mut inherent_data)
+    futures::executor::block_on(timestamp.provide_inherent_data(&mut inherent_data))
         .map_err(|e| format!("creating timestamp inherent data: {:?}", e))?;
 
     let uncles =
         sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
-    uncles
-        .provide_inherent_data(&mut inherent_data)
+    futures::executor::block_on(uncles.provide_inherent_data(&mut inherent_data))
         .map_err(|e| format!("creating uncles inherent data: {:?}", e))?;
 
     let slot_duration = SlotDuration::from_millis(SLOT_DURATION);
@@ -109,13 +107,12 @@ pub fn inherent_benchmark_data(config: &Configuration) -> sc_cli::Result<Inheren
         *timestamp,
         slot_duration,
     );
-    slot.provide_inherent_data(&mut inherent_data)
+    futures::executor::block_on(slot.provide_inherent_data(&mut inherent_data))
         .map_err(|e| format!("creating slot inherent data: {:?}", e))?;
 
     let dynamic_fees =
         pallet_dynamic_fee::InherentDataProvider(U256::from(config.evm.target_gas_price));
-    dynamic_fees
-        .provide_inherent_data(&mut inherent_data)
+    futures::executor::block_on(dynamic_fees.provide_inherent_data(&mut inherent_data))
         .map_err(|e| format!("creating dynamic fee inherent data: {:?}", e))?;
     Ok(inherent_data)
 }
