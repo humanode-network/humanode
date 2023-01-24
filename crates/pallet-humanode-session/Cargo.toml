@@ -37,4 +37,5 @@ try-runtime = [
   "pallet-bioauth/try-runtime",
   "pallet-bootnodes/try-runtime",
   "pallet-session/try-runtime",
+  "sp-runtime/try-runtime",
 ]

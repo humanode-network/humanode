@@ -120,5 +120,6 @@ try-runtime = [
   "pallet-im-online/try-runtime",
   "pallet-transaction-payment/try-runtime",
   "pallet-token-claims/try-runtime",
+  "sp-runtime/try-runtime",
   "try-runtime-cli",
 ]

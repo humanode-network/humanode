@@ -197,10 +197,11 @@ std = [
   "vesting-scheduling-timestamp/std",
 ]
 try-runtime = [
+  "fp-self-contained/try-runtime",
   "frame-executive/try-runtime",
   "frame-support/try-runtime",
   "frame-system/try-runtime",
-  "frame-try-runtime",
+  "frame-try-runtime/try-runtime",
   "pallet-authorship/try-runtime",
   "pallet-babe/try-runtime",
   "pallet-balances/try-runtime",
@@ -227,4 +228,5 @@ try-runtime = [
   "pallet-transaction-payment/try-runtime",
   "pallet-utility/try-runtime",
   "pallet-vesting/try-runtime",
+  "sp-runtime/try-runtime",
 ]
