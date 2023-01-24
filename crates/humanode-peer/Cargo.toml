@@ -75,6 +75,7 @@ sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", bra
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
+sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 sp-keyring = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 sp-panic-handler = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
@@ -121,5 +122,5 @@ try-runtime = [
   "pallet-transaction-payment/try-runtime",
   "pallet-token-claims/try-runtime",
   "sp-runtime/try-runtime",
-  "try-runtime-cli",
+  "try-runtime-cli/try-runtime",
 ]
