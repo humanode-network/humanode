@@ -11,4 +11,4 @@ eth-eip-712 = { package = "eip-712", version = "=0.1.0" }
 hex-literal = "0.3"
 secp256k1 = { version = "0.24" }
 serde_json = { version = "1" }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "polkadot-v0.9.36" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
