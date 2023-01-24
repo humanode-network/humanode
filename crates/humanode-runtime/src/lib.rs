@@ -226,7 +226,7 @@ parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
     /// We allow for 2 seconds of compute with a 6 second average block time.
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
-        ::with_sensible_defaults(Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX).set_proof_size(u64::MAX), NORMAL_DISPATCH_RATIO);
+        ::with_sensible_defaults(Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX).set_proof_size(u64::MAX), NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(MAX_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
     pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
