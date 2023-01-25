@@ -51,17 +51,19 @@ const codeModes = {
   clippy: {
     name: "clippy",
     cargoCommand: "clippy",
-    cargoArgs: "--all-targets -- -D warnings",
+    cargoArgs: "--workspace --all-targets -- -D warnings",
     cargoCacheKey: "clippy",
   },
   test: {
     name: "test",
     cargoCommand: "test",
+    cargoArgs: "--workspace",
     cargoCacheKey: "test",
   },
   build: {
     name: "build",
     cargoCommand: "build",
+    cargoArgs: "--workspace",
     cargoCacheKey: "build",
   },
   fmt: {
@@ -81,19 +83,19 @@ const codeModes = {
   testBenchmark: {
     name: "test benchmark",
     cargoCommand: "test",
-    cargoArgs: "--features runtime-benchmarks",
+    cargoArgs: "--workspace --features runtime-benchmarks",
     cargoCacheKey: "test-benchmark",
   },
   runBenchmark: {
     name: "test-run pallet benchmarks",
     cargoCommand: "run",
-    cargoArgs: "--release --features runtime-benchmarks benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 2 --repeat 0 --external-repeat 0",
+    cargoArgs: "-p humanode-peer --release --features runtime-benchmarks benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 2 --repeat 0 --external-repeat 0",
     cargoCacheKey: "run-benchmark",
   },
   buildTryRuntime: {
     name: "build with try-runtime",
     cargoCommand: "build",
-    cargoArgs: "--features try-runtime",
+    cargoArgs: "--workspace --features try-runtime",
     cargoCacheKey: "try-runtime",
   },
 };
@@ -102,7 +104,7 @@ const buildModes = {
   build: {
     name: "build",
     cargoCommand: "build",
-    cargoArgs: "--release",
+    cargoArgs: "--workspace --release",
     cargoCacheKey: "release-build",
   },
 }
