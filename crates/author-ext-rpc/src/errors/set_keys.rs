@@ -52,7 +52,7 @@ impl From<SetKeysError> for JsonRpseeError {
 //     use super::*;
 
 //     #[test]
-//     fn expected_native_error() {
+//     fn expected_runtime_api_error() {
 //         let error: JsonRpseeError = RuntimeApiError::Native("test".to_string()).into();
 //         let error: ErrorObject = error.into();
 
