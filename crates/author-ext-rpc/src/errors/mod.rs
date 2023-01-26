@@ -1,4 +1,4 @@
-//! All humanode related error kinds that we expose in the RPC.
+//! All author extension related error kinds that we expose in the RPC.
 
 pub mod get_validator_public_key;
 pub mod set_keys;
