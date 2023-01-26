@@ -1,8 +1,10 @@
 //! All humanode related error kinds that we expose in the RPC.
 
+pub mod get_validator_public_key;
 pub mod set_keys;
 pub mod tx_pool;
 
+pub use get_validator_public_key::*;
 pub use set_keys::*;
 pub use tx_pool::*;
 
