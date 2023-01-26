@@ -8,7 +8,7 @@ use jsonrpsee::{
 use rpc_validator_key_logic::ValidatorKeyError;
 use sp_api::ApiError;
 
-use super::ApiErrorCode;
+use super::{tx_pool::AuthorExtTxError, ApiErrorCode};
 
 /// The `set_keys` method error kinds.
 #[derive(Debug)]
@@ -16,16 +16,18 @@ pub enum SetKeysError {
     /// An error that can occur during validator key extraction.
     KeyExtraction(ValidatorKeyError),
     /// An error that can occur during doing a call into runtime api.
-    RuntimeAPi(ApiError),
+    RuntimeApi(ApiError),
     /// An error that can occur during signed `set_keys` extrinsic creation.
     ExtrinsicCreation(CreateSignedSetKeysExtrinsicError),
+    /// An error that can occur with transaction pool logic.
+    TxPool(AuthorExtTxError),
 }
 
 impl From<SetKeysError> for JsonRpseeError {
     fn from(err: SetKeysError) -> Self {
         let (code, message) = match err {
             SetKeysError::KeyExtraction(err) => return err.into(),
-            SetKeysError::RuntimeAPi(err) => (ApiErrorCode::RuntimeApi, err.to_string()),
+            SetKeysError::RuntimeApi(err) => (ApiErrorCode::RuntimeApi, err.to_string()),
             SetKeysError::ExtrinsicCreation(err) => match err {
                 CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => (
                     ApiErrorCode::RuntimeApi,
@@ -36,6 +38,7 @@ impl From<SetKeysError> for JsonRpseeError {
                     "Error during the creation of the signed set keys extrinsic".to_owned(),
                 ),
             },
+            SetKeysError::TxPool(err) => return err.into(),
         };
 
         JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(

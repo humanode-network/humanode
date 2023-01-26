@@ -101,7 +101,7 @@ where
             .client
             .runtime_api()
             .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
-            .map_err(SetKeysError::RuntimeAPi)?
+            .map_err(SetKeysError::RuntimeApi)?
             .map_err(SetKeysError::ExtrinsicCreation)?;
 
         self.pool
@@ -111,7 +111,7 @@ where
                 signed_set_keys_extrinsic,
             )
             .await
-            .map_err(AuthorExtTxError::from)?;
+            .map_err(|err| SetKeysError::TxPool(AuthorExtTxError::from(err)))?;
 
         info!("Author extension - setting keys transaction complete");
 
