@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{RuntimeApiError, TransactionPoolError};
+use errors::{SetKeysError, TransactionPoolError};
 use jsonrpsee::{
     core::{async_trait, RpcResult},
     proc_macros::rpc,
@@ -93,7 +93,8 @@ where
         info!("Author extension - setting keys in progress");
 
         let validator_key =
-            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
+                .map_err(SetKeysError::KeyExtraction)?;
 
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
@@ -101,15 +102,8 @@ where
             .client
             .runtime_api()
             .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
-            .map_err(|err| RuntimeApiError::Native(err.to_string()))?
-            .map_err(|err| match err {
-                author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => {
-                    RuntimeApiError::SessionKeysDecoding(err)
-                }
-                author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation => {
-                    RuntimeApiError::CreatingSignedSetKeys
-                }
-            })?;
+            .map_err(SetKeysError::RuntimeAPi)?
+            .map_err(SetKeysError::CreateExtrinsic)?;
 
         self.pool
             .submit_and_watch(
@@ -127,7 +121,8 @@ where
 
     async fn get_validator_public_key(&self) -> RpcResult<ValidatorKeyExtractor::PublicKeyType> {
         let validator_public_key =
-            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
+                .map_err(SetKeysError::KeyExtraction)?;
 
         Ok(validator_public_key)
     }
