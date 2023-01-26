@@ -1,4 +1,4 @@
-//! The runtime api error kinds.
+//! The `set_keys` method error kinds.
 
 use author_ext_api::CreateSignedSetKeysExtrinsicError;
 use jsonrpsee::{
@@ -10,15 +10,15 @@ use sp_api::ApiError;
 
 use super::ApiErrorCode;
 
-/// The runtime api error kinds.
+/// The `set_keys` method error kinds.
 #[derive(Debug)]
 pub enum SetKeysError {
-    /// The validator key related error.
+    /// An error that can occur during validator key extraction.
     KeyExtraction(ValidatorKeyError),
-    /// The runtime itself api related error.
+    /// An error that can occur during doing a call into runtime api.
     RuntimeAPi(ApiError),
-    /// The error.
-    CreateExtrinsic(CreateSignedSetKeysExtrinsicError),
+    /// An error that can occur during signed `set_keys` extrinsic creation.
+    ExtrinsicCreation(CreateSignedSetKeysExtrinsicError),
 }
 
 impl From<SetKeysError> for JsonRpseeError {
@@ -26,7 +26,7 @@ impl From<SetKeysError> for JsonRpseeError {
         let (code, message) = match err {
             SetKeysError::KeyExtraction(err) => return err.into(),
             SetKeysError::RuntimeAPi(err) => (ApiErrorCode::RuntimeApi, err.to_string()),
-            SetKeysError::CreateExtrinsic(err) => match err {
+            SetKeysError::ExtrinsicCreation(err) => match err {
                 CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => (
                     ApiErrorCode::RuntimeApi,
                     format!("Error during session keys decoding: {err}"),

@@ -103,7 +103,7 @@ where
             .runtime_api()
             .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
             .map_err(SetKeysError::RuntimeAPi)?
-            .map_err(SetKeysError::CreateExtrinsic)?;
+            .map_err(SetKeysError::ExtrinsicCreation)?;
 
         self.pool
             .submit_and_watch(
