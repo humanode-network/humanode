@@ -5,7 +5,7 @@ use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{SetKeysError, TransactionPoolError};
+use errors::{AuthorExtTxError, SetKeysError};
 use jsonrpsee::{
     core::{async_trait, RpcResult},
     proc_macros::rpc,
@@ -15,7 +15,6 @@ use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
 use sp_api::{BlockT, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_core::Bytes;
-use sp_runtime::transaction_validity::InvalidTransaction;
 use tracing::*;
 
 mod errors;
@@ -112,7 +111,7 @@ where
                 signed_set_keys_extrinsic,
             )
             .await
-            .map_err(map_txpool_error)?;
+            .map_err(AuthorExtTxError::from)?;
 
         info!("Author extension - setting keys transaction complete");
 
@@ -125,27 +124,5 @@ where
                 .map_err(SetKeysError::KeyExtraction)?;
 
         Ok(validator_public_key)
-    }
-}
-
-/// Convert a transaction pool error into an author ext related error.
-fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
-    err: T,
-) -> TransactionPoolError {
-    let err = match err.into_pool_error() {
-        Ok(err) => err,
-        Err(err) => {
-            // This is not a Transaction Pool API Error, but it may be a kind of wrapper type
-            // error (i.e. Transaction Pool Error, without the API bit).
-            return TransactionPoolError::Unexpected(err.to_string());
-        }
-    };
-
-    use sc_transaction_pool_api::error::Error;
-    match err {
-        // Provide some custom-tweaked error messages for a few select cases:
-        Error::InvalidTransaction(InvalidTransaction::Payment) => TransactionPoolError::NoFunds,
-        // For the rest cases, fallback to the native error rendering.
-        err => TransactionPoolError::Native(err.to_string()),
     }
 }
