@@ -92,8 +92,7 @@ where
         info!("Author extension - setting keys in progress");
 
         let validator_key =
-            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-                .map_err(SetKeysError::KeyExtraction)?;
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
 
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
@@ -120,8 +119,7 @@ where
 
     async fn get_validator_public_key(&self) -> RpcResult<ValidatorKeyExtractor::PublicKeyType> {
         let validator_public_key =
-            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-                .map_err(SetKeysError::KeyExtraction)?;
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
 
         Ok(validator_public_key)
     }
