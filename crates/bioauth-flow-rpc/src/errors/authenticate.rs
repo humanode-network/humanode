@@ -6,7 +6,7 @@ use jsonrpsee::{
 };
 use sp_api::ApiError;
 
-use super::{robonode::RobonodeError, signer::SignerError, tx_pool::BioauthTxError, ApiErrorCode};
+use super::{robonode::RobonodeError, sign::SignError, tx_pool::BioauthTxError, ApiErrorCode};
 
 /// The `authenticate` method error kinds.
 #[derive(Debug)]
@@ -16,7 +16,7 @@ pub enum AuthenticateError {
     /// An error that can occur during doing a call into runtime api.
     RuntimeApi(ApiError),
     /// An error that can occur during signing process.
-    Signer(SignerError),
+    Sign(SignError),
     /// An error that can occur with transaction pool logic.
     TxPool(BioauthTxError),
 }
@@ -32,7 +32,7 @@ impl From<AuthenticateError> for JsonRpseeError {
                     None::<()>,
                 )))
             }
-            AuthenticateError::Signer(err) => err.into(),
+            AuthenticateError::Sign(err) => err.into(),
             AuthenticateError::TxPool(err) => err.into(),
         }
     }

@@ -11,7 +11,7 @@ use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use errors::{
     AuthenticateError, BioauthTxError, EnrollError, GetFacetecDeviceSdkParamsError,
-    GetFacetecSessionToken, RobonodeError, SignerError, StatusError,
+    GetFacetecSessionToken, RobonodeError, SignError, StatusError,
 };
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
@@ -204,14 +204,14 @@ where
         std::error::Error + 'static,
 {
     /// Return the opaque liveness data and corresponding signature.
-    async fn sign(&self, liveness_data: &LivenessData) -> RpcResult<(OpaqueLivenessData, Vec<u8>)> {
+    async fn sign(&self, liveness_data: &LivenessData) -> Result<(OpaqueLivenessData, Vec<u8>), SignError> {
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
-        let validator_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
+        let validator_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor).map_err(SignError::ValidatorKey)?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {
             tracing::error!(message = "Signing failed", ?error);
-            SignerError::SigningFailed
+            SignError::SigningFailed
         })?;
 
         Ok((opaque_liveness_data, signature))
@@ -309,7 +309,7 @@ where
         info!("Bioauth flow - enrolling in progress");
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await
-            .map_err(|_| EnrollError::Signer(SignerError::SigningFailed))?;
+            .map_err(EnrollError::Signer)?;
 
         let public_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
             .map_err(EnrollError::KeyExtraction)?;
@@ -341,7 +341,7 @@ where
         info!("Bioauth flow - authentication in progress");
 
         let (opaque_liveness_data, signature) = self.sign(&liveness_data).await
-            .map_err(|_| AuthenticateError::Signer(SignerError::SigningFailed))?;
+            .map_err(AuthenticateError::Signer)?;
 
         let response = self
             .robonode_client

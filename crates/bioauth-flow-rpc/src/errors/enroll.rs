@@ -3,7 +3,7 @@
 use jsonrpsee::core::Error as JsonRpseeError;
 use rpc_validator_key_logic::ValidatorKeyError;
 
-use super::{robonode::RobonodeError, signer::SignerError};
+use super::{robonode::RobonodeError, sign::SignError};
 
 /// The `enroll` method error kinds.
 #[derive(Debug)]
@@ -13,7 +13,7 @@ pub enum EnrollError {
     /// An error that can occur during doing a call into robonode.
     Robonode(RobonodeError),
     /// An error that can occur during signing process.
-    Signer(SignerError),
+    Sign(SignError),
 }
 
 impl From<EnrollError> for JsonRpseeError {
@@ -21,7 +21,7 @@ impl From<EnrollError> for JsonRpseeError {
         match err {
             EnrollError::KeyExtraction(err) => err.into(),
             EnrollError::Robonode(err) => err.into(),
-            EnrollError::Signer(err) => err.into(),
+            EnrollError::Sign(err) => err.into(),
         }
     }
 }
