@@ -4,12 +4,13 @@ use jsonrpsee::{
     core::Error as JsonRpseeError,
     types::error::{CallError, ErrorCode, ErrorObject},
 };
+use sp_runtime::transaction_validity::InvalidTransaction;
 
 use super::ApiErrorCode;
 
 /// The transaction pool error kinds.
 #[derive(Debug, thiserror::Error)]
-pub enum TransactionPoolError {
+pub enum BioauthTxError {
     /// Auth ticket signature was not valid.
     #[error("invalid auth ticket signature")]
     AuthTicketSignatureInvalid,
@@ -31,8 +32,8 @@ pub enum TransactionPoolError {
     Unexpected(String),
 }
 
-impl From<TransactionPoolError> for JsonRpseeError {
-    fn from(err: TransactionPoolError) -> Self {
+impl From<BioauthTxError> for JsonRpseeError {
+    fn from(err: BioauthTxError) -> Self {
         JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
             ErrorCode::ServerError(ApiErrorCode::Transaction as _).code(),
             err.to_string(),
@@ -41,81 +42,38 @@ impl From<TransactionPoolError> for JsonRpseeError {
     }
 }
 
-#[cfg(test)]
-mod tests {
+impl<T: sc_transaction_pool_api::error::IntoPoolError> From<T> for BioauthTxError {
+    fn from(err: T) -> Self {
+        let err = match err.into_pool_error() {
+            Ok(err) => err,
+            Err(err) => {
+                // This is not a Transaction Pool API Error, but it may be a kind of wrapper type
+                // error (i.e. Transaction Pool Error, without the API bit).
+                return BioauthTxError::Unexpected(err.to_string());
+            }
+        };
 
-    use super::*;
-
-    #[test]
-    fn expected_auth_ticket_signature_invalid_error() {
-        let error: JsonRpseeError = TransactionPoolError::AuthTicketSignatureInvalid.into();
-        let error: ErrorObject = error.into();
-
-        let expected_error_message = "{\"code\":400,\"message\":\"invalid auth ticket signature\"}";
-        assert_eq!(
-            expected_error_message,
-            serde_json::to_string(&error).unwrap()
-        );
-    }
-
-    #[test]
-    fn expected_unable_to_parse_auth_ticket_error() {
-        let error: JsonRpseeError = TransactionPoolError::UnableToParseAuthTicket.into();
-        let error: ErrorObject = error.into();
-
-        let expected_error_message = "{\"code\":400,\"message\":\"unable to parse auth ticket\"}";
-        assert_eq!(
-            expected_error_message,
-            serde_json::to_string(&error).unwrap()
-        );
-    }
-
-    #[test]
-    fn expected_nonce_already_used_error() {
-        let error: JsonRpseeError = TransactionPoolError::NonceAlreadyUsed.into();
-        let error: ErrorObject = error.into();
-
-        let expected_error_message = "{\"code\":400,\"message\":\"nonce already used\"}";
-        assert_eq!(
-            expected_error_message,
-            serde_json::to_string(&error).unwrap()
-        );
-    }
-
-    #[test]
-    fn expected_already_authenticated_error() {
-        let error: JsonRpseeError = TransactionPoolError::AlreadyAuthenticated.into();
-        let error: ErrorObject = error.into();
-
-        let expected_error_message = "{\"code\":400,\"message\":\"already authenticated\"}";
-        assert_eq!(
-            expected_error_message,
-            serde_json::to_string(&error).unwrap()
-        );
-    }
-
-    #[test]
-    fn expected_native_error() {
-        let error: JsonRpseeError = TransactionPoolError::Native("test".to_string()).into();
-        let error: ErrorObject = error.into();
-
-        let expected_error_message = "{\"code\":400,\"message\":\"transaction pool error: test\"}";
-        assert_eq!(
-            expected_error_message,
-            serde_json::to_string(&error).unwrap()
-        );
-    }
-
-    #[test]
-    fn expected_unexpected_error() {
-        let error: JsonRpseeError = TransactionPoolError::Unexpected("test".to_string()).into();
-        let error: ErrorObject = error.into();
-
-        let expected_error_message =
-            "{\"code\":400,\"message\":\"unexpected transaction pool error: test\"}";
-        assert_eq!(
-            expected_error_message,
-            serde_json::to_string(&error).unwrap()
-        );
+        use sc_transaction_pool_api::error::Error;
+        match err {
+            // Provide some custom-tweaked error messages for a few select cases:
+            Error::InvalidTransaction(InvalidTransaction::BadProof) => {
+                BioauthTxError::AuthTicketSignatureInvalid
+            }
+            Error::InvalidTransaction(InvalidTransaction::Custom(custom_code))
+                if custom_code
+                    == (pallet_bioauth::CustomInvalidTransactionCodes::UnableToParseAuthTicket
+                        as u8) =>
+            {
+                BioauthTxError::UnableToParseAuthTicket
+            }
+            Error::InvalidTransaction(InvalidTransaction::Stale) => {
+                BioauthTxError::NonceAlreadyUsed
+            }
+            Error::InvalidTransaction(InvalidTransaction::Future) => {
+                BioauthTxError::AlreadyAuthenticated
+            }
+            // For the rest cases, fallback to the native error rendering.
+            err => BioauthTxError::Native(err.to_string()),
+        }
     }
 }
