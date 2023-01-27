@@ -9,7 +9,10 @@ use std::sync::Arc;
 
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{RobonodeError, RuntimeApiError, SignerError, TransactionPoolError};
+use errors::{
+    AuthenticateError, BioauthTxError, EnrollError, GetFacetecDeviceSdkParamsError,
+    GetFacetecSessionToken, RobonodeError, SignerError, StatusError,
+};
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
@@ -19,7 +22,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
-use sp_runtime::transaction_validity::InvalidTransaction;
 use tracing::*;
 
 mod errors;
@@ -268,7 +270,7 @@ where
             .as_ref()
             .get_facetec_device_sdk_params()
             .await
-            .map_err(|err| RobonodeError::Other(err.to_string()))?;
+            .map_err(GetFacetecDeviceSdkParamsError::Robonode)?;
         Ok(res)
     }
 
@@ -278,7 +280,7 @@ where
             .as_ref()
             .get_facetec_session_token()
             .await
-            .map_err(|err| RobonodeError::Other(err.to_string()))?;
+            .map_err(GetFacetecSessionToken::Robonode)?;
         Ok(res.session_token)
     }
 
@@ -286,7 +288,7 @@ where
         let own_key = match rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor) {
             Ok(v) => v,
             Err(rpc_validator_key_logic::ValidatorKeyError::MissingValidatorKey) => return Ok(BioauthStatus::Unknown),
-            Err(err) => return Err(err.into()),
+            Err(err) => return Err(StatusError::KeyExtraction(err).into()),
         };
 
         // Extract an id of the last imported block.
@@ -296,7 +298,7 @@ where
             .client
             .runtime_api()
             .bioauth_status(&at, &own_key)
-            .map_err(|err| RuntimeApiError::BioauthStatus(err.to_string()))?;
+            .map_err(StatusError::RuntimeApi)?;
 
         Ok(status.into())
     }
@@ -306,9 +308,11 @@ where
 
         info!("Bioauth flow - enrolling in progress");
 
-        let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
+        let (opaque_liveness_data, signature) = self.sign(&liveness_data).await
+            .map_err(|_| EnrollError::Signer(SignerError::SigningFailed))?;
 
-        let public_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)?;
+        let public_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
+            .map_err(EnrollError::KeyExtraction)?;
         self.robonode_client
             .as_ref()
             .enroll(EnrollRequest {
@@ -321,8 +325,8 @@ where
                 match err {
                     robonode_client::Error::Call(
                         robonode_client::EnrollError::FaceScanRejected
-                    ) => RobonodeError::ShouldRetry,
-                    _ => RobonodeError::Other(err.to_string()),
+                    ) => EnrollError::Robonode(RobonodeError::ShouldRetry),
+                    _ => EnrollError::Robonode(RobonodeError::Other(err.to_string())),
                 }
             })?;
 
@@ -336,7 +340,8 @@ where
 
         info!("Bioauth flow - authentication in progress");
 
-        let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
+        let (opaque_liveness_data, signature) = self.sign(&liveness_data).await
+            .map_err(|_| AuthenticateError::Signer(SignerError::SigningFailed))?;
 
         let response = self
             .robonode_client
@@ -350,8 +355,8 @@ where
                 match err {
                     robonode_client::Error::Call(
                         robonode_client::AuthenticateError::FaceScanRejected
-                    ) => RobonodeError::ShouldRetry,
-                    _ => RobonodeError::Other(err.to_string()),
+                    ) => AuthenticateError::Robonode(RobonodeError::ShouldRetry),
+                    _ => AuthenticateError::Robonode(RobonodeError::Other(err.to_string())),
                 }
             })?;
 
@@ -369,7 +374,7 @@ where
                 response.auth_ticket.into(),
                 response.auth_ticket_signature.into(),
             )
-            .map_err(|err| RuntimeApiError::CreatingAuthExtrinsic(err.to_string()))?;
+            .map_err(AuthenticateError::RuntimeApi)?;
 
         self.pool
             .submit_and_watch(
@@ -378,47 +383,10 @@ where
                 ext,
             )
             .await
-            .map_err(map_txpool_error)?;
+            .map_err(|err| AuthenticateError::TxPool(BioauthTxError::from(err)))?;
 
         info!("Bioauth flow - authenticate transaction complete");
 
         Ok(())
-    }
-}
-
-/// Convert a transaction pool error into a bioauth flow related error.
-fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
-    err: T,
-) -> TransactionPoolError {
-    let err = match err.into_pool_error() {
-        Ok(err) => err,
-        Err(err) => {
-            // This is not a Transaction Pool API Error, but it may be a kind of wrapper type
-            // error (i.e. Transaction Pool Error, without the API bit).
-            return TransactionPoolError::Unexpected(err.to_string());
-        }
-    };
-
-    use sc_transaction_pool_api::error::Error;
-    match err {
-        // Provide some custom-tweaked error messages for a few select cases:
-        Error::InvalidTransaction(InvalidTransaction::BadProof) => {
-            TransactionPoolError::AuthTicketSignatureInvalid
-        }
-        Error::InvalidTransaction(InvalidTransaction::Custom(custom_code))
-            if custom_code
-                == (pallet_bioauth::CustomInvalidTransactionCodes::UnableToParseAuthTicket
-                    as u8) =>
-        {
-            TransactionPoolError::UnableToParseAuthTicket
-        }
-        Error::InvalidTransaction(InvalidTransaction::Stale) => {
-            TransactionPoolError::NonceAlreadyUsed
-        }
-        Error::InvalidTransaction(InvalidTransaction::Future) => {
-            TransactionPoolError::AlreadyAuthenticated
-        }
-        // For the rest cases, fallback to the native error rendering.
-        err => TransactionPoolError::Native(err.to_string()),
     }
 }

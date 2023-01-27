@@ -1,13 +1,21 @@
-//! All humanode related error kinds that we expose in the RPC.
+//! All bioauth flow error kinds that we expose in the RPC.
 
+pub mod authenticate;
+pub mod enroll;
+pub mod get_facetec_device_sdk_params;
+pub mod get_facetec_session_token;
 pub mod robonode;
-pub mod runtime_api;
 pub mod signer;
+pub mod status;
 pub mod tx_pool;
 
+pub use authenticate::*;
+pub use enroll::*;
+pub use get_facetec_device_sdk_params::*;
+pub use get_facetec_session_token::*;
 pub use robonode::*;
-pub use runtime_api::*;
 pub use signer::*;
+pub use status::*;
 pub use tx_pool::*;
 
 /// Custom rpc error codes.
