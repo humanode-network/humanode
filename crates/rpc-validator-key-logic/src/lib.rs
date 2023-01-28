@@ -2,6 +2,7 @@
 
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 
+pub mod error_data;
 mod errors;
 
 pub use errors::*;

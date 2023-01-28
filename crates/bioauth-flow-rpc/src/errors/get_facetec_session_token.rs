@@ -1,28 +1,19 @@
-//! The `get_facetec_session_token` method error kinds.
+//! The `get_facetec_session_token` method error.
 
-use jsonrpsee::{
-    core::Error as JsonRpseeError,
-    types::error::{CallError, ErrorCode, ErrorObject},
-};
-
-use super::ApiErrorCode;
+use super::{app, ApiErrorCode};
 
 /// The `get_facetec_session_token` method error kinds.
 #[derive(Debug)]
-pub enum GetFacetecSessionToken<T: std::error::Error + 'static> {
+pub enum GetFacetecSessionToken {
     /// An error that can occur during doing a call into robonode.
-    Robonode(robonode_client::Error<T>),
+    Robonode(robonode_client::Error<robonode_client::GetFacetecSessionTokenError>),
 }
 
-impl<T: std::error::Error + 'static> From<GetFacetecSessionToken<T>> for JsonRpseeError {
-    fn from(err: GetFacetecSessionToken<T>) -> Self {
+impl From<GetFacetecSessionToken> for jsonrpsee::core::Error {
+    fn from(err: GetFacetecSessionToken) -> Self {
         match err {
             GetFacetecSessionToken::Robonode(err) => {
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                    err.to_string(),
-                    None::<()>,
-                )))
+                app::simple(ApiErrorCode::Robonode, err.to_string())
             }
         }
     }
