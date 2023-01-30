@@ -4,7 +4,7 @@ use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{app, sign::Error as SignError, ApiErrorCode};
+use super::{api_error_code, sign::Error as SignError};
 use crate::error_data::{self, BioauthTxErrorDetails};
 
 /// The `authenticate` method error kinds.
@@ -28,29 +28,38 @@ where
 {
     fn from(err: Error<TxPoolError>) -> Self {
         match err {
-            Error::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => app::data(
-                ApiErrorCode::MissingValidatorKey,
-                err.to_string(),
-                rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
-            ),
-            Error::KeyExtraction(err @ ValidatorKeyError::ValidatorKeyExtraction) => {
-                app::simple(ApiErrorCode::ValidatorKeyExtraction, err.to_string())
+            Error::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => {
+                rpc_error_response::data(
+                    api_error_code::MISSING_VALIDATOR_KEY,
+                    err.to_string(),
+                    rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
+                )
             }
-            Error::Sign(err) => app::simple(ApiErrorCode::Sign, err.to_string()),
+            Error::KeyExtraction(err @ ValidatorKeyError::ValidatorKeyExtraction) => {
+                rpc_error_response::simple(
+                    api_error_code::VALIDATOR_KEY_EXTRACTION,
+                    err.to_string(),
+                )
+            }
+            Error::Sign(err) => rpc_error_response::simple(api_error_code::SIGN, err.to_string()),
             Error::Robonode(
                 err @ robonode_client::Error::Call(
                     robonode_client::AuthenticateError::FaceScanRejected,
                 ),
-            ) => app::data(
-                ApiErrorCode::Robonode,
+            ) => rpc_error_response::data(
+                api_error_code::ROBONODE,
                 err.to_string(),
                 error_data::ShouldRetry,
             ),
-            Error::Robonode(err) => app::simple(ApiErrorCode::Robonode, err.to_string()),
-            Error::RuntimeApi(err) => app::simple(ApiErrorCode::RuntimeApi, err.to_string()),
+            Error::Robonode(err) => {
+                rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
+            }
+            Error::RuntimeApi(err) => {
+                rpc_error_response::simple(api_error_code::RUNTIME_API, err.to_string())
+            }
             Error::BioauthTx(err) => {
                 let (message, data) = map_txpool_error(err);
-                app::raw(ApiErrorCode::Transaction, message, data)
+                rpc_error_response::raw(api_error_code::TRANSACTION, message, data)
             }
         }
     }

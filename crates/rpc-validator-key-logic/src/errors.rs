@@ -1,12 +1,12 @@
 //! The validator related error kinds.
 
 /// Custom rpc error codes.
-#[derive(Debug, Clone, Copy)]
-pub enum ApiErrorCode {
+pub mod api_error_code {
     /// Validator key is not available.
-    MissingValidatorKey = 500,
+    pub const MISSING_VALIDATOR_KEY: i32 = 500;
+
     /// Validator key extraction has failed.
-    ValidatorKeyExtraction = 600,
+    pub const VALIDATOR_KEY_EXTRACTION: i32 = 600;
 }
 
 /// The validator related error kinds.

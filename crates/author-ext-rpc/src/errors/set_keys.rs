@@ -5,7 +5,7 @@ use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{app, ApiErrorCode};
+use super::api_error_code;
 use crate::error_data::{self, AuthorExtTxErrorDetails};
 
 /// The `set_keys` method error kinds.
@@ -27,30 +27,37 @@ where
 {
     fn from(err: Error<TxPoolError>) -> Self {
         match err {
-            Error::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => app::data(
-                ApiErrorCode::MissingValidatorKey,
-                err.to_string(),
-                rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
-            ),
-            Error::KeyExtraction(err @ ValidatorKeyError::ValidatorKeyExtraction) => {
-                app::simple(ApiErrorCode::ValidatorKeyExtraction, err.to_string())
+            Error::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => {
+                rpc_error_response::data(
+                    api_error_code::MISSING_VALIDATOR_KEY,
+                    err.to_string(),
+                    rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
+                )
             }
-            Error::RuntimeApi(err) => app::simple(ApiErrorCode::RuntimeApi, err.to_string()),
+            Error::KeyExtraction(err @ ValidatorKeyError::ValidatorKeyExtraction) => {
+                rpc_error_response::simple(
+                    api_error_code::VALIDATOR_KEY_EXTRACTION,
+                    err.to_string(),
+                )
+            }
+            Error::RuntimeApi(err) => {
+                rpc_error_response::simple(api_error_code::RUNTIME_API, err.to_string())
+            }
             Error::ExtrinsicCreation(
                 ref _err @ CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(ref err_details),
-            ) => app::simple(
-                ApiErrorCode::RuntimeApi,
+            ) => rpc_error_response::simple(
+                api_error_code::RUNTIME_API,
                 format!("Error during session keys decoding: {err_details}"),
             ),
             Error::ExtrinsicCreation(
                 _err @ CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation,
-            ) => app::simple(
-                ApiErrorCode::RuntimeApi,
+            ) => rpc_error_response::simple(
+                api_error_code::RUNTIME_API,
                 "Error during the creation of the signed set keys extrinsic".to_owned(),
             ),
             Error::AuthorExtTx(err) => {
                 let (message, data) = map_txpool_error(err);
-                app::raw(ApiErrorCode::Transaction, message, data)
+                rpc_error_response::raw(api_error_code::TRANSACTION, message, data)
             }
         }
     }

@@ -8,50 +8,24 @@ pub mod sign;
 pub mod status;
 
 /// Custom rpc error codes.
-#[derive(Debug, Clone, Copy)]
-pub enum ApiErrorCode {
+pub mod api_error_code {
     /// Signer has failed.
-    Sign = 100,
+    pub const SIGN: i32 = 100;
+
     /// Request to robonode has failed.
-    Robonode = 200,
+    pub const ROBONODE: i32 = 200;
+
     /// Call to runtime api has failed.
-    RuntimeApi = 300,
+    pub const RUNTIME_API: i32 = 300;
+
     /// Authenticate transaction has failed.
-    Transaction = 400,
+    pub const TRANSACTION: i32 = 400;
+
     /// Validator key is not available.
-    MissingValidatorKey = rpc_validator_key_logic::ApiErrorCode::MissingValidatorKey as _,
+    pub const MISSING_VALIDATOR_KEY: i32 =
+        rpc_validator_key_logic::api_error_code::MISSING_VALIDATOR_KEY;
+
     /// Validator key extraction has failed.
-    ValidatorKeyExtraction = rpc_validator_key_logic::ApiErrorCode::ValidatorKeyExtraction as _,
-}
-
-pub mod app {
-    //! Utility functions for producing jsonrpsee responses for the application level errors.
-
-    use jsonrpsee::{
-        core::Error,
-        types::{error::CallError, ErrorObject},
-    };
-    use serde::Serialize;
-
-    use super::ApiErrorCode;
-
-    /// A simple error without the custom error data.
-    pub fn simple(code: ApiErrorCode, message: impl Into<String>) -> Error {
-        raw(code, message, Option::<()>::None)
-    }
-
-    /// An error with the custom error data.
-    pub fn data<T: Serialize>(code: ApiErrorCode, message: impl Into<String>, data: T) -> Error {
-        raw(code, message, Some(data))
-    }
-
-    /// A general form of an error with or without the custom error data.
-    pub fn raw<T: Serialize>(
-        code: ApiErrorCode,
-        message: impl Into<String>,
-        data: Option<T>,
-    ) -> Error {
-        let error_object = ErrorObject::owned(code as _, message, data);
-        Error::Call(CallError::Custom(error_object))
-    }
+    pub const VALIDATOR_KEY_EXTRACTION: i32 =
+        rpc_validator_key_logic::api_error_code::VALIDATOR_KEY_EXTRACTION;
 }
