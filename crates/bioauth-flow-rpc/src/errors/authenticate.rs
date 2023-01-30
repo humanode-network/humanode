@@ -62,7 +62,7 @@ where
     }
 }
 
-/// Convert a transaction pool error into a human-readable
+/// Convert a transaction pool error into a human-readable.
 fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
     err: T,
 ) -> (String, Option<error_data::BioauthTxErrorDetails>) {

@@ -1,18 +1,16 @@
 //! The `set_keys` method error kinds.
 
 use author_ext_api::CreateSignedSetKeysExtrinsicError;
-use jsonrpsee::{
-    core::Error as JsonRpseeError,
-    types::error::{CallError, ErrorCode, ErrorObject},
-};
 use rpc_validator_key_logic::ValidatorKeyError;
 use sp_api::ApiError;
+use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{tx_pool::AuthorExtTxError, ApiErrorCode};
+use super::{app, ApiErrorCode};
+use crate::error_data::{self, AuthorExtTxErrorDetails};
 
 /// The `set_keys` method error kinds.
 #[derive(Debug)]
-pub enum SetKeysError {
+pub enum SetKeysError<TxPoolError: sc_transaction_pool_api::error::IntoPoolError> {
     /// An error that can occur during validator key extraction.
     KeyExtraction(ValidatorKeyError),
     /// An error that can occur during doing a call into runtime api.
@@ -20,31 +18,76 @@ pub enum SetKeysError {
     /// An error that can occur during signed `set_keys` extrinsic creation.
     ExtrinsicCreation(CreateSignedSetKeysExtrinsicError),
     /// An error that can occur with transaction pool logic.
-    TxPool(AuthorExtTxError),
+    AuthorExtTx(TxPoolError),
 }
 
-impl From<SetKeysError> for JsonRpseeError {
-    fn from(err: SetKeysError) -> Self {
-        let (code, message) = match err {
-            SetKeysError::KeyExtraction(err) => return err.into(),
-            SetKeysError::RuntimeApi(err) => (ApiErrorCode::RuntimeApi, err.to_string()),
-            SetKeysError::ExtrinsicCreation(err) => match err {
-                CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => (
-                    ApiErrorCode::RuntimeApi,
-                    format!("Error during session keys decoding: {err}"),
-                ),
-                CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation => (
-                    ApiErrorCode::RuntimeApi,
-                    "Error during the creation of the signed set keys extrinsic".to_owned(),
-                ),
-            },
-            SetKeysError::TxPool(err) => return err.into(),
-        };
-
-        JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-            ErrorCode::ServerError(code as _).code(),
-            message,
-            None::<()>,
-        )))
+impl<TxPoolError> From<SetKeysError<TxPoolError>> for jsonrpsee::core::Error
+where
+    TxPoolError: sc_transaction_pool_api::error::IntoPoolError,
+{
+    fn from(err: SetKeysError<TxPoolError>) -> Self {
+        match err {
+            SetKeysError::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => app::data(
+                ApiErrorCode::MissingValidatorKey,
+                err.to_string(),
+                rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
+            ),
+            SetKeysError::KeyExtraction(err @ ValidatorKeyError::ValidatorKeyExtraction) => {
+                app::simple(ApiErrorCode::ValidatorKeyExtraction, err.to_string())
+            }
+            SetKeysError::RuntimeApi(err) => app::simple(ApiErrorCode::RuntimeApi, err.to_string()),
+            SetKeysError::ExtrinsicCreation(
+                ref _err @ CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(ref err_details),
+            ) => app::simple(
+                ApiErrorCode::RuntimeApi,
+                format!("Error during session keys decoding: {err_details}"),
+            ),
+            SetKeysError::ExtrinsicCreation(
+                _err @ CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation,
+            ) => app::simple(
+                ApiErrorCode::RuntimeApi,
+                "Error during the creation of the signed set keys extrinsic".to_owned(),
+            ),
+            SetKeysError::AuthorExtTx(err) => {
+                let (message, data) = map_txpool_error(err);
+                app::raw(ApiErrorCode::Transaction, message, data)
+            }
+        }
     }
+}
+
+/// Convert a transaction pool error into a human-readable.
+fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
+    err: T,
+) -> (String, Option<error_data::AuthorExtTxErrorDetails>) {
+    let err = match err.into_pool_error() {
+        Ok(err) => err,
+        Err(err) => {
+            // This is not a Transaction Pool API Error, but it may be a kind of wrapper type
+            // error (i.e. Transaction Pool Error, without the API bit).
+            return (format!("Transaction failed: {}", err), None);
+        }
+    };
+
+    use sc_transaction_pool_api::error::Error;
+    let (kind, message) = match err {
+        // Provide some custom-tweaked error messages for a few select cases:
+        Error::InvalidTransaction(InvalidTransaction::Payment) => {
+            (error_data::AuthorExtTxErrorKind::NoFunds, "No funds")
+        }
+        // For the rest cases, fallback to the native error rendering.
+        err => {
+            return (format!("Transaction failed: {}", err), None);
+        }
+    };
+
+    let data = AuthorExtTxErrorDetails {
+        inner_error: err.to_string(),
+        kind,
+        message,
+    };
+
+    // Rewrite the error message for more human-readable errors while the frontend doesn't support
+    // the custom data parsing.
+    (message.to_owned(), Some(data))
 }
