@@ -2,7 +2,7 @@
 
 use serde::Serialize;
 
-/// The RPC error context we provide to catch transaction pool errors.
+/// The RPC error context we provide to describe transaction pool errors.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthorExtTxErrorDetails {

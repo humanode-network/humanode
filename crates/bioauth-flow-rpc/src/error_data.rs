@@ -16,8 +16,7 @@ impl Serialize for ShouldRetry {
     }
 }
 
-/// The RPC error context we provide to trigger the face capture logic again,
-/// effectively requesting a retry of the same request with a new liveness data.
+/// The RPC error context we provide to describe transaction pool errors.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BioauthTxErrorDetails {
