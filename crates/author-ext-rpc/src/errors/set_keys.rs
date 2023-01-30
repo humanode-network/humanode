@@ -1,4 +1,4 @@
-//! The `set_keys` method error kinds.
+//! The `set_keys` method error.
 
 use author_ext_api::CreateSignedSetKeysExtrinsicError;
 use rpc_validator_key_logic::Error as ValidatorKeyError;

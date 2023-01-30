@@ -1,4 +1,4 @@
-//! The `get_validator_public_key` method error kinds.
+//! The `get_validator_public_key` method error.
 
 use rpc_validator_key_logic::Error as ValidatorKeyError;
 
