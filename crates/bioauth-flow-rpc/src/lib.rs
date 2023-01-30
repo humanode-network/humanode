@@ -10,8 +10,10 @@ use std::sync::Arc;
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use errors::{
-    AuthenticateError, EnrollError, GetFacetecDeviceSdkParamsError, GetFacetecSessionToken,
-    SignError, StatusError,
+    authenticate::Error as AuthenticateError, enroll::Error as EnrollError,
+    get_facetec_device_sdk_params::Error as GetFacetecDeviceSdkParamsError,
+    get_facetec_session_token::Error as GetFacetecSessionToken, sign::Error as SignError,
+    status::Error as StatusError,
 };
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
@@ -287,8 +289,8 @@ where
     async fn status(&self) -> RpcResult<BioauthStatus<Timestamp>> {
         let own_key = match rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor) {
             Ok(v) => v,
-            Err(rpc_validator_key_logic::ValidatorKeyError::MissingValidatorKey) => return Ok(BioauthStatus::Unknown),
-            Err(rpc_validator_key_logic::ValidatorKeyError::ValidatorKeyExtraction) => return Err(StatusError::ValidatorKeyExtraction.into()),
+            Err(rpc_validator_key_logic::Error::MissingValidatorKey) => return Ok(BioauthStatus::Unknown),
+            Err(rpc_validator_key_logic::Error::ValidatorKeyExtraction) => return Err(StatusError::ValidatorKeyExtraction.into()),
         };
 
         // Extract an id of the last imported block.
@@ -332,7 +334,7 @@ where
 
         info!("Bioauth flow - authentication in progress");
 
-        let errtype = |val: errors::AuthenticateError<TransactionPool::Error>| {  val };
+        let errtype = |val: errors::authenticate::Error<TransactionPool::Error>| {  val };
 
         let public_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor).map_err(AuthenticateError::KeyExtraction).map_err(errtype)?;
         let (opaque_liveness_data, signature) = self.sign(public_key, &liveness_data).await

@@ -5,7 +5,9 @@ use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{GetValidatorPublicKeyError, SetKeysError};
+use errors::{
+    get_validator_public_key::Error as GetValidatorPublicKeyError, set_keys::Error as SetKeysError,
+};
 use jsonrpsee::{
     core::{async_trait, RpcResult},
     proc_macros::rpc,
@@ -92,7 +94,7 @@ where
 
         info!("Author extension - setting keys in progress");
 
-        let errtype = |val: errors::SetKeysError<TransactionPool::Error>| val;
+        let errtype = |val: errors::set_keys::Error<TransactionPool::Error>| val;
 
         let validator_key =
             rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)

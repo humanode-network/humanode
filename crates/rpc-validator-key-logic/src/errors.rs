@@ -11,7 +11,7 @@ pub enum ApiErrorCode {
 
 /// The validator related error kinds.
 #[derive(Debug, thiserror::Error)]
-pub enum ValidatorKeyError {
+pub enum Error {
     /// Validator key not available.
     #[error("validator key not available")]
     MissingValidatorKey,

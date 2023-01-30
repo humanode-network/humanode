@@ -10,7 +10,7 @@ pub use errors::*;
 /// Try to extract the validator key.
 pub fn validator_public_key<VKE>(
     validator_key_exctractor: &VKE,
-) -> Result<VKE::PublicKeyType, ValidatorKeyError>
+) -> Result<VKE::PublicKeyType, Error>
 where
     VKE: KeyExtractorT,
     VKE::Error: std::fmt::Debug,
@@ -22,8 +22,8 @@ where
                 message = "Unable to extract own key at bioauth flow RPC",
                 ?error
             );
-            ValidatorKeyError::ValidatorKeyExtraction
+            Error::ValidatorKeyExtraction
         })?
-        .ok_or(ValidatorKeyError::MissingValidatorKey)?;
+        .ok_or(Error::MissingValidatorKey)?;
     Ok(validator_public_key)
 }

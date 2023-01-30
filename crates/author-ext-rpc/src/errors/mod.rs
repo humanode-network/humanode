@@ -3,9 +3,6 @@
 pub mod get_validator_public_key;
 pub mod set_keys;
 
-pub use get_validator_public_key::*;
-pub use set_keys::*;
-
 /// Custom rpc error codes.
 #[derive(Debug, Clone, Copy)]
 pub enum ApiErrorCode {

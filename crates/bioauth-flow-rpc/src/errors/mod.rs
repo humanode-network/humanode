@@ -7,13 +7,6 @@ pub mod get_facetec_session_token;
 pub mod sign;
 pub mod status;
 
-pub use authenticate::*;
-pub use enroll::*;
-pub use get_facetec_device_sdk_params::*;
-pub use get_facetec_session_token::*;
-pub use sign::*;
-pub use status::*;
-
 /// Custom rpc error codes.
 #[derive(Debug, Clone, Copy)]
 pub enum ApiErrorCode {

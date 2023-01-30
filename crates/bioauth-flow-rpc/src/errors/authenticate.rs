@@ -1,15 +1,15 @@
 //! The `authenticate` method error.
 
-use rpc_validator_key_logic::ValidatorKeyError;
+use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{app, sign::SignError, ApiErrorCode};
+use super::{app, sign::Error as SignError, ApiErrorCode};
 use crate::error_data::{self, BioauthTxErrorDetails};
 
 /// The `authenticate` method error kinds.
 #[derive(Debug)]
-pub enum AuthenticateError<TxPoolError: sc_transaction_pool_api::error::IntoPoolError> {
+pub enum Error<TxPoolError: sc_transaction_pool_api::error::IntoPoolError> {
     /// An error that can occur during validator key extraction.
     KeyExtraction(ValidatorKeyError),
     /// An error that can occur during signing process.
@@ -22,24 +22,22 @@ pub enum AuthenticateError<TxPoolError: sc_transaction_pool_api::error::IntoPool
     BioauthTx(TxPoolError),
 }
 
-impl<TxPoolError> From<AuthenticateError<TxPoolError>> for jsonrpsee::core::Error
+impl<TxPoolError> From<Error<TxPoolError>> for jsonrpsee::core::Error
 where
     TxPoolError: sc_transaction_pool_api::error::IntoPoolError,
 {
-    fn from(err: AuthenticateError<TxPoolError>) -> Self {
+    fn from(err: Error<TxPoolError>) -> Self {
         match err {
-            AuthenticateError::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => {
-                app::data(
-                    ApiErrorCode::MissingValidatorKey,
-                    err.to_string(),
-                    rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
-                )
-            }
-            AuthenticateError::KeyExtraction(err @ ValidatorKeyError::ValidatorKeyExtraction) => {
+            Error::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => app::data(
+                ApiErrorCode::MissingValidatorKey,
+                err.to_string(),
+                rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
+            ),
+            Error::KeyExtraction(err @ ValidatorKeyError::ValidatorKeyExtraction) => {
                 app::simple(ApiErrorCode::ValidatorKeyExtraction, err.to_string())
             }
-            AuthenticateError::Sign(err) => app::simple(ApiErrorCode::Sign, err.to_string()),
-            AuthenticateError::Robonode(
+            Error::Sign(err) => app::simple(ApiErrorCode::Sign, err.to_string()),
+            Error::Robonode(
                 err @ robonode_client::Error::Call(
                     robonode_client::AuthenticateError::FaceScanRejected,
                 ),
@@ -48,13 +46,9 @@ where
                 err.to_string(),
                 error_data::ShouldRetry,
             ),
-            AuthenticateError::Robonode(err) => {
-                app::simple(ApiErrorCode::Robonode, err.to_string())
-            }
-            AuthenticateError::RuntimeApi(err) => {
-                app::simple(ApiErrorCode::RuntimeApi, err.to_string())
-            }
-            AuthenticateError::BioauthTx(err) => {
+            Error::Robonode(err) => app::simple(ApiErrorCode::Robonode, err.to_string()),
+            Error::RuntimeApi(err) => app::simple(ApiErrorCode::RuntimeApi, err.to_string()),
+            Error::BioauthTx(err) => {
                 let (message, data) = map_txpool_error(err);
                 app::raw(ApiErrorCode::Transaction, message, data)
             }
