@@ -8,7 +8,7 @@ use serde::Serialize;
 pub struct AuthorExtTxErrorDetails {
     /// The error kind.
     pub kind: AuthorExtTxErrorKind,
-    /// The human-firendly message for what happened.
+    /// The human-friendly message for what happened.
     pub message: &'static str,
     /// The message from the inner transaction pool error.
     pub inner_error: String,

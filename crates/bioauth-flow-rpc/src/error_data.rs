@@ -22,7 +22,7 @@ impl Serialize for ShouldRetry {
 pub struct BioauthTxErrorDetails {
     /// The error kind.
     pub kind: BioauthTxErrorKind,
-    /// The human-firendly message for what happened.
+    /// The human-friendly message for what happened.
     pub message: &'static str,
     /// The message from the inner transaction pool error.
     pub inner_error: String,
