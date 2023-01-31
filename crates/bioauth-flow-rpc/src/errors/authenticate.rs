@@ -119,3 +119,197 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
     // the custom data parsing.
     (message.to_owned(), Some(data))
 }
+
+#[cfg(test)]
+mod tests {
+
+    use jsonrpsee::types::ErrorObject;
+
+    use super::*;
+
+    #[test]
+    fn error_key_extraction_validator_key_extraction() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::KeyExtraction(
+                ValidatorKeyError::ValidatorKeyExtraction,
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":600,\"message\":\"unable to extract own key\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_key_extraction_missing_validator_key() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::KeyExtraction(
+                ValidatorKeyError::MissingValidatorKey,
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":500,\"message\":\"validator key not available\",\"data\":{\"validatorKeyNotAvailable\":true}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_sign() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::Sign(SignError::SigningFailed).into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":100,\"message\":\"signing failed\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_robonode_face_scan_rejected() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::Robonode(robonode_client::Error::Call(
+                robonode_client::AuthenticateError::FaceScanRejected,
+            ))
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message =
+            "{\"code\":200,\"message\":\"server error: face scan rejected\",\"data\":{\"shouldRetry\":true}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_robonode_other() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::Robonode(robonode_client::Error::Call(
+                robonode_client::AuthenticateError::Unknown("test".to_owned()),
+            ))
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message =
+            "{\"code\":200,\"message\":\"server error: unknown error: test\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_runtime_api() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::RuntimeApi(ApiError::Application(
+                "test".into(),
+            ))
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":300,\"message\":\"test\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_bioauth_tx_auth_ticket_signature_invalid() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::BioauthTx(
+                sc_transaction_pool_api::error::Error::InvalidTransaction(
+                    InvalidTransaction::BadProof,
+                ),
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"Invalid auth ticket signature\",\"data\":{\"kind\":\"AUTH_TICKET_SIGNATURE_INVALID\",\"message\":\"Invalid auth ticket signature\",\"innerError\":\"Invalid transaction validity: InvalidTransaction::BadProof\"}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_bioauth_tx_unable_to_parse_auth_ticket() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::BioauthTx(
+                sc_transaction_pool_api::error::Error::InvalidTransaction(
+                    InvalidTransaction::Custom(
+                        pallet_bioauth::CustomInvalidTransactionCodes::UnableToParseAuthTicket
+                            as u8,
+                    ),
+                ),
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"Unable to parse a validly signed auth ticket\",\"data\":{\"kind\":\"UNABLE_TO_PARSE_AUTH_TICKET\",\"message\":\"Unable to parse a validly signed auth ticket\",\"innerError\":\"Invalid transaction validity: InvalidTransaction::Custom(116)\"}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_bioauth_tx_nonce_already_used() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::BioauthTx(
+                sc_transaction_pool_api::error::Error::InvalidTransaction(
+                    InvalidTransaction::Stale,
+                ),
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"The auth ticket you provided has already been used\",\"data\":{\"kind\":\"NONCE_ALREADY_USED\",\"message\":\"The auth ticket you provided has already been used\",\"innerError\":\"Invalid transaction validity: InvalidTransaction::Stale\"}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_bioauth_tx_already_authenticated() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::BioauthTx(
+                sc_transaction_pool_api::error::Error::InvalidTransaction(
+                    InvalidTransaction::Future,
+                ),
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"Active authentication exists currently, and you can't authenticate again yet\",\"data\":{\"kind\":\"ALREADY_AUTHENTICATED\",\"message\":\"Active authentication exists currently, and you can't authenticate again yet\",\"innerError\":\"Invalid transaction validity: InvalidTransaction::Future\"}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_bioauth_tx_other() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::BioauthTx(
+                sc_transaction_pool_api::error::Error::RejectedFutureTransaction,
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"Transaction failed: The pool is not accepting future transactions\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+}
