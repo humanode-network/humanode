@@ -98,3 +98,127 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
     // the custom data parsing.
     (message.to_owned(), Some(data))
 }
+
+#[cfg(test)]
+mod tests {
+
+    use jsonrpsee::types::ErrorObject;
+
+    use super::*;
+
+    #[test]
+    fn error_key_extraction_validator_key_extraction() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::KeyExtraction(
+                ValidatorKeyError::ValidatorKeyExtraction,
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":600,\"message\":\"unable to extract own key\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_key_extraction_missing_validator_key() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::KeyExtraction(
+                ValidatorKeyError::MissingValidatorKey,
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":500,\"message\":\"validator key not available\",\"data\":{\"validatorKeyNotAvailable\":true}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_runtime_api() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::RuntimeApi(ApiError::Application(
+                "test".into(),
+            ))
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":300,\"message\":\"test\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_extrinsic_creation_session_keys_decoding() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::ExtrinsicCreation(
+                CreateSignedSetKeysExtrinsicError::SessionKeysDecoding("test".to_owned()),
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message =
+            "{\"code\":300,\"message\":\"Error during session keys decoding: test\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_extrinsic_creation_signed_extrinsic_creation() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::ExtrinsicCreation(
+                CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation,
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message =
+            "{\"code\":300,\"message\":\"Error during the creation of the signed set keys extrinsic\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_author_ext_tx_no_funds() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::AuthorExtTx(
+                sc_transaction_pool_api::error::Error::InvalidTransaction(
+                    InvalidTransaction::Payment,
+                ),
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"No funds\",\"data\":{\"kind\":\"NO_FUNDS\",\"message\":\"No funds\",\"innerError\":\"Invalid transaction validity: InvalidTransaction::Payment\"}}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_author_ext_tx_other() {
+        let error: jsonrpsee::core::Error =
+            Error::<sc_transaction_pool_api::error::Error>::AuthorExtTx(
+                sc_transaction_pool_api::error::Error::RejectedFutureTransaction,
+            )
+            .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":400,\"message\":\"Transaction failed: The pool is not accepting future transactions\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+}
