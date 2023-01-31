@@ -28,9 +28,7 @@ mod tests {
 
     #[test]
     fn error_robonode() {
-        let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::<
-            robonode_client::GetFacetecDeviceSdkParamsError,
-        >::Call(
+        let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::Call(
             robonode_client::GetFacetecDeviceSdkParamsError::Unknown("test".to_owned()),
         ))
         .into();

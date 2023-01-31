@@ -28,9 +28,7 @@ mod tests {
 
     #[test]
     fn error_robonode() {
-        let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::<
-            robonode_client::GetFacetecSessionTokenError,
-        >::Call(
+        let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::Call(
             robonode_client::GetFacetecSessionTokenError::Unknown("test".to_owned()),
         ))
         .into();
