@@ -29,3 +29,37 @@ impl From<Error> for jsonrpsee::core::Error {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use jsonrpsee::types::ErrorObject;
+
+    use super::*;
+
+    #[test]
+    fn error_validator_key_extraction() {
+        let error: jsonrpsee::core::Error = Error::ValidatorKeyExtraction.into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message = "{\"code\":600,\"message\":\"unable to extract own key\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+
+    #[test]
+    fn error_runtime_api() {
+        let error: jsonrpsee::core::Error =
+            Error::RuntimeApi(ApiError::Application("test".into())).into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message =
+            "{\"code\":300,\"message\":\"unable to get status from the runtime: test\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+}
