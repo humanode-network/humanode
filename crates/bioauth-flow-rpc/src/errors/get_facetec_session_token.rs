@@ -18,3 +18,29 @@ impl From<Error> for jsonrpsee::core::Error {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use jsonrpsee::types::ErrorObject;
+
+    use super::*;
+
+    #[test]
+    fn error_robonode() {
+        let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::<
+            robonode_client::GetFacetecSessionTokenError,
+        >::Call(
+            robonode_client::GetFacetecSessionTokenError::Unknown("test".to_owned()),
+        ))
+        .into();
+        let error: ErrorObject = error.into();
+
+        let expected_error_message =
+            "{\"code\":200,\"message\":\"server error: unknown error: test\"}";
+        assert_eq!(
+            expected_error_message,
+            serde_json::to_string(&error).unwrap()
+        );
+    }
+}
