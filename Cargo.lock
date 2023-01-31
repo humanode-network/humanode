@@ -369,6 +369,7 @@ dependencies = [
  "rpc-validator-key-logic",
  "sc-transaction-pool-api",
  "serde",
+ "serde_json",
  "sp-api",
  "sp-blockchain",
  "sp-core",
