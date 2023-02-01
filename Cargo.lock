@@ -5637,10 +5637,12 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
+ "mockall 0.11.3",
  "parity-scale-codec",
  "primitives-ethereum",
  "scale-info",
  "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]
