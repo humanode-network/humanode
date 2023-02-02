@@ -43,14 +43,14 @@ where
             Error::RuntimeApi(err) => {
                 rpc_error_response::simple(api_error_code::RUNTIME_API, err.to_string())
             }
-            Error::ExtrinsicCreation(
-                ref _err @ CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(ref err_details),
-            ) => rpc_error_response::simple(
+            Error::ExtrinsicCreation(CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(
+                ref err_details,
+            )) => rpc_error_response::simple(
                 api_error_code::RUNTIME_API,
                 format!("Error during session keys decoding: {err_details}"),
             ),
             Error::ExtrinsicCreation(
-                _err @ CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation,
+                CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation,
             ) => rpc_error_response::simple(
                 api_error_code::RUNTIME_API,
                 "Error during the creation of the signed set keys extrinsic".to_owned(),
