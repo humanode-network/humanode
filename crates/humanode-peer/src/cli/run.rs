@@ -4,9 +4,15 @@ use std::sync::Arc;
 
 use frame_benchmarking_cli::*;
 use humanode_runtime::Block;
+#[cfg(feature = "runtime-benchmarks")]
+use humanode_runtime::Runtime;
 use sc_service::PartialComponents;
+#[cfg(feature = "runtime-benchmarks")]
+use sp_core::Get;
 
 use super::{bioauth, Root, Subcommand};
+#[cfg(feature = "runtime-benchmarks")]
+use crate::benchmarking::{inherent_benchmark_data, RemarkBuilder, TransferKeepAliveBuilder};
 use crate::service;
 
 /// Parse command line arguments and run the requested operation.
@@ -163,8 +169,53 @@ pub async fn run() -> sc_cli::Result<()> {
 
                         cmd.run(config.substrate, partial.client, db, storage)
                     }
-                    _ => {
-                        Err("Currently we don't support the rest BenchmarkCmd subcommands.".into())
+                    #[cfg(not(feature = "runtime-benchmarks"))]
+                    BenchmarkCmd::Overhead(_) => Err(
+                        "Overhead benchmarking can be enabled with `--features runtime-benchmarks.`".into()
+                    ),
+                    #[cfg(feature = "runtime-benchmarks")]
+                    BenchmarkCmd::Overhead(cmd) => {
+                        let partial = service::new_partial(&config)?;
+                        let ext_builder = RemarkBuilder {
+                            client: Arc::clone(&partial.client),
+                        };
+                        let inherents = inherent_benchmark_data(&config)?;
+                        cmd.run(
+                            config.substrate,
+                            partial.client,
+                            inherents,
+                            Vec::new(),
+                            &ext_builder,
+                        )
+                    },
+                    #[cfg(not(feature = "runtime-benchmarks"))]
+                    BenchmarkCmd::Extrinsic(_) => Err(
+                        "Extrinsic benchmarking can be enabled with `--features runtime-benchmarks.`".into()
+                    ),
+                    #[cfg(feature = "runtime-benchmarks")]
+                    BenchmarkCmd::Extrinsic(cmd) => {
+                        let partial = service::new_partial(&config)?;
+                        let existential_deposit = <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+                        let ext_factory = ExtrinsicFactory(vec![
+                            Box::new(RemarkBuilder {
+                                client: Arc::clone(&partial.client)
+                            }),
+                            Box::new(TransferKeepAliveBuilder {
+                                client: Arc::clone(&partial.client),
+                                dest: sp_keyring::Sr25519Keyring::Alice.to_account_id(),
+                                value: existential_deposit,
+                            })
+                        ]);
+                        let inherents = inherent_benchmark_data(&config)?;
+                        cmd.run(
+                            partial.client,
+                            inherents,
+                            Vec::new(),
+                            &ext_factory,
+                        )
+                    }
+                    BenchmarkCmd::Machine(cmd) => {
+                        cmd.run(&config.substrate, SUBSTRATE_REFERENCE_HARDWARE.clone())
                     }
                 }
             })

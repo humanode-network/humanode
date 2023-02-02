@@ -47,8 +47,7 @@ where
                 ..
             } => Ok(FacetecResponse(Err(server_error))),
             helper => Err(serde::de::Error::custom(format!(
-                "unable to pick variant: {:?}",
-                helper
+                "unable to pick variant: {helper:?}"
             ))),
         }
     }

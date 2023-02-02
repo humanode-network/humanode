@@ -7,6 +7,11 @@ use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 /// The verifier for the ethereum signature.
 pub trait SignedClaimVerifier {
     /// The type of the native account on the chain.

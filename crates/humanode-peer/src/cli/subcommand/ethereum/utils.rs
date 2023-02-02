@@ -31,10 +31,10 @@ pub fn extract_and_print_keys(
     m.copy_from_slice(&public_key.serialize()[1..65]);
     let account = H160::from(H256::from_slice(Keccak256::digest(m).as_slice()));
 
-    println!("Address:      {:?}", account);
+    println!("Address:      {account:?}");
     println!("Mnemonic:     {}", mnemonic.phrase());
     println!("Private Key:  {:?}", H256::from(private_key.serialize()));
-    println!("Path:         {}", derivation_path);
+    println!("Path:         {derivation_path}");
 
     Ok(())
 }

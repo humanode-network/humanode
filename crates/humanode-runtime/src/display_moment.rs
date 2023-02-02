@@ -18,7 +18,7 @@ impl core::fmt::Display for DisplayMoment {
         // i64 is big enough to process `UnixMilliseconds` properly.
         match Utc.timestamp_millis_opt(self.0.try_into().unwrap()) {
             LocalResult::None => write!(f, "[invalid milliseconds {}]", self.0),
-            LocalResult::Single(dt) => write!(f, "{}", dt),
+            LocalResult::Single(dt) => write!(f, "{dt}"),
             LocalResult::Ambiguous(_, _) => unreachable!(),
         }
     }

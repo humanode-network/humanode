@@ -13,7 +13,19 @@ frame-system = { default-features = false, git = "https://github.com/humanode-ne
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 
+[dev-dependencies]
+mockall = "0.11"
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+
 [features]
 default = ["std"]
-std = ["primitives-ethereum/std", "codec/std", "frame-support/std", "frame-system/std", "scale-info/std", "sp-core/std"]
+std = [
+  "codec/std",
+  "frame-support/std",
+  "frame-system/std",
+  "primitives-ethereum/std",
+  "scale-info/std",
+  "sp-core/std",
+  "sp-runtime/std",
+]
 try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime"]
