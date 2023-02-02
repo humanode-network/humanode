@@ -9,6 +9,10 @@ use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
 #[cfg(feature = "runtime-benchmarks")]
 pub mod benchmarking;
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
 
 /// The verifier for the ethereum signature.
 pub trait SignedClaimVerifier {
