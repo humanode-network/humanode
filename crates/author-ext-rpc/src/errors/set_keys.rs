@@ -72,7 +72,7 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
         Err(err) => {
             // This is not a Transaction Pool API Error, but it may be a kind of wrapper type
             // error (i.e. Transaction Pool Error, without the API bit).
-            return (format!("Transaction failed: {}", err), None);
+            return (format!("Transaction failed: {err}"), None);
         }
     };
 
@@ -84,7 +84,7 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
         }
         // For the rest cases, fallback to the native error rendering.
         err => {
-            return (format!("Transaction failed: {}", err), None);
+            return (format!("Transaction failed: {err}"), None);
         }
     };
 
