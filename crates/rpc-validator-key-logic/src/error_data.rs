@@ -1,4 +1,4 @@
-//! The validator related error kinds.
+//! The shapes and variants of the custom error data.
 
 use jsonrpsee::core::Serialize;
 

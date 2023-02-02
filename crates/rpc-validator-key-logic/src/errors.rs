@@ -1,4 +1,4 @@
-//! The validator related error kinds.
+//! The validator related error.
 
 /// Custom rpc error codes.
 pub mod api_error_code {
