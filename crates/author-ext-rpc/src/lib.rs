@@ -5,30 +5,22 @@ use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
+use errors::{
+    get_validator_public_key::Error as GetValidatorPublicKeyError, set_keys::Error as SetKeysError,
+};
 use jsonrpsee::{
-    core::{async_trait, Error as JsonRpseeError, RpcResult},
+    core::{async_trait, RpcResult},
     proc_macros::rpc,
-    types::error::{CallError, ErrorCode, ErrorObject},
 };
 use rpc_deny_unsafe::DenyUnsafe;
-use sc_transaction_pool_api::{error::IntoPoolError, TransactionPool as TransactionPoolT};
+use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
 use sp_api::{BlockT, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use sp_core::Bytes;
 use tracing::*;
 
-/// Custom rpc error codes.
-#[derive(Debug, Clone, Copy)]
-enum ApiErrorCode {
-    /// Call to runtime api has failed.
-    RuntimeApi = 300,
-    /// Set_keys transaction has failed.
-    Transaction = 400,
-    /// Validator key is not available.
-    MissingValidatorKey = 500,
-    /// Validator key extraction has failed.
-    ValidatorKeyExtraction = 600,
-}
+mod error_data;
+mod errors;
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
@@ -76,28 +68,6 @@ impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
     }
 }
 
-impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
-    AuthorExt<ValidatorKeyExtractor, Client, Block, TransactionPool>
-where
-    ValidatorKeyExtractor: KeyExtractorT,
-    ValidatorKeyExtractor::Error: std::fmt::Debug,
-{
-    /// Try to extract the validator key.
-    fn validator_public_key(&self) -> RpcResult<Option<ValidatorKeyExtractor::PublicKeyType>> {
-        self.validator_key_extractor.extract_key().map_err(|error| {
-            tracing::error!(
-                message = "Unable to extract own key at author extension RPC",
-                ?error
-            );
-            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::ValidatorKeyExtraction as _).code(),
-                "Unable to extract own key".to_owned(),
-                None::<()>,
-            )))
-        })
-    }
-}
-
 #[async_trait]
 impl<ValidatorKeyExtractor, Client, Block, TransactionPool>
     AuthorExtServer<ValidatorKeyExtractor::PublicKeyType>
@@ -124,13 +94,12 @@ where
 
         info!("Author extension - setting keys in progress");
 
-        let validator_key = self.validator_public_key()?.ok_or_else(|| {
-            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
-                "Validator key not available".to_owned(),
-                None::<()>,
-            )))
-        })?;
+        let errtype = |val: errors::set_keys::Error<TransactionPool::Error>| val;
+
+        let validator_key =
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
+                .map_err(SetKeysError::KeyExtraction)
+                .map_err(errtype)?;
 
         let at = sp_api::BlockId::Hash(self.client.info().best_hash);
 
@@ -138,29 +107,10 @@ where
             .client
             .runtime_api()
             .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
-            .map_err(|err| {
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                    format!("Runtime error: {err}"),
-                    None::<()>,
-                )))
-            })?
-            .map_err(|err| match err {
-                author_ext_api::CreateSignedSetKeysExtrinsicError::SessionKeysDecoding(err) => {
-                    JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                        ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                        format!("Error during session keys decoding: {err}"),
-                        None::<()>,
-                    )))
-                }
-                author_ext_api::CreateSignedSetKeysExtrinsicError::SignedExtrinsicCreation => {
-                    JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                        ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                        "Error during the creation of the signed set keys extrinsic".to_owned(),
-                        None::<()>,
-                    )))
-                }
-            })?;
+            .map_err(SetKeysError::RuntimeApi)
+            .map_err(errtype)?
+            .map_err(SetKeysError::ExtrinsicCreation)
+            .map_err(errtype)?;
 
         self.pool
             .submit_and_watch(
@@ -169,17 +119,8 @@ where
                 signed_set_keys_extrinsic,
             )
             .await
-            .map_err(|e| {
-                let message = e.into_pool_error().map_or_else(
-                    |err| format!("Transaction pool error: {err}"),
-                    |err| format!("Unexpected transaction pool error: {err}"),
-                );
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::Transaction as _).code(),
-                    message,
-                    None::<()>,
-                )))
-            })?;
+            .map_err(SetKeysError::AuthorExtTx)
+            .map_err(errtype)?;
 
         info!("Author extension - setting keys transaction complete");
 
@@ -187,13 +128,9 @@ where
     }
 
     async fn get_validator_public_key(&self) -> RpcResult<ValidatorKeyExtractor::PublicKeyType> {
-        let validator_public_key = self.validator_public_key()?.ok_or_else(|| {
-            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
-                "Validator key not available".to_owned(),
-                None::<()>,
-            )))
-        })?;
+        let validator_public_key =
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
+                .map_err(GetValidatorPublicKeyError::KeyExtraction)?;
 
         Ok(validator_public_key)
     }

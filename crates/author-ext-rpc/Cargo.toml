@@ -8,11 +8,17 @@ publish = false
 author-ext-api = { version = "0.1", path = "../author-ext-api" }
 bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
 rpc-deny-unsafe = { path = "../rpc-deny-unsafe" }
+rpc-error-response = { path = "../rpc-error-response" }
+rpc-validator-key-logic = { version = "0.1", path = "../rpc-validator-key-logic" }
 
 jsonrpsee = { version = "0.15.1", features = ["server", "macros"] }
 sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+serde = "1"
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
 tracing = "0.1"
+
+[dev-dependencies]
+serde_json = "1"
