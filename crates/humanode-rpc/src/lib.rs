@@ -192,7 +192,7 @@ where
     C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
     P: TransactionPool<Block = Block> + 'static,
     VKE: KeyExtractorT + Send + Sync + 'static,
-    VKE::PublicKeyType: Encode + AsRef<[u8]> + Send + Sync + sp_runtime::Serialize,
+    VKE::PublicKeyType: Encode + AsRef<[u8]> + Clone + Send + Sync + sp_runtime::Serialize,
     VKE::Error: std::fmt::Debug,
     VSF: SignerFactory<Vec<u8>, VKE::PublicKeyType> + Send + Sync + 'static,
     VSF::Signer: Send + Sync + 'static,

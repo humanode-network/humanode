@@ -9,11 +9,13 @@ use std::sync::Arc;
 
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use jsonrpsee::{
-    core::{Error as JsonRpseeError, RpcResult},
-    proc_macros::rpc,
-    types::error::{CallError, ErrorCode, ErrorObject},
+use errors::{
+    authenticate::Error as AuthenticateError, enroll::Error as EnrollError,
+    get_facetec_device_sdk_params::Error as GetFacetecDeviceSdkParamsError,
+    get_facetec_session_token::Error as GetFacetecSessionToken, sign::Error as SignError,
+    status::Error as StatusError,
 };
+use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
 use rpc_deny_unsafe::DenyUnsafe;
@@ -22,8 +24,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
-use sp_runtime::transaction_validity::InvalidTransaction;
 use tracing::*;
+
+pub mod error_data;
+mod errors;
 
 /// Signer provides signatures for the data.
 #[async_trait::async_trait]
@@ -62,66 +66,6 @@ where
 
 /// The parameters necessary to initialize the FaceTec Device SDK.
 type FacetecDeviceSdkParams = Map<String, Value>;
-
-/// The RPC error context we provide to trigger the face capture logic again,
-/// effectively requesting a retry of the same request with a new liveness data.
-#[derive(Debug)]
-struct ShouldRetry;
-
-impl From<ShouldRetry> for Value {
-    fn from(_: ShouldRetry) -> Self {
-        serde_json::json!({ "shouldRetry": true })
-    }
-}
-
-/// The RPC error context we provide to trigger the face capture logic again,
-/// effectively requesting a retry of the same request with a new liveness data.
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]
-struct TransactionPoolErrorDetails {
-    /// The error kind.
-    kind: TransactionPoolErrorKind,
-    /// The message from the inner transaction pool error.
-    inner_error: String,
-}
-
-/// The error kinds that we expose in the RPC that originate from the transaction pool.
-#[derive(Debug, Serialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-enum TransactionPoolErrorKind {
-    /// Auth ticket signature was not valid.
-    AuthTicketSignatureInvalid,
-    /// We were unable to parse the auth ticket (although its signature was supposed to be
-    /// validated by now).
-    UnableToParseAuthTicket,
-    /// The nonce was already seen by the system.
-    NonceAlreadyUsed,
-    /// The aactive authentication issued by this ticket is still on.
-    AlreadyAuthenticated,
-}
-
-impl From<TransactionPoolErrorDetails> for Value {
-    fn from(val: TransactionPoolErrorDetails) -> Self {
-        serde_json::json!({ "transactionPoolErrorDetails": val })
-    }
-}
-
-/// Custom rpc error codes.
-#[derive(Debug, Clone, Copy)]
-enum ApiErrorCode {
-    /// Signer has failed.
-    Signer = 100,
-    /// Request to robonode has failed.
-    Robonode = 200,
-    /// Call to runtime api has failed.
-    RuntimeApi = 300,
-    /// Authenticate transaction has failed.
-    Transaction = 400,
-    /// Validator key is not available.
-    MissingValidatorKey = 500,
-    /// Validator key extraction has failed.
-    ValidatorKeyExtraction = 600,
-}
 
 /// The bioauth status as used in the RPC.
 #[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -262,41 +206,14 @@ where
     <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
 {
-    /// Try to extract the validator key.
-    fn validator_public_key(&self) -> RpcResult<Option<ValidatorKeyExtractor::PublicKeyType>> {
-        self.validator_key_extractor
-            .extract_key()
-            .map_err(|error| {
-                tracing::error!(
-                    message = "Unable to extract own key at bioauth flow RPC",
-                    ?error
-                );
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::ValidatorKeyExtraction as _).code(),
-                    "Unable to extract own key".to_owned(),
-                    None::<()>,
-                )))
-            })
-    }
     /// Return the opaque liveness data and corresponding signature.
-    async fn sign(&self, liveness_data: &LivenessData) -> RpcResult<(OpaqueLivenessData, Vec<u8>)> {
+    async fn sign(&self, validator_key: <ValidatorKeyExtractor as KeyExtractorT>::PublicKeyType, liveness_data: &LivenessData) -> Result<(OpaqueLivenessData, Vec<u8>), SignError> {
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
-        let validator_key =
-            self.validator_public_key()?
-                .ok_or_else(|| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
-                    "Validator key not available".to_owned(),
-                    None::<()>,
-                ))))?;
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {
             tracing::error!(message = "Signing failed", ?error);
-            JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::Signer as _).code(),
-                "Signing failed".to_owned(),
-                None::<()>,
-            )))
+            SignError::SigningFailed
         })?;
 
         Ok((opaque_liveness_data, signature))
@@ -335,7 +252,7 @@ where
 
     RobonodeClient: AsRef<robonode_client::Client>,
     ValidatorKeyExtractor: KeyExtractorT,
-    ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]>,
+    ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
     ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
     <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
@@ -355,11 +272,7 @@ where
             .as_ref()
             .get_facetec_device_sdk_params()
             .await
-            .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                format!("Request to the robonode failed: {err}"),
-                None::<()>,
-            ))))?;
+            .map_err(GetFacetecDeviceSdkParamsError::Robonode)?;
         Ok(res)
     }
 
@@ -369,18 +282,15 @@ where
             .as_ref()
             .get_facetec_session_token()
             .await
-            .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                format!("Request to the robonode failed: {err}"),
-                None::<()>,
-            ))))?;
+            .map_err(GetFacetecSessionToken::Robonode)?;
         Ok(res.session_token)
     }
 
     async fn status(&self) -> RpcResult<BioauthStatus<Timestamp>> {
-        let own_key = match self.validator_public_key()? {
-            Some(v) => v,
-            None => return Ok(BioauthStatus::Unknown),
+        let own_key = match rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor) {
+            Ok(v) => v,
+            Err(rpc_validator_key_logic::Error::MissingValidatorKey) => return Ok(BioauthStatus::Unknown),
+            Err(rpc_validator_key_logic::Error::ValidatorKeyExtraction) => return Err(StatusError::ValidatorKeyExtraction.into()),
         };
 
         // Extract an id of the last imported block.
@@ -390,11 +300,7 @@ where
             .client
             .runtime_api()
             .bioauth_status(&at, &own_key)
-            .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                format!("Unable to get status from the runtime: {err}"),
-                None::<()>,
-            ))))?;
+            .map_err(StatusError::RuntimeApi)?;
 
         Ok(status.into())
     }
@@ -404,13 +310,10 @@ where
 
         info!("Bioauth flow - enrolling in progress");
 
-        let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
+        let public_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor).map_err(EnrollError::KeyExtraction)?;
+        let (opaque_liveness_data, signature) = self.sign(public_key.clone(), &liveness_data).await
+            .map_err(EnrollError::Sign)?;
 
-        let public_key = self.validator_public_key()?.ok_or_else(|| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-            ErrorCode::ServerError(ApiErrorCode::MissingValidatorKey as _).code(),
-            "Validator key not available".to_string(),
-            None::<()>,
-        ))))?;
         self.robonode_client
             .as_ref()
             .enroll(EnrollRequest {
@@ -419,20 +322,7 @@ where
                 public_key: public_key.as_ref(),
             })
             .await
-            .map_err(|err| {
-                let data: Option<Value>= match err {
-                    robonode_client::Error::Call(
-                        robonode_client::EnrollError::FaceScanRejected
-                    ) => Some(ShouldRetry.into()),
-                    _ => None,
-                };
-
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                    format!("Request to the robonode failed: {err}"),
-                    data,
-                )))
-            })?;
+            .map_err(EnrollError::Robonode)?;
 
         info!("Bioauth flow - enrolling complete");
 
@@ -444,7 +334,11 @@ where
 
         info!("Bioauth flow - authentication in progress");
 
-        let (opaque_liveness_data, signature) = self.sign(&liveness_data).await?;
+        let errtype = |val: errors::authenticate::Error<TransactionPool::Error>| {  val };
+
+        let public_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor).map_err(AuthenticateError::KeyExtraction).map_err(errtype)?;
+        let (opaque_liveness_data, signature) = self.sign(public_key, &liveness_data).await
+            .map_err(AuthenticateError::Sign).map_err(errtype)?;
 
         let response = self
             .robonode_client
@@ -454,20 +348,7 @@ where
                 liveness_data_signature: signature.as_ref(),
             })
             .await
-            .map_err(|err| {
-                let data: Option<Value>= match err {
-                    robonode_client::Error::Call(
-                        robonode_client::AuthenticateError::FaceScanRejected
-                    ) => Some(ShouldRetry.into()),
-                    _ => None,
-                };
-
-                JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::Robonode as _).code(),
-                    format!("Request to the robonode failed: {err}"),
-                    data,
-                )))
-            })?;
+            .map_err(AuthenticateError::Robonode).map_err(errtype)?;
 
         info!("Bioauth flow - authentication complete");
 
@@ -483,11 +364,7 @@ where
                 response.auth_ticket.into(),
                 response.auth_ticket_signature.into(),
             )
-            .map_err(|err| JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                    ErrorCode::ServerError(ApiErrorCode::RuntimeApi as _).code(),
-                    format!("Error creating auth extrinsic: {err}"),
-                    None::<()>,
-                ))))?;
+            .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
 
         self.pool
             .submit_and_watch(
@@ -496,72 +373,10 @@ where
                 ext,
             )
             .await
-            .map_err(map_txpool_error)?;
+            .map_err(AuthenticateError::BioauthTx).map_err(errtype)?;
 
         info!("Bioauth flow - authenticate transaction complete");
 
         Ok(())
     }
-}
-
-/// Convert a transaction pool error into a human-readable
-fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(err: T) -> JsonRpseeError {
-    let code = ErrorCode::ServerError(ApiErrorCode::Transaction as _);
-
-    let err = match err.into_pool_error() {
-        Ok(err) => err,
-        Err(err) => {
-            // This is not a Transaction Pool API Error, but it may be a kind of wrapper type
-            // error (i.e. Transaction Pool Error, without the API bit).
-            return JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                code.code(),
-                format!("Transaction failed: {err}"),
-                None::<()>,
-            )));
-        }
-    };
-
-    use sc_transaction_pool_api::error::Error;
-    let (kind, message) = match err {
-        // Provide some custom-tweaked error messages for a few select cases:
-        Error::InvalidTransaction(InvalidTransaction::BadProof) => (
-            TransactionPoolErrorKind::AuthTicketSignatureInvalid,
-            "Invalid auth ticket signature",
-        ),
-        Error::InvalidTransaction(InvalidTransaction::Custom(custom_code))
-            if custom_code
-                == (pallet_bioauth::CustomInvalidTransactionCodes::UnableToParseAuthTicket
-                    as u8) =>
-        {
-            (
-                TransactionPoolErrorKind::UnableToParseAuthTicket,
-                "Unable to parse a validly signed auth ticket",
-            )
-        }
-        Error::InvalidTransaction(InvalidTransaction::Stale) => (
-            TransactionPoolErrorKind::NonceAlreadyUsed,
-            "The auth ticket you provided has already been used",
-        ),
-        Error::InvalidTransaction(InvalidTransaction::Future) => (
-            TransactionPoolErrorKind::AlreadyAuthenticated,
-            "Active authentication exists currently, and you can't authenticate again yet",
-        ),
-        // For the rest cases, fallback to the native error rendering.
-        err => {
-            return JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-                code.code(),
-                format!("Transaction failed: {err}"),
-                None::<()>,
-            )))
-        }
-    };
-
-    JsonRpseeError::Call(CallError::Custom(ErrorObject::owned(
-        code.code(),
-        message.to_string(),
-        Some(TransactionPoolErrorDetails {
-            inner_error: err.to_string(),
-            kind,
-        }),
-    )))
 }
