@@ -8,14 +8,14 @@ publish = false
 primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 
 [dev-dependencies]
 mockall = "0.11"
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 
 [features]
 default = ["std"]
@@ -28,4 +28,4 @@ std = [
   "sp-core/std",
   "sp-runtime/std",
 ]
-try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime"]
+try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime", "sp-runtime/try-runtime"]

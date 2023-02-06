@@ -89,7 +89,7 @@ const codeModes = {
   runBenchmark: {
     name: "test-run pallet benchmarks",
     cargoCommand: "run",
-    cargoArgs: "-p humanode-peer --release --features runtime-benchmarks,wasmtime benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 2 --repeat 0 --external-repeat 0",
+    cargoArgs: "-p humanode-peer --release --features runtime-benchmarks benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 2 --repeat 0 --external-repeat 0",
     cargoCacheKey: "run-benchmark",
   },
   buildTryRuntime: {

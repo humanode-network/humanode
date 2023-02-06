@@ -7,7 +7,7 @@ publish = false
 [dependencies]
 bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
 
-jsonrpsee = { version = "0.15.1", features = ["server", "macros"] }
+jsonrpsee = { version = "0.16.2", features = ["server", "macros"] }
 serde_json = "1"
 thiserror = "1"
 tracing = "0.1"
