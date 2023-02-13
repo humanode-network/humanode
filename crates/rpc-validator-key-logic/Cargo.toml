@@ -1,0 +1,13 @@
+[package]
+name = "rpc-validator-key-logic"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
+
+jsonrpsee = { version = "0.16.2", features = ["server", "macros"] }
+serde_json = "1"
+thiserror = "1"
+tracing = "0.1"

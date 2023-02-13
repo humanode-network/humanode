@@ -1,0 +1,9 @@
+[package]
+name = "rpc-error-response"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+jsonrpsee = { version = "0.16.2", features = ["server", "macros"] }
+serde = "1"

@@ -414,6 +414,7 @@ pub mod pallet {
     /// Cost incurred from decoding vec of length M or N. Charged as maximum
     #[pallet::call]
     impl<T: Config> Pallet<T> {
+        #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::authenticate())]
         pub fn authenticate(
             origin: OriginFor<T>,
@@ -494,6 +495,7 @@ pub mod pallet {
             Ok(())
         }
 
+        #[pallet::call_index(1)]
         #[pallet::weight(T::WeightInfo::set_robonode_public_key())]
         pub fn set_robonode_public_key(
             origin: OriginFor<T>,

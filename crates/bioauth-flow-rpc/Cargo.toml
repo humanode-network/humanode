@@ -11,15 +11,18 @@ pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
 primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-data" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 rpc-deny-unsafe = { path = "../rpc-deny-unsafe" }
+rpc-error-response = { path = "../rpc-error-response" }
+rpc-validator-key-logic = { version = "0.1", path = "../rpc-validator-key-logic" }
 
 anyhow = "1"
 async-trait = "0.1"
-jsonrpsee = { version = "0.15.1", features = ["server", "macros"] }
-sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+jsonrpsee = { version = "0.16.2", features = ["server", "macros"] }
+sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 serde = "1"
 serde_json = "1"
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/humanode-2022-11-23" }
+sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
+sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
+sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
+thiserror = "1"
 tokio = "1"
 tracing = "0.1"

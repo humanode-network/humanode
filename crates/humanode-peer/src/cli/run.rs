@@ -231,6 +231,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::ExportEmbeddedRuntime(cmd)) => cmd.run().await,
         #[cfg(feature = "try-runtime")]
         Some(Subcommand::TryRuntime(cmd)) => {
+            use sc_executor::{sp_wasm_interface::ExtendedHostFunctions, NativeExecutionDispatch};
             let runner = root.create_humanode_runner(cmd)?;
             runner
                 .run_tasks(|config| async move {
@@ -247,7 +248,10 @@ pub async fn run() -> sc_cli::Result<()> {
                     )
                     .map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
                     Ok((
-                        cmd.run::<Block, service::ExecutorDispatch>(config.substrate),
+                        cmd.run::<Block, ExtendedHostFunctions<
+                            sp_io::SubstrateHostFunctions,
+                            <service::ExecutorDispatch as NativeExecutionDispatch>::ExtendHostFunctions,
+                        >>(),
                         task_manager,
                     ))
                 })

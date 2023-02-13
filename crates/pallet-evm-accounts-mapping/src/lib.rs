@@ -115,6 +115,7 @@ pub mod pallet {
         /// Create a permanent two-way binding between an Ethereum address and a native address.
         /// The native address of the exstrinsic signer is used as a native address, while
         /// the address of the payload signature creator is used as Ethereum address.
+        #[pallet::call_index(0)]
         #[pallet::weight(10_000)]
         pub fn claim_account(
             origin: OriginFor<T>,
