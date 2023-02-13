@@ -61,6 +61,37 @@ fn switch_block<
     pallet_chain_start_moment::Pallet::<T>::on_initialize(frame_system::Pallet::<T>::block_number());
 }
 
+impl pallet_evm_accounts_mapping::benchmarking::Interface for Runtime {
+    fn account_id_to_claim_to() -> <Self as frame_system::Config>::AccountId {
+        AccountId::from(ALICE)
+    }
+
+    fn ethereum_address() -> EthereumAddress {
+        alice_ethereum_address()
+    }
+
+    fn create_ecdsa_signature(
+        account_id: &<Self as frame_system::Config>::AccountId,
+        ethereum_address: &EthereumAddress,
+    ) -> EcdsaSignature {
+        if ethereum_address != &alice_ethereum_address() {
+            panic!("bad ethereum address");
+        }
+
+        let chain_id: [u8; 32] = U256::from(EthereumChainId::chain_id()).into();
+        let verifying_contract = crate::eth_sig::genesis_verifying_contract();
+        let domain = eip712_common::Domain {
+            name: "Humanode EVM Account Claim",
+            version: "1",
+            chain_id: &chain_id,
+            verifying_contract: &verifying_contract,
+        };
+
+        let msg_hash = eip712_account_claim::make_message_hash(domain, account_id.as_ref());
+        alice_sign(&msg_hash)
+    }
+}
+
 impl pallet_token_claims::benchmarking::Interface for Runtime {
     fn account_id_to_claim_to() -> <Self as frame_system::Config>::AccountId {
         AccountId::from(ALICE)

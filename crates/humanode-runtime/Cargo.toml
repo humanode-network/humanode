@@ -111,6 +111,7 @@ runtime-benchmarks = [
   "pallet-bioauth/runtime-benchmarks",
   "pallet-bootnodes/runtime-benchmarks",
   "pallet-ethereum/runtime-benchmarks",
+  "pallet-evm-accounts-mapping/runtime-benchmarks",
   "pallet-evm/runtime-benchmarks",
   "pallet-grandpa/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
