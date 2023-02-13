@@ -18,7 +18,6 @@ serde = { version = "1", optional = true }
 pallet-pot = { version = "0.1", path = "../pallet-pot" }
 
 mockall = "0.11"
-once_cell = "1"
 pallet-balances = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 serde_json = "1"
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
