@@ -21,6 +21,9 @@ const VESTING_DURATION: UnixMilliseconds = 3000;
 const ALICE: [u8; 32] =
     hex_literal::hex!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d");
 
+const BOB: [u8; 32] =
+    hex_literal::hex!("8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48");
+
 fn alice_secret() -> libsecp256k1::SecretKey {
     libsecp256k1::SecretKey::parse(&keccak_256(b"Alice")).unwrap()
 }
@@ -133,7 +136,7 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
     }
 
     fn funds_provider() -> <Self as frame_system::Config>::AccountId {
-        AccountId::from(ALICE)
+        AccountId::from(BOB)
     }
 }
 
