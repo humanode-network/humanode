@@ -25,11 +25,10 @@ fn alice_secret() -> libsecp256k1::SecretKey {
     libsecp256k1::SecretKey::parse(&keccak_256(b"Alice")).unwrap()
 }
 
-fn alice_ethereum_address() -> EthereumAddress {
+fn ethereum_address_from_secret(secret: &libsecp256k1::SecretKey) -> EthereumAddress {
     let mut ethereum_address = [0u8; 20];
     ethereum_address.copy_from_slice(
-        &keccak_256(&libsecp256k1::PublicKey::from_secret_key(&alice_secret()).serialize()[1..65])
-            [12..],
+        &keccak_256(&libsecp256k1::PublicKey::from_secret_key(secret).serialize()[1..65])[12..],
     );
     EthereumAddress(ethereum_address)
 }
@@ -67,14 +66,14 @@ impl pallet_evm_accounts_mapping::benchmarking::Interface for Runtime {
     }
 
     fn ethereum_address() -> EthereumAddress {
-        alice_ethereum_address()
+        ethereum_address_from_secret(&alice_secret())
     }
 
     fn create_ecdsa_signature(
         account_id: &<Self as frame_system::Config>::AccountId,
         ethereum_address: &EthereumAddress,
     ) -> EcdsaSignature {
-        if ethereum_address != &alice_ethereum_address() {
+        if ethereum_address != &ethereum_address_from_secret(&alice_secret()) {
             panic!("bad ethereum address");
         }
 
@@ -97,15 +96,19 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
         AccountId::from(ALICE)
     }
 
-    fn ethereum_address() -> EthereumAddress {
-        alice_ethereum_address()
+    fn existing_ethereum_address() -> EthereumAddress {
+        ethereum_address_from_secret(&alice_secret())
+    }
+
+    fn new_ethereum_address() -> EthereumAddress {
+        ethereum_address_from_secret(&libsecp256k1::SecretKey::parse(&keccak_256(b"NEA")).unwrap())
     }
 
     fn create_ecdsa_signature(
         account_id: &<Self as frame_system::Config>::AccountId,
         ethereum_address: &EthereumAddress,
     ) -> EcdsaSignature {
-        if ethereum_address != &alice_ethereum_address() {
+        if ethereum_address != &ethereum_address_from_secret(&alice_secret()) {
             panic!("bad ethereum address");
         }
 
@@ -120,6 +123,17 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
 
         let msg_hash = eip712_token_claim::make_message_hash(domain, account_id.as_ref());
         alice_sign(&msg_hash)
+    }
+
+    fn claim_info() -> token_claims::ClaimInfoOf<Self> {
+        token_claims::types::ClaimInfo {
+            balance: 1000,
+            vesting: vec![].try_into().unwrap(),
+        }
+    }
+
+    fn funds_provider() -> <Self as frame_system::Config>::AccountId {
+        AccountId::from(ALICE)
     }
 }
 
