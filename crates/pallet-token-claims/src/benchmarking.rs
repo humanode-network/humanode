@@ -46,7 +46,7 @@ pub trait Interface: super::Config {
 
     /// Obtain a claim info data.
     ///
-    /// This is a claim info used for either adding or removing or changing existing claim.
+    /// This is a claim info to be used for either adding or changing existing claim.
     fn claim_info() -> ClaimInfoOf<Self>;
 
     /// Obtain an Account ID.
@@ -171,6 +171,40 @@ benchmarks! {
         );
     }
 
+    change_claim {
+        let ethereum_address = <T as  Interface>::existing_ethereum_address();
+        let funds_provider = <T as  Interface>::funds_provider();
+        let new_claim_info = <T as  Interface>::claim_info();
+
+        // We assume the genesis has the corresponding claim; crash the bench if it doesn't.
+        let claim_info = Claims::<T>::get(ethereum_address).unwrap();
+
+        let currency_total_issuance_before = <CurrencyOf<T>>::total_issuance();
+        let funds_provider_balance_before =  <CurrencyOf<T>>::total_balance(&funds_provider);
+        let pot_account_balance_before = <CurrencyOf<T>>::free_balance(&<T as super::Config>::PotAccountId::get());
+
+        let origin = RawOrigin::Root;
+
+    }: _(origin, ethereum_address, new_claim_info.clone(), funds_provider.clone())
+    verify {
+        assert!(Claims::<T>::get(ethereum_address).is_some());
+
+        let funds_provider_balance_after = <CurrencyOf<T>>::total_balance(&funds_provider);
+        let pot_account_balance_after = <CurrencyOf<T>>::free_balance(&<T as super::Config>::PotAccountId::get());
+        assert_eq!(
+            funds_provider_balance_after - funds_provider_balance_before,
+            claim_info.balance - new_claim_info.balance,
+        );
+        assert_eq!(
+            pot_account_balance_before - pot_account_balance_after,
+            claim_info.balance - new_claim_info.balance,
+        );
+        assert_eq!(
+            currency_total_issuance_before,
+            <CurrencyOf<T>>::total_issuance(),
+        );
+    }
+
     impl_benchmark_test_suite!(
         Pallet,
         crate::mock::new_test_ext(),
@@ -201,7 +235,7 @@ impl Interface for crate::mock::Test {
 
     fn claim_info() -> ClaimInfoOf<Self> {
         types::ClaimInfo {
-            balance: 30,
+            balance: 5,
             vesting: mock::MockVestingSchedule,
         }
     }
