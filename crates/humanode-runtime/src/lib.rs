@@ -656,7 +656,7 @@ impl pallet_ethereum_chain_id::Config for Runtime {}
 impl pallet_evm_accounts_mapping::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = eth_sig::AccountClaimVerifier;
-    type WeightInfo = ();
+    type WeightInfo = pallet_evm_accounts_mapping::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
