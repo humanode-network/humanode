@@ -7,6 +7,8 @@ use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 
+pub mod weights;
+
 #[cfg(feature = "runtime-benchmarks")]
 pub mod benchmarking;
 #[cfg(test)]
@@ -35,6 +37,7 @@ pub trait SignedClaimVerifier {
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
+    use crate::weights::WeightInfo;
 
     #[pallet::config]
     pub trait Config: frame_system::Config {
@@ -43,6 +46,9 @@ pub mod pallet {
 
         /// The signed claim verifier type.
         type Verifier: SignedClaimVerifier<AccountId = Self::AccountId>;
+
+        /// The weight informtation provider type.
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::event]
@@ -116,7 +122,7 @@ pub mod pallet {
         /// The native address of the exstrinsic signer is used as a native address, while
         /// the address of the payload signature creator is used as Ethereum address.
         #[pallet::call_index(0)]
-        #[pallet::weight(10_000)]
+        #[pallet::weight(T::WeightInfo::claim_account())]
         pub fn claim_account(
             origin: OriginFor<T>,
             // Due to the fact that ethereum address can be extracted from any signature
