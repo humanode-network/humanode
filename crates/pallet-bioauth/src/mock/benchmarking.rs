@@ -183,7 +183,7 @@ impl pallet_bioauth::Config for Benchmark {
     type DisplayMoment = DisplayMoment;
     type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
-    type WeightInfo = weights::SubstrateWeight<Benchmark>;
+    type WeightInfo = ();
     type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();

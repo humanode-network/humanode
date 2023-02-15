@@ -493,7 +493,7 @@ impl pallet_bioauth::Config for Runtime {
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
     type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
-    type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = ();
     type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
@@ -656,7 +656,7 @@ impl pallet_ethereum_chain_id::Config for Runtime {}
 impl pallet_evm_accounts_mapping::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = eth_sig::AccountClaimVerifier;
-    type WeightInfo = pallet_evm_accounts_mapping::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = ();
 }
 
 parameter_types! {

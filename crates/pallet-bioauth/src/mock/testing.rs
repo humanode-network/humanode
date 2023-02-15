@@ -14,7 +14,7 @@ use sp_runtime::{
     BuildStorage,
 };
 
-use crate::{self as pallet_bioauth, weights, AuthTicket, TryConvert};
+use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -264,7 +264,7 @@ impl pallet_bioauth::Config for Test {
     type DisplayMoment = DisplayMoment;
     type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
-    type WeightInfo = weights::SubstrateWeight<Test>;
+    type WeightInfo = ();
     type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = MockBeforeAuthHookProvider;
