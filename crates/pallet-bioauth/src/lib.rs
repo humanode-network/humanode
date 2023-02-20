@@ -537,7 +537,7 @@ pub mod pallet {
 
             // Weight: O(M) where M is the number of auths.
             // Cost incurred from decoding vec of length M. Charged as maximum.
-            T::WeightInfo::on_initialize(update_required)
+            T::WeightInfo::on_initialize()
         }
     }
 

@@ -7,7 +7,7 @@ use frame_support::traits::{ConstU16, ConstU32, ConstU64};
 use frame_system as system;
 use mockall::predicate::*;
 use mockall::*;
-use pallet_bioauth::{weights, AuthTicket, TryConvert};
+use pallet_bioauth::{AuthTicket, TryConvert};
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -177,7 +177,7 @@ impl pallet_bioauth::Config for Test {
     type DisplayMoment = DisplayMoment;
     type CurrentMoment = MockCurrentMomentProvider;
     type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
-    type WeightInfo = weights::SubstrateWeight<Self>;
+    type WeightInfo = ();
     type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();

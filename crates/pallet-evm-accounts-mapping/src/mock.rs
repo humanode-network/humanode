@@ -102,6 +102,7 @@ impl frame_system::Config for Test {
 impl pallet_evm_accounts_mapping::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = MockSignedClaimVerifier;
+    type WeightInfo = ();
 }
 
 pub enum EthAddr {

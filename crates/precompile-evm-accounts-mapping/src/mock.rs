@@ -75,6 +75,7 @@ impl pallet_evm_accounts_mapping::SignedClaimVerifier for MockVerifier {
 impl pallet_evm_accounts_mapping::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = MockVerifier;
+    type WeightInfo = ();
 }
 
 mock! {

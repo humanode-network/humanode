@@ -5572,6 +5572,7 @@ dependencies = [
 name = "pallet-evm-accounts-mapping"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "mockall 0.11.3",
@@ -5580,6 +5581,7 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -5775,7 +5777,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "mockall 0.11.3",
- "once_cell",
  "pallet-balances",
  "pallet-pot",
  "parity-scale-codec",

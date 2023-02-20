@@ -34,7 +34,7 @@ type CurrencyOf<T> = <T as Config>::Currency;
 /// The balance from a given config.
 type BalanceOf<T> = <CurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 /// The claim info from a given config.
-type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSchedule>;
+pub type ClaimInfoOf<T> = types::ClaimInfo<BalanceOf<T>, <T as Config>::VestingSchedule>;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -256,7 +256,7 @@ pub mod pallet {
 
         /// Add a new claim.
         #[pallet::call_index(1)]
-        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
+        #[pallet::weight((T::WeightInfo::add_claim(), Pays::No))]
         pub fn add_claim(
             origin: OriginFor<T>,
             ethereum_address: EthereumAddress,
@@ -296,7 +296,7 @@ pub mod pallet {
 
         /// Remove an existing claim.
         #[pallet::call_index(2)]
-        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
+        #[pallet::weight((T::WeightInfo::remove_claim(), Pays::No))]
         pub fn remove_claim(
             origin: OriginFor<T>,
             ethereum_address: EthereumAddress,
@@ -331,7 +331,7 @@ pub mod pallet {
 
         /// Change an existing claim.
         #[pallet::call_index(3)]
-        #[pallet::weight((T::WeightInfo::claim(), Pays::No))]
+        #[pallet::weight((T::WeightInfo::change_claim(), Pays::No))]
         pub fn change_claim(
             origin: OriginFor<T>,
             ethereum_address: EthereumAddress,

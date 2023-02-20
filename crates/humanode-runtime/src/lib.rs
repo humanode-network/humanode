@@ -493,7 +493,7 @@ impl pallet_bioauth::Config for Runtime {
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
     type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
-    type WeightInfo = pallet_bioauth::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = ();
     type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
@@ -656,6 +656,7 @@ impl pallet_ethereum_chain_id::Config for Runtime {}
 impl pallet_evm_accounts_mapping::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = eth_sig::AccountClaimVerifier;
+    type WeightInfo = ();
 }
 
 parameter_types! {
@@ -1342,13 +1343,17 @@ impl_runtime_apis! {
 
             list_benchmark!(list, extra, frame_benchmarking, BaselineBench::<Runtime>);
             list_benchmark!(list, extra, frame_system, SystemBench::<Runtime>);
+            list_benchmark!(list, extra, pallet_babe, Babe);
             list_benchmark!(list, extra, pallet_balances, Balances);
-            list_benchmark!(list, extra, pallet_timestamp, Timestamp);
             list_benchmark!(list, extra, pallet_bioauth, Bioauth);
-            list_benchmark!(list, extra, pallet_token_claims, TokenClaims);
-            list_benchmark!(list, extra, pallet_vesting, Vesting);
+            list_benchmark!(list, extra, pallet_evm_accounts_mapping, EvmAccountsMapping);
+            list_benchmark!(list, extra, pallet_grandpa, Grandpa);
+            list_benchmark!(list, extra, pallet_im_online, ImOnline);
             list_benchmark!(list, extra, pallet_multisig, Multisig);
+            list_benchmark!(list, extra, pallet_timestamp, Timestamp);
+            list_benchmark!(list, extra, pallet_token_claims, TokenClaims);
             list_benchmark!(list, extra, pallet_utility, Utility);
+            list_benchmark!(list, extra, pallet_vesting, Vesting);
 
             let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -1389,13 +1394,17 @@ impl_runtime_apis! {
 
             add_benchmark!(params, batches, frame_benchmarking, BaselineBench::<Runtime>);
             add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
+            add_benchmark!(params, batches, pallet_babe, Babe);
             add_benchmark!(params, batches, pallet_balances, Balances);
-            add_benchmark!(params, batches, pallet_timestamp, Timestamp);
             add_benchmark!(params, batches, pallet_bioauth, Bioauth);
-            add_benchmark!(params, batches, pallet_token_claims, TokenClaims);
-            add_benchmark!(params, batches, pallet_vesting, Vesting);
+            add_benchmark!(params, batches, pallet_evm_accounts_mapping, EvmAccountsMapping);
+            add_benchmark!(params, batches, pallet_grandpa, Grandpa);
+            add_benchmark!(params, batches, pallet_im_online, ImOnline);
             add_benchmark!(params, batches, pallet_multisig, Multisig);
+            add_benchmark!(params, batches, pallet_timestamp, Timestamp);
+            add_benchmark!(params, batches, pallet_token_claims, TokenClaims);
             add_benchmark!(params, batches, pallet_utility, Utility);
+            add_benchmark!(params, batches, pallet_vesting, Vesting);
 
             Ok(batches)
         }
