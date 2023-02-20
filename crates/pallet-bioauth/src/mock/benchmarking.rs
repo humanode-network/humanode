@@ -11,7 +11,7 @@ use sp_runtime::{
     BuildStorage,
 };
 
-use crate::{self as pallet_bioauth, weights, AuthTicket, TryConvert};
+use crate::{self as pallet_bioauth, AuthTicket, TryConvert};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Benchmark>;
 type Block = frame_system::mocking::MockBlock<Benchmark>;
