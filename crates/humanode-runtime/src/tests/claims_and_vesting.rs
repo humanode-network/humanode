@@ -13,7 +13,7 @@ use frame_support::{
     weights::Weight,
 };
 use primitives_ethereum::EcdsaSignature;
-use sp_runtime::{traits::Applyable, ModuleError};
+use sp_runtime::traits::Applyable;
 use vesting_schedule_linear::LinearSchedule;
 
 use super::*;
@@ -597,11 +597,7 @@ fn direct_claiming_fails_when_eth_signature_invalid() {
                 ethereum_address,
                 EcdsaSignature::default()
             ),
-            sp_runtime::DispatchError::Module(ModuleError {
-                index: 27,
-                error: [0u8; 4],
-                message: Some("InvalidSignature")
-            })
+            pallet_token_claims::Error::<Runtime>::InvalidSignature
         );
 
         // Ensure claims related state hasn't been changed.
@@ -640,11 +636,7 @@ fn direct_claiming_fails_when_no_claim() {
                 ethereum_address,
                 signature
             ),
-            sp_runtime::DispatchError::Module(ModuleError {
-                index: 27,
-                error: [1u8, 0u8, 0u8, 0u8],
-                message: Some("NoClaim")
-            })
+            pallet_token_claims::Error::<Runtime>::NoClaim
         );
 
         // Ensure claims related state hasn't been changed.
@@ -684,11 +676,7 @@ fn direct_unlock_fails_when_no_vesting() {
         // Invoke the unlock call.
         assert_noop!(
             Vesting::unlock(Some(account_id("Unknown")).into()),
-            sp_runtime::DispatchError::Module(ModuleError {
-                index: 28,
-                error: [1u8, 0u8, 0u8, 0u8],
-                message: Some("NoVesting")
-            })
+            pallet_vesting::Error::<Runtime>::NoVesting
         );
 
         // Ensure funds are still locked.
@@ -699,6 +687,82 @@ fn direct_unlock_fails_when_no_vesting() {
 
         // Ensure total issuance did not change.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+/// This test verifies that repeated claim fails for the account that already has vesting
+/// after adding new claim info by sudo call.
+#[test]
+fn claims_fails_when_vesting_already_engaged() {
+    // Build the state from the config.
+    new_test_ext().execute_with(move || {
+        // 2/3 from VESTING_DURATION.
+        const PARTIAL_DURATION: u64 = 2000;
+        const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
+        // 2/3 from VESTING_BALANCE rounded up.
+        const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 667;
+
+        // Run blocks to be vesting schedule ready.
+        switch_block();
+        set_timestamp(START_TIMESTAMP);
+        switch_block();
+
+        // Prepare ethereum_address and signature test data based on EIP-712 type data json.
+        let (ethereum_address, signature) = sign_sample_token_claim(b"Batumi", account_id("Alice"));
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Invoke the claim call for future unlocking.
+        assert_ok!(TokenClaims::claim(
+            Some(account_id("Alice")).into(),
+            ethereum_address,
+            signature
+        ));
+
+        // Run blocks with setting proper timestamp to make partial unlocking.
+        set_timestamp(PARTIAL_VESTING_TIMESTAMP);
+        switch_block();
+
+        // Invoke the unlock call.
+        assert_ok!(Vesting::unlock(Some(account_id("Alice")).into()));
+
+        let unlocked_balance = Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
+
+        // Ensure funds are partially unlocked and rounding works as expected.
+        assert_eq!(unlocked_balance, EXPECTED_PARTIAL_UNLOCKED_FUNDS);
+
+        // Ensure the vesting still exists.
+        assert!(Vesting::locks(account_id("Alice")).is_some());
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+
+        // Prepare new claim info data.
+        let new_claim_info = ClaimInfo {
+            balance: 10000,
+            vesting: vec![].try_into().unwrap(),
+        };
+
+        // Invoke the add_claim call by sudo account.
+        assert_ok!(TokenClaims::add_claim(
+            RuntimeOrigin::root(),
+            ethereum_address,
+            new_claim_info,
+            TreasuryPot::account_id()
+        ));
+
+        // Ensure total issuance did not change.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+
+        // Invoke the claim call.
+        assert_noop!(
+            TokenClaims::claim(
+                Some(account_id("Alice")).into(),
+                ethereum_address,
+                signature
+            ),
+            pallet_vesting::Error::<Runtime>::VestingAlreadyEngaged
+        );
     })
 }
 
