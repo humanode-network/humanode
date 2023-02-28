@@ -19,6 +19,7 @@ use sp_runtime::{
     transaction_validity::{TransactionValidity, TransactionValidityError},
 };
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*};
+pub use weights::*;
 
 #[cfg(feature = "runtime-benchmarks")]
 pub mod benchmarking;

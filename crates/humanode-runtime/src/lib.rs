@@ -89,6 +89,7 @@ mod fixed_supply;
 pub mod robonode;
 #[cfg(test)]
 mod tests;
+mod weights;
 
 pub use constants::{
     babe::{BABE_GENESIS_EPOCH_CONFIG, EPOCH_DURATION_IN_SLOTS, MAX_AUTHORITIES, SLOT_DURATION},
@@ -493,7 +494,7 @@ impl pallet_bioauth::Config for Runtime {
     type DisplayMoment = display_moment::DisplayMoment;
     type CurrentMoment = CurrentMoment;
     type AuthenticationsExpireAfter = ConstU64<AUTHENTICATIONS_EXPIRE_AFTER>;
-    type WeightInfo = ();
+    type WeightInfo = weights::pallet_bioauth::WeightInfo<Runtime>;
     type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();

@@ -10,6 +10,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::traits::{Currency, StorageVersion};
+pub use weights::*;
 
 pub use self::pallet::*;
 pub use self::signed_ext::*;
