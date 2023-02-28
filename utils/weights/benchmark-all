@@ -1,0 +1,33 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+
+# Path to the humanode-peer.
+HUMANODE_PEER="${1?Specify a path to the humande-peer}"
+shift
+
+# Benchmark execution result directory.
+OUTPUT_DIR="${1?Specify a path to benchmark execution result directory}"
+shift
+
+# Base benchmark execution command.
+BENCH_COMMAND='"$HUMANODE_PEER" benchmark pallet --chain benchmark --pallet "*" --extrinsic "*" --output "$OUTPUT_DIR"'
+
+REST_BENCH_ARGS=("$@")
+
+# Add additional benchmark related args if they present.
+if [[ $# -ne 0 ]] ; then
+    BENCH_COMMAND+=" ${REST_BENCH_ARGS[*]}"
+fi
+
+# Delete the previous results directory if it exists.
+rm -rf "$OUTPUT_DIR"
+# Create the results directory.
+mkdir -p "$OUTPUT_DIR"
+
+echo $'\nFull benchmark command:\n'
+eval echo $BENCH_COMMAND
+echo $'\nBenchmark execution:\n'
+eval $BENCH_COMMAND
+
+ls -1 "$OUTPUT_DIR" | sed -e 's/\(.*\).rs$/\pub mod \1;/g' | cp /dev/stdin "$OUTPUT_DIR"/mod.rs
