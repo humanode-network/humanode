@@ -50,7 +50,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Compute matrix
         uses: ./.github/actions/plan
         id: set-matrix
@@ -83,7 +83,7 @@ jobs:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         timeout-minutes: 5
 
       - name: Install rust toolchain
