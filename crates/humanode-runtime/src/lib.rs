@@ -279,7 +279,7 @@ impl frame_system::Config for Runtime {
     /// The data to be stored in an account.
     type AccountData = pallet_balances::AccountData<Balance>;
     /// Weight information for the extrinsics of this pallet.
-    type SystemWeightInfo = ();
+    type SystemWeightInfo = weights::frame_system::WeightInfo<Runtime>;
     /// This is used as an identifier of the chain. 42 is the generic substrate prefix.
     /// The Humande prefix is defined at pallet-chain-properties. It allows us to set up
     /// it easy in genesis before launching the chain without changing the code itself.
@@ -372,7 +372,7 @@ impl pallet_timestamp::Config for Runtime {
     type Moment = UnixMilliseconds;
     type OnTimestampSet = Babe;
     type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
-    type WeightInfo = ();
+    type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
 }
 
 impl pallet_chain_start_moment::Config for Runtime {
@@ -425,7 +425,7 @@ impl pallet_balances::Config for Runtime {
     type DustRemoval = TreasuryPot;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
-    type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 }
 
 impl pallet_transaction_payment::Config for Runtime {
@@ -573,7 +573,7 @@ impl pallet_im_online::Config for Runtime {
     type ValidatorSet = Historical;
     type ReportUnresponsiveness = Offences;
     type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
-    type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = weights::pallet_im_online::WeightInfo<Runtime>;
     type MaxKeys = ConstU32<MAX_KEYS>;
     type MaxPeerInHeartbeats = ConstU32<MAX_PEER_IN_HEARTBEATS>;
     type MaxPeerDataEncodingSize = ConstU32<MAX_PEER_DATA_ENCODING_SIZE>;
@@ -657,7 +657,7 @@ impl pallet_ethereum_chain_id::Config for Runtime {}
 impl pallet_evm_accounts_mapping::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type Verifier = eth_sig::AccountClaimVerifier;
-    type WeightInfo = ();
+    type WeightInfo = weights::pallet_evm_accounts_mapping::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -671,7 +671,7 @@ impl pallet_token_claims::Config for Runtime {
     type VestingSchedule = <Self as pallet_vesting::Config>::Schedule;
     type VestingInterface = vesting::TokenClaimsInterface;
     type EthereumSignatureVerifier = eth_sig::TokenClaimVerifier;
-    type WeightInfo = ();
+    type WeightInfo = weights::pallet_token_claims::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -684,7 +684,7 @@ impl pallet_vesting::Config for Runtime {
     type LockId = VestingLockId;
     type Schedule = vesting::Schedule;
     type SchedulingDriver = vesting::SchedulingDriver;
-    type WeightInfo = ();
+    type WeightInfo = weights::pallet_vesting::WeightInfo<Runtime>;
 }
 
 impl pallet_multisig::Config for Runtime {
@@ -694,14 +694,14 @@ impl pallet_multisig::Config for Runtime {
     type DepositBase = ConstU128<1>;
     type DepositFactor = ConstU128<1>;
     type MaxSignatories = ConstU32<128>;
-    type WeightInfo = ();
+    type WeightInfo = weights::pallet_multisig::WeightInfo<Runtime>;
 }
 
 impl pallet_utility::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
     type PalletsOrigin = OriginCaller;
-    type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+    type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
