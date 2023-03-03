@@ -8,6 +8,9 @@ BENCHMARK_HUMANODE_PEER="${BENCHMARK_HUMANODE_PEER:?A path to the humanode-peer 
 # Benchmark execution result directory.
 BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/src/weights"}"
 
+# The path to save the benchmarking data JSON file at.
+BENCHMARK_OUTPUT_JSON_FILE="${BENCHMARK_OUTPUT_JSON_FILE:-"crates/humanode-runtime/assets/benchmark.json"}"
+
 # The path to our custom template.
 BENCHMARK_TEMPLATE_FILE="${BENCHMARK_TEMPLATE_FILE:-"utils/weights/assets/template.hbs"}"
 
@@ -38,28 +41,37 @@ if [[ "$BENCHMARK_HUMANODE_PEER" == "#build" ]]; then
   BENCHMARK_HUMANODE_PEER="target/release/humanode-peer"
 fi
 
-# Base benchmark execution command.
-BENCH_COMMAND=(
+BENCH_COMMAND_BASE=(
   "$BENCHMARK_HUMANODE_PEER"
   benchmark
   pallet
   --chain benchmark
+)
+
+BENCH_COMPUTE_COMMAND=(
+  "${BENCH_COMMAND_BASE[@]}"
   --pallet '*'
   --extrinsic '*'
   --output "$BENCHMARK_OUTPUT_DIR"
-  --json-file "$BENCHMARK_OUTPUT_DIR/benchmark.json"
+  --json-file "$BENCHMARK_OUTPUT_JSON_FILE"
   --steps "${BENCHMARK_STEPS:-"$DEFAULT_STEPS"}"
   --repeat "${BENCHMARK_REPEAT:-"$DEFAULT_REPEAT"}"
   --external-repeat "${BENCHMARK_EXTERNAL_REPEAT:-"$DEFAULT_EXTERNAL_REPEAT"}"
 )
 
+BENCH_COMPUTE_COMMAND+=("$@")
+
+BENCH_RENDER_COMMAND=(
+  "${BENCH_COMMAND_BASE[@]}"
+  --json-input "$BENCHMARK_OUTPUT_JSON_FILE"
+  --output "$BENCHMARK_OUTPUT_DIR"
+)
+
 if [[ "$BENCHMARK_TEMPLATE_FILE" != "#built-in" ]]; then
-  BENCH_COMMAND+=(
+  BENCH_RENDER_COMMAND+=(
     --template "$BENCHMARK_TEMPLATE_FILE"
   )
 fi
-
-BENCH_COMMAND+=("$@")
 
 list_mods() {
   find "$BENCHMARK_OUTPUT_DIR" \
@@ -72,23 +84,25 @@ list_mods() {
 }
 
 printf "=> Mode: \n%s\n" "$BENCHMARK_MODE"
-printf "=> Full benchmark command: \n%s\n" "${BENCH_COMMAND[*]}"
+printf "=> Benchmark computation command: \n%s\n" "${BENCH_COMPUTE_COMMAND[*]}"
+printf "=> Weight files rendering command: \n%s\n" "${BENCH_RENDER_COMMAND[*]}"
 printf "=> Saving output to: \n%s\n" "$BENCHMARK_OUTPUT_DIR"
 
-if [[ "$BENCHMARK_MODE" != "check" ]]; then
-  # Delete the previous results directory if it exists.
-  rm -rf "$BENCHMARK_OUTPUT_DIR"
-  # Create the results directory.
-  mkdir -p "$BENCHMARK_OUTPUT_DIR"
-fi
-
-printf "=> Benchmark execution:\n"
-"${BENCH_COMMAND[@]}"
+printf "=> Benchmark computation:\n"
+"${BENCH_COMPUTE_COMMAND[@]}"
 
 if [[ "$BENCHMARK_MODE" == "check" ]]; then
-  printf "Skipping rewriting mod.rs in check mode..." >&2
+  printf "Skipping weight files rendering in check mode..." >&2
   exit 0
 fi
+
+# Delete the previous results directory if it exists.
+rm -rf "$BENCHMARK_OUTPUT_DIR"
+# Create the results directory.
+mkdir -p "$BENCHMARK_OUTPUT_DIR"
+
+printf "=> Weight files rendering:\n"
+"${BENCH_RENDER_COMMAND[@]}"
 
 MODS_LIST="$(list_mods)"
 
