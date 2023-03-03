@@ -3,7 +3,7 @@ set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # Path to the humanode-peer.
-BENCHMARK_HUMANODE_PEER="${BENCHMARK_HUMANODE_PEER:-}"
+BENCHMARK_HUMANODE_PEER="${BENCHMARK_HUMANODE_PEER:?A path to the humanode-peer is requied}"
 
 # Benchmark execution result directory.
 BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/src/weights"}"
