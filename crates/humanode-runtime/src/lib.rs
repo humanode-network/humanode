@@ -312,7 +312,7 @@ impl pallet_babe::Config for Runtime {
         ConstU64<REPORT_LONGEVITY>,
     >;
 
-    type WeightInfo = ();
+    type WeightInfo = (); // TODO(#578): babe weights are broken
     type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
 }
 
@@ -361,7 +361,7 @@ impl pallet_grandpa::Config for Runtime {
         ConstU64<REPORT_LONGEVITY>,
     >;
 
-    type WeightInfo = ();
+    type WeightInfo = (); // TODO(#578): grandpa weights are broken
     type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
 }
 
