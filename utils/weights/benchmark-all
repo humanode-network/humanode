@@ -12,6 +12,16 @@ fi
 # Benchmark execution result directory.
 BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/weights"}"
 
+DEFAULT_STEPS=50
+DEFAULT_REPEAT=20
+DEFAULT_EXTERNAL_REPEAT=20
+
+if [[ "${BENCHMARK_MODE:-}" == "dev" ]]; then
+  DEFAULT_STEPS=2
+  DEFAULT_REPEAT=0
+  DEFAULT_EXTERNAL_REPEAT=0
+fi
+
 # Base benchmark execution command.
 BENCH_COMMAND=(
   "$BENCHMARK_HUMANODE_PEER"
@@ -21,9 +31,9 @@ BENCH_COMMAND=(
   --pallet '*'
   --extrinsic '*'
   --output "${BENCHMARK_OUTPUT_DIR}/"
-  --steps "${BENCHMARK_STEPS:-"2"}"
-  --repeat "${BENCHMARK_REPEAT:-"0"}"
-  --external-repeat "${BENCHMARK_EXTERNAL_REPEAT:-"0"}"
+  --steps "${BENCHMARK_STEPS:-"$DEFAULT_STEPS"}"
+  --repeat "${BENCHMARK_REPEAT:-"$DEFAULT_REPEAT"}"
+  --external-repeat "${BENCHMARK_EXTERNAL_REPEAT:-"$DEFAULT_EXTERNAL_REPEAT"}"
   "$@"
 )
 
