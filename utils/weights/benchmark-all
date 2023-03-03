@@ -33,7 +33,7 @@ case "${BENCHMARK_MODE:?Specify the benchmark mode}" in
   ;;
 esac
 
-if [[ "$BENCHMARK_HUMANODE_PEER" == "" ]]; then
+if [[ "$BENCHMARK_HUMANODE_PEER" == "!build" ]]; then
   cargo build --release --bin humanode-peer --features runtime-benchmarks
   BENCHMARK_HUMANODE_PEER="target/release/humanode-peer"
 fi
