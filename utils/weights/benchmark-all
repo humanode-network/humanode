@@ -14,6 +14,9 @@ BENCHMARK_OUTPUT_JSON_FILE="${BENCHMARK_OUTPUT_JSON_FILE:-"crates/humanode-runti
 # The path to our custom template.
 BENCHMARK_TEMPLATE_FILE="${BENCHMARK_TEMPLATE_FILE:-"utils/weights/assets/template.hbs"}"
 
+# Skip benchmark computation.
+BENCHMARK_SKIP_COMPUTE="${BENCHMARK_SKIP_COMPUTE:-}"
+
 case "${BENCHMARK_MODE:?Specify the benchmark mode}" in
 "check")
   DEFAULT_STEPS=2
@@ -89,7 +92,11 @@ printf "=> Weight files rendering command: \n%s\n" "${BENCH_RENDER_COMMAND[*]}"
 printf "=> Saving output to: \n%s\n" "$BENCHMARK_OUTPUT_DIR"
 
 printf "=> Benchmark computation:\n"
-"${BENCH_COMPUTE_COMMAND[@]}"
+if [[ "$BENCHMARK_SKIP_COMPUTE" == "true" ]]; then
+  printf "Skipped..."
+else
+  "${BENCH_COMPUTE_COMMAND[@]}"
+fi
 
 if [[ "$BENCHMARK_MODE" == "check" ]]; then
   printf "Skipping weight files rendering in check mode..." >&2
