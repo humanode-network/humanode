@@ -5,7 +5,7 @@ const buildEnvScriptPath = (script) => `.github/scripts/build_env/${script}`;
 const allPlatforms = {
   ubuntu: {
     name: "Ubuntu",
-    os: "ubuntu-20.04",
+    os: "ubuntu-22.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     isOnSelfHostedRunner: false,
     essential: true,
