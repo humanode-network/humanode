@@ -59,14 +59,14 @@ list_mods() {
     sort
 }
 
+printf "=> Mode: \n%s\n" "$BENCHMARK_MODE"
+printf "=> Full benchmark command: \n%s\n" "${BENCH_COMMAND[*]}"
+printf "=> Saving output to: \n%s\n" "$BENCHMARK_OUTPUT_DIR"
+
 # Delete the previous results directory if it exists.
 rm -rf "$BENCHMARK_OUTPUT_DIR"
 # Create the results directory.
 mkdir -p "$BENCHMARK_OUTPUT_DIR"
-
-printf "=> Mode: \n%s\n" "$BENCHMARK_MODE"
-printf "=> Full benchmark command: \n%s\n" "${BENCH_COMMAND[*]}"
-printf "=> Saving output to: \n%s\n" "$BENCHMARK_OUTPUT_DIR"
 
 printf "=> Benchmark execution:\n"
 "${BENCH_COMMAND[@]}"
