@@ -47,6 +47,7 @@ BENCH_COMMAND=(
   --pallet '*'
   --extrinsic '*'
   --output "$BENCHMARK_OUTPUT_DIR"
+  --json-file "$BENCHMARK_OUTPUT_DIR/benchmark.json"
   --steps "${BENCHMARK_STEPS:-"$DEFAULT_STEPS"}"
   --repeat "${BENCHMARK_REPEAT:-"$DEFAULT_REPEAT"}"
   --external-repeat "${BENCHMARK_EXTERNAL_REPEAT:-"$DEFAULT_EXTERNAL_REPEAT"}"
