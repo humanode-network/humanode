@@ -11,6 +11,16 @@ use frame_system::pallet_prelude::*;
 use sp_runtime::traits::{AccountIdConversion, Saturating};
 
 pub use self::pallet::*;
+
+pub mod weights;
+
+#[cfg(feature = "runtime-benchmarks")]
+pub mod benchmarking;
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
@@ -44,6 +54,7 @@ pub enum InitialState<Balance> {
 #[frame_support::pallet]
 pub mod pallet {
     use super::*;
+    use crate::weights::WeightInfo;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
@@ -58,6 +69,9 @@ pub mod pallet {
         /// The pot's pallet id, used for deriving its sovereign account ID.
         #[pallet::constant]
         type PalletId: Get<PalletId>;
+
+        /// The weight information provider type.
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::extra_constants]
