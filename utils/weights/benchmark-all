@@ -96,6 +96,8 @@ printf "=> Benchmark computation:\n"
 if [[ "$BENCHMARK_SKIP_COMPUTE" == "true" ]]; then
   printf "Skipped..."
 else
+  mkdir -p "$(dirname "$BENCHMARK_OUTPUT_JSON_FILE")"
+
   "${BENCH_COMPUTE_COMMAND[@]}"
 fi
 
