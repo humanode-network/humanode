@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-PROTOBUF_VERSION="21.7"
+PROTOBUF_VERSION="22.0"
 PROTOBUF_RELEASES_URL="https://github.com/protocolbuffers/protobuf/releases"
 
 # Aw, how cure, they use python instead of uname...
