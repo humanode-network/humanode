@@ -4,10 +4,6 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 # Path to the humanode-peer.
 BENCHMARK_HUMANODE_PEER="${BENCHMARK_HUMANODE_PEER:-}"
-if [[ "$BENCHMARK_HUMANODE_PEER" == "" ]]; then
-  cargo build --release --features runtime-benchmarks
-  BENCHMARK_HUMANODE_PEER="target/release/humanode-peer"
-fi
 
 # Benchmark execution result directory.
 BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/src/weights"}"
@@ -33,6 +29,11 @@ case "${BENCHMARK_MODE:?Specify the benchmark mode}" in
   exit 1
   ;;
 esac
+
+if [[ "$BENCHMARK_HUMANODE_PEER" == "" ]]; then
+  cargo build --release --bin humanode-peer --features runtime-benchmarks
+  BENCHMARK_HUMANODE_PEER="target/release/humanode-peer"
+fi
 
 # Base benchmark execution command.
 BENCH_COMMAND=(
