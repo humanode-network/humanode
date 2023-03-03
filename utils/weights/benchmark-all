@@ -8,6 +8,9 @@ BENCHMARK_HUMANODE_PEER="${BENCHMARK_HUMANODE_PEER:?A path to the humanode-peer 
 # Benchmark execution result directory.
 BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/src/weights"}"
 
+# The temporary directory to keep the intermediate benchmark renders.
+BENCHMARK_OUTPUT_TEMP_DIR="${BENCHMARK_OUTPUT_TEMP_DIR:-"target/weights"}"
+
 # The path to save the benchmarking data JSON file at.
 BENCHMARK_OUTPUT_JSON_FILE="${BENCHMARK_OUTPUT_JSON_FILE:-"crates/humanode-runtime/assets/benchmark.json"}"
 
@@ -55,7 +58,7 @@ BENCH_COMPUTE_COMMAND=(
   "${BENCH_COMMAND_BASE[@]}"
   --pallet '*'
   --extrinsic '*'
-  --output "$BENCHMARK_OUTPUT_DIR"
+  --output "$BENCHMARK_OUTPUT_TEMP_DIR"
   --json-file "$BENCHMARK_OUTPUT_JSON_FILE"
   --steps "${BENCHMARK_STEPS:-"$DEFAULT_STEPS"}"
   --repeat "${BENCHMARK_REPEAT:-"$DEFAULT_REPEAT"}"
@@ -96,7 +99,9 @@ printf "=> Benchmark computation:\n"
 if [[ "$BENCHMARK_SKIP_COMPUTE" == "true" ]]; then
   printf "Skipped..."
 else
-  mkdir -p "$(dirname "$BENCHMARK_OUTPUT_JSON_FILE")"
+  mkdir -p \
+    "$(dirname "$BENCHMARK_OUTPUT_JSON_FILE")" \
+    "$BENCHMARK_OUTPUT_TEMP_DIR"
 
   "${BENCH_COMPUTE_COMMAND[@]}"
 fi
@@ -106,12 +111,9 @@ if [[ "$BENCHMARK_MODE" == "check" ]]; then
   exit 0
 fi
 
-# Delete the previous results directory if it exists.
-rm -rf "$BENCHMARK_OUTPUT_DIR"
-# Create the results directory.
-mkdir -p "$BENCHMARK_OUTPUT_DIR"
-
 printf "=> Weight files rendering:\n"
+rm -rf "$BENCHMARK_OUTPUT_DIR"
+mkdir -p "$BENCHMARK_OUTPUT_DIR"
 "${BENCH_RENDER_COMMAND[@]}"
 
 MODS_LIST="$(list_mods)"
