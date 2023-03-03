@@ -51,11 +51,11 @@ BENCH_COMMAND_BASE=(
   "$BENCHMARK_HUMANODE_PEER"
   benchmark
   pallet
-  --chain benchmark
 )
 
 BENCH_COMPUTE_COMMAND=(
   "${BENCH_COMMAND_BASE[@]}"
+  --chain benchmark
   --pallet '*'
   --extrinsic '*'
   --output "$BENCHMARK_OUTPUT_TEMP_DIR"
