@@ -52,7 +52,7 @@ BENCH_COMMAND=(
   --external-repeat "${BENCHMARK_EXTERNAL_REPEAT:-"$DEFAULT_EXTERNAL_REPEAT"}"
 )
 
-if [[ "$BENCHMARK_TEMPLATE_FILE" != "" ]]; then
+if [[ "$BENCHMARK_TEMPLATE_FILE" != "built-in" ]]; then
   BENCH_COMMAND+=(
     --template "$BENCHMARK_TEMPLATE_FILE"
   )
