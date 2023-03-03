@@ -10,7 +10,7 @@ if [[ "$BENCHMARK_HUMANODE_PEER" == "" ]]; then
 fi
 
 # Benchmark execution result directory.
-BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/weights"}"
+BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/src/weights"}"
 
 DEFAULT_STEPS=50
 DEFAULT_REPEAT=20
