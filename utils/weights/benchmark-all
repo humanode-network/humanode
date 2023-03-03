@@ -56,7 +56,7 @@ list_mods() {
     -maxdepth 1 \
     -name '*.rs' \
     \! -name 'mod.rs' |
-    sed -e 's|.*/\([^/]*\).rs$|pub mod \1;|g' | \
+    sed -e 's|.*/\([^/]*\).rs$|pub mod \1;|g' |
     sort
 }
 
