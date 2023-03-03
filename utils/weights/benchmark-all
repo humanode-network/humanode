@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
@@ -19,6 +19,9 @@ BENCHMARK_TEMPLATE_FILE="${BENCHMARK_TEMPLATE_FILE:-"utils/weights/assets/templa
 
 # Skip benchmark computation.
 BENCHMARK_SKIP_COMPUTE="${BENCHMARK_SKIP_COMPUTE:-}"
+
+# A file with the list of omitted pallets.
+BENCHMARK_OMITTED_PALLETS_FILE="${BENCHMARK_OMITTED_PALLETS_FILE:-"utils/weights/assets/omitted-pallets"}"
 
 case "${BENCHMARK_MODE:?Specify the benchmark mode}" in
 "check")
@@ -116,6 +119,16 @@ rm -rf "$BENCHMARK_OUTPUT_DIR"
 mkdir -p "$BENCHMARK_OUTPUT_DIR"
 "${BENCH_RENDER_COMMAND[@]}"
 
+printf "=> Clearing out omitted pallets weights:\n"
+readarray -t OMITTED_PALLETS <"$BENCHMARK_OMITTED_PALLETS_FILE"
+
+for OMITTED_PALLET in "${OMITTED_PALLETS[@]}"; do
+  FILE="$BENCHMARK_OUTPUT_DIR/$OMITTED_PALLET.rs"
+  printf "Removing \"%s\"\n" "$FILE"
+  rm -f "$FILE"
+done
+
+printf "=> Rendering mod.rs:\n"
 MODS_LIST="$(list_mods)"
 
 cat <<EOF >"${BENCHMARK_OUTPUT_DIR}/mod.rs"
