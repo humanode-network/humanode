@@ -8,6 +8,9 @@ BENCHMARK_HUMANODE_PEER="${BENCHMARK_HUMANODE_PEER:-}"
 # Benchmark execution result directory.
 BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/src/weights"}"
 
+# The path to our custom template.
+BENCHMARK_TEMPLATE_FILE="${BENCHMARK_TEMPLATE_FILE:-"utils/weights/assets/template.hbs"}"
+
 case "${BENCHMARK_MODE:?Specify the benchmark mode}" in
 "check")
   DEFAULT_STEPS=2
@@ -47,8 +50,15 @@ BENCH_COMMAND=(
   --steps "${BENCHMARK_STEPS:-"$DEFAULT_STEPS"}"
   --repeat "${BENCHMARK_REPEAT:-"$DEFAULT_REPEAT"}"
   --external-repeat "${BENCHMARK_EXTERNAL_REPEAT:-"$DEFAULT_EXTERNAL_REPEAT"}"
-  "$@"
 )
+
+if [[ "$BENCHMARK_TEMPLATE_FILE" != "" ]]; then
+  BENCH_COMMAND+=(
+    --template "$BENCHMARK_TEMPLATE_FILE"
+  )
+fi
+
+BENCH_COMMAND+=("$@")
 
 list_mods() {
   find "$BENCHMARK_OUTPUT_DIR" \
