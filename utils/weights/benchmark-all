@@ -89,7 +89,8 @@ list_mods() {
 printf "=> Mode: \n%s\n" "$BENCHMARK_MODE"
 printf "=> Benchmark computation command: \n%s\n" "${BENCH_COMPUTE_COMMAND[*]}"
 printf "=> Weight files rendering command: \n%s\n" "${BENCH_RENDER_COMMAND[*]}"
-printf "=> Saving output to: \n%s\n" "$BENCHMARK_OUTPUT_DIR"
+printf "=> Saving weight files to: \n%s\n" "$BENCHMARK_OUTPUT_DIR"
+printf "=> Saving JSON file to: \n%s\n" "$BENCHMARK_OUTPUT_JSON_FILE"
 
 printf "=> Benchmark computation:\n"
 if [[ "$BENCHMARK_SKIP_COMPUTE" == "true" ]]; then
