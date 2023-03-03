@@ -15,8 +15,8 @@ BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/src/weigh
 case "${BENCHMARK_MODE:?Specify the benchmark mode}" in
 "dev")
   DEFAULT_STEPS=2
-  DEFAULT_REPEAT=0
-  DEFAULT_EXTERNAL_REPEAT=0
+  DEFAULT_REPEAT=1
+  DEFAULT_EXTERNAL_REPEAT=1
   ;;
 "production")
   DEFAULT_STEPS=50
