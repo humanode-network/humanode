@@ -13,6 +13,11 @@ fi
 BENCHMARK_OUTPUT_DIR="${BENCHMARK_OUTPUT_DIR:-"crates/humanode-runtime/src/weights"}"
 
 case "${BENCHMARK_MODE:?Specify the benchmark mode}" in
+"check")
+  DEFAULT_STEPS=2
+  DEFAULT_REPEAT=0
+  DEFAULT_EXTERNAL_REPEAT=0
+  ;;
 "dev")
   DEFAULT_STEPS=2
   DEFAULT_REPEAT=1
@@ -64,6 +69,11 @@ printf "=> Saving output to: \n%s\n" "$BENCHMARK_OUTPUT_DIR"
 
 printf "=> Benchmark execution:\n"
 "${BENCH_COMMAND[@]}"
+
+if [[ "$BENCHMARK_MODE" == "check" ]]; then
+  printf "Skipping rewriting mod.rs in check mode..." >&2
+  exit 0
+fi
 
 MODS_LIST="$(list_mods)"
 
