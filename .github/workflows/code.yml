@@ -21,7 +21,7 @@ jobs:
 
   plan:
     name: Plan the execution
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     permissions:
@@ -95,7 +95,7 @@ jobs:
 
   e2e:
     name: End-to-end tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 50
     permissions:
       contents: read
@@ -135,7 +135,7 @@ jobs:
             run: utils/checks/features
       fail-fast: false
     name: ${{ matrix.util.name }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     permissions:
       contents: read
