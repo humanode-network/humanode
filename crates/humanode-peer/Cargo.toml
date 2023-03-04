@@ -90,7 +90,7 @@ try-runtime-cli = { git = "https://github.com/humanode-network/substrate", branc
 url = "2"
 
 [dev-dependencies]
-indoc = "1.0"
+indoc = "2.0"
 sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 
 [build-dependencies]
