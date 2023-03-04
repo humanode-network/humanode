@@ -8,12 +8,13 @@ use std::time::Duration;
 use frame_benchmarking_cli::ExtrinsicBuilder;
 use frame_system_rpc_runtime_api::AccountNonceApi;
 use humanode_runtime::{
-    opaque::Block, AccountId, Balance, BalancesCall, Runtime, SystemCall, SLOT_DURATION,
+    opaque::Block, utils::longest_era_for_block_hashes, AccountId, Balance, BalancesCall, Runtime,
+    SystemCall, SLOT_DURATION,
 };
 use sc_client_api::BlockBackend;
 use sp_api::ProvideRuntimeApi;
 use sp_consensus_babe::SlotDuration;
-use sp_core::{Encode, Get, Pair, U256};
+use sp_core::{Encode, Pair, U256};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic, traits::Block as BlockT, OpaqueExtrinsic, SaturatedConversion};
@@ -136,24 +137,16 @@ pub fn create_extrinsic(
     let best_block = client.chain_info().best_number;
     let nonce = maybe_nonce.unwrap_or_else(|| fetch_nonce(client, sender.clone()));
 
-    // Take the biggest period possible, considering the number of cached block hashes.
-    // In case of overflow we pass default (`0`) and let `sp_runtime::generic::Era::mortal`
-    // clamp the value to the appropriate lower bound.
-    let period = <<Runtime as frame_system::Config>::BlockHashCount as Get<u32>>::get()
-        .checked_next_power_of_two()
-        .map(|c| c / 2)
-        .unwrap_or_default()
-        .into();
+    let era = longest_era_for_block_hashes::<<Runtime as frame_system::Config>::BlockHashCount>(
+        best_block.saturated_into(),
+    );
 
     let tip = 0;
     let extra: humanode_runtime::SignedExtra = (
         frame_system::CheckSpecVersion::<humanode_runtime::Runtime>::new(),
         frame_system::CheckTxVersion::<humanode_runtime::Runtime>::new(),
         frame_system::CheckGenesis::<humanode_runtime::Runtime>::new(),
-        frame_system::CheckEra::<humanode_runtime::Runtime>::from(generic::Era::mortal(
-            period,
-            best_block.saturated_into(),
-        )),
+        frame_system::CheckEra::<humanode_runtime::Runtime>::from(era),
         frame_system::CheckNonce::<humanode_runtime::Runtime>::from(nonce),
         frame_system::CheckWeight::<humanode_runtime::Runtime>::new(),
         pallet_bioauth::CheckBioauthTx::<humanode_runtime::Runtime>::new(),
