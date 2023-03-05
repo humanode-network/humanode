@@ -14,7 +14,6 @@ frame-system = { default-features = false, git = "https://github.com/humanode-ne
 scale-info = { version = "2.1.1", default-features = false, features = ["derive"] }
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 
-
 [dev-dependencies]
 mockall = "0.11"
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }

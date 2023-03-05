@@ -2,7 +2,7 @@
 set -euo pipefail
 
 MOLD_GITHUB_REPO="rui314/mold"
-MOLD_VERSION="1.2.1"
+MOLD_VERSION="1.10.1"
 MOLD_INSTALL_PATH="${HOME}/.local"
 
 mkdir -p "$MOLD_INSTALL_PATH"

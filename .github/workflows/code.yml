@@ -21,14 +21,14 @@ jobs:
 
   plan:
     name: Plan the execution
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     permissions:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Compute matrix
         uses: ./.github/actions/plan
         id: set-matrix
@@ -59,7 +59,7 @@ jobs:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         timeout-minutes: 5
 
       - name: Install rust toolchain
@@ -95,14 +95,14 @@ jobs:
 
   e2e:
     name: End-to-end tests
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 50
     permissions:
       contents: read
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         timeout-minutes: 5
 
       - name: Set up polkadot tools
@@ -135,14 +135,14 @@ jobs:
             run: utils/checks/features
       fail-fast: false
     name: ${{ matrix.util.name }}
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     permissions:
       contents: read
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         timeout-minutes: 5
 
       - name: Install rust toolchain
