@@ -19,6 +19,7 @@ use sp_runtime::{
     transaction_validity::{TransactionValidity, TransactionValidityError},
 };
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*};
+pub use weights::*;
 
 #[cfg(feature = "runtime-benchmarks")]
 pub mod benchmarking;
@@ -415,7 +416,11 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         #[pallet::call_index(0)]
-        #[pallet::weight(T::WeightInfo::authenticate())]
+        #[pallet::weight(T::WeightInfo::authenticate(
+            <ActiveAuthentications<T>>::get().len().try_into()
+            .expect("u32 is big enough for this oveflow to be practicly impossible"),
+            <ConsumedAuthTicketNonces<T>>::get().len().try_into()
+            .expect("u32 is big enough for this oveflow to be practicly impossible")))]
         pub fn authenticate(
             origin: OriginFor<T>,
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
@@ -496,7 +501,10 @@ pub mod pallet {
         }
 
         #[pallet::call_index(1)]
-        #[pallet::weight(T::WeightInfo::set_robonode_public_key())]
+        #[pallet::weight(T::WeightInfo::set_robonode_public_key(
+            <ActiveAuthentications<T>>::get().len().try_into()
+            .expect("u32 is big enough for this oveflow to be practicly impossible")
+        ))]
         pub fn set_robonode_public_key(
             origin: OriginFor<T>,
             robonode_public_key: T::RobonodePublicKey,
@@ -537,7 +545,12 @@ pub mod pallet {
 
             // Weight: O(M) where M is the number of auths.
             // Cost incurred from decoding vec of length M. Charged as maximum.
-            T::WeightInfo::on_initialize()
+            T::WeightInfo::on_initialize(
+                <ActiveAuthentications<T>>::get()
+                    .len()
+                    .try_into()
+                    .expect("u32 is big enough for this oveflow to be practicly impossible"),
+            )
         }
     }
 

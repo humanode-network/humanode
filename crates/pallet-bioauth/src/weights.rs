@@ -5,23 +5,23 @@ use frame_support::weights::Weight;
 /// Weight functions needed for pallet-bioauth.
 pub trait WeightInfo {
     /// A function to calculate required weights for authenticate call.
-    fn authenticate() -> Weight;
+    fn authenticate(authentications: u32, nonces: u32) -> Weight;
     /// A function to calculate required weights for `set_robonode_public_key` call.
-    fn set_robonode_public_key() -> Weight;
+    fn set_robonode_public_key(authentications: u32) -> Weight;
     /// A function to calculate required weights for `on_initialize` hook.
-    fn on_initialize() -> Weight;
+    fn on_initialize(authentications: u32) -> Weight;
 }
 
 impl WeightInfo for () {
-    fn authenticate() -> Weight {
+    fn authenticate(_authentications: u32, _nonces: u32) -> Weight {
         Weight::zero()
     }
 
-    fn set_robonode_public_key() -> Weight {
+    fn set_robonode_public_key(_authentications: u32) -> Weight {
         Weight::zero()
     }
 
-    fn on_initialize() -> Weight {
+    fn on_initialize(_authentications: u32) -> Weight {
         Weight::zero()
     }
 }

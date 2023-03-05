@@ -3,6 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::traits::{Currency, LockIdentifier, LockableCurrency, StorageVersion};
+pub use weights::*;
 
 pub use self::logic::*;
 pub use self::pallet::*;

@@ -6,6 +6,7 @@ use frame_support::pallet_prelude::*;
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
+pub use weights::*;
 
 pub mod weights;
 
