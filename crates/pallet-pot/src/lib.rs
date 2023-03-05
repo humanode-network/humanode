@@ -7,8 +7,10 @@
 
 use frame_support::traits::{Imbalance, OnUnbalanced, StorageVersion};
 use frame_support::{pallet_prelude::*, traits::Currency, PalletId};
-pub use pallet::*;
-use sp_runtime::traits::{AccountIdConversion, Saturating};
+use frame_system::pallet_prelude::*;
+use sp_runtime::traits::{AccountIdConversion, CheckedSub, Saturating};
+
+pub use self::pallet::*;
 
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
@@ -75,6 +77,10 @@ pub mod pallet {
     #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T, I = ()>(_);
 
+    /// The amount which has been reported as inactive to `T::Currency`.
+    #[pallet::storage]
+    pub type Inactive<T: Config<I>, I: 'static = ()> = StorageValue<_, BalanceOf<T, I>, ValueQuery>;
+
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config<I>, I: 'static = ()> {
@@ -129,6 +135,13 @@ pub mod pallet {
             }
         }
     }
+
+    #[pallet::hooks]
+    impl<T: Config<I>, I: 'static> Hooks<BlockNumberFor<T>> for Pallet<T, I> {
+        fn on_initialize(_n: BlockNumberFor<T>) -> Weight {
+            Self::update_inactive()
+        }
+    }
 }
 
 impl<T: Config<I>, I: 'static> Pallet<T, I> {
@@ -139,6 +152,31 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
         T::Currency::free_balance(&Self::account_id())
             // Must never be less than 0 but better be safe.
             .saturating_sub(T::Currency::minimum_balance())
+    }
+
+    /// Update the inactive supply for this pot.
+    ///
+    /// This function uses the whole balance of the account, unlike [`Self::balance`],
+    /// which subtracts the existential balance.
+    fn update_inactive() -> Weight {
+        let balance = T::Currency::free_balance(&Self::account_id());
+        let current = Inactive::<T, I>::get();
+
+        let mut weight = T::DbWeight::get().reads(2);
+
+        if balance != current {
+            if let Some(delta) = balance.checked_sub(&current) {
+                T::Currency::deactivate(delta)
+            }
+            if let Some(delta) = current.checked_sub(&balance) {
+                T::Currency::reactivate(delta)
+            }
+            Inactive::<T, I>::put(balance);
+
+            weight += T::DbWeight::get().writes(2);
+        }
+
+        weight
     }
 }
 
