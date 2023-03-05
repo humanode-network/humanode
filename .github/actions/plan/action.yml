@@ -12,7 +12,7 @@ runs:
   using: "composite"
   steps:
     - name: Compute matrix
-      uses: actions/github-script@v4
+      uses: actions/github-script@v6
       id: set-matrix
       env:
         PLAN_NAME: ${{ inputs.plan-name }}
