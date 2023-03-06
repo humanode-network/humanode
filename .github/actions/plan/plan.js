@@ -144,8 +144,8 @@ const code = () => {
 
   // Compute the individual mixins for indep modes.
   const effectiveIncludes = effectiveIndepModes.map((mode) => ({
-    // Run the platform independent tests on Ubuntu.
-    platform: allPlatforms.ubuntu,
+    // Run the platform independent tests on one of the platforms.
+    platform: allPlatforms.ubuntu2204,
     mode,
   }));
 
