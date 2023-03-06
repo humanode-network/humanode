@@ -11,7 +11,7 @@ const allPlatforms = {
     essential: true,
     env: {},
     cacheKey: "ubuntu2204-amd64",
-    artifactMarker: "ubuntu2204-amd64",
+    artifactMarker: "ubuntu2204",
     isBroken: false,
   },
   ubuntu2004: {
@@ -22,7 +22,7 @@ const allPlatforms = {
     essential: false,
     env: {},
     cacheKey: "ubuntu2004-amd64",
-    artifactMarker: "ubuntu2004-amd64",
+    artifactMarker: "ubuntu2004",
     isBroken: false,
   },
   windows: {
@@ -35,7 +35,7 @@ const allPlatforms = {
       CARGO_INCREMENTAL: "0",
     },
     cacheKey: "windows-amd64",
-    artifactMarker: "windows-amd64",
+    artifactMarker: null,
     isBroken: true,
   },
   macos: {
@@ -46,7 +46,7 @@ const allPlatforms = {
     essential: false,
     env: {},
     cacheKey: "macos-amd64",
-    artifactMarker: "macos-amd64",
+    artifactMarker: null,
     isBroken: false,
   },
   macos_aarch64: {
@@ -57,7 +57,7 @@ const allPlatforms = {
     essential: false,
     env: {},
     cacheKey: "macos-aarch64",
-    artifactMarker: "macos-aarch64",
+    artifactMarker: null,
     isBroken: false,
   },
 };

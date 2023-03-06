@@ -123,7 +123,11 @@ jobs:
           PLATFORM_ARTIFACT_MARKER: ${{ matrix.plan.platform.artifactMarker }}
         run: |
           EXECUTABLE_PATH="target/release/humanode-peer"
-          ARTIFACT_NAME="humanode-peer-$(rustc -vV | sed -n 's|host: ||p')-${PLATFORM_ARTIFACT_MARKER}"
+          ARTIFACT_NAME="humanode-peer-$(rustc -vV | sed -n 's|host: ||p')"
+
+          if [[ "$PLATFORM_ARTIFACT_MARKER" != "" ]]; then
+            ARTIFACT_NAME="${ARTIFACT_NAME}-${PLATFORM_ARTIFACT_MARKER}"
+          fi
 
           if [[ "${PATHEXT:-""}" != "" ]]; then
             EXECUTABLE_PATH="${EXECUTABLE_PATH}.exe"
