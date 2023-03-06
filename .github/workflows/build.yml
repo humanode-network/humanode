@@ -129,8 +129,8 @@ jobs:
             EXECUTABLE_PATH="${EXECUTABLE_PATH}.exe"
           fi
 
-          printf '::set-output name=executable-path::%s\n' "$EXECUTABLE_PATH"
-          printf '::set-output name=artifact-name::%s\n' "$ARTIFACT_NAME"
+          printf 'executable-path=%s\n' "$EXECUTABLE_PATH" >> "$GITHUB_OUTPUT"
+          printf 'artifact-name=%s\n' "$ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
