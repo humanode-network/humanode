@@ -3,14 +3,24 @@ const buildEnvScriptPath = (script) => `.github/scripts/build_env/${script}`;
 
 // All the platforms that we support, and their respective settings.
 const allPlatforms = {
-  ubuntu: {
-    name: "Ubuntu",
+  ubuntu2204: {
+    name: "Ubuntu 22.04",
     os: "ubuntu-22.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     isOnSelfHostedRunner: false,
     essential: true,
     env: {},
-    cacheKey: "ubuntu-amd64",
+    cacheKey: "ubuntu2204-amd64",
+    isBroken: false,
+  },
+  ubuntu2004: {
+    name: "Ubuntu 20.04",
+    os: "ubuntu-20.04",
+    buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
+    isOnSelfHostedRunner: false,
+    essential: false,
+    env: {},
+    cacheKey: "ubuntu2004-amd64",
     isBroken: false,
   },
   windows: {
