@@ -20,7 +20,7 @@ const allPlatforms = {
     isOnSelfHostedRunner: false,
     essential: false,
     env: {
-      CARGO_INCREMENTAL: "0"
+      CARGO_INCREMENTAL: "0",
     },
     cacheKey: "windows-amd64",
     isBroken: true,
@@ -89,7 +89,8 @@ const codeModes = {
   runBenchmark: {
     name: "test-run pallet benchmarks",
     cargoCommand: "run",
-    cargoArgs: "-p humanode-peer --release --features runtime-benchmarks benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 2 --repeat 0 --external-repeat 0",
+    cargoArgs:
+      "-p humanode-peer --release --features runtime-benchmarks benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 2 --repeat 0 --external-repeat 0",
     cargoCacheKey: "run-benchmark",
   },
   buildTryRuntime: {
@@ -107,25 +108,31 @@ const buildModes = {
     cargoArgs: "--workspace --release",
     cargoCacheKey: "release-build",
   },
-}
+};
 
 const code = () => {
   // Compute the effective list of platforms to use.
-  const effectivePlatforms = Object.values(allPlatforms).filter(platform => !platform.isBroken && platform.essential);
+  const effectivePlatforms = Object.values(allPlatforms).filter(
+    (platform) => !platform.isBroken && platform.essential
+  );
 
   // Compute the effective list of modes that should run for each of the platforms.
-  const effectiveModes = Object.values(codeModes).filter(mode => !mode.platformIndependent);
+  const effectiveModes = Object.values(codeModes).filter(
+    (mode) => !mode.platformIndependent
+  );
 
   // Compute the effective list of modes that are platform indepedent and only
   // have to be run once.
-  const effectiveIndepModes = Object.values(codeModes).filter(mode => mode.platformIndependent);
+  const effectiveIndepModes = Object.values(codeModes).filter(
+    (mode) => mode.platformIndependent
+  );
 
   // Compute the individual mixins for indep modes.
-  const effectiveIncludes = effectiveIndepModes.map(mode => ({
+  const effectiveIncludes = effectiveIndepModes.map((mode) => ({
     // Run the platform independent tests on Ubuntu.
     platform: allPlatforms.ubuntu,
     mode,
-  }))
+  }));
 
   // Prepare the effective matrix.
   const matrix = provideMatrix(
@@ -133,7 +140,7 @@ const code = () => {
       platform: effectivePlatforms,
       mode: effectiveModes,
     },
-    effectiveIncludes,
+    effectiveIncludes
   );
 
   // Print the matrix, useful for local debugging.
@@ -141,11 +148,13 @@ const code = () => {
 
   // Export the matrix so it's available to the Github Actions script.
   return matrix;
-}
+};
 
 const build = () => {
   // Compute the effective list of platforms to use.
-  const effectivePlatforms = Object.values(allPlatforms).filter(platform => !platform.isBroken);
+  const effectivePlatforms = Object.values(allPlatforms).filter(
+    (platform) => !platform.isBroken
+  );
 
   // Compute the effective list of modes that should run for each of the platforms.
   const effectiveModes = Object.values(buildModes);
@@ -164,20 +173,29 @@ const build = () => {
 
   // Export the matrix so it's available to the Github Actions script.
   return matrix;
-}
+};
 
 const evalMatrix = (dimensions, includes) => {
-  const evalNext = (allVariants, key, values) => allVariants.flatMap((variant) => values.map(value => ({ ...variant, [key]: value })))
-  const dimensionKeys = Object.keys(dimensions)
-  const evaluated = dimensionKeys.reduce((allVariants, dimensionKey) => evalNext(allVariants, dimensionKey, dimensions[dimensionKey]), [{}])
-  return [...evaluated, ...includes]
-}
+  const evalNext = (allVariants, key, values) =>
+    allVariants.flatMap((variant) =>
+      values.map((value) => ({ ...variant, [key]: value }))
+    );
+  const dimensionKeys = Object.keys(dimensions);
+  const evaluated = dimensionKeys.reduce(
+    (allVariants, dimensionKey) =>
+      evalNext(allVariants, dimensionKey, dimensions[dimensionKey]),
+    [{}]
+  );
+  return [...evaluated, ...includes];
+};
 
-const provideMatrix = (dimensions, includes) => ({ plan: evalMatrix(dimensions, includes) })
+const provideMatrix = (dimensions, includes) => ({
+  plan: evalMatrix(dimensions, includes),
+});
 
-const logMatrix = (matrix) => console.log(JSON.stringify(matrix, null, '  '));
+const logMatrix = (matrix) => console.log(JSON.stringify(matrix, null, "  "));
 
 module.exports = {
   code,
   build,
-}
+};
