@@ -132,6 +132,11 @@ jobs:
           printf 'executable-path=%s\n' "$EXECUTABLE_PATH" >> "$GITHUB_OUTPUT"
           printf 'artifact-name=%s\n' "$ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
 
+          printf 'Packaged `%s` into `%s`.\n' \
+            "$EXECUTABLE_PATH" \
+            "$ARTIFACT_NAME" \
+            >> "$GITHUB_STEP_SUMMARY"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
