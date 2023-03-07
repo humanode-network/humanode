@@ -54,7 +54,6 @@ sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "lock
 sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-consensus-uncles = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sc-network = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
@@ -69,7 +68,6 @@ serde_json = "1"
 sha3 = "0.10"
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-authorship = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }

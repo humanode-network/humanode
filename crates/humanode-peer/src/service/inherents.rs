@@ -50,9 +50,6 @@ where
         parent: <super::Block as Block>::Hash,
         _extra_args: (),
     ) -> Result<Self::InherentDataProviders, Box<dyn std::error::Error + Send + Sync>> {
-        let uncles =
-            sc_consensus_uncles::create_uncles_inherent_data_provider(&*self.0.client, parent)?;
-
         let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
 
         let timestamp = if let Some(time_warp) = &self.0.time_warp {
@@ -70,7 +67,7 @@ where
         let dynamic_fee =
             pallet_dynamic_fee::InherentDataProvider(U256::from(self.0.eth_target_gas_price));
 
-        Ok((slot, timestamp, uncles, dynamic_fee))
+        Ok((slot, timestamp, dynamic_fee))
     }
 }
 
