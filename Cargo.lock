@@ -3609,6 +3609,7 @@ dependencies = [
  "fc-mapping-sync",
  "fc-rpc",
  "fc-rpc-core",
+ "fc-storage",
  "fdlimit",
  "fp-evm",
  "frame-benchmarking",
