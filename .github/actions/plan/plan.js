@@ -62,6 +62,12 @@ const allPlatforms = {
   },
 };
 
+// A platform for running things that are platform-independent.
+const corePlatform = {
+  ...allPlatforms.ubuntu2204,
+  name: "Core", // alter the name avoid renaming things all the time
+};
+
 const codeModes = {
   clippy: {
     name: "clippy",
@@ -144,8 +150,8 @@ const code = () => {
 
   // Compute the individual mixins for indep modes.
   const effectiveIncludes = effectiveIndepModes.map((mode) => ({
-    // Run the platform independent tests on one of the platforms.
-    platform: allPlatforms.ubuntu2204,
+    // Run the platform independent tests on the core platform.
+    platform: corePlatform,
     mode,
   }));
 
