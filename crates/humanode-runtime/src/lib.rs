@@ -33,7 +33,9 @@ pub use frame_system::Call as SystemCall;
 use keystore_bioauth_account_id::KeystoreBioauthAccountId;
 pub use pallet_balances::Call as BalancesCall;
 use pallet_bioauth::AuthTicket;
-use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
+use pallet_ethereum::{
+    Call::transact, PostLogContent as EthereumPostLogContent, Transaction as EthereumTransaction,
+};
 use pallet_evm::FeeCalculator;
 use pallet_evm::{Account as EVMAccount, EnsureAddressTruncated, HashedAddressMapping, Runner};
 use pallet_grandpa::{
@@ -613,9 +615,14 @@ impl pallet_evm::Config for Runtime {
     >;
 }
 
+parameter_types! {
+    pub const PostBlockAndTxnHashes: EthereumPostLogContent = EthereumPostLogContent::BlockAndTxnHashes;
+}
+
 impl pallet_ethereum::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
+    type PostLogContent = PostBlockAndTxnHashes;
 }
 
 parameter_types! {
