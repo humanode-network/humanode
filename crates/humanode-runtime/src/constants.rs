@@ -119,8 +119,11 @@ pub mod fees {
                 <crate::Runtime as Config>::WeightInfo::transfer()
             };
 
-            let effective_price: Balance =
-                Balance::from(transfer_weight.ref_time()) * WEIGHT_TO_FEE;
+            let effective_price: Balance = {
+                use frame_support::weights::{Weight, WeightToFee};
+                use pallet_transaction_payment::Config;
+                <crate::Runtime as Config>::WeightToFee::weight_to_fee(&transfer_weight)
+            };
 
             assert!(
                 effective_price < TARGET_PRICE + EPSILON,
