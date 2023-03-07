@@ -25,7 +25,6 @@ pub struct Creator<Client> {
 type InherentDataProviders = (
     sp_consensus_babe::inherents::InherentDataProvider,
     sp_timestamp::InherentDataProvider,
-    sp_authorship::InherentDataProvider<<super::Block as Block>::Header>,
     pallet_dynamic_fee::InherentDataProvider,
 );
 
@@ -47,7 +46,7 @@ where
 
     async fn create_inherent_data_providers(
         &self,
-        parent: <super::Block as Block>::Hash,
+        _parent: <super::Block as Block>::Hash,
         _extra_args: (),
     ) -> Result<Self::InherentDataProviders, Box<dyn std::error::Error + Send + Sync>> {
         let timestamp = sp_timestamp::InherentDataProvider::from_system_time();
@@ -99,14 +98,10 @@ where
                 self.0.raw_slot_duration,
             );
 
-        let uncles =
-            sp_authorship::InherentDataProvider::<<super::Block as Block>::Header>::check_inherents(
-            );
-
         let dynamic_fee =
             pallet_dynamic_fee::InherentDataProvider(U256::from(self.0.eth_target_gas_price));
 
-        Ok((slot, timestamp, uncles, dynamic_fee))
+        Ok((slot, timestamp, dynamic_fee))
     }
 }
 
