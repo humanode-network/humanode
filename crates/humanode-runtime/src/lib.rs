@@ -607,6 +607,7 @@ impl pallet_evm::Config for Runtime {
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
     type OnChargeTransaction = fixed_supply::EvmTransactionCharger<Balances, FeesPot>;
+    type OnCreate = ();
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
     >;
