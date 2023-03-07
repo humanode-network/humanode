@@ -3689,6 +3689,7 @@ dependencies = [
  "fc-db",
  "fc-rpc",
  "fc-rpc-core",
+ "fc-storage",
  "fp-rpc",
  "fp-storage",
  "humanode-runtime",
