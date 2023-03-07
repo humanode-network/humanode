@@ -4,6 +4,7 @@ authors = ["PureStake"]
 description = "Utils to write EVM precompiles."
 edition = "2021"
 version = "0.1.0"
+publish = false
 
 [dependencies]
 impl-trait-for-tuples = "0.2.2"
