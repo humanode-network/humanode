@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 hex = { version = "0.4", default-features = false }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
 [dev-dependencies]
 eip191-crypto = { version = "0.1", path = "../eip191-crypto" }
