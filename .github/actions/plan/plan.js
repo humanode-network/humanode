@@ -63,10 +63,7 @@ const allPlatforms = {
 };
 
 // A platform for running things that are platform-independent.
-const corePlatform = {
-  ...allPlatforms.ubuntu2204,
-  name: "Core", // alter the name avoid renaming things all the time
-};
+const corePlatform = allPlatforms.ubuntu2204;
 
 const codeModes = {
   clippy: {
