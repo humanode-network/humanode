@@ -84,3 +84,52 @@ static_assertions::const_assert!(im_online::MAX_KEYS >= bioauth::MAX_AUTHENTICAT
 static_assertions::const_assert!(
     im_online::MAX_PEER_IN_HEARTBEATS >= 3 * bioauth::MAX_AUTHENTICATIONS
 );
+
+/// Fees related constants.
+pub mod fees {
+    use crate::Balance;
+
+    /// The multiplier to get the fee from weight.
+    ///
+    /// We compute the fee to weight multiplier based on the weight of the `balances.transfer` call,
+    /// and try to fit the fee such that a single transfer call costs ~0.1 HMND.
+    pub const WEIGHT_TO_FEE: Balance = 350_000_000;
+
+    /// The multiplier to get the fee from length.
+    pub const LENGTH_TO_FEE: Balance = 1;
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+
+        /// One unit of HMND.
+        const ONE_HMND: Balance = 10u128.pow(18);
+        /// The target fee for the `balances.transfer` call.
+        const TARGET_PRICE: Balance = ONE_HMND / 10;
+        /// The tolerance we allow for the effective price around the target price to be able
+        /// to use a more round multiplier.
+        const EPSILON: Balance = TARGET_PRICE / 100;
+
+        /// This test ensures the value is within the reasonable boundary around the target price
+        /// of
+        #[test]
+        fn validate_fee_requirements() {
+            let transfer_weight = {
+                use pallet_balances::{Config, WeightInfo};
+                <crate::Runtime as Config>::WeightInfo::transfer()
+            };
+
+            let effective_price: Balance =
+                Balance::from(transfer_weight.ref_time()) * WEIGHT_TO_FEE;
+
+            assert!(
+                effective_price < TARGET_PRICE + EPSILON,
+                "{effective_price} is not within {EPSILON} below {TARGET_PRICE}"
+            );
+            assert!(
+                effective_price > TARGET_PRICE - EPSILON,
+                "{effective_price} is not within {EPSILON} above {TARGET_PRICE}"
+            );
+        }
+    }
+}

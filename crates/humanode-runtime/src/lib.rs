@@ -25,7 +25,7 @@ pub use frame_support::{
         constants::{
             BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND,
         },
-        IdentityFee, Weight,
+        Weight,
     },
     ConsensusEngineId, PalletId, StorageValue, WeakBoundedVec,
 };
@@ -434,8 +434,14 @@ impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, FeesPot>;
     type OperationalFeeMultiplier = ConstU8<5>;
-    type WeightToFee = IdentityFee<Balance>;
-    type LengthToFee = IdentityFee<Balance>;
+    type WeightToFee = frame_support::weights::ConstantMultiplier<
+        Balance,
+        ConstU128<{ constants::fees::WEIGHT_TO_FEE }>,
+    >;
+    type LengthToFee = frame_support::weights::ConstantMultiplier<
+        Balance,
+        ConstU128<{ constants::fees::LENGTH_TO_FEE }>,
+    >;
     type FeeMultiplierUpdate = ();
 }
 
