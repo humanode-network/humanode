@@ -38,7 +38,7 @@ allow = [
   "OpenSSL",
 ]
 deny = []
-copyleft = "warn"
+copyleft = "allow"
 allow-osi-fsf-free = "neither"
 default = "deny"
 confidence-threshold = 0.8
