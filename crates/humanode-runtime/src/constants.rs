@@ -120,7 +120,7 @@ pub mod fees {
             };
 
             let effective_price: Balance = {
-                use frame_support::weights::{Weight, WeightToFee};
+                use frame_support::weights::WeightToFee;
                 use pallet_transaction_payment::Config;
                 <crate::Runtime as Config>::WeightToFee::weight_to_fee(&transfer_weight)
             };
