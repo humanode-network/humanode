@@ -98,11 +98,6 @@ pub fn inherent_benchmark_data(config: &Configuration) -> sc_cli::Result<Inheren
     futures::executor::block_on(timestamp.provide_inherent_data(&mut inherent_data))
         .map_err(|e| format!("creating timestamp inherent data: {:?}", e))?;
 
-    let uncles =
-        sp_authorship::InherentDataProvider::<<Block as BlockT>::Header>::check_inherents();
-    futures::executor::block_on(uncles.provide_inherent_data(&mut inherent_data))
-        .map_err(|e| format!("creating uncles inherent data: {:?}", e))?;
-
     let slot_duration = SlotDuration::from_millis(SLOT_DURATION);
     let slot = sp_consensus_babe::inherents::InherentDataProvider::from_timestamp_and_slot_duration(
         *timestamp,
