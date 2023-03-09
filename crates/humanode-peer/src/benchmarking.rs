@@ -8,8 +8,8 @@ use std::time::Duration;
 use frame_benchmarking_cli::ExtrinsicBuilder;
 use frame_system_rpc_runtime_api::AccountNonceApi;
 use humanode_runtime::{
-    opaque::Block, utils::longest_era_for_block_hashes, AccountId, Balance, BalancesCall, Runtime,
-    SystemCall, SLOT_DURATION,
+    utils::longest_era_for_block_hashes, AccountId, Balance, BalancesCall, Runtime, SystemCall,
+    SLOT_DURATION,
 };
 use sc_client_api::BlockBackend;
 use sp_api::ProvideRuntimeApi;
@@ -17,7 +17,7 @@ use sp_consensus_babe::SlotDuration;
 use sp_core::{Encode, Pair, U256};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{generic, traits::Block as BlockT, OpaqueExtrinsic, SaturatedConversion};
+use sp_runtime::{generic, OpaqueExtrinsic, SaturatedConversion};
 
 use crate::configuration::Configuration;
 use crate::service::FullClient;
