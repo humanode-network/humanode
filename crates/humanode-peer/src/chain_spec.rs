@@ -126,7 +126,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
         // Fork
         None,
         // Properties
-        None,
+        Some(properties()),
         // Extensions
         Extensions::default(),
     ))
@@ -171,7 +171,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
         // Fork
         None,
         // Properties
-        None,
+        Some(properties()),
         // Extensions
         Extensions::default(),
     ))
@@ -221,7 +221,7 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
         // Fork
         None,
         // Properties
-        None,
+        Some(properties()),
         // Extensions
         Extensions::default(),
     ))
@@ -377,6 +377,14 @@ fn testnet_genesis(
             total_claimable: Some(DEV_ACCOUNT_BALANCE),
         },
     }
+}
+
+/// The standard properties we use.
+fn properties() -> sc_chain_spec::Properties {
+    let properites = serde_json::json!({
+        "tokenDecimals": 18,
+    });
+    serde_json::from_value(properites).unwrap() // embedded value, should never fail
 }
 
 #[cfg(test)]
