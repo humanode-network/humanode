@@ -1,6 +1,14 @@
+cargo-features = ["profile-rustflags"]
+
 [workspace]
 resolver = "2"
 members = ["crates/*"]
+
+[profile.dev.package.humanode-peer]
+rustflags = ["-C", "target-feature=+crt-static"]
+
+[profile.release.package.humanode-peer]
+rustflags = ["-C", "target-feature=+crt-static"]
 
 [profile.release-lto]
 inherits = "release"
