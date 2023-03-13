@@ -47,7 +47,7 @@ pub enum Subcommand {
     /// The custom benchmark subcommmand benchmarking runtime pallets.
     #[command(name = "benchmark", about = "Benchmark runtime pallets.")]
     #[command(subcommand)]
-    Benchmark(frame_benchmarking_cli::BenchmarkCmd),
+    Benchmark(Box<frame_benchmarking_cli::BenchmarkCmd>),
 
     /// Db meta columns information.
     FrontierDb(fc_cli::FrontierDbCmd),
