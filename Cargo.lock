@@ -1402,12 +1402,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "difference"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "524cbf6897b527295dff137cec09ecf3a05f4fddffd7dfcd1585403449e74198"
-
-[[package]]
 name = "difflib"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1492,12 +1486,6 @@ dependencies = [
  "byteorder",
  "quick-error",
 ]
-
-[[package]]
-name = "downcast"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bb454f0228b18c7f4c3b0ebbee346ed9c52e7443b0999cd543ff3571205701d"
 
 [[package]]
 name = "downcast"
@@ -2335,15 +2323,6 @@ dependencies = [
 
 [[package]]
 name = "float-cmp"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1267f4ac4f343772758f7b1bdcbe767c218bbab93bb432acbf5162bbf85a6c4"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
-name = "float-cmp"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
@@ -2473,15 +2452,6 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/polkado
 dependencies = [
  "parity-scale-codec",
  "serde",
-]
-
-[[package]]
-name = "fragile"
-version = "1.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7464c5c4a3f014d9b2ec4073650e5c06596f385060af740fc45ad5a19f959e8"
-dependencies = [
- "fragile 2.0.0",
 ]
 
 [[package]]
@@ -4779,44 +4749,17 @@ dependencies = [
 
 [[package]]
 name = "mockall"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ab571328afa78ae322493cacca3efac6a0f2e0a67305b4df31fd439ef129ac0"
-dependencies = [
- "cfg-if",
- "downcast 0.10.0",
- "fragile 1.2.2",
- "lazy_static",
- "mockall_derive 0.10.2",
- "predicates 1.0.8",
- "predicates-tree",
-]
-
-[[package]]
-name = "mockall"
 version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50e4a1c770583dac7ab5e2f6c139153b783a53a1bbee9729613f193e59828326"
 dependencies = [
  "cfg-if",
- "downcast 0.11.0",
- "fragile 2.0.0",
+ "downcast",
+ "fragile",
  "lazy_static",
- "mockall_derive 0.11.3",
- "predicates 2.1.5",
+ "mockall_derive",
+ "predicates",
  "predicates-tree",
-]
-
-[[package]]
-name = "mockall_derive"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7e25b214433f669161f414959594216d8e6ba83b6679d3db96899c0b4639033"
-dependencies = [
- "cfg-if",
- "proc-macro2 1.0.50",
- "quote 1.0.23",
- "syn 1.0.107",
 ]
 
 [[package]]
@@ -5398,7 +5341,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
- "mockall 0.10.2",
+ "mockall",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -5416,7 +5359,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall 0.10.2",
+ "mockall",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -5538,7 +5481,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall 0.11.3",
+ "mockall",
  "parity-scale-codec",
  "primitives-ethereum",
  "scale-info",
@@ -5739,7 +5682,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall 0.11.3",
+ "mockall",
  "pallet-balances",
  "pallet-pot",
  "parity-scale-codec",
@@ -5818,7 +5761,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall 0.11.3",
+ "mockall",
  "once_cell",
  "pallet-balances",
  "parity-scale-codec",
@@ -6156,7 +6099,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "getrandom 0.2.8",
- "mockall 0.10.2",
+ "mockall",
  "num_enum",
  "pallet-bioauth",
  "pallet-evm",
@@ -6178,7 +6121,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
- "mockall 0.10.2",
+ "mockall",
  "pallet-evm-accounts-mapping",
  "parity-scale-codec",
  "primitives-ethereum",
@@ -6224,25 +6167,12 @@ dependencies = [
 
 [[package]]
 name = "predicates"
-version = "1.0.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f49cfaf7fdaa3bfacc6fa3e7054e65148878354a5cfddcf661df4c851f8021df"
-dependencies = [
- "difference",
- "float-cmp 0.8.0",
- "normalize-line-endings",
- "predicates-core",
- "regex",
-]
-
-[[package]]
-name = "predicates"
 version = "2.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59230a63c37f3e18569bdb90e4a89cbf5bf8b06fea0b84e65ea10cc4df47addd"
 dependencies = [
  "difflib",
- "float-cmp 0.9.0",
+ "float-cmp",
  "itertools 0.10.5",
  "normalize-line-endings",
  "predicates-core",
@@ -6948,7 +6878,7 @@ dependencies = [
  "async-trait",
  "facetec-api-client",
  "hex",
- "mockall 0.10.2",
+ "mockall",
  "parity-scale-codec",
  "primitives-auth-ticket",
  "primitives-liveness-data",
@@ -7353,7 +7283,7 @@ dependencies = [
  "futures-timer",
  "libp2p",
  "log",
- "mockall 0.11.3",
+ "mockall",
  "parking_lot 0.12.1",
  "sc-client-api",
  "sc-utils",
@@ -7783,7 +7713,7 @@ dependencies = [
  "libp2p",
  "log",
  "lru",
- "mockall 0.11.3",
+ "mockall",
  "parity-scale-codec",
  "prost",
  "prost-build",
@@ -10411,7 +10341,7 @@ name = "vesting-scheduling-timestamp"
 version = "0.1.0"
 dependencies = [
  "frame-support",
- "mockall 0.11.3",
+ "mockall",
  "num-traits",
  "pallet-vesting",
  "serde",
