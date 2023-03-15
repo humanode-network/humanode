@@ -1920,29 +1920,9 @@ dependencies = [
  "auto_impl",
  "environmental",
  "ethereum",
- "evm-core 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "evm-gasometer 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "evm-runtime 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "log",
- "parity-scale-codec",
- "primitive-types",
- "rlp",
- "scale-info",
- "serde",
- "sha3 0.10.6",
-]
-
-[[package]]
-name = "evm"
-version = "0.37.0"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#842e03d068ddb6a3195a2dedc4a9b63caadb3355"
-dependencies = [
- "auto_impl",
- "environmental",
- "ethereum",
- "evm-core 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "evm-gasometer 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "evm-runtime 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm-core",
+ "evm-gasometer",
+ "evm-runtime",
  "log",
  "parity-scale-codec",
  "primitive-types",
@@ -1965,36 +1945,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "evm-core"
-version = "0.37.0"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#842e03d068ddb6a3195a2dedc4a9b63caadb3355"
-dependencies = [
- "parity-scale-codec",
- "primitive-types",
- "scale-info",
- "serde",
-]
-
-[[package]]
 name = "evm-gasometer"
 version = "0.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8b93c59c54fc26522d842f0e0d3f8e8be331c776df18ff3e540b53c2f64d509"
 dependencies = [
  "environmental",
- "evm-core 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "evm-runtime 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "primitive-types",
-]
-
-[[package]]
-name = "evm-gasometer"
-version = "0.37.0"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#842e03d068ddb6a3195a2dedc4a9b63caadb3355"
-dependencies = [
- "environmental",
- "evm-core 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "evm-runtime 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm-core",
+ "evm-runtime",
  "primitive-types",
 ]
 
@@ -2006,19 +1964,7 @@ checksum = "c79b9459ce64f1a28688397c4013764ce53cd57bb84efc16b5187fa9b05b13ad"
 dependencies = [
  "auto_impl",
  "environmental",
- "evm-core 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "primitive-types",
- "sha3 0.10.6",
-]
-
-[[package]]
-name = "evm-runtime"
-version = "0.37.0"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#842e03d068ddb6a3195a2dedc4a9b63caadb3355"
-dependencies = [
- "auto_impl",
- "environmental",
- "evm-core 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm-core",
  "primitive-types",
  "sha3 0.10.6",
 ]
@@ -2170,7 +2116,7 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/polkado
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
- "evm 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "evm",
  "fc-db",
  "fc-rpc-core",
  "fp-ethereum",
@@ -2409,7 +2355,7 @@ name = "fp-evm"
 version = "3.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.36#a681db94d412c762a66898d5c3fc51a3c97c18cd"
 dependencies = [
- "evm 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "evm",
  "frame-support",
  "parity-scale-codec",
  "serde",
@@ -5419,7 +5365,7 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/polkado
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
- "evm 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "evm",
  "fp-consensus",
  "fp-ethereum",
  "fp-evm",
@@ -5457,7 +5403,7 @@ version = "6.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.36#a681db94d412c762a66898d5c3fc51a3c97c18cd"
 dependencies = [
  "environmental",
- "evm 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "evm",
  "fp-evm",
  "frame-benchmarking",
  "frame-support",
@@ -6136,7 +6082,7 @@ dependencies = [
 name = "precompile-utils"
 version = "0.1.0"
 dependencies = [
- "evm 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm",
  "fp-evm",
  "frame-support",
  "frame-system",
