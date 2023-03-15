@@ -22,6 +22,7 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 
 anyhow = "1"
 async-trait = "0.1"
+bip32 = "0.4.0"
 clap = { version = "4.0", features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "3.0.0" }
 fc-cli = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.36" }
@@ -83,7 +84,6 @@ sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 thiserror = "1"
 tiny-bip39 = "0.8"
-tiny-hderive = "0.3.0"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 try-runtime-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36", optional = true }
