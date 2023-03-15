@@ -1,10 +1,10 @@
 //! Common utils to process ethereum keys.
 
+use bip32::XPrv;
 use bip39::{Mnemonic, Seed};
 use libsecp256k1::{PublicKey, SecretKey};
 use sha3::{Digest, Keccak256};
 use sp_core::{H160, H256};
-use tiny_hderive::bip32::ExtendedPrivKey;
 
 /// A helper function to extract and print keys based on provided mnemonic.
 pub fn extract_and_print_keys(
@@ -15,13 +15,15 @@ pub fn extract_and_print_keys(
     let seed = Seed::new(mnemonic, "");
 
     // Generate the derivation path from the account-index
-    let derivation_path = format!("m/44'/60'/0'/0/{}", account_index.unwrap_or(0));
+    let derivation_path = format!("m/44'/60'/0'/0/{}", account_index.unwrap_or(0))
+        .parse()
+        .expect("Verified DerivationPath is used");
 
     // Derives the private key from.
-    let ext = ExtendedPrivKey::derive(seed.as_bytes(), derivation_path.as_str())
+    let ext = XPrv::derive_from_path(seed, &derivation_path)
         .expect("Mnemonic is either a new one or verified before");
     let private_key =
-        SecretKey::parse_slice(&ext.secret()).expect("Verified ExtendedPrivKey is used");
+        SecretKey::parse_slice(&ext.to_bytes()).expect("Verified ExtendedPrivKey is used");
 
     // Retrieves the public key.
     let public_key = PublicKey::from_secret_key(&private_key);
