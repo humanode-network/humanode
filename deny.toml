@@ -70,7 +70,7 @@ skip-tree = []
 unknown-registry = "warn"
 unknown-git = "warn"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-allow-git = ["https://github.com/rust-blockchain/evm"]
+allow-git = []
 
 [sources.allow-org]
 github = ["humanode-network"]
