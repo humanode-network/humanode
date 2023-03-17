@@ -18,7 +18,18 @@ vulnerability = "deny"
 unmaintained = "warn"
 yanked = "warn"
 notice = "warn"
-ignore = []
+ignore = [
+  # Root cause: tempfile v3.3.0 (used by substrate/polkadot-v0.9.38, warp/v0.3.3, reqwest/v0.11.14).
+  "RUSTSEC-2023-0018",
+  # Root cause: chrono v0.4.23 (used by substrate/polkadot-v0.9.38).
+  "RUSTSEC-2020-0071",
+  # Root cause: eip-712 v0.1.0 (used for tests).
+  "RUSTSEC-2020-0136",
+  # Root cause: eip-712 v0.1.0 (used for tests).
+  "RUSTSEC-2020-0036",
+  # Root cause: eip-712 v0.1.0 (used for tests).
+  "RUSTSEC-2019-0036",
+]
 
 [licenses]
 unlicensed = "deny"
