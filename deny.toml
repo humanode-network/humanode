@@ -23,12 +23,8 @@ ignore = [
   "RUSTSEC-2023-0018",
   # Root cause: chrono v0.4.23 (used by substrate/polkadot-v0.9.38).
   "RUSTSEC-2020-0071",
-  # Root cause: eip-712 v0.1.0 (used for tests).
+  # Root cause: toolshed v0.4.0 (used for eip-712/v0.1.0, only for tests).
   "RUSTSEC-2020-0136",
-  # Root cause: eip-712 v0.1.0 (used for tests).
-  "RUSTSEC-2020-0036",
-  # Root cause: eip-712 v0.1.0 (used for tests).
-  "RUSTSEC-2019-0036",
 ]
 
 [licenses]
