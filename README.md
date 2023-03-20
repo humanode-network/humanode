@@ -28,6 +28,14 @@ Humanode is an innovative blockchain powered by Human biometrics to achieve Sybi
 
 Learn more at [humanode.io](https://humanode.io).
 
+## Usage
+
+See the [documentation](https://link.humanode.io/docs) for usage instructions!
+
+To obtain the Humanode Network node packages use
+the [distribution](https://github.com/humanode-network/distribution) system,
+or our [launcher](https://launcher.humanode.io).
+
 ## Development
 
 Humanode is written in Rust programming language and uses Substrate framework.
