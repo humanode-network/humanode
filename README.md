@@ -10,10 +10,14 @@
 
 <p align="center">
   <strong>
-    <a href="https://humanode.io">About</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="https://link.humanode.io/docs">Docs</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="https://launcher.humanode.io">Launcher</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="https://link.humanode.io/chat">Chat</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://humanode.io">About</a>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://link.humanode.io/docs">Docs</a>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://launcher.humanode.io">Launcher</a>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://link.humanode.io/chat">Chat</a>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
     <a href="https://link.humanode.io/chat/troubleshooting">Troubleshooting</a>
   </strong>
 </p>
