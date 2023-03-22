@@ -17,5 +17,5 @@ path = "tests/tests.rs"
 num_enum = { version = "0.5.3", default-features = false }
 proc-macro2 = "1.0"
 quote = "1.0"
-sha3 = "0.8"
+sha3 = "0.9"
 syn = { version = "1.0", features = ["extra-traits", "fold", "full", "visit"] }

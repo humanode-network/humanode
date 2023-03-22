@@ -47,7 +47,7 @@ frame-system-benchmarking = { default-features = false, optional = true, git = "
 frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 frame-try-runtime = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 hex-literal = { version = "0.3", optional = true }
-libsecp256k1 = { version = "0.7.0", default-features = false }
+libsecp256k1 = { version = "0.7", default-features = false }
 pallet-authorship = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }

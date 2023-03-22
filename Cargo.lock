@@ -370,12 +370,6 @@ checksum = "6107fe1be6682a68940da878d9e9f5e90ca5745b3dec9fd1bb393c8777d4f581"
 
 [[package]]
 name = "base64"
-version = "0.12.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3441f0f7b02788e948e47f457ca01f1d7e6d92c693bc132c22b087d3141c03ff"
-
-[[package]]
-name = "base64"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
@@ -1402,12 +1396,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "difference"
-version = "2.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "524cbf6897b527295dff137cec09ecf3a05f4fddffd7dfcd1585403449e74198"
-
-[[package]]
 name = "difflib"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1492,12 +1480,6 @@ dependencies = [
  "byteorder",
  "quick-error",
 ]
-
-[[package]]
-name = "downcast"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4bb454f0228b18c7f4c3b0ebbee346ed9c52e7443b0999cd543ff3571205701d"
 
 [[package]]
 name = "downcast"
@@ -1932,29 +1914,9 @@ dependencies = [
  "auto_impl",
  "environmental",
  "ethereum",
- "evm-core 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "evm-gasometer 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "evm-runtime 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "log",
- "parity-scale-codec",
- "primitive-types",
- "rlp",
- "scale-info",
- "serde",
- "sha3 0.10.6",
-]
-
-[[package]]
-name = "evm"
-version = "0.37.0"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#842e03d068ddb6a3195a2dedc4a9b63caadb3355"
-dependencies = [
- "auto_impl",
- "environmental",
- "ethereum",
- "evm-core 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "evm-gasometer 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "evm-runtime 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm-core",
+ "evm-gasometer",
+ "evm-runtime",
  "log",
  "parity-scale-codec",
  "primitive-types",
@@ -1977,36 +1939,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "evm-core"
-version = "0.37.0"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#842e03d068ddb6a3195a2dedc4a9b63caadb3355"
-dependencies = [
- "parity-scale-codec",
- "primitive-types",
- "scale-info",
- "serde",
-]
-
-[[package]]
 name = "evm-gasometer"
 version = "0.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a8b93c59c54fc26522d842f0e0d3f8e8be331c776df18ff3e540b53c2f64d509"
 dependencies = [
  "environmental",
- "evm-core 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "evm-runtime 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "primitive-types",
-]
-
-[[package]]
-name = "evm-gasometer"
-version = "0.37.0"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#842e03d068ddb6a3195a2dedc4a9b63caadb3355"
-dependencies = [
- "environmental",
- "evm-core 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
- "evm-runtime 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm-core",
+ "evm-runtime",
  "primitive-types",
 ]
 
@@ -2018,19 +1958,7 @@ checksum = "c79b9459ce64f1a28688397c4013764ce53cd57bb84efc16b5187fa9b05b13ad"
 dependencies = [
  "auto_impl",
  "environmental",
- "evm-core 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "primitive-types",
- "sha3 0.10.6",
-]
-
-[[package]]
-name = "evm-runtime"
-version = "0.37.0"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#842e03d068ddb6a3195a2dedc4a9b63caadb3355"
-dependencies = [
- "auto_impl",
- "environmental",
- "evm-core 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm-core",
  "primitive-types",
  "sha3 0.10.6",
 ]
@@ -2182,7 +2110,7 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/polkado
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
- "evm 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "evm",
  "fc-db",
  "fc-rpc-core",
  "fp-ethereum",
@@ -2191,7 +2119,7 @@ dependencies = [
  "futures",
  "hex",
  "jsonrpsee",
- "libsecp256k1 0.7.1",
+ "libsecp256k1",
  "log",
  "lru",
  "parity-scale-codec",
@@ -2335,15 +2263,6 @@ dependencies = [
 
 [[package]]
 name = "float-cmp"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1267f4ac4f343772758f7b1bdcbe767c218bbab93bb432acbf5162bbf85a6c4"
-dependencies = [
- "num-traits",
-]
-
-[[package]]
-name = "float-cmp"
 version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "98de4bbd547a563b716d8dfa9aad1cb19bfab00f4fa09a6a4ed21dbcf44ce9c4"
@@ -2430,7 +2349,7 @@ name = "fp-evm"
 version = "3.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.36#a681db94d412c762a66898d5c3fc51a3c97c18cd"
 dependencies = [
- "evm 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "evm",
  "frame-support",
  "parity-scale-codec",
  "serde",
@@ -2473,15 +2392,6 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/polkado
 dependencies = [
  "parity-scale-codec",
  "serde",
-]
-
-[[package]]
-name = "fragile"
-version = "1.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7464c5c4a3f014d9b2ec4073650e5c06596f385060af740fc45ad5a19f959e8"
-dependencies = [
- "fragile 2.0.0",
 ]
 
 [[package]]
@@ -3301,7 +3211,7 @@ dependencies = [
  "humanode-runtime",
  "indoc",
  "keystore-bioauth-account-id",
- "libsecp256k1 0.6.0",
+ "libsecp256k1",
  "ngrok-api",
  "pallet-balances",
  "pallet-bioauth",
@@ -3423,7 +3333,7 @@ dependencies = [
  "hex",
  "hex-literal",
  "keystore-bioauth-account-id",
- "libsecp256k1 0.7.1",
+ "libsecp256k1",
  "pallet-authorship",
  "pallet-babe",
  "pallet-balances",
@@ -4407,25 +4317,6 @@ dependencies = [
 
 [[package]]
 name = "libsecp256k1"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c9d220bc1feda2ac231cb78c3d26f27676b8cf82c96971f7aeef3d0cf2797c73"
-dependencies = [
- "arrayref",
- "base64 0.12.3",
- "digest 0.9.0",
- "hmac-drbg",
- "libsecp256k1-core 0.2.2",
- "libsecp256k1-gen-ecmult 0.2.1",
- "libsecp256k1-gen-genmult 0.2.1",
- "rand 0.7.3",
- "serde",
- "sha2 0.9.9",
- "typenum",
-]
-
-[[package]]
-name = "libsecp256k1"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "95b09eff1b35ed3b33b877ced3a691fc7a481919c7e29c53c906226fcf55e2a1"
@@ -4434,24 +4325,13 @@ dependencies = [
  "base64 0.13.1",
  "digest 0.9.0",
  "hmac-drbg",
- "libsecp256k1-core 0.3.0",
- "libsecp256k1-gen-ecmult 0.3.0",
- "libsecp256k1-gen-genmult 0.3.0",
+ "libsecp256k1-core",
+ "libsecp256k1-gen-ecmult",
+ "libsecp256k1-gen-genmult",
  "rand 0.8.5",
  "serde",
  "sha2 0.9.9",
  "typenum",
-]
-
-[[package]]
-name = "libsecp256k1-core"
-version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0f6ab710cec28cef759c5f18671a27dae2a5f952cdaaee1d8e2908cb2478a80"
-dependencies = [
- "crunchy 0.2.2",
- "digest 0.9.0",
- "subtle",
 ]
 
 [[package]]
@@ -4467,29 +4347,11 @@ dependencies = [
 
 [[package]]
 name = "libsecp256k1-gen-ecmult"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccab96b584d38fac86a83f07e659f0deafd0253dc096dab5a36d53efe653c5c3"
-dependencies = [
- "libsecp256k1-core 0.2.2",
-]
-
-[[package]]
-name = "libsecp256k1-gen-ecmult"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3038c808c55c87e8a172643a7d87187fc6c4174468159cb3090659d55bcb4809"
 dependencies = [
- "libsecp256k1-core 0.3.0",
-]
-
-[[package]]
-name = "libsecp256k1-gen-genmult"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67abfe149395e3aa1c48a2beb32b068e2334402df8181f818d3aee2b304c4f5d"
-dependencies = [
- "libsecp256k1-core 0.2.2",
+ "libsecp256k1-core",
 ]
 
 [[package]]
@@ -4498,7 +4360,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3db8d6ba2cec9eacc40e6e8ccc98931840301f1006e95647ceb2dd5c3aa06f7c"
 dependencies = [
- "libsecp256k1-core 0.3.0",
+ "libsecp256k1-core",
 ]
 
 [[package]]
@@ -4779,44 +4641,17 @@ dependencies = [
 
 [[package]]
 name = "mockall"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ab571328afa78ae322493cacca3efac6a0f2e0a67305b4df31fd439ef129ac0"
-dependencies = [
- "cfg-if",
- "downcast 0.10.0",
- "fragile 1.2.2",
- "lazy_static",
- "mockall_derive 0.10.2",
- "predicates 1.0.8",
- "predicates-tree",
-]
-
-[[package]]
-name = "mockall"
 version = "0.11.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "50e4a1c770583dac7ab5e2f6c139153b783a53a1bbee9729613f193e59828326"
 dependencies = [
  "cfg-if",
- "downcast 0.11.0",
- "fragile 2.0.0",
+ "downcast",
+ "fragile",
  "lazy_static",
- "mockall_derive 0.11.3",
- "predicates 2.1.5",
+ "mockall_derive",
+ "predicates",
  "predicates-tree",
-]
-
-[[package]]
-name = "mockall_derive"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7e25b214433f669161f414959594216d8e6ba83b6679d3db96899c0b4639033"
-dependencies = [
- "cfg-if",
- "proc-macro2 1.0.50",
- "quote 1.0.23",
- "syn 1.0.107",
 ]
 
 [[package]]
@@ -5398,7 +5233,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
- "mockall 0.10.2",
+ "mockall",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -5416,7 +5251,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall 0.10.2",
+ "mockall",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -5476,7 +5311,7 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/polkado
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
- "evm 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "evm",
  "fp-consensus",
  "fp-ethereum",
  "fp-evm",
@@ -5514,7 +5349,7 @@ version = "6.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.36#a681db94d412c762a66898d5c3fc51a3c97c18cd"
 dependencies = [
  "environmental",
- "evm 0.37.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "evm",
  "fp-evm",
  "frame-benchmarking",
  "frame-support",
@@ -5538,7 +5373,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall 0.11.3",
+ "mockall",
  "parity-scale-codec",
  "primitives-ethereum",
  "scale-info",
@@ -5739,7 +5574,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall 0.11.3",
+ "mockall",
  "pallet-balances",
  "pallet-pot",
  "parity-scale-codec",
@@ -5818,7 +5653,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall 0.11.3",
+ "mockall",
  "once_cell",
  "pallet-balances",
  "parity-scale-codec",
@@ -6156,7 +5991,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "getrandom 0.2.8",
- "mockall 0.10.2",
+ "mockall",
  "num_enum",
  "pallet-bioauth",
  "pallet-evm",
@@ -6178,7 +6013,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
- "mockall 0.10.2",
+ "mockall",
  "pallet-evm-accounts-mapping",
  "parity-scale-codec",
  "primitives-ethereum",
@@ -6193,7 +6028,7 @@ dependencies = [
 name = "precompile-utils"
 version = "0.1.0"
 dependencies = [
- "evm 0.37.0 (git+https://github.com/rust-blockchain/evm?branch=master)",
+ "evm",
  "fp-evm",
  "frame-support",
  "frame-system",
@@ -6218,21 +6053,8 @@ dependencies = [
  "num_enum",
  "proc-macro2 1.0.50",
  "quote 1.0.23",
- "sha3 0.8.2",
+ "sha3 0.9.1",
  "syn 1.0.107",
-]
-
-[[package]]
-name = "predicates"
-version = "1.0.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f49cfaf7fdaa3bfacc6fa3e7054e65148878354a5cfddcf661df4c851f8021df"
-dependencies = [
- "difference",
- "float-cmp 0.8.0",
- "normalize-line-endings",
- "predicates-core",
- "regex",
 ]
 
 [[package]]
@@ -6242,7 +6064,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "59230a63c37f3e18569bdb90e4a89cbf5bf8b06fea0b84e65ea10cc4df47addd"
 dependencies = [
  "difflib",
- "float-cmp 0.9.0",
+ "float-cmp",
  "itertools 0.10.5",
  "normalize-line-endings",
  "predicates-core",
@@ -6948,7 +6770,7 @@ dependencies = [
  "async-trait",
  "facetec-api-client",
  "hex",
- "mockall 0.10.2",
+ "mockall",
  "parity-scale-codec",
  "primitives-auth-ticket",
  "primitives-liveness-data",
@@ -7353,7 +7175,7 @@ dependencies = [
  "futures-timer",
  "libp2p",
  "log",
- "mockall 0.11.3",
+ "mockall",
  "parking_lot 0.12.1",
  "sc-client-api",
  "sc-utils",
@@ -7783,7 +7605,7 @@ dependencies = [
  "libp2p",
  "log",
  "lru",
- "mockall 0.11.3",
+ "mockall",
  "parity-scale-codec",
  "prost",
  "prost-build",
@@ -8481,19 +8303,6 @@ dependencies = [
 
 [[package]]
 name = "sha3"
-version = "0.8.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd26bc0e7a2e3a7c959bc494caf58b72ee0c71d67704e9520f736ca7e4853ecf"
-dependencies = [
- "block-buffer 0.7.3",
- "byte-tools",
- "digest 0.8.1",
- "keccak",
- "opaque-debug 0.2.3",
-]
-
-[[package]]
-name = "sha3"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f81199417d4e5de3f04b1e871023acea7389672c4135918f05aa9cbf2f2fa809"
@@ -8858,7 +8667,7 @@ dependencies = [
  "hash256-std-hasher",
  "impl-serde",
  "lazy_static",
- "libsecp256k1 0.7.1",
+ "libsecp256k1",
  "log",
  "merlin",
  "num-traits",
@@ -8982,7 +8791,7 @@ dependencies = [
  "ed25519-dalek",
  "futures",
  "hash-db",
- "libsecp256k1 0.7.1",
+ "libsecp256k1",
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.1",
@@ -10411,7 +10220,7 @@ name = "vesting-scheduling-timestamp"
 version = "0.1.0"
 dependencies = [
  "frame-support",
- "mockall 0.11.3",
+ "mockall",
  "num-traits",
  "pallet-vesting",
  "serde",

@@ -41,7 +41,7 @@ frame-system-rpc-runtime-api = { git = "https://github.com/humanode-network/subs
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.3"
-libsecp256k1 = "0.6"
+libsecp256k1 = "0.7"
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.36" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36" }
