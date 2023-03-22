@@ -36,6 +36,7 @@ allow = [
   "MPL-2.0",
   "GPL-3.0 WITH Classpath-exception-2.0",
   "OpenSSL",
+  "Unlicense",
 ]
 deny = []
 copyleft = "allow"
