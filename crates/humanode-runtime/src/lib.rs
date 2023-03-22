@@ -367,7 +367,7 @@ impl pallet_grandpa::Config for Runtime {
 
     type WeightInfo = (); // TODO(#578): grandpa weights are broken
     type MaxAuthorities = ConstU32<MAX_AUTHORITIES>;
-    type MaxSetIdSessionEntries = ConstU64<0>;
+    type MaxSetIdSessionEntries = ConstU64<REPORT_LONGEVITY>;
 }
 
 /// A timestamp: milliseconds since the unix epoch.
