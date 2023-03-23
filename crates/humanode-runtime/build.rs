@@ -4,12 +4,13 @@
 //! and embedded WASM blob for the native build.
 //! It is transparent, is a sense that you won't notice if everything works out.
 
-use substrate_wasm_builder::WasmBuilder;
-
 fn main() {
-    WasmBuilder::new()
-        .with_current_project()
-        .import_memory()
-        .export_heap_base()
-        .build()
+    #[cfg(feature = "std")]
+    {
+        substrate_wasm_builder::WasmBuilder::new()
+            .with_current_project()
+            .import_memory()
+            .export_heap_base()
+            .build()
+    }
 }
