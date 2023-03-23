@@ -8,7 +8,7 @@ publish = false
 eip712-common = { version = "0.1", path = "../eip712-common" }
 primitives-ethereum = { version = "0.1", path = "../primitives-ethereum" }
 
-eth-eip-712 = { package = "eip-712", version = "=0.1.0" }
+ethers = "2.0"
 hex-literal = "0.3"
 secp256k1 = { version = "0.24" }
 serde_json = { version = "1" }

@@ -1,6 +1,7 @@
 //! Common test utils for EIP-712 typed data message construction and signature verification.
 
 use eip712_common::*;
+use ethers::types::transaction::eip712::{Eip712, TypedData};
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 pub use sp_core::{crypto::Pair, ecdsa, H256, U256};
 
@@ -16,10 +17,8 @@ pub fn ecdsa_sign(pair: &ecdsa::Pair, msg: &[u8; 32]) -> EcdsaSignature {
 
 /// Sign a given EIP-712 typed data JSON with the given ECDSA keypair.
 pub fn ecdsa_sign_typed_data(pair: &ecdsa::Pair, type_data_json: &str) -> EcdsaSignature {
-    let typed_data: eth_eip_712::EIP712 = serde_json::from_str(type_data_json).unwrap();
-    let msg_bytes: [u8; 32] = eth_eip_712::hash_structured_data(typed_data)
-        .unwrap()
-        .into();
+    let typed_data: TypedData = serde_json::from_str(type_data_json).unwrap();
+    let msg_bytes: [u8; 32] = typed_data.encode_eip712().unwrap();
     ecdsa_sign(pair, &msg_bytes)
 }
 
