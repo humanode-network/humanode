@@ -34,7 +34,7 @@ robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-featur
 vesting-schedule-linear = { version = "0.1", path = "../vesting-schedule-linear", default-features = false }
 vesting-scheduling-timestamp = { version = "0.1", path = "../vesting-scheduling-timestamp", default-features = false }
 
-chrono = { version = "0.4.19", default-features = false }
+chrono = { version = "0.4.24", default-features = false }
 codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
 fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.36" }
 fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.36" }
