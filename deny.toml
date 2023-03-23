@@ -55,7 +55,7 @@ license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
 ignore = true
 
 [bans]
-multiple-versions = "warn"
+multiple-versions = "allow"
 wildcards = "allow"
 highlight = "all"
 workspace-default-features = "allow"
@@ -63,7 +63,6 @@ external-default-features = "allow"
 allow = []
 deny = []
 features = []
-
 skip = []
 skip-tree = []
 
