@@ -28,10 +28,14 @@ ignore = [
   # We are ignoring this vulnerability for now, as it should be covered when
   # we update to the substrate that includes the bumped dependency.
   "RUSTSEC-2023-0018",
-  # Root cause: chrono v0.4.23 (dependency of substrate/polkadot-v0.9.38).
+  # A potential segfault at the `time` crate, is rather odd conditions though,
+  # when the env var is set in one thread but no in the other.
   #
-  # The vulnerability is in usage of vulnerable time library (v0.1.45).
-  # Waiting the new release of chrono as current main branch doesn't depend on time library already.
+  # Our main blocker here is `substrate`, which has it fixed in `master`.
+  # At the time of writing substrate `master` is at `a9e85ae50d0efbf66f9a715af3b31bf37b884a6e`.
+  #
+  # We are ignoring this vulnerability for now, as it should be covered when
+  # we update to the substrate that includes the bumped dependency.
   "RUSTSEC-2020-0071",
 ]
 
