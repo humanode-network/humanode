@@ -60,7 +60,7 @@ use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
-        IdentifyAccount, NumberFor, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
+        IdentifyAccount, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -430,6 +430,10 @@ impl pallet_balances::Config for Runtime {
     type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 }
 
+parameter_types! {
+    pub FeeMultiplier: pallet_transaction_payment::Multiplier = pallet_transaction_payment::Multiplier::one();
+}
+
 impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, FeesPot>;
@@ -442,7 +446,7 @@ impl pallet_transaction_payment::Config for Runtime {
         Balance,
         ConstU128<{ constants::fees::LENGTH_TO_FEE }>,
     >;
-    type FeeMultiplierUpdate = ();
+    type FeeMultiplierUpdate = pallet_transaction_payment::ConstFeeMultiplier<FeeMultiplier>;
 }
 
 impl pallet_sudo::Config for Runtime {
