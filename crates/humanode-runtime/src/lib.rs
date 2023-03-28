@@ -765,18 +765,24 @@ pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-/// The `SignedExtension` to the basic transaction logic.
-pub type SignedExtra = (
-    frame_system::CheckSpecVersion<Runtime>,
-    frame_system::CheckTxVersion<Runtime>,
-    frame_system::CheckGenesis<Runtime>,
-    frame_system::CheckEra<Runtime>,
-    frame_system::CheckNonce<Runtime>,
-    frame_system::CheckWeight<Runtime>,
-    pallet_bioauth::CheckBioauthTx<Runtime>,
-    pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-    pallet_token_claims::CheckTokenClaim<Runtime>,
+/// The generic version of the `Extra` component of the [`UncheckedExtrinsic`] and
+/// the [`SignedPayload`] of the current runtime implementation, but abstract around the runtime
+/// config. Used internally to ensure we implement utilities in the generic fashion.
+/// See [`SignedExtra`].
+type GenericSignedExtra<R> = (
+    frame_system::CheckSpecVersion<R>,
+    frame_system::CheckTxVersion<R>,
+    frame_system::CheckGenesis<R>,
+    frame_system::CheckEra<R>,
+    frame_system::CheckNonce<R>,
+    frame_system::CheckWeight<R>,
+    pallet_bioauth::CheckBioauthTx<R>,
+    pallet_transaction_payment::ChargeTransactionPayment<R>,
+    pallet_token_claims::CheckTokenClaim<R>,
 );
+/// The `Extra` component of the [`UncheckedExtrinsic`] and the [`SignedPayload`].
+/// Effectively, additional data carried besides the call within the signed transactions.
+pub type SignedExtra = GenericSignedExtra<Runtime>;
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
     fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
