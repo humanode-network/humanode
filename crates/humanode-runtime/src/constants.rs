@@ -84,3 +84,17 @@ static_assertions::const_assert!(im_online::MAX_KEYS >= bioauth::MAX_AUTHENTICAT
 static_assertions::const_assert!(
     im_online::MAX_PEER_IN_HEARTBEATS >= 3 * bioauth::MAX_AUTHENTICATIONS
 );
+
+/// Fees related constants.
+pub mod fees {
+    use crate::Balance;
+
+    /// The multiplier to get the fee from weight.
+    ///
+    /// We compute the fee to weight multiplier based on the weight of the `balances.transfer` call,
+    /// and try to fit the fee such that a single transfer call costs ~0.1 HMND.
+    pub const WEIGHT_TO_FEE: Balance = 400_000_000;
+
+    /// The multiplier to get the fee from length.
+    pub const LENGTH_TO_FEE: Balance = 1;
+}
