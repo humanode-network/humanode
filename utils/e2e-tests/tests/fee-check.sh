@@ -11,6 +11,11 @@ trap 'rm -rf "$TEMPDIR"; pkill -P "$$"' EXIT
 # Run the node.
 "$COMMAND" --dev --base-path "$TEMPDIR" &
 
+# Lower fee threshold that we accept.
+LOWER_FEE_THRESHOLD="99.5"
+# Upper fee threshold that we accept.
+UPPER_FEE_THRESHOLD="100.5"
+
 # Encoded balance transfer keep alive extrinsic.
 #
 # From:   Alice.
@@ -23,5 +28,11 @@ PAYMENT_INFO_JSON="$(yarn polkadot-js-api --ws "ws://127.0.0.1:9944" rpc.payment
 
 # Obtain the partial fee itself.
 PARTIAL_FEE="$(echo "$PAYMENT_INFO_JSON" | grep "partialFee" | awk -v FS="(partialFee\": \"| mUnit)" '{print $2}')"
+
+# Check that the obtained partial fee within an expected range.
+if [[ $(echo "$LOWER_FEE_THRESHOLD<$PARTIAL_FEE<$UPPER_FEE_THRESHOLD" | bc) != 1 ]]; then
+  printf "The partial fee isn't within the expected range:\n  expected: [%s,%s]\n  actual fee value:   %s\n" "$LOWER_FEE_THRESHOLD" "$UPPER_FEE_THRESHOLD" "$PARTIAL_FEE"
+  exit 1
+fi
 
 printf "Test succeded\n" >&2
