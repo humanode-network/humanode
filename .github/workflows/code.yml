@@ -181,4 +181,4 @@ jobs:
             sudo tar -xzvf - -C /usr/local/bin --strip-components=1
         timeout-minutes: 10
 
-      - run: cargo deny check
+      - run: cargo deny check --hide-inclusion-graph --show-stats

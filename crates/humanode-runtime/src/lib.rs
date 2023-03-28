@@ -25,7 +25,7 @@ pub use frame_support::{
         constants::{
             BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND,
         },
-        IdentityFee, Weight,
+        Weight,
     },
     ConsensusEngineId, PalletId, StorageValue, WeakBoundedVec,
 };
@@ -62,7 +62,7 @@ use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
-        IdentifyAccount, NumberFor, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
+        IdentifyAccount, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -431,13 +431,23 @@ impl pallet_balances::Config for Runtime {
     type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 }
 
+parameter_types! {
+    pub FeeMultiplier: pallet_transaction_payment::Multiplier = pallet_transaction_payment::Multiplier::one();
+}
+
 impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, FeesPot>;
     type OperationalFeeMultiplier = ConstU8<5>;
-    type WeightToFee = IdentityFee<Balance>;
-    type LengthToFee = IdentityFee<Balance>;
-    type FeeMultiplierUpdate = ();
+    type WeightToFee = frame_support::weights::ConstantMultiplier<
+        Balance,
+        ConstU128<{ constants::fees::WEIGHT_TO_FEE }>,
+    >;
+    type LengthToFee = frame_support::weights::ConstantMultiplier<
+        Balance,
+        ConstU128<{ constants::fees::LENGTH_TO_FEE }>,
+    >;
+    type FeeMultiplierUpdate = pallet_transaction_payment::ConstFeeMultiplier<FeeMultiplier>;
 }
 
 impl pallet_sudo::Config for Runtime {

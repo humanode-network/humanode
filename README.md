@@ -10,10 +10,14 @@
 
 <p align="center">
   <strong>
-    <a href="https://humanode.io">About</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="https://link.humanode.io/docs">Docs</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="https://launcher.humanode.io">Launcher</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
-    <a href="https://link.humanode.io/chat">Chat</a>&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://humanode.io">About</a>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://link.humanode.io/docs">Docs</a>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://launcher.humanode.io">Launcher</a>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
+    <a href="https://link.humanode.io/chat">Chat</a>
+    &nbsp;&nbsp;&bull;&nbsp;&nbsp;
     <a href="https://link.humanode.io/chat/troubleshooting">Troubleshooting</a>
   </strong>
 </p>
@@ -23,6 +27,14 @@
 Humanode is an innovative blockchain powered by Human biometrics to achieve Sybil-resistance.
 
 Learn more at [humanode.io](https://humanode.io).
+
+## Usage
+
+See the [documentation](https://link.humanode.io/docs) for usage instructions!
+
+To obtain the Humanode Network node packages use
+the [distribution](https://github.com/humanode-network/distribution) system,
+or our [launcher](https://launcher.humanode.io).
 
 ## Development
 

@@ -18,7 +18,28 @@ vulnerability = "deny"
 unmaintained = "warn"
 yanked = "warn"
 notice = "warn"
-ignore = []
+ignore = [
+  # A race condition at `remove_dir_all` crate. Used by `tempfile` crate, and
+  # on a higher level by `substrate`, `warp`, `reqwest` and etc.
+  #
+  # Our main blocker here is `substrate`, which has it fixed in `master`.
+  # At the time of writing substrate `master` is at `a9e85ae50d0efbf66f9a715af3b31bf37b884a6e`.
+  #
+  # We are ignoring this vulnerability for now, as it should be covered when
+  # we update to the substrate that includes the bumped dependency.
+  # TODO(#605): tracking issue for this ignore clause.
+  "RUSTSEC-2023-0018",
+  # A potential segfault at the `time` crate, is rather odd conditions though,
+  # when the env var is set in one thread but no in the other.
+  #
+  # Our main blocker here is `substrate`, which has it fixed in `master`.
+  # At the time of writing substrate `master` is at `a9e85ae50d0efbf66f9a715af3b31bf37b884a6e`.
+  #
+  # We are ignoring this vulnerability for now, as it should be covered when
+  # we update to the substrate that includes the bumped dependency.
+  # TODO(#606): tracking issue for this ignore clause.
+  "RUSTSEC-2020-0071",
+]
 
 [licenses]
 unlicensed = "deny"
@@ -31,6 +52,7 @@ allow = [
   "ISC",
   "0BSD",
   "CC0-1.0",
+  "Unlicense",
 
   # To review:
   "MPL-2.0",
@@ -54,7 +76,7 @@ license-files = [{ path = "LICENSE", hash = 0xbd0eed23 }]
 ignore = true
 
 [bans]
-multiple-versions = "warn"
+multiple-versions = "allow"
 wildcards = "allow"
 highlight = "all"
 workspace-default-features = "allow"
@@ -62,7 +84,6 @@ external-default-features = "allow"
 allow = []
 deny = []
 features = []
-
 skip = []
 skip-tree = []
 
@@ -70,7 +91,7 @@ skip-tree = []
 unknown-registry = "warn"
 unknown-git = "warn"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-allow-git = ["https://github.com/rust-blockchain/evm"]
+allow-git = []
 
 [sources.allow-org]
 github = ["humanode-network"]

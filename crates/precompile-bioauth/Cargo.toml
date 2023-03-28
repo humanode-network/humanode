@@ -21,7 +21,7 @@ sp-runtime = { default-features = false, git = "https://github.com/humanode-netw
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
 [dev-dependencies]
-mockall = "0.10"
+mockall = "0.11"
 sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
