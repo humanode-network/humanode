@@ -65,7 +65,7 @@ use sp_runtime::{
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
     },
-    ApplyExtrinsicResult, MultiSignature, SaturatedConversion,
+    ApplyExtrinsicResult, MultiSignature,
 };
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
@@ -809,23 +809,8 @@ impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
         <UncheckedExtrinsic as sp_runtime::traits::Extrinsic>::SignaturePayload,
     )> {
         let tip = 0;
-        let current_block = System::block_number()
-            .saturated_into::<u64>()
-            // `System::block_number` is initiated with `n+1`
-            // so the actual block number is `n`.
-            .saturating_sub(1);
-        let era = utils::longest_era_for_block_hashes::<Self::BlockHashCount>(current_block);
-        let extra = (
-            frame_system::CheckSpecVersion::<Runtime>::new(),
-            frame_system::CheckTxVersion::<Runtime>::new(),
-            frame_system::CheckGenesis::<Runtime>::new(),
-            frame_system::CheckEra::<Runtime>::from(era),
-            frame_system::CheckNonce::<Runtime>::from(nonce),
-            frame_system::CheckWeight::<Runtime>::new(),
-            pallet_bioauth::CheckBioauthTx::<Runtime>::new(),
-            pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-            pallet_token_claims::CheckTokenClaim::<Runtime>::new(),
-        );
+        let era = utils::current_era::<Self>();
+        let extra = utils::create_extra::<Self>(nonce, era, tip);
         let raw_payload = SignedPayload::new(call, extra).ok()?;
         let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;
         let address = AccountIdLookup::unlookup(account);
