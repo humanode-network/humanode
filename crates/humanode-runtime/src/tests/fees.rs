@@ -58,7 +58,23 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     let storage = config.build_storage().unwrap();
 
     // Make test externalities from the storage.
-    storage.into()
+    let mut ext = sp_io::TestExternalities::new(storage);
+
+    // Provide the keystore.
+    ext.register_extension(sp_keystore::KeystoreExt(keystore().into()));
+
+    ext
+}
+
+/// Crate a new keystore and populate it with some keys to use in tests.
+fn keystore() -> sp_keystore::testing::KeyStore {
+    use sp_keystore::SyncCryptoStore;
+
+    let store = sp_keystore::testing::KeyStore::new();
+    store
+        .sr25519_generate_new(crypto::KEY_TYPE, Some("//Alice"))
+        .unwrap();
+    store
 }
 
 #[allow(clippy::integer_arithmetic)]
@@ -79,6 +95,37 @@ fn assert_fee(call: RuntimeCall, len: u32, expected_fee: Balance, epsilon: Balan
     );
 }
 
+/// The testing cryptography to match the real one we use for the accounts.
+/// We use it to simulate the signatures in the test to estimate the tx size.
+pub mod crypto {
+    use sp_core::sr25519::Signature as Sr25519Signature;
+    use sp_runtime::{
+        app_crypto::{app_crypto, sr25519},
+        traits::Verify,
+        KeyTypeId, MultiSignature, MultiSigner,
+    };
+
+    pub const KEY_TYPE: KeyTypeId = KeyTypeId(*b"test");
+    app_crypto!(sr25519, KEY_TYPE);
+
+    pub struct TestAuthId;
+
+    impl frame_system::offchain::AppCrypto<MultiSigner, MultiSignature> for TestAuthId {
+        type RuntimeAppPublic = Public;
+        type GenericSignature = sp_core::sr25519::Signature;
+        type GenericPublic = sp_core::sr25519::Public;
+    }
+
+    // implemented for mock runtime in test
+    impl frame_system::offchain::AppCrypto<<Sr25519Signature as Verify>::Signer, Sr25519Signature>
+        for TestAuthId
+    {
+        type RuntimeAppPublic = Public;
+        type GenericSignature = sp_core::sr25519::Signature;
+        type GenericPublic = sp_core::sr25519::Public;
+    }
+}
+
 /// A test that validates that a simple balance transfer with a keep alive costs 0.1 HMND.
 #[test]
 fn simple_balances_transfer_keep_alive() {
@@ -86,13 +133,33 @@ fn simple_balances_transfer_keep_alive() {
     new_test_ext_with().execute_with(move || {
         // Prepare a sample call to transfer 1 HMND.
         let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
-            dest: account_id("Eve").into(),
+            dest: account_id("Bob").into(),
             value: ONE_BALANCE_UNIT,
         });
 
-        // An estimate of the actual tx length obtained by manually signing a similar tx
-        // via Polkadot.js.
-        let len = 147;
+        // Compute the length of the extrinsic constaining this call.
+        let (call, len) = {
+            let sign_by = account_public("Alice");
+            let signed_by_id = account_id("Alice");
+            let (call, signature) = utils::create_transaction::<Runtime, crypto::TestAuthId>(
+                call,
+                sign_by,
+                signed_by_id,
+                0,
+            )
+            .unwrap();
+
+            let extrinsic = {
+                use sp_runtime::traits::Extrinsic;
+                crate::UncheckedExtrinsic::new(call.clone(), Some(signature)).unwrap()
+            };
+
+            let encoded = extrinsic.encode();
+
+            let len = encoded.len().try_into().unwrap();
+
+            (call, len)
+        };
 
         // The expected fee that we aim to target: 0.1 HMND.
         let expected_fee = ONE_BALANCE_UNIT / 10;

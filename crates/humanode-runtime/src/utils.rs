@@ -67,3 +67,40 @@ where
         pallet_token_claims::CheckTokenClaim::<R>::new(),
     )
 }
+
+/// A module to encapsulate the helper type aliases.
+mod transaction {
+    type RuntimeCallOf<T> = <T as frame_system::Config>::RuntimeCall;
+    type PublicOf<T> = <T as frame_system::offchain::SigningTypes>::Public;
+    type SignatureOf<T> = <T as frame_system::offchain::SigningTypes>::Signature;
+    type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
+    type IndexOf<T> = <T as frame_system::Config>::Index;
+    type OverarchingCallOf<T> =
+        <T as frame_system::offchain::SendTransactionTypes<RuntimeCallOf<T>>>::OverarchingCall;
+    type ExtrinsicOf<T> =
+        <T as frame_system::offchain::SendTransactionTypes<RuntimeCallOf<T>>>::Extrinsic;
+    type SignaturePayloadOf<T> =
+        <ExtrinsicOf<T> as sp_runtime::traits::Extrinsic>::SignaturePayload;
+
+    /// Take a runtime call, and the use the [`frame_system::offchain`] facilities to create
+    /// a transcation from it.
+    pub fn create_transaction<T, C>(
+        call: RuntimeCallOf<T>,
+        public: PublicOf<T>,
+        account: AccountIdOf<T>,
+        nonce: IndexOf<T>,
+    ) -> Option<(OverarchingCallOf<T>, SignaturePayloadOf<T>)>
+    where
+        T: Send + Sync,
+        T: frame_system::Config,
+        T: frame_system::offchain::SendTransactionTypes<
+            RuntimeCallOf<T>,
+            OverarchingCall = RuntimeCallOf<T>,
+        >,
+        T: frame_system::offchain::CreateSignedTransaction<RuntimeCallOf<T>>,
+        C: frame_system::offchain::AppCrypto<PublicOf<T>, SignatureOf<T>>,
+    {
+        T::create_transaction::<C>(call, public, account, nonce)
+    }
+}
+pub use transaction::create_transaction;
