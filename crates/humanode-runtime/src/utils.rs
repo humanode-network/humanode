@@ -16,8 +16,8 @@ pub fn longest_era_for_block_hashes(
     sp_runtime::generic::Era::mortal(period, current_block)
 }
 
-/// Compute the longest mortal [`Era`] from the current block, assuming we are executing from
-/// the context of the provided runtime.
+/// Compute the longest mortal [`sp_runtime::generic::Era`] from the current block, assuming we are
+/// executing from the context of the provided runtime.
 pub fn current_era<T>() -> sp_runtime::generic::Era
 where
     T: frame_system::Config,
