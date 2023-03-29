@@ -2,6 +2,9 @@ name: code
 
 on:
   push:
+    branches:
+      - '**'
+      - '!gh-readonly-queue/**'
   merge_group:
   schedule:
     - cron: '0 20 * * 0'

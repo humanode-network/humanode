@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - '**'
+      - '!gh-readonly-queue/**'
     tags:
       - 'v*.*.*'
   merge_group:
