@@ -6,6 +6,7 @@ on:
       - '**'
     tags:
       - 'v*.*.*'
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
