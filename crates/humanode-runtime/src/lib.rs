@@ -65,7 +65,7 @@ use sp_runtime::{
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
     },
-    ApplyExtrinsicResult, MultiSignature, SaturatedConversion,
+    ApplyExtrinsicResult, MultiSignature,
 };
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
@@ -765,18 +765,24 @@ pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
-/// The `SignedExtension` to the basic transaction logic.
-pub type SignedExtra = (
-    frame_system::CheckSpecVersion<Runtime>,
-    frame_system::CheckTxVersion<Runtime>,
-    frame_system::CheckGenesis<Runtime>,
-    frame_system::CheckEra<Runtime>,
-    frame_system::CheckNonce<Runtime>,
-    frame_system::CheckWeight<Runtime>,
-    pallet_bioauth::CheckBioauthTx<Runtime>,
-    pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-    pallet_token_claims::CheckTokenClaim<Runtime>,
+/// The generic version of the `Extra` component of the [`UncheckedExtrinsic`] and
+/// the [`SignedPayload`] of the current runtime implementation, but abstract around the runtime
+/// config. Used internally to ensure we implement utilities in the generic fashion.
+/// See [`SignedExtra`].
+type GenericSignedExtra<R> = (
+    frame_system::CheckSpecVersion<R>,
+    frame_system::CheckTxVersion<R>,
+    frame_system::CheckGenesis<R>,
+    frame_system::CheckEra<R>,
+    frame_system::CheckNonce<R>,
+    frame_system::CheckWeight<R>,
+    pallet_bioauth::CheckBioauthTx<R>,
+    pallet_transaction_payment::ChargeTransactionPayment<R>,
+    pallet_token_claims::CheckTokenClaim<R>,
 );
+/// The `Extra` component of the [`UncheckedExtrinsic`] and the [`SignedPayload`].
+/// Effectively, additional data carried besides the call within the signed transactions.
+pub type SignedExtra = GenericSignedExtra<Runtime>;
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
     fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
@@ -803,23 +809,8 @@ impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
         <UncheckedExtrinsic as sp_runtime::traits::Extrinsic>::SignaturePayload,
     )> {
         let tip = 0;
-        let current_block = System::block_number()
-            .saturated_into::<u64>()
-            // `System::block_number` is initiated with `n+1`
-            // so the actual block number is `n`.
-            .saturating_sub(1);
-        let era = utils::longest_era_for_block_hashes::<Self::BlockHashCount>(current_block);
-        let extra = (
-            frame_system::CheckSpecVersion::<Runtime>::new(),
-            frame_system::CheckTxVersion::<Runtime>::new(),
-            frame_system::CheckGenesis::<Runtime>::new(),
-            frame_system::CheckEra::<Runtime>::from(era),
-            frame_system::CheckNonce::<Runtime>::from(nonce),
-            frame_system::CheckWeight::<Runtime>::new(),
-            pallet_bioauth::CheckBioauthTx::<Runtime>::new(),
-            pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(tip),
-            pallet_token_claims::CheckTokenClaim::<Runtime>::new(),
-        );
+        let era = utils::current_era::<Self>();
+        let extra = utils::create_extra::<Self>(nonce, era, tip);
         let raw_payload = SignedPayload::new(call, extra).ok()?;
         let signature = raw_payload.using_encoded(|payload| C::sign(payload, public))?;
         let address = AccountIdLookup::unlookup(account);

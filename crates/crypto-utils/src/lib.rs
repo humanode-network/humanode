@@ -15,12 +15,20 @@ pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Pu
         .public()
 }
 
+/// Generate an account public key from seed.
+pub fn get_account_public_from_seed<TPublic: Public, AccountPublic>(seed: &str) -> AccountPublic
+where
+    AccountPublic: From<<TPublic::Pair as Pair>::Public>,
+{
+    AccountPublic::from(get_from_seed::<TPublic>(seed))
+}
+
 /// Generate an account ID from seed.
 pub fn get_account_id_from_seed<TPublic: Public, AccountPublic, AccountId>(seed: &str) -> AccountId
 where
     AccountPublic: From<<TPublic::Pair as Pair>::Public> + IdentifyAccount<AccountId = AccountId>,
 {
-    AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
+    get_account_public_from_seed::<TPublic, AccountPublic>(seed).into_account()
 }
 
 /// Generate consensus authority keys.
