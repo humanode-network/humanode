@@ -4,12 +4,14 @@ on:
   push:
     branches:
       - '**'
+      - '!gh-readonly-queue/**'
     tags:
       - 'v*.*.*'
+  merge_group:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' && github.event_name != 'merge_group' }}
 
 jobs:
 
