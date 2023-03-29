@@ -2,6 +2,7 @@ name: toml
 
 on:
   push:
+  merge_group:
   schedule:
     - cron: '0 20 * * 0'
 
