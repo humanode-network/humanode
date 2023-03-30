@@ -2128,7 +2128,7 @@ dependencies = [
  "sha2 0.10.6",
  "sha3 0.10.6",
  "thiserror",
- "uuid",
+ "uuid 0.8.2",
 ]
 
 [[package]]
@@ -7526,7 +7526,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-test",
- "uuid",
+ "uuid 1.3.0",
  "warp",
 ]
 
@@ -11107,6 +11107,15 @@ checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
 dependencies = [
  "getrandom 0.2.8",
  "serde",
+]
+
+[[package]]
+name = "uuid"
+version = "1.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1674845326ee10d37ca60470760d4288a6f80f304007d92e5c53bab78c9cfd79"
+dependencies = [
+ "getrandom 0.2.8",
 ]
 
 [[package]]
