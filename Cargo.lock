@@ -6819,7 +6819,7 @@ dependencies = [
  "pallet-evm",
  "parity-scale-codec",
  "precompile-utils-macro",
- "sha3 0.9.1",
+ "sha3 0.10.6",
  "similar-asserts",
  "sp-core",
  "sp-io",
