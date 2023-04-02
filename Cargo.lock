@@ -513,15 +513,15 @@ dependencies = [
 
 [[package]]
 name = "bip32"
-version = "0.4.0"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b30ed1d6f8437a487a266c8293aeb95b61a23261273e3e02912cdb8b68bf798b"
+checksum = "7e40748d60a3296653e45e87e64c6989aebfad607bccce59cc4156c5d81b2f70"
 dependencies = [
  "bs58",
  "hmac 0.12.1",
- "k256 0.11.6",
+ "k256 0.13.0",
  "once_cell",
- "pbkdf2 0.11.0",
+ "pbkdf2 0.12.1",
  "rand_core 0.6.4",
  "ripemd",
  "sha2 0.10.6",
@@ -4430,7 +4430,6 @@ dependencies = [
  "ecdsa 0.14.8",
  "elliptic-curve 0.12.3",
  "sha2 0.10.6",
- "sha3 0.10.6",
 ]
 
 [[package]]
