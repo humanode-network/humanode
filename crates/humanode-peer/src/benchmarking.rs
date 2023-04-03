@@ -8,8 +8,7 @@ use std::time::Duration;
 use frame_benchmarking_cli::ExtrinsicBuilder;
 use frame_system_rpc_runtime_api::AccountNonceApi;
 use humanode_runtime::{
-    utils::longest_era_for_block_hashes, AccountId, Balance, BalancesCall, Runtime, SystemCall,
-    SLOT_DURATION,
+    opaque::Block, AccountId, Balance, BalancesCall, SystemCall, SLOT_DURATION,
 };
 use sc_client_api::BlockBackend;
 use sp_api::ProvideRuntimeApi;
@@ -132,24 +131,17 @@ pub fn create_extrinsic(
     let best_block = client.chain_info().best_number;
     let nonce = maybe_nonce.unwrap_or_else(|| fetch_nonce(client, sender.clone()));
 
-    let era = longest_era_for_block_hashes::<<Runtime as frame_system::Config>::BlockHashCount>(
+    let block_hash_count =
+        <<humanode_runtime::Runtime as frame_system::Config>::BlockHashCount as sp_core::Get<
+            <humanode_runtime::Runtime as frame_system::Config>::BlockNumber,
+        >>::get();
+    let era = humanode_runtime::utils::longest_era_for_block_hashes(
         best_block.saturated_into(),
+        block_hash_count.into(),
     );
 
     let tip = 0;
-    let extra: humanode_runtime::SignedExtra = (
-        frame_system::CheckSpecVersion::<humanode_runtime::Runtime>::new(),
-        frame_system::CheckTxVersion::<humanode_runtime::Runtime>::new(),
-        frame_system::CheckGenesis::<humanode_runtime::Runtime>::new(),
-        frame_system::CheckEra::<humanode_runtime::Runtime>::from(era),
-        frame_system::CheckNonce::<humanode_runtime::Runtime>::from(nonce),
-        frame_system::CheckWeight::<humanode_runtime::Runtime>::new(),
-        pallet_bioauth::CheckBioauthTx::<humanode_runtime::Runtime>::new(),
-        pallet_transaction_payment::ChargeTransactionPayment::<humanode_runtime::Runtime>::from(
-            tip,
-        ),
-        pallet_token_claims::CheckTokenClaim::<humanode_runtime::Runtime>::new(),
-    );
+    let extra = humanode_runtime::utils::create_extra::<humanode_runtime::Runtime>(nonce, era, tip);
 
     let raw_payload = humanode_runtime::SignedPayload::from_raw(
         function.clone(),

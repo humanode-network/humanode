@@ -4,7 +4,9 @@
 // disable the check for the entire module.
 #![allow(dead_code)]
 
-use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
+use crypto_utils::{
+    authority_keys_from_seed, get_account_id_from_seed, get_account_public_from_seed,
+};
 use sp_application_crypto::ByteArray;
 use sp_runtime::app_crypto::sr25519;
 
@@ -12,6 +14,11 @@ use super::*;
 
 /// The public key for the accounts.
 pub type AccountPublic = <Signature as Verify>::Signer;
+
+/// A helper function to return [`AccountPublic`] based on runtime data and provided seed.
+pub fn account_public(seed: &str) -> AccountPublic {
+    get_account_public_from_seed::<sr25519::Public, AccountPublic>(seed)
+}
 
 /// A helper function to return [`AccountId`] based on runtime data and provided seed.
 pub fn account_id(seed: &str) -> AccountId {
