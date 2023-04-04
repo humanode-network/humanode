@@ -1,0 +1,15 @@
+name: 'Prepare environment'
+description: 'Prepare the environment for the build/deployment/etc'
+inputs:
+  script:
+    description: 'The script to run to bootstrap the given environment'
+    required: false
+runs:
+  using: "composite"
+  steps:
+      - name: Prepare the build environment
+        run: ${{ inputs.script }}
+
+      - name: Set up Vistual Studio Command Prompt (Windows only)
+        uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'

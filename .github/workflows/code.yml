@@ -71,11 +71,9 @@ jobs:
         timeout-minutes: 10
 
       - name: Prepare the build environment
-        run: ${{ matrix.plan.platform.buildEnvScript }}
-
-      - name: Set up Vistual Studio Command Prompt (Windows only)
-        uses: ilammy/msvc-dev-cmd@v1
-        if: runner.os == 'Windows'
+        uses: ./.github/actions/env
+        with:
+          script: ${{ matrix.plan.platform.buildEnvScript }}
 
       - name: Cache
         uses: Swatinem/rust-cache@v2
@@ -117,7 +115,9 @@ jobs:
         timeout-minutes: 10
 
       - name: Prepare the build environment
-        run: .github/scripts/build_env/ubuntu.sh
+        uses: ./.github/actions/env
+        with:
+          script: .github/scripts/build_env/ubuntu.sh
 
       - name: Cache
         uses: Swatinem/rust-cache@v2
