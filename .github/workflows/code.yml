@@ -178,7 +178,7 @@ jobs:
               && chmod +x /usr/local/bin/taplo
             run: taplo format --check
 
-          - name: cargo sort
+          - name: cargo-sort
             download: >
               curl -sSL "https://github.com/DevinR528/cargo-sort/releases/download/v1.0.9/cargo-sort-x86_64-unknown-linux-gnu.tar.gz" |
                 sudo tar -xzvf - -C /usr/local/bin
