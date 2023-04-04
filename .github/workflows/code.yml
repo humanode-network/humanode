@@ -168,6 +168,7 @@ jobs:
               curl -sSL "https://github.com/EmbarkStudios/cargo-deny/releases/download/0.13.7/cargo-deny-0.13.7-x86_64-unknown-linux-musl.tar.gz" |
                 sudo tar -xzvf - -C /usr/local/bin --strip-components=1
             run: cargo-deny check --hide-inclusion-graph --show-stats
+            requiresRust: true
 
           - name: taplo
             download: >
@@ -193,6 +194,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         timeout-minutes: 5
+
+      - name: Install rust toolchain
+        run: rustup show
+        if: ${{ matrix.util.requiresRust }}
+        timeout-minutes: 10
+
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        if: ${{ matrix.util.requiresRust }}
+        timeout-minutes: 10
 
       - name: Download ${{ matrix.util.name }}
         run: ${{ matrix.util.download }}
