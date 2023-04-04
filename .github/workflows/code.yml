@@ -66,6 +66,13 @@ jobs:
         uses: actions/checkout@v3
         timeout-minutes: 5
 
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ${{ matrix.plan.platform.cacheKey }}-${{ matrix.plan.mode.cargoCacheKey }}
+        if: "!matrix.plan.platform.isOnSelfHostedRunner"
+        timeout-minutes: 10
+
       - name: Install rust toolchain
         run: rustup show
         timeout-minutes: 10
@@ -74,13 +81,6 @@ jobs:
         uses: ./.github/actions/env
         with:
           script: ${{ matrix.plan.platform.buildEnvScript }}
-
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-        with:
-          shared-key: ${{ matrix.plan.platform.cacheKey }}-${{ matrix.plan.mode.cargoCacheKey }}
-        if: "!matrix.plan.platform.isOnSelfHostedRunner"
-        timeout-minutes: 10
 
       - name: Print build environment info
         run: |
@@ -110,6 +110,10 @@ jobs:
       - name: Set up polkadot tools
         run: yarn install --frozen-lockfile
 
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
+        timeout-minutes: 10
+
       - name: Install rust toolchain
         run: rustup show
         timeout-minutes: 10
@@ -119,9 +123,6 @@ jobs:
         with:
           script: .github/scripts/build_env/ubuntu.sh
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 10
 
       - name: Build binaries
         run: cargo build --release
@@ -149,12 +150,12 @@ jobs:
         uses: actions/checkout@v3
         timeout-minutes: 5
 
-      - name: Install rust toolchain
-        run: rustup show
-        timeout-minutes: 10
-
       - name: Cache
         uses: Swatinem/rust-cache@v2
+        timeout-minutes: 10
+
+      - name: Install rust toolchain
+        run: rustup show
         timeout-minutes: 10
 
       - run: ${{ matrix.util.run }}
@@ -195,13 +196,13 @@ jobs:
         uses: actions/checkout@v3
         timeout-minutes: 5
 
-      - name: Install rust toolchain
-        run: rustup show
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
         if: ${{ matrix.util.requiresRust }}
         timeout-minutes: 10
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
+      - name: Install rust toolchain
+        run: rustup show
         if: ${{ matrix.util.requiresRust }}
         timeout-minutes: 10
 
