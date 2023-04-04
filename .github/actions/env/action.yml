@@ -9,6 +9,7 @@ runs:
   steps:
       - name: Prepare the build environment
         run: ${{ inputs.script }}
+        shell: bash
 
       - name: Set up Vistual Studio Command Prompt (Windows only)
         uses: ilammy/msvc-dev-cmd@v1
