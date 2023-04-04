@@ -91,7 +91,7 @@ jobs:
         timeout-minutes: 10
 
       - name: Build binaries
-        run: cargo build --release --locked
+        run: cargo build --release --locked --features try-runtime
 
       - name: Run bash e2e tests
         run: utils/e2e-tests/bash/run-tests "target/release/humanode-peer"
