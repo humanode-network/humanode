@@ -12,7 +12,14 @@ trap 'rm -rf "$TEMPDIR"; pkill -P "$$"' EXIT
 "$COMMAND" --dev --base-path "$TEMPDIR" &
 
 # Kepp the node running to have around 3 finalized blocks.
-sleep 40
+while true; do
+  sleep 6
+  echo "Trying..."
+  BLOCK_HASH_JSON="$(yarn polkadot-js-api --ws "ws://127.0.0.1:9944" rpc.chain.getBlockHash 5)"
+  if [[ $(grep -L "0x0000000000000000000000000000000000000000000000000000000000000000" <<<"$BLOCK_HASH_JSON") ]]; then
+    break
+  fi
+done
 
 # Run try-runtime execute-block command.
 "$COMMAND" try-runtime --runtime existing execute-block live --uri "ws://127.0.0.1:9944"
