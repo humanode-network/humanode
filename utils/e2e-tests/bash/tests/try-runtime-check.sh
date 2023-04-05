@@ -1,6 +1,21 @@
 #!/bin/bash
 set -euo pipefail
 
+# A helper function to keep the node running until a requested block number is imported.
+wait_block() {
+  REQUESTED_BLOCK_NUMBER="$1"
+  while true; do
+    # Sleep 6 secs as it's an approximate time to produce a block.
+    sleep 6
+    # Obtain the requested block hash.
+    BLOCK_HASH_JSON="$(yarn polkadot-js-api --ws "ws://127.0.0.1:9944" rpc.chain.getBlockHash "$REQUESTED_BLOCK_NUMBER")"
+    # Check if the hash is not null.
+    if [[ $(grep -L "0x0000000000000000000000000000000000000000000000000000000000000000" <<<"$BLOCK_HASH_JSON") ]]; then
+      break
+    fi
+  done
+}
+
 # Set up command.
 COMMAND="$1"
 
@@ -11,15 +26,8 @@ trap 'rm -rf "$TEMPDIR"; pkill -P "$$"' EXIT
 # Run the node.
 "$COMMAND" --dev --base-path "$TEMPDIR" &
 
-# Kepp the node running to have around 3 finalized blocks.
-while true; do
-  sleep 6
-  echo "Trying..."
-  BLOCK_HASH_JSON="$(yarn polkadot-js-api --ws "ws://127.0.0.1:9944" rpc.chain.getBlockHash 5)"
-  if [[ $(grep -L "0x0000000000000000000000000000000000000000000000000000000000000000" <<<"$BLOCK_HASH_JSON") ]]; then
-    break
-  fi
-done
+# Kepp the node running until 5th block is imported.
+wait_block 5
 
 # Run try-runtime execute-block command.
 "$COMMAND" try-runtime --runtime existing execute-block live --uri "ws://127.0.0.1:9944"
