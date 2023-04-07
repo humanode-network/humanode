@@ -23,7 +23,7 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 anyhow = "1"
 async-trait = "0.1"
 bip32 = "0.5.0"
-clap = { version = "4.0", features = ["derive"] }
+clap = { version = "4.1", features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "3.2.2" }
 fc-cli = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 fc-consensus = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
