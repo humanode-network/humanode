@@ -453,7 +453,7 @@ version = "0.60.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "062dddbc1ba4aca46de6338e2bf87771414c335f7b2f2036e8f3e9befebf88e6"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "cexpr",
  "clang-sys",
  "lazy_static",
@@ -549,6 +549,12 @@ name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
+
+[[package]]
+name = "bitflags"
+version = "2.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "487f1e0fcbe47deb8b0574e646def1c903389d95241dd1bbcc6ce4a715dfc0c1"
 
 [[package]]
 name = "bitvec"
@@ -959,7 +965,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "71655c45cb9845d3270c9d6df84ebe72b4dad3c2ba3f7023ad47c144e4e473a5"
 dependencies = [
  "atty",
- "bitflags",
+ "bitflags 1.3.2",
  "clap_derive 3.2.18",
  "clap_lex 0.2.4",
  "indexmap",
@@ -971,12 +977,12 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.1.1"
+version = "4.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ec7a4128863c188deefe750ac1d1dfe66c236909f845af04beed823638dc1b2"
+checksum = "42dfd32784433290c51d92c438bb72ea5063797fc3cc9a21a8c4346bebbb2098"
 dependencies = [
- "bitflags",
- "clap_derive 4.1.0",
+ "bitflags 2.0.2",
+ "clap_derive 4.1.9",
  "clap_lex 0.3.1",
  "is-terminal",
  "once_cell",
@@ -999,9 +1005,9 @@ dependencies = [
 
 [[package]]
 name = "clap_derive"
-version = "4.1.0"
+version = "4.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "684a277d672e91966334af371f1a7b5833f9aa00b07c84e92fbce95e00208ce8"
+checksum = "fddf67631444a3a3e3e5ac51c36a5e01335302de677bd78759eaa90ab1f46644"
 dependencies = [
  "heck",
  "proc-macro-error",
@@ -1369,7 +1375,7 @@ version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2102ea4f781910f8a5b98dd061f4c2023f479ce7bb1236330099ceb5a93cf17"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "crossterm_winapi",
  "libc",
  "mio",
@@ -2574,7 +2580,7 @@ name = "fc-cli"
 version = "1.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.36#a681db94d412c762a66898d5c3fc51a3c97c18cd"
 dependencies = [
- "clap 4.1.1",
+ "clap 4.1.11",
  "ethereum-types",
  "fc-db",
  "fp-rpc",
@@ -2969,7 +2975,7 @@ dependencies = [
  "Inflector",
  "array-bytes",
  "chrono",
- "clap 4.1.1",
+ "clap 4.1.11",
  "comfy-table",
  "frame-benchmarking",
  "frame-support",
@@ -3066,7 +3072,7 @@ name = "frame-support"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.36#f61fb34e17ce6f77ad4215f0c69691bc4c857560"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "frame-metadata",
  "frame-support-procedural",
  "impl-trait-for-tuples",
@@ -3451,7 +3457,7 @@ version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2994bee4a3a6a51eb90c218523be382fd7ea09b16380b9312e9dbe955ff7c7d1"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "libc",
  "libgit2-sys",
  "log",
@@ -3584,7 +3590,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f3e372db8e5c0d213e0cd0b9be18be2aca3d44cf2fe30a9d46a65581cd454584"
 dependencies = [
  "base64 0.13.1",
- "bitflags",
+ "bitflags 1.3.2",
  "bytes",
  "headers-core",
  "http",
@@ -3768,7 +3774,7 @@ dependencies = [
  "bioauth-flow-rpc",
  "bioauth-keys",
  "bip32",
- "clap 4.1.1",
+ "clap 4.1.11",
  "crypto-utils",
  "fc-cli",
  "fc-consensus",
@@ -5464,7 +5470,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d9ea4302b9759a7a88242299225ea3688e63c85ea136371bb6cf94fd674efaab"
 dependencies = [
  "anyhow",
- "bitflags",
+ "bitflags 1.3.2",
  "byteorder",
  "libc",
  "netlink-packet-core",
@@ -5537,7 +5543,7 @@ version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fa52e972a9a719cecb6864fb88568781eb706bac2cd1d4f04a648542dbf78069"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "cfg-if",
  "libc",
 ]
@@ -5774,7 +5780,7 @@ version = "0.10.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "518915b97df115dd36109bfa429a48b8f737bd05508cf9588977b599648926d2"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "cfg-if",
  "foreign-types",
  "libc",
@@ -7277,7 +7283,7 @@ version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb5a58c1855b4b6819d59012155603f0b22ad30cad752600aadfcb695265519a"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
 ]
 
 [[package]]
@@ -7634,7 +7640,7 @@ version = "0.35.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "727a1a6d65f786ec22df8a81ca3121107f235970dc1705ed681d3e6e8b9cd5f9"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "errno",
  "io-lifetimes 0.7.5",
  "libc",
@@ -7648,7 +7654,7 @@ version = "0.36.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d4fdebc4b395b7fbb9ab11e462e20ed9051e7b16e42d24042c776eca0ac81b03"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "errno",
  "io-lifetimes 1.0.4",
  "libc",
@@ -7830,7 +7836,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=locked/polkad
 dependencies = [
  "array-bytes",
  "chrono",
- "clap 4.1.1",
+ "clap 4.1.11",
  "fdlimit",
  "futures",
  "libp2p",
@@ -8220,7 +8226,7 @@ dependencies = [
  "array-bytes",
  "async-trait",
  "asynchronous-codec",
- "bitflags",
+ "bitflags 1.3.2",
  "bytes",
  "cid",
  "either",
@@ -8285,7 +8291,7 @@ version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.36#f61fb34e17ce6f77ad4215f0c69691bc4c857560"
 dependencies = [
  "async-trait",
- "bitflags",
+ "bitflags 1.3.2",
  "bytes",
  "futures",
  "futures-timer",
@@ -8903,7 +8909,7 @@ version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "645926f31b250a2dca3c232496c2d898d91036e45ca0e97e0e2390c54e11be36"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "core-foundation",
  "core-foundation-sys",
  "libc",
@@ -9484,7 +9490,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=locked/polkad
 dependencies = [
  "array-bytes",
  "base58",
- "bitflags",
+ "bitflags 1.3.2",
  "blake2",
  "byteorder",
  "dyn-clonable",
@@ -10013,7 +10019,7 @@ version = "1.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a2a1c578e98c1c16fc3b8ec1328f7659a500737d7a0c6d625e73e830ff9c1f6"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "cfg_aliases",
  "libc",
  "parking_lot 0.11.2",
@@ -10243,7 +10249,7 @@ version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d75182f12f490e953596550b65ee31bda7c8e043d9386174b353bda50838c3fd"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "core-foundation",
  "system-configuration-sys",
 ]
@@ -10646,7 +10652,7 @@ version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f873044bf02dd1e8239e9c1293ea39dad76dc594ec16185d0a1bf31d8dc8d858"
 dependencies = [
- "bitflags",
+ "bitflags 1.3.2",
  "bytes",
  "futures-core",
  "futures-util",
@@ -10887,7 +10893,7 @@ name = "try-runtime-cli"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.36#f61fb34e17ce6f77ad4215f0c69691bc4c857560"
 dependencies = [
- "clap 4.1.1",
+ "clap 4.1.11",
  "frame-remote-externalities",
  "frame-try-runtime",
  "hex",
