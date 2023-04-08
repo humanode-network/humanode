@@ -7,9 +7,7 @@ use std::time::Duration;
 
 use frame_benchmarking_cli::ExtrinsicBuilder;
 use frame_system_rpc_runtime_api::AccountNonceApi;
-use humanode_runtime::{
-    opaque::Block, AccountId, Balance, BalancesCall, SystemCall, SLOT_DURATION,
-};
+use humanode_runtime::{AccountId, Balance, BalancesCall, SystemCall, SLOT_DURATION};
 use sc_client_api::BlockBackend;
 use sp_api::ProvideRuntimeApi;
 use sp_consensus_babe::SlotDuration;
