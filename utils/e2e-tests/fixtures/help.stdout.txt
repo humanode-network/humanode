@@ -147,12 +147,15 @@ Options:
           
           By default it's only enabled for nodes that are authoring new blocks.
           
-          [default: when-validating]
+          [default: when-authority]
 
           Possible values:
-          - always:          Always have offchain worker enabled
-          - never:           Never enable the offchain worker
-          - when-validating: Only enable the offchain worker when running as validator
+          - always:
+            Always have offchain worker enabled
+          - never:
+            Never enable the offchain worker
+          - when-authority:
+            Only enable the offchain worker when running as a validator (or collator, if this is a parachain node)
 
       --enable-offchain-indexing <ENABLE_OFFCHAIN_INDEXING>
           Enable Offchain Indexing API, which allows block import to write to Offchain DB.
@@ -213,7 +216,21 @@ Options:
           
           This mode specifies when the block's state (ie, storage) should be pruned (ie, removed) from the database.
           
-          Possible values: 'archive'            Keep the state of all blocks. 'archive-canonical'  Keep only the state of finalized blocks. number              Keep the state of the last number of finalized blocks.
+          This setting can only be set on the first creation of the database. Every subsequent run will load the pruning mode from the database and will error if the stored mode doesn't match this CLI value. It is fine to drop this CLI flag for subsequent runs.
+          
+          Possible values:
+          
+          - archive:
+          
+          Keep the state of all blocks.
+          
+          - 'archive-canonical'
+          
+          Keep only the state of finalized blocks.
+          
+          - number
+          
+          Keep the state of the last number of finalized blocks.
           
           [default: 256]
 
@@ -222,7 +239,17 @@ Options:
           
           This mode specifies when the block's body (including justifications) should be pruned (ie, removed) from the database.
           
-          Possible values: 'archive'            Keep all blocks. 'archive-canonical'  Keep only finalized blocks. number              Keep the last `number` of finalized blocks.
+          Possible values: - 'archive'
+          
+          Keep all blocks.
+          
+          - 'archive-canonical'
+          
+          Keep only finalized blocks.
+          
+          - number
+          
+          Keep the last `number` of finalized blocks.
           
           [default: archive-canonical]
 
@@ -395,11 +422,11 @@ Options:
       --port <PORT>
           Specify p2p protocol TCP port
 
-      --no-private-ipv4
-          Always forbid connecting to private IPv4 addresses (as specified in [RFC1918](https://tools.ietf.org/html/rfc1918)), unless the address was passed with `--reserved-nodes` or `--bootnodes`. Enabled by default for chains marked as "live" in their chain specifications
+      --no-private-ip
+          Always forbid connecting to private IPv4/IPv6 addresses (as specified in [RFC1918](https://tools.ietf.org/html/rfc1918)), unless the address was passed with `--reserved-nodes` or `--bootnodes`. Enabled by default for chains marked as "live" in their chain specifications
 
-      --allow-private-ipv4
-          Always accept connecting to private IPv4 addresses (as specified in [RFC1918](https://tools.ietf.org/html/rfc1918)). Enabled by default for chains marked as "local" in their chain specifications, or when `--dev` is passed
+      --allow-private-ip
+          Always accept connecting to private IPv4/IPv6 addresses (as specified in [RFC1918](https://tools.ietf.org/html/rfc1918)). Enabled by default for chains marked as "local" in their chain specifications, or when `--dev` is passed
 
       --out-peers <COUNT>
           Specify the number of outgoing connections we're trying to maintain

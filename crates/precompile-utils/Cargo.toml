@@ -16,17 +16,17 @@ similar-asserts = { version = "1.1.0", optional = true }
 precompile-utils-macro = { path = "macro" }
 
 # Substrate
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false }
-frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36", default-features = false }
-frame-system = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36", default-features = false }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36", default-features = false }
-sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36", default-features = false }
-sp-std = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.36", default-features = false }
+codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false }
+frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
+frame-system = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
+sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
+sp-std = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
 
 # Frontier
 evm = { version = "0.37", default-features = false, features = ["with-codec"] }
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.36", default-features = false }
-pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.36", default-features = false }
+fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
+pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.3.1"

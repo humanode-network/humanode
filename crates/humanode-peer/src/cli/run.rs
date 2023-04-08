@@ -135,6 +135,7 @@ pub async fn run() -> sc_cli::Result<()> {
         }
         Some(Subcommand::Ethereum(cmd)) => cmd.run().await,
         Some(Subcommand::Benchmark(cmd)) => {
+            let cmd = &**cmd;
             let runner = root.create_humanode_runner(cmd)?;
 
             runner.sync_run(|config| {

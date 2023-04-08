@@ -1,6 +1,6 @@
 //! RPC subsystem instantiation logic.
 
-use std::{collections::BTreeMap, sync::Arc};
+use std::sync::Arc;
 
 use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtServer};
@@ -8,11 +8,10 @@ use bioauth_flow_rpc::{Bioauth, BioauthServer, Signer, SignerFactory};
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use fc_rpc::{
     Eth, EthApiServer, EthBlockDataCacheTask, EthFilter, EthFilterApiServer, EthPubSub,
-    EthPubSubApiServer, Net, NetApiServer, OverrideHandle, RuntimeApiStorageOverride,
-    SchemaV1Override, SchemaV2Override, SchemaV3Override, StorageOverride, Web3, Web3ApiServer,
+    EthPubSubApiServer, Net, NetApiServer, Web3, Web3ApiServer,
 };
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
-use fp_storage::EthereumStorageSchema;
+use fc_storage::OverrideHandle;
 use humanode_runtime::{
     opaque::Block, AccountId, Balance, BlockNumber, Hash, Index, UnixMilliseconds,
 };
@@ -40,7 +39,6 @@ use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_consensus::SelectChain;
 use sp_consensus_babe::BabeApi;
 use sp_keystore::SyncCryptoStorePtr;
-use sp_runtime::traits::BlakeTwo256;
 
 /// Extra dependencies for `AuthorExt`.
 pub struct AuthorExtDeps<VKE> {
@@ -135,40 +133,6 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub evm: EvmDeps,
     /// Subscription task executor instance.
     pub subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
-}
-
-/// A helper function to handle overrides.
-pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
-where
-    C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
-    C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError>,
-    C: Send + Sync + 'static,
-    C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
-    C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
-    BE: Backend<Block> + 'static,
-    BE::State: StateBackend<BlakeTwo256>,
-{
-    let mut overrides_map = BTreeMap::new();
-    overrides_map.insert(
-        EthereumStorageSchema::V1,
-        Box::new(SchemaV1Override::new(Arc::clone(&client)))
-            as Box<dyn StorageOverride<_> + Send + Sync>,
-    );
-    overrides_map.insert(
-        EthereumStorageSchema::V2,
-        Box::new(SchemaV2Override::new(Arc::clone(&client)))
-            as Box<dyn StorageOverride<_> + Send + Sync>,
-    );
-    overrides_map.insert(
-        EthereumStorageSchema::V3,
-        Box::new(SchemaV3Override::new(Arc::clone(&client)))
-            as Box<dyn StorageOverride<_> + Send + Sync>,
-    );
-
-    Arc::new(OverrideHandle {
-        schemas: overrides_map,
-        fallback: Box::new(RuntimeApiStorageOverride::new(Arc::clone(&client))),
-    })
 }
 
 /// Instantiate all RPC extensions.
