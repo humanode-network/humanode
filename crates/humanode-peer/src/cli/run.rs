@@ -281,8 +281,8 @@ pub async fn run() -> sc_cli::Result<()> {
 fn print_build_info() {
     tracing::info!("   Build info - commit sha: {}", crate::build_info::GIT_SHA);
     tracing::info!(
-        "   Build info - cargo profile: {}",
-        crate::build_info::CARGO_PROFILE
+        "   Build info - cargo debug profile: {}",
+        crate::build_info::CARGO_DEBUG
     );
     tracing::info!(
         "   Build info - cargo features: {}",
