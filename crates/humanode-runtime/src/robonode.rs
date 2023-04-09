@@ -11,7 +11,12 @@ impl PublicKey {
     pub fn from_bytes(
         bytes: &[u8],
     ) -> Result<Self, robonode_crypto::ed25519_dalek::ed25519::Error> {
-        let actual_key = robonode_crypto::PublicKey::from_bytes(bytes)?;
+        if bytes.len() != 32 {
+            return Err(robonode_crypto::ed25519_dalek::ed25519::Error::new());
+        }
+        let mut buf: [u8; 32] = [0; 32];
+        buf.copy_from_slice(bytes);
+        let actual_key = robonode_crypto::PublicKey::from_bytes(&buf)?;
         Ok(Self(actual_key.to_bytes()))
     }
 }
