@@ -93,7 +93,7 @@ indoc = "2.0"
 sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
 [build-dependencies]
-vergen = { version = "7", default-features = false, features = ["cargo", "git"] }
+vergen = { version = "8", default-features = false, features = ["cargo", "git"] }
 
 [features]
 default = []
