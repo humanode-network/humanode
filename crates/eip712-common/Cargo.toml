@@ -12,7 +12,7 @@ sp-io = { default-features = false, git = "https://github.com/humanode-network/s
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
 [dev-dependencies]
-hex-literal = "0.3"
+hex-literal = "0.4"
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
 [features]
