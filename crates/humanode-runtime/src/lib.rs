@@ -565,21 +565,22 @@ impl
         }
         let mut weight: Weight = Weight::zero();
         let weights = <Runtime as frame_system::Config>::DbWeight::get();
+        let mut should_be_deauthenticated = vec![];
         for details in offenders {
             let (_offender, identity) = &details.offender;
             match identity {
                 pallet_humanode_session::Identification::Bioauth(authentication) => {
-                    let has_deauthenticated = Bioauth::deauthenticate(
-                        &authentication.public_key,
-                        DeauthenticationReason::Offence,
-                    );
-                    weight = weight
-                        .saturating_add(weights.reads_writes(1, u64::from(has_deauthenticated)));
+                    should_be_deauthenticated.push(authentication.public_key.clone());
                 }
                 pallet_humanode_session::Identification::Bootnode(..) => {
                     // Never slash the bootnodes.
                 }
             }
+        }
+        if !should_be_deauthenticated.is_empty() {
+            let has_deauthenticated =
+                Bioauth::deauthenticate(should_be_deauthenticated, DeauthenticationReason::Offence);
+            weight = weight.saturating_add(weights.reads_writes(1, u64::from(has_deauthenticated)));
         }
         weight
     }
