@@ -37,7 +37,7 @@ use pallet_ethereum::{
     Call::transact, PostLogContent as EthereumPostLogContent, Transaction as EthereumTransaction,
 };
 use pallet_evm::FeeCalculator;
-use pallet_evm::{Account as EVMAccount, EnsureAddressTruncated, Runner};
+use pallet_evm::{Account as EVMAccount, Runner};
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -61,8 +61,8 @@ pub use sp_runtime::BuildStorage;
 use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
-        AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
-        IdentifyAccount, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
+        BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable, IdentifyAccount, NumberFor,
+        One, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -75,6 +75,7 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
+pub mod evm_address;
 mod frontier_precompiles;
 mod vesting;
 use frontier_precompiles::FrontierPrecompiles;
@@ -251,7 +252,7 @@ impl frame_system::Config for Runtime {
     /// The aggregated dispatch type that is available for extrinsics.
     type RuntimeCall = RuntimeCall;
     /// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-    type Lookup = AccountIdLookup<AccountId, ()>;
+    type Lookup = evm_address::MultiLookup<Self>;
     /// The index type for storing how many extrinsics an account has signed.
     type Index = Index;
     /// The index type for blocks.
@@ -609,9 +610,8 @@ impl pallet_evm::Config for Runtime {
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
-    type CallOrigin = EnsureAddressTruncated;
-    type WithdrawOrigin = EnsureAddressTruncated;
-    type AddressMapping = HashedAddressMapping<BlakeTwo256>;
+    type CallOrigin = evm_address::SystemLookupAddressOrigin<Self>;
+    type WithdrawOrigin = evm_address::SystemLookupAddressOrigin<Self>;
     type AddressMapping = pallet_evm::HashedAddressMapping<BlakeTwo256>;
     type Currency = Balances;
     type RuntimeEvent = RuntimeEvent;
