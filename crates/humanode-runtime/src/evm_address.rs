@@ -28,10 +28,18 @@ where
             MultiAddress::Id(id) => Ok(id),
             // Map 20-byte address to a native address via ethereum address mapping pallet,
             // if the mapping exists.
+            // If the mapping does not exist, we still want to proceed without an error and map the
+            // address to something. Well, the way we do this now is invoking
+            // the [`pallet_evm::HashedAddressMapping::<BlakeTwo256>`].
             MultiAddress::Address20(ethereum_address) => {
                 let ethereum_address = primitives_ethereum::EthereumAddress(ethereum_address);
-                pallet_evm_accounts_mapping::Pallet::<T>::accounts(ethereum_address)
-                    .ok_or(LookupError)
+                pallet_evm_accounts_mapping::Pallet::<T>::accounts(ethereum_address).ok_or_else(
+                    || {
+                        pallet_evm::HashedAddressMapping::<BlakeTwo256>::into_account_id(H160(
+                            ethereum_address.0,
+                        ))
+                    },
+                )
             }
             _ => Err(LookupError),
         }
