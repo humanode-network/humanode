@@ -5,7 +5,8 @@
 #![allow(dead_code)]
 
 use crypto_utils::{
-    authority_keys_from_seed, get_account_id_from_seed, get_account_public_from_seed,
+    authority_keys_from_seed, evm_account_from_seed, get_account_id_from_seed,
+    get_account_public_from_seed,
 };
 use sp_application_crypto::ByteArray;
 use sp_runtime::app_crypto::sr25519;
@@ -28,6 +29,16 @@ pub fn account_id(seed: &str) -> AccountId {
 /// A helper function to return authorities keys based on runtime data and provided seed.
 pub fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) {
     authority_keys_from_seed::<sr25519::Public, AccountPublic, AccountId>(seed)
+}
+
+/// A helper function to return an EVM address based on the provided seed.
+pub fn evm_account_h160(seed: &str) -> H160 {
+    H160(evm_account_from_seed(seed))
+}
+
+/// A helper function to return an EVM address based on the provided seed.
+pub fn evm_account(seed: &str) -> EthereumAddress {
+    EthereumAddress(evm_account_from_seed(seed))
 }
 
 /// A helper function to get a corresponding EVM truncated address for provided `AccountId`.
