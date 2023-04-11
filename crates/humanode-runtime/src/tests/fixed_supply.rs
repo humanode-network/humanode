@@ -65,6 +65,9 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         bootnodes: BootnodesConfig {
             bootnodes: bootnodes.try_into().unwrap(),
         },
+        evm_accounts_mapping: EvmAccountsMappingConfig {
+            mappings: vec![(account_id("Bob"), evm_account("Bob"))],
+        },
         ..Default::default()
     };
     let storage = config.build_storage().unwrap();
@@ -169,14 +172,14 @@ fn total_issuance_evm_withdraw() {
         // Check total issuance before making evm withdraw.
         let total_issuance_before = Balances::total_issuance();
 
-        let bob_evm = evm_truncated_address(account_id("Bob"));
-        let hashed_bob_evm =
+        let bob_evm = evm_account_h160("Bob");
+        let mapped_bob_evm =
             <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
 
-        // Send tokens to hashed_bob_evm to make withdraw from bob_evm.
+        // Send tokens to `mapped_bob_evm` to make withdraw from `bob_evm`.
         assert_ok!(Balances::transfer(
             Some(account_id("Bob")).into(),
-            hashed_bob_evm.into(),
+            mapped_bob_evm.into(),
             INIT_BALANCE - existential_deposit - 1,
         ));
 
@@ -197,11 +200,11 @@ fn total_issuance_evm_call() {
         // Check total issuance before making evm call.
         let total_issuance_before = Balances::total_issuance();
 
-        let bob_evm = evm_truncated_address(account_id("Bob"));
+        let bob_evm = evm_account_h160("Bob");
         let hashed_bob_evm =
             <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
 
-        // Send tokens to hashed_bob_evm to make call from bob_evm.
+        // Send tokens to `mapped_bob_evm` to make call from `bob_evm`.
         assert_ok!(Balances::transfer(
             Some(account_id("Bob")).into(),
             hashed_bob_evm.into(),
@@ -236,14 +239,14 @@ fn total_issuance_evm_create() {
         // Check total issuance before making evm create.
         let total_issuance_before = Balances::total_issuance();
 
-        let bob_evm = evm_truncated_address(account_id("Bob"));
-        let hashed_bob_evm =
+        let bob_evm = evm_account_h160("Bob");
+        let mapped_bob_evm =
             <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
 
-        // Send tokens to hashed_bob_evm to make create from bob_evm.
+        // Send tokens to `mapped_bob_evm` to make create from `bob_evm`.
         assert_ok!(Balances::transfer(
             Some(account_id("Bob")).into(),
-            hashed_bob_evm.into(),
+            mapped_bob_evm.into(),
             INIT_BALANCE - existential_deposit - 1,
         ));
 
