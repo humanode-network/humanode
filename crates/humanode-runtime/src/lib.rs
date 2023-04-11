@@ -82,6 +82,8 @@ use frontier_precompiles::FrontierPrecompiles;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 mod constants;
+mod deauthentication_reason;
+use deauthentication_reason::DeauthenticationReason;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
@@ -512,6 +514,7 @@ impl pallet_bioauth::Config for Runtime {
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
+    type DeauthenticationReason = DeauthenticationReason;
 }
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -566,7 +569,10 @@ impl
             let (_offender, identity) = &details.offender;
             match identity {
                 pallet_humanode_session::Identification::Bioauth(authentication) => {
-                    let has_deauthenticated = Bioauth::deauthenticate(&authentication.public_key);
+                    let has_deauthenticated = Bioauth::deauthenticate(
+                        &authentication.public_key,
+                        DeauthenticationReason::Offence,
+                    );
                     weight = weight
                         .saturating_add(weights.reads_writes(1, u64::from(has_deauthenticated)));
                 }
