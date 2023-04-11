@@ -188,6 +188,7 @@ impl pallet_bioauth::Config for Benchmark {
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
+    type DeauthenticationReason = ();
 }
 
 #[cfg(feature = "runtime-benchmarks")]
