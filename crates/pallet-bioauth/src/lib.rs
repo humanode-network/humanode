@@ -406,7 +406,7 @@ pub mod pallet {
             public_key: &<T as Config>::ValidatorPublicKey,
             reason: <T as Config>::DeauthenticationReason,
         ) -> bool {
-            ActiveAuthentications::<T>::mutate(|active_authentications| {
+            let removed = ActiveAuthentications::<T>::mutate(|active_authentications| {
                 let mut removed = false;
                 active_authentications.retain(|authentication| {
                     if &authentication.public_key == public_key {
@@ -415,15 +415,16 @@ pub mod pallet {
                     }
                     true
                 });
-                if removed {
-                    // Emit an event.
-                    Self::deposit_event(Event::AuthenticationRemoved {
-                        validator_public_key: public_key.clone(),
-                        reason,
-                    });
-                }
                 removed
-            })
+            });
+            if removed {
+                // Emit an event.
+                Self::deposit_event(Event::AuthenticationRemoved {
+                    validator_public_key: public_key.clone(),
+                    reason,
+                });
+            }
+            removed
         }
     }
 
