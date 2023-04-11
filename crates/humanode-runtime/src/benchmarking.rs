@@ -18,14 +18,21 @@ const VESTING_BALANCE: u128 = 1000;
 const CLIFF: UnixMilliseconds = 1000;
 const VESTING_DURATION: UnixMilliseconds = 3000;
 
-const ALICE: [u8; 32] =
-    hex_literal::hex!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d");
+/// Emulate the `account_id` fn from `dev_utils` but with hardcoded values to avoid linking crypto
+/// primitives.
+fn account_id(seed: &str) -> AccountId {
+    use hex_literal::hex;
+    let key = match seed {
+        "Alice" => hex!("d43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d"),
+        "Bob" => hex!("8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48"),
+        "Charlie" => hex!("90b5ab205c6974c9ea841be688864633dc9ca8a357843eeacf2314649965fe22"),
+        _ => panic!("unexpected seed {seed}"),
+    };
+    AccountId::new(key)
+}
 
-const BOB: [u8; 32] =
-    hex_literal::hex!("8eaf04151687736326c9fea17e25fc5287613693c912909cb226aa4794f26a48");
-
-fn alice_secret() -> libsecp256k1::SecretKey {
-    libsecp256k1::SecretKey::parse(&keccak_256(b"Alice")).unwrap()
+fn eth_ecdsa_secret(seed: &[u8]) -> libsecp256k1::SecretKey {
+    libsecp256k1::SecretKey::parse(&keccak_256(seed)).unwrap()
 }
 
 fn ethereum_address_from_secret(secret: &libsecp256k1::SecretKey) -> EthereumAddress {
@@ -36,9 +43,8 @@ fn ethereum_address_from_secret(secret: &libsecp256k1::SecretKey) -> EthereumAdd
     EthereumAddress(ethereum_address)
 }
 
-fn alice_sign(msg_hash: &[u8; 32]) -> EcdsaSignature {
-    let (sig, recovery_id) =
-        libsecp256k1::sign(&libsecp256k1::Message::parse(&msg_hash), &alice_secret());
+fn eth_ecdsa_sign(secret: &libsecp256k1::SecretKey, msg_hash: &[u8; 32]) -> EcdsaSignature {
+    let (sig, recovery_id) = libsecp256k1::sign(&libsecp256k1::Message::parse(&msg_hash), secret);
     let mut ecdsa_signature = [0u8; 65];
     ecdsa_signature[0..64].copy_from_slice(&sig.serialize()[..]);
     ecdsa_signature[64] = recovery_id.serialize();
@@ -65,18 +71,18 @@ fn switch_block<
 
 impl pallet_evm_accounts_mapping::benchmarking::Interface for Runtime {
     fn account_id_to_claim_to() -> <Self as frame_system::Config>::AccountId {
-        AccountId::from(ALICE)
+        account_id("Charlie")
     }
 
     fn ethereum_address() -> EthereumAddress {
-        ethereum_address_from_secret(&alice_secret())
+        ethereum_address_from_secret(&eth_ecdsa_secret(b"Charlie"))
     }
 
     fn create_ecdsa_signature(
         account_id: &<Self as frame_system::Config>::AccountId,
         ethereum_address: &EthereumAddress,
     ) -> EcdsaSignature {
-        if ethereum_address != &ethereum_address_from_secret(&alice_secret()) {
+        if ethereum_address != &ethereum_address_from_secret(&eth_ecdsa_secret(b"Charlie")) {
             panic!("bad ethereum address");
         }
 
@@ -90,28 +96,28 @@ impl pallet_evm_accounts_mapping::benchmarking::Interface for Runtime {
         };
 
         let msg_hash = eip712_account_claim::make_message_hash(domain, account_id.as_ref());
-        alice_sign(&msg_hash)
+        eth_ecdsa_sign(&eth_ecdsa_secret(b"Charlie"), &msg_hash)
     }
 }
 
 impl pallet_token_claims::benchmarking::Interface for Runtime {
     fn account_id_to_claim_to() -> <Self as frame_system::Config>::AccountId {
-        AccountId::from(ALICE)
+        account_id("Alice")
     }
 
     fn existing_ethereum_address() -> EthereumAddress {
-        ethereum_address_from_secret(&alice_secret())
+        ethereum_address_from_secret(&eth_ecdsa_secret(b"Alice"))
     }
 
     fn new_ethereum_address() -> EthereumAddress {
-        ethereum_address_from_secret(&libsecp256k1::SecretKey::parse(&keccak_256(b"NEA")).unwrap())
+        ethereum_address_from_secret(&eth_ecdsa_secret(b"NEA"))
     }
 
     fn create_ecdsa_signature(
         account_id: &<Self as frame_system::Config>::AccountId,
         ethereum_address: &EthereumAddress,
     ) -> EcdsaSignature {
-        if ethereum_address != &ethereum_address_from_secret(&alice_secret()) {
+        if ethereum_address != &ethereum_address_from_secret(&eth_ecdsa_secret(b"Alice")) {
             panic!("bad ethereum address");
         }
 
@@ -125,7 +131,7 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
         };
 
         let msg_hash = eip712_token_claim::make_message_hash(domain, account_id.as_ref());
-        alice_sign(&msg_hash)
+        eth_ecdsa_sign(&eth_ecdsa_secret(b"Alice"), &msg_hash)
     }
 
     fn claim_info() -> token_claims::ClaimInfoOf<Self> {
@@ -136,7 +142,7 @@ impl pallet_token_claims::benchmarking::Interface for Runtime {
     }
 
     fn funds_provider() -> <Self as frame_system::Config>::AccountId {
-        AccountId::from(BOB)
+        account_id("Bob")
     }
 }
 
@@ -157,7 +163,7 @@ impl pallet_token_claims::benchmarking::VestingInterface for vesting::TokenClaim
 
 impl pallet_vesting::benchmarking::Interface for Runtime {
     fn account_id() -> <Self as frame_system::Config>::AccountId {
-        AccountId::from(ALICE)
+        account_id("Alice")
     }
 
     fn schedule() -> <Self as pallet_vesting::Config>::Schedule {
