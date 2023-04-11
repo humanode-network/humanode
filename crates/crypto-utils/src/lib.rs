@@ -45,3 +45,11 @@ where
         get_from_seed::<ImOnlineId>(seed),
     )
 }
+
+/// Generate an EVM account from seed.
+pub fn evm_account_from_seed(seed: &str) -> [u8; 20] {
+    use frame_support::crypto::ecdsa::ECDSAExt;
+    get_from_seed::<sp_runtime::app_crypto::ecdsa::Public>(seed)
+        .to_eth_address()
+        .unwrap()
+}
