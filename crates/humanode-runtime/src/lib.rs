@@ -612,7 +612,7 @@ impl pallet_evm::Config for Runtime {
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
     type CallOrigin = evm_address::SystemLookupAddressOrigin<Self>;
     type WithdrawOrigin = evm_address::SystemLookupAddressOrigin<Self>;
-    type AddressMapping = pallet_evm::HashedAddressMapping<BlakeTwo256>;
+    type AddressMapping = evm_address::SystemLookupAddressMapping<Self>;
     type Currency = Balances;
     type RuntimeEvent = RuntimeEvent;
     type Runner = pallet_evm::runner::stack::Runner<Self>;

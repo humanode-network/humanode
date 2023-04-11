@@ -70,3 +70,40 @@ where
         <T::Lookup as StaticLookup>::lookup(MultiAddress::Address20(address.0)).map_err(|_| origin)
     }
 }
+
+/// A [`pallet_evm::AddressMapping`] implementation that performs the 20-byte address mapping
+/// via [`frame_system::Config::Lookup`], requiring that it uses a [`MultiAddress`] as a source
+/// and passing the [`MultiAddress::Address20`] as an input.
+///
+/// This way this implementation does not introduce anything new, but instead just relies on
+/// however the lookup is implemented, reducing the complexity of the mental model.
+///
+/// ## Panics
+///
+/// Panics when the lookup fails.
+/// This is a temporary solution for now as the EVM internal address mapping interface is
+/// infallible. We will need to make it fallible to land a proper support.
+pub struct SystemLookupAddressMapping<T>(core::marker::PhantomData<T>);
+
+impl<T> pallet_evm::AddressMapping<T::AccountId> for SystemLookupAddressMapping<T>
+where
+    T: frame_system::Config + pallet_evm_accounts_mapping::Config,
+    <T as frame_system::Config>::Lookup: StaticLookup<Source = MultiAddress<T::AccountId, ()>>,
+    <T as frame_system::Config>::AccountId: From<AccountId32>,
+{
+    fn into_account_id(address: H160) -> T::AccountId {
+        <T::Lookup as StaticLookup>::lookup(MultiAddress::Address20(address.0)).unwrap_or_else(|_| {
+            // This panic can happen in practice, and it is not a bug!
+            // If this happens, this means that the lookup has failed, and the address mapping must
+            // fail. Unfortunately, the interface that we are implementing is infallible, so we must
+            // panic to kill the whole EVM invocation.
+            // Ideally we'd just return an error here instead, but the signature of this trait fn
+            // does not allow it.
+            sp_tracing::warn!(
+                %address,
+                "lookup failed for evm address {address}; this is not a bug, you are just accessing the unmapped evm address",
+            );
+            AccountId32::new([0u8; 32]).into()
+        })
+    }
+}
