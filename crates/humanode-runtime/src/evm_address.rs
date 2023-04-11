@@ -70,3 +70,73 @@ where
         <T::Lookup as StaticLookup>::lookup(MultiAddress::Address20(address.0)).map_err(|_| origin)
     }
 }
+
+/// A [`pallet_evm::AddressMapping`] implementation that performs the 20-byte address mapping
+/// via [`frame_system::Config::Lookup`], requiring that it uses a [`MultiAddress`] as a source
+/// and passing the [`MultiAddress::Address20`] as an input.
+///
+/// This way this implementation does not introduce anything new, but instead just relies on
+/// however the lookup is implemented, reducing the complexity of the mental model.
+///
+/// Takes a fallback to allow tweaking what happens when the lookup fails.
+/// This is required because the [`pallet_evm::AddressMapping::into_account_id`] is infallible, but
+/// the lookup is not.
+pub struct SystemLookupAddressMapping<T, Fallback>(core::marker::PhantomData<(T, Fallback)>);
+
+impl<T, Fallback> pallet_evm::AddressMapping<T::AccountId>
+    for SystemLookupAddressMapping<T, Fallback>
+where
+    T: frame_system::Config + pallet_evm_accounts_mapping::Config,
+    <T as frame_system::Config>::Lookup: StaticLookup<Source = MultiAddress<T::AccountId, ()>>,
+    <T as frame_system::Config>::AccountId: From<AccountId32>,
+    Fallback: pallet_evm::AddressMapping<T::AccountId>,
+{
+    fn into_account_id(address: H160) -> T::AccountId {
+        <T::Lookup as StaticLookup>::lookup(MultiAddress::Address20(address.0))
+            .unwrap_or_else(|_| Fallback::into_account_id(address))
+    }
+}
+
+/// A [`pallet_evm::AddressMapping`] implementation that always panics.
+///
+/// Usable as a fallback in composition with other address mapping implementations.
+pub struct PanicAddressMapping<T>(core::marker::PhantomData<T>);
+
+impl<T> pallet_evm::AddressMapping<T::AccountId> for PanicAddressMapping<T>
+where
+    T: frame_system::Config,
+{
+    fn into_account_id(address: H160) -> T::AccountId {
+        // This panic can happen in practice, and it is not a bug!
+        // If this happens, this means that the lookup has failed, and the address mapping must
+        // fail. Unfortunately, the interface that we are implementing is infallible, so we must
+        // panic to kill the whole EVM invocation.
+        // Ideally we'd just return an error here instead, but the signature of this trait fn
+        // does not allow it.
+        panic!(
+            "lookup failed for evm address {address}; this is not a bug, you are just accessing the unmapped evm address",
+        );
+    }
+}
+
+/// A [`pallet_evm::AddressMapping`] implementation that logs a warining and always returns
+/// a default (typically zero) account.
+///
+/// Doesn't make very much sense, and might even be dangerous to use in production.
+///
+/// Usable as a fallback in composition with other address mapping implementations.
+pub struct StaticAddressMapping<T, Value>(core::marker::PhantomData<(T, Value)>);
+
+impl<T, Value> pallet_evm::AddressMapping<T::AccountId> for StaticAddressMapping<T, Value>
+where
+    T: frame_system::Config,
+    Value: Get<T::AccountId>,
+{
+    fn into_account_id(address: H160) -> T::AccountId {
+        sp_tracing::warn!(
+            message = "lookup failed for an evm address",
+            %address,
+        );
+        Value::get()
+    }
+}

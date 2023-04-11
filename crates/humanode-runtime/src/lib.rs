@@ -603,6 +603,7 @@ parameter_types! {
     pub BlockGasLimit: U256 = U256::from(u32::max_value());
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
     pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+    pub DefaultEvmAccountMapping: AccountId32 = AccountId32::new([0; 32]);
 }
 
 impl pallet_evm::Config for Runtime {
@@ -612,7 +613,10 @@ impl pallet_evm::Config for Runtime {
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
     type CallOrigin = evm_address::SystemLookupAddressOrigin<Self>;
     type WithdrawOrigin = evm_address::SystemLookupAddressOrigin<Self>;
-    type AddressMapping = pallet_evm::HashedAddressMapping<BlakeTwo256>;
+    type AddressMapping = evm_address::SystemLookupAddressMapping<
+        Self,
+        evm_address::StaticAddressMapping<Self, DefaultEvmAccountMapping>,
+    >;
     type Currency = Balances;
     type RuntimeEvent = RuntimeEvent;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
