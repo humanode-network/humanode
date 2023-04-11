@@ -10,7 +10,7 @@ eip712-common = { version = "0.1", path = "../eip712-common", default-features =
 [dev-dependencies]
 eip712-common-test-utils = { version = "0.1", path = "../eip712-common-test-utils" }
 
-hex-literal = "0.3"
+hex-literal = "0.4"
 
 [features]
 default = ["std"]
