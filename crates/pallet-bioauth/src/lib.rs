@@ -264,6 +264,9 @@ pub mod pallet {
         type AfterAuthHook: AfterAuthHook<
             <Self::BeforeAuthHook as BeforeAuthHook<Self::ValidatorPublicKey, Self::Moment>>::Data,
         >;
+
+        /// Possible deauthentication reason.
+        type DeauthenticationReason: Clone + PartialEq + Debug;
     }
 
     #[pallet::pallet]
@@ -331,6 +334,15 @@ pub mod pallet {
         NewAuthentication {
             validator_public_key: T::ValidatorPublicKey,
         },
+        /// The authentication has been expired and removed from the state.
+        AuthenticationExpired {
+            validator_public_key: T::ValidatorPublicKey,
+        },
+        /// The authentication has been removed from the state for some reason.
+        AuthenticationRemoved {
+            validator_public_key: T::ValidatorPublicKey,
+            reason: T::DeauthenticationReason,
+        },
     }
 
     /// Possible error conditions during `authenticate` call processing.
@@ -390,7 +402,10 @@ pub mod pallet {
                 .any(|authentication| &authentication.public_key == public_key)
         }
 
-        pub fn deauthenticate(public_key: &<T as Config>::ValidatorPublicKey) -> bool {
+        pub fn deauthenticate(
+            public_key: &<T as Config>::ValidatorPublicKey,
+            reason: <T as Config>::DeauthenticationReason,
+        ) -> bool {
             ActiveAuthentications::<T>::mutate(|active_authentications| {
                 let mut removed = false;
                 active_authentications.retain(|authentication| {
@@ -400,6 +415,13 @@ pub mod pallet {
                     }
                     true
                 });
+                if removed {
+                    // Emit an event.
+                    Self::deposit_event(Event::AuthenticationRemoved {
+                        validator_public_key: public_key.clone(),
+                        reason,
+                    });
+                }
                 removed
             })
         }
@@ -526,6 +548,14 @@ pub mod pallet {
             let active_authentications = possibly_expired_authentications
                 .into_iter()
                 .filter(|possibly_expired_authentication| {
+                    if possibly_expired_authentication.expires_at <= current_moment {
+                        // Emit an event.
+                        Self::deposit_event(Event::AuthenticationExpired {
+                            validator_public_key: possibly_expired_authentication
+                                .public_key
+                                .clone(),
+                        });
+                    }
                     possibly_expired_authentication.expires_at > current_moment
                 })
                 .collect::<Vec<_>>();
