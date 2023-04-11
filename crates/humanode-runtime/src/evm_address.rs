@@ -16,7 +16,7 @@ pub struct MultiLookup<T>(core::marker::PhantomData<T>);
 
 impl<T> StaticLookup for MultiLookup<T>
 where
-    T: frame_system::Config + pallet_evm_accounts_mapping::Config,
+    T: frame_system::Config<AccountId = AccountId32> + pallet_evm_accounts_mapping::Config,
 {
     type Source = MultiAddress<T::AccountId, ()>;
 
@@ -33,26 +33,52 @@ where
             // the [`pallet_evm::HashedAddressMapping::<BlakeTwo256>`].
             MultiAddress::Address20(ethereum_address) => {
                 let ethereum_address = primitives_ethereum::EthereumAddress(ethereum_address);
-                pallet_evm_accounts_mapping::Pallet::<T>::accounts(ethereum_address).ok_or_else(
-                    || {
-                        pallet_evm::HashedAddressMapping::<BlakeTwo256>::into_account_id(H160(
-                            ethereum_address.0,
-                        ))
-                    },
-                )
+                match pallet_evm_accounts_mapping::Pallet::<T>::accounts(ethereum_address) {
+                    Some(mapped) => Ok(mapped),
+                    None => {
+                        let mapped = wrapped_eth_addr::to_native(&ethereum_address.0);
+                        Ok(mapped)
+                    }
+                }
             }
             _ => Err(LookupError),
         }
     }
 
     fn unlookup(t: Self::Target) -> Self::Source {
-        // We unlookup from a native address, so we can naturally always output a native address.
-        // Note: this is only a good idea because we don't do the truncated EVM addresses.
-        // If we were doing this truncated magic, we'd want to map those truncated native addresses
-        // into their 20-byte form here.
-        // Since we always have a real "native" address for each EVM address in our current design -
-        // we just simply always prefer to unlookup into the "native" form.
-        MultiAddress::Id(t)
+        // We try to detect if the address is, in fact, a wrapped ethereum address.
+        // If it is we emit is as 20-byte address.
+        // If not - then we simply passthrough the address as native.
+        match wrapped_eth_addr::from_native(&t) {
+            Some(ethereum_address) => MultiAddress::Address20(ethereum_address),
+            None => MultiAddress::Id(t),
+        }
+    }
+}
+
+mod wrapped_eth_addr {
+    //! A logic to wrap an Ethereum 20-byte address within the "native" [`AccountId32`].
+
+    use super::*;
+
+    /// Encode the 20-byte address into a "native" address.
+    pub fn to_native(address: &[u8; 20]) -> AccountId32 {
+        let mut data = [0u8; 32];
+        data[0..4].copy_from_slice(b"evm:");
+        data[4..24].copy_from_slice(address);
+        AccountId32::new(data)
+    }
+
+    /// Check that the provided "native" address is the wrapped 20-byte address, and decode it if
+    /// it is.
+    pub fn from_native(address: &AccountId32) -> Option<[u8; 20]> {
+        let data: &[u8; 32] = address.as_ref();
+        if &data[0..4] == b"evm:" && data[24..] == [0u8; 8][..] {
+            let mut buf = [0u8; 20];
+            buf.copy_from_slice(&data[4..24]);
+            return Some(buf);
+        }
+        None
     }
 }
 
