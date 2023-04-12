@@ -1258,7 +1258,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "sha2 0.10.6",
- "sha3 0.10.6",
+ "sha3 0.10.7",
  "thiserror",
 ]
 
@@ -2330,7 +2330,7 @@ dependencies = [
  "rand 0.8.5",
  "rlp",
  "serde",
- "sha3 0.10.6",
+ "sha3 0.10.7",
  "zeroize",
 ]
 
@@ -2414,7 +2414,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.6",
- "sha3 0.10.6",
+ "sha3 0.10.7",
  "thiserror",
  "uuid 0.8.2",
 ]
@@ -2431,7 +2431,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
- "sha3 0.10.6",
+ "sha3 0.10.7",
  "thiserror",
  "uint",
 ]
@@ -2465,7 +2465,7 @@ dependencies = [
  "rlp",
  "scale-info",
  "serde",
- "sha3 0.10.6",
+ "sha3 0.10.7",
  "triehash",
 ]
 
@@ -2762,7 +2762,7 @@ dependencies = [
  "rlp",
  "scale-info",
  "serde",
- "sha3 0.10.6",
+ "sha3 0.10.7",
 ]
 
 [[package]]
@@ -2799,7 +2799,7 @@ dependencies = [
  "environmental",
  "evm-core",
  "primitive-types",
- "sha3 0.10.6",
+ "sha3 0.10.7",
 ]
 
 [[package]]
@@ -4121,7 +4121,7 @@ dependencies = [
  "sc-utils",
  "serde",
  "serde_json",
- "sha3 0.10.6",
+ "sha3 0.10.7",
  "sp-api",
  "sp-application-crypto",
  "sp-consensus",
@@ -5796,7 +5796,7 @@ dependencies = [
  "digest 0.10.6",
  "multihash-derive",
  "sha2 0.10.6",
- "sha3 0.10.6",
+ "sha3 0.10.7",
  "unsigned-varint",
 ]
 
@@ -7389,7 +7389,7 @@ dependencies = [
  "pallet-evm",
  "parity-scale-codec",
  "precompile-utils-macro",
- "sha3 0.10.6",
+ "sha3 0.10.7",
  "similar-asserts",
  "sp-core",
  "sp-io",
@@ -9785,9 +9785,9 @@ dependencies = [
 
 [[package]]
 name = "sha3"
-version = "0.10.6"
+version = "0.10.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bdf0c33fae925bdc080598b84bc15c55e7b9a4a43b3c704da051f977469691c9"
+checksum = "54c2bb1a323307527314a36bfb73f24febb08ce2b8a554bf4ffd6f51ad15198c"
 dependencies = [
  "digest 0.10.6",
  "keccak",
@@ -10184,7 +10184,7 @@ dependencies = [
  "byteorder",
  "digest 0.10.6",
  "sha2 0.10.6",
- "sha3 0.10.6",
+ "sha3 0.10.7",
  "sp-std",
  "twox-hash",
 ]
