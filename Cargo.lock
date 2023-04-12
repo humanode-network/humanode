@@ -8113,7 +8113,7 @@ version = "0.1.0"
 dependencies = [
  "ed25519-dalek",
  "hex-literal",
- "rand 0.7.3",
+ "rand 0.8.5",
 ]
 
 [[package]]
@@ -8121,7 +8121,7 @@ name = "robonode-keygen"
 version = "0.1.0"
 dependencies = [
  "hex",
- "rand 0.7.3",
+ "rand 0.8.5",
  "robonode-crypto",
 ]
 

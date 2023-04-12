@@ -9,7 +9,7 @@ ed25519-dalek = { version = "1", default-features = false, features = ["rand", "
 
 [dev-dependencies]
 hex-literal = "0.4.1"
-rand = "0.7"
+rand = "0.8"
 
 [features]
 default = ["std"]
