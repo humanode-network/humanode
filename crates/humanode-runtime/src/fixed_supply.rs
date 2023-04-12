@@ -36,17 +36,8 @@ where
 
     fn pay_priority_fee(tip: Self::LiquidityInfo) {
         if let Some(tip) = tip {
-            // This is a rewrite of the default EVM implementation that blantly mishandles
-            // imbalances. By not following the imbalances discipline (i.e. using the wrong
-            // function) the EVM implementation leads to the appearance of two mirroring opposite
-            // imbalances - while they could've just do `resolve_creating` instead.
-            // This is the correct rewrite of the same logic.
-
-            use pallet_evm::AddressMapping;
-            let account_id = <T as pallet_evm::Config>::AddressMapping::into_account_id(
-                <pallet_evm::Pallet<T>>::find_author(),
-            );
-            C::resolve_creating(&account_id, tip);
+            // Handle the tips in the same manner as the regular fee.
+            OU::on_unbalanced(tip);
         }
     }
 }
