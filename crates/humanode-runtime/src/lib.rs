@@ -554,10 +554,16 @@ impl
             pallet_im_online::IdentificationTuple<Runtime>,
         >],
         _slash_fraction: &[Perbill],
-        _session: sp_staking::SessionIndex,
+        session: sp_staking::SessionIndex,
         disable_strategy: sp_staking::offence::DisableStrategy,
     ) -> Weight {
+        let span = sp_tracing::info_span!("offence", ?disable_strategy, %session, ?offenders);
+        let _guard = span.enter();
+
+        sp_tracing::info!(message = "processing an offence");
+
         if disable_strategy == sp_staking::offence::DisableStrategy::Never {
+            sp_tracing::warn!(message = "skipping an offence that does not lead to kicking");
             return Weight::zero();
         }
         let mut weight: Weight = Weight::zero();
@@ -566,6 +572,7 @@ impl
             let (_offender, identity) = &details.offender;
             match identity {
                 pallet_humanode_session::Identification::Bioauth(authentication) => {
+                    sp_tracing::info!(message = "processing the bioauth offender", ?authentication);
                     let has_deauthenticated = Bioauth::deauthenticate(&authentication.public_key);
                     weight = weight
                         .saturating_add(weights.reads_writes(1, u64::from(has_deauthenticated)));
