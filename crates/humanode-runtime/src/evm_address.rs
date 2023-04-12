@@ -174,3 +174,29 @@ where
         Value::get()
     }
 }
+
+pub struct FindAuthorLookup<T, F>(core::marker::PhantomData<(F, T)>);
+
+impl<T, F> FindAuthor<H160> for FindAuthorLookup<T, F>
+where
+    T: frame_system::Config,
+    <T as frame_system::Config>::Lookup: StaticLookup<Source = MultiAddress<T::AccountId, ()>>,
+    T: pallet_evm_accounts_mapping::Config,
+    F: FindAuthor<T::AccountId>,
+{
+    fn find_author<'a, I>(digests: I) -> Option<H160>
+    where
+        I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+    {
+        let account_id = F::find_author(digests)?;
+
+        match T::Lookup::unlookup(account_id) {
+            MultiAddress::Address20(eth_address) => Some(H160(eth_address)),
+            MultiAddress::Id(account_id) => {
+                pallet_evm_accounts_mapping::Pallet::<T>::ethereum_addresses(account_id)
+                    .map(|eth_address| H160(eth_address.0))
+            }
+            _ => None,
+        }
+    }
+}
