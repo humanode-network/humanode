@@ -1343,15 +1343,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13418e745008f7349ec7e449155f419a61b92b58a99cc3616942b926825ec76b"
 
 [[package]]
-name = "convert_case"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec182b0ca2f35d8fc196cf3404988fd8b8c739a4d270ff118a398feb0cbec1ca"
-dependencies = [
- "unicode-segmentation",
-]
-
-[[package]]
 name = "core-foundation"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2487,9 +2478,9 @@ dependencies = [
 
 [[package]]
 name = "ethers"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "697aba1bec98cb86e7bebd69f9bb365218871464137af9e93e7a72bd6dc421d0"
+checksum = "356eaf2e3947efa975c3f953e33f73193e5e21b9d8bab26c3ca532676931696f"
 dependencies = [
  "ethers-addressbook",
  "ethers-contract",
@@ -2503,9 +2494,9 @@ dependencies = [
 
 [[package]]
 name = "ethers-addressbook"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0b603812e5e4d63521c691cbc1f34743879e96a1ee96c6594639d7fa0cf6fbc"
+checksum = "d56f1c92cb7c406794c8324158da4caf9e54018e28b776df8155085e1d06db75"
 dependencies = [
  "ethers-core",
  "once_cell",
@@ -2515,9 +2506,9 @@ dependencies = [
 
 [[package]]
 name = "ethers-contract"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b4e8ed7c2b2a22e07b65ae0eb426c948a7448f1be15c66e4813e02c423751fc9"
+checksum = "2a328cb42014ac0ac577a8dac32eb658ee0f32b5a9a5317a0329ac1d4201f1c6"
 dependencies = [
  "ethers-contract-abigen",
  "ethers-contract-derive",
@@ -2534,9 +2525,9 @@ dependencies = [
 
 [[package]]
 name = "ethers-contract-abigen"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bf0984f4ec4e267fd27b7c9fa2f73e72c5c98491a73f777290654154d104f723"
+checksum = "d96813e4b58b6c6b817367380db900dddbd67bfe27610ec89fd3263778d5a4aa"
 dependencies = [
  "Inflector",
  "dunce",
@@ -2545,14 +2536,14 @@ dependencies = [
  "eyre",
  "getrandom 0.2.9",
  "hex",
- "prettyplease",
+ "prettyplease 0.2.4",
  "proc-macro2",
  "quote",
  "regex",
  "reqwest",
  "serde",
  "serde_json",
- "syn 1.0.109",
+ "syn 2.0.13",
  "tokio",
  "toml 0.7.3",
  "url",
@@ -2561,45 +2552,45 @@ dependencies = [
 
 [[package]]
 name = "ethers-contract-derive"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "914e9211077a1b590af1ee6b8dfbd54515c808119546c95da69479908dc3d4de"
+checksum = "373068bb24b4dea8fe0d1758aadab2dd4ec9de1d2c28316439cadcda3ed48eae"
 dependencies = [
+ "Inflector",
  "ethers-contract-abigen",
  "ethers-core",
  "hex",
  "proc-macro2",
  "quote",
- "syn 1.0.109",
+ "serde_json",
+ "syn 2.0.13",
 ]
 
 [[package]]
 name = "ethers-core"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40bf114f1017ace0f622f1652f59c2c5e1abfe7d88891cca0c43da979b351de0"
+checksum = "3a5f8f85ba96698eab9a4782ed2215d0979b1981b99f1be0726c200ffdac22f5"
 dependencies = [
  "arrayvec 0.7.2",
  "bytes",
  "cargo_metadata 0.15.4",
  "chrono",
- "convert_case",
  "elliptic-curve 0.13.3",
  "ethabi",
  "generic-array 0.14.7",
  "getrandom 0.2.9",
  "hex",
  "k256 0.13.0",
- "num_enum 0.5.11",
+ "num_enum 0.6.0",
  "once_cell",
  "open-fastrlp",
- "proc-macro2",
  "rand 0.8.5",
  "rlp",
  "serde",
  "serde_json",
  "strum",
- "syn 1.0.109",
+ "syn 2.0.13",
  "tempfile",
  "thiserror",
  "tiny-keccak",
@@ -2608,9 +2599,9 @@ dependencies = [
 
 [[package]]
 name = "ethers-etherscan"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8920b59cf81e357df2c8102d6a9dc81c2d68f7409543ff3b6868851ecf007807"
+checksum = "7cfc3d36be9e16bac241e1d59ec9ace00e8e4241c09f604a0f65158eb37d4878"
 dependencies = [
  "ethers-core",
  "ethers-solc",
@@ -2625,9 +2616,9 @@ dependencies = [
 
 [[package]]
 name = "ethers-middleware"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c54b30f67c1883ed68bd38aedbdd321831382c12e1b95089c8261c79bb85e4da"
+checksum = "1e6f3543b4f6679b2558901c4b323cecb06b19239439d2588fa8b489bac9675d"
 dependencies = [
  "async-trait",
  "auto_impl",
@@ -2652,9 +2643,9 @@ dependencies = [
 
 [[package]]
 name = "ethers-providers"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2fa0857eaad0c1678f982a2f4cfbe33ebd51d273cc93de0182b7c693f2a84a1"
+checksum = "7c9d2cbed43cf618004dbe339e389e10dae46ea8e55872ab63a25fad25a6082a"
 dependencies = [
  "async-trait",
  "auto_impl",
@@ -2689,9 +2680,9 @@ dependencies = [
 
 [[package]]
 name = "ethers-signers"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5caa7cad4f444931d0ed45818e609847781582399eff0be5c089e8666475c7fb"
+checksum = "d56871f70b97cc5cced5c39c88a0196c206d8f7fb8e1e0952fbf1fb73c033219"
 dependencies = [
  "async-trait",
  "coins-bip32",
@@ -2708,9 +2699,9 @@ dependencies = [
 
 [[package]]
 name = "ethers-solc"
-version = "2.0.2"
+version = "2.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "139542f51f4c405d0dd7e97c34232140a14e8744d1cf121777355567187259e4"
+checksum = "6e967e60bca8fc83d640a7aebd1492d625c43e86b88a5a5bb08b1019472d5d6b"
 dependencies = [
  "cfg-if",
  "dunce",
@@ -7454,6 +7445,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "prettyplease"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ceca8aaf45b5c46ec7ed39fff75f57290368c1846d33d24a122ca81416ab058"
+dependencies = [
+ "proc-macro2",
+ "syn 2.0.13",
+]
+
+[[package]]
 name = "primitive-types"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7602,7 +7603,7 @@ dependencies = [
  "log",
  "multimap",
  "petgraph",
- "prettyplease",
+ "prettyplease 0.1.25",
  "prost",
  "prost-types",
  "regex",
@@ -9969,14 +9970,15 @@ dependencies = [
 
 [[package]]
 name = "solang-parser"
-version = "0.2.3"
+version = "0.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff87dae6cdccacdbf3b19e99b271083556e808de0f59c74a01482f64fdbc61fc"
+checksum = "8c5ead679f39243782be98c2689e592fc0fc9489ca2e47c9e027bd30f948df31"
 dependencies = [
  "itertools",
  "lalrpop",
  "lalrpop-util",
  "phf",
+ "thiserror",
  "unicode-xid",
 ]
 
