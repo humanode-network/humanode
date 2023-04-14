@@ -58,17 +58,7 @@ mod benchmarks {
     use super::*;
 
     fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto::Keypair {
-        // Derive Public Key component.
-        let robonode_secret_key =
-            robonode_crypto::SecretKey::from_bytes(secret_key_bytes.as_ref()).unwrap();
-        let robonode_public_key: robonode_crypto::PublicKey = (&robonode_secret_key).into();
-
-        // Constructs bytes of Secret Key and Public Key.
-        let mut keypair_bytes = [0; 64];
-        let _ = &keypair_bytes[..32].copy_from_slice(robonode_secret_key.as_bytes());
-        let _ = &keypair_bytes[32..].copy_from_slice(robonode_public_key.as_bytes());
-
-        robonode_crypto::Keypair::from_bytes(keypair_bytes.as_ref()).unwrap()
+        robonode_crypto::Keypair::from_bytes(&secret_key_bytes)
     }
 
     impl pallet_bioauth::benchmarking::AuthTicketSigner for Runtime {
@@ -85,7 +75,7 @@ mod benchmarks {
             let robonode_keypair = derive_keypair_from_secret_key(ROBONODE_SECRET_KEY);
             robonode_keypair
                 .try_sign(auth_ticket.as_ref())
-                .unwrap_or(Signature::from_bytes(&[0; 64]).unwrap())
+                .unwrap_or(Signature::from_bytes(&[0; 64]))
                 .to_bytes()
                 .to_vec()
         }
