@@ -1,7 +1,7 @@
 //! Common test utils for EIP-712 typed data message construction and signature verification.
 
 use eip712_common::*;
-use ethers::types::transaction::eip712::{Eip712, TypedData};
+use ethers_core::types::transaction::eip712::{Eip712, TypedData};
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 pub use sp_core::{crypto::Pair, ecdsa, H256, U256};
 
