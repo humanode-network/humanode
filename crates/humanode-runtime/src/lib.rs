@@ -578,9 +578,11 @@ impl
             }
         }
         if !should_be_deauthenticated.is_empty() {
-            let has_deauthenticated =
+            let deauthenticated_public_keys =
                 Bioauth::deauthenticate(should_be_deauthenticated, DeauthenticationReason::Offence);
-            weight = weight.saturating_add(weights.reads_writes(1, u64::from(has_deauthenticated)));
+            weight = weight.saturating_add(
+                weights.reads_writes(1, u64::from(!deauthenticated_public_keys.is_empty())),
+            );
         }
         weight
     }

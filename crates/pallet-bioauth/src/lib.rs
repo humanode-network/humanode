@@ -403,26 +403,25 @@ pub mod pallet {
         pub fn deauthenticate(
             public_keys: Vec<<T as Config>::ValidatorPublicKey>,
             reason: <T as Config>::DeauthenticationReason,
-        ) -> bool {
-            let removed = ActiveAuthentications::<T>::mutate(|active_authentications| {
-                let mut removed = false;
+        ) -> Vec<<T as Config>::ValidatorPublicKey> {
+            let mut removed_public_keys = vec![];
+            ActiveAuthentications::<T>::mutate(|active_authentications| {
                 active_authentications.retain(|authentication| {
                     if public_keys.contains(&authentication.public_key) {
-                        removed = true;
+                        removed_public_keys.push(authentication.public_key.clone());
                         return false;
                     }
                     true
                 });
-                removed
             });
-            if removed {
+            if !removed_public_keys.is_empty() {
                 // Emit an event.
                 Self::deposit_event(Event::AuthenticationsRemoved {
-                    removed: public_keys,
+                    removed: removed_public_keys.clone(),
                     reason,
                 });
             }
-            removed
+            removed_public_keys
         }
     }
 
