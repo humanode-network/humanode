@@ -5,11 +5,11 @@ edition = "2021"
 publish = false
 
 [dependencies]
-eip712-common = { version = "0.1", path = "../eip712-common" }
-primitives-ethereum = { version = "0.1", path = "../primitives-ethereum" }
+eip712-common = { path = "../eip712-common" }
+primitives-ethereum = { path = "../primitives-ethereum" }
 
-ethers-core = { version = "2.0", default-features = false, features = ["eip712"] }
-hex-literal = "0.4"
-secp256k1 = { version = "0.27" }
-serde_json = { version = "1" }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+ethers-core = { workspace = true, default-features = false, features = ["eip712"] }
+hex-literal = { workspace = true }
+secp256k1 = { workspace = true }
+serde_json = { workspace = true }
+sp-core = { workspace = true }

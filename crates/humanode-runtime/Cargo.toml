@@ -5,105 +5,102 @@ edition = "2021"
 publish = false
 
 [build-dependencies]
-substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", optional = true }
+substrate-wasm-builder = { workspace = true, optional = true }
 
 [dependencies]
-author-ext-api = { version = "0.1", path = "../author-ext-api", default-features = false }
-bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
-bridge-pot-currency-swap = { version = "0.1", path = "../bridge-pot-currency-swap", default-features = false }
-eip191-crypto = { version = "0.1", path = "../eip191-crypto", default-features = false }
-eip191-token-claim = { version = "0.1", path = "../eip191-token-claim", default-features = false }
-eip712-account-claim = { version = "0.1", path = "../eip712-account-claim", default-features = false }
-eip712-common = { version = "0.1", path = "../eip712-common", default-features = false }
-eip712-token-claim = { version = "0.1", path = "../eip712-token-claim", default-features = false }
-keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id", default-features = false }
-pallet-balanced-currency-swap-bridges-initializer = { version = "0.1", path = "../pallet-balanced-currency-swap-bridges-initializer", default-features = false }
-pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
-pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
-pallet-chain-properties = { version = "0.1", path = "../pallet-chain-properties", default-features = false }
-pallet-chain-start-moment = { version = "0.1", path = "../pallet-chain-start-moment", default-features = false }
-pallet-currency-swap = { version = "0.1", path = "../pallet-currency-swap", default-features = false }
-pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
-pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
-pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
-pallet-pot = { version = "0.1", path = "../pallet-pot", default-features = false }
-pallet-token-claims = { version = "0.1", path = "../pallet-token-claims", default-features = false }
-pallet-vesting = { version = "0.1", path = "../pallet-vesting", default-features = false }
-precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-features = false }
-precompile-currency-swap = { version = "0.1", path = "../precompile-currency-swap", default-features = false }
-precompile-evm-accounts-mapping = { version = "0.1", path = "../precompile-evm-accounts-mapping", default-features = false }
-primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
-primitives-currency-swap-proxy = { version = "0.1", path = "../primitives-currency-swap-proxy", default-features = false }
-primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
-robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
-vesting-schedule-linear = { version = "0.1", path = "../vesting-schedule-linear", default-features = false }
-vesting-scheduling-timestamp = { version = "0.1", path = "../vesting-scheduling-timestamp", default-features = false }
+author-ext-api = { path = "../author-ext-api", default-features = false }
+bioauth-flow-api = { path = "../bioauth-flow-api", default-features = false }
+bridge-pot-currency-swap = { path = "../bridge-pot-currency-swap", default-features = false }
+eip191-crypto = { path = "../eip191-crypto", default-features = false }
+eip191-token-claim = { path = "../eip191-token-claim", default-features = false }
+eip712-account-claim = { path = "../eip712-account-claim", default-features = false }
+eip712-common = { path = "../eip712-common", default-features = false }
+eip712-token-claim = { path = "../eip712-token-claim", default-features = false }
+keystore-bioauth-account-id = { path = "../keystore-bioauth-account-id", default-features = false }
+pallet-balanced-currency-swap-bridges-initializer = { path = "../pallet-balanced-currency-swap-bridges-initializer", default-features = false }
+pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
+pallet-bootnodes = { path = "../pallet-bootnodes", default-features = false }
+pallet-chain-properties = { path = "../pallet-chain-properties", default-features = false }
+pallet-chain-start-moment = { path = "../pallet-chain-start-moment", default-features = false }
+pallet-currency-swap = { path = "../pallet-currency-swap", default-features = false }
+pallet-ethereum-chain-id = { path = "../pallet-ethereum-chain-id", default-features = false }
+pallet-evm-accounts-mapping = { path = "../pallet-evm-accounts-mapping", default-features = false }
+pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
+pallet-pot = { path = "../pallet-pot", default-features = false }
+pallet-token-claims = { path = "../pallet-token-claims", default-features = false }
+pallet-vesting = { path = "../pallet-vesting", default-features = false }
+precompile-bioauth = { path = "../precompile-bioauth", default-features = false }
+precompile-currency-swap = { path = "../precompile-currency-swap", default-features = false }
+precompile-evm-accounts-mapping = { path = "../precompile-evm-accounts-mapping", default-features = false }
+precompile-utils = { path = "../precompile-utils", default-features = false }
+primitives-auth-ticket = { path = "../primitives-auth-ticket", default-features = false }
+primitives-currency-swap-proxy = { path = "../primitives-currency-swap-proxy", default-features = false }
+primitives-ethereum = { path = "../primitives-ethereum", default-features = false }
+robonode-crypto = { path = "../robonode-crypto", default-features = false }
+vesting-schedule-linear = { path = "../vesting-schedule-linear", default-features = false }
+vesting-scheduling-timestamp = { path = "../vesting-scheduling-timestamp", default-features = false }
 
-chrono = { version = "0.4.24", default-features = false }
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fp-rpc = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fp-self-contained = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-frame-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-executive = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-system-benchmarking = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-try-runtime = { default-features = false, optional = true, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-hex-literal = { version = "0.4", optional = true }
-libsecp256k1 = { version = "0.7", default-features = false }
-pallet-authorship = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-balances = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-system = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-multisig = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-offences = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-session = { default-features = false, features = [
-  "historical",
-], git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-sudo = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-utility = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
-serde = { version = "1", features = ["derive"], optional = true }
-sp-api = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-application-crypto = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-block-builder = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-consensus-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-inherents = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-offchain = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-session = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-staking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-tracing = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-transaction-pool = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-version = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-static_assertions = { version = "1.1.0", default-features = false }
+chrono = { workspace = true, default-features = false }
+codec = { workspace = true, package = "parity-scale-codec", default-features = false, features = ["derive"] }
+fp-evm = { workspace = true }
+fp-rpc = { workspace = true, default-features = false }
+fp-self-contained = { workspace = true, default-features = false }
+frame-benchmarking = { workspace = true, default-features = false, optional = true }
+frame-executive = { workspace = true, default-features = false }
+frame-support = { workspace = true, default-features = false }
+frame-system = { workspace = true, default-features = false }
+frame-system-benchmarking = { workspace = true, default-features = false, optional = true }
+frame-system-rpc-runtime-api = { workspace = true, default-features = false }
+frame-try-runtime = { workspace = true, default-features = false, optional = true }
+hex-literal = { workspace = true, optional = true }
+libsecp256k1 = { workspace = true, default-features = false }
+pallet-authorship = { workspace = true, default-features = false }
+pallet-babe = { workspace = true, default-features = false }
+pallet-balances = { workspace = true, default-features = false }
+pallet-ethereum = { workspace = true, default-features = false }
+pallet-evm = { workspace = true, default-features = false }
+pallet-evm-balances = { workspace = true, default-features = false }
+pallet-evm-precompile-modexp = { workspace = true, default-features = false }
+pallet-evm-precompile-sha3fips = { workspace = true, default-features = false }
+pallet-evm-precompile-simple = { workspace = true, default-features = false }
+pallet-evm-system = { workspace = true, default-features = false }
+pallet-grandpa = { workspace = true, default-features = false }
+pallet-im-online = { workspace = true, default-features = false }
+pallet-multisig = { workspace = true, default-features = false }
+pallet-offences = { workspace = true, default-features = false }
+pallet-session = { workspace = true, default-features = false, features = ["historical"] }
+pallet-sudo = { workspace = true, default-features = false }
+pallet-timestamp = { workspace = true, default-features = false }
+pallet-transaction-payment = { workspace = true, default-features = false }
+pallet-transaction-payment-rpc-runtime-api = { workspace = true, default-features = false }
+pallet-utility = { workspace = true, default-features = false }
+scale-info = { workspace = true, default-features = false, features = ["derive"] }
+serde = { workspace = true, features = ["derive"], optional = true }
+sp-api = { workspace = true, default-features = false }
+sp-application-crypto = { workspace = true, default-features = false }
+sp-block-builder = { workspace = true, default-features = false }
+sp-consensus-babe = { workspace = true, default-features = false }
+sp-core = { workspace = true, default-features = false }
+sp-inherents = { workspace = true, default-features = false }
+sp-offchain = { workspace = true, default-features = false }
+sp-runtime = { workspace = true, default-features = false }
+sp-session = { workspace = true, default-features = false }
+sp-staking = { workspace = true, default-features = false }
+sp-std = { workspace = true, default-features = false }
+sp-tracing = { workspace = true, default-features = false }
+sp-transaction-pool = { workspace = true, default-features = false }
+sp-version = { workspace = true, default-features = false }
+static_assertions = { workspace = true, default-features = false }
 
 [dev-dependencies]
-crypto-utils = { version = "0.1", path = "../crypto-utils" }
-eip712-common-test-utils = { version = "0.1", path = "../eip712-common-test-utils" }
-precompile-utils = { path = "../precompile-utils", default-features = false }
+crypto-utils = { path = "../crypto-utils" }
+eip712-common-test-utils = { path = "../eip712-common-test-utils" }
 
-ethereum = "0.14"
-hex = "0.4"
-hex-literal = "0.4"
-serde_json = "1"
-sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+ethereum = { workspace = true }
+hex = { workspace = true }
+serde_json = { workspace = true }
+sp-io = { workspace = true }
+sp-keystore = { workspace = true }
 
 [features]
 default = ["std"]
@@ -145,6 +142,7 @@ std = [
   "eip712-account-claim/std",
   "eip712-common/std",
   "eip712-token-claim/std",
+  "ethereum/std",
   "fp-evm/std",
   "fp-rpc/std",
   "fp-self-contained/std",

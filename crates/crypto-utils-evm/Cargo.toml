@@ -5,13 +5,13 @@ edition = "2021"
 publish = false
 
 [dependencies]
-anyhow = "1"
-bip32 = "0.5"
-libsecp256k1 = { version = "0.7", default-features = false }
-sha3 = "0.10"
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-thiserror = "1"
-tiny-bip39 = "1.0"
+anyhow = { workspace = true }
+bip32 = { workspace = true }
+libsecp256k1 = { workspace = true }
+sha3 = { workspace = true }
+sp-core = { workspace = true }
+thiserror = { workspace = true }
+tiny-bip39 = { workspace = true }
 
 [dev-dependencies]
-hex-literal = "0.4"
+hex-literal = { workspace = true }

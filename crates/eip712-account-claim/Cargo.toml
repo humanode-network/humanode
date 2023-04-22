@@ -5,12 +5,12 @@ edition = "2021"
 publish = false
 
 [dependencies]
-eip712-common = { version = "0.1", path = "../eip712-common", default-features = false }
+eip712-common = { path = "../eip712-common", default-features = false }
 
 [dev-dependencies]
-eip712-common-test-utils = { version = "0.1", path = "../eip712-common-test-utils" }
+eip712-common-test-utils = { path = "../eip712-common-test-utils" }
 
-hex-literal = "0.4"
+hex-literal = { workspace = true }
 
 [features]
 default = ["std"]

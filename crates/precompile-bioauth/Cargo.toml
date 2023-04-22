@@ -5,25 +5,25 @@ edition = "2021"
 publish = false
 
 [dependencies]
-pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
+pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
 
-codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-getrandom = { version = "0.2", features = ["js"] }
-num_enum = { version = "0.6.0", default-features = false }
-pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
-scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
-serde = { version = "1", features = ["derive"], optional = true }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+codec = { workspace = true, package = "parity-scale-codec", default-features = false, features = ["derive"] }
+fp-evm = { workspace = true, default-features = false }
+frame-support = { workspace = true, default-features = false }
+frame-system = { workspace = true, default-features = false }
+getrandom = { workspace = true, features = ["js"] }
+num_enum = { workspace = true, default-features = false }
+pallet-evm = { workspace = true, default-features = false }
+scale-info = { workspace = true, default-features = false, features = ["derive"] }
+serde = { workspace = true, features = ["derive"], optional = true }
+sp-runtime = { workspace = true, default-features = false }
+sp-std = { workspace = true, default-features = false }
 
 [dev-dependencies]
-mockall = "0.11"
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+mockall = { workspace = true }
+sp-core = { workspace = true, default-features = false }
+sp-io = { workspace = true, default-features = false }
 
 [features]
 default = ["std"]
