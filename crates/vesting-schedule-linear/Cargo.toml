@@ -5,17 +5,17 @@ edition = "2021"
 publish = false
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = [
+codec = { workspace = true, package = "parity-scale-codec", default-features = false, features = [
   "derive",
   "max-encoded-len",
 ] }
-num-traits = { version = "0.2", default-features = false }
-scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
-serde = { version = "1", features = ["derive"], optional = true }
+num-traits = { workspace = true, default-features = false }
+scale-info = { workspace = true, default-features = false, features = ["derive"] }
+serde = { workspace = true, features = ["derive"], optional = true }
 
 [dev-dependencies]
-num = "0.4"
-serde_json = "1"
+num = { workspace = true }
+serde_json = { workspace = true }
 
 [features]
 default = ["std"]

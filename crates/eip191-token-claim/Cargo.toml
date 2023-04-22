@@ -5,14 +5,14 @@ edition = "2021"
 publish = false
 
 [dependencies]
-hex = { version = "0.4", default-features = false }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+hex = { workspace = true, default-features = false }
+sp-std = { workspace = true, default-features = false }
 
 [dev-dependencies]
-eip191-crypto = { version = "0.1", path = "../eip191-crypto" }
-primitives-ethereum = { version = "0.1", path = "../primitives-ethereum" }
+eip191-crypto = { path = "../eip191-crypto" }
+primitives-ethereum = { path = "../primitives-ethereum" }
 
-hex-literal = "0.4"
+hex-literal = { workspace = true }
 
 [features]
 default = ["std"]

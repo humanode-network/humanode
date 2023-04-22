@@ -5,8 +5,8 @@ edition = "2021"
 publish = false
 
 [dependencies]
-primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket" }
-robonode-crypto = { version = "0.1", path = "../robonode-crypto" }
+primitives-auth-ticket = { path = "../primitives-auth-ticket" }
+robonode-crypto = { path = "../robonode-crypto" }
 
-anyhow = "1"
-hex = "0.4"
+anyhow = { workspace = true }
+hex = { workspace = true }
