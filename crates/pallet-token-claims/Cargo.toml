@@ -7,11 +7,11 @@ publish = false
 [dependencies]
 primitives-ethereum = { path = "../primitives-ethereum", default-features = false }
 
-codec = { workspace = true, package = "parity-scale-codec", default-features = false, features = ["derive"] }
-frame-benchmarking = { workspace = true, default-features = false, optional = true }
-frame-support = { workspace = true, default-features = false }
-frame-system = { workspace = true, default-features = false }
-scale-info = { workspace = true, default-features = false, features = ["derive"] }
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+frame-benchmarking = { workspace = true, optional = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
 serde = { workspace = true, optional = true }
 
 [dev-dependencies]

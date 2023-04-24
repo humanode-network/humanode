@@ -7,9 +7,9 @@ publish = false
 [dependencies]
 primitives-ethereum = { path = "../primitives-ethereum", default-features = false }
 
-sp-core-hashing-proc-macro = { workspace = true, default-features = false }
-sp-io = { workspace = true, default-features = false }
-sp-std = { workspace = true, default-features = false }
+sp-core-hashing-proc-macro = { workspace = true }
+sp-io = { workspace = true }
+sp-std = { workspace = true }
 
 [dev-dependencies]
 hex-literal = { workspace = true }

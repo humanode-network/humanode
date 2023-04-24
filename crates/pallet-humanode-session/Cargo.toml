@@ -8,13 +8,13 @@ publish = false
 pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
 pallet-bootnodes = { path = "../pallet-bootnodes", default-features = false }
 
-codec = { workspace = true, package = "parity-scale-codec", default-features = false, features = ["derive"] }
-frame-support = { workspace = true, default-features = false }
-frame-system = { workspace = true, default-features = false }
-pallet-session = { workspace = true, default-features = false, features = ["historical"] }
-scale-info = { workspace = true, default-features = false, features = ["derive"] }
-sp-runtime = { workspace = true, default-features = false }
-sp-std = { workspace = true, default-features = false }
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-session = { workspace = true, features = ["historical"] }
+scale-info = { workspace = true, features = ["derive"] }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
 
 [features]
 default = ["std"]

@@ -8,8 +8,8 @@ publish = false
 pallet-vesting = { path = "../pallet-vesting", default-features = false }
 vesting-schedule-linear = { path = "../vesting-schedule-linear", default-features = false }
 
-frame-support = { workspace = true, default-features = false }
-num-traits = { workspace = true, default-features = false }
+frame-support = { workspace = true }
+num-traits = { workspace = true }
 serde = { workspace = true, optional = true }
 
 [dev-dependencies]

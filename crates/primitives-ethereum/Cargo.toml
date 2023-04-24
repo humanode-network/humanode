@@ -5,11 +5,11 @@ edition = "2021"
 publish = false
 
 [dependencies]
-codec = { workspace = true, package = "parity-scale-codec", default-features = false, features = ["derive"] }
-frame-support = { workspace = true, default-features = false }
-frame-system = { workspace = true, default-features = false }
-rustc-hex = { workspace = true, default-features = false }
-scale-info = { workspace = true, default-features = false, features = ["derive"] }
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+rustc-hex = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
 serde = { workspace = true, optional = true }
 
 [dev-dependencies]

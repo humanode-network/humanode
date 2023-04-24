@@ -8,7 +8,7 @@ publish = false
 eip712-common = { path = "../eip712-common" }
 primitives-ethereum = { path = "../primitives-ethereum" }
 
-ethers-core = { workspace = true, default-features = false, features = ["eip712"] }
+ethers-core = { workspace = true, features = ["eip712"] }
 hex-literal = { workspace = true }
 secp256k1 = { workspace = true }
 serde_json = { workspace = true }
