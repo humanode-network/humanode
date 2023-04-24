@@ -5,10 +5,10 @@ edition = "2021"
 publish = false
 
 [dependencies]
-codec = { workspace = true, package = "parity-scale-codec", default-features = false, features = ["derive"] }
-frame-support = { workspace = true, default-features = false }
-frame-system = { workspace = true, default-features = false }
-scale-info = { workspace = true, default-features = false, features = ["derive"] }
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
 
 [dev-dependencies]
 pallet-timestamp = { workspace = true }

@@ -43,10 +43,10 @@ futures = { workspace = true }
 hex = { workspace = true }
 hex-literal = { workspace = true }
 libsecp256k1 = { workspace = true }
-pallet-balances = { workspace = true, default-features = false }
-pallet-dynamic-fee = { workspace = true, default-features = false }
-pallet-im-online = { workspace = true, default-features = false }
-pallet-transaction-payment = { workspace = true, default-features = false }
+pallet-balances = { workspace = true }
+pallet-dynamic-fee = { workspace = true }
+pallet-im-online = { workspace = true }
+pallet-transaction-payment = { workspace = true }
 qr2term = { workspace = true }
 reqwest = { workspace = true }
 sc-basic-authorship = { workspace = true }
@@ -93,7 +93,7 @@ indoc = { workspace = true }
 sp-io = { workspace = true }
 
 [build-dependencies]
-vergen = { workspace = true, default-features = false, features = ["cargo", "git", "gitcl"] }
+vergen = { workspace = true, features = ["cargo", "git", "gitcl"] }
 
 [features]
 default = []
