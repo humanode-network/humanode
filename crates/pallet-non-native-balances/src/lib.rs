@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Codec, Decode, Encode, MaxEncodedLen};
-use frame_support::traits::{OnUnbalanced, StorageVersion};
+use frame_support::traits::{Imbalance, OnUnbalanced, StorageVersion};
 pub use pallet::*;
 use scale_info::TypeInfo;
 use sp_runtime::RuntimeDebug;
@@ -169,5 +169,22 @@ pub mod pallet {
             who: <T as Config<I>>::AccountId,
             amount: T::Balance,
         },
+    }
+}
+
+/// Removes a dust account whose balance was non-zero but below `ExistentialDeposit`.
+pub struct DustCleaner<T: Config<I>, I: 'static = ()>(
+    Option<(<T as Config<I>>::AccountId, NegativeImbalance<T, I>)>,
+);
+
+impl<T: Config<I>, I: 'static> Drop for DustCleaner<T, I> {
+    fn drop(&mut self) {
+        if let Some((who, dust)) = self.0.take() {
+            Pallet::<T, I>::deposit_event(Event::DustLost {
+                account: who,
+                amount: dust.peek(),
+            });
+            T::DustRemoval::on_unbalanced(dust);
+        }
     }
 }
