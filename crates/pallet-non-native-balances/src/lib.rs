@@ -8,6 +8,9 @@ pub use pallet::*;
 use scale_info::TypeInfo;
 use sp_runtime::RuntimeDebug;
 
+mod imbalances;
+pub use imbalances::{NegativeImbalance, PositiveImbalance};
+
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
@@ -88,7 +91,7 @@ pub mod pallet {
         type ExistentialDeposit: Get<Self::Balance>;
 
         /// Handler for the unbalanced reduction when removing a dust account.
-        type DustRemoval: OnUnbalanced<NegativeImbalance<Self>>;
+        type DustRemoval: OnUnbalanced<NegativeImbalance<Self, I>>;
     }
 
     #[pallet::pallet]
