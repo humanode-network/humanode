@@ -1,7 +1,7 @@
 //! Imbalances implementation.
 
 use frame_support::traits::{SameOrOther, TryDrop};
-use sp_std::{cmp::Ordering, mem, result};
+use sp_std::{cmp::Ordering, mem};
 
 use super::*;
 
