@@ -6077,6 +6077,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-non-native-balances"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-offences"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.38#9091bbcf8c8ae3524d9c46f50ab855044dcc51a2"
