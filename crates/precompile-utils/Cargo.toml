@@ -25,8 +25,8 @@ sp-std = { git = "https://github.com/humanode-network/substrate", branch = "lock
 
 # Frontier
 evm = { version = "0.37", default-features = false, features = ["with-codec"] }
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
-pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
+fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "evm-external-account-id", default-features = false }
+pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "evm-external-account-id", default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.4.1"
