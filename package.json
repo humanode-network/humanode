@@ -3,6 +3,6 @@
   "version": "0.0.0",
   "private": true,
   "dependencies": {
-    "@polkadot/api-cli": "^0.53"
+    "@polkadot/api-cli": "^0.54"
   }
 }
