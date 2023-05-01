@@ -3669,6 +3669,7 @@ dependencies = [
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-multisig",
+ "pallet-non-native-balances",
  "pallet-offences",
  "pallet-pot",
  "pallet-session",

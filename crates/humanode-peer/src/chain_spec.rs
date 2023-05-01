@@ -1,20 +1,23 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
+use std::{collections::BTreeMap, str::FromStr};
+
 use crypto_utils::{authority_keys_from_seed, evm_account_from_seed, get_account_id_from_seed};
 use frame_support::BoundedVec;
 use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, token_claims::types::ClaimInfo, AccountId, BabeConfig, Balance,
-    BalancesConfig, BioauthConfig, BootnodesConfig, ChainPropertiesConfig, EthereumAddress,
-    EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig, GenesisConfig, GrandpaConfig,
-    ImOnlineConfig, SessionConfig, Signature, SudoConfig, SystemConfig, TokenClaimsConfig,
-    WASM_BINARY,
+    BalancesConfig, BioauthConfig, BootnodesConfig, ChainPropertiesConfig, EVMConfig,
+    EthereumAddress, EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig,
+    GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig,
+    SystemConfig, TokenClaimsConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
+use sp_core::{H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{app_crypto::sr25519, traits::Verify};
 
@@ -328,16 +331,52 @@ fn testnet_genesis(
         ethereum_chain_id: EthereumChainIdConfig {
             chain_id: ETH_CHAIN_ID,
         },
-        evm: Default::default(),
-        evm_accounts_mapping: EvmAccountsMappingConfig {
-            mappings: vec![
-                (
-                    account_id("Alice"),
-                    EthereumAddress(ETHEREUM_ADDRESS_GERALD),
-                ),
-                (account_id("Bob"), evm_account("Bob")),
-            ],
+        evm: EVMConfig {
+            accounts: {
+                let mut map = BTreeMap::new();
+                map.insert(
+                    // H160 address of Alice dev account
+                    // Derived from SS58 (42 prefix) address
+                    // SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+                    // hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
+                    // Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
+                    H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
+                        .expect("internal H160 is valid; qed"),
+                    fp_evm::GenesisAccount {
+                        balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+                            .expect("internal U256 is valid; qed"),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
+                map.insert(
+                    // H160 address of CI test runner account
+                    H160::from_str("0x5bF873526Af0f919EEE7344752e800CCdBE2d829")
+                        .expect("internal H160 is valid; qed"),
+                    fp_evm::GenesisAccount {
+                        balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+                            .expect("internal U256 is valid; qed"),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
+                map.insert(
+                    // H160 address for benchmark usage
+                    H160::from_str("1000000000000000000000000000000000000001")
+                        .expect("internal H160 is valid; qed"),
+                    fp_evm::GenesisAccount {
+                        nonce: U256::from(1),
+                        balance: U256::from(1_000_000_000_000_000_000_000_000u128),
+                        storage: Default::default(),
+                        code: vec![0x00],
+                    },
+                );
+                map
+            },
         },
+        evm_accounts_mapping: Default::default(),
         ethereum: EthereumConfig {},
         dynamic_fee: Default::default(),
         base_fee: Default::default(),

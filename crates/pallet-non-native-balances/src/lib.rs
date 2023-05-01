@@ -76,11 +76,6 @@ pub struct AccountData<Balance> {
 }
 
 impl<Balance: Saturating + Copy + Ord> AccountData<Balance> {
-    /// How much this account's balance can be reduced for the given `reasons`.
-    fn usable(&self, reasons: Reasons) -> Balance {
-        self.free.saturating_sub(self.frozen(reasons))
-    }
-
     /// The amount that this account's free balance may not be reduced beyond for the given
     /// `reasons`.
     fn frozen(&self, reasons: Reasons) -> Balance {

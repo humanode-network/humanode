@@ -23,6 +23,7 @@ pallet-chain-start-moment = { version = "0.1", path = "../pallet-chain-start-mom
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
+pallet-non-native-balances = { version = "0.1", path = "../pallet-non-native-balances", default-features = false }
 pallet-pot = { version = "0.1", path = "../pallet-pot", default-features = false }
 pallet-token-claims = { version = "0.1", path = "../pallet-token-claims", default-features = false }
 pallet-vesting = { version = "0.1", path = "../pallet-vesting", default-features = false }
