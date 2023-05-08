@@ -42,10 +42,11 @@ frame-system-rpc-runtime-api = { workspace = true }
 futures = { workspace = true }
 hex = { workspace = true }
 hex-literal = { workspace = true }
+pallet-balances = { workspace = true }
 pallet-im-online = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 qr2term = { workspace = true }
-reqwest = { workspace = true }
+reqwest = { workspace = true, features = ["default"] }
 sc-basic-authorship = { workspace = true }
 sc-chain-spec = { workspace = true }
 sc-chain-spec-derive = { workspace = true }
