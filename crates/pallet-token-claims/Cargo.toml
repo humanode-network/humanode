@@ -37,9 +37,13 @@ std = [
   "frame-benchmarking/std",
   "frame-support/std",
   "frame-system/std",
+  "pallet-balances/std",
   "primitives-ethereum/std",
   "scale-info/std",
-  "serde",
+  "serde/std",
+  "serde_json/std",
+  "sp-core/std",
+  "sp-runtime/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
