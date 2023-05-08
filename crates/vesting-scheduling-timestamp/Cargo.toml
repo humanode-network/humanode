@@ -18,4 +18,11 @@ serde_json = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["frame-support/std", "num-traits/std", "pallet-vesting/std", "serde", "vesting-schedule-linear/std"]
+std = [
+  "frame-support/std",
+  "num-traits/std",
+  "pallet-vesting/std",
+  "serde/std",
+  "serde_json/std",
+  "vesting-schedule-linear/std",
+]

@@ -13,4 +13,4 @@ rand = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["ed25519-dalek/std"]
+std = ["ed25519-dalek/std", "rand/std"]

@@ -12,4 +12,4 @@ sp-std = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["serde", "codec/std", "sp-std/std", "scale-info/std"]
+std = ["serde/std", "codec/std", "sp-std/std", "scale-info/std"]

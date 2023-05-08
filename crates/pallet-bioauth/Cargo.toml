@@ -37,7 +37,7 @@ std = [
   "frame-support/std",
   "frame-system/std",
   "scale-info/std",
-  "serde",
+  "serde/std",
   "sp-api/std",
   "sp-core/std",
   "sp-io/std",

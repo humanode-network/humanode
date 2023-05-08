@@ -27,6 +27,7 @@ std = [
   "pallet-balances/std",
   "pallet-pot/std",
   "scale-info/std",
+  "sp-core/std",
   "sp-std/std",
   "sp-tracing/std",
 ]
