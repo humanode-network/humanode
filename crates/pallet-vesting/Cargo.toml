@@ -10,7 +10,7 @@ frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
-serde = { workspace = true, optional = true }
+serde = { workspace = true, optional = true, features = ["default"] }
 sp-api = { workspace = true }
 
 [dev-dependencies]

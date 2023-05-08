@@ -6,4 +6,4 @@ publish = false
 
 [dependencies]
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
-serde = { workspace = true }
+serde = { workspace = true, features = ["default"] }

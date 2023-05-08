@@ -10,7 +10,7 @@ frame-support = { workspace = true }
 frame-system = { workspace = true }
 rustc-hex = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
-serde = { workspace = true, optional = true }
+serde = { workspace = true, optional = true, features = ["default"] }
 
 [dev-dependencies]
 serde_json = { workspace = true }

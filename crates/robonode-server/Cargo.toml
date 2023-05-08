@@ -12,14 +12,14 @@ robonode-crypto = { path = "../robonode-crypto" }
 
 async-trait = { workspace = true }
 hex = { workspace = true }
-reqwest = { workspace = true }
+reqwest = { workspace = true, features = ["default"] }
 sc-tracing = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 sp-core = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 uuid = { workspace = true, features = ["v4"] }
-warp = { workspace = true }
+warp = { workspace = true, features = ["default"] }
 
 [dev-dependencies]
 codec = { workspace = true, package = "parity-scale-codec" }

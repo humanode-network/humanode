@@ -18,7 +18,7 @@ anyhow = { workspace = true }
 async-trait = { workspace = true }
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
 sc-transaction-pool-api = { workspace = true }
-serde = { workspace = true }
+serde = { workspace = true, features = ["default"] }
 serde_json = { workspace = true }
 sp-api = { workspace = true }
 sp-blockchain = { workspace = true }
