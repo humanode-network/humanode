@@ -17,4 +17,4 @@ hex = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["primitives-ethereum/std", "sp-io/std", "sp-std/std"]
+std = ["hex/std", "primitives-ethereum/std", "sp-io/std", "sp-std/std"]

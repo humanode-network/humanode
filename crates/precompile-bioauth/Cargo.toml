@@ -38,7 +38,7 @@ std = [
   "pallet-evm/std",
   "precompile-utils/std",
   "scale-info/std",
-  "serde",
+  "serde/std",
   "sp-core/std",
   "sp-io/std",
   "sp-runtime/std",

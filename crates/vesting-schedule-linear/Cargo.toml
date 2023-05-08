@@ -16,4 +16,4 @@ serde_json = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["codec/std", "num-traits/std", "scale-info/std", "serde"]
+std = ["codec/std", "num/std", "num-traits/std", "scale-info/std", "serde/std", "serde_json/std"]
