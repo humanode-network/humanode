@@ -13,7 +13,7 @@ rpc-validator-key-logic = { path = "../rpc-validator-key-logic" }
 
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
 sc-transaction-pool-api = { workspace = true }
-serde = { workspace = true }
+serde = { workspace = true, features = ["default"] }
 sp-api = { workspace = true }
 sp-blockchain = { workspace = true }
 sp-core = { workspace = true }

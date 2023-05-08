@@ -10,7 +10,7 @@ vesting-schedule-linear = { path = "../vesting-schedule-linear", default-feature
 
 frame-support = { workspace = true }
 num-traits = { workspace = true }
-serde = { workspace = true, optional = true }
+serde = { workspace = true, optional = true, features = ["default"] }
 
 [dev-dependencies]
 mockall = { workspace = true }
