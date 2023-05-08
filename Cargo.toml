@@ -64,7 +64,7 @@ codec = { package = "parity-scale-codec", version = "3.2.2", default-features = 
 
 # Substrate fork.
 frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
-frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
 frame-executive = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
 frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
 frame-system = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
