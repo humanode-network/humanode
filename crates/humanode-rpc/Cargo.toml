@@ -13,12 +13,12 @@ bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
-fc-db = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-rpc = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-rpc-core = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-storage = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fp-rpc = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fp-storage = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+fc-db = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fc-rpc = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fc-rpc-core = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fc-storage = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fp-rpc = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fp-storage = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 jsonrpsee = { version = "0.16.2", features = ["server", "macros"] }
 pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sc-chain-spec = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }

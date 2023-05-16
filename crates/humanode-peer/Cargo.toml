@@ -25,15 +25,15 @@ async-trait = "0.1"
 bip32 = "0.5.0"
 clap = { version = "4.1", features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "3.2.2" }
-fc-cli = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-consensus = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-db = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-mapping-sync = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-rpc = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-rpc-core = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-storage = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+fc-cli = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fc-consensus = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fc-db = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fc-mapping-sync = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fc-rpc = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fc-rpc-core = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+fc-storage = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 fdlimit = "0.2"
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", optional = true }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
@@ -44,7 +44,7 @@ hex = "0.4.3"
 hex-literal = "0.4"
 libsecp256k1 = "0.7"
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 qr2term = "0.3"
