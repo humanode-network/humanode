@@ -14,12 +14,21 @@ pub struct EvmTransactionCharger<C, OU>(PhantomData<(C, OU)>);
 impl<T, C, OU> pallet_evm::OnChargeEVMTransaction<T> for EvmTransactionCharger<C, OU>
 where
     T: pallet_evm::Config,
-    C: Currency<<T as frame_system::Config>::AccountId>,
-    OU: OnUnbalanced<<C as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance>,
+    C: Currency<
+        <<T as pallet_evm::Config>::AccountProvider as pallet_evm::AccountProvider>::AccountId,
+    >,
+    OU: OnUnbalanced<
+        <C as Currency<
+            <<T as pallet_evm::Config>::AccountProvider as pallet_evm::AccountProvider>::AccountId,
+        >>::NegativeImbalance,
+    >,
     U256: UniqueSaturatedInto<<C as Currency<<T as frame_system::Config>::AccountId>>::Balance>,
 {
-    type LiquidityInfo =
-        Option<<C as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance>;
+    type LiquidityInfo = Option<
+        <C as Currency<
+            <<T as pallet_evm::Config>::AccountProvider as pallet_evm::AccountProvider>::AccountId,
+        >>::NegativeImbalance,
+    >;
 
     fn withdraw_fee(who: &H160, fee: U256) -> Result<Self::LiquidityInfo, pallet_evm::Error<T>> {
         <pallet_evm::EVMCurrencyAdapter<C, OU> as pallet_evm::OnChargeEVMTransaction<T>>::withdraw_fee(who, fee)
