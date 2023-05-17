@@ -82,6 +82,7 @@ parameter_types! {
 
 impl pallet_pot::Config for Test {
     type RuntimeEvent = RuntimeEvent;
+    type AccountId = u64;
     type Currency = Balances;
     type PalletId = PotPalletId;
 }
