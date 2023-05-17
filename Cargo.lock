@@ -2340,7 +2340,7 @@ dependencies = [
 [[package]]
 name = "fc-cli"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "clap",
  "ethereum-types",
@@ -2358,7 +2358,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "async-trait",
  "fc-db",
@@ -2376,7 +2376,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "fp-storage",
  "kvdb-rocksdb",
@@ -2395,7 +2395,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -2413,7 +2413,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2455,7 +2455,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2468,7 +2468,7 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2635,7 +2635,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -2647,7 +2647,7 @@ dependencies = [
 [[package]]
 name = "fp-dynamic-fee"
 version = "1.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "async-trait",
  "sp-core",
@@ -2657,7 +2657,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2671,7 +2671,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "evm",
  "frame-support",
@@ -2685,7 +2685,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2701,7 +2701,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -2713,7 +2713,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -3662,9 +3662,11 @@ dependencies = [
  "pallet-ethereum-chain-id",
  "pallet-evm",
  "pallet-evm-accounts-mapping",
+ "pallet-evm-balances",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
+ "pallet-evm-system",
  "pallet-grandpa",
  "pallet-humanode-session",
  "pallet-im-online",
@@ -5805,7 +5807,7 @@ dependencies = [
 [[package]]
 name = "pallet-base-fee"
 version = "1.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -5881,7 +5883,7 @@ dependencies = [
 [[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "fp-dynamic-fee",
  "fp-evm",
@@ -5898,7 +5900,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -5937,7 +5939,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "environmental",
  "evm",
@@ -5975,9 +5977,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-balances"
+version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "fp-evm",
  "num",
@@ -5986,7 +6002,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "fp-evm",
  "tiny-keccak",
@@ -5995,11 +6011,25 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#f8c9346efc3551e598bd26ed6d390a75450b9843"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
 dependencies = [
  "fp-evm",
  "ripemd",
  "sp-io",
+]
+
+[[package]]
+name = "pallet-evm-system"
+version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=frame-evm-balances#108650bbc3a4aa6d3a9412d47c3f124c3623cbff"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -10716,7 +10746,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if",
  "digest 0.10.6",
- "rand 0.7.3",
+ "rand 0.8.5",
  "static_assertions",
 ]
 
