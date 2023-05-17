@@ -401,18 +401,21 @@ type PotInstanceTokenClaims = pallet_pot::Instance3;
 
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
     type RuntimeEvent = RuntimeEvent;
+    type AccountId = AccountId;
     type PalletId = TreasuryPotPalletId;
     type Currency = Balances;
 }
 
 impl pallet_pot::Config<PotInstanceFees> for Runtime {
     type RuntimeEvent = RuntimeEvent;
+    type AccountId = AccountId;
     type PalletId = FeesPotPalletId;
     type Currency = Balances;
 }
 
 impl pallet_pot::Config<PotInstanceTokenClaims> for Runtime {
     type RuntimeEvent = RuntimeEvent;
+    type AccountId = AccountId;
     type PalletId = TokenClaimsPotPalletId;
     type Currency = Balances;
 }
