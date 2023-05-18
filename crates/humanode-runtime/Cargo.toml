@@ -54,9 +54,11 @@ pallet-base-fee = { default-features = false, git = "https://github.com/humanode
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+pallet-evm-balances = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
+pallet-evm-system = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "frame-evm-balances" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-multisig = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
@@ -159,6 +161,8 @@ std = [
   "pallet-evm-precompile-sha3fips/std",
   "pallet-evm-precompile-simple/std",
   "pallet-evm/std",
+  "pallet-evm-balances/std",
+  "pallet-evm-system/std",
   "pallet-grandpa/std",
   "pallet-humanode-session/std",
   "pallet-im-online/std",
