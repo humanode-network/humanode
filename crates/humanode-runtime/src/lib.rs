@@ -643,8 +643,7 @@ impl pallet_evm_balances::Config for Runtime {
     type Balance = Balance;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = EvmSystem;
-    // type DustRemoval = EvmTreasuryPot;
-    type DustRemoval = ();
+    type DustRemoval = EvmTreasuryPot;
 }
 
 pub struct EvmAccountProvider;
