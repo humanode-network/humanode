@@ -382,6 +382,7 @@ fn testnet_genesis(
         base_fee: Default::default(),
         transaction_payment: Default::default(),
         fees_pot: Default::default(),
+        evm_fees_pot: Default::default(),
         treasury_pot: Default::default(),
         evm_treasury_pot: Default::default(),
         token_claims_pot: Default::default(),

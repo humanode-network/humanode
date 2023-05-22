@@ -396,7 +396,7 @@ parameter_types! {
     pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
     pub const EvmTreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr2");
     pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
-    // pub const EvmFeesPotPalletId: PalletId = PalletId(*b"hmnd/fe2");
+    pub const EvmFeesPotPalletId: PalletId = PalletId(*b"hmnd/fe2");
     pub const TokenClaimsPotPalletId: PalletId = PalletId(*b"hmnd/tc1");
 }
 
@@ -404,7 +404,7 @@ type PotInstanceTreasury = pallet_pot::Instance1;
 type PotInstanceFees = pallet_pot::Instance2;
 type PotInstanceTokenClaims = pallet_pot::Instance3;
 type PotInstanceEvmTreasury = pallet_pot::Instance4;
-// type PotInstanceEvmFees = pallet_pot::Instance5;
+type PotInstanceEvmFees = pallet_pot::Instance5;
 
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
     type RuntimeEvent = RuntimeEvent;
@@ -427,19 +427,19 @@ impl pallet_pot::Config<PotInstanceFees> for Runtime {
     type Currency = Balances;
 }
 
+impl pallet_pot::Config<PotInstanceEvmFees> for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = EvmAccountId;
+    type PalletId = EvmFeesPotPalletId;
+    type Currency = EvmBalances;
+}
+
 impl pallet_pot::Config<PotInstanceTokenClaims> for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = AccountId;
     type PalletId = TokenClaimsPotPalletId;
     type Currency = Balances;
 }
-
-// impl pallet_pot::Config<PotInstanceEvmFees> for Runtime {
-//     type RuntimeEvent = RuntimeEvent;
-//     type AccountId = EvmAccountId;
-//     type PalletId = EvmFeesPotPalletId;
-//     type Currency = EvmBalances;
-// }
 
 impl pallet_balances::Config for Runtime {
     type MaxLocks = ConstU32<50>;
@@ -832,7 +832,7 @@ construct_runtime!(
         EvmSystem: pallet_evm_system = 31,
         EvmBalances: pallet_evm_balances = 32,
         EvmTreasuryPot: pallet_pot::<Instance4> = 33,
-        // EvmFeesPot: pallet_pot::<Instance5> = 34,
+        EvmFeesPot: pallet_pot::<Instance5> = 34,
     }
 );
 
