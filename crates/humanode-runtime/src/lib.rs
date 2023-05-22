@@ -394,7 +394,7 @@ impl pallet_authorship::Config for Runtime {
 
 parameter_types! {
     pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
-    // pub const EvmTreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr2");
+    pub const EvmTreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr2");
     pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
     // pub const EvmFeesPotPalletId: PalletId = PalletId(*b"hmnd/fe2");
     pub const TokenClaimsPotPalletId: PalletId = PalletId(*b"hmnd/tc1");
@@ -403,7 +403,7 @@ parameter_types! {
 type PotInstanceTreasury = pallet_pot::Instance1;
 type PotInstanceFees = pallet_pot::Instance2;
 type PotInstanceTokenClaims = pallet_pot::Instance3;
-// type PotInstanceEvmTreasury = pallet_pot::Instance4;
+type PotInstanceEvmTreasury = pallet_pot::Instance4;
 // type PotInstanceEvmFees = pallet_pot::Instance5;
 
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
@@ -413,12 +413,12 @@ impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
     type Currency = Balances;
 }
 
-// impl pallet_pot::Config<PotInstanceEvmTreasury> for Runtime {
-//     type RuntimeEvent = RuntimeEvent;
-//     type AccountId = EvmAccountId;
-//     type PalletId = EvmTreasuryPotPalletId;
-//     type Currency = Balances;
-// }
+impl pallet_pot::Config<PotInstanceEvmTreasury> for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = EvmAccountId;
+    type PalletId = EvmTreasuryPotPalletId;
+    type Currency = EvmBalances;
+}
 
 impl pallet_pot::Config<PotInstanceFees> for Runtime {
     type RuntimeEvent = RuntimeEvent;
@@ -832,7 +832,7 @@ construct_runtime!(
         Utility: pallet_utility = 30,
         EvmSystem: pallet_evm_system = 31,
         EvmBalances: pallet_evm_balances = 32,
-        // EvmTreasuryPot: pallet_pot::<Instance4> = 33,
+        EvmTreasuryPot: pallet_pot::<Instance4> = 33,
         // EvmFeesPot: pallet_pot::<Instance5> = 34,
     }
 );

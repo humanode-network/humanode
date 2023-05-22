@@ -383,6 +383,7 @@ fn testnet_genesis(
         transaction_payment: Default::default(),
         fees_pot: Default::default(),
         treasury_pot: Default::default(),
+        evm_treasury_pot: Default::default(),
         token_claims_pot: Default::default(),
         token_claims: TokenClaimsConfig {
             claims: vec![(
