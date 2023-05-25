@@ -1,5 +1,7 @@
 //! Tests to verify the fee prices.
 
+use std::collections::BTreeMap;
+
 use super::*;
 use crate::dev_utils::*;
 use crate::opaque::SessionKeys;
@@ -52,6 +54,30 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         },
         bootnodes: BootnodesConfig {
             bootnodes: bootnodes.try_into().unwrap(),
+        },
+        evm: EVMConfig {
+            accounts: {
+                let mut map = BTreeMap::new();
+                map.insert(
+                    EvmTreasuryPot::account_id(),
+                    fp_evm::GenesisAccount {
+                        balance: INIT_BALANCE.into(),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
+                map.insert(
+                    EvmFeesPot::account_id(),
+                    fp_evm::GenesisAccount {
+                        balance: INIT_BALANCE.into(),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
+                map
+            },
         },
         ..Default::default()
     };
