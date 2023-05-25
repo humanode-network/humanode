@@ -8,9 +8,9 @@ use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, token_claims::types::ClaimInfo, AccountId, BabeConfig, Balance,
     BalancesConfig, BioauthConfig, BootnodesConfig, ChainPropertiesConfig, EVMConfig,
-    EthereumAddress, EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig,
-    GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig,
-    SystemConfig, TokenClaimsConfig, WASM_BINARY,
+    EthereumAddress, EthereumChainIdConfig, EthereumConfig, GenesisConfig, GrandpaConfig,
+    ImOnlineConfig, SessionConfig, Signature, SudoConfig, SystemConfig, TokenClaimsConfig,
+    WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -241,13 +241,6 @@ const EXISTENTIAL_DEPOSIT: Balance = 500;
 /// The initial pot accounts balance for testnet genesis.
 const INITIAL_POT_ACCOUNT_BALANCE: Balance = EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE;
 
-/// An Ethereum dev account; we call this one "Gerald".
-/// Private key: `0x99b3c12287537e38c90a9219d4cb074a89a16e9cdb20bf85728ebd97c343e342`.
-/// This is an Ethereum ECDSA compatible account, so it can be used in
-/// Ethereum wallets and dapps to interface with Ethereum-compatible networks
-/// (like our network!).
-const ETHEREUM_ADDRESS_GERALD: [u8; 20] = hex!("6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b");
-
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
@@ -371,6 +364,24 @@ fn testnet_genesis(
                         balance: U256::from(1_000_000_000_000_000_000_000_000u128),
                         storage: Default::default(),
                         code: vec![0x00],
+                    },
+                );
+                map.insert(
+                    humanode_runtime::EvmTreasuryPot::account_id(),
+                    fp_evm::GenesisAccount {
+                        balance: INITIAL_POT_ACCOUNT_BALANCE.into(),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
+                map.insert(
+                    humanode_runtime::EvmFeesPot::account_id(),
+                    fp_evm::GenesisAccount {
+                        balance: INITIAL_POT_ACCOUNT_BALANCE.into(),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
                     },
                 );
                 map
