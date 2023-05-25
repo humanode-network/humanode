@@ -45,7 +45,13 @@ fn works() {
         "treasuryPot": {
             "initialState": "Initialized"
         },
+        "evmTreasuryPot": {
+            "initialState": "Initialized"
+        },
         "feesPot": {
+            "initialState": "Initialized"
+        },
+        "evmFeesPot": {
             "initialState": "Initialized"
         },
         "tokenClaimsPot": {
@@ -81,7 +87,20 @@ fn works() {
         },
         "ethereum": {},
         "evm": {
-            "accounts": {}
+            "accounts": {
+                "0x6d6f646c686d6e642f6665320000000000000000": {
+                    "nonce": "0x0",
+                    "balance": "0xd3c21bcecceda10001f4",
+                    "storage": {},
+                    "code": []
+                },
+                "0x6d6f646c686d6e642f7472320000000000000000": {
+                    "nonce": "0x0",
+                    "balance": "0xd3c21bcecceda10001f4",
+                    "storage": {},
+                    "code": []
+                }
+            }
         },
         "dynamicFee": {
             "minGasPrice": "0x0"
@@ -119,7 +138,7 @@ fn unknown_field() {
         `system`, `bootnodes`, `bioauth`, `babe`, `balances`, `treasuryPot`, \
         `feesPot`, `tokenClaimsPot`, `transactionPayment`, `session`, `chainProperties`, \
         `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, `dynamicFee`, `baseFee`, \
-        `imOnline`, `evmAccountsMapping`, `tokenClaims` at line 1 column 6"
+        `imOnline`, `evmAccountsMapping`, `tokenClaims`, `evmTreasuryPot`, `evmFeesPot` at line 1 column 6"
     );
 }
 
