@@ -58,24 +58,14 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         evm: EVMConfig {
             accounts: {
                 let mut map = BTreeMap::new();
-                map.insert(
-                    EvmTreasuryPot::account_id(),
-                    fp_evm::GenesisAccount {
-                        balance: INIT_BALANCE.into(),
-                        code: Default::default(),
-                        nonce: Default::default(),
-                        storage: Default::default(),
-                    },
-                );
-                map.insert(
-                    EvmFeesPot::account_id(),
-                    fp_evm::GenesisAccount {
-                        balance: INIT_BALANCE.into(),
-                        code: Default::default(),
-                        nonce: Default::default(),
-                        storage: Default::default(),
-                    },
-                );
+                let init_genesis_account = fp_evm::GenesisAccount {
+                    balance: INIT_BALANCE.into(),
+                    code: Default::default(),
+                    nonce: Default::default(),
+                    storage: Default::default(),
+                };
+                map.insert(EvmTreasuryPot::account_id(), init_genesis_account.clone());
+                map.insert(EvmFeesPot::account_id(), init_genesis_account);
                 map
             },
         },
