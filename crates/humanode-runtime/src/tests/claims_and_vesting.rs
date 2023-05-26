@@ -3,6 +3,8 @@
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
 
+use std::collections::BTreeMap;
+
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
 use frame_support::{
@@ -177,6 +179,20 @@ fn new_test_ext() -> sp_io::TestExternalities {
             total_claimable: Some(2 * VESTING_BALANCE),
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1 },
+        evm: EVMConfig {
+            accounts: {
+                let mut map = BTreeMap::new();
+                let init_genesis_account = fp_evm::GenesisAccount {
+                    balance: INIT_BALANCE.into(),
+                    code: Default::default(),
+                    nonce: Default::default(),
+                    storage: Default::default(),
+                };
+                map.insert(EvmTreasuryPot::account_id(), init_genesis_account.clone());
+                map.insert(EvmFeesPot::account_id(), init_genesis_account);
+                map
+            },
+        },
         ..Default::default()
     };
     let storage = config.build_storage().unwrap();
@@ -256,7 +272,13 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         "treasuryPot": {{
             "initialState": "Initialized"
         }},
+        "evmTreasuryPot": {{
+            "initialState": "Initialized"
+        }},
         "feesPot": {{
+            "initialState": "Initialized"
+        }},
+        "evmFeesPot": {{
             "initialState": "Initialized"
         }},
         "tokenClaimsPot": {{
@@ -292,7 +314,20 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         }},
         "ethereum": {{}},
         "evm": {{
-            "accounts": {{}}
+            "accounts": {{
+                "0x6d6f646c686d6e642f6665320000000000000000": {{
+                    "nonce": "0x0",
+                    "balance": "0xd3c21bcecceda10001f4",
+                    "storage": {{}},
+                    "code": []
+                }},
+                "0x6d6f646c686d6e642f7472320000000000000000": {{
+                    "nonce": "0x0",
+                    "balance": "0xd3c21bcecceda10001f4",
+                    "storage": {{}},
+                    "code": []
+                }}
+            }}
         }},
         "dynamicFee": {{
             "minGasPrice": "0x0"
