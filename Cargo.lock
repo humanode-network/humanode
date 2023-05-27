@@ -3636,6 +3636,8 @@ dependencies = [
  "eip712-common",
  "eip712-common-test-utils",
  "eip712-token-claim",
+ "ethereum",
+ "fp-evm",
  "fp-rpc",
  "fp-self-contained",
  "frame-benchmarking",
