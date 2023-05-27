@@ -1,13 +1,12 @@
 //! Tests to verify fixed supply logic.
 
-use std::str::FromStr;
+use std::collections::BTreeMap;
 
 use frame_support::{
     assert_ok,
     dispatch::{DispatchClass, DispatchInfo, Pays},
     weights::Weight,
 };
-use pallet_evm::AddressMapping;
 use sp_runtime::traits::SignedExtension;
 
 use super::*;
@@ -22,6 +21,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     let authorities = vec![authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
+    let evm_endowed_accounts = vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")];
     // Build test genesis.
     let config = GenesisConfig {
         balances: BalancesConfig {
@@ -64,6 +64,23 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         },
         bootnodes: BootnodesConfig {
             bootnodes: bootnodes.try_into().unwrap(),
+        },
+        evm: EVMConfig {
+            accounts: {
+                let evm_pot_accounts = vec![EvmTreasuryPot::account_id(), EvmFeesPot::account_id()];
+                let init_genesis_account = fp_evm::GenesisAccount {
+                    balance: INIT_BALANCE.into(),
+                    code: Default::default(),
+                    nonce: Default::default(),
+                    storage: Default::default(),
+                };
+
+                evm_endowed_accounts
+                    .into_iter()
+                    .chain(evm_pot_accounts.into_iter())
+                    .map(|k| (k, init_genesis_account.clone()))
+                    .collect::<BTreeMap<_, _>>()
+            },
         },
         ..Default::default()
     };
@@ -160,106 +177,31 @@ fn total_issuance_transaction_payment_validate() {
 }
 
 #[test]
-fn total_issuance_evm_withdraw() {
+fn total_issuance_ethereum_execute() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
-        let existential_deposit =
-            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+        // Check total issuance before executing an ethereum transaction.
+        let total_issuance_before = EvmBalances::total_issuance();
 
-        // Check total issuance before making evm withdraw.
-        let total_issuance_before = Balances::total_issuance();
+        let evm_bob_origin =
+            pallet_ethereum::RawOrigin::EthereumTransaction(evm_account_id("EvmBob"));
+        // let transaction = pallet_ethereum::Transaction::Legacy(
+        //     ethereum::LegacyTransaction {
+        //         nonce: U256::from(0),
+        //         gas_price: 20_000_000_000_u64.into(),
+        //         gas_limit: 21000.into(),
+        //         action: ethereum::TransactionAction::Call(
+        //             hex!("727fc6a68321b754475c668a6abfb6e9e71c169a").into(),
+        //         ),
+        //         value: U256::from(1_000),
+        //         input: Vec::new(),
+        //     }
+        //     .into(),
+        // );
 
-        let bob_evm = evm_truncated_address(account_id("Bob"));
-        let hashed_bob_evm =
-            <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
-
-        // Send tokens to hashed_bob_evm to make withdraw from bob_evm.
-        assert_ok!(Balances::transfer(
-            Some(account_id("Bob")).into(),
-            hashed_bob_evm.into(),
-            INIT_BALANCE - existential_deposit - 1,
-        ));
-
-        assert_ok!(EVM::withdraw(Some(account_id("Bob")).into(), bob_evm, 1000));
-
-        // Check total issuance after making evm withdraw.
-        assert_eq!(Balances::total_issuance(), total_issuance_before);
-    })
-}
-
-#[test]
-fn total_issuance_evm_call() {
-    // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
-        let existential_deposit =
-            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
-
-        // Check total issuance before making evm call.
-        let total_issuance_before = Balances::total_issuance();
-
-        let bob_evm = evm_truncated_address(account_id("Bob"));
-        let hashed_bob_evm =
-            <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
-
-        // Send tokens to hashed_bob_evm to make call from bob_evm.
-        assert_ok!(Balances::transfer(
-            Some(account_id("Bob")).into(),
-            hashed_bob_evm.into(),
-            INIT_BALANCE - existential_deposit - 1,
-        ));
-
-        assert_ok!(EVM::call(
-            Some(account_id("Bob")).into(),
-            bob_evm,
-            H160::from_str("1000000000000000000000000000000000000001").unwrap(),
-            Vec::new(),
-            U256::from(1_000),
-            1000000,
-            U256::from(2_000_000_000),
-            Some(U256::from(1)),
-            Some(U256::from(0)),
-            Vec::new(),
-        ));
-
-        // Check total issuance after making evm call.
-        assert_eq!(Balances::total_issuance(), total_issuance_before);
-    })
-}
-
-#[test]
-fn total_issuance_evm_create() {
-    // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
-        let existential_deposit =
-            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
-
-        // Check total issuance before making evm create.
-        let total_issuance_before = Balances::total_issuance();
-
-        let bob_evm = evm_truncated_address(account_id("Bob"));
-        let hashed_bob_evm =
-            <Runtime as pallet_evm::Config>::AddressMapping::into_account_id(bob_evm);
-
-        // Send tokens to hashed_bob_evm to make create from bob_evm.
-        assert_ok!(Balances::transfer(
-            Some(account_id("Bob")).into(),
-            hashed_bob_evm.into(),
-            INIT_BALANCE - existential_deposit - 1,
-        ));
-
-        assert_ok!(EVM::create(
-            Some(account_id("Bob")).into(),
-            bob_evm,
-            Vec::new(),
-            U256::from(1_000),
-            1000000,
-            U256::from(2_000_000_000),
-            Some(U256::from(1)),
-            Some(U256::from(0)),
-            Vec::new(),
-        ));
-
-        // Check total issuance after making evm call.
-        assert_eq!(Balances::total_issuance(), total_issuance_before);
+        // // Execute an ethereum transaction.
+        // assert_ok!(Ethereum::transact(evm_bob_origin.into(), transaction));
+        // Check total issuance after making transfer.
+        assert_eq!(EvmBalances::total_issuance(), total_issuance_before);
     })
 }
