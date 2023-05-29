@@ -224,6 +224,8 @@ try-runtime = [
   "pallet-ethereum/try-runtime",
   "pallet-evm-accounts-mapping/try-runtime",
   "pallet-evm/try-runtime",
+  "pallet-evm-balances/try-runtime",
+  "pallet-evm-system/try-runtime",
   "pallet-grandpa/try-runtime",
   "pallet-humanode-session/try-runtime",
   "pallet-im-online/try-runtime",
