@@ -646,31 +646,8 @@ impl pallet_evm_balances::Config for Runtime {
     type DustRemoval = EvmTreasuryPot;
 }
 
-pub struct EvmAccountProvider;
-
-impl pallet_evm::AccountProvider for EvmAccountProvider {
-    type AccountId = EvmAccountId;
-    type Index = Index;
-
-    fn create_account(who: &Self::AccountId) {
-        let _ = EvmSystem::create_account(who);
-    }
-
-    fn remove_account(who: &Self::AccountId) {
-        let _ = EvmSystem::remove_account(who);
-    }
-
-    fn account_nonce(who: &Self::AccountId) -> Self::Index {
-        EvmSystem::account_nonce(who)
-    }
-
-    fn inc_account_nonce(who: &Self::AccountId) {
-        EvmSystem::inc_account_nonce(who);
-    }
-}
-
 impl pallet_evm::Config for Runtime {
-    type AccountProvider = EvmAccountProvider;
+    type AccountProvider = EvmSystem;
     type FeeCalculator = BaseFee;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
