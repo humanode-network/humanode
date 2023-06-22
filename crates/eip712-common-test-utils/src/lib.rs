@@ -1,7 +1,7 @@
 //! Common test utils for EIP-712 typed data message construction and signature verification.
 
 use eip712_common::*;
-use ethers::types::transaction::eip712::{Eip712, TypedData};
+use ethers_core::types::transaction::eip712::{Eip712, TypedData};
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 pub use sp_core::{crypto::Pair, ecdsa, H256, U256};
 
@@ -22,18 +22,21 @@ pub fn ecdsa_sign_typed_data(pair: &ecdsa::Pair, type_data_json: &str) -> EcdsaS
     ecdsa_sign(pair, &msg_bytes)
 }
 
-/// Create an Ethereum address from the given seed.
-///
-/// This algorithm will return the addresses corresponding to the [`ecdsa::Pair`]s generated
-/// by [`ecdsa_pair`] with the same `seed`.
-pub fn ethereum_address_from_seed(seed: &[u8]) -> EthereumAddress {
-    use secp256k1::{PublicKey, Secp256k1, SecretKey};
-    let secret = SecretKey::from_slice(&keccak_256(seed)).unwrap();
-    let context = Secp256k1::signing_only();
-    let public = PublicKey::from_secret_key(&context, &secret);
+/// Create an Ethereum address from the given ECDSA keypair.
+pub fn ethereum_address(pair: &ecdsa::Pair) -> EthereumAddress {
+    let public = secp256k1::PublicKey::from_slice(&pair.public().0).unwrap();
     let mut public_bytes = [0u8; 64];
     public_bytes.copy_from_slice(&public.serialize_uncompressed()[1..]);
     let mut address = [0u8; 20];
     address.copy_from_slice(&keccak_256(&public_bytes)[12..]);
     EthereumAddress(address)
+}
+
+/// Create an Ethereum address from the given seed.
+///
+/// This algorithm will return the addresses corresponding to the [`ecdsa::Pair`]s generated
+/// by [`ecdsa_pair`] with the same `seed`.
+pub fn ethereum_address_from_seed(seed: &[u8]) -> EthereumAddress {
+    let pair = ecdsa_pair(seed);
+    ethereum_address(&pair)
 }
