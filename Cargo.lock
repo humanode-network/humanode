@@ -3658,6 +3658,7 @@ dependencies = [
  "pallet-chain-properties",
  "pallet-chain-start-moment",
  "pallet-contracts",
+ "pallet-contracts-primitives",
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
@@ -5891,6 +5892,7 @@ version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.38#9091bbcf8c8ae3524d9c46f50ab855044dcc51a2"
 dependencies = [
  "bitflags",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "impl-trait-for-tuples",
@@ -5898,7 +5900,10 @@ dependencies = [
  "pallet-contracts-primitives",
  "pallet-contracts-proc-macro",
  "parity-scale-codec",
+ "rand 0.8.5",
+ "rand_pcg",
  "scale-info",
+ "serde",
  "smallvec",
  "sp-api",
  "sp-core",

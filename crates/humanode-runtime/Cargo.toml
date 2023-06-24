@@ -52,6 +52,7 @@ pallet-babe = { default-features = false, git = "https://github.com/humanode-net
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-contracts = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+pallet-contracts-primitives = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
@@ -111,6 +112,7 @@ runtime-benchmarks = [
   "pallet-balances/runtime-benchmarks",
   "pallet-bioauth/runtime-benchmarks",
   "pallet-bootnodes/runtime-benchmarks",
+  "pallet-contracts/runtime-benchmarks",
   "pallet-ethereum/runtime-benchmarks",
   "pallet-evm-accounts-mapping/runtime-benchmarks",
   "pallet-evm/runtime-benchmarks",
@@ -152,6 +154,8 @@ std = [
   "pallet-bootnodes/std",
   "pallet-chain-properties/std",
   "pallet-chain-start-moment/std",
+  "pallet-contracts/std",
+  "pallet-contracts-primitives/std",
   "pallet-dynamic-fee/std",
   "pallet-ethereum-chain-id/std",
   "pallet-ethereum/std",
@@ -213,6 +217,7 @@ try-runtime = [
   "pallet-bootnodes/try-runtime",
   "pallet-chain-properties/try-runtime",
   "pallet-chain-start-moment/try-runtime",
+  "pallet-contracts/try-runtime",
   "pallet-dynamic-fee/try-runtime",
   "pallet-ethereum-chain-id/try-runtime",
   "pallet-ethereum/try-runtime",
