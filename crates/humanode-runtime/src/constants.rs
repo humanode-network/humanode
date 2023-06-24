@@ -98,3 +98,11 @@ pub mod fees {
     /// The multiplier to get the fee from length.
     pub const LENGTH_TO_FEE: Balance = 1;
 }
+
+/// Belances.
+pub mod balances {
+    use crate::Balance;
+
+    pub const UNIT: Balance = 10_u128.pow(18);
+    pub const MILLIUNIT: Balance = UNIT / 10_u128.pow(3);
+}
