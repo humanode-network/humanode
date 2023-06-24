@@ -726,6 +726,8 @@ impl pallet_utility::Config for Runtime {
     type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
+impl pallet_contracts::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -766,6 +768,7 @@ construct_runtime!(
         Vesting: pallet_vesting = 28,
         Multisig: pallet_multisig = 29,
         Utility: pallet_utility = 30,
+        Contracts: pallet_contracts = 31,
     }
 );
 
