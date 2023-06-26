@@ -5909,6 +5909,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-currency-swap"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.38#07429a3b559c7277fa20024587f67ae809556054"
