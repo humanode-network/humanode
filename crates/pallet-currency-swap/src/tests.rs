@@ -1,7 +1,9 @@
 //! The tests for the pallet.
 
 use frame_support::{assert_noop, assert_ok, traits::Currency};
+use mockall::predicate;
 use sp_core::H160;
+use sp_runtime::DispatchError;
 use sp_std::str::FromStr;
 
 use crate::mock::*;
@@ -18,12 +20,23 @@ fn swap_works() {
         // Prepare the test state.
         Balances::make_free_balance_be(&alice, alice_balance);
 
-        let balances_before = Balances::total_issuance();
-        let evm_balances_before = EvmBalances::total_issuance();
-
         // Check test preconditions.
         assert_eq!(Balances::total_balance(&alice), alice_balance);
         assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
+
+        // Set mock expectations.
+        let swap_ctx = MockCurrencySwap::swap_context();
+        swap_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(
+                <Balances as Currency<u64>>::NegativeImbalance::new(swap_balance),
+            ))
+            .return_once(move |_| {
+                Ok(<EvmBalances as Currency<H160>>::NegativeImbalance::new(
+                    swap_balance,
+                ))
+            });
 
         // Invoke the function under test.
         assert_ok!(CurrencySwap::swap(
@@ -38,11 +51,9 @@ fn swap_works() {
             alice_balance - swap_balance
         );
         assert_eq!(EvmBalances::total_balance(&alice_evm), swap_balance);
-        assert_eq!(Balances::total_issuance(), balances_before - swap_balance);
-        assert_eq!(
-            EvmBalances::total_issuance(),
-            evm_balances_before + swap_balance
-        );
+
+        // Assert mock invocations.
+        swap_ctx.checkpoint();
     });
 }
 
@@ -53,15 +64,28 @@ fn swap_fails() {
         let alice = 42;
         let alice_evm = H160::from_str("1000000000000000000000000000000000000001").unwrap();
         let alice_balance = 1000;
-        let swap_balance = 10000;
+        let swap_balance = 100;
 
         // Prepare the test state.
         Balances::make_free_balance_be(&alice, alice_balance);
 
+        // Set mock expectations.
+        let swap_ctx = MockCurrencySwap::swap_context();
+        swap_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(
+                <Balances as Currency<u64>>::NegativeImbalance::new(swap_balance),
+            ))
+            .return_once(move |_| Err(DispatchError::Other("currency swap failed")));
+
         // Invoke the function under test.
         assert_noop!(
             CurrencySwap::swap(RuntimeOrigin::signed(alice), alice_evm, swap_balance),
-            pallet_balances::Error::<Test>::InsufficientBalance
+            DispatchError::Other("currency swap failed")
         );
+
+        // Assert mock invocations.
+        swap_ctx.checkpoint();
     });
 }
