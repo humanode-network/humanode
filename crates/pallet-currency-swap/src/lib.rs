@@ -15,22 +15,31 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-/// The currency type related to `From` of `CurrencySwap` interface.
+/// The currency to convert from (from a given config).
 type CurrencyFromOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
     <T as frame_system::Config>::AccountId,
     <T as Config>::AccountIdTo,
 >>::From;
 
-/// The balance type related to `CurrencyFromOf`.
+/// The currency balance to convert from (from a given config).
 type BalanceFromOf<T> =
     <CurrencyFromOf<T> as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
+/// The currency to convert to (from a given config).
+type CurrencyToOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
+    <T as frame_system::Config>::AccountId,
+    <T as Config>::AccountIdTo,
+>>::To;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::pallet_prelude::*;
+    use frame_support::{
+        pallet_prelude::*,
+        traits::{ExistenceRequirement, WithdrawReasons},
+    };
     use frame_system::pallet_prelude::*;
     use sp_runtime::traits::MaybeDisplay;
     use sp_std::fmt::Debug;
@@ -68,13 +77,22 @@ pub mod pallet {
         #[pallet::weight(T::WeightInfo::swap())]
         pub fn swap(
             origin: OriginFor<T>,
-            account_id_to: T::AccountIdTo,
-            balance: BalanceFromOf<T>,
+            to: T::AccountIdTo,
+            amount: BalanceFromOf<T>,
         ) -> DispatchResult {
-            let account_id_from = ensure_signed(origin)?;
+            let who = ensure_signed(origin)?;
 
-            let _ = T::CurrencySwap::swap(&account_id_from, &account_id_to, balance)
-                .map_err(Into::into)?;
+            let from_imbalance = CurrencyFromOf::<T>::withdraw(
+                &who,
+                amount,
+                WithdrawReasons::TRANSFER,
+                ExistenceRequirement::AllowDeath,
+            )?;
+
+            let to_imbalance = T::CurrencySwap::swap(from_imbalance).map_err(Into::into)?;
+
+            CurrencyToOf::<T>::resolve_creating(&to, to_imbalance);
+
             Ok(())
         }
     }

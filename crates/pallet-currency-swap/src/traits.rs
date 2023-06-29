@@ -13,8 +13,6 @@ pub trait CurrencySwap<AccountIdFrom, AccountIdTo> {
 
     /// Swap balances.
     fn swap(
-        account_id_from: &AccountIdFrom,
-        account_id_to: &AccountIdTo,
-        amount: <Self::From as Currency<AccountIdFrom>>::Balance,
-    ) -> Result<<Self::To as Currency<AccountIdTo>>::Balance, Self::Error>;
+        imbalance: <Self::From as Currency<AccountIdFrom>>::NegativeImbalance,
+    ) -> Result<<Self::To as Currency<AccountIdTo>>::NegativeImbalance, Self::Error>;
 }
