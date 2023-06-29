@@ -15,18 +15,18 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-/// The currency to convert from (from a given config).
-type CurrencyFromOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
+/// Utility alias for easy access to [`CurrencySwap::From`] type from a given config.
+type FromCurrencyOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
     <T as frame_system::Config>::AccountId,
     <T as Config>::AccountIdTo,
 >>::From;
 
-/// The currency balance to convert from (from a given config).
-type BalanceFromOf<T> =
-    <CurrencyFromOf<T> as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+/// Utility alias for easy access to [`CurrencySwap::From::Balance`] type from a given config.
+type FromBalanceOf<T> =
+    <FromCurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
-/// The currency to convert to (from a given config).
-type CurrencyToOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
+/// Utility alias for easy access to [`CurrencySwap::To`] type from a given config.
+type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
     <T as frame_system::Config>::AccountId,
     <T as Config>::AccountIdTo,
 >>::To;
@@ -78,11 +78,11 @@ pub mod pallet {
         pub fn swap(
             origin: OriginFor<T>,
             to: T::AccountIdTo,
-            amount: BalanceFromOf<T>,
+            amount: FromBalanceOf<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let from_imbalance = CurrencyFromOf::<T>::withdraw(
+            let from_imbalance = FromCurrencyOf::<T>::withdraw(
                 &who,
                 amount,
                 WithdrawReasons::TRANSFER,
@@ -91,7 +91,7 @@ pub mod pallet {
 
             let to_imbalance = T::CurrencySwap::swap(from_imbalance).map_err(Into::into)?;
 
-            CurrencyToOf::<T>::resolve_creating(&to, to_imbalance);
+            ToCurrencyOf::<T>::resolve_creating(&to, to_imbalance);
 
             Ok(())
         }
