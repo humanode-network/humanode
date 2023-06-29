@@ -5914,7 +5914,6 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "mockall",
  "pallet-balances",
  "pallet-evm-balances",
  "pallet-evm-system",

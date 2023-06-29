@@ -10,28 +10,11 @@ use frame_support::{
         traits::{BlakeTwo256, IdentityLookup},
         BuildStorage, DispatchError,
     },
-    traits::{ConstU32, ConstU64},
+    traits::{ConstU32, ConstU64, Currency, ExistenceRequirement, Imbalance, WithdrawReasons},
 };
-use mockall::mock;
 use sp_core::{H160, H256};
 
 use crate::{self as pallet_currency_swap, traits};
-
-mock! {
-    #[derive(Debug)]
-    pub CurrencySwap {}
-    impl traits::CurrencySwap<u64, H160> for CurrencySwap {
-        type From = Balances;
-        type To = EvmBalances;
-        type Error = DispatchError;
-
-        fn swap(
-            account_id_from: &u64,
-            account_id_to: &H160,
-            amount: u64,
-        ) -> Result<u64, DispatchError>;
-    }
-}
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -107,9 +90,35 @@ impl pallet_evm_balances::Config for Test {
     type DustRemoval = ();
 }
 
+pub struct NativeToEvm;
+
+impl traits::CurrencySwap<u64, H160> for NativeToEvm {
+    type From = Balances;
+    type To = EvmBalances;
+    type Error = DispatchError;
+
+    fn swap(
+        account_id_from: &u64,
+        account_id_to: &H160,
+        amount: u64,
+    ) -> Result<u64, DispatchError> {
+        let withdraw_imbalance = Balances::withdraw(
+            account_id_from,
+            amount,
+            WithdrawReasons::TRANSFER,
+            ExistenceRequirement::AllowDeath,
+        )?;
+
+        let deposit_imbalance =
+            EvmBalances::deposit_creating(account_id_to, withdraw_imbalance.peek());
+
+        Ok(deposit_imbalance.peek())
+    }
+}
+
 impl pallet_currency_swap::Config for Test {
     type AccountIdTo = H160;
-    type CurrencySwap = MockCurrencySwap;
+    type CurrencySwap = NativeToEvm;
     type WeightInfo = ();
 }
 
