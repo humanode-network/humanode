@@ -11,6 +11,12 @@ use sp_core::{Get, H160, H256, U256};
 use sp_std::marker::PhantomData;
 use sp_std::prelude::*;
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 /// Possible actions for this interface.
 #[precompile_utils::generate_function_selector]
 #[derive(Debug, PartialEq)]
