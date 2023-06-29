@@ -6752,6 +6752,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "primitives-currency-swap"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+]
+
+[[package]]
 name = "primitives-ethereum"
 version = "0.1.0"
 dependencies = [
