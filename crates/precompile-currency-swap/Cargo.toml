@@ -1,0 +1,46 @@
+[package]
+name = "precompile-currency-swap"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+precompile-utils = { path = "../precompile-utils", default-features = false }
+primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
+
+codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
+fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+getrandom = { version = "0.2", features = ["js"] }
+num_enum = { version = "0.6.0", default-features = false }
+pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
+scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
+serde = { version = "1", features = ["derive"], optional = true }
+sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+
+[dev-dependencies]
+mockall = "0.11"
+sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+
+[features]
+default = ["std"]
+std = [
+  "codec/std",
+  "fp-evm/std",
+  "frame-support/std",
+  "frame-system/std",
+  "getrandom/std",
+  "num_enum/std",
+  "pallet-evm/std",
+  "precompile-utils/std",
+  "primitives-currency-swap/std",
+  "scale-info/std",
+  "serde",
+  "sp-core/std",
+  "sp-io/std",
+  "sp-runtime/std",
+  "sp-std/std",
+]

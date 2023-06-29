@@ -6636,6 +6636,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "precompile-currency-swap"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "getrandom 0.2.9",
+ "mockall",
+ "num_enum 0.6.0",
+ "pallet-evm",
+ "parity-scale-codec",
+ "precompile-utils",
+ "primitives-currency-swap",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "precompile-evm-accounts-mapping"
 version = "0.1.0"
 dependencies = [
