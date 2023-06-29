@@ -35,6 +35,9 @@ std = [
 try-runtime = [
   "frame-support/try-runtime",
   "frame-system/try-runtime",
+  "pallet-balances/try-runtime",
+  "pallet-evm-balances/try-runtime",
+  "pallet-evm-system/try-runtime",
   "primitives-currency-swap/try-runtime",
   "sp-runtime/try-runtime",
 ]
