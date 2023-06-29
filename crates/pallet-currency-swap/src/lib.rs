@@ -54,7 +54,7 @@ pub mod pallet {
     /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config {
-        /// The user account identifier type balances send to.
+        /// The user account identifier type to convert to.
         type AccountIdTo: Parameter
             + Member
             + MaybeSerializeDeserialize
