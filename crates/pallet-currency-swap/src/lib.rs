@@ -38,6 +38,7 @@ type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
 pub mod pallet {
     use frame_support::{
         pallet_prelude::*,
+        storage::with_storage_layer,
         traits::{ExistenceRequirement, WithdrawReasons},
     };
     use frame_system::pallet_prelude::*;
@@ -82,18 +83,20 @@ pub mod pallet {
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
-            let from_imbalance = FromCurrencyOf::<T>::withdraw(
-                &who,
-                amount,
-                WithdrawReasons::TRANSFER,
-                ExistenceRequirement::AllowDeath,
-            )?;
+            with_storage_layer(move || {
+                let from_imbalance = FromCurrencyOf::<T>::withdraw(
+                    &who,
+                    amount,
+                    WithdrawReasons::TRANSFER,
+                    ExistenceRequirement::AllowDeath,
+                )?;
 
-            let to_imbalance = T::CurrencySwap::swap(from_imbalance).map_err(Into::into)?;
+                let to_imbalance = T::CurrencySwap::swap(from_imbalance).map_err(Into::into)?;
 
-            ToCurrencyOf::<T>::resolve_creating(&to, to_imbalance);
+                ToCurrencyOf::<T>::resolve_creating(&to, to_imbalance);
 
-            Ok(())
+                Ok(())
+            })
         }
     }
 }
