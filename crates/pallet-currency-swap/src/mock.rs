@@ -90,9 +90,9 @@ impl pallet_evm_balances::Config for Test {
     type DustRemoval = ();
 }
 
-pub struct NativeToEvm;
+pub struct NativeToEvmOneToOne;
 
-impl traits::CurrencySwap<u64, H160> for NativeToEvm {
+impl traits::CurrencySwap<u64, H160> for NativeToEvmOneToOne {
     type From = Balances;
     type To = EvmBalances;
     type Error = DispatchError;
@@ -118,7 +118,7 @@ impl traits::CurrencySwap<u64, H160> for NativeToEvm {
 
 impl pallet_currency_swap::Config for Test {
     type AccountIdTo = H160;
-    type CurrencySwap = NativeToEvm;
+    type CurrencySwap = NativeToEvmOneToOne;
     type WeightInfo = ();
 }
 
