@@ -30,12 +30,10 @@ fn swap_works() {
             .expect()
             .once()
             .with(predicate::eq(
-                <Balances as Currency<u64>>::NegativeImbalance::new(swap_balance),
+                <Balances as Currency<AccountId>>::NegativeImbalance::new(swap_balance),
             ))
             .return_once(move |_| {
-                Ok(<EvmBalances as Currency<H160>>::NegativeImbalance::new(
-                    swap_balance,
-                ))
+                Ok(<EvmBalances as Currency<EvmAccountId>>::NegativeImbalance::new(swap_balance))
             });
 
         // Invoke the function under test.

@@ -20,6 +20,10 @@ use crate::{self as pallet_currency_swap, traits};
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
+pub(crate) type AccountId = u64;
+pub(crate) type EvmAccountId = H160;
+type Balance = u64;
+
 frame_support::construct_runtime!(
     pub enum Test where
         Block = Block,
@@ -45,14 +49,14 @@ impl frame_system::Config for Test {
     type BlockNumber = u64;
     type Hash = H256;
     type Hashing = BlakeTwo256;
-    type AccountId = u64;
-    type Lookup = IdentityLookup<u64>;
+    type AccountId = AccountId;
+    type Lookup = IdentityLookup<AccountId>;
     type Header = Header;
     type RuntimeEvent = RuntimeEvent;
     type BlockHashCount = ConstU64<250>;
     type Version = ();
     type PalletInfo = PalletInfo;
-    type AccountData = pallet_balances::AccountData<u64>;
+    type AccountData = pallet_balances::AccountData<Balance>;
     type OnNewAccount = ();
     type OnKilledAccount = ();
     type SystemWeightInfo = ();
@@ -75,17 +79,17 @@ impl pallet_balances::Config for Test {
 
 impl pallet_evm_system::Config for Test {
     type RuntimeEvent = RuntimeEvent;
-    type AccountId = H160;
+    type AccountId = EvmAccountId;
     type Index = u64;
-    type AccountData = pallet_evm_balances::AccountData<u64>;
+    type AccountData = pallet_evm_balances::AccountData<Balance>;
     type OnNewAccount = ();
     type OnKilledAccount = ();
 }
 
 impl pallet_evm_balances::Config for Test {
     type RuntimeEvent = RuntimeEvent;
-    type AccountId = H160;
-    type Balance = u64;
+    type AccountId = EvmAccountId;
+    type Balance = Balance;
     type ExistentialDeposit = ConstU64<1>;
     type AccountStore = EvmSystem;
     type DustRemoval = ();
@@ -94,14 +98,14 @@ impl pallet_evm_balances::Config for Test {
 mock! {
     #[derive(Debug)]
     pub CurrencySwap {}
-    impl traits::CurrencySwap<u64, H160> for CurrencySwap {
+    impl traits::CurrencySwap<AccountId, EvmAccountId> for CurrencySwap {
         type From = Balances;
         type To = EvmBalances;
         type Error = DispatchError;
 
         fn swap(
-            imbalance: <Balances as Currency<u64>>::NegativeImbalance,
-        ) -> Result<<EvmBalances as Currency<H160>>::NegativeImbalance, DispatchError>;
+            imbalance: <Balances as Currency<AccountId>>::NegativeImbalance,
+        ) -> Result<<EvmBalances as Currency<EvmAccountId>>::NegativeImbalance, DispatchError>;
     }
 }
 
