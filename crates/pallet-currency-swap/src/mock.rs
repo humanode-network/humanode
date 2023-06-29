@@ -15,7 +15,7 @@ use frame_support::{
 use mockall::mock;
 use sp_core::{H160, H256};
 
-use crate::{self as pallet_currency_swap, traits};
+use crate::{self as pallet_currency_swap};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -98,7 +98,7 @@ impl pallet_evm_balances::Config for Test {
 mock! {
     #[derive(Debug)]
     pub CurrencySwap {}
-    impl traits::CurrencySwap<AccountId, EvmAccountId> for CurrencySwap {
+    impl primitives_currency_swap::CurrencySwap<AccountId, EvmAccountId> for CurrencySwap {
         type From = Balances;
         type To = EvmBalances;
         type Error = DispatchError;

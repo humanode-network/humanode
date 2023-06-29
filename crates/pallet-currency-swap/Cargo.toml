@@ -5,6 +5,8 @@ edition = "2021"
 publish = false
 
 [dependencies]
+primitives-currency-swap = { version = "0.1", path = "../primitives-currency-swap", default-features = false }
+
 codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
@@ -21,5 +23,18 @@ sp-core = { git = "https://github.com/humanode-network/substrate", branch = "loc
 
 [features]
 default = ["std"]
-std = ["codec/std", "frame-support/std", "frame-system/std", "scale-info/std", "sp-runtime/std", "sp-std/std"]
-try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime", "sp-runtime/try-runtime"]
+std = [
+  "codec/std",
+  "frame-support/std",
+  "frame-system/std",
+  "primitives-currency-swap/std",
+  "scale-info/std",
+  "sp-runtime/std",
+  "sp-std/std",
+]
+try-runtime = [
+  "frame-support/try-runtime",
+  "frame-system/try-runtime",
+  "primitives-currency-swap/try-runtime",
+  "sp-runtime/try-runtime",
+]

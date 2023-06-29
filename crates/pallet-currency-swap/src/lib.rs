@@ -4,11 +4,10 @@
 
 use frame_support::traits::Currency;
 pub use pallet::*;
+use primitives_currency_swap::CurrencySwap as CurrencySwapT;
 pub use weights::*;
 
 pub mod weights;
-
-pub mod traits;
 
 #[cfg(test)]
 mod mock;
@@ -16,7 +15,7 @@ mod mock;
 mod tests;
 
 /// Utility alias for easy access to [`CurrencySwap::From`] type from a given config.
-type FromCurrencyOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
+type FromCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
     <T as frame_system::Config>::AccountId,
     <T as Config>::AccountIdTo,
 >>::From;
@@ -26,7 +25,7 @@ type FromBalanceOf<T> =
     <FromCurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
 /// Utility alias for easy access to [`CurrencySwap::To`] type from a given config.
-type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
+type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
     <T as frame_system::Config>::AccountId,
     <T as Config>::AccountIdTo,
 >>::To;
@@ -47,7 +46,6 @@ pub mod pallet {
     use frame_system::pallet_prelude::*;
     use sp_runtime::traits::MaybeDisplay;
     use sp_std::fmt::Debug;
-    use traits::CurrencySwap;
 
     use super::*;
 
@@ -71,7 +69,7 @@ pub mod pallet {
             + MaxEncodedLen;
 
         /// Interface into currency swap implementation.
-        type CurrencySwap: CurrencySwap<Self::AccountId, Self::AccountIdTo>;
+        type CurrencySwap: CurrencySwapT<Self::AccountId, Self::AccountIdTo>;
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;

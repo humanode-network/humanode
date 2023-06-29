@@ -5919,6 +5919,7 @@ dependencies = [
  "pallet-evm-balances",
  "pallet-evm-system",
  "parity-scale-codec",
+ "primitives-currency-swap",
  "scale-info",
  "sp-core",
  "sp-runtime",
