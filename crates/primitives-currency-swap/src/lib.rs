@@ -10,7 +10,7 @@ pub trait CurrencySwap<AccountIdFrom, AccountIdTo> {
     /// The currency to convert from.
     type From: Currency<AccountIdFrom>;
 
-    /// The currency type balances send to.
+    /// The currency to convert to.
     type To: Currency<AccountIdTo>;
 
     /// A possible error happens during the actual swap logic.
