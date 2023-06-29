@@ -7,7 +7,7 @@ use frame_support::{sp_runtime::DispatchError, traits::Currency};
 
 /// Currency swap interface.
 pub trait CurrencySwap<AccountIdFrom, AccountIdTo> {
-    /// The currency type balances send from.
+    /// The currency to convert from.
     type From: Currency<AccountIdFrom>;
 
     /// The currency type balances send to.
