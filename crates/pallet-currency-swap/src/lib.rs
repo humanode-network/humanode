@@ -53,7 +53,8 @@ pub mod pallet {
         ) -> DispatchResult {
             let account_id_from = ensure_signed(origin)?;
 
-            let _ = T::CurrencySwap::swap(&account_id_from, &account_id_to, balance)?;
+            let _ = T::CurrencySwap::swap(&account_id_from, &account_id_to, balance)
+                .map_err(Into::into)?;
             Ok(())
         }
     }
