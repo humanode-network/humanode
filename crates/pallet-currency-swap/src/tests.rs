@@ -6,7 +6,7 @@ use sp_core::H160;
 use sp_runtime::DispatchError;
 use sp_std::str::FromStr;
 
-use crate::mock::*;
+use crate::{mock::*, *};
 
 /// This test verifies that swap call works in the happy path.
 #[test]
@@ -23,6 +23,9 @@ fn swap_works() {
         // Check test preconditions.
         assert_eq!(Balances::total_balance(&alice), alice_balance);
         assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
+
+        // Set block number to enable events.
+        System::set_block_number(1);
 
         // Set mock expectations.
         let swap_ctx = MockCurrencySwap::swap_context();
@@ -49,6 +52,12 @@ fn swap_works() {
             alice_balance - swap_balance
         );
         assert_eq!(EvmBalances::total_balance(&alice_evm), swap_balance);
+        System::assert_has_event(RuntimeEvent::CurrencySwap(Event::BalancesSwapped {
+            from: alice,
+            withdrawed_amount: swap_balance,
+            to: alice_evm,
+            deposited_amount: swap_balance,
+        }));
 
         // Assert mock invocations.
         swap_ctx.checkpoint();

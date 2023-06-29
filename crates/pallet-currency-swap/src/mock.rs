@@ -110,6 +110,7 @@ mock! {
 }
 
 impl pallet_currency_swap::Config for Test {
+    type RuntimeEvent = RuntimeEvent;
     type AccountIdTo = H160;
     type CurrencySwap = MockCurrencySwap;
     type WeightInfo = ();

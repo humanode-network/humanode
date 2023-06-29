@@ -31,6 +31,9 @@ type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as traits::CurrencySwap<
     <T as Config>::AccountIdTo,
 >>::To;
 
+/// Utility alias for easy access to [`CurrencySwap::To::Balance`] type from a given config.
+type ToBalanceOf<T> = <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>::Balance;
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -39,7 +42,7 @@ pub mod pallet {
     use frame_support::{
         pallet_prelude::*,
         storage::with_storage_layer,
-        traits::{ExistenceRequirement, WithdrawReasons},
+        traits::{ExistenceRequirement, Imbalance, WithdrawReasons},
     };
     use frame_system::pallet_prelude::*;
     use sp_runtime::traits::MaybeDisplay;
@@ -55,6 +58,9 @@ pub mod pallet {
     /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config {
+        /// Overarching event type.
+        type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
         /// The user account identifier type to convert to.
         type AccountIdTo: Parameter
             + Member
@@ -71,6 +77,22 @@ pub mod pallet {
         type WeightInfo: WeightInfo;
     }
 
+    #[pallet::event]
+    #[pallet::generate_deposit(pub(super) fn deposit_event)]
+    pub enum Event<T: Config> {
+        /// Balances were swapped.
+        BalancesSwapped {
+            /// The account id balances withdrawed from.
+            from: T::AccountId,
+            /// The withdrawed balances amount.
+            withdrawed_amount: FromBalanceOf<T>,
+            /// The account id balances deposited to.
+            to: T::AccountIdTo,
+            /// The deposited balances amount.
+            deposited_amount: ToBalanceOf<T>,
+        },
+    }
+
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Swap balances.
@@ -84,16 +106,26 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
 
             with_storage_layer(move || {
-                let from_imbalance = FromCurrencyOf::<T>::withdraw(
+                let withdrawed_imbalance = FromCurrencyOf::<T>::withdraw(
                     &who,
                     amount,
                     WithdrawReasons::TRANSFER,
                     ExistenceRequirement::AllowDeath,
                 )?;
+                let withdrawed_amount = withdrawed_imbalance.peek();
 
-                let to_imbalance = T::CurrencySwap::swap(from_imbalance).map_err(Into::into)?;
+                let deposited_imbalance =
+                    T::CurrencySwap::swap(withdrawed_imbalance).map_err(Into::into)?;
+                let deposited_amount = deposited_imbalance.peek();
 
-                ToCurrencyOf::<T>::resolve_creating(&to, to_imbalance);
+                ToCurrencyOf::<T>::resolve_creating(&to, deposited_imbalance);
+
+                Self::deposit_event(Event::BalancesSwapped {
+                    from: who,
+                    withdrawed_amount,
+                    to,
+                    deposited_amount,
+                });
 
                 Ok(())
             })
