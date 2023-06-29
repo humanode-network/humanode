@@ -9,6 +9,11 @@ pub mod weights;
 
 pub mod traits;
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
