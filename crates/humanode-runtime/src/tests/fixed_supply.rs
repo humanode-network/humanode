@@ -67,7 +67,6 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         },
         evm: EVMConfig {
             accounts: {
-                let evm_pot_accounts = vec![EvmTreasuryPot::account_id(), EvmFeesPot::account_id()];
                 let init_genesis_account = fp_evm::GenesisAccount {
                     balance: INIT_BALANCE.into(),
                     code: Default::default(),
@@ -77,7 +76,6 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 
                 evm_endowed_accounts
                     .into_iter()
-                    .chain(evm_pot_accounts.into_iter())
                     .map(|k| (k, init_genesis_account.clone()))
                     .collect::<BTreeMap<_, _>>()
             },
@@ -186,7 +184,7 @@ fn total_issuance_ethereum_execute() {
         let evm_bob_origin =
             pallet_ethereum::RawOrigin::EthereumTransaction(evm_account_id("EvmBob"));
 
-        // This test legacy data transaction obtained from 
+        // This test legacy data transaction obtained from
         // <https://github.com/rust-blockchain/ethereum/blob/0ffbe47d1da71841be274442a3050da9c895e10a/src/transaction.rs#L788>.
         let legacy_transaction = pallet_ethereum::Transaction::Legacy(ethereum::LegacyTransaction {
 			nonce: 0.into(),

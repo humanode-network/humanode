@@ -340,24 +340,9 @@ fn testnet_genesis(
         },
         evm: EVMConfig {
             accounts: {
-                let evm_pot_accounts = vec![
-                    (
-                        humanode_runtime::EvmTreasuryPot::account_id(),
-                        evm_non_system_genesis_account(INITIAL_POT_ACCOUNT_BALANCE),
-                    ),
-                    (
-                        humanode_runtime::EvmFeesPot::account_id(),
-                        evm_non_system_genesis_account(INITIAL_POT_ACCOUNT_BALANCE),
-                    ),
-                ];
-
-                evm_pot_accounts
+                evm_endowed_accounts
                     .into_iter()
-                    .chain(
-                        evm_endowed_accounts
-                            .into_iter()
-                            .map(|k| (k, evm_non_system_genesis_account(DEV_ACCOUNT_BALANCE))),
-                    )
+                    .map(|k| (k, evm_non_system_genesis_account(DEV_ACCOUNT_BALANCE)))
                     .collect::<BTreeMap<_, _>>()
             },
         },
@@ -367,9 +352,7 @@ fn testnet_genesis(
         base_fee: Default::default(),
         transaction_payment: Default::default(),
         fees_pot: Default::default(),
-        evm_fees_pot: Default::default(),
         treasury_pot: Default::default(),
-        evm_treasury_pot: Default::default(),
         token_claims_pot: Default::default(),
         token_claims: TokenClaimsConfig {
             claims: vec![(
