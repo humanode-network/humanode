@@ -14,23 +14,23 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-/// Utility alias for easy access to [`CurrencySwap::From`] type from a given config.
+/// Utility alias for easy access to [`primitives_currency_swap::CurrencySwap::From`] type from a given config.
 type FromCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
     <T as frame_system::Config>::AccountId,
     <T as Config>::AccountIdTo,
 >>::From;
 
-/// Utility alias for easy access to [`CurrencySwap::From::Balance`] type from a given config.
+/// The currency balance to convert from.
 type FromBalanceOf<T> =
     <FromCurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
-/// Utility alias for easy access to [`CurrencySwap::To`] type from a given config.
+/// Utility alias for easy access to [`primitives_currency_swap::CurrencySwap::To`] type from a given config.
 type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
     <T as frame_system::Config>::AccountId,
     <T as Config>::AccountIdTo,
 >>::To;
 
-/// Utility alias for easy access to [`CurrencySwap::To::Balance`] type from a given config.
+/// The currency balance to convert to.
 type ToBalanceOf<T> = <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>::Balance;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
