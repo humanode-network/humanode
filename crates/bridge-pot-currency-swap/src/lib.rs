@@ -4,63 +4,45 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
-    sp_runtime::DispatchError,
-    traits::{Currency, ExistenceRequirement, Get, Imbalance, WithdrawReasons},
+    sp_runtime::traits::Convert,
+    traits::{Currency, Get},
 };
-use primitives_currency_swap::CurrencySwap;
 use sp_std::marker::PhantomData;
 
+pub mod existence_optional;
+pub mod existence_required;
+
+pub use existence_optional::Marker as ExistenceOptional;
+pub use existence_required::Marker as ExistenceRequired;
+
 /// The config for the generic bridge pot currency swap logic.
-pub trait Config<AccountIdFrom, AccountIdTo> {
-    /// The pot account used to receive withdrawed balances to.
-    type PotFrom: Get<AccountIdFrom>;
+pub trait Config {
+    /// The type representing the account for the currency to swap from.
+    type AccountFrom;
 
-    /// The pot account used to send deposited balances from.
-    type PotTo: Get<AccountIdTo>;
+    /// The type representing the account for the currency to swap to.
+    type AccountTo;
+
+    /// The currency to swap from.
+    type CurrencyFrom: Currency<Self::AccountFrom>;
+
+    /// The currency to swap to.
+    type CurrencyTo: Currency<Self::AccountTo>;
+
+    /// The converter to determine how the balance amount should be converted from one currency to
+    /// another.
+    type BalanceCoverter: Convert<
+        <Self::CurrencyFrom as Currency<Self::AccountFrom>>::Balance,
+        <Self::CurrencyTo as Currency<Self::AccountTo>>::Balance,
+    >;
+
+    /// The account to land the balances to when receiving the funds as part of the swap operation.
+    type PotFrom: Get<Self::AccountFrom>;
+
+    /// The account to take the balances from when sending the funds as part of the swap operation.
+    type PotTo: Get<Self::AccountTo>;
 }
 
-/// One to one bridge pot currency swap logic.
-pub struct OneToOne<AccountIdFrom, AccountIdTo, ConfigT, CurrencyFrom, CurrencyTo>(
-    PhantomData<(
-        AccountIdFrom,
-        AccountIdTo,
-        ConfigT,
-        CurrencyFrom,
-        CurrencyTo,
-    )>,
-)
-where
-    ConfigT: Config<AccountIdFrom, AccountIdTo>,
-    CurrencyFrom: Currency<AccountIdFrom>,
-    CurrencyTo: Currency<AccountIdTo>;
-
-impl<AccountIdFrom, AccountIdTo, ConfigT, CurrencyFrom, CurrencyTo>
-    CurrencySwap<AccountIdFrom, AccountIdTo>
-    for OneToOne<AccountIdFrom, AccountIdTo, ConfigT, CurrencyFrom, CurrencyTo>
-where
-    ConfigT: Config<AccountIdFrom, AccountIdTo>,
-    CurrencyFrom: Currency<AccountIdFrom>,
-    CurrencyTo: Currency<AccountIdTo>,
-    CurrencyTo::Balance: From<CurrencyFrom::Balance>,
-{
-    type From = CurrencyFrom;
-    type To = CurrencyTo;
-    type Error = DispatchError;
-
-    fn swap(
-        imbalance: CurrencyFrom::NegativeImbalance,
-    ) -> Result<CurrencyTo::NegativeImbalance, DispatchError> {
-        let amount = imbalance.peek();
-
-        CurrencyFrom::resolve_creating(&ConfigT::PotFrom::get(), imbalance);
-
-        let imbalance = CurrencyTo::withdraw(
-            &ConfigT::PotTo::get(),
-            amount.into(),
-            WithdrawReasons::TRANSFER,
-            ExistenceRequirement::AllowDeath,
-        )?;
-
-        Ok(imbalance)
-    }
-}
+/// A [`primitives_currency_swap::CurrencySwap`] implementation that does the swap using two
+/// "pot" accounts for each of end swaped currencies.
+pub struct CurrencySwap<T: Config, ExistenceRequirement>(PhantomData<(T, ExistenceRequirement)>);
