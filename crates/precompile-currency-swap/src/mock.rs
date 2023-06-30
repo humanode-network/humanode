@@ -3,7 +3,7 @@
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
 
-use fp_evm::{Context, ExitError, ExitReason, PrecompileHandle, Transfer};
+use fp_evm::PrecompileHandle;
 use frame_support::{
     once_cell::sync::Lazy,
     sp_io,
@@ -191,39 +191,6 @@ mock! {
         fn swap(
             imbalance: <EvmBalances as Currency<EvmAccountId>>::NegativeImbalance,
         ) -> Result<<Balances as Currency<AccountId>>::NegativeImbalance, DispatchError>;
-    }
-}
-
-mock! {
-    #[derive(Debug)]
-    pub PrecompileHandle {}
-
-    impl PrecompileHandle for PrecompileHandle {
-        fn call(
-            &mut self,
-            to: sp_core::H160,
-            transfer: Option<Transfer>,
-            input: Vec<u8>,
-            gas_limit: Option<u64>,
-            is_static: bool,
-            context: &Context,
-        ) -> (ExitReason, Vec<u8>);
-
-        fn record_cost(&mut self, cost: u64) -> Result<(), ExitError>;
-
-        fn remaining_gas(&self) -> u64;
-
-        fn log(&mut self, address: sp_core::H160, topics: Vec<sp_core::H256>, data: Vec<u8>) -> Result<(), ExitError>;
-
-        fn code_address(&self) -> sp_core::H160;
-
-        fn input(&self) -> &[u8];
-
-        fn context(&self) -> &Context;
-
-        fn is_static(&self) -> bool;
-
-        fn gas_limit(&self) -> Option<u64>;
     }
 }
 
