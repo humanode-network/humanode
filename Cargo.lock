@@ -6671,7 +6671,6 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "getrandom 0.2.9",
  "hex-literal",
  "mockall",
  "num_enum 0.6.0",
@@ -6684,11 +6683,7 @@ dependencies = [
  "precompile-utils",
  "primitives-currency-swap",
  "scale-info",
- "serde",
  "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]

@@ -2,15 +2,17 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::tokens::currency::Currency;
+use frame_support::{
+    sp_runtime,
+    sp_std::{marker::PhantomData, prelude::*},
+    traits::tokens::currency::Currency,
+};
 use pallet_evm::{
     ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
     PrecompileResult,
 };
 use precompile_utils::{succeed, EvmDataWriter, EvmResult, PrecompileHandleExt};
 use sp_core::{Get, H160, H256, U256};
-use sp_std::marker::PhantomData;
-use sp_std::prelude::*;
 
 #[cfg(test)]
 mod mock;
