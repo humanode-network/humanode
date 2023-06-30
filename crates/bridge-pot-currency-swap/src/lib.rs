@@ -5,9 +5,9 @@
 
 use frame_support::{
     sp_runtime::traits::Convert,
+    sp_std::marker::PhantomData,
     traits::{Currency, Get},
 };
-use sp_std::marker::PhantomData;
 
 pub mod existence_optional;
 pub mod existence_required;

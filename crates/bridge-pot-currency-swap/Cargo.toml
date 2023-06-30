@@ -8,9 +8,8 @@ publish = false
 primitives-currency-swap = { version = "0.1", path = "../primitives-currency-swap", default-features = false }
 
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
 [features]
 default = ["std"]
-std = ["frame-support/std", "primitives-currency-swap/std", "sp-std/std"]
+std = ["frame-support/std", "primitives-currency-swap/std"]
 try-runtime = ["frame-support/try-runtime", "primitives-currency-swap/try-runtime"]
