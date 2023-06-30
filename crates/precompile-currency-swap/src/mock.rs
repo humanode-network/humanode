@@ -83,7 +83,7 @@ impl pallet_balances::Config for Test {
     type Balance = Balance;
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
-    type ExistentialDeposit = ConstU128<1>;
+    type ExistentialDeposit = ConstU128<2>; // 2 because we test the account kills via 1 balance
     type AccountStore = System;
     type MaxLocks = ();
     type MaxReserves = ();
