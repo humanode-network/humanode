@@ -182,7 +182,7 @@ fn swap_works_almost_full_balance() {
 
 /// This test verifies that the swap precompile call behaves as expected when called without
 /// the sufficient balance.
-/// The fee is not withdrawn, and neither is the value.
+/// The fee is not consumed, and neither is the value.
 #[test]
 fn swap_fail_no_funds() {
     new_test_ext().execute_with_ext(|_| {
@@ -251,7 +251,7 @@ fn swap_fail_no_funds() {
 
 /// This test verifies that the swap precompile call behaves as expected when the currency swap
 /// implementation fails.
-/// The fee is withdrawn, but the value is not.
+/// The fee is consumed, but the value is not.
 /// The error message is checked to be correct.
 #[test]
 fn swap_fail_trait_error() {
@@ -265,7 +265,7 @@ fn swap_fail_trait_error() {
         let alice_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
-        let expected_gas_usage: u64 = 50_123; // all the allowed fee will be withdrawn
+        let expected_gas_usage: u64 = 50_123; // all the allowed fee will be consumed
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
