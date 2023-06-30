@@ -22,17 +22,17 @@ fn swap_works() {
         let alice = AccountId::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
-        let alice_balance = 100 * 10u128.pow(18);
+        let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
         let expected_gas_usage: u64 = 21216 + 200;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -85,7 +85,7 @@ fn swap_works() {
         // Assert state changes.
         assert_eq!(
             EvmBalances::total_balance(&alice_evm),
-            alice_balance - swap_balance - expected_fee
+            alice_evm_balance - swap_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), swap_balance);
 
@@ -110,14 +110,14 @@ fn swap_works_almost_full_balance() {
         let expected_gas_usage: u64 = 21216 + 200;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
-        let alice_balance = 100 * 10u128.pow(18);
+        let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 100 * 10u128.pow(18) - expected_fee - 1;
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -170,7 +170,7 @@ fn swap_works_almost_full_balance() {
         // Assert state changes.
         assert_eq!(
             EvmBalances::total_balance(&alice_evm),
-            alice_balance - swap_balance - expected_fee
+            alice_evm_balance - swap_balance - expected_fee
         );
         assert_eq!(EvmBalances::total_balance(&alice_evm), 1);
         assert_eq!(Balances::total_balance(&alice), swap_balance);
@@ -192,14 +192,14 @@ fn swap_fail_no_funds() {
         let alice = AccountId::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
-        let alice_balance = 100 * 10u128.pow(18);
+        let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 1000 * 10u128.pow(18); // more than we have
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -241,7 +241,7 @@ fn swap_fail_no_funds() {
         );
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Assert mock invocations.
@@ -262,17 +262,17 @@ fn swap_fail_trait_error() {
         let alice = AccountId::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
-        let alice_balance = 100 * 10u128.pow(18);
+        let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
         let expected_gas_usage: u64 = 21216 + 200;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -322,7 +322,7 @@ fn swap_fail_trait_error() {
         // Assert state changes.
         assert_eq!(
             EvmBalances::total_balance(&alice_evm),
-            alice_balance - expected_fee
+            alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
 
@@ -350,14 +350,14 @@ fn swap_fail_full_balance() {
         let expected_gas_usage: u64 = 21216 + 200;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
-        let alice_balance = 100 * 10u128.pow(18);
+        let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 100 * 10u128.pow(18) - expected_fee;
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -399,7 +399,7 @@ fn swap_fail_full_balance() {
         );
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Assert mock invocations.
@@ -419,17 +419,17 @@ fn swap_fail_bad_selector() {
         let alice = AccountId::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
-        let alice_balance = 100 * 10u128.pow(18);
+        let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
         let expected_gas_usage: u64 = 50_123; // all fee will be consumed
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -472,7 +472,7 @@ fn swap_fail_bad_selector() {
         // Assert state changes.
         assert_eq!(
             EvmBalances::total_balance(&alice_evm),
-            alice_balance - expected_fee
+            alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
 
@@ -497,14 +497,14 @@ fn swap_fail_value_overflow() {
         let alice = AccountId::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
-        let alice_balance = u128::MAX;
+        let alice_evm_balance = u128::MAX;
         let swap_balance_u256: U256 = U256::from(u128::MAX) + U256::from(1);
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -545,7 +545,7 @@ fn swap_fail_value_overflow() {
         );
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Assert mock invocations.
@@ -565,17 +565,17 @@ fn swap_fail_no_arguments() {
         let alice = AccountId::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
-        let alice_balance = 100 * 10u128.pow(18);
+        let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
         let expected_gas_usage: u64 = 50_123; // all fee will be consumed
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -618,7 +618,7 @@ fn swap_fail_no_arguments() {
         // Assert state changes.
         assert_eq!(
             EvmBalances::total_balance(&alice_evm),
-            alice_balance - expected_fee
+            alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
 
@@ -639,17 +639,17 @@ fn swap_fail_short_argument() {
         let alice = AccountId::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
-        let alice_balance = 100 * 10u128.pow(18);
+        let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
         let expected_gas_usage: u64 = 50_123; // all fee will be consumed
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -693,7 +693,7 @@ fn swap_fail_short_argument() {
         // Assert state changes.
         assert_eq!(
             EvmBalances::total_balance(&alice_evm),
-            alice_balance - expected_fee
+            alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
 
@@ -714,17 +714,17 @@ fn swap_fail_trailing_junk() {
         let alice = AccountId::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
-        let alice_balance = 100 * 10u128.pow(18);
+        let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
         let expected_gas_usage: u64 = 50_123; // all fee will be consumed
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
-        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
 
         // Set block number to enable events.
@@ -768,7 +768,7 @@ fn swap_fail_trailing_junk() {
         // Assert state changes.
         assert_eq!(
             EvmBalances::total_balance(&alice_evm),
-            alice_balance - expected_fee
+            alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
 
