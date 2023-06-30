@@ -409,7 +409,7 @@ fn swap_fail_full_balance() {
 
 /// This test verifies that the swap precompile call behaves as expected when a bad selector is
 /// passed.
-/// Fee will be consumed, but not the value.
+/// All fee (up to specified max fee limit!) will be consumed, but not the value.
 #[test]
 fn swap_fail_bad_selector() {
     new_test_ext().execute_with_ext(|_| {
@@ -422,7 +422,7 @@ fn swap_fail_bad_selector() {
         let alice_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
-        let expected_gas_usage: u64 = 50_123;
+        let expected_gas_usage: u64 = 50_123; // all fee will be consumed
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
