@@ -4,7 +4,8 @@
 
 use frame_support::traits::tokens::currency::Currency;
 use pallet_evm::{
-    ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
+    ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
+    PrecompileResult,
 };
 use precompile_utils::{succeed, EvmDataWriter, EvmResult, PrecompileHandleExt};
 use sp_core::{Get, H160, H256, U256};
@@ -123,8 +124,9 @@ where
             },
         })?;
 
-        let imbalance = CurrencySwapT::swap(imbalance).map_err(|_| PrecompileFailure::Error {
-            exit_status: ExitError::Other("unable to swap funds".into()),
+        let imbalance = CurrencySwapT::swap(imbalance).map_err(|_| PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: "unable to swap the currency".into(),
         })?;
 
         CurrencySwapT::To::resolve_creating(&to, imbalance);

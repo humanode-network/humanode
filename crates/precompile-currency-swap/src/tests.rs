@@ -251,7 +251,7 @@ fn swap_fail_no_funds() {
 
 /// This test verifies that the swap precompile call behaves as expected when the currency swap
 /// implementation fails.
-/// The fee is consumed, but the value is not.
+/// The fee is consumed (and not all of it - just what was actually used), but the value is not.
 /// The error message is checked to be correct.
 #[test]
 fn swap_fail_trait_error() {
@@ -265,7 +265,7 @@ fn swap_fail_trait_error() {
         let alice_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
-        let expected_gas_usage: u64 = 50_123; // all the allowed fee will be consumed
+        let expected_gas_usage: u64 = 21216 + 200;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
@@ -301,7 +301,7 @@ fn swap_fail_trait_error() {
             *PRECOMPILE_ADDRESS,
             input,
             swap_balance.into(),
-            50_123, // a reasonable upper bound for tests
+            50_000, // a reasonable upper bound for tests
             Some(*GAS_PRICE),
             Some(*GAS_PRICE),
             None,
@@ -313,10 +313,10 @@ fn swap_fail_trait_error() {
         .unwrap();
         assert_eq!(
             execinfo.exit_reason,
-            fp_evm::ExitReason::Error(fp_evm::ExitError::Other("unable to swap funds".into()))
+            fp_evm::ExitReason::Revert(ExitRevert::Reverted)
         );
         assert_eq!(execinfo.used_gas, expected_gas_usage.into());
-        assert_eq!(execinfo.value, Vec::<u8>::new());
+        assert_eq!(execinfo.value, "unable to swap the currency".as_bytes());
         assert_eq!(execinfo.logs, Vec::new());
 
         // Assert state changes.
