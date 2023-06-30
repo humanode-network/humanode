@@ -8,6 +8,7 @@ publish = false
 primitives-currency-swap = { version = "0.1", path = "../primitives-currency-swap", default-features = false }
 
 codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
+frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", optional = true }
 frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
@@ -23,6 +24,13 @@ sp-core = { git = "https://github.com/humanode-network/substrate", branch = "loc
 
 [features]
 default = ["std"]
+runtime-benchmarks = [
+  "frame-benchmarking/runtime-benchmarks",
+  "frame-support/runtime-benchmarks",
+  "frame-system/runtime-benchmarks",
+  "pallet-balances/runtime-benchmarks",
+  "sp-runtime/runtime-benchmarks",
+]
 std = [
   "codec/std",
   "frame-support/std",
