@@ -61,11 +61,11 @@ where
     }
 }
 
-/// Utility alias for easy access to [`CurrencySwap::From::Balance`] type.
+/// Utility alias for easy access to [`primitives_currency_swap::CurrencySwap::From::Balance`] type.
 type FromBalanceFor<T, AccountIdFrom, AccountIdTo> =
     <FromCurrencyFor<T, AccountIdFrom, AccountIdTo> as Currency<AccountIdFrom>>::Balance;
 
-/// Utility alias for easy access to [`CurrencySwap::From`] type.
+/// Utility alias for easy access to [`primitives_currency_swap::CurrencySwap::From`] type.
 type FromCurrencyFor<T, AccountIdFrom, AccountIdTo> =
     <T as primitives_currency_swap::CurrencySwap<AccountIdFrom, AccountIdTo>>::From;
 
