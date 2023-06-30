@@ -406,3 +406,149 @@ fn swap_fail_full_balance() {
         swap_ctx.checkpoint();
     });
 }
+
+/// This test verifies that the swap precompile call behaves as expected when a bad selector is
+/// passed.
+/// Fee will be consumed, but not the value.
+#[test]
+fn swap_fail_bad_selector() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice = AccountId::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000000000000000000000000000001"
+        ));
+        let alice_balance = 100 * 10u128.pow(18);
+        let swap_balance = 10 * 10u128.pow(18);
+
+        let expected_gas_usage: u64 = 50_123;
+        let expected_fee: Balance = gas_to_fee(expected_gas_usage);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+
+        // Check test preconditions.
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(Balances::total_balance(&alice), 0);
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Set mock expectations.
+        let swap_ctx = MockCurrencySwap::swap_context();
+        swap_ctx.expect().never();
+
+        // Prepare EVM call.
+        let input = EvmDataWriter::new_with_selector(123u32)
+            .write(H256::from(alice.as_ref()))
+            .build();
+
+        // Invoke the function under test.
+        let config = <Test as pallet_evm::Config>::config();
+        let execinfo = <Test as pallet_evm::Config>::Runner::call(
+            alice_evm,
+            *PRECOMPILE_ADDRESS,
+            input,
+            swap_balance.into(),
+            50_123, // a reasonable upper bound for tests
+            Some(*GAS_PRICE),
+            Some(*GAS_PRICE),
+            None,
+            Vec::new(),
+            true,
+            true,
+            config,
+        )
+        .unwrap();
+        assert_eq!(
+            execinfo.exit_reason,
+            fp_evm::ExitReason::Error(fp_evm::ExitError::Other("invalid function selector".into()))
+        );
+        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.value, Vec::<u8>::new());
+        assert_eq!(execinfo.logs, Vec::new());
+
+        // Assert state changes.
+        assert_eq!(
+            EvmBalances::total_balance(&alice_evm),
+            alice_balance - expected_fee
+        );
+        assert_eq!(Balances::total_balance(&alice), 0);
+
+        // Assert mock invocations.
+        swap_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that the swap precompile call behaves as expected when the call value
+/// is overflowing the underlying balance type.
+/// This test actually unable to invoke the condition, as it fails prior to that error due to
+/// a failing balance check. Nonetheless, this behaviour is verified in this test.
+/// The test name could be misleading, but the idea here is that this test is a demonstration of how
+/// we tried to test the value overflow and could not.
+/// Fee will be consumed, but not the value.
+#[test]
+fn swap_fail_value_overflow() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice = AccountId::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000000000000000000000000000001"
+        ));
+        let alice_balance = u128::MAX;
+        let swap_balance_u256: U256 = U256::from(u128::MAX) + U256::from(1);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+
+        // Check test preconditions.
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(Balances::total_balance(&alice), 0);
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Set mock expectations.
+        let swap_ctx = MockCurrencySwap::swap_context();
+        swap_ctx.expect().never();
+
+        // Prepare EVM call.
+        let input = EvmDataWriter::new_with_selector(123u32)
+            .write(H256::from(alice.as_ref()))
+            .build();
+
+        // Invoke the function under test.
+        let config = <Test as pallet_evm::Config>::config();
+        let storage_root = frame_support::storage_root(sp_runtime::StateVersion::V1);
+        let execerr = <Test as pallet_evm::Config>::Runner::call(
+            alice_evm,
+            *PRECOMPILE_ADDRESS,
+            input,
+            swap_balance_u256,
+            50_000, // a reasonable upper bound for tests
+            Some(*GAS_PRICE),
+            Some(*GAS_PRICE),
+            None,
+            Vec::new(),
+            true,
+            true,
+            config,
+        )
+        .unwrap_err();
+        assert!(matches!(execerr.error, pallet_evm::Error::BalanceLow));
+        assert_eq!(
+            storage_root,
+            frame_support::storage_root(sp_runtime::StateVersion::V1),
+            "storage changed"
+        );
+
+        // Assert state changes.
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(Balances::total_balance(&alice), 0);
+
+        // Assert mock invocations.
+        swap_ctx.checkpoint();
+    });
+}
