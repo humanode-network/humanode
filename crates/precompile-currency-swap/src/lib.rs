@@ -28,15 +28,21 @@ pub enum Action {
 /// Exposes the currency swap interface to EVM.
 pub struct CurrencySwap<CurrencySwapT, AccountIdFrom, AccountIdTo, GasCost>(
     PhantomData<(CurrencySwapT, AccountIdFrom, AccountIdTo, GasCost)>,
-);
+)
+where
+    AccountIdFrom: From<H160>,
+    AccountIdTo: From<[u8; 32]>,
+    CurrencySwapT: primitives_currency_swap::CurrencySwap<AccountIdFrom, AccountIdTo>,
+    FromBalanceFor<CurrencySwapT, AccountIdFrom, AccountIdTo>: TryFrom<U256>,
+    GasCost: Get<u64>;
 
 impl<CurrencySwapT, AccountIdFrom, AccountIdTo, GasCost> Precompile
     for CurrencySwap<CurrencySwapT, AccountIdFrom, AccountIdTo, GasCost>
 where
     AccountIdFrom: From<H160>,
-    AccountIdTo: From<H256>,
+    AccountIdTo: From<[u8; 32]>,
     CurrencySwapT: primitives_currency_swap::CurrencySwap<AccountIdFrom, AccountIdTo>,
-    FromBalanceFor<CurrencySwapT, AccountIdFrom, AccountIdTo>: From<U256>,
+    FromBalanceFor<CurrencySwapT, AccountIdFrom, AccountIdTo>: TryFrom<U256>,
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
@@ -66,23 +72,29 @@ impl<CurrencySwapT, AccountIdFrom, AccountIdTo, GasCost>
     CurrencySwap<CurrencySwapT, AccountIdFrom, AccountIdTo, GasCost>
 where
     AccountIdFrom: From<H160>,
-    AccountIdTo: From<H256>,
+    AccountIdTo: From<[u8; 32]>,
     CurrencySwapT: primitives_currency_swap::CurrencySwap<AccountIdFrom, AccountIdTo>,
-    FromBalanceFor<CurrencySwapT, AccountIdFrom, AccountIdTo>: From<U256>,
+    FromBalanceFor<CurrencySwapT, AccountIdFrom, AccountIdTo>: TryFrom<U256>,
+    GasCost: Get<u64>,
 {
     /// Swap EVM tokens to native tokens.
     fn swap(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
 
         let fp_evm::Context {
-            caller: from,
+            address,
             apparent_value: value,
             ..
         } = handle.context();
 
-        let from: AccountIdFrom = (*from).into();
+        // Here we must withdraw from self (i.e. from the precompile address, not from the caller
+        // address), since the funds have already been transferred to us (precompile) as this point.
+        let from: AccountIdFrom = (*address).into();
 
-        let value: FromBalanceFor<CurrencySwapT, AccountIdFrom, AccountIdTo> = (*value).into();
+        let value: FromBalanceFor<CurrencySwapT, AccountIdFrom, AccountIdTo> =
+            (*value).try_into().map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("value is out of bounds".into()),
+            })?;
 
         input
             .expect_arguments(1)
@@ -90,11 +102,9 @@ where
                 exit_status: ExitError::Other("exactly one argument is expected".into()),
             })?;
 
-        let to_bytes: sp_core::H256 = input.read()?;
-
-        let to: AccountIdTo = to_bytes.try_into().map_err(|_| PrecompileFailure::Error {
-            exit_status: ExitError::Other("input must be a valid account id".into()),
-        })?;
+        let to: H256 = input.read()?;
+        let to: [u8; 32] = to.into();
+        let to: AccountIdTo = to.into();
 
         let imbalance = CurrencySwapT::From::withdraw(
             &from,
@@ -102,8 +112,15 @@ where
             frame_support::traits::WithdrawReasons::TRANSFER,
             frame_support::traits::ExistenceRequirement::AllowDeath,
         )
-        .map_err(|_| PrecompileFailure::Error {
-            exit_status: ExitError::Other("unable to withdrwaw funds".into()),
+        .map_err(|error| match error {
+            sp_runtime::DispatchError::Token(sp_runtime::TokenError::NoFunds) => {
+                PrecompileFailure::Error {
+                    exit_status: ExitError::OutOfFund,
+                }
+            }
+            _ => PrecompileFailure::Error {
+                exit_status: ExitError::Other("unable to withdrwaw funds".into()),
+            },
         })?;
 
         let imbalance = CurrencySwapT::swap(imbalance).map_err(|_| PrecompileFailure::Error {

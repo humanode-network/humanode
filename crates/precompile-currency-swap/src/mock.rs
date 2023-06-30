@@ -5,24 +5,26 @@
 
 use fp_evm::{Context, ExitError, ExitReason, PrecompileHandle, Transfer};
 use frame_support::{
+    once_cell::sync::Lazy,
     sp_io,
     sp_runtime::{
         testing::Header,
         traits::{BlakeTwo256, IdentityLookup},
         BuildStorage, DispatchError,
     },
-    traits::{ConstU64, Currency},
+    traits::{ConstU16, ConstU32, ConstU64, Currency},
+    weights::Weight,
 };
 use frame_system as system;
-use mockall::{mock, predicate::*, *};
-use sp_core::{H160, H256, U256};
+use mockall::mock;
+use sp_core::{ConstU128, H160, H256, U256};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-pub(crate) type AccountId = u64;
+pub(crate) type AccountId = sp_runtime::AccountId32;
 pub(crate) type EvmAccountId = H160;
-pub(crate) type Balance = u64;
+pub(crate) type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -48,23 +50,23 @@ impl system::Config for Test {
     type RuntimeOrigin = RuntimeOrigin;
     type RuntimeCall = RuntimeCall;
     type Index = u64;
-    type BlockNumber = BlockNumber;
+    type BlockNumber = u64;
     type Hash = H256;
     type Hashing = BlakeTwo256;
-    type AccountId = u64;
+    type AccountId = AccountId;
     type Lookup = IdentityLookup<Self::AccountId>;
     type Header = Header;
     type RuntimeEvent = RuntimeEvent;
     type BlockHashCount = ConstU64<250>;
     type Version = ();
     type PalletInfo = PalletInfo;
-    type AccountData = ();
+    type AccountData = pallet_balances::AccountData<Balance>;
     type OnNewAccount = ();
     type OnKilledAccount = ();
     type SystemWeightInfo = ();
-    type SS58Prefix = ConstU16<42>;
+    type SS58Prefix = ConstU16<1>;
     type OnSetCode = ();
-    type MaxConsumers = frame_support::traits::ConstU32<16>;
+    type MaxConsumers = ConstU32<16>;
 }
 
 frame_support::parameter_types! {
@@ -78,10 +80,10 @@ impl pallet_timestamp::Config for Test {
 }
 
 impl pallet_balances::Config for Test {
-    type Balance = u64;
+    type Balance = Balance;
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
-    type ExistentialDeposit = ConstU64<1>;
+    type ExistentialDeposit = ConstU128<1>;
     type AccountStore = System;
     type MaxLocks = ();
     type MaxReserves = ();
@@ -102,16 +104,18 @@ impl pallet_evm_balances::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = EvmAccountId;
     type Balance = Balance;
-    type ExistentialDeposit = ConstU64<1>;
+    type ExistentialDeposit = ConstU128<1>;
     type AccountStore = EvmSystem;
     type DustRemoval = ();
 }
+
+pub(crate) static GAS_PRICE: Lazy<U256> = Lazy::new(|| 1_000_000_000u128.into());
 
 pub struct FixedGasPrice;
 impl fp_evm::FeeCalculator for FixedGasPrice {
     fn min_gas_price() -> (U256, Weight) {
         // Return some meaningful gas price and weight
-        (1_000_000_000u128.into(), Weight::from_ref_time(7u64))
+        (*GAS_PRICE, Weight::from_ref_time(7u64))
     }
 }
 
@@ -122,11 +126,10 @@ frame_support::parameter_types! {
 }
 
 impl pallet_evm::Config for Test {
-    type AccountProvider = pallet_evm::NativeSystemAccountProvider<Self>;
+    type AccountProvider = EvmSystem;
     type FeeCalculator = FixedGasPrice;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
-
     type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
     type CallOrigin = pallet_evm::EnsureAddressNever<
         <Self::AccountProvider as pallet_evm::AccountProvider>::AccountId,
@@ -135,8 +138,7 @@ impl pallet_evm::Config for Test {
         <Self::AccountProvider as pallet_evm::AccountProvider>::AccountId,
     >;
     type AddressMapping = pallet_evm::IdentityAddressMapping;
-    type Currency = Balances;
-
+    type Currency = EvmBalances;
     type RuntimeEvent = RuntimeEvent;
     type PrecompilesType = MockPrecompileSet;
     type PrecompilesValue = MockPrecompiles;
@@ -148,17 +150,47 @@ impl pallet_evm::Config for Test {
     type FindAuthor = ();
 }
 
+type CurrencySwapPrecompile =
+    crate::CurrencySwap<MockCurrencySwap, EvmAccountId, AccountId, ConstU64<200>>;
+
+/// The precompile set containing the precompile under test.
+pub struct MockPrecompileSet;
+
+pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x900));
+
+impl pallet_evm::PrecompileSet for MockPrecompileSet {
+    /// Tries to execute a precompile in the precompile set.
+    /// If the provided address is not a precompile, returns None.
+    fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<pallet_evm::PrecompileResult> {
+        use pallet_evm::Precompile;
+        let address = handle.code_address();
+
+        if address == *PRECOMPILE_ADDRESS {
+            return Some(CurrencySwapPrecompile::execute(handle));
+        }
+
+        None
+    }
+
+    /// Check if the given address is a precompile. Should only be called to
+    /// perform the check while not executing the precompile afterward, since
+    /// `execute` already performs a check internally.
+    fn is_precompile(&self, address: H160) -> bool {
+        address == *PRECOMPILE_ADDRESS
+    }
+}
+
 mock! {
     #[derive(Debug)]
     pub CurrencySwap {}
-    impl primitives_currency_swap::CurrencySwap<AccountId, EvmAccountId> for CurrencySwap {
-        type From = Balances;
-        type To = EvmBalances;
+    impl primitives_currency_swap::CurrencySwap<EvmAccountId, AccountId> for CurrencySwap {
+        type From = EvmBalances;
+        type To = Balances;
         type Error = DispatchError;
 
         fn swap(
-            imbalance: <Balances as Currency<AccountId>>::NegativeImbalance,
-        ) -> Result<<EvmBalances as Currency<EvmAccountId>>::NegativeImbalance, DispatchError>;
+            imbalance: <EvmBalances as Currency<EvmAccountId>>::NegativeImbalance,
+        ) -> Result<<Balances as Currency<AccountId>>::NegativeImbalance, DispatchError>;
     }
 }
 

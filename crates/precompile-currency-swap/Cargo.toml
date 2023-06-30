@@ -22,11 +22,12 @@ sp-runtime = { default-features = false, git = "https://github.com/humanode-netw
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
 [dev-dependencies]
+hex-literal = "0.4"
 mockall = "0.11"
-pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-system = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-balances = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+pallet-evm-balances = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+pallet-evm-system = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
@@ -39,7 +40,11 @@ std = [
   "frame-system/std",
   "getrandom/std",
   "num_enum/std",
+  "pallet-balances/std",
+  "pallet-evm-balances/std",
+  "pallet-evm-system/std",
   "pallet-evm/std",
+  "pallet-timestamp/std",
   "precompile-utils/std",
   "primitives-currency-swap/std",
   "scale-info/std",
