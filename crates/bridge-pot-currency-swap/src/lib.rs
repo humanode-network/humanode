@@ -10,12 +10,16 @@ use frame_support::{
 use primitives_currency_swap::CurrencySwap;
 use sp_std::marker::PhantomData;
 
+/// The config for the generic bridge pot currency swap logic.
 pub trait Config<AccountIdFrom, AccountIdTo> {
+    /// The pot account used to receive withdrawed balances to.
     type PotFrom: Get<AccountIdFrom>;
 
+    /// The pot account used to send deposited balances from.
     type PotTo: Get<AccountIdTo>;
 }
 
+/// One to one bridge pot currency swap logic.
 pub struct OneToOne<AccountIdFrom, AccountIdTo, ConfigT, CurrencyFrom, CurrencyTo>(
     PhantomData<(
         AccountIdFrom,
@@ -44,11 +48,8 @@ where
     type Error = DispatchError;
 
     fn swap(
-        imbalance: <Self::From as frame_support::traits::Currency<AccountIdFrom>>::NegativeImbalance,
-    ) -> Result<
-        <Self::To as frame_support::traits::Currency<AccountIdTo>>::NegativeImbalance,
-        Self::Error,
-    > {
+        imbalance: CurrencyFrom::NegativeImbalance,
+    ) -> Result<CurrencyTo::NegativeImbalance, DispatchError> {
         let amount = imbalance.peek();
 
         CurrencyFrom::resolve_creating(&ConfigT::PotFrom::get(), imbalance);
