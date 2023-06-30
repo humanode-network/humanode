@@ -119,7 +119,7 @@ where
                 }
             }
             _ => PrecompileFailure::Error {
-                exit_status: ExitError::Other("unable to withdrwaw funds".into()),
+                exit_status: ExitError::Other("unable to withdraw funds".into()),
             },
         })?;
 
