@@ -49,13 +49,13 @@ impl logic::Signer<Vec<u8>> for robonode_crypto::Keypair {
     {
         use robonode_crypto::ed25519_dalek::Signer;
         let sig = Signer::sign(self, data.as_ref());
-        Ok(sig.as_ref().to_owned())
+        Ok(sig.to_vec())
     }
 }
 
 #[async_trait::async_trait]
 impl logic::PublicKeyProvider for robonode_crypto::Keypair {
     fn public_key(&self) -> &[u8] {
-        self.public.as_bytes()
+        self.as_ref().as_ref()
     }
 }
