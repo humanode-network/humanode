@@ -107,6 +107,13 @@ where
         let to: [u8; 32] = to.into();
         let to: AccountIdTo = to.into();
 
+        let junk_data = input.read_till_end()?;
+        if !junk_data.is_empty() {
+            return Err(PrecompileFailure::Error {
+                exit_status: ExitError::Other("junk at the end of input".into()),
+            });
+        }
+
         let imbalance = CurrencySwapT::From::withdraw(
             &from,
             value,

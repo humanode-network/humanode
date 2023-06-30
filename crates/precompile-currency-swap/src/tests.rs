@@ -701,3 +701,78 @@ fn swap_fail_short_argument() {
         swap_ctx.checkpoint();
     });
 }
+
+/// This test verifies that the swap precompile call behaves as expected when the call has
+/// extra data after the end of the first argument.
+/// All fee (up to specified max fee limit!) will be consumed, but not the value.
+#[test]
+fn swap_fail_trailing_junk() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice = AccountId::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000000000000000000000000000001"
+        ));
+        let alice_balance = 100 * 10u128.pow(18);
+        let swap_balance = 10 * 10u128.pow(18);
+
+        let expected_gas_usage: u64 = 50_123; // all fee will be consumed
+        let expected_fee: Balance = gas_to_fee(expected_gas_usage);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_balance);
+
+        // Check test preconditions.
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_balance);
+        assert_eq!(Balances::total_balance(&alice), 0);
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Set mock expectations.
+        let swap_ctx = MockCurrencySwap::swap_context();
+        swap_ctx.expect().never();
+
+        // Prepare EVM call.
+        let mut input = EvmDataWriter::new_with_selector(Action::Swap)
+            .write(H256::from(alice.as_ref()))
+            .build();
+        input.extend_from_slice(&hex_literal::hex!("1000")); // bad input
+
+        // Invoke the function under test.
+        let config = <Test as pallet_evm::Config>::config();
+        let execinfo = <Test as pallet_evm::Config>::Runner::call(
+            alice_evm,
+            *PRECOMPILE_ADDRESS,
+            input,
+            swap_balance.into(),
+            50_123, // a reasonable upper bound for tests
+            Some(*GAS_PRICE),
+            Some(*GAS_PRICE),
+            None,
+            Vec::new(),
+            true,
+            true,
+            config,
+        )
+        .unwrap();
+        assert_eq!(
+            execinfo.exit_reason,
+            fp_evm::ExitReason::Error(fp_evm::ExitError::Other("junk at the end of input".into()))
+        );
+        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.value, Vec::<u8>::new());
+        assert_eq!(execinfo.logs, Vec::new());
+
+        // Assert state changes.
+        assert_eq!(
+            EvmBalances::total_balance(&alice_evm),
+            alice_balance - expected_fee
+        );
+        assert_eq!(Balances::total_balance(&alice), 0);
+
+        // Assert mock invocations.
+        swap_ctx.checkpoint();
+    });
+}
