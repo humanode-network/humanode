@@ -5975,6 +5975,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-balances"
+version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.38#07429a3b559c7277fa20024587f67ae809556054"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.38#07429a3b559c7277fa20024587f67ae809556054"
@@ -6000,6 +6014,21 @@ dependencies = [
  "fp-evm",
  "ripemd",
  "sp-io",
+]
+
+[[package]]
+name = "pallet-evm-system"
+version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.38#07429a3b559c7277fa20024587f67ae809556054"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -6645,7 +6674,11 @@ dependencies = [
  "getrandom 0.2.9",
  "mockall",
  "num_enum 0.6.0",
+ "pallet-balances",
  "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
  "parity-scale-codec",
  "precompile-utils",
  "primitives-currency-swap",
