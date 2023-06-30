@@ -17,30 +17,30 @@ pub use existence_required::Marker as ExistenceRequired;
 
 /// The config for the generic bridge pot currency swap logic.
 pub trait Config {
-    /// The type representing the account for the currency to swap from.
-    type AccountFrom;
+    /// The type representing the account key for the currency to swap from.
+    type AccountIdFrom;
 
-    /// The type representing the account for the currency to swap to.
-    type AccountTo;
+    /// The type representing the account key for the currency to swap to.
+    type AccountIdTo;
 
     /// The currency to swap from.
-    type CurrencyFrom: Currency<Self::AccountFrom>;
+    type CurrencyFrom: Currency<Self::AccountIdFrom>;
 
     /// The currency to swap to.
-    type CurrencyTo: Currency<Self::AccountTo>;
+    type CurrencyTo: Currency<Self::AccountIdTo>;
 
     /// The converter to determine how the balance amount should be converted from one currency to
     /// another.
     type BalanceCoverter: Convert<
-        <Self::CurrencyFrom as Currency<Self::AccountFrom>>::Balance,
-        <Self::CurrencyTo as Currency<Self::AccountTo>>::Balance,
+        <Self::CurrencyFrom as Currency<Self::AccountIdFrom>>::Balance,
+        <Self::CurrencyTo as Currency<Self::AccountIdTo>>::Balance,
     >;
 
     /// The account to land the balances to when receiving the funds as part of the swap operation.
-    type PotFrom: Get<Self::AccountFrom>;
+    type PotFrom: Get<Self::AccountIdFrom>;
 
     /// The account to take the balances from when sending the funds as part of the swap operation.
-    type PotTo: Get<Self::AccountTo>;
+    type PotTo: Get<Self::AccountIdTo>;
 }
 
 /// A [`primitives_currency_swap::CurrencySwap`] implementation that does the swap using two

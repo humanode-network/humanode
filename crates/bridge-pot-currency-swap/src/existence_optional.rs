@@ -11,7 +11,7 @@ use super::{Config, CurrencySwap};
 /// A marker type for the implementation that does not require pot accounts existence.
 pub enum Marker {}
 
-impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountFrom, T::AccountTo>
+impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountIdFrom, T::AccountIdTo>
     for CurrencySwap<T, Marker>
 {
     type From = T::CurrencyFrom;
@@ -19,8 +19,8 @@ impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountFrom, T::Accoun
     type Error = DispatchError;
 
     fn swap(
-        imbalance: <Self::From as Currency<T::AccountFrom>>::NegativeImbalance,
-    ) -> Result<<Self::To as Currency<T::AccountTo>>::NegativeImbalance, Self::Error> {
+        imbalance: <Self::From as Currency<T::AccountIdFrom>>::NegativeImbalance,
+    ) -> Result<<Self::To as Currency<T::AccountIdTo>>::NegativeImbalance, Self::Error> {
         let amount = imbalance.peek();
 
         T::CurrencyFrom::resolve_creating(&T::PotFrom::get(), imbalance);

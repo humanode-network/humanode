@@ -28,17 +28,17 @@ impl<T> From<Error<T>> for DispatchError {
     }
 }
 
-impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountFrom, T::AccountTo>
+impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountIdFrom, T::AccountIdTo>
     for CurrencySwap<T, Marker>
 {
     type From = T::CurrencyFrom;
     type To = T::CurrencyTo;
     type Error =
-        Error<<<T as Config>::CurrencyFrom as Currency<T::AccountFrom>>::NegativeImbalance>;
+        Error<<<T as Config>::CurrencyFrom as Currency<T::AccountIdFrom>>::NegativeImbalance>;
 
     fn swap(
-        imbalance: <Self::From as Currency<T::AccountFrom>>::NegativeImbalance,
-    ) -> Result<<Self::To as Currency<T::AccountTo>>::NegativeImbalance, Self::Error> {
+        imbalance: <Self::From as Currency<T::AccountIdFrom>>::NegativeImbalance,
+    ) -> Result<<Self::To as Currency<T::AccountIdTo>>::NegativeImbalance, Self::Error> {
         let amount = imbalance.peek();
 
         T::CurrencyFrom::resolve_into_existing(&T::PotFrom::get(), imbalance)
