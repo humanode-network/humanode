@@ -9,12 +9,6 @@ use frame_support::{
 };
 use primitives_currency_swap::CurrencySwap;
 
-/// A utility type alias for easy access to [`CurrencySwap::Error`] of [`Config::CurrencySwap`].
-type CurrencySwapErrorFor<T> = <<T as Config>::CurrencySwap as CurrencySwap<
-    <T as Config>::AccountIdFrom,
-    <T as Config>::AccountIdTo,
->>::Error;
-
 /// A utility type alias for easy access to [`CurrencySwap::From`] of [`Config::CurrencySwap`].
 type CurrencyFromFor<T> = <<T as Config>::CurrencySwap as CurrencySwap<
     <T as Config>::AccountIdFrom,
@@ -59,15 +53,20 @@ where
     T: Config,
     To: OnUnbalanced<CurrencyToNegativeImbalanceFor<T>>,
     Fallback: OnUnbalanced<CurrencyFromNegativeImbalanceFor<T>>,
-    CurrencySwapErrorFor<T>: Into<Option<CurrencyFromNegativeImbalanceFor<T>>>,
 {
     fn on_nonzero_unbalanced(amount: CurrencyFromNegativeImbalanceFor<T>) {
         let amount = match T::CurrencySwap::swap(amount) {
             Ok(amount) => amount,
-            Err(error) => {
-                if let Some(amount) = error.into() {
-                    Fallback::on_unbalanceds(std::iter::once(amount));
-                }
+            Err(primitives_currency_swap::Error {
+                cause: error,
+                incoming_imbalance,
+            }) => {
+                let error: frame_support::sp_runtime::DispatchError = error.into();
+                frame_support::sp_tracing::error!(
+                    message = "unable to route the funds through the swap",
+                    ?error
+                );
+                Fallback::on_unbalanceds(std::iter::once(incoming_imbalance));
                 return;
             }
         };
