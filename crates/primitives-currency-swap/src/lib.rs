@@ -37,7 +37,7 @@ pub type ToNegativeImbalanceFor<T, AccountIdFrom, AccountIdTo> = <<T as Currency
     AccountIdTo,
 >>::To as Currency<AccountIdTo>>::NegativeImbalance;
 
-/// A type alias for compact delcaration of the error type for the [`CurrencySwap::swap`] call.
+/// A type alias for compact declaration of the error type for the [`CurrencySwap::swap`] call.
 pub type ErrorFor<T, AccountIdFrom, AccountIdTo> = Error<
     FromNegativeImbalanceFor<T, AccountIdFrom, AccountIdTo>,
     <T as CurrencySwap<AccountIdFrom, AccountIdTo>>::Error,
