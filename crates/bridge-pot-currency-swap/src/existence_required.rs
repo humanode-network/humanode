@@ -15,7 +15,7 @@ pub enum Marker {}
 pub enum Error<ImbalanceFrom> {
     /// Unable to resolve the incoming balance into the corresponding pot.
     ResolvingIncomingImbalance(ImbalanceFrom),
-    /// Unable to withdraw the outpoing balance from the corresponding pot.
+    /// Unable to withdraw the outgoing balance from the corresponding pot.
     IssuingOutgoingImbalance(DispatchError),
 }
 
