@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+
+list() {
+  cargo metadata --format-version 1 |
+    jq '.resolve.nodes | map(. | { name: (.id | sub("\\s+(?<version>[^\\s]+?)\\s.*$"; " \(.version)")), features: (.features | sort) }) | sort_by(.name)' |
+    yq -P .
+}
+
+SNAPSHOTS_PATH="utils/checks/snapshots"
+
+CURRENT_SNAPSHOT="$SNAPSHOTS_PATH/features.yaml"
+NEW_SNAPSHOT="$SNAPSHOTS_PATH/features.new.yaml"
+
+list >"$NEW_SNAPSHOT"
+
+if ! DIFF="$(diff -u "$CURRENT_SNAPSHOT" "$NEW_SNAPSHOT")"; then
+  printf "Features do not match!\n\n"
+  printf "Old: %s\nNew: %s\n\n" "$CURRENT_SNAPSHOT" "$NEW_SNAPSHOT"
+  printf "Diff:\n%s\n\n" "$DIFF"
+  printf "If all looks good do:\n\n  mv %s %s\n\n" "$NEW_SNAPSHOT" "$CURRENT_SNAPSHOT"
+  exit 1
+fi
+
+# No changes, so cleanup after ourselves.
+rm -f "$NEW_SNAPSHOT"
