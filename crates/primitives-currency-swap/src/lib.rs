@@ -46,7 +46,7 @@ pub type ErrorFor<T, AccountIdFrom, AccountIdTo> = Error<
 /// An error that can occur while doing a currency swap.
 #[derive(Debug)]
 pub struct Error<I, E> {
-    /// The inderlying cause of this error.
+    /// The underlying cause of this error.
     pub cause: E,
     /// The original imbalances that was passed to the swap operation.
     pub incoming_imbalance: I,
