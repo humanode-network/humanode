@@ -135,7 +135,7 @@ where
         })?;
 
         let imbalance = CurrencySwapT::swap(imbalance).map_err(|error| {
-            // Here we undo the withdrawal to avoid having a dangling imbalance.
+            // Here we undo the withdrawl to avoid having a dangling imbalance.
             CurrencySwapT::From::resolve_creating(&from, error.incoming_imbalance);
             PrecompileFailure::Revert {
                 exit_status: ExitRevert::Reverted,
