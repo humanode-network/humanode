@@ -12,17 +12,19 @@ pub enum Marker {}
 
 /// An error that can occur while doing the swap operation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Error<ImbalanceFrom> {
+pub enum Error {
     /// Unable to resolve the incoming balance into the corresponding pot.
-    ResolvingIncomingImbalance(ImbalanceFrom),
+    ResolvingIncomingImbalance,
     /// Unable to withdraw the outgoing balance from the corresponding pot.
     IssuingOutgoingImbalance(DispatchError),
 }
 
-impl<T> From<Error<T>> for DispatchError {
-    fn from(value: Error<T>) -> Self {
+impl From<Error> for DispatchError {
+    fn from(value: Error) -> Self {
         match value {
-            Error::ResolvingIncomingImbalance(_) => DispatchError::NoProviders,
+            Error::ResolvingIncomingImbalance => {
+                DispatchError::Other("swap pot account does not exist")
+            }
             Error::IssuingOutgoingImbalance(err) => err,
         }
     }
@@ -33,25 +35,42 @@ impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountIdFrom, T::Acco
 {
     type From = T::CurrencyFrom;
     type To = T::CurrencyTo;
-    type Error =
-        Error<<<T as Config>::CurrencyFrom as Currency<T::AccountIdFrom>>::NegativeImbalance>;
+    type Error = Error;
 
     fn swap(
-        imbalance: <Self::From as Currency<T::AccountIdFrom>>::NegativeImbalance,
-    ) -> Result<<Self::To as Currency<T::AccountIdTo>>::NegativeImbalance, Self::Error> {
-        let amount = imbalance.peek();
+        incoming_imbalance: <Self::From as Currency<T::AccountIdFrom>>::NegativeImbalance,
+    ) -> Result<
+        <Self::To as Currency<T::AccountIdTo>>::NegativeImbalance,
+        primitives_currency_swap::ErrorFor<Self, T::AccountIdFrom, T::AccountIdTo>,
+    > {
+        let amount = incoming_imbalance.peek();
 
-        T::CurrencyFrom::resolve_into_existing(&T::PotFrom::get(), imbalance)
-            .map_err(Error::ResolvingIncomingImbalance)?;
-
-        let imbalance = T::CurrencyTo::withdraw(
+        let outgoing_imbalance = match T::CurrencyTo::withdraw(
             &T::PotTo::get(),
             T::BalanceCoverter::convert(amount),
             WithdrawReasons::TRANSFER,
             ExistenceRequirement::KeepAlive,
-        )
-        .map_err(Error::IssuingOutgoingImbalance)?;
+        ) {
+            Ok(imbalance) => imbalance,
+            Err(error) => {
+                return Err(primitives_currency_swap::Error {
+                    cause: Error::IssuingOutgoingImbalance(error),
+                    incoming_imbalance,
+                });
+            }
+        };
 
-        Ok(imbalance)
+        match T::CurrencyFrom::resolve_into_existing(&T::PotFrom::get(), incoming_imbalance) {
+            Ok(()) => {}
+            Err(imbalance) => {
+                T::CurrencyTo::resolve_creating(&T::PotTo::get(), outgoing_imbalance);
+                return Err(primitives_currency_swap::Error {
+                    cause: Error::ResolvingIncomingImbalance,
+                    incoming_imbalance: imbalance,
+                });
+            }
+        }
+
+        Ok(outgoing_imbalance)
     }
 }
