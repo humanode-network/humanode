@@ -22,7 +22,8 @@ type FromCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
     <T as Config>::AccountIdTo,
 >>::From;
 
-/// The currency balance to convert from.
+/// Utility alias for easy access to the [`Currency::Balance`] of
+/// the [`primitives_currency_swap::CurrencySwap::From`] type.
 type FromBalanceOf<T> =
     <FromCurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
@@ -32,7 +33,8 @@ type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
     <T as Config>::AccountIdTo,
 >>::To;
 
-/// The currency balance to convert to.
+/// Utility alias for easy access to the [`Currency::Balance`] of
+/// the [`primitives_currency_swap::CurrencySwap::To`] type.
 type ToBalanceOf<T> = <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>::Balance;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
