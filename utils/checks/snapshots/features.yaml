@@ -801,6 +801,7 @@
   features: []
 - name: evm 0.37.0
   features:
+    - default
     - environmental
     - scale-codec
     - scale-info
@@ -929,6 +930,7 @@
     - std
 - name: fp-self-contained 1.0.0-dev
   features:
+    - default
     - serde
     - std
 - name: fp-storage 2.0.0
@@ -950,6 +952,7 @@
     - rocksdb
 - name: frame-executive 4.0.0-dev
   features:
+    - default
     - std
 - name: frame-metadata 15.1.0
   features:
@@ -984,6 +987,7 @@
     - std
 - name: frame-try-runtime 0.10.0-dev
   features:
+    - default
     - std
 - name: fs2 0.4.3
   features: []
@@ -1955,9 +1959,11 @@
     - into_bits
 - name: pallet-authorship 4.0.0-dev
   features:
+    - default
     - std
 - name: pallet-babe 4.0.0-dev
   features:
+    - default
     - std
 - name: pallet-balances 4.0.0-dev
   features:
@@ -1965,6 +1971,7 @@
     - std
 - name: pallet-base-fee 1.0.0
   features:
+    - default
     - std
 - name: pallet-bioauth 0.1.0
   features:
@@ -1988,9 +1995,11 @@
     - std
 - name: pallet-dynamic-fee 4.0.0-dev
   features:
+    - default
     - std
 - name: pallet-ethereum 4.0.0-dev
   features:
+    - default
     - std
 - name: pallet-ethereum-chain-id 0.1.0
   features:
@@ -1998,6 +2007,7 @@
     - std
 - name: pallet-evm 6.0.0-dev
   features:
+    - default
     - frame-benchmarking
     - std
 - name: pallet-evm-accounts-mapping 0.1.0
@@ -2007,15 +2017,19 @@
     - std
 - name: pallet-evm-precompile-modexp 2.0.0-dev
   features:
+    - default
     - std
 - name: pallet-evm-precompile-sha3fips 2.0.0-dev
   features:
+    - default
     - std
 - name: pallet-evm-precompile-simple 2.0.0-dev
   features:
+    - default
     - std
 - name: pallet-grandpa 4.0.0-dev
   features:
+    - default
     - std
 - name: pallet-humanode-session 0.1.0
   features:
@@ -2027,9 +2041,11 @@
     - std
 - name: pallet-multisig 4.0.0-dev
   features:
+    - default
     - std
 - name: pallet-offences 4.0.0-dev
   features:
+    - default
     - serde
     - std
 - name: pallet-pot 0.1.0
@@ -2039,11 +2055,13 @@
     - std
 - name: pallet-session 4.0.0-dev
   features:
+    - default
     - historical
     - sp-trie
     - std
 - name: pallet-sudo 4.0.0-dev
   features:
+    - default
     - std
 - name: pallet-timestamp 4.0.0-dev
   features:
@@ -2057,6 +2075,7 @@
     - std
 - name: pallet-transaction-payment 4.0.0-dev
   features:
+    - default
     - serde
     - std
 - name: pallet-transaction-payment-rpc 4.0.0-dev
@@ -2067,6 +2086,7 @@
     - std
 - name: pallet-utility 4.0.0-dev
   features:
+    - default
     - std
 - name: pallet-vesting 0.1.0
   features:
@@ -2643,6 +2663,7 @@
 - name: scale-info 2.5.0
   features:
     - decode
+    - default
     - derive
     - scale-info-derive
     - serde
@@ -3013,6 +3034,7 @@
     - std
 - name: sp-staking 4.0.0-dev
   features:
+    - default
     - std
 - name: sp-state-machine 0.13.0
   features:
@@ -3504,6 +3526,7 @@
 - name: vergen 8.1.1
   features:
     - cargo
+    - default
     - git
     - gitcl
     - time
