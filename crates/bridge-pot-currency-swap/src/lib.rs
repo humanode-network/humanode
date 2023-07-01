@@ -44,5 +44,5 @@ pub trait Config {
 }
 
 /// A [`primitives_currency_swap::CurrencySwap`] implementation that does the swap using two
-/// "pot" accounts for each of end swaped currencies.
+/// "pot" accounts for each of end swapped currencies.
 pub struct CurrencySwap<T: Config, ExistenceRequirement>(PhantomData<(T, ExistenceRequirement)>);
