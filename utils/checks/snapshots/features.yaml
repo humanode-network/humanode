@@ -920,7 +920,6 @@
     - std
 - name: fp-evm 3.0.0-dev
   features:
-    - default
     - serde
     - std
 - name: fp-rpc 3.0.0-dev
@@ -945,9 +944,7 @@
     - serde
     - std
 - name: frame-benchmarking-cli 4.0.0-dev
-  features:
-    - default
-    - rocksdb
+  features: []
 - name: frame-executive 4.0.0-dev
   features:
     - std
@@ -1791,7 +1788,6 @@
 - name: num 0.4.0
   features:
     - alloc
-    - default
     - num-bigint
     - std
 - name: num-bigint 0.4.3
@@ -1961,7 +1957,6 @@
     - std
 - name: pallet-balances 4.0.0-dev
   features:
-    - default
     - std
 - name: pallet-base-fee 1.0.0
   features:
@@ -2023,7 +2018,6 @@
     - std
 - name: pallet-im-online 4.0.0-dev
   features:
-    - default
     - std
 - name: pallet-multisig 4.0.0-dev
   features:
@@ -2047,7 +2041,6 @@
     - std
 - name: pallet-timestamp 4.0.0-dev
   features:
-    - default
     - std
 - name: pallet-token-claims 0.1.0
   features:
@@ -2705,19 +2698,14 @@
     - recovery
     - std
 - name: secp256k1 0.27.0
-  features:
-    - alloc
-    - default
-    - std
+  features: []
 - name: secp256k1-sys 0.6.1
   features:
     - alloc
     - recovery
     - std
 - name: secp256k1-sys 0.8.1
-  features:
-    - alloc
-    - std
+  features: []
 - name: secrecy 0.8.0
   features:
     - alloc
@@ -2782,7 +2770,6 @@
     - std
 - name: sha3 0.10.6
   features:
-    - default
     - std
 - name: sha3 0.9.1
   features:
