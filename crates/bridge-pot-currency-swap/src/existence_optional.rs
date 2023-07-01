@@ -19,19 +19,30 @@ impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountIdFrom, T::Acco
     type Error = DispatchError;
 
     fn swap(
-        imbalance: <Self::From as Currency<T::AccountIdFrom>>::NegativeImbalance,
-    ) -> Result<<Self::To as Currency<T::AccountIdTo>>::NegativeImbalance, Self::Error> {
-        let amount = imbalance.peek();
+        incoming_imbalance: <Self::From as Currency<T::AccountIdFrom>>::NegativeImbalance,
+    ) -> Result<
+        <Self::To as Currency<T::AccountIdTo>>::NegativeImbalance,
+        primitives_currency_swap::ErrorFor<Self, T::AccountIdFrom, T::AccountIdTo>,
+    > {
+        let amount = incoming_imbalance.peek();
 
-        T::CurrencyFrom::resolve_creating(&T::PotFrom::get(), imbalance);
-
-        let imbalance = T::CurrencyTo::withdraw(
+        let outgoing_imbalance = match T::CurrencyTo::withdraw(
             &T::PotTo::get(),
             T::BalanceCoverter::convert(amount),
             WithdrawReasons::TRANSFER,
             ExistenceRequirement::AllowDeath,
-        )?;
+        ) {
+            Ok(imbalance) => imbalance,
+            Err(error) => {
+                return Err(primitives_currency_swap::Error {
+                    cause: error,
+                    incoming_imbalance,
+                })
+            }
+        };
 
-        Ok(imbalance)
+        T::CurrencyFrom::resolve_creating(&T::PotFrom::get(), incoming_imbalance);
+
+        Ok(outgoing_imbalance)
     }
 }

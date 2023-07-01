@@ -88,6 +88,7 @@ fn swap_works() {
             alice_evm_balance - swap_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), swap_balance);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -174,6 +175,7 @@ fn swap_works_almost_full_balance() {
         );
         assert_eq!(EvmBalances::total_balance(&alice_evm), 1);
         assert_eq!(Balances::total_balance(&alice), swap_balance);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -243,6 +245,7 @@ fn swap_fail_no_funds() {
         // Assert state changes.
         assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -286,7 +289,12 @@ fn swap_fail_trait_error() {
             .with(predicate::eq(
                 <EvmBalances as Currency<EvmAccountId>>::NegativeImbalance::new(swap_balance),
             ))
-            .return_once(move |_| Err(sp_runtime::DispatchError::Other("test")));
+            .return_once(move |incoming_imbalance| {
+                Err(primitives_currency_swap::Error {
+                    cause: sp_runtime::DispatchError::Other("test"),
+                    incoming_imbalance,
+                })
+            });
 
         // Prepare EVM call.
         let input = EvmDataWriter::new_with_selector(Action::Swap)
@@ -325,6 +333,7 @@ fn swap_fail_trait_error() {
             alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -401,6 +410,7 @@ fn swap_fail_full_balance() {
         // Assert state changes.
         assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -475,6 +485,7 @@ fn swap_fail_bad_selector() {
             alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -547,6 +558,7 @@ fn swap_fail_value_overflow() {
         // Assert state changes.
         assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -621,6 +633,7 @@ fn swap_fail_no_arguments() {
             alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -696,6 +709,7 @@ fn swap_fail_short_argument() {
             alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -771,6 +785,7 @@ fn swap_fail_trailing_junk() {
             alice_evm_balance - expected_fee
         );
         assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
