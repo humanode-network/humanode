@@ -13,7 +13,7 @@ use frame_support::{
         traits::{BlakeTwo256, IdentityLookup},
         BuildStorage, DispatchError,
     },
-    traits::{ConstU16, ConstU32, ConstU64, Currency},
+    traits::{ConstU16, ConstU32, ConstU64},
     weights::Weight,
 };
 use frame_system as system;
@@ -190,8 +190,11 @@ mock! {
         type Error = DispatchError;
 
         fn swap(
-            imbalance: <EvmBalances as Currency<EvmAccountId>>::NegativeImbalance,
-        ) -> Result<<Balances as Currency<AccountId>>::NegativeImbalance, DispatchError>;
+            imbalance: primitives_currency_swap::FromNegativeImbalanceFor<Self, EvmAccountId, AccountId>,
+        ) -> Result<
+            primitives_currency_swap::ToNegativeImbalanceFor<Self, EvmAccountId, AccountId>,
+            primitives_currency_swap::ErrorFor<Self, EvmAccountId, AccountId>,
+        >;
     }
 }
 

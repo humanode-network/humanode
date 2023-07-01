@@ -134,9 +134,13 @@ where
             },
         })?;
 
-        let imbalance = CurrencySwapT::swap(imbalance).map_err(|_| PrecompileFailure::Revert {
-            exit_status: ExitRevert::Reverted,
-            output: "unable to swap the currency".into(),
+        let imbalance = CurrencySwapT::swap(imbalance).map_err(|error| {
+            // Here we undo the withdrawl to avoid having a dangling imbalance.
+            CurrencySwapT::From::resolve_creating(&from, error.incoming_imbalance);
+            PrecompileFailure::Revert {
+                exit_status: ExitRevert::Reverted,
+                output: "unable to swap the currency".into(),
+            }
         })?;
 
         CurrencySwapT::To::resolve_creating(&to, imbalance);
