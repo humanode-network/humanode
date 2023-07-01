@@ -117,7 +117,11 @@ pub mod pallet {
                 let withdrawed_amount = withdrawed_imbalance.peek();
 
                 let deposited_imbalance =
-                    T::CurrencySwap::swap(withdrawed_imbalance).map_err(Into::into)?;
+                    T::CurrencySwap::swap(withdrawed_imbalance).map_err(|error| {
+                        // Here we undo the withdrawl to avoid having a dangling imbalance.
+                        FromCurrencyOf::<T>::resolve_creating(&who, error.incoming_imbalance);
+                        error.cause.into()
+                    })?;
                 let deposited_amount = deposited_imbalance.peek();
 
                 ToCurrencyOf::<T>::resolve_creating(&to, deposited_imbalance);

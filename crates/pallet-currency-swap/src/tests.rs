@@ -84,13 +84,22 @@ fn swap_fails() {
             .with(predicate::eq(
                 <Balances as Currency<u64>>::NegativeImbalance::new(swap_balance),
             ))
-            .return_once(move |_| Err(DispatchError::Other("currency swap failed")));
+            .return_once(move |incoming_imbalance| {
+                Err(primitives_currency_swap::Error {
+                    cause: sp_runtime::DispatchError::Other("currency swap failed"),
+                    incoming_imbalance,
+                })
+            });
 
         // Invoke the function under test.
         assert_noop!(
             CurrencySwap::swap(RuntimeOrigin::signed(alice), alice_evm, swap_balance),
             DispatchError::Other("currency swap failed")
         );
+
+        // Assert state changes.
+        assert_eq!(Balances::total_balance(&alice), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();

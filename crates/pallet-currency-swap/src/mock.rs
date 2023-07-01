@@ -105,7 +105,10 @@ mock! {
 
         fn swap(
             imbalance: <Balances as Currency<AccountId>>::NegativeImbalance,
-        ) -> Result<<EvmBalances as Currency<EvmAccountId>>::NegativeImbalance, DispatchError>;
+        ) -> Result<
+            primitives_currency_swap::ToNegativeImbalanceFor<Self, AccountId, EvmAccountId>,
+            primitives_currency_swap::ErrorFor<Self, AccountId, EvmAccountId>
+        >;
     }
 }
 
