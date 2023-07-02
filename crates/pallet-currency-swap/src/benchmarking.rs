@@ -17,17 +17,17 @@ pub trait Interface: super::Config {
     /// Verify currency swap environment,
     fn verify(data: Self::Data) -> DispatchResult;
 
-    /// Obtain an account id balances withdrawed from.
-    fn from() -> <Self as frame_system::Config>::AccountId;
+    /// Obtain the Account ID the balance is swapped from.
+    fn from_account_id() -> <Self as frame_system::Config>::AccountId;
 
-    /// Obtain withdraw balances amount.
-    fn withdraw_amount() -> FromBalanceOf<Self>;
+    /// Obtain the amount of balance to withdraw from the swap source account.
+    fn from_balance() -> FromBalanceOf<Self>;
 
-    /// Obtain an account id balances deposited to.
-    fn to() -> <Self as Config>::AccountIdTo;
+    /// Obtain the Account ID the balance is swapped to.
+    fn to_account_id() -> <Self as Config>::AccountIdTo;
 
-    /// Obtain deposit balances amount.
-    fn deposit_amount() -> ToBalanceOf<Self>;
+    /// Obtain the amount of balance to deposit to the swap destination account.
+    fn to_balance() -> ToBalanceOf<Self>;
 }
 
 benchmarks! {
@@ -37,10 +37,10 @@ benchmarks! {
     }
 
     swap {
-        let from = <T as Interface>::from();
-        let withdraw_amount = <T as Interface>::withdraw_amount();
-        let to = <T as Interface>::to();
-        let deposit_amount =  <T as Interface>::deposit_amount();
+        let from = <T as Interface>::from_account_id();
+        let from_balance = <T as Interface>::from_balance();
+        let to = <T as Interface>::to_account_id();
+        let to_balance =  <T as Interface>::to_balance();
         let init_balance: u32 = 1000;
 
         let _ = <FromCurrencyOf<T>>::deposit_creating(&from, init_balance.into());
@@ -52,13 +52,13 @@ benchmarks! {
 
         let origin = RawOrigin::Signed(from.clone());
 
-    }: _(origin, to.clone(), withdraw_amount)
+    }: _(origin, to.clone(), from_balance)
     verify {
         let from_balance_after = <FromCurrencyOf<T>>::total_balance(&from);
         let to_balance_after = <ToCurrencyOf<T>>::total_balance(&to);
 
-        assert_eq!(from_balance_before - from_balance_after, withdraw_amount);
-        assert_eq!(to_balance_after - to_balance_before, deposit_amount);
+        assert_eq!(from_balance_before - from_balance_after, from_balance);
+        assert_eq!(to_balance_after - to_balance_before, to_balance);
 
         assert_ok!(<T as Interface>::verify(currency_swap));
     }
@@ -84,7 +84,7 @@ impl Interface for crate::mock::Test {
         swap_ctx.expect().times(1..).return_once(move |_| {
             Ok(
                 <mock::EvmBalances as Currency<mock::EvmAccountId>>::NegativeImbalance::new(
-                    Self::deposit_amount().into(),
+                    Self::to_balance().into(),
                 ),
             )
         });
@@ -99,21 +99,21 @@ impl Interface for crate::mock::Test {
         Ok(())
     }
 
-    fn from() -> <Self as frame_system::Config>::AccountId {
+    fn from_account_id() -> <Self as frame_system::Config>::AccountId {
         42
     }
 
-    fn withdraw_amount() -> FromBalanceOf<Self> {
+    fn from_balance() -> FromBalanceOf<Self> {
         100
     }
 
-    fn to() -> <Self as Config>::AccountIdTo {
+    fn to_account_id() -> <Self as Config>::AccountIdTo {
         use sp_std::str::FromStr;
 
         mock::EvmAccountId::from_str("1000000000000000000000000000000000000001").unwrap()
     }
 
-    fn deposit_amount() -> ToBalanceOf<Self> {
+    fn to_balance() -> ToBalanceOf<Self> {
         100
     }
 }
