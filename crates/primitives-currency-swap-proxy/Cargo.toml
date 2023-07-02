@@ -1,0 +1,15 @@
+[package]
+name = "primitives-currency-swap-proxy"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+primitives-currency-swap = { version = "0.1", path = "../primitives-currency-swap" }
+
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+
+[features]
+default = ["std"]
+std = ["frame-support/std", "primitives-currency-swap/std"]
+try-runtime = ["frame-support/try-runtime", "primitives-currency-swap/try-runtime"]
