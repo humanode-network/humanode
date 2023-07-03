@@ -68,7 +68,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     nonce: Default::default(),
                     storage: Default::default(),
                 };
-                map.insert(EvmBalancesPot::account_id(), init_genesis_account);
+                map.insert(EvmToNativeSwapBridgePot::account_id(), init_genesis_account);
                 map
             },
         },

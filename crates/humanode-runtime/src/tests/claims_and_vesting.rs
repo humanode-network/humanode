@@ -191,7 +191,7 @@ fn new_test_ext() -> sp_io::TestExternalities {
                     nonce: Default::default(),
                     storage: Default::default(),
                 };
-                map.insert(EvmBalancesPot::account_id(), init_genesis_account);
+                map.insert(EvmToNativeSwapBridgePot::account_id(), init_genesis_account);
                 map
             },
         },
@@ -342,7 +342,7 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         "nativeToEvmSwapBridgePot": {{
             "initialState": "Initialized"
         }},
-        "evmBalancesPot": {{
+        "evmToNativeSwapBridgePot": {{
             "initialState": "Initialized"
         }}
     }}"#

@@ -345,7 +345,7 @@ fn testnet_genesis(
         evm: EVMConfig {
             accounts: {
                 let evm_pot_accounts = vec![(
-                    humanode_runtime::EvmBalancesPot::account_id(),
+                    humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
                     evm_non_system_genesis_account(INITIAL_POT_ACCOUNT_BALANCE),
                 )];
 
@@ -368,7 +368,7 @@ fn testnet_genesis(
         treasury_pot: Default::default(),
         token_claims_pot: Default::default(),
         native_to_evm_swap_bridge_pot: Default::default(),
-        evm_balances_pot: Default::default(),
+        evm_to_native_swap_bridge_pot: Default::default(),
         token_claims: TokenClaimsConfig {
             claims: vec![(
                 EthereumAddress(hex!("bf0b5a4099f0bf6c8bc4252ebec548bae95602ea")),

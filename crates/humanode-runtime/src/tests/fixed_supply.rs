@@ -71,7 +71,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         },
         evm: EVMConfig {
             accounts: {
-                let evm_pot_accounts = vec![EvmBalancesPot::account_id()];
+                let evm_pot_accounts = vec![EvmToNativeSwapBridgePot::account_id()];
 
                 let init_genesis_account = fp_evm::GenesisAccount {
                     balance: INIT_BALANCE.into(),

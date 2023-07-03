@@ -66,7 +66,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         },
         evm: EVMConfig {
             accounts: {
-                let evm_pot_accounts = vec![EvmBalancesPot::account_id()];
+                let evm_pot_accounts = vec![EvmToNativeSwapBridgePot::account_id()];
 
                 let init_genesis_account = fp_evm::GenesisAccount {
                     balance: INIT_BALANCE.into(),
@@ -98,7 +98,8 @@ fn currency_swap_native_call() {
         let native_to_evm_swap_bridge_pot_before =
             Balances::total_balance(&NativeToEvmSwapBridgePot::account_id());
         let alice_evm_balance_before = EvmBalances::total_balance(&evm_account_id("EvmAlice"));
-        let evm_balances_pot_before = EvmBalances::total_balance(&EvmBalancesPot::account_id());
+        let evm_to_native_swap_bridge_pot_before =
+            EvmBalances::total_balance(&EvmToNativeSwapBridgePot::account_id());
         let swap_balance: Balance = 1000;
 
         // Make swap.
@@ -122,8 +123,8 @@ fn currency_swap_native_call() {
             alice_evm_balance_before + swap_balance
         );
         assert_eq!(
-            EvmBalances::total_balance(&EvmBalancesPot::account_id()),
-            evm_balances_pot_before - swap_balance
+            EvmBalances::total_balance(&EvmToNativeSwapBridgePot::account_id()),
+            evm_to_native_swap_bridge_pot_before - swap_balance
         );
     })
 }

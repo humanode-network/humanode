@@ -115,7 +115,7 @@ fn works() {
         "nativeToEvmSwapBridgePot": {
             "initialState": "Initialized"
         },
-        "evmBalancesPot": {
+        "evmToNativeSwapBridgePot": {
             "initialState": "Initialized"
         }
     }"#;
@@ -136,7 +136,7 @@ fn unknown_field() {
         `system`, `bootnodes`, `bioauth`, `babe`, `balances`, `treasuryPot`, \
         `feesPot`, `tokenClaimsPot`, `transactionPayment`, `session`, `chainProperties`, \
         `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, `dynamicFee`, `baseFee`, \
-        `imOnline`, `evmAccountsMapping`, `tokenClaims`, `nativeToEvmSwapBridgePot`, `evmBalancesPot` at line 1 column 6"
+        `imOnline`, `evmAccountsMapping`, `tokenClaims`, `nativeToEvmSwapBridgePot`, `evmToNativeSwapBridgePot` at line 1 column 6"
     );
 }
 
