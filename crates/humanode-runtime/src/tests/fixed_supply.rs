@@ -1,5 +1,8 @@
 //! Tests to verify fixed supply logic.
 
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::integer_arithmetic)]
+
 use std::str::FromStr;
 
 use frame_support::{
@@ -95,6 +98,33 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 
     // Make test externalities from the storage.
     storage.into()
+}
+
+fn assert_total_issuance() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        let native_to_evm_swap_bridge_pot =
+            Balances::total_balance(&NativeToEvmSwapBridgePot::account_id());
+        let evm_to_native_swap_bridge_pot =
+            EvmBalances::total_balance(&EvmToNativeSwapBridgePot::account_id());
+
+        let existential_deposit =
+            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+        let evm_existential_deposit =
+            <<Runtime as pallet_evm_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+
+        let total_issuance = Balances::total_issuance();
+        let evm_total_issuance = EvmBalances::total_issuance();
+
+        assert_eq!(
+            total_issuance,
+            evm_to_native_swap_bridge_pot - evm_existential_deposit
+        );
+        assert_eq!(
+            evm_total_issuance,
+            native_to_evm_swap_bridge_pot - existential_deposit
+        );
+    })
 }
 
 #[test]
