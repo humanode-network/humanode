@@ -397,8 +397,8 @@ parameter_types! {
     pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
     pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
     pub const TokenClaimsPotPalletId: PalletId = PalletId(*b"hmnd/tc1");
-    pub const NativeToEvmSwapBridgePotPalletId: PalletId = PalletId(*b"hmnd/sb1");
-    pub const EvmToNativeSwapBridgePotPalletId: PalletId = PalletId(*b"hmnd/se2");
+    pub const NativeToEvmSwapBridgePotPalletId: PalletId = PalletId(*b"hmcsb/ne");
+    pub const EvmToNativeSwapBridgePotPalletId: PalletId = PalletId(*b"hmcsb/en");
 }
 
 type PotInstanceTreasury = pallet_pot::Instance1;
