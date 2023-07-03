@@ -184,15 +184,17 @@ fn new_test_ext() -> sp_io::TestExternalities {
         },
         evm: EVMConfig {
             accounts: {
-                let mut map = BTreeMap::new();
-                let init_genesis_account = fp_evm::GenesisAccount {
-                    balance: INIT_BALANCE.into(),
-                    code: Default::default(),
-                    nonce: Default::default(),
-                    storage: Default::default(),
-                };
-                map.insert(EvmToNativeSwapBridgePot::account_id(), init_genesis_account);
-                map
+                let evm_pot_accounts = vec![(
+                    EvmToNativeSwapBridgePot::account_id(),
+                    fp_evm::GenesisAccount {
+                        balance: INIT_BALANCE.into(),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                )];
+
+                evm_pot_accounts.into_iter().collect::<BTreeMap<_, _>>()
             },
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1 },
