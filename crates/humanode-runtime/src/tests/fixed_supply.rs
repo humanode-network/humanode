@@ -1,10 +1,12 @@
 //! Tests to verify fixed supply logic.
 
 use frame_support::{
-    assert_ok,
-    dispatch::{DispatchClass, DispatchInfo, Pays},
+    assert_noop, assert_ok,
+    dispatch::{DispatchClass, DispatchError, DispatchInfo, Pays},
+    traits::{Currency, ExistenceRequirement},
     weights::Weight,
 };
+use sp_core::ByteArray;
 use sp_runtime::traits::SignedExtension;
 
 use super::*;
@@ -207,5 +209,37 @@ fn total_issuance_ethereum_transact() {
         assert_ok!(Ethereum::transact(evm_bob_origin.into(), legacy_transaction));
         // Check total issuance after executing ethereum transaction.
         assert_eq!(EvmBalances::total_issuance(), total_issuance_before);
+    })
+}
+
+#[test]
+fn total_issuance_evm_withdraw() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        let existential_deposit =
+            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+
+        // Check total issuance before making evm withdraw.
+        let total_issuance_before = Balances::total_issuance();
+
+        // Calculate bob related evm truncated address.
+        let bob_evm_truncated = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
+
+        // Send tokens to hashed_bob_evm to make withdraw from bob_evm.
+        assert_ok!(EvmBalances::transfer(
+            &evm_account_id("EvmAlice"),
+            &bob_evm_truncated,
+            INIT_BALANCE - existential_deposit - 1,
+            ExistenceRequirement::KeepAlive
+        ));
+
+        // Invoke the function under test.
+        assert_noop!(
+            EVM::withdraw(Some(account_id("Bob")).into(), bob_evm_truncated, 1000),
+            DispatchError::BadOrigin
+        );
+
+        // Check total issuance after making evm withdraw.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
