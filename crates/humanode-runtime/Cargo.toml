@@ -96,6 +96,7 @@ static_assertions = { version = "1.1.0", default-features = false }
 [dev-dependencies]
 crypto-utils = { version = "0.1", path = "../crypto-utils" }
 eip712-common-test-utils = { version = "0.1", path = "../eip712-common-test-utils" }
+precompile-utils = { path = "../precompile-utils", default-features = false }
 
 ethereum = "0.14"
 fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
@@ -190,6 +191,7 @@ std = [
   "precompile-bioauth/std",
   "precompile-currency-swap/std",
   "precompile-evm-accounts-mapping/std",
+  "precompile-utils/std",
   "primitives-auth-ticket/std",
   "primitives-currency-swap-proxy/std",
   "primitives-ethereum/std",
