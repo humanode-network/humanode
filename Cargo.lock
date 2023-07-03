@@ -3733,6 +3733,7 @@ dependencies = [
  "pallet-vesting",
  "parity-scale-codec",
  "precompile-bioauth",
+ "precompile-currency-swap",
  "precompile-evm-accounts-mapping",
  "primitives-auth-ticket",
  "primitives-ethereum",

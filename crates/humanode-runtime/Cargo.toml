@@ -29,6 +29,7 @@ pallet-pot = { version = "0.1", path = "../pallet-pot", default-features = false
 pallet-token-claims = { version = "0.1", path = "../pallet-token-claims", default-features = false }
 pallet-vesting = { version = "0.1", path = "../pallet-vesting", default-features = false }
 precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-features = false }
+precompile-currency-swap = { version = "0.1", path = "../precompile-currency-swap", default-features = false }
 precompile-evm-accounts-mapping = { version = "0.1", path = "../precompile-evm-accounts-mapping", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
 primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
@@ -186,6 +187,7 @@ std = [
   "pallet-utility/std",
   "pallet-vesting/std",
   "precompile-bioauth/std",
+  "precompile-currency-swap/std",
   "precompile-evm-accounts-mapping/std",
   "primitives-auth-ticket/std",
   "primitives-ethereum/std",

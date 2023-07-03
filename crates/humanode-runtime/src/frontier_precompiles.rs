@@ -3,9 +3,12 @@ use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use precompile_bioauth::Bioauth;
+use precompile_currency_swap::CurrencySwap;
 use precompile_evm_accounts_mapping::EvmAccountsMapping;
 use sp_core::H160;
 use sp_std::marker::PhantomData;
+
+use crate::{currency_swap::EvmToNativeOneToOne, AccountId, ConstU64, EvmAccountId};
 
 pub struct FrontierPrecompiles<R>(PhantomData<R>);
 
@@ -20,7 +23,7 @@ where
     R: pallet_evm::Config,
 {
     pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-        sp_std::vec![1_u64, 2, 3, 4, 5, 1024, 1025, 2048, 2049]
+        sp_std::vec![1_u64, 2, 3, 4, 5, 1024, 1025, 2048, 2049, 2304]
             .into_iter()
             .map(hash)
             .collect()
@@ -48,6 +51,12 @@ where
             // Humanode precompiles:
             a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
             a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
+            a if a == hash(2304) => Some(CurrencySwap::<
+                EvmToNativeOneToOne,
+                EvmAccountId,
+                AccountId,
+                ConstU64<200>,
+            >::execute(handle)),
             // Fallback
             _ => None,
         }
