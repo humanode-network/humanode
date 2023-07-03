@@ -41,7 +41,7 @@ fn works() {
                     500
                 ],
                 [
-                    "5EYCAe5h8DABNomrgzwXmXUNWubB11vNter6MkpCRZryyaVh",
+                    "5EYCAe5h8D3eoqQjYNXVzehEzFAnY7cFnhV8ahjqgo5VxmeP",
                     500
                 ]
             ]
@@ -86,7 +86,7 @@ fn works() {
         "ethereum": {},
         "evm": {
             "accounts": {
-                "0x6d6f646c686d6e642f7365320000000000000000": {
+                "0x6d6f646c686d63732f656e310000000000000000": {
                     "nonce": "0x0",
                     "balance": "0xd3c21bcecceda10001f4",
                     "storage": {},

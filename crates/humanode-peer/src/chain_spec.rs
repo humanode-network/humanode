@@ -54,7 +54,7 @@ pub fn evm_account_id(seed: &str) -> EvmAccountId {
 }
 
 /// The default Humanode ss58 prefix.
-pub const SS58_PREFIX: u16 = 5234;
+pub const SS58_PREFIX: u16 = 42;
 /// Default ethereum chain id.
 pub const ETH_CHAIN_ID: u64 = 5234;
 /// The development robonode public key.
