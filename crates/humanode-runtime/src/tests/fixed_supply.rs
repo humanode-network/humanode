@@ -26,7 +26,11 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: {
-                let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
+                let pot_accounts = vec![
+                    TreasuryPot::account_id(),
+                    FeesPot::account_id(),
+                    BalancesPot::account_id(),
+                ];
                 endowed_accounts
                     .iter()
                     .cloned()
@@ -67,6 +71,8 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         },
         evm: EVMConfig {
             accounts: {
+                let evm_pot_accounts = vec![EvmBalancesPot::account_id()];
+
                 let init_genesis_account = fp_evm::GenesisAccount {
                     balance: INIT_BALANCE.into(),
                     code: Default::default(),
@@ -76,6 +82,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 
                 evm_endowed_accounts
                     .into_iter()
+                    .chain(evm_pot_accounts.into_iter())
                     .map(|k| (k, init_genesis_account.clone()))
                     .collect::<BTreeMap<_, _>>()
             },

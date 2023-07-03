@@ -3,6 +3,8 @@
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
 
+use std::collections::BTreeMap;
+
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
 use frame_support::{
@@ -112,7 +114,11 @@ fn new_test_ext() -> sp_io::TestExternalities {
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: {
-                let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
+                let pot_accounts = vec![
+                    TreasuryPot::account_id(),
+                    FeesPot::account_id(),
+                    BalancesPot::account_id(),
+                ];
                 endowed_accounts
                     .iter()
                     .cloned()
@@ -175,6 +181,19 @@ fn new_test_ext() -> sp_io::TestExternalities {
                 ),
             ],
             total_claimable: Some(2 * VESTING_BALANCE),
+        },
+        evm: EVMConfig {
+            accounts: {
+                let mut map = BTreeMap::new();
+                let init_genesis_account = fp_evm::GenesisAccount {
+                    balance: INIT_BALANCE.into(),
+                    code: Default::default(),
+                    nonce: Default::default(),
+                    storage: Default::default(),
+                };
+                map.insert(EvmBalancesPot::account_id(), init_genesis_account);
+                map
+            },
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1 },
         ..Default::default()
@@ -248,6 +267,10 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
                     500
                 ],
                 [
+                    "5EYCAe5h8DABNomrgzwXmXUNWubB11vNter6MkpCRZryyaVh",
+                    500
+                ],
+                [
                     "5EYCAe5h8DABNonG7tbqC8bjDUw9jM1ewHJWssszZYbjkH2e",
                     {token_claim_pot_balance}
                 ]
@@ -292,7 +315,14 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         }},
         "ethereum": {{}},
         "evm": {{
-            "accounts": {{}}
+            "accounts": {{
+                "0x6d6f646c686d6e642f7365320000000000000000": {{
+                    "nonce": "0x0",
+                    "balance": "0xd3c21bcecceda10001f4",
+                    "storage": {{}},
+                    "code": []
+                }}
+            }}
         }},
         "dynamicFee": {{
             "minGasPrice": "0x0"
@@ -308,7 +338,13 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         "evmAccountsMapping": {{
             "mappings": []
         }},
-        "tokenClaims": {token_claims}
+        "tokenClaims": {token_claims},
+        "balancesPot": {{
+            "initialState": "Initialized"
+        }},
+        "evmBalancesPot": {{
+            "initialState": "Initialized"
+        }}
     }}"#
     )
 }
