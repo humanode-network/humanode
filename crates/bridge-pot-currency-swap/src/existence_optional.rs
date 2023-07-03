@@ -28,7 +28,7 @@ impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountIdFrom, T::Acco
 
         let outgoing_imbalance = match T::CurrencyTo::withdraw(
             &T::PotTo::get(),
-            T::BalanceCoverter::convert(amount),
+            T::BalanceConverter::convert(amount),
             WithdrawReasons::TRANSFER,
             ExistenceRequirement::AllowDeath,
         ) {
