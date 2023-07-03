@@ -103,8 +103,11 @@ fn total_issuance_transaction_fee() {
     new_test_ext_with().execute_with(move || {
         let existential_deposit =
             <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+
         // Check total issuance before making transfer.
         let total_issuance_before = Balances::total_issuance();
+        let evm_total_issuance_before = EvmBalances::total_issuance();
+
         // Make KeepAlive transfer.
         assert_ok!(Balances::transfer_keep_alive(
             Some(account_id("Bob")).into(),
@@ -113,6 +116,7 @@ fn total_issuance_transaction_fee() {
         ));
         // Check total issuance after making transfer.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
+        assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
     })
 }
 
@@ -124,6 +128,7 @@ fn total_issuance_dust_removal() {
             <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
         // Check total issuance before making transfer.
         let total_issuance_before = Balances::total_issuance();
+        let evm_total_issuance_before = EvmBalances::total_issuance();
 
         // Make AllowDeath transfer.
         assert_ok!(Balances::transfer(
@@ -133,6 +138,7 @@ fn total_issuance_dust_removal() {
         ));
         // Check total issuance after making transfer.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
+        assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
         // Check that the account is dead.
         assert!(!frame_system::Account::<Runtime>::contains_key(account_id(
             "Bob"
@@ -158,6 +164,7 @@ fn total_issuance_transaction_payment_validate() {
 
         // Check total issuance before making transaction validate.
         let total_issuance_before = Balances::total_issuance();
+        let evm_total_issuance_before = EvmBalances::total_issuance();
 
         assert_ok!(
             pallet_transaction_payment::ChargeTransactionPayment::<Runtime>::from(0).validate(
@@ -180,6 +187,7 @@ fn total_issuance_transaction_payment_validate() {
         // If you see this assertion start failing (while the *rest of the suite is ok*) - it might
         // mean that the liquidity drop at tx validation has been fixed.
         assert_ne!(Balances::total_issuance(), total_issuance_before);
+        assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
     })
 }
 
@@ -192,6 +200,7 @@ fn total_issuance_evm_withdraw() {
 
         // Check total issuance before making evm withdraw.
         let total_issuance_before = Balances::total_issuance();
+        let evm_total_issuance_before = EvmBalances::total_issuance();
 
         // Calculate bob related evm truncated address.
         let bob_evm_truncated = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
@@ -212,6 +221,7 @@ fn total_issuance_evm_withdraw() {
 
         // Check total issuance after making evm withdraw.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
+        assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
     })
 }
 
@@ -223,6 +233,7 @@ fn total_issuance_evm_call() {
 
         // Check total issuance before making evm call.
         let total_issuance_before = Balances::total_issuance();
+        let evm_total_issuance_before = EvmBalances::total_issuance();
 
         // Calculate bob related evm truncated address.
         let bob_evm_truncated = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
@@ -253,6 +264,7 @@ fn total_issuance_evm_call() {
 
         // Check total issuance after making evm call.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
+        assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
     })
 }
 
@@ -264,6 +276,7 @@ fn total_issuance_evm_create() {
 
         // Check total issuance before making evm create.
         let total_issuance_before = Balances::total_issuance();
+        let evm_total_issuance_before = EvmBalances::total_issuance();
 
         // Calculate bob related evm truncated address.
         let bob_evm_truncated = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
@@ -293,6 +306,7 @@ fn total_issuance_evm_create() {
 
         // Check total issuance after making evm call.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
+        assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
     })
 }
 
@@ -301,7 +315,8 @@ fn total_issuance_ethereum_transact() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Check total issuance before executing an ethereum transaction.
-        let total_issuance_before = EvmBalances::total_issuance();
+        let total_issuance_before = Balances::total_issuance();
+        let evm_total_issuance_before = EvmBalances::total_issuance();
 
         let evm_bob_origin =
             pallet_ethereum::RawOrigin::EthereumTransaction(evm_account_id("EvmBob"));
@@ -323,6 +338,7 @@ fn total_issuance_ethereum_transact() {
         // Execute an ethereum transaction.
         assert_ok!(Ethereum::transact(evm_bob_origin.into(), legacy_transaction));
         // Check total issuance after executing ethereum transaction.
-        assert_eq!(EvmBalances::total_issuance(), total_issuance_before);
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+        assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
     })
 }
