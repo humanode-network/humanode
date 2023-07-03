@@ -66,10 +66,10 @@ where
                     message = "unable to route the funds through the swap",
                     ?error
                 );
-                Fallback::on_unbalanceds(std::iter::once(incoming_imbalance));
+                Fallback::on_unbalanceds(sp_std::iter::once(incoming_imbalance));
                 return;
             }
         };
-        To::on_unbalanceds(std::iter::once(amount))
+        To::on_unbalanceds(sp_std::iter::once(amount))
     }
 }
