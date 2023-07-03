@@ -32,6 +32,7 @@ precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-
 precompile-currency-swap = { version = "0.1", path = "../precompile-currency-swap", default-features = false }
 precompile-evm-accounts-mapping = { version = "0.1", path = "../precompile-evm-accounts-mapping", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
+primitives-currency-swap-proxy = { version = "0.1", path = "../primitives-currency-swap-proxy", default-features = false }
 primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 vesting-schedule-linear = { version = "0.1", path = "../vesting-schedule-linear", default-features = false }
@@ -190,6 +191,7 @@ std = [
   "precompile-currency-swap/std",
   "precompile-evm-accounts-mapping/std",
   "primitives-auth-ticket/std",
+  "primitives-currency-swap-proxy/std",
   "primitives-ethereum/std",
   "robonode-crypto/std",
   "scale-info/std",
@@ -248,5 +250,6 @@ try-runtime = [
   "pallet-transaction-payment/try-runtime",
   "pallet-utility/try-runtime",
   "pallet-vesting/try-runtime",
+  "primitives-currency-swap-proxy/try-runtime",
   "sp-runtime/try-runtime",
 ]

@@ -37,3 +37,11 @@ impl bridge_pot_currency_swap::Config for EvmToNativeOneToOneConfig {
     type PotFrom = EvmBalancesPotAccountId;
     type PotTo = BalancesPotAccountId;
 }
+
+pub struct EvmToNativeProxy;
+
+impl primitives_currency_swap_proxy::Config for EvmToNativeProxy {
+    type AccountIdFrom = EvmAccountId;
+    type AccountIdTo = AccountId;
+    type CurrencySwap = EvmToNativeOneToOne;
+}

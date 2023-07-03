@@ -3736,6 +3736,7 @@ dependencies = [
  "precompile-currency-swap",
  "precompile-evm-accounts-mapping",
  "primitives-auth-ticket",
+ "primitives-currency-swap-proxy",
  "primitives-ethereum",
  "robonode-crypto",
  "scale-info",
