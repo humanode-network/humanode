@@ -1,5 +1,7 @@
 //! Tests to verify fixed supply logic.
 
+use std::str::FromStr;
+
 use frame_support::{
     assert_noop, assert_ok,
     dispatch::{DispatchClass, DispatchError, DispatchInfo, Pays},
@@ -209,6 +211,87 @@ fn total_issuance_evm_withdraw() {
         );
 
         // Check total issuance after making evm withdraw.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+#[test]
+fn total_issuance_evm_call() {
+    new_test_ext_with().execute_with(move || {
+        let existential_deposit =
+            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+
+        // Check total issuance before making evm call.
+        let total_issuance_before = Balances::total_issuance();
+
+        // Calculate bob related evm truncated address.
+        let bob_evm_truncated = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
+
+        // Send tokens to hashed_bob_evm to make call from bob_evm.
+        assert_ok!(EvmBalances::transfer(
+            &evm_account_id("EvmAlice"),
+            &bob_evm_truncated,
+            INIT_BALANCE - existential_deposit - 1,
+            ExistenceRequirement::KeepAlive
+        ));
+
+        assert_noop!(
+            EVM::call(
+                Some(account_id("Bob")).into(),
+                bob_evm_truncated,
+                H160::from_str("1000000000000000000000000000000000000001").unwrap(),
+                Vec::new(),
+                U256::from(1_000),
+                1000000,
+                U256::from(2_000_000_000),
+                Some(U256::from(1)),
+                Some(U256::from(0)),
+                Vec::new(),
+            ),
+            DispatchError::BadOrigin
+        );
+
+        // Check total issuance after making evm call.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+    })
+}
+
+#[test]
+fn total_issuance_evm_create() {
+    new_test_ext_with().execute_with(move || {
+        let existential_deposit =
+            <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+
+        // Check total issuance before making evm create.
+        let total_issuance_before = Balances::total_issuance();
+
+        // Calculate bob related evm truncated address.
+        let bob_evm_truncated = H160::from_slice(&account_id("Bob").as_slice()[0..20]);
+
+        // Send tokens to hashed_bob_evm to make create from bob_evm.
+        assert_ok!(EvmBalances::transfer(
+            &evm_account_id("EvmAlice"),
+            &bob_evm_truncated,
+            INIT_BALANCE - existential_deposit - 1,
+            ExistenceRequirement::KeepAlive
+        ));
+
+        assert_noop!(
+            EVM::create(
+                Some(account_id("Bob")).into(),
+                bob_evm_truncated,
+                Vec::new(),
+                U256::from(1_000),
+                1000000,
+                U256::from(2_000_000_000),
+                Some(U256::from(1)),
+                Some(U256::from(0)),
+                Vec::new(),
+            ),
+            DispatchError::BadOrigin
+        );
+
+        // Check total issuance after making evm call.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
