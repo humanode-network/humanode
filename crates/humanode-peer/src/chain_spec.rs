@@ -286,7 +286,7 @@ fn testnet_genesis(
                         INITIAL_POT_ACCOUNT_BALANCE,
                     ),
                     (
-                        humanode_runtime::BalancesPot::account_id(),
+                        humanode_runtime::NativeToEvmSwapBridgePot::account_id(),
                         INITIAL_POT_ACCOUNT_BALANCE,
                     ),
                 ];
@@ -367,7 +367,7 @@ fn testnet_genesis(
         fees_pot: Default::default(),
         treasury_pot: Default::default(),
         token_claims_pot: Default::default(),
-        balances_pot: Default::default(),
+        native_to_evm_swap_bridge_pot: Default::default(),
         evm_balances_pot: Default::default(),
         token_claims: TokenClaimsConfig {
             claims: vec![(

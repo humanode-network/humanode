@@ -112,7 +112,7 @@ fn works() {
             "claims": [],
             "totalClaimable": 0
         },
-        "balancesPot": {
+        "nativeToEvmSwapBridgePot": {
             "initialState": "Initialized"
         },
         "evmBalancesPot": {
@@ -136,7 +136,7 @@ fn unknown_field() {
         `system`, `bootnodes`, `bioauth`, `babe`, `balances`, `treasuryPot`, \
         `feesPot`, `tokenClaimsPot`, `transactionPayment`, `session`, `chainProperties`, \
         `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, `dynamicFee`, `baseFee`, \
-        `imOnline`, `evmAccountsMapping`, `tokenClaims`, `balancesPot`, `evmBalancesPot` at line 1 column 6"
+        `imOnline`, `evmAccountsMapping`, `tokenClaims`, `nativeToEvmSwapBridgePot`, `evmBalancesPot` at line 1 column 6"
     );
 }
 

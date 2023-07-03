@@ -22,7 +22,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                 let pot_accounts = vec![
                     TreasuryPot::account_id(),
                     FeesPot::account_id(),
-                    BalancesPot::account_id(),
+                    NativeToEvmSwapBridgePot::account_id(),
                 ];
                 endowed_accounts
                     .iter()

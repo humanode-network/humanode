@@ -397,14 +397,14 @@ parameter_types! {
     pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
     pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
     pub const TokenClaimsPotPalletId: PalletId = PalletId(*b"hmnd/tc1");
-    pub const CurrencySwapBalancesPotPalletId: PalletId = PalletId(*b"hmnd/sb1");
+    pub const NativeToEvmSwapBridgePotPalletId: PalletId = PalletId(*b"hmnd/sb1");
     pub const CurrencySwapEvmBalancesPotPalletId: PalletId = PalletId(*b"hmnd/se2");
 }
 
 type PotInstanceTreasury = pallet_pot::Instance1;
 type PotInstanceFees = pallet_pot::Instance2;
 type PotInstanceTokenClaims = pallet_pot::Instance3;
-type PotInstanceCurrencySwapBalances = pallet_pot::Instance4;
+type PotInstanceNativeToEvmSwapBridge = pallet_pot::Instance4;
 type PotInstanceCurrencySwapEvmBalances = pallet_pot::Instance5;
 
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
@@ -428,10 +428,10 @@ impl pallet_pot::Config<PotInstanceTokenClaims> for Runtime {
     type Currency = Balances;
 }
 
-impl pallet_pot::Config<PotInstanceCurrencySwapBalances> for Runtime {
+impl pallet_pot::Config<PotInstanceNativeToEvmSwapBridge> for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = AccountId;
-    type PalletId = CurrencySwapBalancesPotPalletId;
+    type PalletId = NativeToEvmSwapBridgePotPalletId;
     type Currency = Balances;
 }
 
@@ -827,7 +827,7 @@ construct_runtime!(
         Utility: pallet_utility = 30,
         EvmSystem: pallet_evm_system = 31,
         EvmBalances: pallet_evm_balances = 32,
-        BalancesPot: pallet_pot::<Instance4> = 33,
+        NativeToEvmSwapBridgePot: pallet_pot::<Instance4> = 33,
         EvmBalancesPot: pallet_pot::<Instance5> = 34,
         CurrencySwap: pallet_currency_swap = 35,
     }

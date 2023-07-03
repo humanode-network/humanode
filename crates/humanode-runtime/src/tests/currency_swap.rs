@@ -27,7 +27,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                 let pot_accounts = vec![
                     TreasuryPot::account_id(),
                     FeesPot::account_id(),
-                    BalancesPot::account_id(),
+                    NativeToEvmSwapBridgePot::account_id(),
                 ];
                 endowed_accounts
                     .iter()
@@ -95,7 +95,8 @@ fn currency_swap_native_call() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         let alice_balance_before = Balances::total_balance(&account_id("Alice"));
-        let balances_pot_before = Balances::total_balance(&BalancesPot::account_id());
+        let native_to_evm_swap_bridge_pot_before =
+            Balances::total_balance(&NativeToEvmSwapBridgePot::account_id());
         let alice_evm_balance_before = EvmBalances::total_balance(&evm_account_id("EvmAlice"));
         let evm_balances_pot_before = EvmBalances::total_balance(&EvmBalancesPot::account_id());
         let swap_balance: Balance = 1000;
@@ -113,8 +114,8 @@ fn currency_swap_native_call() {
             alice_balance_before - swap_balance
         );
         assert_eq!(
-            Balances::total_balance(&BalancesPot::account_id()),
-            balances_pot_before + swap_balance
+            Balances::total_balance(&NativeToEvmSwapBridgePot::account_id()),
+            native_to_evm_swap_bridge_pot_before + swap_balance
         );
         assert_eq!(
             EvmBalances::total_balance(&evm_account_id("EvmAlice")),

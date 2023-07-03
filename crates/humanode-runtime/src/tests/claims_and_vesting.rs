@@ -117,7 +117,7 @@ fn new_test_ext() -> sp_io::TestExternalities {
                 let pot_accounts = vec![
                     TreasuryPot::account_id(),
                     FeesPot::account_id(),
-                    BalancesPot::account_id(),
+                    NativeToEvmSwapBridgePot::account_id(),
                 ];
                 endowed_accounts
                     .iter()
@@ -339,7 +339,7 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
             "mappings": []
         }},
         "tokenClaims": {token_claims},
-        "balancesPot": {{
+        "nativeToEvmSwapBridgePot": {{
             "initialState": "Initialized"
         }},
         "evmBalancesPot": {{
