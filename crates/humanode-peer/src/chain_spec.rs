@@ -285,6 +285,10 @@ fn testnet_genesis(
                         humanode_runtime::TokenClaimsPot::account_id(),
                         INITIAL_POT_ACCOUNT_BALANCE,
                     ),
+                    (
+                        humanode_runtime::BalancesPot::account_id(),
+                        INITIAL_POT_ACCOUNT_BALANCE,
+                    ),
                 ];
                 pot_accounts
                     .into_iter()
@@ -340,9 +344,18 @@ fn testnet_genesis(
         },
         evm: EVMConfig {
             accounts: {
-                evm_endowed_accounts
+                let evm_pot_accounts = vec![(
+                    humanode_runtime::EvmBalancesPot::account_id(),
+                    evm_non_system_genesis_account(INITIAL_POT_ACCOUNT_BALANCE),
+                )];
+
+                evm_pot_accounts
                     .into_iter()
-                    .map(|k| (k, evm_non_system_genesis_account(DEV_ACCOUNT_BALANCE)))
+                    .chain(
+                        evm_endowed_accounts
+                            .into_iter()
+                            .map(|k| (k, evm_non_system_genesis_account(DEV_ACCOUNT_BALANCE))),
+                    )
                     .collect::<BTreeMap<_, _>>()
             },
         },
