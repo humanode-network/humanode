@@ -6871,6 +6871,7 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "primitives-currency-swap",
+ "sp-std",
 ]
 
 [[package]]

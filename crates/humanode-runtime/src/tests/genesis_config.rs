@@ -81,20 +81,7 @@ fn works() {
         },
         "ethereum": {},
         "evm": {
-            "accounts": {
-                "0x6d6f646c686d6e642f6665320000000000000000": {
-                    "nonce": "0x0",
-                    "balance": "0xd3c21bcecceda10001f4",
-                    "storage": {},
-                    "code": []
-                },
-                "0x6d6f646c686d6e642f7472320000000000000000": {
-                    "nonce": "0x0",
-                    "balance": "0xd3c21bcecceda10001f4",
-                    "storage": {},
-                    "code": []
-                }
-            }
+            "accounts": {}
         },
         "dynamicFee": {
             "minGasPrice": "0x0"
