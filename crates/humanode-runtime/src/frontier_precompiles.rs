@@ -8,7 +8,7 @@ use precompile_evm_accounts_mapping::EvmAccountsMapping;
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
-use crate::{currency_swap::EvmToNativeOneToOne, AccountId, ConstU64, EvmAccountId};
+use crate::{currency_swap, AccountId, ConstU64, EvmAccountId};
 
 pub struct FrontierPrecompiles<R>(PhantomData<R>);
 
@@ -52,7 +52,7 @@ where
             a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
             a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
             a if a == hash(2304) => Some(CurrencySwap::<
-                EvmToNativeOneToOne,
+                currency_swap::EvmToNativeOneToOne,
                 EvmAccountId,
                 AccountId,
                 ConstU64<200>,
