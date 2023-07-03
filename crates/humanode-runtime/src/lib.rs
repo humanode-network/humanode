@@ -644,11 +644,7 @@ impl pallet_evm_balances::Config for Runtime {
     type Balance = Balance;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = EvmSystem;
-    type DustRemoval = primitives_currency_swap_proxy::SwapUnbalanced<
-        currency_swap::EvmToNativeProxy,
-        TreasuryPot,
-        EvmToNativeSwapBridgePot,
-    >;
+    type DustRemoval = currency_swap::TreasuryPotProxy;
 }
 
 impl pallet_currency_swap::Config for Runtime {
@@ -674,14 +670,8 @@ impl pallet_evm::Config for Runtime {
     type PrecompilesValue = PrecompilesValue;
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
-    type OnChargeTransaction = fixed_supply::EvmTransactionCharger<
-        EvmBalances,
-        primitives_currency_swap_proxy::SwapUnbalanced<
-            currency_swap::EvmToNativeProxy,
-            FeesPot,
-            EvmToNativeSwapBridgePot,
-        >,
-    >;
+    type OnChargeTransaction =
+        fixed_supply::EvmTransactionCharger<EvmBalances, currency_swap::FeesPotProxy>;
     type OnCreate = ();
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,

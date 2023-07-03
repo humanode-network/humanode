@@ -3,7 +3,7 @@ use sp_runtime::traits::Identity;
 
 use crate::{
     parameter_types, AccountId, Balances, EvmAccountId, EvmBalances, EvmToNativeSwapBridgePot,
-    NativeToEvmSwapBridgePot,
+    FeesPot, NativeToEvmSwapBridgePot, TreasuryPot,
 };
 
 parameter_types! {
@@ -39,10 +39,22 @@ impl bridge_pot_currency_swap::Config for EvmToNativeOneToOneConfig {
     type PotTo = NativeToEvmSwapBridgePotAccountId;
 }
 
-pub struct EvmToNativeProxy;
+pub struct EvmToNativeProxyConfig;
 
-impl primitives_currency_swap_proxy::Config for EvmToNativeProxy {
+impl primitives_currency_swap_proxy::Config for EvmToNativeProxyConfig {
     type AccountIdFrom = EvmAccountId;
     type AccountIdTo = AccountId;
     type CurrencySwap = EvmToNativeOneToOne;
 }
+
+pub type FeesPotProxy = primitives_currency_swap_proxy::SwapUnbalanced<
+    EvmToNativeProxyConfig,
+    FeesPot,
+    EvmToNativeSwapBridgePot,
+>;
+
+pub type TreasuryPotProxy = primitives_currency_swap_proxy::SwapUnbalanced<
+    EvmToNativeProxyConfig,
+    TreasuryPot,
+    EvmToNativeSwapBridgePot,
+>;
