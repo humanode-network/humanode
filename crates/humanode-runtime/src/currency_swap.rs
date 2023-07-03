@@ -19,7 +19,7 @@ impl bridge_pot_currency_swap::Config for NativeToEvmOneToOneConfig {
     type AccountIdTo = EvmAccountId;
     type CurrencyFrom = Balances;
     type CurrencyTo = EvmBalances;
-    type BalanceCoverter = Identity;
+    type BalanceConverter = Identity;
     type PotFrom = BalancesPotAccountId;
     type PotTo = EvmBalancesPotAccountId;
 }
@@ -33,7 +33,7 @@ impl bridge_pot_currency_swap::Config for EvmToNativeOneToOneConfig {
     type AccountIdTo = AccountId;
     type CurrencyFrom = EvmBalances;
     type CurrencyTo = Balances;
-    type BalanceCoverter = Identity;
+    type BalanceConverter = Identity;
     type PotFrom = EvmBalancesPotAccountId;
     type PotTo = BalancesPotAccountId;
 }
