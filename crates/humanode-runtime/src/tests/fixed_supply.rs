@@ -1,7 +1,5 @@
 //! Tests to verify fixed supply logic.
 
-use std::collections::BTreeMap;
-
 use frame_support::{
     assert_ok,
     dispatch::{DispatchClass, DispatchInfo, Pays},
@@ -84,7 +82,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     .into_iter()
                     .chain(evm_pot_accounts.into_iter())
                     .map(|k| (k, init_genesis_account.clone()))
-                    .collect::<BTreeMap<_, _>>()
+                    .collect()
             },
         },
         ..Default::default()

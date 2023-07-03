@@ -1,7 +1,5 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
-use std::collections::BTreeMap;
-
 use crypto_utils::{authority_keys_from_seed, evm_account_from_seed, get_account_id_from_seed};
 use frame_support::BoundedVec;
 use hex_literal::hex;
@@ -356,7 +354,7 @@ fn testnet_genesis(
                             .into_iter()
                             .map(|k| (k, evm_genesis_account(DEV_ACCOUNT_BALANCE))),
                     )
-                    .collect::<BTreeMap<_, _>>()
+                    .collect()
             },
         },
         evm_accounts_mapping: Default::default(),

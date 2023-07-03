@@ -3,8 +3,6 @@
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
 
-use std::collections::BTreeMap;
-
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
 use frame_support::{
@@ -194,7 +192,7 @@ fn new_test_ext() -> sp_io::TestExternalities {
                     },
                 )];
 
-                evm_pot_accounts.into_iter().collect::<BTreeMap<_, _>>()
+                evm_pot_accounts.into_iter().collect()
             },
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1 },

@@ -1,7 +1,5 @@
 //! Tests to verify the fee prices.
 
-use std::collections::BTreeMap;
-
 use super::*;
 use crate::dev_utils::*;
 use crate::opaque::SessionKeys;
@@ -71,7 +69,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     },
                 )];
 
-                evm_pot_accounts.into_iter().collect::<BTreeMap<_, _>>()
+                evm_pot_accounts.into_iter().collect()
             },
         },
         ..Default::default()

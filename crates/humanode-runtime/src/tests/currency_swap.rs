@@ -3,8 +3,6 @@
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
 
-use std::collections::BTreeMap;
-
 use frame_support::{assert_ok, traits::Currency};
 
 use super::*;
@@ -79,7 +77,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     .into_iter()
                     .chain(evm_pot_accounts.into_iter())
                     .map(|k| (k, init_genesis_account.clone()))
-                    .collect::<BTreeMap<_, _>>()
+                    .collect()
             },
         },
         ..Default::default()
