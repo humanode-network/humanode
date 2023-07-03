@@ -180,7 +180,7 @@ fn total_issuance_transaction_payment_validate() {
 }
 
 #[test]
-fn total_issuance_ethereum_execute() {
+fn total_issuance_ethereum_transact() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Check total issuance before executing an ethereum transaction.
