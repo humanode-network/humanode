@@ -83,7 +83,7 @@ fn dev_robonode_public_key(default: &'static [u8]) -> Result<robonode::PublicKey
     .map_err(|err| format!("unable to parse robonode public key: {err:?}"))
 }
 
-/// A helper function to construct non system evm genesis account with predefined balance.
+/// A helper function to construct an EVM genesis account with a predefined balance.
 fn evm_genesis_account(init_balance: Balance) -> fp_evm::GenesisAccount {
     fp_evm::GenesisAccount {
         balance: init_balance.into(),
