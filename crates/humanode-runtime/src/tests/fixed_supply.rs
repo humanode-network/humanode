@@ -341,22 +341,27 @@ fn total_issuance_evm_create() {
 }
 
 #[test]
-fn total_issuance_ethereum_transact() {
+fn total_issuance_transaction_fee_ethereum_transact() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Check total issuance before executing an ethereum transaction.
         let total_issuance_before = Balances::total_issuance();
         let evm_total_issuance_before = EvmBalances::total_issuance();
 
+        // Check fees pot balance before executing an ethereum transaction.
+        let fees_pot_balance_before = Balances::total_balance(&FeesPot::account_id());
+
         let evm_bob_origin =
             pallet_ethereum::RawOrigin::EthereumTransaction(evm_account_id("EvmBob"));
+        let gas_price = 20_000_000_000_u128;
+        let gas_limit = 21000;
 
         // This test legacy data transaction obtained from
         // <https://github.com/rust-blockchain/ethereum/blob/0ffbe47d1da71841be274442a3050da9c895e10a/src/transaction.rs#L788>.
         let legacy_transaction = pallet_ethereum::Transaction::Legacy(ethereum::LegacyTransaction {
 			nonce: 0.into(),
-			gas_price: 20_000_000_000_u64.into(),
-			gas_limit: 21000.into(),
+			gas_price: gas_price.into(),
+			gas_limit: gas_limit.into(),
 			action: ethereum::TransactionAction::Call(
 				hex_literal::hex!("727fc6a68321b754475c668a6abfb6e9e71c169a").into(),
 			),
@@ -367,8 +372,46 @@ fn total_issuance_ethereum_transact() {
 
         // Execute an ethereum transaction.
         assert_ok!(Ethereum::transact(evm_bob_origin.into(), legacy_transaction));
+
         // Check total issuance after executing ethereum transaction.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
         assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
+        // Check fees pot balance after executing ethereum transaction.
+        assert_eq!(Balances::total_balance(&FeesPot::account_id()), fees_pot_balance_before + (gas_price * gas_limit));
+    })
+}
+
+#[test]
+fn total_issuance_dust_removal_evm_transfer() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        let evm_existential_deposit =
+            <<Runtime as pallet_evm_balances::Config>::ExistentialDeposit as Get<u128>>::get();
+        let treasury_pot_before = Balances::total_balance(&TreasuryPot::account_id());
+
+        // Check total issuance before executing an ethereum transaction.
+        let total_issuance_before = Balances::total_issuance();
+        let evm_total_issuance_before = EvmBalances::total_issuance();
+
+        // Make AllowDeath transfer.
+        assert_ok!(EvmBalances::transfer(
+            &evm_account_id("EvmBob"),
+            &evm_account_id("EvmAlice"),
+            INIT_BALANCE - evm_existential_deposit + 1,
+            ExistenceRequirement::AllowDeath
+        ));
+
+        // Check total issuance after making transfer.
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
+        assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
+        // Check that the account is dead.
+        assert!(!pallet_evm_system::Account::<Runtime>::contains_key(
+            evm_account_id("EvmBob")
+        ));
+        // Check that treasury pot account balance has been updated properly.
+        assert_eq!(
+            Balances::total_balance(&TreasuryPot::account_id()),
+            treasury_pot_before + evm_existential_deposit - 1
+        );
     })
 }

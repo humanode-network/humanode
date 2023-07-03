@@ -126,38 +126,3 @@ fn currency_swap_native_call() {
         );
     })
 }
-
-#[test]
-fn currency_swap_proxy_ethereum_execute() {
-    // Build the state from the config.
-    new_test_ext_with().execute_with(move || {
-        // Check fees pot balance before executing an ethereum transaction.
-        let fees_pot_balance_before = Balances::total_balance(&FeesPot::account_id());
-
-        let evm_bob_origin =
-            pallet_ethereum::RawOrigin::EthereumTransaction(evm_account_id("EvmBob"));
-
-        let gas_price = 20_000_000_000_u128;
-        let gas_limit = 21000;
-
-        // This test legacy data transaction obtained from
-        // <https://github.com/rust-blockchain/ethereum/blob/0ffbe47d1da71841be274442a3050da9c895e10a/src/transaction.rs#L788>.
-        let legacy_transaction = pallet_ethereum::Transaction::Legacy(ethereum::LegacyTransaction {
-			nonce: 0.into(),
-			gas_price: gas_price.into(),
-			gas_limit: gas_limit.into(),
-			action: ethereum::TransactionAction::Call(
-				hex_literal::hex!("727fc6a68321b754475c668a6abfb6e9e71c169a").into(),
-			),
-			value: U256::from(10) * 1_000_000_000 * 1_000_000_000,
-			input: hex_literal::hex!("a9059cbb000000000213ed0f886efd100b67c7e4ec0a85a7d20dc971600000000000000000000015af1d78b58c4000").into(),
-			signature: ethereum::TransactionSignature::new(38, hex_literal::hex!("be67e0a07db67da8d446f76add590e54b6e92cb6b8f9835aeb67540579a27717").into(), hex_literal::hex!("2d690516512020171c1ec870f6ff45398cc8609250326be89915fb538e7bd718").into()).unwrap(),
-		});
-
-        // Execute an ethereum transaction.
-        assert_ok!(Ethereum::transact(evm_bob_origin.into(), legacy_transaction));
-
-        // Check fees pot balance after executing ethereum transaction.
-        assert_eq!(Balances::total_balance(&FeesPot::account_id()), fees_pot_balance_before + (gas_price * gas_limit));
-    })
-}
