@@ -10,6 +10,7 @@ substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate"
 [dependencies]
 author-ext-api = { version = "0.1", path = "../author-ext-api", default-features = false }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
+bridge-pot-currency-swap = { version = "0.1", path = "../bridge-pot-currency-swap", default-features = false }
 eip191-crypto = { version = "0.1", path = "../eip191-crypto", default-features = false }
 eip191-token-claim = { version = "0.1", path = "../eip191-token-claim", default-features = false }
 eip712-account-claim = { version = "0.1", path = "../eip712-account-claim", default-features = false }
@@ -20,6 +21,7 @@ pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features
 pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
 pallet-chain-properties = { version = "0.1", path = "../pallet-chain-properties", default-features = false }
 pallet-chain-start-moment = { version = "0.1", path = "../pallet-chain-start-moment", default-features = false }
+pallet-currency-swap = { version = "0.1", path = "../pallet-currency-swap", default-features = false }
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
@@ -115,6 +117,7 @@ runtime-benchmarks = [
   "pallet-balances/runtime-benchmarks",
   "pallet-bioauth/runtime-benchmarks",
   "pallet-bootnodes/runtime-benchmarks",
+  "pallet-currency-swap/runtime-benchmarks",
   "pallet-ethereum/runtime-benchmarks",
   "pallet-evm-accounts-mapping/runtime-benchmarks",
   "pallet-evm/runtime-benchmarks",
@@ -132,6 +135,7 @@ runtime-benchmarks = [
 std = [
   "author-ext-api/std",
   "bioauth-flow-api/std",
+  "bridge-pot-currency-swap/std",
   "chrono/std",
   "codec/std",
   "eip191-crypto/std",
@@ -156,6 +160,7 @@ std = [
   "pallet-bootnodes/std",
   "pallet-chain-properties/std",
   "pallet-chain-start-moment/std",
+  "pallet-currency-swap/std",
   "pallet-dynamic-fee/std",
   "pallet-ethereum-chain-id/std",
   "pallet-ethereum/std",
@@ -206,6 +211,7 @@ std = [
   "vesting-scheduling-timestamp/std",
 ]
 try-runtime = [
+  "bridge-pot-currency-swap/try-runtime",
   "fp-self-contained/try-runtime",
   "frame-executive/try-runtime",
   "frame-support/try-runtime",
@@ -219,6 +225,7 @@ try-runtime = [
   "pallet-bootnodes/try-runtime",
   "pallet-chain-properties/try-runtime",
   "pallet-chain-start-moment/try-runtime",
+  "pallet-currency-swap/try-runtime",
   "pallet-dynamic-fee/try-runtime",
   "pallet-ethereum-chain-id/try-runtime",
   "pallet-ethereum/try-runtime",

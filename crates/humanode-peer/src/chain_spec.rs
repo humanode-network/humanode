@@ -354,6 +354,8 @@ fn testnet_genesis(
         fees_pot: Default::default(),
         treasury_pot: Default::default(),
         token_claims_pot: Default::default(),
+        balances_pot: Default::default(),
+        evm_balances_pot: Default::default(),
         token_claims: TokenClaimsConfig {
             claims: vec![(
                 EthereumAddress(hex!("bf0b5a4099f0bf6c8bc4252ebec548bae95602ea")),
