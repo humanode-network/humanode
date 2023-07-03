@@ -31,7 +31,7 @@ pub trait Config {
 
     /// The converter to determine how the balance amount should be converted from one currency to
     /// another.
-    type BalanceCoverter: Convert<
+    type BalanceConverter: Convert<
         <Self::CurrencyFrom as Currency<Self::AccountIdFrom>>::Balance,
         <Self::CurrencyTo as Currency<Self::AccountIdTo>>::Balance,
     >;
