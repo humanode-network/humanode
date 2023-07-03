@@ -84,7 +84,7 @@ fn dev_robonode_public_key(default: &'static [u8]) -> Result<robonode::PublicKey
 }
 
 /// A helper function to construct non system evm genesis account with predefined balance.
-fn evm_non_system_genesis_account(init_balance: Balance) -> fp_evm::GenesisAccount {
+fn evm_genesis_account(init_balance: Balance) -> fp_evm::GenesisAccount {
     fp_evm::GenesisAccount {
         balance: init_balance.into(),
         code: Default::default(),
@@ -346,7 +346,7 @@ fn testnet_genesis(
             accounts: {
                 let evm_pot_accounts = vec![(
                     humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
-                    evm_non_system_genesis_account(INITIAL_POT_ACCOUNT_BALANCE),
+                    evm_genesis_account(INITIAL_POT_ACCOUNT_BALANCE),
                 )];
 
                 evm_pot_accounts
@@ -354,7 +354,7 @@ fn testnet_genesis(
                     .chain(
                         evm_endowed_accounts
                             .into_iter()
-                            .map(|k| (k, evm_non_system_genesis_account(DEV_ACCOUNT_BALANCE))),
+                            .map(|k| (k, evm_genesis_account(DEV_ACCOUNT_BALANCE))),
                     )
                     .collect::<BTreeMap<_, _>>()
             },
