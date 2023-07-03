@@ -5,11 +5,11 @@ edition = "2021"
 publish = false
 
 [dependencies]
-ed25519-dalek = { version = "1", default-features = false, features = ["rand", "u64_backend"] }
+ed25519-dalek = { version = "2.0.0-rc.3", default-features = false, features = ["rand_core", "zeroize"] }
 
 [dev-dependencies]
 hex-literal = "0.4.1"
-rand = "0.7"
+rand = "0.8"
 
 [features]
 default = ["std"]

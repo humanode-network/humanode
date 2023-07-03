@@ -8,4 +8,4 @@ publish = false
 robonode-crypto = { version = "0.1", path = "../robonode-crypto" }
 
 hex = "0.4"
-rand = "0.7"
+rand = "0.8"

@@ -1,0 +1,51 @@
+[package]
+name = "pallet-currency-swap"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+primitives-currency-swap = { version = "0.1", path = "../primitives-currency-swap", default-features = false }
+
+codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
+frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", optional = true }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
+sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+
+[dev-dependencies]
+mockall = "0.11"
+pallet-balances = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+pallet-evm-balances = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+pallet-evm-system = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+
+[features]
+default = ["std"]
+runtime-benchmarks = [
+  "frame-benchmarking/runtime-benchmarks",
+  "frame-support/runtime-benchmarks",
+  "frame-system/runtime-benchmarks",
+  "pallet-balances/runtime-benchmarks",
+  "sp-runtime/runtime-benchmarks",
+]
+std = [
+  "codec/std",
+  "frame-support/std",
+  "frame-system/std",
+  "primitives-currency-swap/std",
+  "scale-info/std",
+  "sp-runtime/std",
+  "sp-std/std",
+]
+try-runtime = [
+  "frame-support/try-runtime",
+  "frame-system/try-runtime",
+  "pallet-balances/try-runtime",
+  "pallet-evm-balances/try-runtime",
+  "pallet-evm-system/try-runtime",
+  "primitives-currency-swap/try-runtime",
+  "sp-runtime/try-runtime",
+]

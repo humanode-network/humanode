@@ -29,7 +29,10 @@ pub fn make(input: Input) -> Result<Output, anyhow::Error> {
         robonode_keypair,
     } = input;
 
-    let robonode_keypair = Keypair::from_bytes(&robonode_keypair)?;
+    let mut robonode_keypair_buf = [0u8; 64];
+    robonode_keypair_buf.copy_from_slice(&robonode_keypair);
+
+    let robonode_keypair = Keypair::from_keypair_bytes(&robonode_keypair_buf)?;
 
     let opaque_auth_ticket = OpaqueAuthTicket::from(&auth_ticket);
 
@@ -47,6 +50,6 @@ pub fn make(input: Input) -> Result<Output, anyhow::Error> {
     Ok(Output {
         auth_ticket: opaque_auth_ticket.into(),
         robonode_signature: robonode_signature.into(),
-        robonode_public_key: robonode_keypair.public.as_bytes()[..].into(),
+        robonode_public_key: robonode_keypair.as_ref().as_bytes()[..].into(),
     })
 }
