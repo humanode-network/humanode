@@ -8,7 +8,7 @@ use sp_std::str::FromStr;
 
 use crate::{mock::*, *};
 
-/// This test verifies that [`swap`] call works as expected in case origin left balances amount
+/// This test verifies that swap call works as expected in case origin left balances amount
 /// is greater or equal than existential deposit.
 #[test]
 fn swap_works() {
@@ -65,7 +65,7 @@ fn swap_works() {
     });
 }
 
-/// This test verifies that [`swap`] call works as expected in case origin left balances amount
+/// This test verifies that swap call works as expected in case origin left balances amount
 /// is less than existential deposit. The origin account should be killed.
 #[test]
 fn swap_works_kill_origin() {
@@ -119,7 +119,7 @@ fn swap_works_kill_origin() {
     });
 }
 
-/// This test verifies that [`swap_keep_alive`] call works in the happy path.
+/// This test verifies that `swap_keep_alive` call works in the happy path.
 #[test]
 fn swap_keep_alive_works() {
     new_test_ext().execute_with_ext(|_| {
@@ -175,7 +175,7 @@ fn swap_keep_alive_works() {
     });
 }
 
-/// This test verifies that [`swap`] call fails in case some error happens during the actual swap logic.
+/// This test verifies that swap call fails in case some error happens during the actual swap logic.
 #[test]
 fn swap_fails() {
     new_test_ext().execute_with_ext(|_| {
@@ -217,7 +217,7 @@ fn swap_fails() {
     });
 }
 
-/// This test verifies that [`swap_keep_alive`] call fails in case origin left balances amount
+/// This test verifies that `swap_keep_alive` call fails in case origin left balances amount
 /// is less than existential deposit. The call should prevent swap operation.
 #[test]
 fn swap_keep_alive_fails() {

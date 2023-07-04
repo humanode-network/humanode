@@ -114,7 +114,7 @@ pub mod pallet {
             })
         }
 
-        /// Same as the [`swap`] call, but with a check that the swap will not kill the origin account.
+        /// Same as the swap call, but with a check that the swap will not kill the origin account.
         #[pallet::call_index(1)]
         #[pallet::weight(T::WeightInfo::swap_keep_alive())]
         pub fn swap_keep_alive(
