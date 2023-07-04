@@ -69,7 +69,7 @@ impl pallet_balances::Config for Test {
     type Balance = u64;
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
-    type ExistentialDeposit = ConstU64<1>;
+    type ExistentialDeposit = ConstU64<10>;
     type AccountStore = System;
     type MaxLocks = ();
     type MaxReserves = ();
@@ -90,7 +90,7 @@ impl pallet_evm_balances::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = EvmAccountId;
     type Balance = Balance;
-    type ExistentialDeposit = ConstU64<1>;
+    type ExistentialDeposit = ConstU64<10>;
     type AccountStore = EvmSystem;
     type DustRemoval = ();
 }

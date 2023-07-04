@@ -6,10 +6,17 @@ use frame_support::weights::Weight;
 pub trait WeightInfo {
     /// A function to calculate required weights for swap call.
     fn swap() -> Weight;
+
+    /// A function to calculate required weights for `swap_keep_alive` call.
+    fn swap_keep_alive() -> Weight;
 }
 
 impl WeightInfo for () {
     fn swap() -> Weight {
+        Weight::zero()
+    }
+
+    fn swap_keep_alive() -> Weight {
         Weight::zero()
     }
 }
