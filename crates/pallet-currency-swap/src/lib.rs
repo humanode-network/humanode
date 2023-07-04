@@ -108,33 +108,64 @@ pub mod pallet {
             let who = ensure_signed(origin)?;
 
             with_storage_layer(move || {
-                let withdrawed_imbalance = FromCurrencyOf::<T>::withdraw(
-                    &who,
-                    amount,
-                    WithdrawReasons::TRANSFER,
-                    ExistenceRequirement::AllowDeath,
-                )?;
-                let withdrawed_amount = withdrawed_imbalance.peek();
-
-                let deposited_imbalance =
-                    T::CurrencySwap::swap(withdrawed_imbalance).map_err(|error| {
-                        // Here we undo the withdrawl to avoid having a dangling imbalance.
-                        FromCurrencyOf::<T>::resolve_creating(&who, error.incoming_imbalance);
-                        error.cause.into()
-                    })?;
-                let deposited_amount = deposited_imbalance.peek();
-
-                ToCurrencyOf::<T>::resolve_creating(&to, deposited_imbalance);
-
-                Self::deposit_event(Event::BalancesSwapped {
-                    from: who,
-                    withdrawed_amount,
-                    to,
-                    deposited_amount,
-                });
+                Self::do_swap(who, to, amount, ExistenceRequirement::AllowDeath)?;
 
                 Ok(())
             })
+        }
+
+        /// Same as the swap call, but with a check that the swap will not kill the origin account.
+        #[pallet::call_index(1)]
+        #[pallet::weight(T::WeightInfo::swap_keep_alive())]
+        pub fn swap_keep_alive(
+            origin: OriginFor<T>,
+            to: T::AccountIdTo,
+            amount: FromBalanceOf<T>,
+        ) -> DispatchResult {
+            let who = ensure_signed(origin)?;
+
+            with_storage_layer(move || {
+                Self::do_swap(who, to, amount, ExistenceRequirement::KeepAlive)?;
+
+                Ok(())
+            })
+        }
+    }
+
+    impl<T: Config> Pallet<T> {
+        /// General swap balances implementation.
+        pub fn do_swap(
+            who: T::AccountId,
+            to: T::AccountIdTo,
+            amount: FromBalanceOf<T>,
+            existence_requirement: ExistenceRequirement,
+        ) -> DispatchResult {
+            let withdrawed_imbalance = FromCurrencyOf::<T>::withdraw(
+                &who,
+                amount,
+                WithdrawReasons::TRANSFER,
+                existence_requirement,
+            )?;
+            let withdrawed_amount = withdrawed_imbalance.peek();
+
+            let deposited_imbalance =
+                T::CurrencySwap::swap(withdrawed_imbalance).map_err(|error| {
+                    // Here we undo the withdrawl to avoid having a dangling imbalance.
+                    FromCurrencyOf::<T>::resolve_creating(&who, error.incoming_imbalance);
+                    error.cause.into()
+                })?;
+            let deposited_amount = deposited_imbalance.peek();
+
+            ToCurrencyOf::<T>::resolve_creating(&to, deposited_imbalance);
+
+            Self::deposit_event(Event::BalancesSwapped {
+                from: who,
+                withdrawed_amount,
+                to,
+                deposited_amount,
+            });
+
+            Ok(())
         }
     }
 }
