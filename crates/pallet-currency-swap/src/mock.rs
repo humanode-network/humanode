@@ -109,6 +109,10 @@ mock! {
             primitives_currency_swap::ToNegativeImbalanceFor<Self, AccountId, EvmAccountId>,
             primitives_currency_swap::ErrorFor<Self, AccountId, EvmAccountId>
         >;
+
+        fn estimate_swapped_balance(
+            balance: <Balances as Currency<AccountId>>::Balance,
+        ) -> <EvmBalances as Currency<EvmAccountId>>::Balance;
     }
 }
 
