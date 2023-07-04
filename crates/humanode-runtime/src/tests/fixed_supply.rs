@@ -25,17 +25,16 @@ const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
 fn new_test_ext_with() -> sp_io::TestExternalities {
     let authorities = vec![authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
+
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
+    let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
+
     let evm_endowed_accounts = vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")];
     // Build test genesis.
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: {
-                let pot_accounts = vec![
-                    TreasuryPot::account_id(),
-                    FeesPot::account_id(),
-                    NativeToEvmSwapBridgePot::account_id(),
-                ];
+                let pot_accounts = pot_accounts.clone();
                 endowed_accounts
                     .iter()
                     .cloned()
@@ -45,6 +44,12 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                         [(
                             TokenClaimsPot::account_id(),
                             <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                        ),
+                        (
+                            NativeToEvmSwapBridgePot::account_id(),
+                            INIT_BALANCE * evm_endowed_accounts.len() as u128 +
+                                // Own bridge pot minimum balance.
+                                <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
                         .into_iter(),
                     )
@@ -76,8 +81,6 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         },
         evm: EVMConfig {
             accounts: {
-                let evm_pot_accounts = vec![EvmToNativeSwapBridgePot::account_id()];
-
                 let init_genesis_account = fp_evm::GenesisAccount {
                     balance: INIT_BALANCE.into(),
                     code: Default::default(),
@@ -87,8 +90,24 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 
                 evm_endowed_accounts
                     .into_iter()
-                    .chain(evm_pot_accounts.into_iter())
                     .map(|k| (k, init_genesis_account.clone()))
+                    .chain(
+                        [(
+                            EvmToNativeSwapBridgePot::account_id(),
+                            fp_evm::GenesisAccount {
+                                balance: (INIT_BALANCE * (endowed_accounts.len() + pot_accounts.len()) as u128 +
+                                    // Own bridge pot minimum balance.
+                                    <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance() +
+                                    // `TokenClaimsPot` minimum balance.
+                                    <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
+                                ).into(),
+                                code: Default::default(),
+                                nonce: Default::default(),
+                                storage: Default::default(),
+                            },
+                        )]
+                        .into_iter(),
+                    )
                     .collect()
             },
         },
@@ -117,13 +136,21 @@ fn assert_total_issuance() {
         let evm_total_issuance = EvmBalances::total_issuance();
 
         assert_eq!(
-            total_issuance,
+            total_issuance - native_to_evm_swap_bridge_pot,
             evm_to_native_swap_bridge_pot - evm_existential_deposit
         );
         assert_eq!(
-            evm_total_issuance,
+            evm_total_issuance - evm_to_native_swap_bridge_pot,
             native_to_evm_swap_bridge_pot - existential_deposit
         );
+    })
+}
+
+#[test]
+fn total_issuance_genesis() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        assert_total_issuance();
     })
 }
 
@@ -147,6 +174,7 @@ fn total_issuance_transaction_fee() {
         // Check total issuance after making transfer.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
         assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
+        assert_total_issuance();
     })
 }
 
@@ -173,6 +201,7 @@ fn total_issuance_dust_removal() {
         assert!(!frame_system::Account::<Runtime>::contains_key(account_id(
             "Bob"
         )));
+        assert_total_issuance();
     })
 }
 
@@ -218,6 +247,7 @@ fn total_issuance_transaction_payment_validate() {
         // mean that the liquidity drop at tx validation has been fixed.
         assert_ne!(Balances::total_issuance(), total_issuance_before);
         assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
+        assert_total_issuance();
     })
 }
 
@@ -252,6 +282,7 @@ fn total_issuance_evm_withdraw() {
         // Check total issuance after making evm withdraw.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
         assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
+        assert_total_issuance();
     })
 }
 
@@ -295,6 +326,7 @@ fn total_issuance_evm_call() {
         // Check total issuance after making evm call.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
         assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
+        assert_total_issuance();
     })
 }
 
@@ -337,6 +369,7 @@ fn total_issuance_evm_create() {
         // Check total issuance after making evm call.
         assert_eq!(Balances::total_issuance(), total_issuance_before);
         assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
+        assert_total_issuance();
     })
 }
 
@@ -378,6 +411,7 @@ fn total_issuance_transaction_fee_ethereum_transact() {
         assert_eq!(EvmBalances::total_issuance(), evm_total_issuance_before);
         // Check fees pot balance after executing ethereum transaction.
         assert_eq!(Balances::total_balance(&FeesPot::account_id()), fees_pot_balance_before + (gas_price * gas_limit));
+        assert_total_issuance();
     })
 }
 
@@ -413,5 +447,6 @@ fn total_issuance_dust_removal_evm_transfer() {
             Balances::total_balance(&TreasuryPot::account_id()),
             treasury_pot_before + evm_existential_deposit - 1
         );
+        assert_total_issuance();
     })
 }
