@@ -5,7 +5,7 @@
 use frame_support::{
     sp_runtime,
     sp_std::{marker::PhantomData, prelude::*},
-    traits::tokens::currency::Currency,
+    traits::{fungible::Inspect, tokens::currency::Currency},
 };
 use pallet_evm::{
     ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
@@ -116,6 +116,20 @@ where
                 exit_status: ExitError::Other("junk at the end of input".into()),
             });
         }
+
+        let estimated_swapped_balance = CurrencySwapT::estimate_swapped_balance(value);
+        CurrencySwapT::To::can_deposit(&to, estimated_swapped_balance, false)
+            .into_result()
+            .map_err(|error| match error {
+                sp_runtime::DispatchError::Token(sp_runtime::TokenError::BelowMinimum) => {
+                    PrecompileFailure::Error {
+                        exit_status: ExitError::OutOfFund,
+                    }
+                }
+                _ => PrecompileFailure::Error {
+                    exit_status: ExitError::Other("unable to deposit funds".into()),
+                },
+            })?;
 
         let imbalance = CurrencySwapT::From::withdraw(
             &from,
