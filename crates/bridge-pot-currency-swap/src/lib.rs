@@ -6,7 +6,7 @@
 use frame_support::{
     sp_runtime::traits::Convert,
     sp_std::marker::PhantomData,
-    traits::{Currency, Get},
+    traits::{fungible::Inspect, Currency, Get},
 };
 
 pub mod existence_optional;
@@ -24,10 +24,18 @@ pub trait Config {
     type AccountIdTo;
 
     /// The currency to swap from.
-    type CurrencyFrom: Currency<Self::AccountIdFrom>;
+    type CurrencyFrom: Currency<Self::AccountIdFrom>
+        + Inspect<
+            Self::AccountIdFrom,
+            Balance = <Self::CurrencyFrom as Currency<Self::AccountIdFrom>>::Balance,
+        >;
 
     /// The currency to swap to.
-    type CurrencyTo: Currency<Self::AccountIdTo>;
+    type CurrencyTo: Currency<Self::AccountIdTo>
+        + Inspect<
+            Self::AccountIdTo,
+            Balance = <Self::CurrencyTo as Currency<Self::AccountIdTo>>::Balance,
+        >;
 
     /// The converter to determine how the balance amount should be converted from one currency to
     /// another.
