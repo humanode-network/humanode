@@ -21,26 +21,34 @@ const INIT_BALANCE: Balance = 10u128.pow(18 + 6);
 fn new_test_ext_with() -> sp_io::TestExternalities {
     let authorities = vec![authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
+
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
+    let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
+
     let evm_endowed_accounts = vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")];
     // Build test genesis.
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: {
-                let pot_accounts = vec![
-                    TreasuryPot::account_id(),
-                    FeesPot::account_id(),
-                    NativeToEvmSwapBridgePot::account_id(),
-                ];
+                let pot_accounts = pot_accounts.clone();
                 endowed_accounts
                     .iter()
                     .cloned()
                     .chain(pot_accounts.into_iter())
                     .map(|k| (k, INIT_BALANCE))
-                    .chain([(
-                        TokenClaimsPot::account_id(),
-                        <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
-                    )])
+                    .chain(
+                        [(
+                            TokenClaimsPot::account_id(),
+                            <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                        ),
+                        (
+                            NativeToEvmSwapBridgePot::account_id(),
+                            INIT_BALANCE * evm_endowed_accounts.len() as u128 +
+                                // Own bridge pot minimum balance.
+                                <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                        )]
+                        .into_iter(),
+                    )
                     .collect()
             },
         },
@@ -69,8 +77,6 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         },
         evm: EVMConfig {
             accounts: {
-                let evm_pot_accounts = vec![EvmToNativeSwapBridgePot::account_id()];
-
                 let init_genesis_account = fp_evm::GenesisAccount {
                     balance: INIT_BALANCE.into(),
                     code: Default::default(),
@@ -80,8 +86,24 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 
                 evm_endowed_accounts
                     .into_iter()
-                    .chain(evm_pot_accounts.into_iter())
                     .map(|k| (k, init_genesis_account.clone()))
+                    .chain(
+                        [(
+                            EvmToNativeSwapBridgePot::account_id(),
+                            fp_evm::GenesisAccount {
+                                balance: (INIT_BALANCE * (endowed_accounts.len() + pot_accounts.len()) as u128 +
+                                    // Own bridge pot minimum balance.
+                                    <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance() +
+                                    // `TokenClaimsPot` minimum balance.
+                                    <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
+                                ).into(),
+                                code: Default::default(),
+                                nonce: Default::default(),
+                                storage: Default::default(),
+                            },
+                        )]
+                        .into_iter(),
+                    )
                     .collect()
             },
         },
