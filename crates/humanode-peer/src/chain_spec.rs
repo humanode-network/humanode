@@ -5,16 +5,17 @@ use frame_support::BoundedVec;
 use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, token_claims::types::ClaimInfo, AccountId, BabeConfig, Balance,
-    BalancesConfig, BioauthConfig, BootnodesConfig, ChainPropertiesConfig, EthereumAddress,
-    EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig, GenesisConfig, GrandpaConfig,
-    ImOnlineConfig, SessionConfig, Signature, SudoConfig, SystemConfig, TokenClaimsConfig,
-    WASM_BINARY,
+    BalancesConfig, BioauthConfig, BootnodesConfig, ChainPropertiesConfig, EVMConfig,
+    EthereumAddress, EthereumChainIdConfig, EthereumConfig, EvmAccountId, GenesisConfig,
+    GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig, SystemConfig,
+    TokenClaimsConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
+use sp_core::H160;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{app_crypto::sr25519, traits::Verify};
 
@@ -48,8 +49,8 @@ pub fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) 
 }
 
 /// Generate an EVM account from seed.
-pub fn evm_account(seed: &str) -> EthereumAddress {
-    EthereumAddress(evm_account_from_seed(seed))
+pub fn evm_account_id(seed: &str) -> EvmAccountId {
+    H160::from_slice(&evm_account_from_seed(seed))
 }
 
 /// The default Humanode ss58 prefix.
@@ -78,6 +79,16 @@ fn dev_robonode_public_key(default: &'static [u8]) -> Result<robonode::PublicKey
         }
     }
     .map_err(|err| format!("unable to parse robonode public key: {err:?}"))
+}
+
+/// A helper function to construct an EVM genesis account with a predefined balance.
+fn evm_genesis_account(init_balance: Balance) -> fp_evm::GenesisAccount {
+    fp_evm::GenesisAccount {
+        balance: init_balance.into(),
+        code: Default::default(),
+        nonce: Default::default(),
+        storage: Default::default(),
+    }
 }
 
 /// A configuration for local testnet.
@@ -115,6 +126,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     account_id("Eve//stash"),
                     account_id("Ferdie//stash"),
                 ],
+                vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")],
                 robonode_public_key,
                 vec![account_id("Alice")],
             )
@@ -160,6 +172,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     account_id("Alice//stash"),
                     account_id("Bob//stash"),
                 ],
+                vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")],
                 robonode_public_key,
                 vec![account_id("Alice")],
             )
@@ -210,6 +223,7 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
                     account_id("Alice//stash"),
                     account_id("Bob//stash"),
                 ],
+                vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")],
                 robonode_public_key,
                 vec![account_id("Alice")],
             )
@@ -238,19 +252,13 @@ const EXISTENTIAL_DEPOSIT: Balance = 500;
 /// The initial pot accounts balance for testnet genesis.
 const INITIAL_POT_ACCOUNT_BALANCE: Balance = EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE;
 
-/// An Ethereum dev account; we call this one "Gerald".
-/// Private key: `0x99b3c12287537e38c90a9219d4cb074a89a16e9cdb20bf85728ebd97c343e342`.
-/// This is an Ethereum ECDSA compatible account, so it can be used in
-/// Ethereum wallets and dapps to interface with Ethereum-compatible networks
-/// (like our network!).
-const ETHEREUM_ADDRESS_GERALD: [u8; 20] = hex!("6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b");
-
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
     initial_authorities: Vec<(AccountId, BabeId, GrandpaId, ImOnlineId)>,
     root_key: AccountId,
     endowed_accounts: Vec<AccountId>,
+    evm_endowed_accounts: Vec<EvmAccountId>,
     robonode_public_key: robonode::PublicKey,
     bootnodes: Vec<AccountId>,
 ) -> GenesisConfig {
@@ -273,6 +281,10 @@ fn testnet_genesis(
                     ),
                     (
                         humanode_runtime::TokenClaimsPot::account_id(),
+                        INITIAL_POT_ACCOUNT_BALANCE,
+                    ),
+                    (
+                        humanode_runtime::NativeToEvmSwapBridgePot::account_id(),
                         INITIAL_POT_ACCOUNT_BALANCE,
                     ),
                 ];
@@ -328,16 +340,24 @@ fn testnet_genesis(
         ethereum_chain_id: EthereumChainIdConfig {
             chain_id: ETH_CHAIN_ID,
         },
-        evm: Default::default(),
-        evm_accounts_mapping: EvmAccountsMappingConfig {
-            mappings: vec![
-                (
-                    account_id("Alice"),
-                    EthereumAddress(ETHEREUM_ADDRESS_GERALD),
-                ),
-                (account_id("Bob"), evm_account("Bob")),
-            ],
+        evm: EVMConfig {
+            accounts: {
+                let evm_pot_accounts = vec![(
+                    humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
+                    evm_genesis_account(INITIAL_POT_ACCOUNT_BALANCE),
+                )];
+
+                evm_pot_accounts
+                    .into_iter()
+                    .chain(
+                        evm_endowed_accounts
+                            .into_iter()
+                            .map(|k| (k, evm_genesis_account(DEV_ACCOUNT_BALANCE))),
+                    )
+                    .collect()
+            },
         },
+        evm_accounts_mapping: Default::default(),
         ethereum: EthereumConfig {},
         dynamic_fee: Default::default(),
         base_fee: Default::default(),
@@ -345,6 +365,8 @@ fn testnet_genesis(
         fees_pot: Default::default(),
         treasury_pot: Default::default(),
         token_claims_pot: Default::default(),
+        native_to_evm_swap_bridge_pot: Default::default(),
+        evm_to_native_swap_bridge_pot: Default::default(),
         token_claims: TokenClaimsConfig {
             claims: vec![(
                 EthereumAddress(hex!("bf0b5a4099f0bf6c8bc4252ebec548bae95602ea")),

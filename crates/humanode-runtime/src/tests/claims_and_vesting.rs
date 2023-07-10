@@ -107,12 +107,14 @@ fn prepare_applyable_data(
 fn new_test_ext() -> sp_io::TestExternalities {
     let authorities = vec![authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
+
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
+    let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
     // Build test genesis.
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: {
-                let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
+                let pot_accounts = pot_accounts.clone();
                 endowed_accounts
                     .iter()
                     .cloned()
@@ -122,6 +124,10 @@ fn new_test_ext() -> sp_io::TestExternalities {
                         [(
                             TokenClaimsPot::account_id(),
                             2 * VESTING_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                        ),
+                        (
+                            NativeToEvmSwapBridgePot::account_id(),
+                            <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
                         .into_iter(),
                     )
@@ -175,6 +181,28 @@ fn new_test_ext() -> sp_io::TestExternalities {
                 ),
             ],
             total_claimable: Some(2 * VESTING_BALANCE),
+        },
+        evm: EVMConfig {
+            accounts: {
+                let evm_pot_accounts =
+                    vec![(
+                        EvmToNativeSwapBridgePot::account_id(),
+                        fp_evm::GenesisAccount {
+                            balance: (INIT_BALANCE * (endowed_accounts.len() + pot_accounts.len()) as u128 +
+                            // Own bridge pot minimum balance.
+                            <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance() +
+                            // `TokenClaimsPot` minimum balance.
+                            2 * VESTING_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
+                        )
+                            .into(),
+                            code: Default::default(),
+                            nonce: Default::default(),
+                            storage: Default::default(),
+                        },
+                    )];
+
+                evm_pot_accounts.into_iter().collect()
+            },
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1 },
         ..Default::default()
@@ -248,6 +276,10 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
                     500
                 ],
                 [
+                    "5EYCAe5h8D3eoqQjYNXVzehEzFAnY7cFnhV8ahjqgo5VxmeP",
+                    500
+                ],
+                [
                     "5EYCAe5h8DABNonG7tbqC8bjDUw9jM1ewHJWssszZYbjkH2e",
                     {token_claim_pot_balance}
                 ]
@@ -292,7 +324,14 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         }},
         "ethereum": {{}},
         "evm": {{
-            "accounts": {{}}
+            "accounts": {{
+                "0x6d6f646c686d63732f656e310000000000000000": {{
+                    "nonce": "0x0",
+                    "balance": "0xd3c21bcecceda10001f4",
+                    "storage": {{}},
+                    "code": []
+                }}
+            }}
         }},
         "dynamicFee": {{
             "minGasPrice": "0x0"
@@ -308,7 +347,13 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         "evmAccountsMapping": {{
             "mappings": []
         }},
-        "tokenClaims": {token_claims}
+        "tokenClaims": {token_claims},
+        "nativeToEvmSwapBridgePot": {{
+            "initialState": "Initialized"
+        }},
+        "evmToNativeSwapBridgePot": {{
+            "initialState": "Initialized"
+        }}
     }}"#
     )
 }
