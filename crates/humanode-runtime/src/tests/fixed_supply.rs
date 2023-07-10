@@ -286,6 +286,7 @@ fn total_issuance_evm_withdraw() {
 
 #[test]
 fn total_issuance_evm_call() {
+    // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         let existential_deposit =
             <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
@@ -330,6 +331,7 @@ fn total_issuance_evm_call() {
 
 #[test]
 fn total_issuance_evm_create() {
+    // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         let existential_deposit =
             <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
