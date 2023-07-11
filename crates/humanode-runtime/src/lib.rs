@@ -37,7 +37,7 @@ use pallet_ethereum::{
     Call::transact, PostLogContent as EthereumPostLogContent, Transaction as EthereumTransaction,
 };
 use pallet_evm::FeeCalculator;
-use pallet_evm::{Account as EVMAccount, EnsureAddressTruncated, HashedAddressMapping, Runner};
+use pallet_evm::{Account as EVMAccount, Runner};
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -82,6 +82,7 @@ use frontier_precompiles::FrontierPrecompiles;
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 mod constants;
+mod currency_swap;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
@@ -149,6 +150,9 @@ pub type Signature = MultiSignature;
 /// the [`frame_system::Config::Lookup`] the amount of work at the surrounding ecosystem
 /// (i.e. Polkadot.js) is beyond the reasonable effort for us now.
 pub type AccountId = AccountId32;
+
+/// Evm account identifier.
+pub type EvmAccountId = H160;
 
 // Ensure that the `AccountId` it equivalent to the public key of our transaction signing scheme.
 static_assertions::assert_type_eq_all!(
@@ -393,11 +397,15 @@ parameter_types! {
     pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
     pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
     pub const TokenClaimsPotPalletId: PalletId = PalletId(*b"hmnd/tc1");
+    pub const NativeToEvmSwapBridgePotPalletId: PalletId = PalletId(*b"hmcs/ne1");
+    pub const EvmToNativeSwapBridgePotPalletId: PalletId = PalletId(*b"hmcs/en1");
 }
 
 type PotInstanceTreasury = pallet_pot::Instance1;
 type PotInstanceFees = pallet_pot::Instance2;
 type PotInstanceTokenClaims = pallet_pot::Instance3;
+type PotInstanceNativeToEvmSwapBridge = pallet_pot::Instance4;
+type PotInstanceEvmToNativeSwapBridge = pallet_pot::Instance5;
 
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
     type RuntimeEvent = RuntimeEvent;
@@ -418,6 +426,20 @@ impl pallet_pot::Config<PotInstanceTokenClaims> for Runtime {
     type AccountId = AccountId;
     type PalletId = TokenClaimsPotPalletId;
     type Currency = Balances;
+}
+
+impl pallet_pot::Config<PotInstanceNativeToEvmSwapBridge> for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = AccountId;
+    type PalletId = NativeToEvmSwapBridgePotPalletId;
+    type Currency = Balances;
+}
+
+impl pallet_pot::Config<PotInstanceEvmToNativeSwapBridge> for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = EvmAccountId;
+    type PalletId = EvmToNativeSwapBridgePotPalletId;
+    type Currency = EvmBalances;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -607,23 +629,49 @@ parameter_types! {
     pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
 }
 
+impl pallet_evm_system::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = EvmAccountId;
+    type Index = Index;
+    type AccountData = pallet_evm_balances::AccountData<Balance>;
+    type OnNewAccount = ();
+    type OnKilledAccount = ();
+}
+
+impl pallet_evm_balances::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = EvmAccountId;
+    type Balance = Balance;
+    type ExistentialDeposit = ConstU128<500>;
+    type AccountStore = EvmSystem;
+    type DustRemoval = currency_swap::TreasuryPotProxy;
+}
+
+impl pallet_currency_swap::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountIdTo = EvmAccountId;
+    type CurrencySwap = currency_swap::NativeToEvmOneToOne;
+    type WeightInfo = ();
+}
+
 impl pallet_evm::Config for Runtime {
-    type AccountProvider = pallet_evm::NativeSystemAccountProvider<Self>;
+    type AccountProvider = EvmSystem;
     type FeeCalculator = BaseFee;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
-    type CallOrigin = EnsureAddressTruncated;
-    type WithdrawOrigin = EnsureAddressTruncated;
-    type AddressMapping = HashedAddressMapping<BlakeTwo256>;
-    type Currency = Balances;
+    type CallOrigin = pallet_evm::EnsureAddressNever<EvmAccountId>;
+    type WithdrawOrigin = pallet_evm::EnsureAddressNever<EvmAccountId>;
+    type AddressMapping = pallet_evm::IdentityAddressMapping;
+    type Currency = EvmBalances;
     type RuntimeEvent = RuntimeEvent;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = FrontierPrecompiles<Self>;
     type PrecompilesValue = PrecompilesValue;
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
-    type OnChargeTransaction = fixed_supply::EvmTransactionCharger<Balances, FeesPot>;
+    type OnChargeTransaction =
+        fixed_supply::EvmTransactionCharger<EvmBalances, currency_swap::FeesPotProxy>;
     type OnCreate = ();
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
@@ -767,6 +815,11 @@ construct_runtime!(
         Vesting: pallet_vesting = 28,
         Multisig: pallet_multisig = 29,
         Utility: pallet_utility = 30,
+        EvmSystem: pallet_evm_system = 31,
+        EvmBalances: pallet_evm_balances = 32,
+        NativeToEvmSwapBridgePot: pallet_pot::<Instance4> = 33,
+        EvmToNativeSwapBridgePot: pallet_pot::<Instance5> = 34,
+        CurrencySwap: pallet_currency_swap = 35,
     }
 );
 

@@ -10,6 +10,7 @@ substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate"
 [dependencies]
 author-ext-api = { version = "0.1", path = "../author-ext-api", default-features = false }
 bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api", default-features = false }
+bridge-pot-currency-swap = { version = "0.1", path = "../bridge-pot-currency-swap", default-features = false }
 eip191-crypto = { version = "0.1", path = "../eip191-crypto", default-features = false }
 eip191-token-claim = { version = "0.1", path = "../eip191-token-claim", default-features = false }
 eip712-account-claim = { version = "0.1", path = "../eip712-account-claim", default-features = false }
@@ -20,6 +21,7 @@ pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features
 pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
 pallet-chain-properties = { version = "0.1", path = "../pallet-chain-properties", default-features = false }
 pallet-chain-start-moment = { version = "0.1", path = "../pallet-chain-start-moment", default-features = false }
+pallet-currency-swap = { version = "0.1", path = "../pallet-currency-swap", default-features = false }
 pallet-ethereum-chain-id = { version = "0.1", path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { version = "0.1", path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { version = "0.1", path = "../pallet-humanode-session", default-features = false }
@@ -27,8 +29,10 @@ pallet-pot = { version = "0.1", path = "../pallet-pot", default-features = false
 pallet-token-claims = { version = "0.1", path = "../pallet-token-claims", default-features = false }
 pallet-vesting = { version = "0.1", path = "../pallet-vesting", default-features = false }
 precompile-bioauth = { version = "0.1", path = "../precompile-bioauth", default-features = false }
+precompile-currency-swap = { version = "0.1", path = "../precompile-currency-swap", default-features = false }
 precompile-evm-accounts-mapping = { version = "0.1", path = "../precompile-evm-accounts-mapping", default-features = false }
 primitives-auth-ticket = { version = "0.1", path = "../primitives-auth-ticket", default-features = false }
+primitives-currency-swap-proxy = { version = "0.1", path = "../primitives-currency-swap-proxy", default-features = false }
 primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
 robonode-crypto = { version = "0.1", path = "../robonode-crypto", default-features = false }
 vesting-schedule-linear = { version = "0.1", path = "../vesting-schedule-linear", default-features = false }
@@ -54,9 +58,11 @@ pallet-base-fee = { default-features = false, git = "https://github.com/humanode
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+pallet-evm-balances = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm-precompile-simple = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+pallet-evm-system = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-grandpa = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-multisig = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
@@ -90,8 +96,12 @@ static_assertions = { version = "1.1.0", default-features = false }
 [dev-dependencies]
 crypto-utils = { version = "0.1", path = "../crypto-utils" }
 eip712-common-test-utils = { version = "0.1", path = "../eip712-common-test-utils" }
+precompile-utils = { path = "../precompile-utils", default-features = false }
 
+ethereum = "0.14"
+fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 hex = "0.4"
+hex-literal = "0.4"
 serde_json = "1"
 sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
@@ -110,6 +120,7 @@ runtime-benchmarks = [
   "pallet-balances/runtime-benchmarks",
   "pallet-bioauth/runtime-benchmarks",
   "pallet-bootnodes/runtime-benchmarks",
+  "pallet-currency-swap/runtime-benchmarks",
   "pallet-ethereum/runtime-benchmarks",
   "pallet-evm-accounts-mapping/runtime-benchmarks",
   "pallet-evm/runtime-benchmarks",
@@ -127,6 +138,7 @@ runtime-benchmarks = [
 std = [
   "author-ext-api/std",
   "bioauth-flow-api/std",
+  "bridge-pot-currency-swap/std",
   "chrono/std",
   "codec/std",
   "eip191-crypto/std",
@@ -151,6 +163,7 @@ std = [
   "pallet-bootnodes/std",
   "pallet-chain-properties/std",
   "pallet-chain-start-moment/std",
+  "pallet-currency-swap/std",
   "pallet-dynamic-fee/std",
   "pallet-ethereum-chain-id/std",
   "pallet-ethereum/std",
@@ -159,6 +172,8 @@ std = [
   "pallet-evm-precompile-sha3fips/std",
   "pallet-evm-precompile-simple/std",
   "pallet-evm/std",
+  "pallet-evm-balances/std",
+  "pallet-evm-system/std",
   "pallet-grandpa/std",
   "pallet-humanode-session/std",
   "pallet-im-online/std",
@@ -174,8 +189,11 @@ std = [
   "pallet-utility/std",
   "pallet-vesting/std",
   "precompile-bioauth/std",
+  "precompile-currency-swap/std",
   "precompile-evm-accounts-mapping/std",
+  "precompile-utils/std",
   "primitives-auth-ticket/std",
+  "primitives-currency-swap-proxy/std",
   "primitives-ethereum/std",
   "robonode-crypto/std",
   "scale-info/std",
@@ -199,6 +217,7 @@ std = [
   "vesting-scheduling-timestamp/std",
 ]
 try-runtime = [
+  "bridge-pot-currency-swap/try-runtime",
   "fp-self-contained/try-runtime",
   "frame-executive/try-runtime",
   "frame-support/try-runtime",
@@ -212,11 +231,14 @@ try-runtime = [
   "pallet-bootnodes/try-runtime",
   "pallet-chain-properties/try-runtime",
   "pallet-chain-start-moment/try-runtime",
+  "pallet-currency-swap/try-runtime",
   "pallet-dynamic-fee/try-runtime",
   "pallet-ethereum-chain-id/try-runtime",
   "pallet-ethereum/try-runtime",
   "pallet-evm-accounts-mapping/try-runtime",
   "pallet-evm/try-runtime",
+  "pallet-evm-balances/try-runtime",
+  "pallet-evm-system/try-runtime",
   "pallet-grandpa/try-runtime",
   "pallet-humanode-session/try-runtime",
   "pallet-im-online/try-runtime",
@@ -230,5 +252,6 @@ try-runtime = [
   "pallet-transaction-payment/try-runtime",
   "pallet-utility/try-runtime",
   "pallet-vesting/try-runtime",
+  "primitives-currency-swap-proxy/try-runtime",
   "sp-runtime/try-runtime",
 ]
