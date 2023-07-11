@@ -1,12 +1,19 @@
 //! The tests for the pallet.
 
-use frame_support::{assert_noop, assert_ok, traits::Currency};
+use frame_support::{
+    assert_noop, assert_ok,
+    traits::fungible::{Balanced, Inspect},
+};
 use mockall::predicate;
 use sp_core::H160;
 use sp_runtime::DispatchError;
 use sp_std::str::FromStr;
 
 use crate::{mock::*, *};
+
+fn set_balance<AccountId, T: fungible::Balanced<AccountId>>(who: &AccountId, amount: T::Balance) {
+    T::resolve(who, T::issue(amount));
+}
 
 /// This test verifies that swap call works as expected in case origin left balances amount
 /// is greater or equal than existential deposit.
@@ -19,11 +26,11 @@ fn swap_works() {
         let swap_balance = 100;
 
         // Prepare the test state.
-        Balances::make_free_balance_be(&alice, alice_balance);
+        set_balance::<_, Balances>(&alice, alice_balance);
 
         // Check test preconditions.
-        assert_eq!(Balances::total_balance(&alice), alice_balance);
-        assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
+        assert_eq!(Balances::balance(&alice), alice_balance);
+        assert_eq!(EvmBalances::balance(&alice_evm), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -33,12 +40,8 @@ fn swap_works() {
         swap_ctx
             .expect()
             .once()
-            .with(predicate::eq(
-                <Balances as Currency<AccountId>>::NegativeImbalance::new(swap_balance),
-            ))
-            .return_once(move |_| {
-                Ok(<EvmBalances as Currency<EvmAccountId>>::NegativeImbalance::new(swap_balance))
-            });
+            .with(predicate::eq(Balances::issue(swap_balance)))
+            .return_once(move |_| Ok(EvmBalances::issue(swap_balance)));
 
         // Invoke the function under test.
         assert_ok!(CurrencySwap::swap(
@@ -48,14 +51,11 @@ fn swap_works() {
         ));
 
         // Assert state changes.
-        assert_eq!(
-            Balances::total_balance(&alice),
-            alice_balance - swap_balance
-        );
-        assert_eq!(EvmBalances::total_balance(&alice_evm), swap_balance);
+        assert_eq!(Balances::balance(&alice), alice_balance - swap_balance);
+        assert_eq!(EvmBalances::balance(&alice_evm), swap_balance);
         System::assert_has_event(RuntimeEvent::CurrencySwap(Event::BalancesSwapped {
             from: alice,
-            withdrawed_amount: swap_balance,
+            withdrawn_amount: swap_balance,
             to: alice_evm,
             deposited_amount: swap_balance,
         }));
@@ -76,11 +76,11 @@ fn swap_works_kill_origin() {
         let swap_balance = 999;
 
         // Prepare the test state.
-        Balances::make_free_balance_be(&alice, alice_balance);
+        set_balance::<_, Balances>(&alice, alice_balance);
 
         // Check test preconditions.
-        assert_eq!(Balances::total_balance(&alice), alice_balance);
-        assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
+        assert_eq!(Balances::balance(&alice), alice_balance);
+        assert_eq!(EvmBalances::balance(&alice_evm), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -90,12 +90,8 @@ fn swap_works_kill_origin() {
         swap_ctx
             .expect()
             .once()
-            .with(predicate::eq(
-                <Balances as Currency<AccountId>>::NegativeImbalance::new(swap_balance),
-            ))
-            .return_once(move |_| {
-                Ok(<EvmBalances as Currency<EvmAccountId>>::NegativeImbalance::new(swap_balance))
-            });
+            .with(predicate::eq(Balances::issue(swap_balance)))
+            .return_once(move |_| Ok(EvmBalances::issue(swap_balance)));
 
         // Invoke the function under test.
         assert_ok!(CurrencySwap::swap(
@@ -106,10 +102,10 @@ fn swap_works_kill_origin() {
 
         // Assert state changes.
         assert!(!System::account_exists(&alice));
-        assert_eq!(EvmBalances::total_balance(&alice_evm), swap_balance);
+        assert_eq!(EvmBalances::balance(&alice_evm), swap_balance);
         System::assert_has_event(RuntimeEvent::CurrencySwap(Event::BalancesSwapped {
             from: alice,
-            withdrawed_amount: swap_balance,
+            withdrawn_amount: swap_balance,
             to: alice_evm,
             deposited_amount: swap_balance,
         }));
@@ -129,11 +125,11 @@ fn swap_keep_alive_works() {
         let swap_balance = 100;
 
         // Prepare the test state.
-        Balances::make_free_balance_be(&alice, alice_balance);
+        set_balance::<_, Balances>(&alice, alice_balance);
 
         // Check test preconditions.
-        assert_eq!(Balances::total_balance(&alice), alice_balance);
-        assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
+        assert_eq!(Balances::balance(&alice), alice_balance);
+        assert_eq!(EvmBalances::balance(&alice_evm), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -143,12 +139,8 @@ fn swap_keep_alive_works() {
         swap_ctx
             .expect()
             .once()
-            .with(predicate::eq(
-                <Balances as Currency<AccountId>>::NegativeImbalance::new(swap_balance),
-            ))
-            .return_once(move |_| {
-                Ok(<EvmBalances as Currency<EvmAccountId>>::NegativeImbalance::new(swap_balance))
-            });
+            .with(predicate::eq(Balances::issue(swap_balance)))
+            .return_once(move |_| Ok(EvmBalances::issue(swap_balance)));
 
         // Invoke the function under test.
         assert_ok!(CurrencySwap::swap(
@@ -158,14 +150,11 @@ fn swap_keep_alive_works() {
         ));
 
         // Assert state changes.
-        assert_eq!(
-            Balances::total_balance(&alice),
-            alice_balance - swap_balance
-        );
-        assert_eq!(EvmBalances::total_balance(&alice_evm), swap_balance);
+        assert_eq!(Balances::balance(&alice), alice_balance - swap_balance);
+        assert_eq!(EvmBalances::balance(&alice_evm), swap_balance);
         System::assert_has_event(RuntimeEvent::CurrencySwap(Event::BalancesSwapped {
             from: alice,
-            withdrawed_amount: swap_balance,
+            withdrawn_amount: swap_balance,
             to: alice_evm,
             deposited_amount: swap_balance,
         }));
@@ -185,20 +174,18 @@ fn swap_fails() {
         let swap_balance = 100;
 
         // Prepare the test state.
-        Balances::make_free_balance_be(&alice, alice_balance);
+        set_balance::<_, Balances>(&alice, alice_balance);
 
         // Set mock expectations.
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx
             .expect()
             .once()
-            .with(predicate::eq(
-                <Balances as Currency<u64>>::NegativeImbalance::new(swap_balance),
-            ))
-            .return_once(move |incoming_imbalance| {
+            .with(predicate::eq(Balances::issue(swap_balance)))
+            .return_once(move |incoming_credit| {
                 Err(primitives_currency_swap::Error {
                     cause: sp_runtime::DispatchError::Other("currency swap failed"),
-                    incoming_imbalance,
+                    incoming_credit,
                 })
             });
 
@@ -209,8 +196,8 @@ fn swap_fails() {
         );
 
         // Assert state changes.
-        assert_eq!(Balances::total_balance(&alice), alice_balance);
-        assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
+        assert_eq!(Balances::balance(&alice), alice_balance);
+        assert_eq!(EvmBalances::balance(&alice_evm), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();
@@ -228,7 +215,7 @@ fn swap_keep_alive_fails() {
         let swap_balance = 999;
 
         // Prepare the test state.
-        Balances::make_free_balance_be(&alice, alice_balance);
+        set_balance::<_, Balances>(&alice, alice_balance);
 
         // Set mock expectations.
         let swap_ctx = MockCurrencySwap::swap_context();
@@ -241,8 +228,8 @@ fn swap_keep_alive_fails() {
         );
 
         // Assert state changes.
-        assert_eq!(Balances::total_balance(&alice), alice_balance);
-        assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
+        assert_eq!(Balances::balance(&alice), alice_balance);
+        assert_eq!(EvmBalances::balance(&alice_evm), 0);
 
         // Assert mock invocations.
         swap_ctx.checkpoint();

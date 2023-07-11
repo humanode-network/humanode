@@ -10,7 +10,7 @@ use frame_support::{
         traits::{BlakeTwo256, IdentityLookup},
         BuildStorage, DispatchError,
     },
-    traits::{ConstU32, ConstU64, Currency},
+    traits::{fungible, ConstU32, ConstU64},
 };
 use mockall::mock;
 use sp_core::{H160, H256};
@@ -104,10 +104,10 @@ mock! {
         type Error = DispatchError;
 
         fn swap(
-            imbalance: <Balances as Currency<AccountId>>::NegativeImbalance,
+            credit: fungible::CreditOf<AccountId, Balances>,
         ) -> Result<
-            primitives_currency_swap::ToNegativeImbalanceFor<Self, AccountId, EvmAccountId>,
-            primitives_currency_swap::ErrorFor<Self, AccountId, EvmAccountId>
+            fungible::CreditOf<EvmAccountId, EvmBalances>,
+            primitives_currency_swap::Error<fungible::CreditOf<AccountId, Balances>, DispatchError>,
         >;
     }
 }

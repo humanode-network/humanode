@@ -14,6 +14,7 @@ frame-system = { default-features = false, git = "https://github.com/humanode-ne
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
 sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+sp-tracing = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 
 [dev-dependencies]
 mockall = "0.11"
@@ -39,6 +40,7 @@ std = [
   "scale-info/std",
   "sp-runtime/std",
   "sp-std/std",
+  "sp-tracing/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
