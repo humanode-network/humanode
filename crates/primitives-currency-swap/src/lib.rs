@@ -44,6 +44,6 @@ pub type ErrorFor<T, AccountIdFrom, AccountIdTo> = Error<
 pub struct Error<I, E> {
     /// The underlying cause of this error.
     pub cause: E,
-    /// The original imbalance that was passed to the swap operation.
-    pub incoming_imbalance: I,
+    /// The original credit that was passed to the swap operation.
+    pub incoming_credit: I,
 }
