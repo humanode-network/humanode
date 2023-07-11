@@ -190,7 +190,7 @@ mock! {
         type Error = DispatchError;
 
         fn swap(
-            imbalance: primitives_currency_swap::FromNegativeImbalanceFor<Self, EvmAccountId, AccountId>,
+            credit: primitives_currency_swap::FromNegativeImbalanceFor<Self, EvmAccountId, AccountId>,
         ) -> Result<
             primitives_currency_swap::ToNegativeImbalanceFor<Self, EvmAccountId, AccountId>,
             primitives_currency_swap::ErrorFor<Self, EvmAccountId, AccountId>,

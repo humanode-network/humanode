@@ -117,7 +117,7 @@ where
             });
         }
 
-        let imbalance = CurrencySwapT::From::withdraw(
+        let credit = CurrencySwapT::From::withdraw(
             &from,
             value,
             frame_support::traits::WithdrawReasons::TRANSFER,
@@ -134,16 +134,16 @@ where
             },
         })?;
 
-        let imbalance = CurrencySwapT::swap(imbalance).map_err(|error| {
-            // Here we undo the withdrawal to avoid having a dangling imbalance.
-            CurrencySwapT::From::resolve_creating(&from, error.incoming_imbalance);
+        let credit = CurrencySwapT::swap(credit).map_err(|error| {
+            // Here we undo the withdrawal to avoid having a dangling credit.
+            CurrencySwapT::From::resolve(&from, error.incoming_credit);
             PrecompileFailure::Revert {
                 exit_status: ExitRevert::Reverted,
                 output: "unable to swap the currency".into(),
             }
         })?;
 
-        CurrencySwapT::To::resolve_creating(&to, imbalance);
+        CurrencySwapT::To::resolve(&to, credit);
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }

@@ -289,10 +289,10 @@ fn swap_fail_trait_error() {
             .with(predicate::eq(
                 <EvmBalances as Currency<EvmAccountId>>::NegativeImbalance::new(swap_balance),
             ))
-            .return_once(move |incoming_imbalance| {
+            .return_once(move |incoming_credit| {
                 Err(primitives_currency_swap::Error {
                     cause: sp_runtime::DispatchError::Other("test"),
-                    incoming_imbalance,
+                    incoming_credit,
                 })
             });
 
