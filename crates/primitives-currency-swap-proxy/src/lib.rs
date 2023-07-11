@@ -42,9 +42,9 @@ pub trait Config {
     type CurrencySwap: CurrencySwap<Self::AccountIdFrom, Self::AccountIdTo>;
 }
 
-/// An [`OnUnbalanced`] implementation that routes the imbalance through the currency swap and
-/// passes the resulting imbalance to the `To`.
-/// If swap fails, will try to pass the original imbalance to the `Fallback`.
+/// An [`OnUnbalanced`] implementation that routes the credit through the currency swap and
+/// passes the resulting credit to the `To`.
+/// If swap fails, will try to pass the original credit to the `Fallback`.
 pub struct SwapUnbalanced<T, To, Fallback>(PhantomData<(T, To, Fallback)>);
 
 impl<T, To, Fallback> OnUnbalanced<CurrencyFromNegativeImbalanceFor<T>>
@@ -59,14 +59,14 @@ where
             Ok(amount) => amount,
             Err(primitives_currency_swap::Error {
                 cause: error,
-                incoming_imbalance,
+                incoming_credit,
             }) => {
                 let error: frame_support::sp_runtime::DispatchError = error.into();
                 frame_support::sp_tracing::error!(
                     message = "unable to route the funds through the swap",
                     ?error
                 );
-                Fallback::on_unbalanceds(sp_std::iter::once(incoming_imbalance));
+                Fallback::on_unbalanceds(sp_std::iter::once(incoming_credit));
                 return;
             }
         };
