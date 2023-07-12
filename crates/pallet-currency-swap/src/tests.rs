@@ -3,7 +3,7 @@
 use frame_support::{assert_noop, assert_ok, traits::Currency};
 use mockall::predicate;
 use sp_core::H160;
-use sp_runtime::DispatchError;
+use sp_runtime::{DispatchError, TokenError};
 use sp_std::str::FromStr;
 
 use crate::{mock::*, *};
@@ -245,6 +245,45 @@ fn swap_fails() {
     });
 }
 
+/// This test verifies that swap call fails in case estimated swapped balance less or equal
+/// than target currency existential deposit.
+#[test]
+fn swap_below_ed_fails() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42;
+        let alice_evm = H160::from_str("1000000000000000000000000000000000000001").unwrap();
+        let alice_balance = 1000;
+        let swap_balance = 100;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance);
+
+        // // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(swap_balance))
+            .return_const(EXISTENTIAL_DEPOSIT - 1);
+        let swap_ctx = MockCurrencySwap::swap_context();
+        swap_ctx.expect().never();
+
+        // Invoke the function under test.
+        assert_noop!(
+            CurrencySwap::swap(RuntimeOrigin::signed(alice), alice_evm, swap_balance),
+            DispatchError::Token(TokenError::BelowMinimum)
+        );
+
+        // Assert state changes.
+        assert_eq!(Balances::total_balance(&alice), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
+
+        // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
+        swap_ctx.checkpoint();
+    });
+}
+
 /// This test verifies that `swap_keep_alive` call fails in case origin left balances amount
 /// is less than existential deposit. The call should prevent swap operation.
 #[test]
@@ -272,6 +311,45 @@ fn swap_keep_alive_fails() {
         assert_noop!(
             CurrencySwap::swap_keep_alive(RuntimeOrigin::signed(alice), alice_evm, swap_balance),
             pallet_balances::Error::<Test>::KeepAlive
+        );
+
+        // Assert state changes.
+        assert_eq!(Balances::total_balance(&alice), alice_balance);
+        assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
+
+        // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
+        swap_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that `swap_keep_alive` call fails in case estimated swapped balance less or equal
+/// than target currency existential deposit.
+#[test]
+fn swap_keep_alive_below_ed_fails() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42;
+        let alice_evm = H160::from_str("1000000000000000000000000000000000000001").unwrap();
+        let alice_balance = 1000;
+        let swap_balance = 100;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance);
+
+        // // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(swap_balance))
+            .return_const(EXISTENTIAL_DEPOSIT - 1);
+        let swap_ctx = MockCurrencySwap::swap_context();
+        swap_ctx.expect().never();
+
+        // Invoke the function under test.
+        assert_noop!(
+            CurrencySwap::swap_keep_alive(RuntimeOrigin::signed(alice), alice_evm, swap_balance),
+            DispatchError::Token(TokenError::BelowMinimum)
         );
 
         // Assert state changes.
