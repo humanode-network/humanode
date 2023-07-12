@@ -74,12 +74,19 @@ benchmarks! {
 impl Interface for crate::mock::Test {
     type Data = (
         std::sync::MutexGuard<'static, ()>,
+        mock::__mock_MockCurrencySwap_CurrencySwap_9230394375286242749::__estimate_swapped_balance::Context,
         mock::__mock_MockCurrencySwap_CurrencySwap_9230394375286242749::__swap::Context,
     );
 
     fn prepare() -> Self::Data {
         let mock_runtime_guard = mock::runtime_lock();
 
+        let estimate_swapped_balance_ctx =
+            mock::MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx
+            .expect()
+            .times(1..)
+            .return_const(Self::to_balance());
         let swap_ctx = mock::MockCurrencySwap::swap_context();
         swap_ctx.expect().times(1..).return_once(move |_| {
             Ok(
@@ -89,11 +96,12 @@ impl Interface for crate::mock::Test {
             )
         });
 
-        (mock_runtime_guard, swap_ctx)
+        (mock_runtime_guard, estimate_swapped_balance_ctx, swap_ctx)
     }
 
     fn verify(data: Self::Data) -> DispatchResult {
-        let (mock_runtime_guard, swap_ctx) = data;
+        let (mock_runtime_guard, estimate_swapped_balance_ctx, swap_ctx) = data;
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
         drop(mock_runtime_guard);
         Ok(())
