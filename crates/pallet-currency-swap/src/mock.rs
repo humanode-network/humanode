@@ -17,6 +17,8 @@ use sp_core::{H160, H256};
 
 use crate::{self as pallet_currency_swap};
 
+pub(crate) const EXISTENTIAL_DEPOSIT: u64 = 10;
+
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -69,7 +71,7 @@ impl pallet_balances::Config for Test {
     type Balance = u64;
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
-    type ExistentialDeposit = ConstU64<10>;
+    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT>;
     type AccountStore = System;
     type MaxLocks = ();
     type MaxReserves = ();
@@ -90,7 +92,7 @@ impl pallet_evm_balances::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = EvmAccountId;
     type Balance = Balance;
-    type ExistentialDeposit = ConstU64<10>;
+    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT>;
     type AccountStore = EvmSystem;
     type DustRemoval = ();
 }
@@ -109,6 +111,10 @@ mock! {
             primitives_currency_swap::ToNegativeImbalanceFor<Self, AccountId, EvmAccountId>,
             primitives_currency_swap::ErrorFor<Self, AccountId, EvmAccountId>
         >;
+
+        fn estimate_swapped_balance(
+            balance: <Balances as Currency<AccountId>>::Balance,
+        ) -> <EvmBalances as Currency<EvmAccountId>>::Balance;
     }
 }
 

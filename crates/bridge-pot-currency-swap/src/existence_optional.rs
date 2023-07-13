@@ -45,4 +45,10 @@ impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountIdFrom, T::Acco
 
         Ok(outgoing_imbalance)
     }
+
+    fn estimate_swapped_balance(
+        balance: <Self::From as Currency<T::AccountIdFrom>>::Balance,
+    ) -> <Self::To as Currency<T::AccountIdTo>>::Balance {
+        T::BalanceConverter::convert(balance)
+    }
 }

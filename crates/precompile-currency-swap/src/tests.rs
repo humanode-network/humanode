@@ -39,6 +39,12 @@ fn swap_works() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(swap_balance))
+            .return_const(swap_balance);
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx
             .expect()
@@ -91,6 +97,7 @@ fn swap_works() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
@@ -125,6 +132,12 @@ fn swap_works_almost_full_balance() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(swap_balance))
+            .return_const(swap_balance);
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx
             .expect()
@@ -178,6 +191,7 @@ fn swap_works_almost_full_balance() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
@@ -208,6 +222,8 @@ fn swap_fail_no_funds() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx.expect().never();
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx.expect().never();
 
@@ -248,6 +264,90 @@ fn swap_fail_no_funds() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
+        swap_ctx.checkpoint();
+    });
+}
+
+/// This test verifies that the swap precompile call behaves as expected when
+/// estimated swapped balance less or equal than target currency existential deposit.
+/// All fee (up to specified max fee limit!) will be consumed, but not the value.
+#[test]
+fn swap_fail_below_ed() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice = AccountId::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000000000000000000000000000001"
+        ));
+
+        let expected_gas_usage: u64 = 50_123; // all fee will be consumed
+        let expected_fee: Balance = gas_to_fee(expected_gas_usage);
+
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let swap_balance = 10 * 10u128.pow(18);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        // Check test preconditions.
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
+        assert_eq!(Balances::total_balance(&alice), 0);
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(swap_balance))
+            .return_const(1_u128);
+        let swap_ctx = MockCurrencySwap::swap_context();
+        swap_ctx.expect().never();
+
+        // Prepare EVM call.
+        let input = EvmDataWriter::new_with_selector(Action::Swap)
+            .write(H256::from(alice.as_ref()))
+            .build();
+
+        // Invoke the function under test.
+        let config = <Test as pallet_evm::Config>::config();
+        let execinfo = <Test as pallet_evm::Config>::Runner::call(
+            alice_evm,
+            *PRECOMPILE_ADDRESS,
+            input,
+            swap_balance.into(),
+            50_123, // a reasonable upper bound for tests
+            Some(*GAS_PRICE),
+            Some(*GAS_PRICE),
+            None,
+            Vec::new(),
+            true,
+            true,
+            config,
+        )
+        .unwrap();
+        assert_eq!(
+            execinfo.exit_reason,
+            fp_evm::ExitReason::Error(fp_evm::ExitError::OutOfFund)
+        );
+        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.value, Vec::<u8>::new());
+        assert_eq!(execinfo.logs, Vec::new());
+
+        // Assert state changes.
+        assert_eq!(
+            EvmBalances::total_balance(&alice_evm),
+            alice_evm_balance - expected_fee
+        );
+        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+
+        // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
@@ -282,6 +382,12 @@ fn swap_fail_trait_error() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(swap_balance))
+            .return_const(swap_balance);
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx
             .expect()
@@ -336,6 +442,7 @@ fn swap_fail_trait_error() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
@@ -373,6 +480,8 @@ fn swap_fail_full_balance() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx.expect().never();
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx.expect().never();
 
@@ -413,6 +522,7 @@ fn swap_fail_full_balance() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
@@ -446,6 +556,8 @@ fn swap_fail_bad_selector() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx.expect().never();
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx.expect().never();
 
@@ -488,6 +600,7 @@ fn swap_fail_bad_selector() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
@@ -522,6 +635,8 @@ fn swap_fail_value_overflow() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx.expect().never();
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx.expect().never();
 
@@ -561,6 +676,7 @@ fn swap_fail_value_overflow() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
@@ -594,6 +710,8 @@ fn swap_fail_no_arguments() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx.expect().never();
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx.expect().never();
 
@@ -636,6 +754,7 @@ fn swap_fail_no_arguments() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
@@ -669,6 +788,8 @@ fn swap_fail_short_argument() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx.expect().never();
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx.expect().never();
 
@@ -712,6 +833,7 @@ fn swap_fail_short_argument() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
@@ -745,6 +867,8 @@ fn swap_fail_trailing_junk() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let estimate_swapped_balance_ctx = MockCurrencySwap::estimate_swapped_balance_context();
+        estimate_swapped_balance_ctx.expect().never();
         let swap_ctx = MockCurrencySwap::swap_context();
         swap_ctx.expect().never();
 
@@ -788,6 +912,7 @@ fn swap_fail_trailing_junk() {
         assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
 
         // Assert mock invocations.
+        estimate_swapped_balance_ctx.checkpoint();
         swap_ctx.checkpoint();
     });
 }
