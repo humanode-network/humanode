@@ -5892,8 +5892,6 @@ dependencies = [
  "frame-system",
  "mockall",
  "pallet-balances",
- "pallet-evm-balances",
- "pallet-evm-system",
  "pallet-pot",
  "parity-scale-codec",
  "primitives-currency-swap",
