@@ -15,8 +15,20 @@ pub use existence_optional::Marker as ExistenceOptional;
 pub use existence_required::Marker as ExistenceRequired;
 pub use pallet::*;
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
+
+/// The interface to verify bridge pot currency swap related data at genesis.
+pub trait GenesisVerifier {
+    /// Verify bridge pot currency swap related data.
+    fn verify() -> bool;
+}
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -81,6 +93,9 @@ pub mod pallet {
 
         /// The account to take the balances from when sending the funds as part of the swap operation.
         type PotTo: Get<Self::AccountIdTo>;
+
+        /// Interface into genesis verifier implementation.
+        type GenesisVerifier: GenesisVerifier;
     }
 
     #[pallet::genesis_config]
@@ -97,7 +112,12 @@ pub mod pallet {
     // The build of genesis for the pallet.
     #[pallet::genesis_build]
     impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
-        fn build(&self) {}
+        fn build(&self) {
+            assert!(
+                T::GenesisVerifier::verify(),
+                "invalid genesis bridge pot currency swap related data"
+            );
+        }
     }
 }
 
