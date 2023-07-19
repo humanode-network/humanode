@@ -1,45 +1,15 @@
 use bridge_pot_currency_swap::ExistenceRequired;
-use sp_runtime::traits::Identity;
 
 use crate::{
-    parameter_types, AccountId, Balances, EvmAccountId, EvmBalances, EvmToNativeSwapBridgePot,
-    FeesPot, NativeToEvmSwapBridgePot, TreasuryPot,
+    AccountId, EvmAccountId, EvmToNativeSwapBridge, EvmToNativeSwapBridgePot, FeesPot,
+    NativeToEvmSwapBridge, TreasuryPot,
 };
 
-parameter_types! {
-    pub NativeToEvmSwapBridgePotAccountId: AccountId = NativeToEvmSwapBridgePot::account_id();
-    pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
-}
-
 pub type NativeToEvmOneToOne =
-    bridge_pot_currency_swap::CurrencySwap<NativeToEvmOneToOneConfig, ExistenceRequired>;
-
-pub struct NativeToEvmOneToOneConfig;
-
-impl bridge_pot_currency_swap::Config for NativeToEvmOneToOneConfig {
-    type AccountIdFrom = AccountId;
-    type AccountIdTo = EvmAccountId;
-    type CurrencyFrom = Balances;
-    type CurrencyTo = EvmBalances;
-    type BalanceConverter = Identity;
-    type PotFrom = NativeToEvmSwapBridgePotAccountId;
-    type PotTo = EvmToNativeSwapBridgePotAccountId;
-}
+    bridge_pot_currency_swap::CurrencySwap<NativeToEvmSwapBridge, ExistenceRequired>;
 
 pub type EvmToNativeOneToOne =
-    bridge_pot_currency_swap::CurrencySwap<EvmToNativeOneToOneConfig, ExistenceRequired>;
-
-pub struct EvmToNativeOneToOneConfig;
-
-impl bridge_pot_currency_swap::Config for EvmToNativeOneToOneConfig {
-    type AccountIdFrom = EvmAccountId;
-    type AccountIdTo = AccountId;
-    type CurrencyFrom = EvmBalances;
-    type CurrencyTo = Balances;
-    type BalanceConverter = Identity;
-    type PotFrom = EvmToNativeSwapBridgePotAccountId;
-    type PotTo = NativeToEvmSwapBridgePotAccountId;
-}
+    bridge_pot_currency_swap::CurrencySwap<EvmToNativeSwapBridge, ExistenceRequired>;
 
 pub struct EvmToNativeProxyConfig;
 

@@ -6,13 +6,14 @@ use frame_support::{
     traits::{Currency, ExistenceRequirement, Get, Imbalance, WithdrawReasons},
 };
 
-use super::{Config, CurrencySwap};
+use super::{Config, CurrencySwap, Pallet};
 
 /// A marker type for the implementation that does not require pot accounts existence.
 pub enum Marker {}
 
-impl<T: Config> primitives_currency_swap::CurrencySwap<T::AccountIdFrom, T::AccountIdTo>
-    for CurrencySwap<T, Marker>
+impl<T: Config<I>, I: 'static>
+    primitives_currency_swap::CurrencySwap<T::AccountIdFrom, T::AccountIdTo>
+    for CurrencySwap<Pallet<T, I>, Marker>
 {
     type From = T::CurrencyFrom;
     type To = T::CurrencyTo;
