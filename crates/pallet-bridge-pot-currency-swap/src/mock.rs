@@ -4,16 +4,17 @@
 #![allow(clippy::integer_arithmetic)]
 
 use frame_support::{
-    parameter_types,
+    parameter_types, sp_io,
     sp_runtime::{
         testing::Header,
         traits::{BlakeTwo256, Identity, IdentityLookup},
+        BuildStorage,
     },
     traits::{ConstU32, ConstU64},
     PalletId,
 };
 use mockall::mock;
-use sp_core::{H160, H256};
+use sp_core::H256;
 
 use crate::{self as pallet_bridge_pot_currency_swap};
 
@@ -23,7 +24,6 @@ type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
 pub(crate) type AccountId = u64;
-pub(crate) type EvmAccountId = H160;
 type Balance = u64;
 
 frame_support::construct_runtime!(
@@ -34,12 +34,8 @@ frame_support::construct_runtime!(
     {
         System: frame_system,
         Balances: pallet_balances,
-        EvmSystem: pallet_evm_system,
-        EvmBalances: pallet_evm_balances,
-        NativeToEvmSwapBridgePot: pallet_pot::<Instance1>,
-        EvmToNativeSwapBridgePot: pallet_pot::<Instance2>,
-        NativeToEvmSwapBridge: pallet_bridge_pot_currency_swap::<Instance1>,
-        EvmToNativeSwapBridge: pallet_bridge_pot_currency_swap::<Instance2>,
+        SwapBridgePot: pallet_pot::<Instance1>,
+        SwapBridge: pallet_bridge_pot_currency_swap::<Instance1>,
     }
 );
 
@@ -82,44 +78,17 @@ impl pallet_balances::Config for Test {
     type WeightInfo = ();
 }
 
-impl pallet_evm_system::Config for Test {
-    type RuntimeEvent = RuntimeEvent;
-    type AccountId = EvmAccountId;
-    type Index = u64;
-    type AccountData = pallet_evm_balances::AccountData<Balance>;
-    type OnNewAccount = ();
-    type OnKilledAccount = ();
-}
-
-impl pallet_evm_balances::Config for Test {
-    type RuntimeEvent = RuntimeEvent;
-    type AccountId = EvmAccountId;
-    type Balance = Balance;
-    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT>;
-    type AccountStore = EvmSystem;
-    type DustRemoval = ();
-}
-
 parameter_types! {
-    pub const NativeToEvmSwapBridgePotPalletId: PalletId = PalletId(*b"hmcs/ne1");
-    pub const EvmToNativeSwapBridgePotPalletId: PalletId = PalletId(*b"hmcs/en1");
+    pub const SwapBridgePotPalletId: PalletId = PalletId(*b"humanod1");
 }
 
-type PotInstanceNativeToEvmSwapBridge = pallet_pot::Instance1;
-type PotInstanceEvmToNativeSwapBridge = pallet_pot::Instance2;
+type PotInstanceSwapBridge = pallet_pot::Instance1;
 
-impl pallet_pot::Config<PotInstanceNativeToEvmSwapBridge> for Test {
+impl pallet_pot::Config<PotInstanceSwapBridge> for Test {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = AccountId;
-    type PalletId = NativeToEvmSwapBridgePotPalletId;
+    type PalletId = SwapBridgePotPalletId;
     type Currency = Balances;
-}
-
-impl pallet_pot::Config<PotInstanceEvmToNativeSwapBridge> for Test {
-    type RuntimeEvent = RuntimeEvent;
-    type AccountId = EvmAccountId;
-    type PalletId = EvmToNativeSwapBridgePotPalletId;
-    type Currency = EvmBalances;
 }
 
 mock! {
@@ -132,38 +101,31 @@ mock! {
 }
 
 parameter_types! {
-    pub const NativeToEvmSwapBridgePalletId: PalletId = PalletId(*b"hmsb/ne1");
-    pub const EvmToNativeSwapBridgePalletId: PalletId = PalletId(*b"hmsb/en1");
+    pub const SwapBridgePalletId: PalletId = PalletId(*b"hmsb/ne1");
 }
 
 parameter_types! {
-    pub NativeToEvmSwapBridgePotAccountId: AccountId = NativeToEvmSwapBridgePot::account_id();
-    pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
+    pub SwapBridgePotAccountId: AccountId = SwapBridgePot::account_id();
 }
 
 type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
-type BridgeInstanceEvmToNativeSwap = pallet_bridge_pot_currency_swap::Instance2;
 
 impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Test {
     type AccountIdFrom = AccountId;
-    type AccountIdTo = EvmAccountId;
+    type AccountIdTo = AccountId;
     type CurrencyFrom = Balances;
-    type CurrencyTo = EvmBalances;
+    type CurrencyTo = Balances;
     type BalanceConverter = Identity;
-    type PotFrom = NativeToEvmSwapBridgePotAccountId;
-    type PotTo = EvmToNativeSwapBridgePotAccountId;
+    type PotFrom = SwapBridgePotAccountId;
+    type PotTo = SwapBridgePotAccountId;
     type GenesisVerifier = MockGenesisVerifier;
 }
 
-impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceEvmToNativeSwap> for Test {
-    type AccountIdFrom = EvmAccountId;
-    type AccountIdTo = AccountId;
-    type CurrencyFrom = EvmBalances;
-    type CurrencyTo = Balances;
-    type BalanceConverter = Identity;
-    type PotFrom = EvmToNativeSwapBridgePotAccountId;
-    type PotTo = NativeToEvmSwapBridgePotAccountId;
-    type GenesisVerifier = MockGenesisVerifier;
+// This function basically just builds a genesis storage key/value store according to
+// our desired mockup.
+pub fn new_test_ext_with(genesis_config: GenesisConfig) -> sp_io::TestExternalities {
+    let storage = genesis_config.build_storage().unwrap();
+    storage.into()
 }
 
 pub fn runtime_lock() -> std::sync::MutexGuard<'static, ()> {
