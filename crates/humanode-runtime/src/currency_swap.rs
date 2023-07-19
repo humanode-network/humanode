@@ -1,4 +1,4 @@
-use bridge_pot_currency_swap::ExistenceRequired;
+use pallet_bridge_pot_currency_swap::ExistenceRequired;
 
 use crate::{
     AccountId, EvmAccountId, EvmToNativeSwapBridge, EvmToNativeSwapBridgePot, FeesPot,
@@ -6,10 +6,10 @@ use crate::{
 };
 
 pub type NativeToEvmOneToOne =
-    bridge_pot_currency_swap::CurrencySwap<NativeToEvmSwapBridge, ExistenceRequired>;
+    pallet_bridge_pot_currency_swap::CurrencySwap<NativeToEvmSwapBridge, ExistenceRequired>;
 
 pub type EvmToNativeOneToOne =
-    bridge_pot_currency_swap::CurrencySwap<EvmToNativeSwapBridge, ExistenceRequired>;
+    pallet_bridge_pot_currency_swap::CurrencySwap<EvmToNativeSwapBridge, ExistenceRequired>;
 
 pub struct EvmToNativeProxyConfig;
 

@@ -777,18 +777,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8d696c370c750c948ada61c69a0ee2cbbb9c50b1019ddb86d9317157a99c2cae"
 
 [[package]]
-name = "bridge-pot-currency-swap"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec",
- "primitives-currency-swap",
- "scale-info",
- "sp-std",
-]
-
-[[package]]
 name = "bs58"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3678,7 +3666,6 @@ version = "0.1.0"
 dependencies = [
  "author-ext-api",
  "bioauth-flow-api",
- "bridge-pot-currency-swap",
  "chrono",
  "crypto-utils",
  "eip191-crypto",
@@ -3708,6 +3695,7 @@ dependencies = [
  "pallet-base-fee",
  "pallet-bioauth",
  "pallet-bootnodes",
+ "pallet-bridge-pot-currency-swap",
  "pallet-chain-properties",
  "pallet-chain-start-moment",
  "pallet-currency-swap",
@@ -5893,6 +5881,18 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-bridge-pot-currency-swap"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "primitives-currency-swap",
+ "scale-info",
  "sp-std",
 ]
 

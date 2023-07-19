@@ -786,10 +786,10 @@ parameter_types! {
     pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
 }
 
-type BridgeInstanceNativeToEvmSwap = bridge_pot_currency_swap::Instance1;
-type BridgeInstanceEvmToNativeSwap = bridge_pot_currency_swap::Instance2;
+type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
+type BridgeInstanceEvmToNativeSwap = pallet_bridge_pot_currency_swap::Instance2;
 
-impl bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Runtime {
+impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Runtime {
     type AccountIdFrom = AccountId;
     type AccountIdTo = EvmAccountId;
     type CurrencyFrom = Balances;
@@ -799,7 +799,7 @@ impl bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Runtime
     type PotTo = EvmToNativeSwapBridgePotAccountId;
 }
 
-impl bridge_pot_currency_swap::Config<BridgeInstanceEvmToNativeSwap> for Runtime {
+impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceEvmToNativeSwap> for Runtime {
     type AccountIdFrom = EvmAccountId;
     type AccountIdTo = AccountId;
     type CurrencyFrom = EvmBalances;
@@ -854,8 +854,8 @@ construct_runtime!(
         NativeToEvmSwapBridgePot: pallet_pot::<Instance4> = 33,
         EvmToNativeSwapBridgePot: pallet_pot::<Instance5> = 34,
         CurrencySwap: pallet_currency_swap = 35,
-        NativeToEvmSwapBridge: bridge_pot_currency_swap::<Instance1> = 36,
-        EvmToNativeSwapBridge: bridge_pot_currency_swap::<Instance2> = 37,
+        NativeToEvmSwapBridge: pallet_bridge_pot_currency_swap::<Instance1> = 36,
+        EvmToNativeSwapBridge: pallet_bridge_pot_currency_swap::<Instance2> = 37,
     }
 );
 

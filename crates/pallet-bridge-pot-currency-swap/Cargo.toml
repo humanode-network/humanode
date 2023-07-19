@@ -1,5 +1,5 @@
 [package]
-name = "bridge-pot-currency-swap"
+name = "pallet-bridge-pot-currency-swap"
 version = "0.1.0"
 edition = "2021"
 publish = false
