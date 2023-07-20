@@ -353,7 +353,9 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         }},
         "evmToNativeSwapBridgePot": {{
             "initialState": "Initialized"
-        }}
+        }},
+        "nativeToEvmSwapBridge": null,
+        "evmToNativeSwapBridge": null
     }}"#
     )
 }

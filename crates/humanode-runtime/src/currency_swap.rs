@@ -1,44 +1,22 @@
-use bridge_pot_currency_swap::ExistenceRequired;
-use sp_runtime::traits::Identity;
+use pallet_bridge_pot_currency_swap::ExistenceRequired;
 
 use crate::{
-    parameter_types, AccountId, Balances, EvmAccountId, EvmBalances, EvmToNativeSwapBridgePot,
-    FeesPot, NativeToEvmSwapBridgePot, TreasuryPot,
+    AccountId, EvmAccountId, EvmToNativeSwapBridge, EvmToNativeSwapBridgePot, FeesPot,
+    NativeToEvmSwapBridge, TreasuryPot,
 };
 
-parameter_types! {
-    pub NativeToEvmSwapBridgePotAccountId: AccountId = NativeToEvmSwapBridgePot::account_id();
-    pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
-}
-
 pub type NativeToEvmOneToOne =
-    bridge_pot_currency_swap::CurrencySwap<NativeToEvmOneToOneConfig, ExistenceRequired>;
-
-pub struct NativeToEvmOneToOneConfig;
-
-impl bridge_pot_currency_swap::Config for NativeToEvmOneToOneConfig {
-    type AccountIdFrom = AccountId;
-    type AccountIdTo = EvmAccountId;
-    type CurrencyFrom = Balances;
-    type CurrencyTo = EvmBalances;
-    type BalanceConverter = Identity;
-    type PotFrom = NativeToEvmSwapBridgePotAccountId;
-    type PotTo = EvmToNativeSwapBridgePotAccountId;
-}
+    pallet_bridge_pot_currency_swap::CurrencySwap<NativeToEvmSwapBridge, ExistenceRequired>;
 
 pub type EvmToNativeOneToOne =
-    bridge_pot_currency_swap::CurrencySwap<EvmToNativeOneToOneConfig, ExistenceRequired>;
+    pallet_bridge_pot_currency_swap::CurrencySwap<EvmToNativeSwapBridge, ExistenceRequired>;
 
-pub struct EvmToNativeOneToOneConfig;
+pub struct GenesisVerifier;
 
-impl bridge_pot_currency_swap::Config for EvmToNativeOneToOneConfig {
-    type AccountIdFrom = EvmAccountId;
-    type AccountIdTo = AccountId;
-    type CurrencyFrom = EvmBalances;
-    type CurrencyTo = Balances;
-    type BalanceConverter = Identity;
-    type PotFrom = EvmToNativeSwapBridgePotAccountId;
-    type PotTo = NativeToEvmSwapBridgePotAccountId;
+impl pallet_bridge_pot_currency_swap::GenesisVerifier for GenesisVerifier {
+    fn verify() -> bool {
+        true
+    }
 }
 
 pub struct EvmToNativeProxyConfig;
