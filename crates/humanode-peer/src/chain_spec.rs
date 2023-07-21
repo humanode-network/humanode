@@ -262,6 +262,21 @@ fn testnet_genesis(
     robonode_public_key: robonode::PublicKey,
     bootnodes: Vec<AccountId>,
 ) -> GenesisConfig {
+    let pot_accounts = vec![
+        (
+            humanode_runtime::TreasuryPot::account_id(),
+            INITIAL_POT_ACCOUNT_BALANCE,
+        ),
+        (
+            humanode_runtime::FeesPot::account_id(),
+            INITIAL_POT_ACCOUNT_BALANCE,
+        ),
+        (
+            humanode_runtime::TokenClaimsPot::account_id(),
+            INITIAL_POT_ACCOUNT_BALANCE,
+        ),
+    ];
+
     GenesisConfig {
         system: SystemConfig {
             // Add Wasm runtime to storage.
@@ -270,30 +285,24 @@ fn testnet_genesis(
         balances: BalancesConfig {
             // Configure endowed accounts with initial balance.
             balances: {
-                let pot_accounts = vec![
-                    (
-                        humanode_runtime::TreasuryPot::account_id(),
-                        INITIAL_POT_ACCOUNT_BALANCE,
-                    ),
-                    (
-                        humanode_runtime::FeesPot::account_id(),
-                        INITIAL_POT_ACCOUNT_BALANCE,
-                    ),
-                    (
-                        humanode_runtime::TokenClaimsPot::account_id(),
-                        INITIAL_POT_ACCOUNT_BALANCE,
-                    ),
-                    (
-                        humanode_runtime::NativeToEvmSwapBridgePot::account_id(),
-                        INITIAL_POT_ACCOUNT_BALANCE,
-                    ),
-                ];
+                let pot_accounts = pot_accounts.clone();
+                let endowed_accounts = endowed_accounts.clone();
                 pot_accounts
                     .into_iter()
                     .chain(
                         endowed_accounts
                             .into_iter()
                             .map(|k| (k, DEV_ACCOUNT_BALANCE)),
+                    )
+                    .chain(
+                        [
+                        (
+                            humanode_runtime::NativeToEvmSwapBridgePot::account_id(),
+                            DEV_ACCOUNT_BALANCE * evm_endowed_accounts.len() as u128 +
+                            // Own bridge pot minimum balance.
+                            <humanode_runtime::Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                        )]
+                        .into_iter(),
                     )
                     .collect()
             },
@@ -344,7 +353,12 @@ fn testnet_genesis(
             accounts: {
                 let evm_pot_accounts = vec![(
                     humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
-                    evm_genesis_account(INITIAL_POT_ACCOUNT_BALANCE),
+                    evm_genesis_account(
+                        DEV_ACCOUNT_BALANCE * endowed_accounts.len() as u128 +
+                        INITIAL_POT_ACCOUNT_BALANCE * pot_accounts.len() as u128 +
+                        // Own bridge pot minimum balance.
+                        <humanode_runtime::EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance(),
+                    ),
                 )];
 
                 evm_pot_accounts
