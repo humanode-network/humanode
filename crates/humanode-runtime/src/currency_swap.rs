@@ -11,14 +11,6 @@ pub type NativeToEvmOneToOne =
 pub type EvmToNativeOneToOne =
     pallet_bridge_pot_currency_swap::CurrencySwap<EvmToNativeSwapBridge, ExistenceRequired>;
 
-pub struct GenesisVerifier;
-
-impl pallet_bridge_pot_currency_swap::GenesisVerifier for GenesisVerifier {
-    fn verify() -> bool {
-        true
-    }
-}
-
 pub struct EvmToNativeProxyConfig;
 
 impl primitives_currency_swap_proxy::Config for EvmToNativeProxyConfig {
