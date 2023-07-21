@@ -10,6 +10,7 @@ use frame_support::{
 };
 pub mod existence_optional;
 pub mod existence_required;
+pub mod genesis_verifier;
 
 pub use existence_optional::Marker as ExistenceOptional;
 pub use existence_required::Marker as ExistenceRequired;
