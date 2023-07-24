@@ -145,6 +145,7 @@ std = [
   "eip712-account-claim/std",
   "eip712-common/std",
   "eip712-token-claim/std",
+  "fp-evm/std",
   "fp-rpc/std",
   "fp-self-contained/std",
   "frame-executive/std",
