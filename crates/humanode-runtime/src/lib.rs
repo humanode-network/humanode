@@ -213,7 +213,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 105,
+    spec_version: 106,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -624,10 +624,13 @@ impl pallet_offences::Config for Runtime {
     type OnOffenceHandler = OffenceSlasher;
 }
 
+const BLOCK_GAS_LIMIT: u64 = 75_000_000;
+const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2000;
+
 parameter_types! {
-    pub BlockGasLimit: U256 = U256::from(u32::max_value());
+    pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
-    pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+    pub WeightPerGas: Weight = Weight::from_ref_time(fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK));
 }
 
 impl pallet_evm_system::Config for Runtime {
