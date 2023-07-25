@@ -102,6 +102,27 @@ fn prepare_applyable_data(
     (checked_extrinsic, normal_dispatch_info, len)
 }
 
+/// A helper function to prepare basic native accounts with balances.
+fn prepare_basic_native_accounts(
+    endowed_accounts: Vec<AccountId>,
+    pot_accounts: Vec<AccountId>,
+) -> Vec<(AccountId, Balance)> {
+    endowed_accounts
+        .iter()
+        .cloned()
+        .chain(pot_accounts.into_iter())
+        .map(|k| (k, INIT_BALANCE))
+        .chain(
+            [(
+                TokenClaimsPot::account_id(),
+                2 * VESTING_BALANCE
+                    + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+            )]
+            .into_iter(),
+        )
+        .collect::<Vec<_>>()
+}
+
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
 fn new_test_ext() -> sp_io::TestExternalities {
@@ -110,22 +131,17 @@ fn new_test_ext() -> sp_io::TestExternalities {
 
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
     let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
+    let basic_native_accounts = prepare_basic_native_accounts(endowed_accounts, pot_accounts);
+
     // Build test genesis.
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: {
-                let pot_accounts = pot_accounts.clone();
-                endowed_accounts
+                basic_native_accounts
                     .iter()
                     .cloned()
-                    .chain(pot_accounts.into_iter())
-                    .map(|k| (k, INIT_BALANCE))
                     .chain(
                         [(
-                            TokenClaimsPot::account_id(),
-                            2 * VESTING_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
-                        ),
-                        (
                             NativeToEvmSwapBridgePot::account_id(),
                             <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
@@ -184,22 +200,24 @@ fn new_test_ext() -> sp_io::TestExternalities {
         },
         evm: EVMConfig {
             accounts: {
-                let evm_pot_accounts =
-                    vec![(
-                        EvmToNativeSwapBridgePot::account_id(),
-                        fp_evm::GenesisAccount {
-                            balance: (INIT_BALANCE * (endowed_accounts.len() + pot_accounts.len()) as u128 +
-                            // Own bridge pot minimum balance.
-                            <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance() +
-                            // `TokenClaimsPot` minimum balance.
-                            2 * VESTING_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
+                let evm_pot_accounts = vec![(
+                    EvmToNativeSwapBridgePot::account_id(),
+                    fp_evm::GenesisAccount {
+                        balance: pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
+                            NativeToEvmSwapBridge,
+                        >::calculate_expected_to_bridge_balance(
+                            basic_native_accounts
+                                .iter()
+                                .map(|acc| acc.1)
+                                .collect::<Vec<_>>(),
                         )
-                            .into(),
-                            code: Default::default(),
-                            nonce: Default::default(),
-                            storage: Default::default(),
-                        },
-                    )];
+                        .unwrap()
+                        .into(),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                )];
 
                 evm_pot_accounts.into_iter().collect()
             },
