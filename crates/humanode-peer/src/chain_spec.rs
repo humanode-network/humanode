@@ -252,6 +252,81 @@ const EXISTENTIAL_DEPOSIT: Balance = 500;
 /// The initial pot accounts balance for testnet genesis.
 const INITIAL_POT_ACCOUNT_BALANCE: Balance = EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE;
 
+/// A helper function to prepare native and evm accounts.
+#[allow(clippy::type_complexity)]
+fn prepare_accounts_balances(
+    native_endowed_accounts: Vec<AccountId>,
+    native_pot_accounts: Vec<AccountId>,
+    evm_endowed_accounts: Vec<EvmAccountId>,
+    evm_pot_accounts: Vec<EvmAccountId>,
+) -> (
+    Vec<(AccountId, Balance)>,
+    Vec<(EvmAccountId, fp_evm::GenesisAccount)>,
+) {
+    let basic_native_accounts = native_pot_accounts
+        .into_iter()
+        .map(|k| (k, INITIAL_POT_ACCOUNT_BALANCE))
+        .chain(
+            native_endowed_accounts
+                .into_iter()
+                .map(|k| (k, DEV_ACCOUNT_BALANCE)),
+        )
+        .collect::<Vec<_>>();
+
+    let basic_evm_accounts = evm_pot_accounts
+        .into_iter()
+        .map(|k| (k, evm_genesis_account(DEV_ACCOUNT_BALANCE)))
+        .chain(
+            evm_endowed_accounts
+                .into_iter()
+                .map(|k| (k, evm_genesis_account(DEV_ACCOUNT_BALANCE))),
+        )
+        .collect::<Vec<_>>();
+
+    let native_accounts = basic_native_accounts
+        .clone()
+        .into_iter()
+        .chain(
+            [(
+                humanode_runtime::NativeToEvmSwapBridgePot::account_id(),
+                pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
+                    humanode_runtime::EvmToNativeSwapBridge,
+                >::calculate_expected_to_bridge_balance(
+                    basic_evm_accounts
+                        .iter()
+                        .map(|acc| acc.1.balance.as_u128())
+                        .collect::<Vec<_>>(),
+                )
+                .unwrap(),
+            )]
+            .into_iter(),
+        )
+        .collect::<Vec<_>>();
+
+    let evm_accounts = basic_evm_accounts
+        .into_iter()
+        .chain(
+            [(
+                humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
+                evm_genesis_account(
+                    pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
+                        humanode_runtime::NativeToEvmSwapBridge,
+                    >::calculate_expected_to_bridge_balance(
+                        basic_native_accounts
+                            .iter()
+                            .map(|acc| acc.1)
+                            .collect::<Vec<_>>(),
+                    )
+                    .unwrap(),
+                ),
+            )]
+            .into_iter(),
+        )
+        .collect::<Vec<_>>();
+
+    (native_accounts, evm_accounts)
+}
+
 /// Configure initial storage state for FRAME modules.
 fn testnet_genesis(
     wasm_binary: &[u8],
@@ -262,32 +337,17 @@ fn testnet_genesis(
     robonode_public_key: robonode::PublicKey,
     bootnodes: Vec<AccountId>,
 ) -> GenesisConfig {
-    let pot_accounts = vec![
-        (
-            humanode_runtime::TreasuryPot::account_id(),
-            INITIAL_POT_ACCOUNT_BALANCE,
-        ),
-        (
-            humanode_runtime::FeesPot::account_id(),
-            INITIAL_POT_ACCOUNT_BALANCE,
-        ),
-        (
-            humanode_runtime::TokenClaimsPot::account_id(),
-            INITIAL_POT_ACCOUNT_BALANCE,
-        ),
+    let native_pot_accounts = vec![
+        humanode_runtime::TreasuryPot::account_id(),
+        humanode_runtime::FeesPot::account_id(),
+        humanode_runtime::TokenClaimsPot::account_id(),
     ];
-    let basic_native_accounts = pot_accounts
-        .into_iter()
-        .chain(
-            endowed_accounts
-                .into_iter()
-                .map(|k| (k, DEV_ACCOUNT_BALANCE)),
-        )
-        .collect::<Vec<_>>();
-    let basic_evm_accounts = evm_endowed_accounts
-        .iter()
-        .map(|acc| (acc, evm_genesis_account(DEV_ACCOUNT_BALANCE)))
-        .collect::<Vec<_>>();
+    let (native_accounts, evm_accounts) = prepare_accounts_balances(
+        endowed_accounts,
+        native_pot_accounts,
+        evm_endowed_accounts,
+        vec![],
+    );
 
     GenesisConfig {
         system: SystemConfig {
@@ -296,27 +356,7 @@ fn testnet_genesis(
         },
         balances: BalancesConfig {
             // Configure endowed accounts with initial balance.
-            balances: {
-                basic_native_accounts
-                    .clone()
-                    .into_iter()
-                    .chain(
-                        [(
-                            humanode_runtime::NativeToEvmSwapBridgePot::account_id(),
-                            pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
-                                humanode_runtime::EvmToNativeSwapBridge,
-                            >::calculate_expected_to_bridge_balance(
-                                basic_evm_accounts
-                                    .iter()
-                                    .map(|acc| acc.1.balance.as_u128())
-                                    .collect::<Vec<_>>(),
-                            )
-                            .unwrap(),
-                        )]
-                        .into_iter(),
-                    )
-                    .collect()
-            },
+            balances: { native_accounts.into_iter().collect() },
         },
         session: SessionConfig {
             keys: initial_authorities
@@ -361,31 +401,7 @@ fn testnet_genesis(
             chain_id: ETH_CHAIN_ID,
         },
         evm: EVMConfig {
-            accounts: {
-                let evm_pot_accounts = vec![(
-                    humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
-                    evm_genesis_account(
-                        pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
-                            humanode_runtime::NativeToEvmSwapBridge,
-                        >::calculate_expected_to_bridge_balance(
-                            basic_native_accounts
-                                .iter()
-                                .map(|acc| acc.1)
-                                .collect::<Vec<_>>(),
-                        )
-                        .unwrap(),
-                    ),
-                )];
-
-                evm_pot_accounts
-                    .into_iter()
-                    .chain(
-                        evm_endowed_accounts
-                            .into_iter()
-                            .map(|k| (k, evm_genesis_account(DEV_ACCOUNT_BALANCE))),
-                    )
-                    .collect()
-            },
+            accounts: { evm_accounts.into_iter().collect() },
         },
         evm_accounts_mapping: Default::default(),
         ethereum: EthereumConfig {},
