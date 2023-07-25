@@ -245,6 +245,7 @@ fn assert_applyable_validate_all_transaction_sources(
 }
 
 fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> String {
+    let evm_bridge_pot_balance = token_claim_pot_balance + 500 /*treasury pot*/ + 500 /*fees pot*/ + 500 /*evm ed*/;
     format!(
         r#"{{
         "system": {{
@@ -327,7 +328,7 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
             "accounts": {{
                 "0x6d6f646c686d63732f656e310000000000000000": {{
                     "nonce": "0x0",
-                    "balance": "0xd3c21bcecceda10001f4",
+                    "balance": "{evm_bridge_pot_balance:x}",
                     "storage": {{}},
                     "code": []
                 }}

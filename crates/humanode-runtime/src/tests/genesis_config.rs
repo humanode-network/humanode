@@ -88,7 +88,7 @@ fn works() {
             "accounts": {
                 "0x6d6f646c686d63732f656e310000000000000000": {
                     "nonce": "0x0",
-                    "balance": "0xd3c21bcecceda10001f4",
+                    "balance": "0x7d0",
                     "storage": {},
                     "code": []
                 }
