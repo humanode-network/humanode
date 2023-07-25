@@ -17,6 +17,7 @@ humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id" }
 ngrok-api = { version = "0.1", path = "../ngrok-api" }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
+pallet-bridge-pot-currency-swap = { version = "0.1", path = "../pallet-bridge-pot-currency-swap" }
 pallet-token-claims = { version = "0.1", path = "../pallet-token-claims" }
 robonode-client = { version = "0.1", path = "../robonode-client" }
 
@@ -116,6 +117,7 @@ try-runtime = [
   "humanode-runtime/try-runtime",
   "pallet-balances/try-runtime",
   "pallet-bioauth/try-runtime",
+  "pallet-bridge-pot-currency-swap/try-runtime",
   "pallet-dynamic-fee/try-runtime",
   "pallet-im-online/try-runtime",
   "pallet-transaction-payment/try-runtime",

@@ -276,6 +276,18 @@ fn testnet_genesis(
             INITIAL_POT_ACCOUNT_BALANCE,
         ),
     ];
+    let basic_native_accounts = pot_accounts
+        .into_iter()
+        .chain(
+            endowed_accounts
+                .into_iter()
+                .map(|k| (k, DEV_ACCOUNT_BALANCE)),
+        )
+        .collect::<Vec<_>>();
+    let basic_evm_accounts = evm_endowed_accounts
+        .iter()
+        .map(|acc| (acc, evm_genesis_account(DEV_ACCOUNT_BALANCE)))
+        .collect::<Vec<_>>();
 
     GenesisConfig {
         system: SystemConfig {
@@ -285,25 +297,21 @@ fn testnet_genesis(
         balances: BalancesConfig {
             // Configure endowed accounts with initial balance.
             balances: {
-                let pot_accounts = pot_accounts.clone();
-                let endowed_accounts = endowed_accounts.clone();
-                pot_accounts
+                basic_native_accounts
+                    .clone()
                     .into_iter()
                     .chain(
-                        endowed_accounts
-                            .into_iter()
-                            .map(|k| (k, DEV_ACCOUNT_BALANCE)),
-                    )
-                    .chain(
-                        [
-                        (
+                        [(
                             humanode_runtime::NativeToEvmSwapBridgePot::account_id(),
-                            DEV_ACCOUNT_BALANCE
-                                .checked_mul(evm_endowed_accounts.len().try_into().unwrap()).unwrap()
-                                .checked_add(
-                                    // Own bridge pot minimum balance.
-                                    <humanode_runtime::Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-                                ).unwrap(),
+                            pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
+                                humanode_runtime::EvmToNativeSwapBridge,
+                            >::calculate_expected_to_bridge_balance(
+                                basic_evm_accounts
+                                    .iter()
+                                    .map(|acc| acc.1.balance.as_u128())
+                                    .collect::<Vec<_>>(),
+                            )
+                            .unwrap(),
                         )]
                         .into_iter(),
                     )
@@ -357,13 +365,15 @@ fn testnet_genesis(
                 let evm_pot_accounts = vec![(
                     humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
                     evm_genesis_account(
-                        DEV_ACCOUNT_BALANCE
-                            .checked_mul(endowed_accounts.len().try_into().unwrap()).unwrap()
-                            .checked_add(INITIAL_POT_ACCOUNT_BALANCE.checked_mul(pot_accounts.len().try_into().unwrap()).unwrap()
-                            .checked_add(
-                                // Own bridge pot minimum balance.
-                                <humanode_runtime::EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance(),
-                            ).unwrap()).unwrap()
+                        pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
+                            humanode_runtime::NativeToEvmSwapBridge,
+                        >::calculate_expected_to_bridge_balance(
+                            basic_native_accounts
+                                .iter()
+                                .map(|acc| acc.1)
+                                .collect::<Vec<_>>(),
+                        )
+                        .unwrap(),
                     ),
                 )];
 
