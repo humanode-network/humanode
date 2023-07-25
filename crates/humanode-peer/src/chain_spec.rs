@@ -298,9 +298,12 @@ fn testnet_genesis(
                         [
                         (
                             humanode_runtime::NativeToEvmSwapBridgePot::account_id(),
-                            DEV_ACCOUNT_BALANCE * evm_endowed_accounts.len() as u128 +
-                            // Own bridge pot minimum balance.
-                            <humanode_runtime::Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                            DEV_ACCOUNT_BALANCE
+                                .checked_mul(evm_endowed_accounts.len().try_into().unwrap()).unwrap()
+                                .checked_add(
+                                    // Own bridge pot minimum balance.
+                                    <humanode_runtime::Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
+                                ).unwrap(),
                         )]
                         .into_iter(),
                     )
@@ -354,10 +357,13 @@ fn testnet_genesis(
                 let evm_pot_accounts = vec![(
                     humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
                     evm_genesis_account(
-                        DEV_ACCOUNT_BALANCE * endowed_accounts.len() as u128 +
-                        INITIAL_POT_ACCOUNT_BALANCE * pot_accounts.len() as u128 +
-                        // Own bridge pot minimum balance.
-                        <humanode_runtime::EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance(),
+                        DEV_ACCOUNT_BALANCE
+                            .checked_mul(endowed_accounts.len().try_into().unwrap()).unwrap()
+                            .checked_add(INITIAL_POT_ACCOUNT_BALANCE.checked_mul(pot_accounts.len().try_into().unwrap()).unwrap()
+                            .checked_add(
+                                // Own bridge pot minimum balance.
+                                <humanode_runtime::EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance(),
+                            ).unwrap()).unwrap()
                     ),
                 )];
 
