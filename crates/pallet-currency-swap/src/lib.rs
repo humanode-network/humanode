@@ -103,7 +103,7 @@ pub mod pallet {
         pub fn swap(
             origin: OriginFor<T>,
             to: T::AccountIdTo,
-            amount: FromBalanceOf<T>,
+            #[pallet::compact] amount: FromBalanceOf<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
@@ -120,7 +120,7 @@ pub mod pallet {
         pub fn swap_keep_alive(
             origin: OriginFor<T>,
             to: T::AccountIdTo,
-            amount: FromBalanceOf<T>,
+            #[pallet::compact] amount: FromBalanceOf<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
