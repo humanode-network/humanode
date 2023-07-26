@@ -386,7 +386,7 @@ fn testnet_genesis(
             accounts: {
                 basic_evm_accounts
                     .into_iter()
-                    .map(|k| (k.0, evm_genesis_account(k.1)))
+                    .map(|(account_id, balance)| (account_id, evm_genesis_account(balance)))
                     .chain(
                         [(
                             humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
