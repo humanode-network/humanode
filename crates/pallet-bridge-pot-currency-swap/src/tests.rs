@@ -55,7 +55,7 @@ fn calculate_expected_to_bridge_balance_works() {
         assert_eq!(
             expected_to_bridge_balance,
             Balanced::<SwapBridge>::calculate_expected_to_bridge_balance(
-                all_from_balances_without_bridge_balance
+                &all_from_balances_without_bridge_balance
             )
             .unwrap()
         );
@@ -71,7 +71,7 @@ fn calculate_expected_to_bridge_balance_fails_overflow() {
         assert_eq!(
             DispatchError::Arithmetic(ArithmeticError::Overflow),
             Balanced::<SwapBridge>::calculate_expected_to_bridge_balance(
-                all_from_balances_without_bridge_balance
+                &all_from_balances_without_bridge_balance
             )
             .unwrap_err()
         );
