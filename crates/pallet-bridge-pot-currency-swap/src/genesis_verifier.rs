@@ -18,11 +18,9 @@ impl<T: Config<I>, I: 'static> Balanced<Pallet<T, I>> {
     /// A function to calculate expected [`Config::PotTo`] balance based on the provided list of
     /// all [`Config::AccountIdFrom`] balances except [`Config::PotFrom`] balance.
     pub fn calculate_expected_to_bridge_balance(
-        all_from_balances_without_bridge_balance: &[<T::CurrencyFrom as Currency<
-            T::AccountIdFrom,
-        >>::Balance],
+        from_balances: &[<T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance],
     ) -> Result<<T::CurrencyTo as Currency<T::AccountIdTo>>::Balance, DispatchError> {
-        let to_bridge_balance = all_from_balances_without_bridge_balance.iter().try_fold(
+        let to_bridge_balance = from_balances.iter().try_fold(
             Zero::zero(),
             |sum: <T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance, &from_balance| {
                 sum.checked_add(&from_balance)
