@@ -7,19 +7,12 @@ inputs:
 outputs:
   matrix:
     description: 'The build matrix generated from planning'
-    value: ${{ steps.set-matrix.outputs.matrix }}
+    value: ${{ steps.plan.outputs.matrix }}
 runs:
   using: "composite"
   steps:
-    - name: Compute matrix
-      uses: actions/github-script@v6
-      id: set-matrix
-      env:
-        PLAN_NAME: ${{ inputs.plan-name }}
-        ACTION_PATH: ${{ github.action_path }}
+    - uses: MOZGIII/action-plan@v0.2.0
+      id: plan
       with:
-        script: |
-          const planners = require(`${process.env.ACTION_PATH}/plan.js`);
-          const planner = planners[process.env.PLAN_NAME];
-          const matrix = planner();
-          core.setOutput('matrix', matrix);
+        plan-file: ${{ github.action_path }}/plan.js
+        plan: ${{ inputs.plan-name }}
