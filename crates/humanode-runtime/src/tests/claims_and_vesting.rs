@@ -206,7 +206,7 @@ fn new_test_ext() -> sp_io::TestExternalities {
                         balance: pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
                             NativeToEvmSwapBridge,
                         >::calculate_expected_to_bridge_balance(
-                            &basic_native_accounts
+                            basic_native_accounts
                                 .iter()
                                 .map(|acc| acc.1)
                                 .collect::<Vec<_>>(),

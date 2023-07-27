@@ -3,7 +3,7 @@
 use frame_support::{
     sp_runtime::{
         traits::{CheckedAdd, Convert, Zero},
-        ArithmeticError, DispatchError,
+        ArithmeticError,
     },
     sp_std::marker::PhantomData,
     traits::{Currency, Get},
@@ -14,23 +14,32 @@ use super::{Config, GenesisVerifier, Pallet};
 /// The implementation that requires bridge pot balance values be balanced.
 pub struct Balanced<Pallet>(PhantomData<Pallet>);
 
+/// The bridge pot balances logic related error kinds.
+#[derive(Debug, PartialEq)]
+pub enum Error {
+    /// The arithmetic operation error.
+    Arithmetic(ArithmeticError),
+}
+
 impl<T: Config<I>, I: 'static> Balanced<Pallet<T, I>> {
     /// A function to calculate expected [`Config::PotTo`] balance based on the provided list of
     /// all [`Config::AccountIdFrom`] balances except [`Config::PotFrom`] balance.
     pub fn calculate_expected_to_bridge_balance(
-        from_balances: &[<T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance],
-    ) -> Result<<T::CurrencyTo as Currency<T::AccountIdTo>>::Balance, DispatchError> {
-        let to_bridge_balance = from_balances.iter().try_fold(
+        from_balances: impl IntoIterator<
+            Item = <T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance,
+        >,
+    ) -> Result<<T::CurrencyTo as Currency<T::AccountIdTo>>::Balance, Error> {
+        let to_bridge_balance = from_balances.into_iter().try_fold(
             Zero::zero(),
-            |sum: <T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance, &from_balance| {
+            |sum: <T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance, from_balance| {
                 sum.checked_add(&from_balance)
-                    .ok_or(DispatchError::Arithmetic(ArithmeticError::Overflow))
+                    .ok_or(Error::Arithmetic(ArithmeticError::Overflow))
             },
         )?;
 
         let to_bridge_balance = T::BalanceConverter::convert(to_bridge_balance)
             .checked_add(&T::CurrencyTo::minimum_balance())
-            .ok_or(DispatchError::Arithmetic(ArithmeticError::Overflow))?;
+            .ok_or(Error::Arithmetic(ArithmeticError::Overflow))?;
 
         Ok(to_bridge_balance)
     }
