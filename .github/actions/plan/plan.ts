@@ -1,5 +1,6 @@
 // An utility to apply common build script paths.
-const buildEnvScriptPath = (script) => `.github/scripts/build_env/${script}`;
+const buildEnvScriptPath = (script: string) =>
+  `.github/scripts/build_env/${script}`;
 
 // All the platforms that we support, and their respective settings.
 const allPlatforms = {
@@ -117,7 +118,7 @@ const codeModes = {
     cargoArgs: "--workspace --features try-runtime",
     cargoCacheKey: "try-runtime",
   },
-};
+} as const;
 
 const buildModes = {
   build: {
@@ -126,9 +127,9 @@ const buildModes = {
     cargoArgs: "--workspace --release",
     cargoCacheKey: "release-build",
   },
-};
+} as const;
 
-const code = () => {
+export const code = () => {
   // Compute the effective list of platforms to use.
   const effectivePlatforms = Object.values(allPlatforms).filter(
     (platform) => !platform.isBroken && platform.essential
@@ -136,13 +137,13 @@ const code = () => {
 
   // Compute the effective list of modes that should run for each of the platforms.
   const effectiveModes = Object.values(codeModes).filter(
-    (mode) => !mode.platformIndependent
+    (mode) => !("platformIndependent" in mode && mode.platformIndependent)
   );
 
   // Compute the effective list of modes that are platform indepedent and only
   // have to be run once.
   const effectiveIndepModes = Object.values(codeModes).filter(
-    (mode) => mode.platformIndependent
+    (mode) => "platformIndependent" in mode && mode.platformIndependent
   );
 
   // Compute the individual mixins for indep modes.
@@ -168,7 +169,7 @@ const code = () => {
   return matrix;
 };
 
-const build = () => {
+export const build = () => {
   // Compute the effective list of platforms to use.
   const effectivePlatforms = Object.values(allPlatforms).filter(
     (platform) => !platform.isBroken
@@ -212,8 +213,3 @@ const provideMatrix = (dimensions, includes) => ({
 });
 
 const logMatrix = (matrix) => console.log(JSON.stringify(matrix, null, "  "));
-
-module.exports = {
-  code,
-  build,
-};

@@ -14,5 +14,5 @@ runs:
     - uses: MOZGIII/action-plan@v0.2.0
       id: plan
       with:
-        plan-file: ${{ github.action_path }}/plan.js
+        plan-file: ${{ github.action_path }}/plan.ts
         plan: ${{ inputs.plan-name }}
