@@ -254,26 +254,20 @@ const INITIAL_POT_ACCOUNT_BALANCE: Balance = EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_B
 
 /// A helper function to calculate bridge pot balances.
 fn get_bridge_pot_balances(
-    basic_native_accounts: &[(AccountId, Balance)],
-    basic_evm_accounts: &[(EvmAccountId, Balance)],
+    basic_native_accounts: impl IntoIterator<Item = (AccountId, Balance)>,
+    basic_evm_accounts: impl IntoIterator<Item = (EvmAccountId, Balance)>,
 ) -> (Balance, Balance) {
     let native_bridge_pot_balance = pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
         humanode_runtime::EvmToNativeSwapBridge,
     >::calculate_expected_to_bridge_balance(
-        basic_evm_accounts
-            .iter()
-            .map(|acc| acc.1)
-            .collect::<Vec<_>>(),
+        basic_evm_accounts.into_iter().map(|acc| acc.1)
     )
     .expect("basic evm balances should be valid");
 
     let evm_bridge_pot_balance = pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
         humanode_runtime::NativeToEvmSwapBridge,
     >::calculate_expected_to_bridge_balance(
-        basic_native_accounts
-            .iter()
-            .map(|acc| acc.1)
-            .collect::<Vec<_>>(),
+        basic_native_accounts.into_iter().map(|acc| acc.1)
     )
     .expect("basic native balances should be valid");
 
@@ -317,7 +311,7 @@ fn testnet_genesis(
         .collect::<Vec<_>>();
 
     let (native_bridge_pot_balance, evm_bridge_pot_balance) =
-        get_bridge_pot_balances(&basic_native_accounts, &basic_evm_accounts);
+        get_bridge_pot_balances(basic_native_accounts.clone(), basic_evm_accounts.clone());
 
     GenesisConfig {
         system: SystemConfig {
