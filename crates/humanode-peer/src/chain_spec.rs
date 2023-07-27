@@ -253,7 +253,6 @@ const EXISTENTIAL_DEPOSIT: Balance = 500;
 const INITIAL_POT_ACCOUNT_BALANCE: Balance = EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE;
 
 /// A helper function to calculate bridge pot balances.
-#[allow(clippy::type_complexity)]
 fn get_bridge_pot_balances(
     basic_native_accounts: &[(AccountId, Balance)],
     basic_evm_accounts: &[(EvmAccountId, Balance)],
