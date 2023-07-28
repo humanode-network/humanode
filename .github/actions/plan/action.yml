@@ -11,9 +11,8 @@ outputs:
 runs:
   using: "composite"
   steps:
-    - uses: MOZGIII/action-plan@v0.4.1
+    - uses: MOZGIII/action-plan@v0.6.0
       id: plan
       with:
         plan-file: ${{ github.action_path }}/plan.ts
-        tsconfig: ${{ github.action_path }}/tsconfig.json
         plan: ${{ inputs.plan-name }}
