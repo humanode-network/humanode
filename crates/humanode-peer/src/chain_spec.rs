@@ -260,7 +260,7 @@ fn get_bridge_pot_balances(
     let native_bridge_pot_balance = pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
         humanode_runtime::EvmToNativeSwapBridge,
     >::calculate_expected_to_bridge_balance(
-        basic_evm_accounts.into_iter().map(|acc| acc.1)
+        basic_evm_accounts.into_iter().map(|(_, balance)| balance)
     )
     .expect("basic evm balances should be valid");
 
