@@ -10,7 +10,7 @@ use frame_support::{
         traits::{BlakeTwo256, Identity, IdentityLookup},
         BuildStorage,
     },
-    traits::{ConstU32, ConstU64},
+    traits::{ConstU32, ConstU64, StorageMapShim},
     PalletId,
 };
 use mockall::mock;
@@ -33,7 +33,8 @@ frame_support::construct_runtime!(
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
         System: frame_system,
-        Balances: pallet_balances,
+        BalancesLeft: pallet_balances::<Instance1>,
+        BalancesRight: pallet_balances::<Instance2>,
         SwapBridgePot: pallet_pot::<Instance1>,
         SwapBridge: pallet_bridge_pot_currency_swap::<Instance1>,
     }
@@ -66,12 +67,32 @@ impl frame_system::Config for Test {
     type MaxConsumers = ConstU32<16>;
 }
 
-impl pallet_balances::Config for Test {
+type BalancesInstanceLeft = pallet_balances::Instance1;
+type BalancesInstanceRight = pallet_balances::Instance2;
+
+impl pallet_balances::Config<BalancesInstanceLeft> for Test {
     type Balance = u64;
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
     type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT>;
     type AccountStore = System;
+    type MaxLocks = ();
+    type MaxReserves = ();
+    type ReserveIdentifier = [u8; 8];
+    type WeightInfo = ();
+}
+
+impl pallet_balances::Config<BalancesInstanceRight> for Test {
+    type Balance = u64;
+    type RuntimeEvent = RuntimeEvent;
+    type DustRemoval = ();
+    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT>;
+    type AccountStore = StorageMapShim<
+        pallet_balances::Account<Test, BalancesInstanceRight>,
+        frame_system::Provider<Test>,
+        AccountId,
+        pallet_balances::AccountData<Balance>,
+    >;
     type MaxLocks = ();
     type MaxReserves = ();
     type ReserveIdentifier = [u8; 8];
@@ -88,7 +109,7 @@ impl pallet_pot::Config<PotInstanceSwapBridge> for Test {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = AccountId;
     type PalletId = SwapBridgePotPalletId;
-    type Currency = Balances;
+    type Currency = BalancesLeft;
 }
 
 mock! {
@@ -113,8 +134,8 @@ type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
 impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Test {
     type AccountIdFrom = AccountId;
     type AccountIdTo = AccountId;
-    type CurrencyFrom = Balances;
-    type CurrencyTo = Balances;
+    type CurrencyFrom = BalancesLeft;
+    type CurrencyTo = BalancesLeft;
     type BalanceConverter = Identity;
     type PotFrom = SwapBridgePotAccountId;
     type PotTo = SwapBridgePotAccountId;
