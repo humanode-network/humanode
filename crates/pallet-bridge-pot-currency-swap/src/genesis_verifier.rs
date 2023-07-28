@@ -24,7 +24,7 @@ pub enum Error {
 impl<T: Config<I>, I: 'static> Balanced<Pallet<T, I>> {
     /// A function to calculate expected [`Config::PotTo`] balance based on the provided list of
     /// all [`Config::AccountIdFrom`] balances except [`Config::PotFrom`] balance.
-    pub fn calculate_expected_to_bridge_balance(
+    pub fn calculate_expected_bridge_balance(
         from_balances: impl IntoIterator<
             Item = <T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance,
         >,

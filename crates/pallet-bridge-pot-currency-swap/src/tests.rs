@@ -48,29 +48,28 @@ fn genesis_verifier_true() {
     })
 }
 
-/// This test verifies that `calculate_expected_to_bridge_balance` function works in the happy path.
+/// This test verifies that `calculate_expected_bridge_balance` function works in the happy path.
 #[test]
-fn calculate_expected_to_bridge_balance_works() {
+fn calculate_expected_bridge_balance_works() {
     with_runtime_lock(|| {
         let from_balances = vec![10, 20, 30, 40];
         let expected_to_bridge_balance = from_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT;
         assert_eq!(
             expected_to_bridge_balance,
-            Balanced::<SwapBridge>::calculate_expected_to_bridge_balance(from_balances).unwrap()
+            Balanced::<SwapBridge>::calculate_expected_bridge_balance(from_balances).unwrap()
         );
     })
 }
 
-/// This test verifies that `calculate_expected_to_bridge_balance` function fails in case
+/// This test verifies that `calculate_expected_bridge_balance` function fails in case
 /// overflow error happens.
 #[test]
-fn calculate_expected_to_bridge_balance_fails_overflow() {
+fn calculate_expected_bridge_balance_fails_overflow() {
     with_runtime_lock(|| {
         let from_balances = vec![10, 20, 30, u64::MAX];
         assert_eq!(
             Error::Arithmetic(ArithmeticError::Overflow),
-            Balanced::<SwapBridge>::calculate_expected_to_bridge_balance(from_balances)
-                .unwrap_err()
+            Balanced::<SwapBridge>::calculate_expected_bridge_balance(from_balances).unwrap_err()
         );
     })
 }
