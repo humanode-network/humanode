@@ -35,8 +35,10 @@ frame_support::construct_runtime!(
         System: frame_system,
         BalancesLeft: pallet_balances::<Instance1>,
         BalancesRight: pallet_balances::<Instance2>,
-        SwapBridgePot: pallet_pot::<Instance1>,
-        SwapBridge: pallet_bridge_pot_currency_swap::<Instance1>,
+        SwapBridgeLeftPot: pallet_pot::<Instance1>,
+        SwapBridgeRightPot: pallet_pot::<Instance2>,
+        SwapBridgeLeft: pallet_bridge_pot_currency_swap::<Instance1>,
+        SwapBridgeRight: pallet_bridge_pot_currency_swap::<Instance2>,
     }
 );
 
@@ -100,46 +102,78 @@ impl pallet_balances::Config<BalancesInstanceRight> for Test {
 }
 
 parameter_types! {
-    pub const SwapBridgePotPalletId: PalletId = PalletId(*b"humanod1");
+    pub const SwapBridgeLeftPotPalletId: PalletId = PalletId(*b"humanodL");
+    pub const SwapBridgeRightPotPalletId: PalletId = PalletId(*b"humanodR");
 }
 
-type PotInstanceSwapBridge = pallet_pot::Instance1;
+type PotInstanceSwapBridgeLeft = pallet_pot::Instance1;
+type PotInstanceSwapBridgeRight = pallet_pot::Instance2;
 
-impl pallet_pot::Config<PotInstanceSwapBridge> for Test {
+impl pallet_pot::Config<PotInstanceSwapBridgeLeft> for Test {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = AccountId;
-    type PalletId = SwapBridgePotPalletId;
+    type PalletId = SwapBridgeLeftPotPalletId;
     type Currency = BalancesLeft;
+}
+
+impl pallet_pot::Config<PotInstanceSwapBridgeRight> for Test {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = AccountId;
+    type PalletId = SwapBridgeRightPotPalletId;
+    type Currency = BalancesRight;
 }
 
 mock! {
     #[derive(Debug)]
-    pub GenesisVerifier {}
+    pub GenesisVerifierLR {}
 
-    impl crate::GenesisVerifier for GenesisVerifier {
+    impl crate::GenesisVerifier for GenesisVerifierLR {
+        fn verify() -> bool;
+    }
+}
+
+mock! {
+    #[derive(Debug)]
+    pub GenesisVerifierRL {}
+
+    impl crate::GenesisVerifier for GenesisVerifierRL {
         fn verify() -> bool;
     }
 }
 
 parameter_types! {
-    pub const SwapBridgePalletId: PalletId = PalletId(*b"hmsb/ne1");
+    pub const SwapBridgeLeftPalletId: PalletId = PalletId(*b"hmsb/lr1");
+    pub const SwapBridgeRightPalletId: PalletId = PalletId(*b"hmsb/rl1");
 }
 
 parameter_types! {
-    pub SwapBridgePotAccountId: AccountId = SwapBridgePot::account_id();
+    pub SwapBridgeLeftPotAccountId: AccountId = SwapBridgeLeftPot::account_id();
+    pub SwapBridgeRightPotAccountId: AccountId = SwapBridgeRightPot::account_id();
 }
 
-type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
+type BridgeInstanceLeftToRightSwap = pallet_bridge_pot_currency_swap::Instance1;
+type BridgeInstanceRightToLeftSwap = pallet_bridge_pot_currency_swap::Instance2;
 
-impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Test {
+impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceLeftToRightSwap> for Test {
     type AccountIdFrom = AccountId;
     type AccountIdTo = AccountId;
     type CurrencyFrom = BalancesLeft;
+    type CurrencyTo = BalancesRight;
+    type BalanceConverter = Identity;
+    type PotFrom = SwapBridgeLeftPotAccountId;
+    type PotTo = SwapBridgeRightPotAccountId;
+    type GenesisVerifier = MockGenesisVerifierLR;
+}
+
+impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceRightToLeftSwap> for Test {
+    type AccountIdFrom = AccountId;
+    type AccountIdTo = AccountId;
+    type CurrencyFrom = BalancesRight;
     type CurrencyTo = BalancesLeft;
     type BalanceConverter = Identity;
-    type PotFrom = SwapBridgePotAccountId;
-    type PotTo = SwapBridgePotAccountId;
-    type GenesisVerifier = MockGenesisVerifier;
+    type PotFrom = SwapBridgeRightPotAccountId;
+    type PotTo = SwapBridgeLeftPotAccountId;
+    type GenesisVerifier = MockGenesisVerifierRL;
 }
 
 // This function basically just builds a genesis storage key/value store according to

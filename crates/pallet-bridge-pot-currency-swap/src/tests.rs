@@ -11,11 +11,18 @@ use crate::{
 #[should_panic = "invalid genesis bridge pot currency swap related data"]
 fn genesis_verifier_false() {
     with_runtime_lock(|| {
-        let verify_ctx = MockGenesisVerifier::verify_context();
-        verify_ctx.expect().once().return_const(false);
+        let verify_lr_ctx = MockGenesisVerifierLR::verify_context();
+        let verify_rl_ctx = MockGenesisVerifierLR::verify_context();
+        verify_lr_ctx.expect().once().return_const(false);
+        // Swap bridge left genesis config presents early than swap bridge right genesis config
+        // at mocked runtime.
+        verify_rl_ctx.expect().never();
 
         let config = GenesisConfig {
-            swap_bridge_pot: pallet_pot::GenesisConfig {
+            swap_bridge_left_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Unchecked,
+            },
+            swap_bridge_right_pot: pallet_pot::GenesisConfig {
                 initial_state: pallet_pot::InitialState::Unchecked,
             },
             ..Default::default()
@@ -23,7 +30,8 @@ fn genesis_verifier_false() {
 
         new_test_ext_with(config).execute_with(move || {});
 
-        verify_ctx.checkpoint();
+        verify_lr_ctx.checkpoint();
+        verify_rl_ctx.checkpoint();
     })
 }
 
@@ -32,11 +40,16 @@ fn genesis_verifier_false() {
 #[test]
 fn genesis_verifier_true() {
     with_runtime_lock(|| {
-        let verify_ctx = MockGenesisVerifier::verify_context();
-        verify_ctx.expect().once().return_const(true);
+        let verify_lr_ctx = MockGenesisVerifierLR::verify_context();
+        let verify_rl_ctx = MockGenesisVerifierRL::verify_context();
+        verify_lr_ctx.expect().once().return_const(true);
+        verify_rl_ctx.expect().once().return_const(true);
 
         let config = GenesisConfig {
-            swap_bridge_pot: pallet_pot::GenesisConfig {
+            swap_bridge_left_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Unchecked,
+            },
+            swap_bridge_right_pot: pallet_pot::GenesisConfig {
                 initial_state: pallet_pot::InitialState::Unchecked,
             },
             ..Default::default()
@@ -44,7 +57,8 @@ fn genesis_verifier_true() {
 
         new_test_ext_with(config).execute_with(move || {});
 
-        verify_ctx.checkpoint();
+        verify_lr_ctx.checkpoint();
+        verify_rl_ctx.checkpoint();
     })
 }
 
@@ -56,7 +70,7 @@ fn calculate_expected_bridge_balance_works() {
         let expected_to_bridge_balance = from_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT;
         assert_eq!(
             expected_to_bridge_balance,
-            Balanced::<SwapBridge>::calculate_expected_bridge_balance(from_balances).unwrap()
+            Balanced::<SwapBridgeLeft>::calculate_expected_bridge_balance(from_balances).unwrap()
         );
     })
 }
@@ -69,7 +83,8 @@ fn calculate_expected_bridge_balance_fails_overflow() {
         let from_balances = vec![10, 20, 30, u64::MAX];
         assert_eq!(
             Error::Arithmetic(ArithmeticError::Overflow),
-            Balanced::<SwapBridge>::calculate_expected_bridge_balance(from_balances).unwrap_err()
+            Balanced::<SwapBridgeLeft>::calculate_expected_bridge_balance(from_balances)
+                .unwrap_err()
         );
     })
 }
