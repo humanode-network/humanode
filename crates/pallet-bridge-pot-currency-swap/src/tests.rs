@@ -66,12 +66,21 @@ fn genesis_verifier_true() {
 #[test]
 fn calculate_expected_bridge_balance_works() {
     with_runtime_lock(|| {
-        let from_balances = vec![10, 20, 30, 40];
-        let expected_to_bridge_balance =
-            from_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT_LEFT;
+        let left_balances = vec![10, 20, 30, 40];
+        let right_balances = vec![20, 40, 60, 80, 100];
+
+        let expected_left_bridge_balance =
+            right_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT_LEFT;
+        let expected_right_bridge_balance =
+            left_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT_RIGHT;
+
         assert_eq!(
-            expected_to_bridge_balance,
-            Balanced::<SwapBridgeLeft>::calculate_expected_bridge_balance(from_balances).unwrap()
+            expected_left_bridge_balance,
+            Balanced::<SwapBridgeRight>::calculate_expected_bridge_balance(right_balances).unwrap()
+        );
+        assert_eq!(
+            expected_right_bridge_balance,
+            Balanced::<SwapBridgeLeft>::calculate_expected_bridge_balance(left_balances).unwrap()
         );
     })
 }
@@ -81,10 +90,10 @@ fn calculate_expected_bridge_balance_works() {
 #[test]
 fn calculate_expected_bridge_balance_fails_overflow() {
     with_runtime_lock(|| {
-        let from_balances = vec![10, 20, 30, u64::MAX];
+        let left_balances = vec![10, 20, 30, u64::MAX];
         assert_eq!(
             Error::Arithmetic(ArithmeticError::Overflow),
-            Balanced::<SwapBridgeLeft>::calculate_expected_bridge_balance(from_balances)
+            Balanced::<SwapBridgeLeft>::calculate_expected_bridge_balance(left_balances)
                 .unwrap_err()
         );
     })
