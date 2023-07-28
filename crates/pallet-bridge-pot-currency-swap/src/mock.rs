@@ -18,7 +18,8 @@ use sp_core::H256;
 
 use crate::{self as pallet_bridge_pot_currency_swap};
 
-pub(crate) const EXISTENTIAL_DEPOSIT: u64 = 10;
+pub(crate) const EXISTENTIAL_DEPOSIT_LEFT: u64 = 10;
+pub(crate) const EXISTENTIAL_DEPOSIT_RIGHT: u64 = 20;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -76,7 +77,7 @@ impl pallet_balances::Config<BalancesInstanceLeft> for Test {
     type Balance = u64;
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
-    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT>;
+    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT_LEFT>;
     type AccountStore = System;
     type MaxLocks = ();
     type MaxReserves = ();
@@ -88,7 +89,7 @@ impl pallet_balances::Config<BalancesInstanceRight> for Test {
     type Balance = u64;
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
-    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT>;
+    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT_RIGHT>;
     type AccountStore = StorageMapShim<
         pallet_balances::Account<Test, BalancesInstanceRight>,
         frame_system::Provider<Test>,

@@ -67,7 +67,8 @@ fn genesis_verifier_true() {
 fn calculate_expected_bridge_balance_works() {
     with_runtime_lock(|| {
         let from_balances = vec![10, 20, 30, 40];
-        let expected_to_bridge_balance = from_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT;
+        let expected_to_bridge_balance =
+            from_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT_LEFT;
         assert_eq!(
             expected_to_bridge_balance,
             Balanced::<SwapBridgeLeft>::calculate_expected_bridge_balance(from_balances).unwrap()
