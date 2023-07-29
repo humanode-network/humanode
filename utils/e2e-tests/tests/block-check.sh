@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+
 get_address() {
   "$COMMAND" key inspect "$@" | grep "SS58 Address:" | awk '{print $3}'
 }
@@ -20,7 +22,7 @@ ADDR="$(get_address "//Alice")"
 
 # Send TX and wait for block creation.
 # The test will also fail if no block is created within 20 sec.
-POLKA_JSON="$(timeout 20 yarn polkadot-js-api --ws "ws://127.0.0.1:9944" --seed "//Alice" tx.balances.transfer "$ADDR" 10000)"
+POLKA_JSON="$(timeout 20 yarn "$SCRIPT_DIR" polkadot-js-api --ws "ws://127.0.0.1:9944" --seed "//Alice" tx.balances.transfer "$ADDR" 10000)"
 
 # Log polkadot-js-api response.
 printf "polkadot-js-api response:\n%s\n" "$POLKA_JSON" >&2
