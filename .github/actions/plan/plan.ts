@@ -132,18 +132,18 @@ const buildModes = {
 export const code = () => {
   // Compute the effective list of platforms to use.
   const effectivePlatforms = Object.values(allPlatforms).filter(
-    (platform) => !platform.isBroken && platform.essential
+    (platform) => !platform.isBroken && platform.essential,
   );
 
   // Compute the effective list of modes that should run for each of the platforms.
   const effectiveModes = Object.values(codeModes).filter(
-    (mode) => !("platformIndependent" in mode && mode.platformIndependent)
+    (mode) => !("platformIndependent" in mode && mode.platformIndependent),
   );
 
   // Compute the effective list of modes that are platform indepedent and only
   // have to be run once.
   const effectiveIndepModes = Object.values(codeModes).filter(
-    (mode) => "platformIndependent" in mode && mode.platformIndependent
+    (mode) => "platformIndependent" in mode && mode.platformIndependent,
   );
 
   // Compute the individual mixins for indep modes.
@@ -159,7 +159,7 @@ export const code = () => {
       platform: effectivePlatforms,
       mode: effectiveModes,
     },
-    effectiveIncludes
+    effectiveIncludes,
   );
 
   // Print the matrix, useful for local debugging.
@@ -172,7 +172,7 @@ export const code = () => {
 export const build = () => {
   // Compute the effective list of platforms to use.
   const effectivePlatforms = Object.values(allPlatforms).filter(
-    (platform) => !platform.isBroken
+    (platform) => !platform.isBroken,
   );
 
   // Compute the effective list of modes that should run for each of the platforms.
@@ -184,7 +184,7 @@ export const build = () => {
       platform: effectivePlatforms,
       mode: effectiveModes,
     },
-    []
+    [],
   );
 
   // Print the matrix, useful for local debugging.
@@ -197,13 +197,13 @@ export const build = () => {
 const evalMatrix = (dimensions, includes) => {
   const evalNext = (allVariants, key, values) =>
     allVariants.flatMap((variant) =>
-      values.map((value) => ({ ...variant, [key]: value }))
+      values.map((value) => ({ ...variant, [key]: value })),
     );
   const dimensionKeys = Object.keys(dimensions);
   const evaluated = dimensionKeys.reduce(
     (allVariants, dimensionKey) =>
       evalNext(allVariants, dimensionKey, dimensions[dimensionKey]),
-    [{}]
+    [{}],
   );
   return [...evaluated, ...includes];
 };
