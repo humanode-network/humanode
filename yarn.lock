@@ -49,7 +49,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api-cli@npm:^0.55":
+"@polkadot/api-cli@npm:^0.55.3":
   version: 0.55.3
   resolution: "@polkadot/api-cli@npm:0.55.3"
   dependencies:
@@ -491,9 +491,9 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*":
-  version: 17.0.23
-  resolution: "@types/node@npm:17.0.23"
-  checksum: a3517554737cbb042e76c30d0e5482192ac4d9bea0eeb086e2622d9cabf460a0eb52a696b99fcd18e7fcc93c96db6cc7ae507f6608f256ef0b5c1d8c87a5a470
+  version: 20.4.5
+  resolution: "@types/node@npm:20.4.5"
+  checksum: 36a0304a8dc346a1b2d2edac4c4633eecf70875793d61a5274d0df052d7a7af7a8e34f29884eac4fbd094c4f0201477dcb39c0ecd3307ca141688806538d1138
   languageName: node
   linkType: hard
 
@@ -624,7 +624,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "humanode-e2e-tests-deps@workspace:utils/e2e-tests"
   dependencies:
-    "@polkadot/api-cli": ^0.55
+    "@polkadot/api-cli": ^0.55.3
   languageName: unknown
   linkType: soft
 
