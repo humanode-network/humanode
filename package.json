@@ -4,5 +4,6 @@
   "private": true,
   "dependencies": {
     "@polkadot/api-cli": "^0.55"
-  }
+  },
+  "packageManager": "yarn@3.6.1"
 }
