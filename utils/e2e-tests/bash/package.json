@@ -1,5 +1,5 @@
 {
-  "name": "humanode-e2e-tests",
+  "name": "humanode-e2e-tests-bash",
   "version": "0.0.0",
   "private": true,
   "type": "module",
