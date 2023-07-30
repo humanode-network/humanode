@@ -620,9 +620,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"humanode-e2e-tests-deps@workspace:utils/e2e-tests":
+"humanode-e2e-tests@workspace:utils/e2e-tests":
   version: 0.0.0-use.local
-  resolution: "humanode-e2e-tests-deps@workspace:utils/e2e-tests"
+  resolution: "humanode-e2e-tests@workspace:utils/e2e-tests"
   dependencies:
     "@polkadot/api-cli": ^0.55.3
   languageName: unknown
