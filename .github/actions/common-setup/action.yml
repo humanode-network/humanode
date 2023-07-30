@@ -1,0 +1,51 @@
+name: "Common setup"
+description: "Apply the common setup steps for this codebase"
+inputs:
+  platformCacheKey:
+    description: "The key for the cache for the platform; if empty the caching will be disabled"
+    required: false
+    default: ""
+  modeCacheKey:
+    description: "The key for the cache for the mode"
+    required: false
+    default: ""
+  requiresRust:
+    description: "Requires rust to be installed"
+    required: false
+    default: "true"
+  isOnSelfHostedRunner:
+    description: "Enable if running on a self-hosted runner"
+    required: false
+    default: "false"
+  buildEnvScript:
+    description: "The script to run to bootstrap the given environment"
+    required: false
+    default: ""
+runs:
+  using: "composite"
+  steps:
+    - name: Cache
+      uses: Swatinem/rust-cache@v2
+      with:
+        key: ${{ inputs.modeCacheKey == '' && inputs.platformCacheKey || ''}}
+        shared-key: ${{ inputs.modeCacheKey != '' && format('{0}-{1}', inputs.platformCacheKey, inputs.modeCacheKey) || '' }}
+      if: ${{ inputs.platformCacheKey != '' && inputs.isOnSelfHostedRunner != 'true' && inputs.requiresRust == 'true' }}
+
+    - name: Install rust toolchain
+      shell: bash
+      run: rustup show
+      if: ${{ inputs.requiresRust == 'true' }}
+
+    - name: Prepare the build environment
+      uses: ./.github/actions/env
+      with:
+        script: ${{ inputs.buildEnvScript }}
+      if: ${{ inputs.buildEnvScript != 'skip' }}
+
+    - name: Print build environment info
+      shell: bash
+      run: |
+        set -x
+        cargo --version
+        cargo clippy --version
+        env
