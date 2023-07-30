@@ -3,10 +3,10 @@ name: docker
 on:
   push:
     branches:
-      - '**'
-      - '!gh-readonly-queue/**'
+      - "**"
+      - "!gh-readonly-queue/**"
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
   merge_group:
 
 concurrency:
@@ -14,7 +14,6 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/master' && github.event_name != 'merge_group' }}
 
 jobs:
-
   docker:
     name: Docker
     runs-on: ubuntu-22.04
@@ -76,4 +75,3 @@ jobs:
           xargs docker/tag-and-push.sh humanode <<EOF
             ${{ steps.meta.outputs.tags }}
           EOF
-

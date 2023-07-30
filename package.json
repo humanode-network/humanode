@@ -3,5 +3,12 @@
   "workspaces": [
     "utils/e2e-tests"
   ],
+  "scripts": {
+    "prettier:check": "prettier -l .",
+    "prettier:fix": "prettier -w ."
+  },
+  "devDependencies": {
+    "prettier": "^2.8.8"
+  },
   "packageManager": "yarn@3.6.1"
 }
