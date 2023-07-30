@@ -129,6 +129,8 @@ jobs:
             run: utils/checks/require-fork-deps
           - name: Check features
             run: utils/checks/features
+          - name: Check features snapshot
+            run: utils/checks/features-snapshot
       fail-fast: false
     name: ${{ matrix.util.name }}
     runs-on: ubuntu-22.04
