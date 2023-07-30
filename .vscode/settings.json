@@ -7,6 +7,5 @@
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
-  "rust-analyzer.cargo.buildScripts.enable": false,
-  "prettier.prettierPath": "node_modules/prettier/bin/prettier.cjs"
+  "rust-analyzer.cargo.buildScripts.enable": false
 }
