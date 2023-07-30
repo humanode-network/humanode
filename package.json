@@ -2,5 +2,6 @@
   "name": "humanode-tools",
   "workspaces": [
     "utils/e2e-tests"
-  ]
+  ],
+  "packageManager": "yarn@3.6.1"
 }
