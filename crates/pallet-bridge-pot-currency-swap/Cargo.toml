@@ -16,7 +16,6 @@ sp-std = { default-features = false, git = "https://github.com/humanode-network/
 [dev-dependencies]
 pallet-pot = { version = "0.1", path = "../pallet-pot", default-features = false }
 
-mockall = "0.11"
 pallet-balances = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 

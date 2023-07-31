@@ -1,24 +1,33 @@
 use frame_support::sp_runtime::ArithmeticError;
 
-use crate::{
-    genesis_verifier::{Balanced, Error},
-    mock::*,
-};
+use crate::mock::*;
+use crate::{Balanced, BalancedError};
 
-/// This test verifies that the genesis builder correctly ensures genesis verifier result in case
-/// it returns false.
+/// This test verifies that the genesis builder correctly ensures genesis bridge pot balances
+/// values that are balanced.
 #[test]
-#[should_panic = "invalid genesis bridge pot currency swap related data"]
-fn genesis_verifier_false() {
+fn genesis_balanced_true() {
     with_runtime_lock(|| {
-        let verify_lr_ctx = MockGenesisVerifierLR::verify_context();
-        let verify_rl_ctx = MockGenesisVerifierLR::verify_context();
-        verify_lr_ctx.expect().once().return_const(false);
-        // Swap bridge left genesis config presents early than swap bridge right genesis config
-        // at mocked runtime.
-        verify_rl_ctx.expect().never();
-
         let config = GenesisConfig {
+            balances_left: pallet_balances::GenesisConfig {
+                balances: vec![
+                    (4201, 10),
+                    (4202, 20),
+                    (4203, 30),
+                    (4204, 40),
+                    (SwapBridgeLeftPot::account_id(), 310),
+                ],
+            },
+            balances_right: pallet_balances::GenesisConfig {
+                balances: vec![
+                    (4211, 20),
+                    (4212, 40),
+                    (4213, 60),
+                    (4214, 80),
+                    (4215, 100),
+                    (SwapBridgeRightPot::account_id(), 120),
+                ],
+            },
             swap_bridge_left_pot: pallet_pot::GenesisConfig {
                 initial_state: pallet_pot::InitialState::Unchecked,
             },
@@ -29,42 +38,68 @@ fn genesis_verifier_false() {
         };
 
         new_test_ext_with(config).execute_with(move || {});
-
-        verify_lr_ctx.checkpoint();
-        verify_rl_ctx.checkpoint();
     })
 }
 
-/// This test verifies that the genesis builder correctly ensures genesis verifier result in case
-/// it returns true.
+/// This test verifies that the genesis builder panics in case bridge pot balances values
+/// are not balanced.
 #[test]
-fn genesis_verifier_true() {
+#[should_panic = "genesis bridge pot balances values not balanced"]
+fn genesis_balanced_false() {
     with_runtime_lock(|| {
-        let verify_lr_ctx = MockGenesisVerifierLR::verify_context();
-        let verify_rl_ctx = MockGenesisVerifierRL::verify_context();
-        verify_lr_ctx.expect().once().return_const(true);
-        verify_rl_ctx.expect().once().return_const(true);
-
         let config = GenesisConfig {
+            balances_left: pallet_balances::GenesisConfig {
+                balances: vec![(4201, 10), (SwapBridgeLeftPot::account_id(), 20)],
+            },
+            balances_right: pallet_balances::GenesisConfig {
+                balances: vec![(4211, 20), (SwapBridgeRightPot::account_id(), 100)],
+            },
             swap_bridge_left_pot: pallet_pot::GenesisConfig {
-                initial_state: pallet_pot::InitialState::Unchecked,
+                initial_state: pallet_pot::InitialState::Initialized,
             },
             swap_bridge_right_pot: pallet_pot::GenesisConfig {
-                initial_state: pallet_pot::InitialState::Unchecked,
+                initial_state: pallet_pot::InitialState::Initialized,
             },
             ..Default::default()
         };
 
         new_test_ext_with(config).execute_with(move || {});
-
-        verify_lr_ctx.checkpoint();
-        verify_rl_ctx.checkpoint();
     })
 }
 
-/// This test verifies that `calculate_expected_bridge_balance` function works in the happy path.
+/// This test verifies that the genesis builder panics in case error happens during bridge pot
+/// balance calculation.
 #[test]
-fn calculate_expected_bridge_balance_works() {
+#[should_panic = "error during bridge pot balance calculation: An arithmetic error has been occured: An overflow would occur"]
+fn genesis_bridge_pot_calculation_fails() {
+    with_runtime_lock(|| {
+        let config = GenesisConfig {
+            balances_left: pallet_balances::GenesisConfig {
+                balances: vec![
+                    (4201, 10),
+                    (4202, u64::MAX - 20),
+                    (SwapBridgeLeftPot::account_id(), 10),
+                ],
+            },
+            balances_right: pallet_balances::GenesisConfig {
+                balances: vec![(4211, 20), (SwapBridgeRightPot::account_id(), 100)],
+            },
+            swap_bridge_left_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            swap_bridge_right_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            ..Default::default()
+        };
+
+        new_test_ext_with(config).execute_with(move || {});
+    })
+}
+
+/// This test verifies that `balanced_value` function works in the happy path.
+#[test]
+fn balanced_value_works() {
     with_runtime_lock(|| {
         let left_balances = vec![10, 20, 30, 40];
         let right_balances = vec![20, 40, 60, 80, 100];
@@ -76,24 +111,24 @@ fn calculate_expected_bridge_balance_works() {
 
         assert_eq!(
             expected_left_bridge_balance,
-            Balanced::<SwapBridgeRight>::calculate_expected_bridge_balance(right_balances).unwrap()
+            Balanced::<Test, BridgeInstanceRightToLeftSwap>::balanced_value(right_balances)
+                .unwrap()
         );
         assert_eq!(
             expected_right_bridge_balance,
-            Balanced::<SwapBridgeLeft>::calculate_expected_bridge_balance(left_balances).unwrap()
+            Balanced::<Test, BridgeInstanceLeftToRightSwap>::balanced_value(left_balances).unwrap()
         );
     })
 }
 
-/// This test verifies that `calculate_expected_bridge_balance` function fails in case
-/// overflow error happens.
+/// This test verifies that `balanced_value` function fails in case overflow error happens.
 #[test]
-fn calculate_expected_bridge_balance_fails_overflow() {
+fn balanced_value_fails_overflow() {
     with_runtime_lock(|| {
         let left_balances = vec![10, 20, 30, u64::MAX];
         assert_eq!(
-            Error::Arithmetic(ArithmeticError::Overflow),
-            Balanced::<SwapBridgeLeft>::calculate_expected_bridge_balance(left_balances)
+            BalancedError::Arithmetic(ArithmeticError::Overflow),
+            Balanced::<Test, BridgeInstanceLeftToRightSwap>::balanced_value(left_balances)
                 .unwrap_err()
         );
     })

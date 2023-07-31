@@ -8,10 +8,11 @@ use frame_support::{
     sp_std::marker::PhantomData,
     traits::{fungible::Inspect, Currency, StorageVersion},
 };
+mod balances_values;
 pub mod existence_optional;
 pub mod existence_required;
-pub mod genesis_verifier;
 
+pub use balances_values::{Balanced, Error as BalancedError};
 pub use existence_optional::Marker as ExistenceOptional;
 pub use existence_required::Marker as ExistenceRequired;
 pub use pallet::*;
@@ -24,12 +25,6 @@ mod tests;
 
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
-
-/// The interface to verify bridge pot currency swap related data at genesis.
-pub trait GenesisVerifier {
-    /// Verify bridge pot currency swap related data.
-    fn verify() -> bool;
-}
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -94,9 +89,6 @@ pub mod pallet {
 
         /// The account to take the balances from when sending the funds as part of the swap operation.
         type PotTo: Get<Self::AccountIdTo>;
-
-        /// Interface into genesis verifier implementation.
-        type GenesisVerifier: GenesisVerifier;
     }
 
     #[pallet::genesis_config]
@@ -114,10 +106,14 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
         fn build(&self) {
-            assert!(
-                T::GenesisVerifier::verify(),
-                "invalid genesis bridge pot currency swap related data"
-            );
+            let pot_to_balance = T::CurrencyTo::total_balance(&T::PotTo::get());
+            match Balanced::<T, I>::expected_bridge_balance() {
+                Ok(expected_pot_to_balance) => assert!(
+                    pot_to_balance == expected_pot_to_balance,
+                    "genesis bridge pot balances values not balanced"
+                ),
+                Err(err) => panic!("error during bridge pot balance calculation: {err}",),
+            }
         }
     }
 }

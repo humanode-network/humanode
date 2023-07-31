@@ -13,7 +13,6 @@ use frame_support::{
     traits::{ConstU32, ConstU64, StorageMapShim},
     PalletId,
 };
-use mockall::mock;
 use sp_core::H256;
 
 use crate::{self as pallet_bridge_pot_currency_swap};
@@ -124,24 +123,6 @@ impl pallet_pot::Config<PotInstanceSwapBridgeRight> for Test {
     type Currency = BalancesRight;
 }
 
-mock! {
-    #[derive(Debug)]
-    pub GenesisVerifierLR {}
-
-    impl crate::GenesisVerifier for GenesisVerifierLR {
-        fn verify() -> bool;
-    }
-}
-
-mock! {
-    #[derive(Debug)]
-    pub GenesisVerifierRL {}
-
-    impl crate::GenesisVerifier for GenesisVerifierRL {
-        fn verify() -> bool;
-    }
-}
-
 parameter_types! {
     pub const SwapBridgeLeftPalletId: PalletId = PalletId(*b"hmsb/lr1");
     pub const SwapBridgeRightPalletId: PalletId = PalletId(*b"hmsb/rl1");
@@ -152,8 +133,8 @@ parameter_types! {
     pub SwapBridgeRightPotAccountId: AccountId = SwapBridgeRightPot::account_id();
 }
 
-type BridgeInstanceLeftToRightSwap = pallet_bridge_pot_currency_swap::Instance1;
-type BridgeInstanceRightToLeftSwap = pallet_bridge_pot_currency_swap::Instance2;
+pub type BridgeInstanceLeftToRightSwap = pallet_bridge_pot_currency_swap::Instance1;
+pub type BridgeInstanceRightToLeftSwap = pallet_bridge_pot_currency_swap::Instance2;
 
 impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceLeftToRightSwap> for Test {
     type AccountIdFrom = AccountId;
@@ -163,7 +144,6 @@ impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceLeftToRightSwap> for 
     type BalanceConverter = Identity;
     type PotFrom = SwapBridgeLeftPotAccountId;
     type PotTo = SwapBridgeRightPotAccountId;
-    type GenesisVerifier = MockGenesisVerifierLR;
 }
 
 impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceRightToLeftSwap> for Test {
@@ -174,7 +154,6 @@ impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceRightToLeftSwap> for 
     type BalanceConverter = Identity;
     type PotFrom = SwapBridgeRightPotAccountId;
     type PotTo = SwapBridgeLeftPotAccountId;
-    type GenesisVerifier = MockGenesisVerifierRL;
 }
 
 // This function basically just builds a genesis storage key/value store according to
