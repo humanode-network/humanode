@@ -82,9 +82,10 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     .chain(
                         [(
                             NativeToEvmSwapBridgePot::account_id(),
-                            pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
-                                EvmToNativeSwapBridge,
-                            >::calculate_expected_to_bridge_balance(
+                            pallet_bridge_pot_currency_swap::Balanced::<
+                                Runtime,
+                                BridgeInstanceEvmToNativeSwap,
+                            >::balanced_value(
                                 basic_evm_accounts
                                     .iter()
                                     .map(|acc| acc.1.balance.as_u128())
@@ -128,17 +129,17 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                         [(
                             EvmToNativeSwapBridgePot::account_id(),
                             fp_evm::GenesisAccount {
-                                balance:
-                                    pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
-                                        NativeToEvmSwapBridge,
-                                    >::calculate_expected_to_bridge_balance(
-                                        basic_native_accounts
-                                            .iter()
-                                            .map(|acc| acc.1)
-                                            .collect::<Vec<_>>(),
-                                    )
-                                    .unwrap()
-                                    .into(),
+                                balance: pallet_bridge_pot_currency_swap::Balanced::<
+                                    Runtime,
+                                    BridgeInstanceNativeToEvmSwap,
+                                >::balanced_value(
+                                    basic_native_accounts
+                                        .iter()
+                                        .map(|acc| acc.1)
+                                        .collect::<Vec<_>>(),
+                                )
+                                .unwrap()
+                                .into(),
                                 code: Default::default(),
                                 nonce: Default::default(),
                                 storage: Default::default(),

@@ -789,8 +789,8 @@ parameter_types! {
     pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
 }
 
-type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
-type BridgeInstanceEvmToNativeSwap = pallet_bridge_pot_currency_swap::Instance2;
+pub type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
+pub type BridgeInstanceEvmToNativeSwap = pallet_bridge_pot_currency_swap::Instance2;
 
 impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Runtime {
     type AccountIdFrom = AccountId;
@@ -800,8 +800,6 @@ impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for 
     type BalanceConverter = Identity;
     type PotFrom = NativeToEvmSwapBridgePotAccountId;
     type PotTo = EvmToNativeSwapBridgePotAccountId;
-    type GenesisVerifier =
-        pallet_bridge_pot_currency_swap::genesis_verifier::Balanced<NativeToEvmSwapBridge>;
 }
 
 impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceEvmToNativeSwap> for Runtime {
@@ -812,8 +810,6 @@ impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceEvmToNativeSwap> for 
     type BalanceConverter = Identity;
     type PotFrom = EvmToNativeSwapBridgePotAccountId;
     type PotTo = NativeToEvmSwapBridgePotAccountId;
-    type GenesisVerifier =
-        pallet_bridge_pot_currency_swap::genesis_verifier::Balanced<EvmToNativeSwapBridge>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously

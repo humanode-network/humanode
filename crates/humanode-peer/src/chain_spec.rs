@@ -257,17 +257,17 @@ fn get_bridge_pot_balances(
     basic_native_balances: impl IntoIterator<Item = Balance>,
     basic_evm_balances: impl IntoIterator<Item = Balance>,
 ) -> (Balance, Balance) {
-    let native_bridge_pot_balance =
-        pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
-            humanode_runtime::EvmToNativeSwapBridge,
-        >::calculate_expected_bridge_balance(basic_native_balances.into_iter())
-        .expect("basic evm balances should be valid");
+    let native_bridge_pot_balance = pallet_bridge_pot_currency_swap::Balanced::<
+        humanode_runtime::Runtime,
+        humanode_runtime::BridgeInstanceEvmToNativeSwap,
+    >::balanced_value(basic_evm_balances.into_iter())
+    .expect("basic native balances should be valid");
 
-    let evm_bridge_pot_balance =
-        pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
-            humanode_runtime::NativeToEvmSwapBridge,
-        >::calculate_expected_bridge_balance(basic_evm_balances.into_iter())
-        .expect("basic native balances should be valid");
+    let evm_bridge_pot_balance = pallet_bridge_pot_currency_swap::Balanced::<
+        humanode_runtime::Runtime,
+        humanode_runtime::BridgeInstanceNativeToEvmSwap,
+    >::balanced_value(basic_native_balances.into_iter())
+    .expect("basic evm balances should be valid");
 
     (native_bridge_pot_balance, evm_bridge_pot_balance)
 }

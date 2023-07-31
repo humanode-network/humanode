@@ -84,9 +84,10 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                 let evm_pot_accounts = vec![(
                     EvmToNativeSwapBridgePot::account_id(),
                     fp_evm::GenesisAccount {
-                        balance: pallet_bridge_pot_currency_swap::genesis_verifier::Balanced::<
-                            NativeToEvmSwapBridge,
-                        >::calculate_expected_to_bridge_balance(
+                        balance: pallet_bridge_pot_currency_swap::Balanced::<
+                            Runtime,
+                            BridgeInstanceNativeToEvmSwap,
+                        >::balanced_value(
                             basic_native_accounts
                                 .iter()
                                 .map(|acc| acc.1)
