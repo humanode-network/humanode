@@ -1,19 +1,18 @@
-name: 'Plan'
-description: 'Plan the execution and output a build matrix'
+name: "Plan"
+description: "Plan the execution and output a build matrix"
 inputs:
   plan-name:
-    description: 'What plan to use'
+    description: "What plan to use"
     required: true
 outputs:
   matrix:
-    description: 'The build matrix generated from planning'
+    description: "The build matrix generated from planning"
     value: ${{ steps.plan.outputs.matrix }}
 runs:
   using: "composite"
   steps:
-    - uses: MOZGIII/action-plan@v0.4.1
+    - uses: MOZGIII/action-plan@v0.7.0
       id: plan
       with:
         plan-file: ${{ github.action_path }}/plan.ts
-        tsconfig: ${{ github.action_path }}/tsconfig.json
         plan: ${{ inputs.plan-name }}

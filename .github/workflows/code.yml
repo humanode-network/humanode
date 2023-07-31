@@ -3,11 +3,11 @@ name: code
 on:
   push:
     branches:
-      - '**'
-      - '!gh-readonly-queue/**'
+      - "**"
+      - "!gh-readonly-queue/**"
   merge_group:
   schedule:
-    - cron: '0 20 * * 0'
+    - cron: "0 20 * * 0"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -22,7 +22,6 @@ env:
   RUSTDOCFLAGS: "-D warnings"
 
 jobs:
-
   plan:
     name: Plan the execution
     runs-on: ubuntu-22.04
@@ -52,7 +51,6 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Job config
         run: printf "%s\n" "$MATRIX_CONTEXT"
         env:
@@ -98,13 +96,11 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Checkout
         uses: actions/checkout@v3
         timeout-minutes: 5
 
-      - name: Set up polkadot tools
-        run: yarn install --frozen-lockfile
+      - run: yarn install --immutable
 
       - name: Cache
         uses: Swatinem/rust-cache@v2
@@ -119,12 +115,11 @@ jobs:
         with:
           script: .github/scripts/build_env/ubuntu.sh
 
-
       - name: Build binaries
         run: cargo build --release
 
       - name: Run e2e tests
-        run: utils/e2e-tests/run-tests "target/release/humanode-peer"
+        run: utils/e2e-tests/bash/run-tests "target/release/humanode-peer"
 
   embedded-utils:
     strategy:
@@ -134,6 +129,8 @@ jobs:
             run: utils/checks/require-fork-deps
           - name: Check features
             run: utils/checks/features
+          - name: Check features snapshot
+            run: utils/checks/features-snapshot
       fail-fast: false
     name: ${{ matrix.util.name }}
     runs-on: ubuntu-22.04
@@ -141,7 +138,6 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Checkout
         uses: actions/checkout@v3
         timeout-minutes: 5
@@ -187,7 +183,6 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Checkout
         uses: actions/checkout@v3
         timeout-minutes: 5
@@ -208,3 +203,22 @@ jobs:
 
       - run: ${{ matrix.util.run }}
         timeout-minutes: 10
+
+  prettier:
+    name: prettier:check
+    runs-on: ubuntu-22.04
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        timeout-minutes: 5
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version-file: .node-version
+
+      - run: yarn install --immutable
+
+      - run: yarn prettier:fix

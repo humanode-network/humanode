@@ -1,166 +1,46 @@
-// An utility to apply common build script paths.
-const buildEnvScriptPath = (script: string) =>
-  `.github/scripts/build_env/${script}`;
+import * as modes from "./modes.js";
+import * as platforms from "./platforms.js";
+import { logMatrix, matrixItemsFiltered, evalMatrix } from "./matrix.js";
 
-// All the platforms that we support, and their respective settings.
-const allPlatforms = {
-  ubuntu2204: {
-    name: "Ubuntu 22.04",
-    os: "ubuntu-22.04",
-    buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
-    isOnSelfHostedRunner: false,
-    essential: true,
-    env: {},
-    cacheKey: "ubuntu2204-amd64",
-    artifactMarker: "ubuntu2204",
-    isBroken: false,
-  },
-  ubuntu2004: {
-    name: "Ubuntu 20.04",
-    os: "ubuntu-20.04",
-    buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
-    isOnSelfHostedRunner: false,
-    essential: false,
-    env: {},
-    cacheKey: "ubuntu2004-amd64",
-    artifactMarker: "ubuntu2004",
-    isBroken: false,
-  },
-  windows: {
-    name: "Windows",
-    os: "windows-latest",
-    buildEnvScript: buildEnvScriptPath("windows.sh"),
-    isOnSelfHostedRunner: false,
-    essential: false,
-    env: {
-      CARGO_INCREMENTAL: "0",
-    },
-    cacheKey: "windows-amd64",
-    artifactMarker: null,
-    isBroken: true,
-  },
-  macos: {
-    name: "macOS (amd64)",
-    os: "macos-latest",
-    buildEnvScript: buildEnvScriptPath("macos.sh"),
-    isOnSelfHostedRunner: false,
-    essential: false,
-    env: {},
-    cacheKey: "macos-amd64",
-    artifactMarker: null,
-    isBroken: false,
-  },
-  macos_aarch64: {
-    name: "macOS (aarch64)",
-    os: ["self-hosted", "macOS", "aarch64"],
-    buildEnvScript: buildEnvScriptPath("macos.sh"),
-    isOnSelfHostedRunner: true,
-    essential: false,
-    env: {},
-    cacheKey: "macos-aarch64",
-    artifactMarker: null,
-    isBroken: false,
-  },
-};
-
-// A platform for running things that are platform-independent.
-const corePlatform = allPlatforms.ubuntu2204;
-
-const codeModes = {
-  clippy: {
-    name: "clippy",
-    cargoCommand: "clippy",
-    cargoArgs: "--workspace --all-targets -- -D warnings",
-    cargoCacheKey: "clippy",
-  },
-  test: {
-    name: "test",
-    cargoCommand: "test",
-    cargoArgs: "--workspace",
-    cargoCacheKey: "test",
-  },
-  build: {
-    name: "build",
-    cargoCommand: "build",
-    cargoArgs: "--workspace",
-    cargoCacheKey: "build",
-  },
-  fmt: {
-    name: "fmt",
-    cargoCommand: "fmt",
-    cargoArgs: "-- --check",
-    platformIndependent: true,
-    cargoCacheKey: "code",
-  },
-  docs: {
-    name: "doc",
-    cargoCommand: "doc",
-    cargoArgs: "--workspace --document-private-items",
-    platformIndependent: true,
-    cargoCacheKey: "doc",
-  },
-  testBenchmark: {
-    name: "test benchmark",
-    cargoCommand: "test",
-    cargoArgs: "--workspace --features runtime-benchmarks",
-    cargoCacheKey: "test-benchmark",
-  },
-  runBenchmark: {
-    name: "test-run pallet benchmarks",
-    cargoCommand: "run",
-    cargoArgs:
-      "-p humanode-peer --release --features runtime-benchmarks benchmark pallet --chain benchmark --execution native --pallet '*' --extrinsic '*' --steps 2 --repeat 0 --external-repeat 0",
-    cargoCacheKey: "run-benchmark",
-  },
-  buildTryRuntime: {
-    name: "build with try-runtime",
-    cargoCommand: "build",
-    cargoArgs: "--workspace --features try-runtime",
-    cargoCacheKey: "try-runtime",
-  },
-} as const;
-
-const buildModes = {
-  build: {
-    name: "build",
-    cargoCommand: "build",
-    cargoArgs: "--workspace --release",
-    cargoCacheKey: "release-build",
-  },
-} as const;
-
-export const code = () => {
+export const buildMatrix = <M extends modes.Modes>(
+  modes: M,
+  platformsFilter: (platform: platforms.Platform) => boolean
+) => {
   // Compute the effective list of platforms to use.
-  const effectivePlatforms = Object.values(allPlatforms).filter(
-    (platform) => !platform.isBroken && platform.essential
-  );
+  const activePlatforms = matrixItemsFiltered(platforms.all, platformsFilter);
+
+  const isPlatformIndependentMode = (mode: modes.Mode): boolean =>
+    mode.platformIndependent === true;
 
   // Compute the effective list of modes that should run for each of the platforms.
-  const effectiveModes = Object.values(codeModes).filter(
-    (mode) => !("platformIndependent" in mode && mode.platformIndependent)
+  const activeModes = matrixItemsFiltered(
+    modes,
+    (mode) => !isPlatformIndependentMode(mode)
   );
 
   // Compute the effective list of modes that are platform indepedent and only
   // have to be run once.
-  const effectiveIndepModes = Object.values(codeModes).filter(
-    (mode) => "platformIndependent" in mode && mode.platformIndependent
+  const activePlatformIndependentModes = matrixItemsFiltered(
+    modes,
+    isPlatformIndependentMode
   );
 
   // Compute the individual mixins for indep modes.
-  const effectiveIncludes = effectiveIndepModes.map((mode) => ({
+  const includes = activePlatformIndependentModes.map((mode) => ({
     // Run the platform independent tests on the core platform.
-    platform: corePlatform,
+    platform: platforms.core,
     mode,
   }));
 
   // Prepare the effective matrix.
-  const matrix = provideMatrix(
+  const plan = evalMatrix(
     {
-      platform: effectivePlatforms,
-      mode: effectiveModes,
+      platform: activePlatforms,
+      mode: activeModes,
     },
-    effectiveIncludes
+    includes
   );
+  const matrix = { plan };
 
   // Print the matrix, useful for local debugging.
   logMatrix(matrix);
@@ -169,47 +49,11 @@ export const code = () => {
   return matrix;
 };
 
-export const build = () => {
-  // Compute the effective list of platforms to use.
-  const effectivePlatforms = Object.values(allPlatforms).filter(
-    (platform) => !platform.isBroken
+export const code = () =>
+  buildMatrix(
+    modes.code,
+    (platform) => !platform.isBroken && platform.essential
   );
 
-  // Compute the effective list of modes that should run for each of the platforms.
-  const effectiveModes = Object.values(buildModes);
-
-  // Prepare the effective matrix.
-  const matrix = provideMatrix(
-    {
-      platform: effectivePlatforms,
-      mode: effectiveModes,
-    },
-    []
-  );
-
-  // Print the matrix, useful for local debugging.
-  logMatrix(matrix);
-
-  // Export the matrix so it's available to the Github Actions script.
-  return matrix;
-};
-
-const evalMatrix = (dimensions, includes) => {
-  const evalNext = (allVariants, key, values) =>
-    allVariants.flatMap((variant) =>
-      values.map((value) => ({ ...variant, [key]: value }))
-    );
-  const dimensionKeys = Object.keys(dimensions);
-  const evaluated = dimensionKeys.reduce(
-    (allVariants, dimensionKey) =>
-      evalNext(allVariants, dimensionKey, dimensions[dimensionKey]),
-    [{}]
-  );
-  return [...evaluated, ...includes];
-};
-
-const provideMatrix = (dimensions, includes) => ({
-  plan: evalMatrix(dimensions, includes),
-});
-
-const logMatrix = (matrix) => console.log(JSON.stringify(matrix, null, "  "));
+export const build = () =>
+  buildMatrix(modes.build, (platform) => !platform.isBroken);
