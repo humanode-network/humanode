@@ -177,7 +177,7 @@ fn genesis_bridge_to_balance_works() {
     })
 }
 
-/// This test verifies that `balanced_value` function fails in case overflow error happens.
+/// This test verifies that `genesis_bridge_to_balance` function fails in case overflow error happens.
 #[test]
 fn genesis_bridge_to_balance_fails_overflow() {
     with_runtime_lock(|| {
@@ -186,5 +186,65 @@ fn genesis_bridge_to_balance_fails_overflow() {
             DispatchError::Arithmetic(ArithmeticError::Overflow),
             SwapBridgeRight::genesis_bridge_to_balance(genesis_left_balances).unwrap_err()
         );
+    })
+}
+
+/// This test verifies that `genesis_bridge_to_balance` function calculates genesis bridge balances
+/// as expected to pass genesis validation.
+#[test]
+fn genesis_bridge_to_balance_passes_genesis_validation() {
+    with_runtime_lock(|| {
+        let left_basic_accounts = vec![(4201, 10), (4202, 20), (4203, 30), (4204, 40)];
+        let right_basic_accounts =
+            vec![(4211, 20), (4212, 40), (4213, 60), (4214, 80), (4215, 100)];
+
+        let config = GenesisConfig {
+            balances_left: pallet_balances::GenesisConfig {
+                balances: vec![
+                    (4201, 10),
+                    (4202, 20),
+                    (4203, 30),
+                    (4204, 40),
+                    (
+                        SwapBridgeLeftPot::account_id(),
+                        SwapBridgeRight::genesis_bridge_to_balance(
+                            left_basic_accounts
+                                .iter()
+                                .map(|(_, balance)| balance)
+                                .copied(),
+                        )
+                        .unwrap(),
+                    ),
+                ],
+            },
+            balances_right: pallet_balances::GenesisConfig {
+                balances: vec![
+                    (4211, 20),
+                    (4212, 40),
+                    (4213, 60),
+                    (4214, 80),
+                    (4215, 100),
+                    (
+                        SwapBridgeRightPot::account_id(),
+                        SwapBridgeLeft::genesis_bridge_to_balance(
+                            right_basic_accounts
+                                .iter()
+                                .map(|(_, balance)| balance)
+                                .copied(),
+                        )
+                        .unwrap(),
+                    ),
+                ],
+            },
+            swap_bridge_left_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            swap_bridge_right_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            ..Default::default()
+        };
+
+        new_test_ext_with(config).execute_with(move || {});
     })
 }
