@@ -252,24 +252,22 @@ const EXISTENTIAL_DEPOSIT: Balance = 500;
 /// The initial pot accounts balance for testnet genesis.
 const INITIAL_POT_ACCOUNT_BALANCE: Balance = EXISTENTIAL_DEPOSIT + DEV_ACCOUNT_BALANCE;
 
-/// A helper function to calculate bridge pot balances.
-fn get_bridge_pot_balances(
+/// A helper function to calculate bridge balances.
+fn get_bridge_balances(
     basic_native_balances: impl IntoIterator<Item = Balance>,
     basic_evm_balances: impl IntoIterator<Item = Balance>,
 ) -> (Balance, Balance) {
-    let native_bridge_pot_balance =
-        humanode_runtime::EvmToNativeSwapBridge::genesis_bridge_to_balance(
-            basic_evm_balances.into_iter(),
-        )
-        .expect("basic native balances should be valid");
+    let native_bridge_balance = humanode_runtime::EvmToNativeSwapBridge::genesis_bridge_to_balance(
+        basic_evm_balances.into_iter(),
+    )
+    .expect("basic native balances should be valid");
 
-    let evm_bridge_pot_balance =
-        humanode_runtime::NativeToEvmSwapBridge::genesis_bridge_to_balance(
-            basic_native_balances.into_iter(),
-        )
-        .expect("basic evm balances should be valid");
+    let evm_bridge_balance = humanode_runtime::NativeToEvmSwapBridge::genesis_bridge_to_balance(
+        basic_native_balances.into_iter(),
+    )
+    .expect("basic evm balances should be valid");
 
-    (native_bridge_pot_balance, evm_bridge_pot_balance)
+    (native_bridge_balance, evm_bridge_balance)
 }
 
 /// Configure initial storage state for FRAME modules.
@@ -308,7 +306,7 @@ fn testnet_genesis(
         .map(|k| (k, DEV_ACCOUNT_BALANCE))
         .collect::<Vec<_>>();
 
-    let (native_bridge_pot_balance, evm_bridge_pot_balance) = get_bridge_pot_balances(
+    let (native_bridge_balance, evm_bridge_balance) = get_bridge_balances(
         basic_native_accounts
             .iter()
             .map(|(_, balance)| balance)
@@ -332,7 +330,7 @@ fn testnet_genesis(
                     .chain(
                         [(
                             humanode_runtime::NativeToEvmSwapBridgePot::account_id(),
-                            native_bridge_pot_balance,
+                            native_bridge_balance,
                         )]
                         .into_iter(),
                     )
@@ -388,7 +386,7 @@ fn testnet_genesis(
                     .chain(
                         [(
                             humanode_runtime::EvmToNativeSwapBridgePot::account_id(),
-                            evm_bridge_pot_balance,
+                            evm_bridge_balance,
                         )]
                         .into_iter(),
                     )
