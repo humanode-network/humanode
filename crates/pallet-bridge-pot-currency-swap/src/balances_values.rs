@@ -36,27 +36,52 @@ impl sp_std::fmt::Display for Error {
 }
 
 impl<T: Config<I>, I: 'static> Balanced<T, I> {
-    /// A function to calculate expected [`Config::PotTo`] balance based on the provided.
-    pub fn expected_bridge_balance(
-    ) -> Result<<T::CurrencyTo as Currency<T::AccountIdTo>>::Balance, Error> {
+    /// The balance that at this moment can theoritically be sent to the [`PotFrom`].
+    pub fn swappable_balance_at_from(
+    ) -> Result<<T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance, ArithmeticError> {
         let total_from = T::CurrencyFrom::total_issuance();
-        let pot_from = T::CurrencyFrom::total_balance(&T::PotFrom::get());
+        let bridge_from = T::CurrencyFrom::total_balance(&T::PotFrom::get());
 
+        let swappable_at_from = total_from
+            .checked_sub(&bridge_from)
+            .ok_or(ArithmeticError::Underflow)?;
+
+        Ok(swappable_at_from)
+    }
+
+    /// The balance that at this moment can theoritically be withdrawn from [`PotTo`].
+    pub fn swappable_balance_at_to(
+    ) -> Result<<T::CurrencyTo as Currency<T::AccountIdTo>>::Balance, ArithmeticError> {
+        let bridge_to = T::CurrencyTo::total_balance(&T::PotTo::get());
         let ed_to = T::CurrencyTo::minimum_balance();
 
-        let bridge_balance = T::BalanceConverter::convert(
-            total_from
-                .checked_sub(&pot_from)
-                .ok_or(Error::Arithmetic(ArithmeticError::Underflow))?,
-        )
-        .checked_add(&ed_to)
-        .ok_or(Error::Arithmetic(ArithmeticError::Overflow))?;
+        let swappable_at_to = bridge_to
+            .checked_sub(&ed_to)
+            .ok_or(ArithmeticError::Underflow)?;
 
-        Ok(bridge_balance)
+        Ok(swappable_at_to)
+    }
+
+    /// The expected bridge balance.
+    pub fn expected_bridge_balance_at_to(
+    ) -> Result<<T::CurrencyTo as Currency<T::AccountIdTo>>::Balance, ArithmeticError> {
+        let to_ed = T::CurrencyTo::minimum_balance();
+        let swappable_at_from = T::BalanceConverter::convert(Self::swappable_balance_at_from()?);
+        to_ed
+            .checked_add(&swappable_at_from)
+            .ok_or(ArithmeticError::Underflow)
+    }
+
+    /// Ensure the swappable from and to and in balance.
+    pub fn verify_swappable_balance() -> Result<bool, ArithmeticError> {
+        let swappable_at_from = T::BalanceConverter::convert(Self::swappable_balance_at_from()?);
+        let swappable_at_to = Self::swappable_balance_at_to()?;
+        let is_balanced = swappable_at_from == swappable_at_to;
+        Ok(is_balanced)
     }
 
     /// A function to calculate balanced value based on the provided list of [`Config::AccountIdFrom`] balances.
-    pub fn balanced_value(
+    pub fn genesis_swappable_balance_at_from(
         from_balances: impl IntoIterator<
             Item = <T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance,
         >,

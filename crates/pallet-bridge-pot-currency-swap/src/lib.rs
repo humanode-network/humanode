@@ -11,11 +11,13 @@ use frame_support::{
 mod balances_values;
 pub mod existence_optional;
 pub mod existence_required;
+mod upgrade_init;
 
 pub use self::balances_values::{Balanced, Error as BalancedError};
 pub use self::existence_optional::Marker as ExistenceOptional;
 pub use self::existence_required::Marker as ExistenceRequired;
 pub use self::pallet::*;
+pub use self::upgrade_init::InitBalanceProvider;
 
 #[cfg(test)]
 mod mock;
@@ -24,7 +26,7 @@ mod mock;
 mod tests;
 
 /// The current storage version.
-const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -32,6 +34,7 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay};
+    use frame_system::pallet_prelude::*;
     use sp_std::fmt::Debug;
 
     use super::*;
@@ -89,6 +92,9 @@ pub mod pallet {
 
         /// The account to take the balances from when sending the funds as part of the swap operation.
         type PotTo: Get<Self::AccountIdTo>;
+
+        /// The balance provider for the pot initialization.
+        type InitBalanceProvider: InitBalanceProvider<Self::AccountIdTo, Self::CurrencyTo>;
     }
 
     #[pallet::genesis_config]
@@ -107,13 +113,33 @@ pub mod pallet {
     impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
         fn build(&self) {
             let pot_to_balance = T::CurrencyTo::total_balance(&T::PotTo::get());
-            match Balanced::<T, I>::expected_bridge_balance() {
+            match Balanced::<T, I>::expected_bridge_balance_at_to() {
                 Ok(expected_pot_to_balance) => assert!(
                     pot_to_balance == expected_pot_to_balance,
                     "genesis bridge pot balances values not balanced"
                 ),
-                Err(err) => panic!("error during bridge pot balance calculation: {err}",),
+                Err(err) => panic!(
+                    "error during bridge pot balance calculation: {}",
+                    Into::<&'static str>::into(err)
+                ),
             }
+        }
+    }
+
+    #[pallet::hooks]
+    impl<T: Config<I>, I: 'static> Hooks<BlockNumberFor<T>> for Pallet<T, I> {
+        fn on_runtime_upgrade() -> Weight {
+            upgrade_init::on_runtime_upgrade::<T, I>()
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+            upgrade_init::pre_upgrade::<T, I>()
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+            upgrade_init::post_upgrade::<T, I>()
         }
     }
 }

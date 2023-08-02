@@ -70,7 +70,7 @@ fn genesis_balanced_false() {
 /// This test verifies that the genesis builder panics in case error happens during bridge pot
 /// balance calculation.
 #[test]
-#[should_panic = "error during bridge pot balance calculation: An arithmetic error has been occured: An overflow would occur"]
+#[should_panic = "error during bridge pot balance calculation: An underflow would occur"]
 fn genesis_bridge_pot_calculation_fails() {
     with_runtime_lock(|| {
         let config = GenesisConfig {
@@ -111,12 +111,17 @@ fn balanced_value_works() {
 
         assert_eq!(
             expected_left_bridge_balance,
-            Balanced::<Test, BridgeInstanceRightToLeftSwap>::balanced_value(right_balances)
-                .unwrap()
+            Balanced::<Test, BridgeInstanceRightToLeftSwap>::genesis_swappable_balance_at_from(
+                right_balances
+            )
+            .unwrap()
         );
         assert_eq!(
             expected_right_bridge_balance,
-            Balanced::<Test, BridgeInstanceLeftToRightSwap>::balanced_value(left_balances).unwrap()
+            Balanced::<Test, BridgeInstanceLeftToRightSwap>::genesis_swappable_balance_at_from(
+                left_balances
+            )
+            .unwrap()
         );
     })
 }
@@ -128,8 +133,10 @@ fn balanced_value_fails_overflow() {
         let left_balances = vec![10, 20, 30, u64::MAX];
         assert_eq!(
             BalancedError::Arithmetic(ArithmeticError::Overflow),
-            Balanced::<Test, BridgeInstanceLeftToRightSwap>::balanced_value(left_balances)
-                .unwrap_err()
+            Balanced::<Test, BridgeInstanceLeftToRightSwap>::genesis_swappable_balance_at_from(
+                left_balances
+            )
+            .unwrap_err()
         );
     })
 }

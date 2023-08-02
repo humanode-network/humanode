@@ -15,7 +15,7 @@ use frame_support::{
 };
 use sp_core::H256;
 
-use crate::{self as pallet_bridge_pot_currency_swap};
+use crate::{self as pallet_bridge_pot_currency_swap, upgrade_init::MintInitBalanceProvider};
 
 pub(crate) const EXISTENTIAL_DEPOSIT_LEFT: u64 = 10;
 pub(crate) const EXISTENTIAL_DEPOSIT_RIGHT: u64 = 20;
@@ -144,6 +144,7 @@ impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceLeftToRightSwap> for 
     type BalanceConverter = Identity;
     type PotFrom = SwapBridgeLeftPotAccountId;
     type PotTo = SwapBridgeRightPotAccountId;
+    type InitBalanceProvider = MintInitBalanceProvider;
 }
 
 impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceRightToLeftSwap> for Test {
@@ -154,6 +155,7 @@ impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceRightToLeftSwap> for 
     type BalanceConverter = Identity;
     type PotFrom = SwapBridgeRightPotAccountId;
     type PotTo = SwapBridgeLeftPotAccountId;
+    type InitBalanceProvider = MintInitBalanceProvider;
 }
 
 // This function basically just builds a genesis storage key/value store according to
