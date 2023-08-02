@@ -789,8 +789,8 @@ parameter_types! {
     pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
 }
 
-pub type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
-pub type BridgeInstanceEvmToNativeSwap = pallet_bridge_pot_currency_swap::Instance2;
+type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
+type BridgeInstanceEvmToNativeSwap = pallet_bridge_pot_currency_swap::Instance2;
 
 impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Runtime {
     type AccountIdFrom = AccountId;
