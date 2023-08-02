@@ -41,7 +41,7 @@ fn genesis_balanced_true() {
 }
 
 /// This test verifies that the genesis builder correctly ensures genesis bridge pot balances
-/// values that are balanced in case full swappable balance belong to one of the bridges.
+/// values that are balanced in case  swappable balance fully belongs to one of the bridges.
 #[test]
 fn genesis_balanced_true_full_swappable_to_one_bridge() {
     with_runtime_lock(|| {
@@ -59,6 +59,31 @@ fn genesis_balanced_true_full_swappable_to_one_bridge() {
                     SwapBridgeRightPot::account_id(),
                     swappable_balance + EXISTENTIAL_DEPOSIT_RIGHT,
                 )],
+            },
+            swap_bridge_left_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            swap_bridge_right_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            ..Default::default()
+        };
+
+        new_test_ext_with(config).execute_with(move || {});
+    })
+}
+
+/// This test verifies that the genesis builder correctly ensures genesis bridge pot balances
+/// values that are balanced in case swappable balance is zero.
+#[test]
+fn genesis_balanced_true_swappable_zero() {
+    with_runtime_lock(|| {
+        let config = GenesisConfig {
+            balances_left: pallet_balances::GenesisConfig {
+                balances: vec![(SwapBridgeLeftPot::account_id(), EXISTENTIAL_DEPOSIT_LEFT)],
+            },
+            balances_right: pallet_balances::GenesisConfig {
+                balances: vec![(SwapBridgeRightPot::account_id(), EXISTENTIAL_DEPOSIT_RIGHT)],
             },
             swap_bridge_left_pot: pallet_pot::GenesisConfig {
                 initial_state: pallet_pot::InitialState::Initialized,
@@ -131,7 +156,7 @@ fn genesis_bridge_pot_calculation_fails() {
 
 /// This test verifies that `genesis_bridge_to_balance` function works in the happy path.
 #[test]
-fn balanced_value_works() {
+fn genesis_bridge_to_balance_works() {
     with_runtime_lock(|| {
         let genesis_left_balances = vec![10, 20, 30, 40];
         let genesis_right_balances = vec![20, 40, 60, 80, 100];
@@ -154,7 +179,7 @@ fn balanced_value_works() {
 
 /// This test verifies that `balanced_value` function fails in case overflow error happens.
 #[test]
-fn balanced_value_fails_overflow() {
+fn genesis_bridge_to_balance_fails_overflow() {
     with_runtime_lock(|| {
         let genesis_left_balances = vec![10, 20, 30, u64::MAX];
         assert_eq!(
