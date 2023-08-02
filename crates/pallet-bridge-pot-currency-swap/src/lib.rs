@@ -12,10 +12,10 @@ mod balances_values;
 pub mod existence_optional;
 pub mod existence_required;
 
-pub use balances_values::{Balanced, Error as BalancedError};
-pub use existence_optional::Marker as ExistenceOptional;
-pub use existence_required::Marker as ExistenceRequired;
-pub use pallet::*;
+pub use self::balances_values::{Balanced, Error as BalancedError};
+pub use self::existence_optional::Marker as ExistenceOptional;
+pub use self::existence_required::Marker as ExistenceRequired;
+pub use self::pallet::*;
 
 #[cfg(test)]
 mod mock;
