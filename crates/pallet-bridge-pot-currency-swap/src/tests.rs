@@ -41,7 +41,7 @@ fn genesis_balanced_true() {
 }
 
 /// This test verifies that the genesis builder correctly ensures genesis bridge pot balances
-/// values that are balanced in case  swappable balance fully belongs to one of the bridges.
+/// values that are balanced in case swappable balance fully belongs to one of the bridges.
 #[test]
 fn genesis_balanced_true_full_swappable_to_one_bridge() {
     with_runtime_lock(|| {
