@@ -28,10 +28,10 @@ fn genesis_balanced_true() {
                 ],
             },
             swap_bridge_left_pot: pallet_pot::GenesisConfig {
-                initial_state: pallet_pot::InitialState::Unchecked,
+                initial_state: pallet_pot::InitialState::Initialized,
             },
             swap_bridge_right_pot: pallet_pot::GenesisConfig {
-                initial_state: pallet_pot::InitialState::Unchecked,
+                initial_state: pallet_pot::InitialState::Initialized,
             },
             ..Default::default()
         };
