@@ -4,15 +4,16 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
-    sp_runtime::traits::Convert,
+    sp_runtime::{
+        traits::{CheckedAdd, CheckedSub, Convert, Zero},
+        ArithmeticError, DispatchError,
+    },
     sp_std::marker::PhantomData,
-    traits::{fungible::Inspect, Currency, StorageVersion},
+    traits::{fungible::Inspect, Currency, Get, StorageVersion},
 };
-mod balances_values;
 pub mod existence_optional;
 pub mod existence_required;
 
-pub use balances_values::{Balanced, Error as BalancedError};
 pub use existence_optional::Marker as ExistenceOptional;
 pub use existence_required::Marker as ExistenceRequired;
 pub use pallet::*;
@@ -106,15 +107,60 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config<I>, I: 'static> GenesisBuild<T, I> for GenesisConfig<T, I> {
         fn build(&self) {
-            let pot_to_balance = T::CurrencyTo::total_balance(&T::PotTo::get());
-            match Balanced::<T, I>::expected_bridge_balance() {
-                Ok(expected_pot_to_balance) => assert!(
-                    pot_to_balance == expected_pot_to_balance,
-                    "genesis bridge pot balances values not balanced"
+            let bridge_to_balance = T::CurrencyTo::total_balance(&T::PotTo::get());
+            match Pallet::<T, I>::expected_bridge_to_balance() {
+                Ok(expected_bridge_to_balance) => assert!(
+                    bridge_to_balance == expected_bridge_to_balance,
+                    "invalid bridge balance value: got {bridge_to_balance:?}, expected {expected_bridge_to_balance:?}"
                 ),
-                Err(err) => panic!("error during bridge pot balance calculation: {err}",),
+                Err(err) => panic!(
+                    "error during bridge balance calculation: {err:?}"
+                ),
             }
         }
+    }
+}
+
+impl<T: Config<I>, I: 'static> Pallet<T, I> {
+    /// A function to calculate expected [`Config::PotTo`] bridge balance.
+    pub fn expected_bridge_to_balance(
+    ) -> Result<<T::CurrencyTo as Currency<T::AccountIdTo>>::Balance, DispatchError> {
+        let total_from = <T::CurrencyFrom as Currency<T::AccountIdFrom>>::total_issuance();
+        let bridge_from = T::CurrencyFrom::total_balance(&T::PotFrom::get());
+
+        let swappable_from = total_from
+            .checked_sub(&bridge_from)
+            .ok_or(DispatchError::Arithmetic(ArithmeticError::Underflow))?;
+
+        let ed_to = <T::CurrencyTo as Currency<T::AccountIdTo>>::minimum_balance();
+
+        let bridge_balance = T::BalanceConverter::convert(swappable_from)
+            .checked_add(&ed_to)
+            .ok_or(DispatchError::Arithmetic(ArithmeticError::Overflow))?;
+
+        Ok(bridge_balance)
+    }
+
+    /// A function to calculate genesis [`Config::PotTo`] bridge balance value based on the provided
+    /// list of [`Config::AccountIdFrom`] genesis balances.
+    pub fn genesis_bridge_to_balance(
+        genesis_from_balances: impl IntoIterator<
+            Item = <T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance,
+        >,
+    ) -> Result<<T::CurrencyTo as Currency<T::AccountIdTo>>::Balance, DispatchError> {
+        let bridge_balance = genesis_from_balances.into_iter().try_fold(
+            Zero::zero(),
+            |sum: <T::CurrencyFrom as Currency<T::AccountIdFrom>>::Balance, from_balance| {
+                sum.checked_add(&from_balance)
+                    .ok_or(DispatchError::Arithmetic(ArithmeticError::Overflow))
+            },
+        )?;
+
+        let bridge_balance = T::BalanceConverter::convert(bridge_balance)
+            .checked_add(&<T::CurrencyTo as Currency<T::AccountIdTo>>::minimum_balance())
+            .ok_or(DispatchError::Arithmetic(ArithmeticError::Overflow))?;
+
+        Ok(bridge_balance)
     }
 }
 

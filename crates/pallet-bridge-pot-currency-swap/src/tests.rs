@@ -1,7 +1,6 @@
-use frame_support::sp_runtime::ArithmeticError;
+use frame_support::sp_runtime::{ArithmeticError, DispatchError};
 
 use crate::mock::*;
-use crate::{Balanced, BalancedError};
 
 /// This test verifies that the genesis builder correctly ensures genesis bridge pot balances
 /// values that are balanced.
@@ -44,7 +43,7 @@ fn genesis_balanced_true() {
 /// This test verifies that the genesis builder panics in case bridge pot balances values
 /// are not balanced.
 #[test]
-#[should_panic = "genesis bridge pot balances values not balanced"]
+#[should_panic = "invalid bridge balance value: got 100, expected 30"]
 fn genesis_balanced_false() {
     with_runtime_lock(|| {
         let config = GenesisConfig {
@@ -70,7 +69,7 @@ fn genesis_balanced_false() {
 /// This test verifies that the genesis builder panics in case error happens during bridge pot
 /// balance calculation.
 #[test]
-#[should_panic = "error during bridge pot balance calculation: An arithmetic error has been occured: An overflow would occur"]
+#[should_panic = "error during bridge balance calculation: Arithmetic(Overflow)"]
 fn genesis_bridge_pot_calculation_fails() {
     with_runtime_lock(|| {
         let config = GenesisConfig {
@@ -97,26 +96,25 @@ fn genesis_bridge_pot_calculation_fails() {
     })
 }
 
-/// This test verifies that `balanced_value` function works in the happy path.
+/// This test verifies that `genesis_bridge_to_balance` function works in the happy path.
 #[test]
 fn balanced_value_works() {
     with_runtime_lock(|| {
-        let left_balances = vec![10, 20, 30, 40];
-        let right_balances = vec![20, 40, 60, 80, 100];
+        let genesis_left_balances = vec![10, 20, 30, 40];
+        let genesis_right_balances = vec![20, 40, 60, 80, 100];
 
         let expected_left_bridge_balance =
-            right_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT_LEFT;
+            genesis_right_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT_LEFT;
         let expected_right_bridge_balance =
-            left_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT_RIGHT;
+            genesis_left_balances.iter().sum::<u64>() + EXISTENTIAL_DEPOSIT_RIGHT;
 
         assert_eq!(
-            expected_left_bridge_balance,
-            Balanced::<Test, BridgeInstanceRightToLeftSwap>::balanced_value(right_balances)
-                .unwrap()
+            expected_right_bridge_balance,
+            SwapBridgeLeft::genesis_bridge_to_balance(genesis_left_balances).unwrap()
         );
         assert_eq!(
-            expected_right_bridge_balance,
-            Balanced::<Test, BridgeInstanceLeftToRightSwap>::balanced_value(left_balances).unwrap()
+            expected_left_bridge_balance,
+            SwapBridgeRight::genesis_bridge_to_balance(genesis_right_balances).unwrap()
         );
     })
 }
@@ -125,11 +123,10 @@ fn balanced_value_works() {
 #[test]
 fn balanced_value_fails_overflow() {
     with_runtime_lock(|| {
-        let left_balances = vec![10, 20, 30, u64::MAX];
+        let genesis_left_balances = vec![10, 20, 30, u64::MAX];
         assert_eq!(
-            BalancedError::Arithmetic(ArithmeticError::Overflow),
-            Balanced::<Test, BridgeInstanceLeftToRightSwap>::balanced_value(left_balances)
-                .unwrap_err()
+            DispatchError::Arithmetic(ArithmeticError::Overflow),
+            SwapBridgeRight::genesis_bridge_to_balance(genesis_left_balances).unwrap_err()
         );
     })
 }
