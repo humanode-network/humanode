@@ -40,6 +40,39 @@ fn genesis_balanced_true() {
     })
 }
 
+/// This test verifies that the genesis builder correctly ensures genesis bridge pot balances
+/// values that are balanced in case full swappable balance belong to one of the bridges.
+#[test]
+fn genesis_balanced_true_full_swappable_to_one_bridge() {
+    with_runtime_lock(|| {
+        let swappable_balance = 1000;
+
+        let config = GenesisConfig {
+            balances_left: pallet_balances::GenesisConfig {
+                balances: vec![
+                    (4201, swappable_balance),
+                    (SwapBridgeLeftPot::account_id(), EXISTENTIAL_DEPOSIT_LEFT),
+                ],
+            },
+            balances_right: pallet_balances::GenesisConfig {
+                balances: vec![(
+                    SwapBridgeRightPot::account_id(),
+                    swappable_balance + EXISTENTIAL_DEPOSIT_RIGHT,
+                )],
+            },
+            swap_bridge_left_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            swap_bridge_right_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            ..Default::default()
+        };
+
+        new_test_ext_with(config).execute_with(move || {});
+    })
+}
+
 /// This test verifies that the genesis builder panics in case bridge pot balances values
 /// are not balanced.
 #[test]
