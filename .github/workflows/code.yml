@@ -60,28 +60,13 @@ jobs:
         uses: actions/checkout@v3
         timeout-minutes: 5
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/common-setup
         with:
-          shared-key: ${{ matrix.plan.platform.cacheKey }}-${{ matrix.plan.mode.cargoCacheKey }}
-        if: "!matrix.plan.platform.isOnSelfHostedRunner"
+          platformCacheKey: ${{ matrix.plan.platform.cacheKey }}
+          modeCacheKey: ${{ matrix.plan.mode.cargoCacheKey }}
+          isOnSelfHostedRunner: ${{ matrix.plan.platform.isOnSelfHostedRunner }}
+          buildEnvScript: ${{ matrix.plan.platform.buildEnvScript }}
         timeout-minutes: 10
-
-      - name: Install rust toolchain
-        run: rustup show
-        timeout-minutes: 10
-
-      - name: Prepare the build environment
-        uses: ./.github/actions/env
-        with:
-          script: ${{ matrix.plan.platform.buildEnvScript }}
-
-      - name: Print build environment info
-        run: |
-          set -x
-          cargo --version
-          cargo clippy --version
-          env
 
       - name: Run cargo ${{ matrix.plan.mode.cargoCommand }}
         uses: actions-rs/cargo@v1
@@ -102,18 +87,11 @@ jobs:
 
       - run: yarn install --immutable
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 10
-
-      - name: Install rust toolchain
-        run: rustup show
-        timeout-minutes: 10
-
-      - name: Prepare the build environment
-        uses: ./.github/actions/env
+      - uses: ./.github/actions/common-setup
         with:
-          script: .github/scripts/build_env/ubuntu.sh
+          platformCacheKey: ubuntu2204-amd64
+          buildEnvScript: .github/scripts/build_env/ubuntu.sh
+        timeout-minutes: 10
 
       - name: Build binaries
         run: cargo build --release
@@ -142,12 +120,9 @@ jobs:
         uses: actions/checkout@v3
         timeout-minutes: 5
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 10
-
-      - name: Install rust toolchain
-        run: rustup show
+      - uses: ./.github/actions/common-setup
+        with:
+          platformCacheKey: ubuntu2204-amd64
         timeout-minutes: 10
 
       - run: ${{ matrix.util.run }}
@@ -187,14 +162,9 @@ jobs:
         uses: actions/checkout@v3
         timeout-minutes: 5
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-        if: ${{ matrix.util.requiresRust }}
-        timeout-minutes: 10
-
-      - name: Install rust toolchain
-        run: rustup show
-        if: ${{ matrix.util.requiresRust }}
+      - uses: ./.github/actions/common-setup
+        with:
+          requiresRust: ${{ matrix.util.requiresRust }}
         timeout-minutes: 10
 
       - name: Download ${{ matrix.util.name }}
