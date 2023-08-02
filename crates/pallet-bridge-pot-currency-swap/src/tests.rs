@@ -208,7 +208,7 @@ fn genesis_bridge_to_balance_passes_genesis_validation() {
                     (
                         SwapBridgeLeftPot::account_id(),
                         SwapBridgeRight::genesis_bridge_to_balance(
-                            left_basic_accounts
+                            right_basic_accounts
                                 .iter()
                                 .map(|(_, balance)| balance)
                                 .copied(),
@@ -227,7 +227,7 @@ fn genesis_bridge_to_balance_passes_genesis_validation() {
                     (
                         SwapBridgeRightPot::account_id(),
                         SwapBridgeLeft::genesis_bridge_to_balance(
-                            right_basic_accounts
+                            left_basic_accounts
                                 .iter()
                                 .map(|(_, balance)| balance)
                                 .copied(),
