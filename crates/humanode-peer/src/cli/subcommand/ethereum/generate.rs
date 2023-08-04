@@ -24,7 +24,7 @@ impl GenerateAccountCmd {
             false => Mnemonic::new(MnemonicType::Words12, Language::English),
         };
 
-        extract_and_print_keys(&mnemonic, self.account_index)?;
+        extract_and_print_keys(&mnemonic, self.account_index);
 
         Ok(())
     }

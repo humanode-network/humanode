@@ -22,7 +22,7 @@ impl InspectAccountCmd {
         let mnemonic = Mnemonic::from_phrase(&self.mnemonic, Language::English)
             .map_err(|err| sc_cli::Error::Input(err.to_string()))?;
 
-        extract_and_print_keys(&mnemonic, self.account_index)?;
+        extract_and_print_keys(&mnemonic, self.account_index);
 
         Ok(())
     }
