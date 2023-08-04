@@ -22,8 +22,8 @@ Commands:
           Revert the chain to a previous state
   bioauth
           Biometric authentication related subcommands
-  ethereum
-          Ethereum related subcommands
+  evm
+          EVM related subcommands
   benchmark
           Benchmark runtime pallets.
   frontier-db
