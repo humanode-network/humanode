@@ -1,6 +1,6 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
-use crypto_utils::{authority_keys_from_seed, evm_account_from_seed, get_account_id_from_seed};
+use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
 use frame_support::BoundedVec;
 use hex_literal::hex;
 use humanode_runtime::{
@@ -15,7 +15,6 @@ use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::H160;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{app_crypto::sr25519, traits::Verify};
 
