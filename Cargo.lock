@@ -1458,11 +1458,13 @@ dependencies = [
 name = "crypto-utils-evm"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "bip32",
  "hex-literal",
  "libsecp256k1",
  "sha3 0.10.6",
  "sp-core",
+ "thiserror",
  "tiny-bip39",
 ]
 
@@ -3620,6 +3622,7 @@ dependencies = [
  "sp-runtime",
  "sp-timestamp",
  "thiserror",
+ "tiny-bip39",
  "tokio",
  "tracing",
  "try-runtime-cli",

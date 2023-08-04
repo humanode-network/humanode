@@ -15,20 +15,44 @@ pub struct KeyData {
     pub derivation_path: bip32::DerivationPath,
 }
 
+/// An error that can occur at [`from_mnemonic_bip39`] call.
+#[derive(Debug, thiserror::Error)]
+pub enum FromMnemonicBip39Error {
+    /// Derivation has failed.
+    #[error("derivation: {0}")]
+    Derivation(bip32::Error),
+    /// Secret key parsing failed.
+    #[error("secret key: {0}")]
+    SecretKey(libsecp256k1::Error),
+}
+
+/// An error that can occur at [`from_phrase_bip44`] call.
+#[derive(Debug, thiserror::Error)]
+pub enum FromPhraseBip44 {
+    /// Mnemonic parsing failed.
+    #[error("mnemonic: {0}")]
+    Mnemonic(anyhow::Error),
+    /// Inner [`from_mnemonic_bip39`] call failed.
+    #[error(transparent)]
+    FromMnemonicBip39(FromMnemonicBip39Error),
+}
+
 impl KeyData {
     /// Create a new [`KeyData`] from the given BIP39 mnemonic and an account index.
     pub fn from_mnemonic_bip39(
         mnemonic: &bip39::Mnemonic,
         password: &str,
         derivation_path: &bip32::DerivationPath,
-    ) -> Self {
+    ) -> Result<Self, FromMnemonicBip39Error> {
         // Retrieve the seed from the mnemonic.
         let seed = bip39::Seed::new(mnemonic, password);
 
         // Derives the private key from.
-        let ext = bip32::XPrv::derive_from_path(seed, derivation_path).unwrap();
+        let ext = bip32::XPrv::derive_from_path(seed, derivation_path)
+            .map_err(FromMnemonicBip39Error::Derivation)?;
 
-        let private_key = libsecp256k1::SecretKey::parse_slice(&ext.to_bytes()).unwrap();
+        let private_key = libsecp256k1::SecretKey::parse_slice(&ext.to_bytes())
+            .map_err(FromMnemonicBip39Error::SecretKey)?;
 
         // Retrieves the public key.
         let public_key = libsecp256k1::PublicKey::from_secret_key(&private_key);
@@ -42,12 +66,12 @@ impl KeyData {
 
         let account = H160::from(H256::from_slice(digest.as_ref()));
 
-        Self {
+        Ok(Self {
             account,
             mnemonic: mnemonic.phrase().to_owned(),
             private_key: H256::from(private_key.serialize()),
             derivation_path: derivation_path.clone(),
-        }
+        })
     }
 
     /// Construct the key info from the BIP39 mnemonic using BIP44 convenions.
@@ -55,7 +79,7 @@ impl KeyData {
         mnemonic: &bip39::Mnemonic,
         password: &str,
         account_index: Option<u32>,
-    ) -> Self {
+    ) -> Result<Self, FromMnemonicBip39Error> {
         let derivation_path = format!("m/44'/60'/0'/0/{}", account_index.unwrap_or(0));
         let derivation_path = derivation_path.parse().unwrap();
         Self::from_mnemonic_bip39(mnemonic, password, &derivation_path)
@@ -63,14 +87,20 @@ impl KeyData {
 
     /// Construct the key info from the BIP39 mnemonic phrase (in English) using BIP44 convenions.
     /// If you need other language - use [`Self::from_mnemonic_bip44`].
-    pub fn from_phrase_bip44(phrase: &str, password: &str, account_index: Option<u32>) -> Self {
-        let mnemonic = bip39::Mnemonic::from_phrase(phrase, bip39::Language::English).unwrap();
+    pub fn from_phrase_bip44(
+        phrase: &str,
+        password: &str,
+        account_index: Option<u32>,
+    ) -> Result<Self, FromPhraseBip44> {
+        let mnemonic = bip39::Mnemonic::from_phrase(phrase, bip39::Language::English)
+            .map_err(FromPhraseBip44::Mnemonic)?;
         Self::from_mnemonic_bip44(&mnemonic, password, account_index)
+            .map_err(FromPhraseBip44::FromMnemonicBip39)
     }
 
     /// Construct the key info from the account on the Substrate standard dev seed.
     pub fn from_dev_seed(account_index: u32) -> Self {
-        Self::from_phrase_bip44(sp_core::crypto::DEV_PHRASE, "", Some(account_index))
+        Self::from_phrase_bip44(sp_core::crypto::DEV_PHRASE, "", Some(account_index)).unwrap()
     }
 }
 
@@ -112,7 +142,7 @@ mod tests {
         ];
 
         for (phrase, pw, expected_key_info) in cases {
-            let key_info = KeyData::from_phrase_bip44(phrase, pw, None);
+            let key_info = KeyData::from_phrase_bip44(phrase, pw, None).unwrap();
             assert_eq!(key_info, expected_key_info);
         }
     }
