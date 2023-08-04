@@ -492,6 +492,8 @@
   features: []
 - name: crypto-utils 0.1.0
   features: []
+- name: crypto-utils-evm 0.1.0
+  features: []
 - name: ctr 0.8.0
   features: []
 - name: ctr 0.9.2
