@@ -5,7 +5,7 @@
 use super::CliConfigurationExt;
 
 pub mod bioauth;
-pub mod ethereum;
+pub mod evm;
 pub mod export_embedded_runtime;
 
 /// Humanode peer subcommands.
@@ -40,9 +40,9 @@ pub enum Subcommand {
     #[command(subcommand)]
     Bioauth(bioauth::BioauthCmd),
 
-    /// Ethereum related subcommands.
+    /// EVM related subcommands.
     #[command(subcommand)]
-    Ethereum(ethereum::EthereumCmd),
+    Evm(evm::EvmCmd),
 
     /// The custom benchmark subcommmand benchmarking runtime pallets.
     #[command(name = "benchmark", about = "Benchmark runtime pallets.")]

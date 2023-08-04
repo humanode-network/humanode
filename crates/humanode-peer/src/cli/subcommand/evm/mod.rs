@@ -6,19 +6,19 @@ pub mod utils;
 
 /// Subcommands for the `ethereum` command.
 #[derive(Debug, clap::Subcommand)]
-pub enum EthereumCmd {
+pub enum EvmCmd {
     /// Generate a random account.
     GenerateAccount(generate::GenerateAccountCmd),
     /// Inspect a provided mnemonic.
     InspectAccount(inspect::InspectAccountCmd),
 }
 
-impl EthereumCmd {
+impl EvmCmd {
     /// Run the ethereum subcommands
     pub async fn run(&self) -> sc_cli::Result<()> {
         match self {
-            EthereumCmd::GenerateAccount(cmd) => cmd.run().await,
-            EthereumCmd::InspectAccount(cmd) => cmd.run().await,
+            EvmCmd::GenerateAccount(cmd) => cmd.run().await,
+            EvmCmd::InspectAccount(cmd) => cmd.run().await,
         }
     }
 }
