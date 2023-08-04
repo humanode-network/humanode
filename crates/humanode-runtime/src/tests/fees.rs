@@ -3,6 +3,8 @@
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
 
+use ethereum::EIP1559Transaction;
+
 use super::*;
 use crate::dev_utils::*;
 use crate::opaque::SessionKeys;
@@ -128,6 +130,23 @@ fn assert_fee(call: RuntimeCall, len: u32, expected_fee: Balance, epsilon: Balan
     );
 }
 
+fn assert_evm_fee(call: RuntimeCall, len: u32, expected_fee: Balance, epsilon: Balance) {
+    let dispath_info = TransactionPayment::query_call_info(call, len);
+    let effective_fee = dispath_info.partial_fee;
+
+    let lower_threshold = expected_fee - epsilon;
+    let upper_threshold = expected_fee + epsilon;
+
+    assert!(
+        effective_fee <= upper_threshold,
+        "{effective_fee} is not within {epsilon} above {expected_fee} ({effective_fee} > {upper_threshold})"
+    );
+    assert!(
+        effective_fee >= lower_threshold,
+        "{effective_fee} is not within {epsilon} below {expected_fee} ({effective_fee} < {lower_threshold})"
+    );
+}
+
 /// The testing cryptography to match the real one we use for the accounts.
 /// We use it to simulate the signatures in the test to estimate the tx size.
 pub mod crypto {
@@ -146,6 +165,16 @@ pub mod crypto {
         type GenericSignature = sp_core::sr25519::Signature;
         type GenericPublic = sp_core::sr25519::Public;
     }
+}
+
+fn switch_block() {
+    use frame_support::traits::{OnFinalize, OnInitialize};
+
+    if System::block_number() != 0 {
+        AllPalletsWithSystem::on_finalize(System::block_number());
+    }
+    System::set_block_number(System::block_number() + 1);
+    AllPalletsWithSystem::on_initialize(System::block_number());
 }
 
 /// A test that validates that a simple balance transfer with a keep alive costs 0.1 HMND.
@@ -190,5 +219,52 @@ fn simple_balances_transfer_keep_alive() {
         let epsilon = expected_fee / 200;
 
         assert_fee(call, len, expected_fee, epsilon);
+    })
+}
+
+/// A test that validates that a simple EVM balance transfer with a keep alive costs 0.2 HMND.
+#[test]
+fn simple_evm_transaction() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        switch_block();
+        Timestamp::set(RuntimeOrigin::none(), 1000).unwrap();
+        switch_block();
+
+        // Prepare a sample call to transfer 1 HMND.
+        let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
+        assert_eq!(
+            max_fee_per_gas,
+            constants::evm_fees::BASE_FEE_PER_GAS.into()
+        );
+
+        let to = H160(hex_literal::hex!(
+            "0000000000000000000000000000000000000000"
+        ));
+
+        let call = RuntimeCall::Ethereum(pallet_ethereum::Call::transact {
+            transaction: EthereumTransaction::EIP1559(EIP1559Transaction {
+                chain_id: <Runtime as pallet_evm::Config>::ChainId::get(),
+                nonce: 0.into(),
+                max_priority_fee_per_gas: 0.into(),
+                max_fee_per_gas,
+                gas_limit: 21000.into(), // simple transfer
+                action: ethereum::TransactionAction::Call(to),
+                value: U256::from(ONE_BALANCE_UNIT),
+                input: Default::default(),
+                access_list: Default::default(),
+                odd_y_parity: false,
+                r: Default::default(),
+                s: Default::default(),
+            }),
+        });
+
+        // The expected fee that we aim to target: 0.2 HMND.
+        let expected_fee = ONE_BALANCE_UNIT / 5;
+
+        // The tolerance within which the actual fee is allowed to be around the expected fee.
+        let epsilon = expected_fee / 200;
+
+        assert_evm_fee(call, 0, expected_fee, epsilon);
     })
 }
