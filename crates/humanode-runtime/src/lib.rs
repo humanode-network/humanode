@@ -104,6 +104,7 @@ pub use constants::{
     equivocation::REPORT_LONGEVITY,
     im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
 };
+use static_assertions::const_assert;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -232,11 +233,14 @@ pub fn native_version() -> NativeVersion {
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const MAX_BLOCK_LENGTH: u32 = 5 * 1024 * 1024;
 
+/// We allow for 2 seconds of compute with a 6 second average block time.
+const EXPECTED_BLOCK_WEIGHT: Weight =
+    Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX);
+
 parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
-    /// We allow for 2 seconds of compute with a 6 second average block time.
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
-        ::with_sensible_defaults(Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX), NORMAL_DISPATCH_RATIO);
+        ::with_sensible_defaults(EXPECTED_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(MAX_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
     pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
@@ -625,7 +629,11 @@ impl pallet_offences::Config for Runtime {
 }
 
 const BLOCK_GAS_LIMIT: u64 = 75_000_000;
-const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2000;
+
+const WEIGHT_MILLISECS_PER_BLOCK: u64 = EXPECTED_BLOCK_WEIGHT.ref_time()
+    / frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS;
+// An assertion to ensure this value is what we expect it to be here.
+const_assert!(WEIGHT_MILLISECS_PER_BLOCK == 2000u64);
 
 parameter_types! {
     pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
