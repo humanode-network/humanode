@@ -1,6 +1,6 @@
 {
   "editor.formatOnSave": true,
-  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.check.command": "clippy",
   "[rust]": {
     "editor.rulers": [100]
   },
