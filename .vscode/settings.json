@@ -7,6 +7,8 @@
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
+  // This takes too long when working with substrate, as it build the whole
+  // runtime each time the node host code is built.
   "rust-analyzer.cargo.buildScripts.enable": false,
   "vitest.commandLine": "yarn utils/e2e-tests/ts test:watch --",
   "vitest.include": [
