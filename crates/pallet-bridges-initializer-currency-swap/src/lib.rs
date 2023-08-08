@@ -8,11 +8,14 @@ use frame_support::{
         traits::{CheckedAdd, CheckedSub, Convert, Get, Zero},
         ArithmeticError, DispatchError,
     },
-    traits::{fungible, Currency},
+    storage::with_storage_layer,
+    traits::{fungible, Currency, StorageVersion},
     weights::Weight,
 };
 pub use pallet::*;
 use sp_std::cmp::Ordering;
+
+mod upgrade_init;
 
 #[cfg(test)]
 mod mock;
@@ -20,18 +23,23 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+/// The current storage version.
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay};
+    use frame_system::pallet_prelude::*;
     use sp_std::fmt::Debug;
 
     use super::*;
 
     /// The Bridge Pot Currency Swap Initializer Pallet.
     #[pallet::pallet]
+    #[pallet::storage_version(STORAGE_VERSION)]
     #[pallet::generate_store(pub(super) trait Store)]
     pub struct Pallet<T>(_);
 
@@ -112,46 +120,69 @@ pub mod pallet {
         /// The currencies are not balanced.
         NotBalanced,
     }
+
+    #[pallet::hooks]
+    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+        fn on_runtime_upgrade() -> Weight {
+            upgrade_init::on_runtime_upgrade::<T>()
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+            upgrade_init::pre_upgrade::<T, I>()
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+            upgrade_init::post_upgrade::<T, I>()
+        }
+    }
 }
 
 impl<T: Config> Pallet<T> {
     /// Initialize bridges pot accounts.
     pub fn initialize() -> Result<Weight, DispatchError> {
-        let evm_total_issuance = T::EvmCurrency::total_issuance();
-        let evm_bridge_balance = T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
-        let mut weight = T::DbWeight::get().reads(2);
+        let mut weight = T::DbWeight::get().reads(0);
 
-        let evm_swappable = evm_total_issuance
-            .checked_sub(&evm_bridge_balance)
-            .expect("evm_total_issuance is greater than evm_bridge_balance; qed.");
+        with_storage_layer(move || {
+            let evm_total_issuance = T::EvmCurrency::total_issuance();
+            let evm_bridge_balance = T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
+            weight += T::DbWeight::get().reads(2);
 
-        let native_swap_reserved = T::BalanceConverterEvmToNative::convert(evm_swappable);
-        let native_bridge_balance = native_swap_reserved
-            .checked_add(&T::NativeCurrency::minimum_balance())
-            .ok_or(ArithmeticError::Overflow)?;
-        weight += T::DbWeight::get().reads(1);
+            let evm_swappable = evm_total_issuance
+                .checked_sub(&evm_bridge_balance)
+                .expect("evm_total_issuance is greater than evm_bridge_balance; qed.");
 
-        weight += Self::make_native_bridge_balance_be(native_bridge_balance)?;
+            let native_swap_reserved = T::BalanceConverterEvmToNative::convert(evm_swappable);
+            let native_bridge_balance = native_swap_reserved
+                .checked_add(&T::NativeCurrency::minimum_balance())
+                .ok_or(ArithmeticError::Overflow)?;
+            weight += T::DbWeight::get().reads(1);
 
-        let native_total_issuance = T::NativeCurrency::total_issuance();
-        weight += T::DbWeight::get().reads(1);
+            weight += Self::make_native_bridge_balance_be(native_bridge_balance)?;
 
-        let native_swappable = native_total_issuance
-            .checked_sub(&native_bridge_balance)
-            .expect("native_total_issuance is greater than native_bridge_balance; qed.");
+            let native_total_issuance = T::NativeCurrency::total_issuance();
+            weight += T::DbWeight::get().reads(1);
 
-        let evm_swap_reserved = T::BalanceConverterNativeToEvm::convert(native_swappable);
-        let evm_bridge_balance = evm_swap_reserved
-            .checked_add(&T::EvmCurrency::minimum_balance())
-            .ok_or(ArithmeticError::Overflow)?;
-        weight += T::DbWeight::get().reads(1);
+            let native_swappable = native_total_issuance
+                .checked_sub(&native_bridge_balance)
+                .expect("native_total_issuance is greater than native_bridge_balance; qed.");
 
-        weight += Self::make_evm_bridge_balance_be(evm_bridge_balance)?;
+            let evm_swap_reserved = T::BalanceConverterNativeToEvm::convert(native_swappable);
+            let evm_bridge_balance = evm_swap_reserved
+                .checked_add(&T::EvmCurrency::minimum_balance())
+                .ok_or(ArithmeticError::Overflow)?;
+            weight += T::DbWeight::get().reads(1);
 
-        if !Self::is_balanced()? {
-            return Err(Error::<T>::NotBalanced.into());
-        }
-        weight += T::DbWeight::get().reads(8);
+            weight += Self::make_evm_bridge_balance_be(evm_bridge_balance)?;
+
+            if !Self::is_balanced()? {
+                return Err::<(), DispatchError>(Error::<T>::NotBalanced.into());
+            }
+            weight += T::DbWeight::get().reads(8);
+
+            Ok(())
+        })?;
 
         Ok(weight)
     }
