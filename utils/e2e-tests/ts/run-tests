@@ -4,4 +4,10 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 cd "$SCRIPT_DIR/../../.."
 
+HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the first arguemnt}"
+shift
+
+HUMANODE_PEER_PATH="$(realpath -s "$HUMANODE_PEER_PATH")"
+export HUMANODE_PEER_PATH
+
 exec yarn utils/e2e-tests/ts test "$@"
