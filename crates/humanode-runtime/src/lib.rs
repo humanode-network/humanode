@@ -5,6 +5,8 @@
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
+// Runtime impl macros generate non-snake case names.
+#![allow(non_snake_case)]
 
 // If we're in standard compilation mode, embed the build-script generated code that pulls in
 // the WASM portion of the runtime, so that it is invocable from the native (aka host) side code.
