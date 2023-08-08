@@ -1988,6 +1988,10 @@
   features:
     - default
     - std
+- name: pallet-bridges-initializer-currency-swap 0.1.0
+  features:
+    - default
+    - std
 - name: pallet-chain-properties 0.1.0
   features:
     - default
