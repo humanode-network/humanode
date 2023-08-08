@@ -12,6 +12,7 @@ default-run = "humanode-peer"
 bioauth-flow-rpc = { version = "0.1", path = "../bioauth-flow-rpc" }
 bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
 crypto-utils = { version = "0.1", path = "../crypto-utils" }
+crypto-utils-evm = { version = "0.1", path = "../crypto-utils-evm" }
 humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
 humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id" }
@@ -22,7 +23,6 @@ robonode-client = { version = "0.1", path = "../robonode-client" }
 
 anyhow = "1"
 async-trait = "0.1"
-bip32 = "0.5.0"
 clap = { version = "4.1", features = ["derive"] }
 codec = { package = "parity-scale-codec", version = "3.2.2" }
 fc-cli = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
@@ -42,7 +42,6 @@ frame-system-rpc-runtime-api = { git = "https://github.com/humanode-network/subs
 futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.4"
-libsecp256k1 = "0.7"
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
@@ -67,7 +66,6 @@ sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", b
 sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-sha3 = "0.10"
 sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
@@ -82,7 +80,7 @@ sp-panic-handler = { git = "https://github.com/humanode-network/substrate", bran
 sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 thiserror = "1"
-tiny-bip39 = "1.0"
+tiny-bip39 = "1"
 tokio = { version = "1", features = ["full"] }
 tracing = "0.1"
 try-runtime-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", optional = true }
