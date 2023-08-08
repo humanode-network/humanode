@@ -121,7 +121,10 @@ impl<T: Config> Pallet<T> {
     /// Initialize bridges pot accounts.
     pub fn initialize() -> Result<(), DispatchError> {
         let evm_total_issuance = T::EvmCurrency::total_issuance();
-        let evm_swappable = evm_total_issuance;
+        let evm_bridge_balance = T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
+        let evm_swappable = evm_total_issuance
+            .checked_sub(&evm_bridge_balance)
+            .ok_or(ArithmeticError::Underflow)?;
 
         let native_swap_reserved = T::BalanceConverterEvmToNative::convert(evm_swappable);
         let native_bridge_balance = native_swap_reserved
