@@ -26,15 +26,26 @@ pub enum FromMnemonicBip39Error {
     SecretKey(libsecp256k1::Error),
 }
 
+/// An error that can occur at [`from_mnemonic_bip44`] call.
+#[derive(Debug, thiserror::Error)]
+pub enum FromMnemonicBip44Error {
+    /// Derivation path was invalid.
+    #[error("derivation path: {0}")]
+    DerivationPath(bip32::Error),
+    /// Inner [`from_mnemonic_bip39`] call failed.
+    #[error(transparent)]
+    FromMnemonicBip39(FromMnemonicBip39Error),
+}
+
 /// An error that can occur at [`from_phrase_bip44`] call.
 #[derive(Debug, thiserror::Error)]
 pub enum FromPhraseBip44 {
     /// Mnemonic parsing failed.
     #[error("mnemonic: {0}")]
     Mnemonic(anyhow::Error),
-    /// Inner [`from_mnemonic_bip39`] call failed.
+    /// Inner [`from_mnemonic_bip44`] call failed.
     #[error(transparent)]
-    FromMnemonicBip39(FromMnemonicBip39Error),
+    FromMnemonicBip44(FromMnemonicBip44Error),
 }
 
 impl KeyData {
@@ -79,10 +90,13 @@ impl KeyData {
         mnemonic: &bip39::Mnemonic,
         password: &str,
         account_index: Option<u32>,
-    ) -> Result<Self, FromMnemonicBip39Error> {
+    ) -> Result<Self, FromMnemonicBip44Error> {
         let derivation_path = format!("m/44'/60'/0'/0/{}", account_index.unwrap_or(0));
-        let derivation_path = derivation_path.parse().unwrap();
+        let derivation_path = derivation_path
+            .parse()
+            .map_err(FromMnemonicBip44Error::DerivationPath)?;
         Self::from_mnemonic_bip39(mnemonic, password, &derivation_path)
+            .map_err(FromMnemonicBip44Error::FromMnemonicBip39)
     }
 
     /// Construct the key info from the BIP39 mnemonic phrase (in English) using BIP44 convenions.
@@ -95,7 +109,7 @@ impl KeyData {
         let mnemonic = bip39::Mnemonic::from_phrase(phrase, bip39::Language::English)
             .map_err(FromPhraseBip44::Mnemonic)?;
         Self::from_mnemonic_bip44(&mnemonic, password, account_index)
-            .map_err(FromPhraseBip44::FromMnemonicBip39)
+            .map_err(FromPhraseBip44::FromMnemonicBip44)
     }
 
     /// Construct the key info from the account on the Substrate standard dev seed.

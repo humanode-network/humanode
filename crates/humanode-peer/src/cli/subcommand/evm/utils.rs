@@ -4,7 +4,7 @@
 pub fn extract_and_print_keys(
     mnemonic: &bip39::Mnemonic,
     account_index: Option<u32>,
-) -> Result<(), crypto_utils_evm::FromMnemonicBip39Error> {
+) -> Result<(), crypto_utils_evm::FromMnemonicBip44Error> {
     let key_data = crypto_utils_evm::KeyData::from_mnemonic_bip44(mnemonic, "", account_index)?;
 
     println!("Address:      {:?}", key_data.account);
