@@ -1,4 +1,4 @@
-//! A substrate pallet for bridge pot currency swap initialization implementation.
+//! A substrate pallet for bridges pot currency swap initialization logic.
 
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
@@ -36,6 +36,7 @@ pub mod pallet {
     /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config {
+        /// The evm user account identifier type.
         type EvmAccountId: Parameter
             + Member
             + MaybeSerializeDeserialize
@@ -44,32 +45,41 @@ pub mod pallet {
             + Ord
             + MaxEncodedLen;
 
+        /// The interface into native currency implementation.
         type NativeCurrency: Currency<Self::AccountId>
             + fungible::Inspect<
                 Self::AccountId,
                 Balance = <Self::NativeCurrency as Currency<Self::AccountId>>::Balance,
             >;
 
+        /// The interface into evm currency implementation.
         type EvmCurrency: Currency<Self::EvmAccountId>
             + fungible::Inspect<
                 Self::EvmAccountId,
                 Balance = <Self::EvmCurrency as Currency<Self::EvmAccountId>>::Balance,
             >;
 
+        /// The converter to determine how the balance amount should be converted from
+        /// native currency to evm currency.
         type BalanceConverterNativeToEvm: Convert<
             <Self::NativeCurrency as Currency<Self::AccountId>>::Balance,
             <Self::EvmCurrency as Currency<Self::EvmAccountId>>::Balance,
         >;
 
+        /// The converter to determine how the balance amount should be converted from
+        /// evm currency to native currency.
         type BalanceConverterEvmToNative: Convert<
             <Self::EvmCurrency as Currency<Self::EvmAccountId>>::Balance,
             <Self::NativeCurrency as Currency<Self::AccountId>>::Balance,
         >;
 
+        /// The native-evm bridge pot account.
         type NativeEvmBridgePot: Get<Self::AccountId>;
 
+        /// The native treasury pot account.
         type NativeTreasuryPot: Get<Self::AccountId>;
 
+        /// The evm-native bridge pot account.
         type EvmNativeBridgePot: Get<Self::EvmAccountId>;
     }
 
@@ -88,16 +98,23 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
-            match Pallet::<T>::init() {
+            match Pallet::<T>::initialize() {
                 Ok(_) => {}
                 Err(err) => panic!("error during bridges initialization: {err:?}",),
             }
         }
     }
+
+    #[pallet::error]
+    pub enum Error<T> {
+        /// The currencies are not balanced.
+        NotBalanced,
+    }
 }
 
 impl<T: Config> Pallet<T> {
-    pub fn init() -> Result<(), DispatchError> {
+    /// Initialize bridges pot accounts.
+    pub fn initialize() -> Result<(), DispatchError> {
         let evm_total_issuance = T::EvmCurrency::total_issuance();
         let evm_swappable = evm_total_issuance;
 
@@ -127,12 +144,15 @@ impl<T: Config> Pallet<T> {
         let imbalance = T::EvmCurrency::issue(evm_bridge_balance);
         T::EvmCurrency::resolve_creating(&T::EvmNativeBridgePot::get(), imbalance);
 
-        assert!(Self::verify_balanced()?, "not balanced");
+        if !Self::is_balanced()? {
+            return Err(Error::<T>::NotBalanced.into());
+        }
 
         Ok(())
     }
 
-    fn verify_balanced() -> Result<bool, ArithmeticError> {
+    /// Verify currencies balanced requirements.
+    fn is_balanced() -> Result<bool, ArithmeticError> {
         let is_balanced_native_evm = swap_reserved_balance::<
             T::AccountId,
             T::NativeCurrency,
@@ -153,7 +173,7 @@ impl<T: Config> Pallet<T> {
     }
 }
 
-/// Swappable balance.
+/// A helper function to calculate swappable balance.
 fn swappable_balance<AccountId, C: Currency<AccountId>, B: Get<AccountId>>(
 ) -> Result<C::Balance, ArithmeticError> {
     let total = C::total_issuance();
@@ -166,7 +186,7 @@ fn swappable_balance<AccountId, C: Currency<AccountId>, B: Get<AccountId>>(
     Ok(swappable)
 }
 
-/// Swap reserved balance.
+/// A helper function to calculate swap reserved balance.
 fn swap_reserved_balance<AccountId, C: Currency<AccountId>, B: Get<AccountId>>(
 ) -> Result<C::Balance, ArithmeticError> {
     let bridge = C::total_balance(&B::get());
