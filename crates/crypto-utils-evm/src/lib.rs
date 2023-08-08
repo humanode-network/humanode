@@ -15,7 +15,7 @@ pub struct KeyData {
     pub derivation_path: bip32::DerivationPath,
 }
 
-/// An error that can occur at [`from_mnemonic_bip39`] call.
+/// An error that can occur at [`KeyData::from_mnemonic_bip39`] call.
 #[derive(Debug, thiserror::Error)]
 pub enum FromMnemonicBip39Error {
     /// Derivation has failed.
@@ -26,24 +26,24 @@ pub enum FromMnemonicBip39Error {
     SecretKey(libsecp256k1::Error),
 }
 
-/// An error that can occur at [`from_mnemonic_bip44`] call.
+/// An error that can occur at [`KeyData::from_mnemonic_bip44`] call.
 #[derive(Debug, thiserror::Error)]
 pub enum FromMnemonicBip44Error {
     /// Derivation path was invalid.
     #[error("derivation path: {0}")]
     DerivationPath(bip32::Error),
-    /// Inner [`from_mnemonic_bip39`] call failed.
+    /// Inner [`KeyData::from_mnemonic_bip39`] call failed.
     #[error(transparent)]
     FromMnemonicBip39(FromMnemonicBip39Error),
 }
 
-/// An error that can occur at [`from_phrase_bip44`] call.
+/// An error that can occur at [`KeyData::from_phrase_bip44`] call.
 #[derive(Debug, thiserror::Error)]
 pub enum FromPhraseBip44 {
     /// Mnemonic parsing failed.
     #[error("mnemonic: {0}")]
     Mnemonic(anyhow::Error),
-    /// Inner [`from_mnemonic_bip44`] call failed.
+    /// Inner [`KeyData::from_mnemonic_bip44`] call failed.
     #[error(transparent)]
     FromMnemonicBip44(FromMnemonicBip44Error),
 }
