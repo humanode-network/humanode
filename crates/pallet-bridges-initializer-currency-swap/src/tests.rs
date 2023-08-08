@@ -147,3 +147,42 @@ fn initialization_fails_overflow() {
         new_test_ext_with(config).execute_with(move || {});
     })
 }
+
+#[test]
+#[should_panic = "error during bridges initialization: Module(ModuleError { index: 1, error: [2, 0, 0, 0], message: Some(\"InsufficientBalance\") })"]
+fn initialization_fails_treasury_insufficient_balance() {
+    with_runtime_lock(|| {
+        let treasury = (NativeTreasury::get(), EXISTENTIAL_DEPOSIT_NATIVE + 10);
+        let swap_bridge_native_evm = (
+            SwapBridgeNativeToEvmPot::account_id(),
+            EXISTENTIAL_DEPOSIT_NATIVE,
+        );
+
+        let lion = (4211, 200);
+        let dog = (4212, 300);
+        let cat = (4213, 400);
+        let fish = (4214, 500);
+        let evm_bridge_delta = 50;
+        let swap_bridge_evm_native = (
+            SwapBridgeEvmToNativePot::account_id(),
+            EXISTENTIAL_DEPOSIT_EVM + evm_bridge_delta,
+        );
+
+        let config = GenesisConfig {
+            balances: pallet_balances::GenesisConfig {
+                balances: vec![treasury, swap_bridge_native_evm],
+            },
+            evm_balances: pallet_balances::GenesisConfig {
+                balances: vec![lion, dog, cat, fish, swap_bridge_evm_native],
+            },
+            swap_bridge_native_to_evm_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            swap_bridge_evm_to_native_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            ..Default::default()
+        };
+        new_test_ext_with(config).execute_with(move || {});
+    })
+}

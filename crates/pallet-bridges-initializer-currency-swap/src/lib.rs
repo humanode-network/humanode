@@ -195,6 +195,7 @@ impl<T: Config> Pallet<T> {
                     frame_support::traits::WithdrawReasons::TRANSFER,
                     frame_support::traits::ExistenceRequirement::KeepAlive,
                 )?;
+
                 // We can safely ignore the result as overflow cann't be reached.
                 // current_native_bridge_balance + current_native_treasury < total_issuance.
                 // So, imbalance + current_native_treasury < total_issuance.
