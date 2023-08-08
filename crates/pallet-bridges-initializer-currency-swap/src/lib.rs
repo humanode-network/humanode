@@ -5,12 +5,13 @@
 
 use frame_support::{
     sp_runtime::{
-        traits::{CheckedAdd, CheckedSub, Convert, Get},
+        traits::{CheckedAdd, CheckedSub, Convert, Get, Zero},
         ArithmeticError, DispatchError,
     },
     traits::{fungible, Currency},
 };
 pub use pallet::*;
+use sp_std::cmp::Ordering;
 
 #[cfg(test)]
 mod mock;
@@ -28,7 +29,7 @@ pub mod pallet {
 
     use super::*;
 
-    /// The Bridge Pot Currency Swap Pallet.
+    /// The Bridge Pot Currency Swap Initializer Pallet.
     #[pallet::pallet]
     #[pallet::generate_store(pub(super) trait Store)]
     pub struct Pallet<T>(_);
@@ -109,6 +110,10 @@ pub mod pallet {
     pub enum Error<T> {
         /// The currencies are not balanced.
         NotBalanced,
+        /// Native-evm bridge pot balance is too high.
+        NativeEvmBridgePotOverflow,
+        /// Evm-native bridge pot balance is too low.
+        EvmNativeBridgePotUnderflow,
     }
 }
 
@@ -123,13 +128,7 @@ impl<T: Config> Pallet<T> {
             .checked_add(&T::NativeCurrency::minimum_balance())
             .ok_or(ArithmeticError::Overflow)?;
 
-        let imbalance = T::NativeCurrency::withdraw(
-            &T::NativeTreasuryPot::get(),
-            native_bridge_balance,
-            frame_support::traits::WithdrawReasons::TRANSFER,
-            frame_support::traits::ExistenceRequirement::KeepAlive,
-        )?;
-        T::NativeCurrency::resolve_creating(&T::NativeEvmBridgePot::get(), imbalance);
+        Self::make_native_bridge_balance_be(native_bridge_balance)?;
 
         let native_total_issuance = T::NativeCurrency::total_issuance();
         let native_swappable = native_total_issuance
@@ -141,13 +140,101 @@ impl<T: Config> Pallet<T> {
             .checked_add(&T::EvmCurrency::minimum_balance())
             .ok_or(ArithmeticError::Overflow)?;
 
-        let imbalance = T::EvmCurrency::issue(evm_bridge_balance);
-        T::EvmCurrency::resolve_creating(&T::EvmNativeBridgePot::get(), imbalance);
+        Self::make_evm_bridge_balance_be(evm_bridge_balance)?;
 
         if !Self::is_balanced()? {
             return Err(Error::<T>::NotBalanced.into());
         }
 
+        Ok(())
+    }
+
+    /// Make native bridge balance be provided amount value.
+    ///
+    ///  The logic can change native swappable balance value.
+    fn make_native_bridge_balance_be(
+        amount: <T::NativeCurrency as Currency<T::AccountId>>::Balance,
+    ) -> Result<(), DispatchError> {
+        let current_native_bridge_balance =
+            T::NativeCurrency::total_balance(&T::NativeEvmBridgePot::get());
+
+        if current_native_bridge_balance == Zero::zero() {
+            let imbalance = T::NativeCurrency::withdraw(
+                &T::NativeTreasuryPot::get(),
+                amount,
+                frame_support::traits::WithdrawReasons::TRANSFER,
+                frame_support::traits::ExistenceRequirement::KeepAlive,
+            )?;
+            T::NativeCurrency::resolve_creating(&T::NativeEvmBridgePot::get(), imbalance);
+
+            return Ok(());
+        }
+
+        match current_native_bridge_balance.cmp(&amount) {
+            Ordering::Less => {
+                let imbalance = T::NativeCurrency::withdraw(
+                    &T::NativeTreasuryPot::get(),
+                    amount
+                        .checked_sub(&current_native_bridge_balance)
+                        .ok_or(ArithmeticError::Underflow)?,
+                    frame_support::traits::WithdrawReasons::TRANSFER,
+                    frame_support::traits::ExistenceRequirement::KeepAlive,
+                )?;
+                T::NativeCurrency::resolve_into_existing(&T::NativeEvmBridgePot::get(), imbalance)
+                    .map_err(|_| Error::<T>::NativeEvmBridgePotOverflow)?;
+            }
+            Ordering::Greater => {
+                let imbalance = T::NativeCurrency::withdraw(
+                    &T::NativeEvmBridgePot::get(),
+                    current_native_bridge_balance
+                        .checked_sub(&amount)
+                        .ok_or(ArithmeticError::Underflow)?,
+                    frame_support::traits::WithdrawReasons::TRANSFER,
+                    frame_support::traits::ExistenceRequirement::KeepAlive,
+                )?;
+                T::NativeCurrency::resolve_into_existing(&T::NativeEvmBridgePot::get(), imbalance)
+                    .map_err(|_| Error::<T>::NativeEvmBridgePotOverflow)?;
+            }
+            Ordering::Equal => {}
+        }
+
+        Ok(())
+    }
+
+    /// Make evm bridge balance be provided amount value.
+    ///
+    /// The logic shouldn't change evm swappable balance value.
+    fn make_evm_bridge_balance_be(
+        amount: <T::EvmCurrency as Currency<T::EvmAccountId>>::Balance,
+    ) -> Result<(), DispatchError> {
+        let current_evm_bridge_balance =
+            T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
+
+        match current_evm_bridge_balance.cmp(&amount) {
+            Ordering::Less => {
+                let imbalance = T::EvmCurrency::issue(
+                    amount
+                        .checked_sub(&current_evm_bridge_balance)
+                        .ok_or(ArithmeticError::Underflow)?,
+                );
+                T::EvmCurrency::resolve_creating(&T::EvmNativeBridgePot::get(), imbalance);
+            }
+            Ordering::Greater => {
+                let imbalance = T::EvmCurrency::burn(
+                    current_evm_bridge_balance
+                        .checked_sub(&amount)
+                        .ok_or(ArithmeticError::Underflow)?,
+                );
+                T::EvmCurrency::settle(
+                    &T::EvmNativeBridgePot::get(),
+                    imbalance,
+                    frame_support::traits::WithdrawReasons::RESERVE,
+                    frame_support::traits::ExistenceRequirement::KeepAlive,
+                )
+                .map_err(|_| Error::<T>::NativeEvmBridgePotOverflow)?;
+            }
+            Ordering::Equal => {}
+        }
         Ok(())
     }
 
