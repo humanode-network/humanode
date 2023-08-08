@@ -110,10 +110,6 @@ pub mod pallet {
     pub enum Error<T> {
         /// The currencies are not balanced.
         NotBalanced,
-        /// Native-evm bridge pot balance is too high.
-        NativeEvmBridgePotOverflow,
-        /// Evm-native bridge pot balance is too low.
-        EvmNativeBridgePotUnderflow,
     }
 }
 
@@ -124,7 +120,7 @@ impl<T: Config> Pallet<T> {
         let evm_bridge_balance = T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
         let evm_swappable = evm_total_issuance
             .checked_sub(&evm_bridge_balance)
-            .ok_or(ArithmeticError::Underflow)?;
+            .expect("evm_total_issuance is greater than evm_bridge_balance; qed.");
 
         let native_swap_reserved = T::BalanceConverterEvmToNative::convert(evm_swappable);
         let native_bridge_balance = native_swap_reserved
@@ -136,7 +132,7 @@ impl<T: Config> Pallet<T> {
         let native_total_issuance = T::NativeCurrency::total_issuance();
         let native_swappable = native_total_issuance
             .checked_sub(&native_bridge_balance)
-            .ok_or(ArithmeticError::Underflow)?;
+            .expect("native_total_issuance is greater than native_bridge_balance; qed.");
 
         let evm_swap_reserved = T::BalanceConverterNativeToEvm::convert(native_swappable);
         let evm_bridge_balance = evm_swap_reserved
@@ -154,7 +150,7 @@ impl<T: Config> Pallet<T> {
 
     /// Make native bridge balance be provided amount value.
     ///
-    ///  The logic can change native swappable balance value.
+    /// The logic can change native swappable balance value.
     fn make_native_bridge_balance_be(
         amount: <T::NativeCurrency as Currency<T::AccountId>>::Balance,
     ) -> Result<(), DispatchError> {
@@ -179,24 +175,33 @@ impl<T: Config> Pallet<T> {
                     &T::NativeTreasuryPot::get(),
                     amount
                         .checked_sub(&current_native_bridge_balance)
-                        .ok_or(ArithmeticError::Underflow)?,
+                        .expect("current_native_bridge_balance is less than amount; qed."),
                     frame_support::traits::WithdrawReasons::TRANSFER,
                     frame_support::traits::ExistenceRequirement::KeepAlive,
                 )?;
-                T::NativeCurrency::resolve_into_existing(&T::NativeEvmBridgePot::get(), imbalance)
-                    .map_err(|_| Error::<T>::NativeEvmBridgePotOverflow)?;
+                // We can safely ignore the result as overflow cann't be reached.
+                // current_native_bridge_balance < amount. The resulted balance is equal to amount.
+                let _ = T::NativeCurrency::resolve_into_existing(
+                    &T::NativeEvmBridgePot::get(),
+                    imbalance,
+                );
             }
             Ordering::Greater => {
                 let imbalance = T::NativeCurrency::withdraw(
                     &T::NativeEvmBridgePot::get(),
                     current_native_bridge_balance
                         .checked_sub(&amount)
-                        .ok_or(ArithmeticError::Underflow)?,
+                        .expect("current_native_bridge_balance is greater than amount; qed."),
                     frame_support::traits::WithdrawReasons::TRANSFER,
                     frame_support::traits::ExistenceRequirement::KeepAlive,
                 )?;
-                T::NativeCurrency::resolve_into_existing(&T::NativeEvmBridgePot::get(), imbalance)
-                    .map_err(|_| Error::<T>::NativeEvmBridgePotOverflow)?;
+                // We can safely ignore the result as overflow cann't be reached.
+                // current_native_bridge_balance + current_native_treasury < total_issuance.
+                // So, imbalance + current_native_treasury < total_issuance.
+                let _ = T::NativeCurrency::resolve_into_existing(
+                    &T::NativeTreasuryPot::get(),
+                    imbalance,
+                );
             }
             Ordering::Equal => {}
         }
@@ -213,28 +218,39 @@ impl<T: Config> Pallet<T> {
         let current_evm_bridge_balance =
             T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
 
+        if current_evm_bridge_balance == Zero::zero() {
+            let imbalance = T::EvmCurrency::issue(amount);
+            T::EvmCurrency::resolve_creating(&T::EvmNativeBridgePot::get(), imbalance);
+
+            return Ok(());
+        }
+
         match current_evm_bridge_balance.cmp(&amount) {
             Ordering::Less => {
                 let imbalance = T::EvmCurrency::issue(
                     amount
                         .checked_sub(&current_evm_bridge_balance)
-                        .ok_or(ArithmeticError::Underflow)?,
+                        .expect("current_evm_bridge_balance is less than amount; qed."),
                 );
-                T::EvmCurrency::resolve_creating(&T::EvmNativeBridgePot::get(), imbalance);
+                // We can safely ignore the result as overflow cann't be reached.
+                // current_evm_bridge_balance < amount. The resulted balance is equal to amount.
+                let _ =
+                    T::EvmCurrency::resolve_into_existing(&T::EvmNativeBridgePot::get(), imbalance);
             }
             Ordering::Greater => {
                 let imbalance = T::EvmCurrency::burn(
                     current_evm_bridge_balance
                         .checked_sub(&amount)
-                        .ok_or(ArithmeticError::Underflow)?,
+                        .expect("current_evm_bridge_balance is greater than amount; qed."),
                 );
-                T::EvmCurrency::settle(
+                // We can safely ignore the result as underflow cann't be reached.
+                // current_evm_bridge_balance > amount => imbalance < current_evm_bridge_balance.
+                let _ = T::EvmCurrency::settle(
                     &T::EvmNativeBridgePot::get(),
                     imbalance,
                     frame_support::traits::WithdrawReasons::RESERVE,
                     frame_support::traits::ExistenceRequirement::KeepAlive,
-                )
-                .map_err(|_| Error::<T>::NativeEvmBridgePotOverflow)?;
+                );
             }
             Ordering::Equal => {}
         }
