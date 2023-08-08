@@ -18,12 +18,6 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-pub trait BalanceMaker<AccountId, C: Currency<AccountId>> {
-    const IS_SWAPPABLE_CHANGED: bool;
-
-    fn make_balance(amount: C::Balance) -> Result<(), DispatchError>;
-}
-
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -73,10 +67,10 @@ pub mod pallet {
         >;
 
         type NativeEvmBridgePot: Get<Self::AccountId>;
-        type NativeBridgeBalanceMaker: BalanceMaker<Self::AccountId, Self::NativeCurrency>;
+
+        type NativeTreasuryPot: Get<Self::AccountId>;
 
         type EvmNativeBridgePot: Get<Self::EvmAccountId>;
-        type EvmBridgeBalanceMaker: BalanceMaker<Self::EvmAccountId, Self::EvmCurrency>;
     }
 
     #[pallet::genesis_config]
@@ -104,11 +98,6 @@ pub mod pallet {
 
 impl<T: Config> Pallet<T> {
     pub fn init() -> Result<(), DispatchError> {
-        assert!(
-            !T::EvmBridgeBalanceMaker::IS_SWAPPABLE_CHANGED,
-            "not supported"
-        );
-
         let evm_total_issuance = T::EvmCurrency::total_issuance();
         let evm_swappable = evm_total_issuance;
 
@@ -117,7 +106,13 @@ impl<T: Config> Pallet<T> {
             .checked_add(&T::NativeCurrency::minimum_balance())
             .ok_or(ArithmeticError::Overflow)?;
 
-        T::NativeBridgeBalanceMaker::make_balance(native_bridge_balance)?;
+        let imbalance = T::NativeCurrency::withdraw(
+            &T::NativeTreasuryPot::get(),
+            native_bridge_balance,
+            frame_support::traits::WithdrawReasons::TRANSFER,
+            frame_support::traits::ExistenceRequirement::KeepAlive,
+        )?;
+        T::NativeCurrency::resolve_creating(&T::NativeEvmBridgePot::get(), imbalance);
 
         let native_total_issuance = T::NativeCurrency::total_issuance();
         let native_swappable = native_total_issuance
@@ -129,7 +124,8 @@ impl<T: Config> Pallet<T> {
             .checked_add(&T::EvmCurrency::minimum_balance())
             .ok_or(ArithmeticError::Overflow)?;
 
-        T::EvmBridgeBalanceMaker::make_balance(evm_bridge_balance)?;
+        let imbalance = T::EvmCurrency::issue(evm_bridge_balance);
+        T::EvmCurrency::resolve_creating(&T::EvmNativeBridgePot::get(), imbalance);
 
         assert!(Self::verify_balanced()?, "not balanced");
 

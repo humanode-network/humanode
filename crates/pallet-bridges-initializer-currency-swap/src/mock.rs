@@ -8,14 +8,14 @@ use frame_support::{
     sp_runtime::{
         testing::Header,
         traits::{BlakeTwo256, Identity, IdentityLookup},
-        BuildStorage, DispatchError,
+        BuildStorage,
     },
-    traits::{ConstU32, ConstU64, Currency, StorageMapShim},
+    traits::{ConstU32, ConstU64, StorageMapShim},
     PalletId,
 };
 use sp_core::H256;
 
-use crate::{self as pallet_bridges_init_currency_swap, BalanceMaker};
+use crate::{self as pallet_bridges_init_currency_swap};
 
 pub(crate) const EXISTENTIAL_DEPOSIT_NATIVE: u64 = 10;
 pub(crate) const EXISTENTIAL_DEPOSIT_EVM: u64 = 20;
@@ -137,37 +137,6 @@ parameter_types! {
     pub NativeTreasury: AccountId = 4200;
 }
 
-pub struct NativeBridgeBalanceMaker;
-
-impl BalanceMaker<AccountId, Balances> for NativeBridgeBalanceMaker {
-    const IS_SWAPPABLE_CHANGED: bool = true;
-
-    fn make_balance(amount: Balance) -> Result<(), DispatchError> {
-        let imbalance = Balances::withdraw(
-            &NativeTreasury::get(),
-            amount,
-            frame_support::traits::WithdrawReasons::TRANSFER,
-            frame_support::traits::ExistenceRequirement::KeepAlive,
-        )?;
-
-        Balances::resolve_creating(&SwapBridgeNativeToEvmPotAccountId::get(), imbalance);
-        Ok(())
-    }
-}
-
-pub struct EvmBridgeBalanceMaker;
-
-impl BalanceMaker<AccountId, EvmBalances> for EvmBridgeBalanceMaker {
-    const IS_SWAPPABLE_CHANGED: bool = false;
-
-    fn make_balance(amount: Balance) -> Result<(), DispatchError> {
-        let imbalance = EvmBalances::issue(amount);
-
-        EvmBalances::resolve_creating(&SwapBridgeNativeToEvmPotAccountId::get(), imbalance);
-        Ok(())
-    }
-}
-
 impl pallet_bridges_init_currency_swap::Config for Test {
     type EvmAccountId = EvmAccountId;
     type NativeCurrency = Balances;
@@ -175,9 +144,8 @@ impl pallet_bridges_init_currency_swap::Config for Test {
     type BalanceConverterEvmToNative = Identity;
     type BalanceConverterNativeToEvm = Identity;
     type NativeEvmBridgePot = SwapBridgeNativeToEvmPotAccountId;
-    type NativeBridgeBalanceMaker = NativeBridgeBalanceMaker;
+    type NativeTreasuryPot = NativeTreasury;
     type EvmNativeBridgePot = SwapBridgeEvmToNativePotAccountId;
-    type EvmBridgeBalanceMaker = EvmBridgeBalanceMaker;
 }
 
 // This function basically just builds a genesis storage key/value store according to
