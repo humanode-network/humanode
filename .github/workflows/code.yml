@@ -96,8 +96,11 @@ jobs:
       - name: Build binaries
         run: cargo build --release
 
-      - name: Run e2e tests
+      - name: Run bash e2e tests
         run: utils/e2e-tests/bash/run-tests "target/release/humanode-peer"
+
+      - name: Run ts e2e tests
+        run: utils/e2e-tests/ts/run-tests "target/release/humanode-peer"
 
   embedded-utils:
     strategy:
