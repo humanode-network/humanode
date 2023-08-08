@@ -1,13 +1,18 @@
 {
   "editor.formatOnSave": true,
-  "rust-analyzer.checkOnSave.command": "clippy",
+  "rust-analyzer.check.command": "clippy",
   "[rust]": {
     "editor.rulers": [100]
   },
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
+  // This takes too long when working with substrate, as it build the whole
+  // runtime each time the node host code is built.
   "rust-analyzer.cargo.buildScripts.enable": false,
+  // Uncomment this while working on runtime.
+  // "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
+  // "rust-analyzer.cargo.noDefaultFeatures": true,
   "vitest.commandLine": "yarn utils/e2e-tests/ts test:watch --",
   "vitest.include": [
     "utils/e2e-tests/ts/**/tests/**/*.ts",
