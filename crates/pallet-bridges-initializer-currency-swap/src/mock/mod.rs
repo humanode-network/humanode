@@ -46,3 +46,45 @@ pub fn with_runtime_lock<R>(f: impl FnOnce() -> R) -> R {
     drop(lock);
     res
 }
+
+#[derive(Clone, Copy)]
+pub(crate) struct AccountInfo {
+    pub account: u64,
+    pub balance: u64,
+}
+
+impl From<AccountInfo> for (u64, u64) {
+    fn from(account_info: AccountInfo) -> Self {
+        (account_info.account, account_info.balance)
+    }
+}
+
+pub(crate) const ALICE: AccountInfo = AccountInfo {
+    account: 4201,
+    balance: 20,
+};
+
+pub(crate) const BOB: AccountInfo = AccountInfo {
+    account: 4202,
+    balance: 30,
+};
+
+pub(crate) const LION: AccountInfo = AccountInfo {
+    account: 4211,
+    balance: 200,
+};
+
+pub(crate) const DOG: AccountInfo = AccountInfo {
+    account: 4212,
+    balance: 300,
+};
+
+pub(crate) const CAT: AccountInfo = AccountInfo {
+    account: 4213,
+    balance: 400,
+};
+
+pub(crate) const FISH: AccountInfo = AccountInfo {
+    account: 4214,
+    balance: 500,
+};
