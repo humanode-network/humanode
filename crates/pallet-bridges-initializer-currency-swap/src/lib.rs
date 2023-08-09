@@ -14,6 +14,9 @@ use frame_support::{
 };
 pub use pallet::*;
 use sp_std::cmp::Ordering;
+pub use weights::*;
+
+pub mod weights;
 
 mod upgrade_init;
 
@@ -94,6 +97,9 @@ pub mod pallet {
 
         /// The evm-native bridge pot account.
         type EvmNativeBridgePot: Get<Self::EvmAccountId>;
+
+        /// Weight information for extrinsics in this pallet.
+        type WeightInfo: WeightInfo;
     }
 
     /// The initializer version.
@@ -149,6 +155,20 @@ pub mod pallet {
         #[cfg(feature = "try-runtime")]
         fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
             upgrade_init::post_upgrade::<T>(state)
+        }
+    }
+
+    #[pallet::call]
+    impl<T: Config> Pallet<T> {
+        /// Verify if currencies are balanced.
+        #[pallet::call_index(0)]
+        #[pallet::weight(T::WeightInfo::verify_balanced())]
+        pub fn verify_balanced(_origin: OriginFor<T>) -> DispatchResult {
+            if !Pallet::<T>::is_balanced()? {
+                return Err(Error::<T>::NotBalanced.into());
+            }
+
+            Ok(())
         }
     }
 }

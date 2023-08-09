@@ -131,4 +131,5 @@ impl pallet_bridges_initializer_currency_swap::Config for Test {
     type NativeEvmBridgePot = SwapBridgeNativeToEvmPotAccountId;
     type NativeTreasuryPot = NativeTreasury;
     type EvmNativeBridgePot = SwapBridgeEvmToNativePotAccountId;
+    type WeightInfo = ();
 }
