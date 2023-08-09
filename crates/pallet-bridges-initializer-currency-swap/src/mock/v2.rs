@@ -1,4 +1,4 @@
-//! The mock for the pallet.
+//! The v2 mock that includes bridges initialization logic at runtime.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
@@ -92,7 +92,7 @@ impl pallet_balances::Config<BalancesInstanceEvm> for Test {
     type AccountStore = StorageMapShim<
         pallet_balances::Account<Test, BalancesInstanceEvm>,
         frame_system::Provider<Test>,
-        AccountId,
+        EvmAccountId,
         pallet_balances::AccountData<Balance>,
     >;
     type MaxLocks = ();

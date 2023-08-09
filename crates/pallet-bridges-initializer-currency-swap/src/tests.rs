@@ -1,6 +1,6 @@
-use frame_support::traits::Currency;
+use frame_support::traits::{Currency, OnRuntimeUpgrade};
 
-use crate::mock::*;
+use crate::mock::{v1, v2::*};
 
 #[test]
 fn initialization_bridges_ed_works() {
@@ -184,5 +184,55 @@ fn initialization_fails_treasury_insufficient_balance() {
             ..Default::default()
         };
         new_test_ext_with(config).execute_with(move || {});
+    })
+}
+
+#[test]
+fn runtime_upgrade() {
+    with_runtime_lock(|| {
+        v1::with_runtime_lock(|| {
+            let treasury = (NativeTreasury::get(), 1450);
+            let alice = (4201, 20);
+            let bob = (4203, 30);
+
+            let lion = (4211, 200);
+            let dog = (4212, 300);
+            let cat = (4213, 400);
+            let fish = (4214, 500);
+
+            let config = v1::GenesisConfig {
+                balances: pallet_balances::GenesisConfig {
+                    balances: vec![treasury, alice, bob],
+                },
+                evm_balances: pallet_balances::GenesisConfig {
+                    balances: vec![lion, dog, cat, fish],
+                },
+                ..Default::default()
+            };
+
+            let mut v1_ext = v1::new_test_ext_with(config);
+            v1_ext.execute_with(move || {
+                // Do runtime upgrade hook.
+                AllPalletsWithoutSystem::on_runtime_upgrade();
+
+                // Verify bridges initialization result.
+                assert!(EvmNativeBridgesInitializer::is_balanced().unwrap());
+                assert_eq!(
+                    Balances::total_balance(&SwapBridgeNativeToEvmPot::account_id()),
+                    lion.1 + dog.1 + cat.1 + fish.1 + EXISTENTIAL_DEPOSIT_NATIVE
+                );
+                assert_eq!(
+                    Balances::total_balance(&NativeTreasury::get()),
+                    treasury.1 - (lion.1 + dog.1 + cat.1 + fish.1 + EXISTENTIAL_DEPOSIT_NATIVE)
+                );
+                assert_eq!(
+                    EvmBalances::total_balance(&SwapBridgeEvmToNativePot::account_id(),),
+                    Balances::total_balance(&NativeTreasury::get())
+                        + alice.1
+                        + bob.1
+                        + EXISTENTIAL_DEPOSIT_EVM
+                );
+            });
+        })
     })
 }
