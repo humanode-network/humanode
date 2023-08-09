@@ -26,6 +26,9 @@ mod tests;
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
+/// The current bridges initializer version.
+pub const CURRENT_BRIDGES_INITIALIZER_VERSION: u16 = 1;
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -93,6 +96,11 @@ pub mod pallet {
         type EvmNativeBridgePot: Get<Self::EvmAccountId>;
     }
 
+    /// The initializer version.
+    #[pallet::storage]
+    #[pallet::getter(fn initializer_version)]
+    pub type InitializerVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
+
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config>(PhantomData<T>);
 
@@ -116,6 +124,8 @@ pub mod pallet {
                     Err(err) => panic!("error during bridges initialization: {err:?}",),
                 }
             }
+
+            <InitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
         }
     }
 

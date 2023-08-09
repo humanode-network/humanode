@@ -3,7 +3,10 @@ use frame_support::{
     traits::{Currency, OnRuntimeUpgrade},
 };
 
-use crate::mock::{new_test_ext_with, v0, v1, with_runtime_lock, *};
+use crate::{
+    mock::{new_test_ext_with, v0, v1, with_runtime_lock, *},
+    InitializerVersion, CURRENT_BRIDGES_INITIALIZER_VERSION,
+};
 
 #[test]
 fn initialization_bridges_ed_works() {
@@ -49,6 +52,10 @@ fn initialization_bridges_ed_works() {
             ..Default::default()
         };
         new_test_ext_with(config).execute_with(move || {
+            assert_eq!(
+                <InitializerVersion<v1::Test>>::get(),
+                CURRENT_BRIDGES_INITIALIZER_VERSION
+            );
             assert_eq!(
                 v1::Balances::total_balance(&v1::SwapBridgeNativeToEvmPot::account_id()),
                 LION.balance
@@ -119,6 +126,10 @@ fn initialization_bridges_ed_delta_works() {
         };
         new_test_ext_with(config).execute_with(move || {
             assert_eq!(
+                <InitializerVersion<v1::Test>>::get(),
+                CURRENT_BRIDGES_INITIALIZER_VERSION
+            );
+            assert_eq!(
                 v1::Balances::total_balance(&v1::SwapBridgeNativeToEvmPot::account_id()),
                 LION.balance
                     + DOG.balance
@@ -187,6 +198,10 @@ fn initialization_idempotence() {
         };
         new_test_ext_with(config).execute_with(move || {
             // Verify that bridges initialization has been applied at genesis.
+            assert_eq!(
+                <InitializerVersion<v1::Test>>::get(),
+                CURRENT_BRIDGES_INITIALIZER_VERSION
+            );
             assert!(v1::EvmNativeBridgesInitializer::is_balanced().unwrap());
             assert_eq!(
                 v1::Balances::total_balance(&v1::SwapBridgeNativeToEvmPot::account_id()),
@@ -327,11 +342,16 @@ fn runtime_upgrade() {
                 v1::Balances::total_balance(&v1::SwapBridgeEvmToNativePot::account_id()),
                 0
             );
+            assert_eq!(<InitializerVersion<v1::Test>>::get(), 0);
 
             // Do runtime upgrade hook.
             v1::AllPalletsWithoutSystem::on_runtime_upgrade();
 
             // Verify bridges initialization result.
+            assert_eq!(
+                <InitializerVersion<v1::Test>>::get(),
+                CURRENT_BRIDGES_INITIALIZER_VERSION
+            );
             assert!(v1::EvmNativeBridgesInitializer::is_balanced().unwrap());
             assert_eq!(
                 v1::Balances::total_balance(&v1::SwapBridgeNativeToEvmPot::account_id()),

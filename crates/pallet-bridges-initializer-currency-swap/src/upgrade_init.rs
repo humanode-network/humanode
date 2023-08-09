@@ -2,18 +2,25 @@
 
 use frame_support::pallet_prelude::*;
 
-use crate::{Config, Pallet};
+use crate::{Config, InitializerVersion, Pallet, CURRENT_BRIDGES_INITIALIZER_VERSION};
 
 /// Initialize the bridges pot accounts.
 pub fn on_runtime_upgrade<T: Config>() -> Weight {
-    let is_balanced = Pallet::<T>::is_balanced().unwrap_or_default();
-    let mut weight = T::DbWeight::get().reads(8);
+    let initializer_version = <InitializerVersion<T>>::get();
+    let mut weight = T::DbWeight::get().reads(1);
 
-    if !is_balanced {
-        match Pallet::<T>::initialize() {
-            Ok(w) => weight += w,
-            Err(err) => sp_tracing::error!("error during bridges initialization: {err:?}"),
+    if initializer_version != CURRENT_BRIDGES_INITIALIZER_VERSION {
+        let is_balanced = Pallet::<T>::is_balanced().unwrap_or_default();
+        weight += T::DbWeight::get().reads(8);
+
+        if !is_balanced {
+            match Pallet::<T>::initialize() {
+                Ok(w) => weight += w,
+                Err(err) => sp_tracing::error!("error during bridges initialization: {err:?}"),
+            }
         }
+
+        <InitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
     }
 
     weight
