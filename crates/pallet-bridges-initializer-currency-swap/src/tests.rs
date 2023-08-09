@@ -1,6 +1,6 @@
 use frame_support::traits::{Currency, OnRuntimeUpgrade};
 
-use crate::mock::{new_test_ext_with, v1, v2::*, with_runtime_lock, *};
+use crate::mock::{new_test_ext_with, v1, v2, with_runtime_lock, *};
 
 #[test]
 fn initialization_bridges_ed_works() {
@@ -9,7 +9,7 @@ fn initialization_bridges_ed_works() {
         let alice = (4201, 20);
         let bob = (4203, 30);
         let swap_bridge_native_evm = (
-            SwapBridgeNativeToEvmPot::account_id(),
+            v2::SwapBridgeNativeToEvmPot::account_id(),
             EXISTENTIAL_DEPOSIT_NATIVE,
         );
 
@@ -18,11 +18,11 @@ fn initialization_bridges_ed_works() {
         let cat = (4213, 400);
         let fish = (4214, 500);
         let swap_bridge_evm_native = (
-            SwapBridgeEvmToNativePot::account_id(),
+            v2::SwapBridgeEvmToNativePot::account_id(),
             EXISTENTIAL_DEPOSIT_EVM,
         );
 
-        let config = GenesisConfig {
+        let config = v2::GenesisConfig {
             balances: pallet_balances::GenesisConfig {
                 balances: vec![treasury, alice, bob, swap_bridge_native_evm],
             },
@@ -39,16 +39,16 @@ fn initialization_bridges_ed_works() {
         };
         new_test_ext_with(config).execute_with(move || {
             assert_eq!(
-                Balances::total_balance(&SwapBridgeNativeToEvmPot::account_id()),
+                v2::Balances::total_balance(&v2::SwapBridgeNativeToEvmPot::account_id()),
                 lion.1 + dog.1 + cat.1 + fish.1 + EXISTENTIAL_DEPOSIT_NATIVE
             );
             assert_eq!(
-                Balances::total_balance(&NativeTreasury::get()),
+                v2::Balances::total_balance(&NativeTreasury::get()),
                 treasury.1 - (lion.1 + dog.1 + cat.1 + fish.1)
             );
             assert_eq!(
-                EvmBalances::total_balance(&SwapBridgeEvmToNativePot::account_id(),),
-                Balances::total_balance(&NativeTreasury::get())
+                v2::EvmBalances::total_balance(&v2::SwapBridgeEvmToNativePot::account_id(),),
+                v2::Balances::total_balance(&NativeTreasury::get())
                     + alice.1
                     + bob.1
                     + EXISTENTIAL_DEPOSIT_EVM
@@ -65,7 +65,7 @@ fn initialization_bridges_ed_delta_works() {
         let bob = (4203, 30);
         let native_bridge_delta = 100;
         let swap_bridge_native_evm = (
-            SwapBridgeNativeToEvmPot::account_id(),
+            v2::SwapBridgeNativeToEvmPot::account_id(),
             EXISTENTIAL_DEPOSIT_NATIVE + native_bridge_delta,
         );
 
@@ -75,11 +75,11 @@ fn initialization_bridges_ed_delta_works() {
         let fish = (4214, 500);
         let evm_bridge_delta = 50;
         let swap_bridge_evm_native = (
-            SwapBridgeEvmToNativePot::account_id(),
+            v2::SwapBridgeEvmToNativePot::account_id(),
             EXISTENTIAL_DEPOSIT_EVM + evm_bridge_delta,
         );
 
-        let config = GenesisConfig {
+        let config = v2::GenesisConfig {
             balances: pallet_balances::GenesisConfig {
                 balances: vec![treasury, alice, bob, swap_bridge_native_evm],
             },
@@ -96,16 +96,16 @@ fn initialization_bridges_ed_delta_works() {
         };
         new_test_ext_with(config).execute_with(move || {
             assert_eq!(
-                Balances::total_balance(&SwapBridgeNativeToEvmPot::account_id()),
+                v2::Balances::total_balance(&v2::SwapBridgeNativeToEvmPot::account_id()),
                 lion.1 + dog.1 + cat.1 + fish.1 + EXISTENTIAL_DEPOSIT_NATIVE
             );
             assert_eq!(
-                Balances::total_balance(&NativeTreasury::get()),
+                v2::Balances::total_balance(&NativeTreasury::get()),
                 treasury.1 - (lion.1 + dog.1 + cat.1 + fish.1) + native_bridge_delta
             );
             assert_eq!(
-                EvmBalances::total_balance(&SwapBridgeEvmToNativePot::account_id(),),
-                Balances::total_balance(&NativeTreasury::get())
+                v2::EvmBalances::total_balance(&v2::SwapBridgeEvmToNativePot::account_id(),),
+                v2::Balances::total_balance(&NativeTreasury::get())
                     + alice.1
                     + bob.1
                     + EXISTENTIAL_DEPOSIT_EVM
@@ -120,16 +120,16 @@ fn initialization_fails_overflow() {
     with_runtime_lock(|| {
         let treasury = (NativeTreasury::get(), EXISTENTIAL_DEPOSIT_NATIVE);
         let swap_bridge_native_evm = (
-            SwapBridgeNativeToEvmPot::account_id(),
+            v2::SwapBridgeNativeToEvmPot::account_id(),
             u64::MAX - EXISTENTIAL_DEPOSIT_NATIVE,
         );
 
         let swap_bridge_evm_native = (
-            SwapBridgeEvmToNativePot::account_id(),
+            v2::SwapBridgeEvmToNativePot::account_id(),
             EXISTENTIAL_DEPOSIT_EVM,
         );
 
-        let config = GenesisConfig {
+        let config = v2::GenesisConfig {
             balances: pallet_balances::GenesisConfig {
                 balances: vec![treasury, swap_bridge_native_evm],
             },
@@ -154,7 +154,7 @@ fn initialization_fails_treasury_insufficient_balance() {
     with_runtime_lock(|| {
         let treasury = (NativeTreasury::get(), EXISTENTIAL_DEPOSIT_NATIVE + 10);
         let swap_bridge_native_evm = (
-            SwapBridgeNativeToEvmPot::account_id(),
+            v2::SwapBridgeNativeToEvmPot::account_id(),
             EXISTENTIAL_DEPOSIT_NATIVE,
         );
 
@@ -164,11 +164,11 @@ fn initialization_fails_treasury_insufficient_balance() {
         let fish = (4214, 500);
         let evm_bridge_delta = 50;
         let swap_bridge_evm_native = (
-            SwapBridgeEvmToNativePot::account_id(),
+            v2::SwapBridgeEvmToNativePot::account_id(),
             EXISTENTIAL_DEPOSIT_EVM + evm_bridge_delta,
         );
 
-        let config = GenesisConfig {
+        let config = v2::GenesisConfig {
             balances: pallet_balances::GenesisConfig {
                 balances: vec![treasury, swap_bridge_native_evm],
             },
@@ -199,7 +199,7 @@ fn runtime_upgrade() {
         let cat = (4213, 400);
         let fish = (4214, 500);
 
-        let config = v1::GenesisConfig {
+        let v1_config = v1::GenesisConfig {
             balances: pallet_balances::GenesisConfig {
                 balances: vec![treasury, alice, bob],
             },
@@ -209,24 +209,33 @@ fn runtime_upgrade() {
             ..Default::default()
         };
 
-        let mut v1_ext = new_test_ext_with(config);
-        v1_ext.execute_with(move || {
+        new_test_ext_with(v1_config).execute_with(move || {
+            // Check test preconditions.
+            assert_eq!(
+                v2::Balances::total_balance(&v2::SwapBridgeNativeToEvmPot::account_id()),
+                0
+            );
+            assert_eq!(
+                v2::Balances::total_balance(&v2::SwapBridgeEvmToNativePot::account_id()),
+                0
+            );
+
             // Do runtime upgrade hook.
-            AllPalletsWithoutSystem::on_runtime_upgrade();
+            v2::AllPalletsWithoutSystem::on_runtime_upgrade();
 
             // Verify bridges initialization result.
-            assert!(EvmNativeBridgesInitializer::is_balanced().unwrap());
+            assert!(v2::EvmNativeBridgesInitializer::is_balanced().unwrap());
             assert_eq!(
-                Balances::total_balance(&SwapBridgeNativeToEvmPot::account_id()),
+                v2::Balances::total_balance(&v2::SwapBridgeNativeToEvmPot::account_id()),
                 lion.1 + dog.1 + cat.1 + fish.1 + EXISTENTIAL_DEPOSIT_NATIVE
             );
             assert_eq!(
-                Balances::total_balance(&NativeTreasury::get()),
+                v2::Balances::total_balance(&NativeTreasury::get()),
                 treasury.1 - (lion.1 + dog.1 + cat.1 + fish.1 + EXISTENTIAL_DEPOSIT_NATIVE)
             );
             assert_eq!(
-                EvmBalances::total_balance(&SwapBridgeEvmToNativePot::account_id(),),
-                Balances::total_balance(&NativeTreasury::get())
+                v2::EvmBalances::total_balance(&v2::SwapBridgeEvmToNativePot::account_id(),),
+                v2::Balances::total_balance(&NativeTreasury::get())
                     + alice.1
                     + bob.1
                     + EXISTENTIAL_DEPOSIT_EVM
