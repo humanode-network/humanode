@@ -15,7 +15,7 @@ use frame_support::{
 };
 use sp_core::H256;
 
-use crate::{self as pallet_bridges_init_currency_swap};
+use crate::{self as pallet_bridges_initializer_currency_swap};
 
 pub(crate) const EXISTENTIAL_DEPOSIT_NATIVE: u64 = 10;
 pub(crate) const EXISTENTIAL_DEPOSIT_EVM: u64 = 20;
@@ -38,7 +38,7 @@ frame_support::construct_runtime!(
         EvmBalances: pallet_balances::<Instance2>,
         SwapBridgeNativeToEvmPot: pallet_pot::<Instance1>,
         SwapBridgeEvmToNativePot: pallet_pot::<Instance2>,
-        EvmNativeBridgesInitializer: pallet_bridges_init_currency_swap,
+        EvmNativeBridgesInitializer: pallet_bridges_initializer_currency_swap,
     }
 );
 
@@ -137,7 +137,7 @@ parameter_types! {
     pub NativeTreasury: AccountId = 4200;
 }
 
-impl pallet_bridges_init_currency_swap::Config for Test {
+impl pallet_bridges_initializer_currency_swap::Config for Test {
     type EvmAccountId = EvmAccountId;
     type NativeCurrency = Balances;
     type EvmCurrency = EvmBalances;
