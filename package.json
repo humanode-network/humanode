@@ -1,7 +1,8 @@
 {
   "name": "humanode-tools",
   "workspaces": [
-    "utils/e2e-tests/bash"
+    "utils/e2e-tests/bash",
+    "utils/e2e-tests/ts"
   ],
   "scripts": {
     "prettier:check": "prettier -l .",

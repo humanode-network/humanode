@@ -1,6 +1,6 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
-use crypto_utils::{authority_keys_from_seed, evm_account_from_seed, get_account_id_from_seed};
+use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
 use frame_support::BoundedVec;
 use hex_literal::hex;
 use humanode_runtime::{
@@ -15,7 +15,6 @@ use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::H160;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{app_crypto::sr25519, traits::Verify};
 
@@ -49,8 +48,9 @@ pub fn authority_keys(seed: &str) -> (AccountId, BabeId, GrandpaId, ImOnlineId) 
 }
 
 /// Generate an EVM account from seed.
-pub fn evm_account_id(seed: &str) -> EvmAccountId {
-    H160::from_slice(&evm_account_from_seed(seed))
+pub fn evm_account_id_from_dev_seed(account_index: u32) -> EvmAccountId {
+    let key_data = crypto_utils_evm::KeyData::from_dev_seed(account_index);
+    key_data.account
 }
 
 /// The default Humanode ss58 prefix.
@@ -126,7 +126,10 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
                     account_id("Eve//stash"),
                     account_id("Ferdie//stash"),
                 ],
-                vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")],
+                vec![
+                    evm_account_id_from_dev_seed(0),
+                    evm_account_id_from_dev_seed(1),
+                ],
                 robonode_public_key,
                 vec![account_id("Alice")],
             )
@@ -172,7 +175,10 @@ pub fn development_config() -> Result<ChainSpec, String> {
                     account_id("Alice//stash"),
                     account_id("Bob//stash"),
                 ],
-                vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")],
+                vec![
+                    evm_account_id_from_dev_seed(0),
+                    evm_account_id_from_dev_seed(1),
+                ],
                 robonode_public_key,
                 vec![account_id("Alice")],
             )
@@ -223,7 +229,10 @@ pub fn benchmark_config() -> Result<ChainSpec, String> {
                     account_id("Alice//stash"),
                     account_id("Bob//stash"),
                 ],
-                vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")],
+                vec![
+                    evm_account_id_from_dev_seed(0),
+                    evm_account_id_from_dev_seed(1),
+                ],
                 robonode_public_key,
                 vec![account_id("Alice")],
             )

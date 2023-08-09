@@ -1,0 +1,17 @@
+[package]
+name = "crypto-utils-evm"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+anyhow = "1"
+bip32 = "0.5"
+libsecp256k1 = { version = "0.7", default-features = false }
+sha3 = "0.10"
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+thiserror = "1"
+tiny-bip39 = "1.0"
+
+[dev-dependencies]
+hex-literal = "0.4"
