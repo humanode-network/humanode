@@ -4,8 +4,8 @@ use frame_support::{parameter_types, sp_io, sp_runtime::BuildStorage};
 
 use crate::{self as pallet_bridges_initializer_currency_swap};
 
+pub mod v0;
 pub mod v1;
-pub mod v2;
 
 pub(crate) const EXISTENTIAL_DEPOSIT_NATIVE: u64 = 10;
 pub(crate) const EXISTENTIAL_DEPOSIT_EVM: u64 = 20;

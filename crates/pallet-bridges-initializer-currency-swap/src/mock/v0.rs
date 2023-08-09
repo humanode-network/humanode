@@ -1,16 +1,15 @@
-//! The v2 mock that includes bridges initialization logic at runtime.
+//! The v1 mock that represents just a case with two separate accounts system
+//! without bridges initialization logic at runtime.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
 
 use frame_support::{
-    parameter_types,
     sp_runtime::{
         testing::Header,
-        traits::{BlakeTwo256, Identity, IdentityLookup},
+        traits::{BlakeTwo256, IdentityLookup},
     },
     traits::{ConstU32, ConstU64, StorageMapShim},
-    PalletId,
 };
 use sp_core::H256;
 
@@ -28,9 +27,6 @@ frame_support::construct_runtime!(
         System: frame_system,
         Balances: pallet_balances::<Instance1>,
         EvmBalances: pallet_balances::<Instance2>,
-        SwapBridgeNativeToEvmPot: pallet_pot::<Instance1>,
-        SwapBridgeEvmToNativePot: pallet_pot::<Instance2>,
-        EvmNativeBridgesInitializer: pallet_bridges_initializer_currency_swap,
     }
 );
 
@@ -88,47 +84,4 @@ impl pallet_balances::Config<BalancesInstanceEvm> for Test {
     type MaxReserves = ();
     type ReserveIdentifier = [u8; 8];
     type WeightInfo = ();
-}
-
-parameter_types! {
-    pub const SwapBridgeNativeToEvmPotPalletId: PalletId = PalletId(*b"humanoNE");
-    pub const SwapBridgeEvmToNativePotPalletId: PalletId = PalletId(*b"humanoEN");
-}
-
-type PotInstanceSwapBridgeNativeToEvm = pallet_pot::Instance1;
-type PotInstanceSwapBridgeEvmToNative = pallet_pot::Instance2;
-
-impl pallet_pot::Config<PotInstanceSwapBridgeNativeToEvm> for Test {
-    type RuntimeEvent = RuntimeEvent;
-    type AccountId = AccountId;
-    type PalletId = SwapBridgeNativeToEvmPotPalletId;
-    type Currency = Balances;
-}
-
-impl pallet_pot::Config<PotInstanceSwapBridgeEvmToNative> for Test {
-    type RuntimeEvent = RuntimeEvent;
-    type AccountId = EvmAccountId;
-    type PalletId = SwapBridgeEvmToNativePotPalletId;
-    type Currency = EvmBalances;
-}
-
-parameter_types! {
-    pub const SwapBridgeNativeToEvmPalletId: PalletId = PalletId(*b"hmsb/ne1");
-    pub const SwapBridgeEvmToNativePalletId: PalletId = PalletId(*b"hmsb/en1");
-}
-
-parameter_types! {
-    pub SwapBridgeNativeToEvmPotAccountId: AccountId = SwapBridgeNativeToEvmPot::account_id();
-    pub SwapBridgeEvmToNativePotAccountId: AccountId = SwapBridgeEvmToNativePot::account_id();
-}
-
-impl pallet_bridges_initializer_currency_swap::Config for Test {
-    type EvmAccountId = EvmAccountId;
-    type NativeCurrency = Balances;
-    type EvmCurrency = EvmBalances;
-    type BalanceConverterEvmToNative = Identity;
-    type BalanceConverterNativeToEvm = Identity;
-    type NativeEvmBridgePot = SwapBridgeNativeToEvmPotAccountId;
-    type NativeTreasuryPot = NativeTreasury;
-    type EvmNativeBridgePot = SwapBridgeEvmToNativePotAccountId;
 }
