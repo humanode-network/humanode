@@ -133,12 +133,12 @@ pub mod pallet {
 
         #[cfg(feature = "try-runtime")]
         fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-            upgrade_init::pre_upgrade::<T, I>()
+            upgrade_init::pre_upgrade::<T>()
         }
 
         #[cfg(feature = "try-runtime")]
         fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
-            upgrade_init::post_upgrade::<T, I>()
+            upgrade_init::post_upgrade::<T>(state)
         }
     }
 }
