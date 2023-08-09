@@ -6,10 +6,17 @@ use crate::Pallet;
 
 /// Initialize the bridges pot accounts.
 pub fn on_runtime_upgrade<T: crate::Config>() -> Weight {
-    match Pallet::<T>::initialize() {
-        Ok(weight) => weight,
-        Err(err) => panic!("error during bridges initialization: {err:?}"),
+    let is_balanced = Pallet::<T>::is_balanced().unwrap_or_default();
+    let mut weight = T::DbWeight::get().reads(8);
+
+    if !is_balanced {
+        match Pallet::<T>::initialize() {
+            Ok(w) => weight += w,
+            Err(err) => sp_tracing::error!("error during bridges initialization: {err:?}"),
+        }
     }
+
+    weight
 }
 
 /// Check the state before the bridges initialization.

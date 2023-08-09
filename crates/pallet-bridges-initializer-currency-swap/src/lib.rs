@@ -108,9 +108,13 @@ pub mod pallet {
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig<T> {
         fn build(&self) {
-            match Pallet::<T>::initialize() {
-                Ok(_) => {}
-                Err(err) => panic!("error during bridges initialization: {err:?}",),
+            let is_balanced = Pallet::<T>::is_balanced().unwrap_or_default();
+
+            if !is_balanced {
+                match Pallet::<T>::initialize() {
+                    Ok(_) => {}
+                    Err(err) => panic!("error during bridges initialization: {err:?}",),
+                }
             }
         }
     }
