@@ -4,28 +4,20 @@
 #![allow(clippy::integer_arithmetic)]
 
 use frame_support::{
-    parameter_types, sp_io,
+    parameter_types,
     sp_runtime::{
         testing::Header,
         traits::{BlakeTwo256, Identity, IdentityLookup},
-        BuildStorage,
     },
     traits::{ConstU32, ConstU64, StorageMapShim},
     PalletId,
 };
 use sp_core::H256;
 
-use crate::{self as pallet_bridges_initializer_currency_swap};
-
-pub(crate) const EXISTENTIAL_DEPOSIT_NATIVE: u64 = 10;
-pub(crate) const EXISTENTIAL_DEPOSIT_EVM: u64 = 20;
+use super::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
-
-pub(crate) type AccountId = u64;
-pub(crate) type EvmAccountId = u64;
-type Balance = u64;
 
 frame_support::construct_runtime!(
     pub enum Test where
@@ -68,9 +60,6 @@ impl frame_system::Config for Test {
     type OnSetCode = ();
     type MaxConsumers = ConstU32<16>;
 }
-
-type BalancesInstanceNative = pallet_balances::Instance1;
-type BalancesInstanceEvm = pallet_balances::Instance2;
 
 impl pallet_balances::Config<BalancesInstanceNative> for Test {
     type Balance = u64;
@@ -133,10 +122,6 @@ parameter_types! {
     pub SwapBridgeEvmToNativePotAccountId: AccountId = SwapBridgeEvmToNativePot::account_id();
 }
 
-parameter_types! {
-    pub NativeTreasury: AccountId = 4200;
-}
-
 impl pallet_bridges_initializer_currency_swap::Config for Test {
     type EvmAccountId = EvmAccountId;
     type NativeCurrency = Balances;
@@ -146,29 +131,4 @@ impl pallet_bridges_initializer_currency_swap::Config for Test {
     type NativeEvmBridgePot = SwapBridgeNativeToEvmPotAccountId;
     type NativeTreasuryPot = NativeTreasury;
     type EvmNativeBridgePot = SwapBridgeEvmToNativePotAccountId;
-}
-
-// This function basically just builds a genesis storage key/value store according to
-// our desired mockup.
-pub fn new_test_ext_with(genesis_config: GenesisConfig) -> sp_io::TestExternalities {
-    let storage = genesis_config.build_storage().unwrap();
-    storage.into()
-}
-
-pub fn runtime_lock() -> std::sync::MutexGuard<'static, ()> {
-    static MOCK_RUNTIME_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
-    // Ignore the poisoning for the tests that panic.
-    // We only care about concurrency here, not about the poisoning.
-    match MOCK_RUNTIME_MUTEX.lock() {
-        Ok(guard) => guard,
-        Err(poisoned) => poisoned.into_inner(),
-    }
-}
-
-pub fn with_runtime_lock<R>(f: impl FnOnce() -> R) -> R {
-    let lock = runtime_lock();
-    let res = f();
-    drop(lock);
-    res
 }
