@@ -227,8 +227,16 @@ fn initialization_idempotency() {
             assert_storage_noop!(v1::EvmNativeBridgesInitializer::initialize().unwrap());
             assert_storage_noop!(v1::EvmNativeBridgesInitializer::initialize().unwrap());
 
-            for _ in 0..5 {
+            for attempt in 0..5 {
+                // Send to an existing account.
                 v1::Balances::transfer(Some(ALICE.account).into(), BOB.account, 1).unwrap();
+                // Create a new one account.
+                v1::EvmBalances::transfer(
+                    Some(FISH.account).into(),
+                    5234 + attempt,
+                    EXISTENTIAL_DEPOSIT_EVM,
+                )
+                .unwrap();
 
                 // Initialize bridges one more time after a change.
                 assert_storage_noop!(v1::EvmNativeBridgesInitializer::initialize().unwrap());
