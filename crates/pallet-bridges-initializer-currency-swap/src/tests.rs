@@ -223,6 +223,10 @@ fn initialization_idempotency() {
                     + EXISTENTIAL_DEPOSIT_EVM
             );
 
+            // Do it twice to ensure immediate reinvocation idempotency.
+            assert_storage_noop!(v1::EvmNativeBridgesInitializer::initialize().unwrap());
+            assert_storage_noop!(v1::EvmNativeBridgesInitializer::initialize().unwrap());
+
             for _ in 0..5 {
                 v1::Balances::transfer(Some(ALICE.account).into(), BOB.account, 1).unwrap();
 
