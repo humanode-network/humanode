@@ -154,7 +154,7 @@ fn initialization_bridges_ed_delta_works() {
 }
 
 #[test]
-fn initialization_idempotence() {
+fn initialization_idempotency() {
     with_runtime_lock(|| {
         let treasury = AccountInfo {
             account: NativeTreasury::get(),
@@ -226,7 +226,7 @@ fn initialization_idempotence() {
             for _ in 0..5 {
                 v1::Balances::transfer(Some(ALICE.account).into(), BOB.account, 1).unwrap();
 
-                // Initialize bridges one more time.
+                // Initialize bridges one more time after a change.
                 assert_storage_noop!(v1::EvmNativeBridgesInitializer::initialize().unwrap());
             }
         });

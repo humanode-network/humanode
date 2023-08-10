@@ -1,4 +1,4 @@
-//! The v1 mock that represents just a case with two separate accounts system
+//! The v0 mock that represents just a case with two separate accounts system
 //! without bridges initialization logic at runtime.
 
 // Allow simple integer arithmetic in tests.
