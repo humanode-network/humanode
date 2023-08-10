@@ -16,12 +16,11 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     let authorities = vec![authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
-    let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
+    let pot_accounts = vec![FeesPot::account_id()];
     // Build test genesis.
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: {
-                let pot_accounts = pot_accounts.clone();
                 endowed_accounts
                     .iter()
                     .cloned()
@@ -29,6 +28,10 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     .map(|k| (k, INIT_BALANCE))
                     .chain(
                         [(
+                            TreasuryPot::account_id(),
+                            10 * INIT_BALANCE
+                        ),
+                        (
                             TokenClaimsPot::account_id(),
                             <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         ),
@@ -70,12 +73,9 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     vec![(
                         EvmToNativeSwapBridgePot::account_id(),
                         fp_evm::GenesisAccount {
-                            balance: (INIT_BALANCE * (endowed_accounts.len() + pot_accounts.len()) as u128 +
-                            // Own bridge pot minimum balance.
-                            <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance() +
-                            // `TokenClaimsPot` minimum balance.
-                            <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-                        )
+                            balance: <EvmBalances as frame_support::traits::Currency<
+                                EvmAccountId,
+                            >>::minimum_balance()
                             .into(),
                             code: Default::default(),
                             nonce: Default::default(),
