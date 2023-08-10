@@ -351,7 +351,7 @@ impl<T: Config> Pallet<T> {
     }
 
     /// Verify currencies balanced requirements.
-    fn is_balanced() -> Result<bool, ArithmeticError> {
+    pub fn is_balanced() -> Result<bool, ArithmeticError> {
         let is_balanced_native_evm = swap_reserved_balance::<
             T::AccountId,
             T::NativeCurrency,
