@@ -814,6 +814,22 @@ impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceEvmToNativeSwap> for 
     type GenesisVerifier = currency_swap::GenesisVerifier;
 }
 
+parameter_types! {
+    pub TreasuryPotAccountId: AccountId = TreasuryPot::account_id();
+}
+
+impl pallet_balanced_currency_swap_bridges_initializer::Config for Runtime {
+    type EvmAccountId = EvmAccountId;
+    type NativeCurrency = Balances;
+    type EvmCurrency = EvmBalances;
+    type BalanceConverterEvmToNative = Identity;
+    type BalanceConverterNativeToEvm = Identity;
+    type NativeEvmBridgePot = NativeToEvmSwapBridgePotAccountId;
+    type NativeTreasuryPot = TreasuryPotAccountId;
+    type EvmNativeBridgePot = EvmToNativeSwapBridgePotAccountId;
+    type WeightInfo = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -859,8 +875,9 @@ construct_runtime!(
         NativeToEvmSwapBridgePot: pallet_pot::<Instance4> = 33,
         EvmToNativeSwapBridgePot: pallet_pot::<Instance5> = 34,
         CurrencySwap: pallet_currency_swap = 35,
-        NativeToEvmSwapBridge: pallet_bridge_pot_currency_swap::<Instance1> = 36,
-        EvmToNativeSwapBridge: pallet_bridge_pot_currency_swap::<Instance2> = 37,
+        BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
+        NativeToEvmSwapBridge: pallet_bridge_pot_currency_swap::<Instance1> = 37,
+        EvmToNativeSwapBridge: pallet_bridge_pot_currency_swap::<Instance2> = 38,
     }
 );
 

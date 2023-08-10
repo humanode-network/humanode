@@ -118,6 +118,7 @@ fn works() {
         "evmToNativeSwapBridgePot": {
             "initialState": "Initialized"
         },
+        "balancedCurrencySwapBridgesInitializer": null,
         "nativeToEvmSwapBridge": null,
         "evmToNativeSwapBridge": null
     }"#;
@@ -139,7 +140,7 @@ fn unknown_field() {
         `feesPot`, `tokenClaimsPot`, `transactionPayment`, `session`, `chainProperties`, \
         `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, `dynamicFee`, `baseFee`, \
         `imOnline`, `evmAccountsMapping`, `tokenClaims`, `nativeToEvmSwapBridgePot`, \
-        `evmToNativeSwapBridgePot`, `nativeToEvmSwapBridge`, `evmToNativeSwapBridge` at line 1 column 6"
+        `evmToNativeSwapBridgePot`, `balancedCurrencySwapBridgesInitializer`, `nativeToEvmSwapBridge`, `evmToNativeSwapBridge` at line 1 column 6"
     );
 }
 

@@ -115,6 +115,19 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     storage.into()
 }
 
+/// This test verifies that bridges initialization has been applied at genesis.
+#[test]
+fn currencies_are_balanced() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        assert_eq!(
+            BalancedCurrencySwapBridgesInitializer::initializer_version(),
+            pallet_balanced_currency_swap_bridges_initializer::CURRENT_BRIDGES_INITIALIZER_VERSION
+        );
+        assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
+    })
+}
+
 /// This test verifies that swap native call works in the happy path.
 #[test]
 fn currency_swap_native_call_works() {
@@ -136,6 +149,7 @@ fn currency_swap_native_call_works() {
         ));
 
         // Assert state changes.
+        assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
         assert_eq!(
             Balances::total_balance(&account_id("Alice")),
             alice_balance_before - swap_balance
@@ -204,6 +218,7 @@ fn currency_swap_precompile_call_works() {
         assert_eq!(execinfo.logs, Vec::new());
 
         // Assert state changes.
+        assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
         assert_eq!(
             Balances::total_balance(&FeesPot::account_id()),
             fees_pot_balance_before + expected_fee
