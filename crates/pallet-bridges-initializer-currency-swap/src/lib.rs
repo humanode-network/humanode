@@ -301,10 +301,14 @@ impl<T: Config> Pallet<T> {
 
     /// Make evm bridge balance be provided amount value.
     ///
-    /// The logic shouldn't change evm swappable balance value.
+    /// This function MINTS/BURNS the tokens as it needs to balance out the currencies and bridge pots.
+    /// The logic shouldn't change evm swappable balance value, but it can change the total evm issuance.
     fn make_evm_bridge_balance_be(
         amount: <T::EvmCurrency as Currency<T::EvmAccountId>>::Balance,
     ) -> Result<Weight, DispatchError> {
+        let evm_swappable_balance_before =
+            swappable_balance::<T::EvmAccountId, T::EvmCurrency, T::EvmNativeBridgePot>()?;
+
         let current_evm_bridge_balance =
             T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
         let mut weight = T::DbWeight::get().reads(1);
@@ -354,6 +358,13 @@ impl<T: Config> Pallet<T> {
             }
             Ordering::Equal => {}
         }
+
+        debug_assert!(
+            evm_swappable_balance_before
+                == swappable_balance::<T::EvmAccountId, T::EvmCurrency, T::EvmNativeBridgePot>()?,
+            "we must ensure that the swappable balance isn't altered"
+        );
+
         Ok(weight)
     }
 
