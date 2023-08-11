@@ -223,10 +223,12 @@ impl<T: Config> Pallet<T> {
 
     /// Make native bridge balance be provided amount value.
     ///
-    /// The logic can change native swappable balance value.
+    /// This function TRANSFERS the tokens to/from the treasury to balance the bridge pots.
+    /// It will not change the total issuance, but it can change the native swappable balance value.
     fn make_native_bridge_balance_be(
         amount: <T::NativeCurrency as Currency<T::AccountId>>::Balance,
     ) -> Result<Weight, DispatchError> {
+        let native_total_issuance_before = T::NativeCurrency::total_issuance();
         let current_native_bridge_balance =
             T::NativeCurrency::total_balance(&T::NativeEvmBridgePot::get());
         let mut weight = T::DbWeight::get().reads(1);
@@ -288,6 +290,11 @@ impl<T: Config> Pallet<T> {
             }
             Ordering::Equal => {}
         }
+
+        debug_assert!(
+            native_total_issuance_before == T::NativeCurrency::total_issuance(),
+            "we must ensure that the total issuance isn't altered"
+        );
 
         Ok(weight)
     }
