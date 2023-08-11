@@ -293,7 +293,7 @@ impl<T: Config> Pallet<T> {
 
         debug_assert!(
             native_total_issuance_before == T::NativeCurrency::total_issuance(),
-            "we must ensure that the total issuance isn't altered"
+            "we must ensure that the native total issuance isn't altered"
         );
 
         Ok(weight)
@@ -362,7 +362,7 @@ impl<T: Config> Pallet<T> {
         debug_assert!(
             evm_swappable_balance_before
                 == swappable_balance::<T::EvmAccountId, T::EvmCurrency, T::EvmNativeBridgePot>()?,
-            "we must ensure that the swappable balance isn't altered"
+            "we must ensure that the evm swappable balance isn't altered"
         );
 
         Ok(weight)
