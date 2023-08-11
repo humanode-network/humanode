@@ -258,7 +258,7 @@ impl<T: Config> Pallet<T> {
                 )?;
                 weight += T::DbWeight::get().writes(1);
 
-                // We can safely ignore the result as overflow cann't be reached.
+                // We can safely ignore the result as overflow can't be reached.
                 // current_native_bridge_balance < amount. The resulted balance is equal to amount.
                 let _ = T::NativeCurrency::resolve_into_existing(
                     &T::NativeEvmBridgePot::get(),
@@ -277,7 +277,7 @@ impl<T: Config> Pallet<T> {
                 )?;
                 weight += T::DbWeight::get().writes(1);
 
-                // We can safely ignore the result as overflow cann't be reached.
+                // We can safely ignore the result as overflow can't be reached.
                 // current_native_bridge_balance + current_native_treasury < total_issuance.
                 // So, imbalance + current_native_treasury < total_issuance.
                 let _ = T::NativeCurrency::resolve_into_existing(
@@ -321,7 +321,7 @@ impl<T: Config> Pallet<T> {
                 );
                 weight += T::DbWeight::get().writes(1);
 
-                // We can safely ignore the result as overflow cann't be reached.
+                // We can safely ignore the result as overflow can't be reached.
                 // current_evm_bridge_balance < amount. The resulted balance is equal to amount.
                 let _ =
                     T::EvmCurrency::resolve_into_existing(&T::EvmNativeBridgePot::get(), imbalance);
@@ -335,7 +335,7 @@ impl<T: Config> Pallet<T> {
                 );
                 weight += T::DbWeight::get().writes(1);
 
-                // We can safely ignore the result as underflow cann't be reached.
+                // We can safely ignore the result as underflow can't be reached.
                 // current_evm_bridge_balance > amount => imbalance < current_evm_bridge_balance.
                 let _ = T::EvmCurrency::settle(
                     &T::EvmNativeBridgePot::get(),
