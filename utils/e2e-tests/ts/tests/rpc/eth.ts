@@ -45,8 +45,6 @@ describe("eth rpc", () => {
         const txReceipt = await tx.wait(1, 12000);
         const fee = txReceipt!.fee;
 
-        console.log({ actual: fee, expected: expectedFee, tolerance });
-
         expect(fee).toBeWithin(expectedFee, { tolerance });
       });
     });
