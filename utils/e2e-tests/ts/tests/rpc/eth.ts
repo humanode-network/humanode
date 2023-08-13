@@ -3,6 +3,7 @@ import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/eth";
 import { cleanupStack } from "../../lib/cleanup";
 import * as ethers from "ethers";
+import "../../lib/expect";
 
 describe("eth rpc", () => {
   let node: RunNodeState;
@@ -46,9 +47,7 @@ describe("eth rpc", () => {
 
         console.log({ actual: fee, expected: expectedFee, tolerance });
 
-        expect(
-          fee > expectedFee - tolerance && fee < expectedFee + tolerance
-        ).toStrictEqual(true);
+        expect(fee).toBeWithin(expectedFee, { tolerance });
       });
     });
   });
