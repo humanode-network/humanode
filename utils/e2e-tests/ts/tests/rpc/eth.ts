@@ -34,7 +34,7 @@ describe("eth rpc", () => {
       const expectedFee = ethers.parseEther("0.00004"); // TODO: adjust this to a real value of 0.2
       const tolerance = expectedFee / 10n;
 
-      it("changes the balance within the tolerance around the expected cost", async () => {
+      it("is within the tolerance around the expected cost", async () => {
         const [alice, bob] = devSigners;
 
         const tx = await alice.sendTransaction({
