@@ -107,6 +107,18 @@ pub mod pallet {
     #[pallet::getter(fn initializer_version)]
     pub type InitializerVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
 
+    /// The native-evm bridge minimum balance value.
+    #[pallet::storage]
+    #[pallet::getter(fn native_evm_bridge_minimum_balance)]
+    pub type NativeEvmBridgeMinimumBalance<T: Config> =
+        StorageValue<_, <T::NativeCurrency as Currency<T::AccountId>>::Balance, ValueQuery>;
+
+    /// The evm-native bridge minimum balance value.
+    #[pallet::storage]
+    #[pallet::getter(fn evm_native_bridge_minimum_balance)]
+    pub type EvmNativeBridgeMinimumBalance<T: Config> =
+        StorageValue<_, <T::EvmCurrency as Currency<T::EvmAccountId>>::Balance, ValueQuery>;
+
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config>(PhantomData<T>);
 
@@ -179,6 +191,8 @@ impl<T: Config> Pallet<T> {
         let mut weight = T::DbWeight::get().reads(0);
 
         with_storage_layer(move || {
+            weight += Self::init_bridges_miminum_balances()?;
+
             let evm_total_issuance = T::EvmCurrency::total_issuance();
             let evm_bridge_balance = T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
             weight += T::DbWeight::get().reads(2);
@@ -189,7 +203,7 @@ impl<T: Config> Pallet<T> {
 
             let native_swap_reserved = T::BalanceConverterEvmToNative::convert(evm_swappable);
             let native_bridge_balance = native_swap_reserved
-                .checked_add(&T::NativeCurrency::minimum_balance())
+                .checked_add(&<NativeEvmBridgeMinimumBalance<T>>::get())
                 .ok_or(ArithmeticError::Overflow)?;
             weight += T::DbWeight::get().reads(1);
 
@@ -204,7 +218,7 @@ impl<T: Config> Pallet<T> {
 
             let evm_swap_reserved = T::BalanceConverterNativeToEvm::convert(native_swappable);
             let evm_bridge_balance = evm_swap_reserved
-                .checked_add(&T::EvmCurrency::minimum_balance())
+                .checked_add(&<EvmNativeBridgeMinimumBalance<T>>::get())
                 .ok_or(ArithmeticError::Overflow)?;
             weight += T::DbWeight::get().reads(1);
 
@@ -215,8 +229,43 @@ impl<T: Config> Pallet<T> {
             }
             weight += T::DbWeight::get().reads(8);
 
+            debug_assert!(
+                T::NativeCurrency::total_issuance()
+                    == T::BalanceConverterEvmToNative::convert(T::EvmCurrency::total_issuance()),
+                "we must ensure that the native and evm total issuances are proportionally equal"
+            );
+
             Ok(())
         })?;
+
+        Ok(weight)
+    }
+
+    /// A helper function to init bridges minimum balances be proportionally equal.
+    fn init_bridges_miminum_balances() -> Result<Weight, DispatchError> {
+        let native_ed = T::NativeCurrency::minimum_balance();
+        let evm_ed = T::EvmCurrency::minimum_balance();
+        let mut weight = T::DbWeight::get().reads(2);
+
+        match native_ed.cmp(&T::BalanceConverterEvmToNative::convert(evm_ed)) {
+            Ordering::Greater => {
+                <NativeEvmBridgeMinimumBalance<T>>::put(native_ed);
+                <EvmNativeBridgeMinimumBalance<T>>::put(T::BalanceConverterNativeToEvm::convert(
+                    native_ed,
+                ));
+            }
+            Ordering::Less => {
+                <EvmNativeBridgeMinimumBalance<T>>::put(evm_ed);
+                <NativeEvmBridgeMinimumBalance<T>>::put(T::BalanceConverterEvmToNative::convert(
+                    evm_ed,
+                ));
+            }
+            Ordering::Equal => {
+                <NativeEvmBridgeMinimumBalance<T>>::put(native_ed);
+                <EvmNativeBridgeMinimumBalance<T>>::put(evm_ed);
+            }
+        };
+        weight += T::DbWeight::get().writes(2);
 
         Ok(weight)
     }
@@ -370,20 +419,23 @@ impl<T: Config> Pallet<T> {
 
     /// Verify currencies balanced requirements.
     pub fn is_balanced() -> Result<bool, ArithmeticError> {
-        let is_balanced_native_evm = swap_reserved_balance::<
-            T::AccountId,
-            T::NativeCurrency,
-            T::NativeEvmBridgePot,
-        >()? == T::BalanceConverterEvmToNative::convert(
-            swappable_balance::<T::EvmAccountId, T::EvmCurrency, T::EvmNativeBridgePot>()?,
-        );
+        let is_balanced_native_evm =
+            swap_reserved_balance::<T::AccountId, T::NativeCurrency, T::NativeEvmBridgePot>(
+                <NativeEvmBridgeMinimumBalance<T>>::get(),
+            )? == T::BalanceConverterEvmToNative::convert(swappable_balance::<
+                T::EvmAccountId,
+                T::EvmCurrency,
+                T::EvmNativeBridgePot,
+            >()?);
 
         let is_balanced_evm_native =
             T::BalanceConverterNativeToEvm::convert(swap_reserved_balance::<
                 T::AccountId,
                 T::NativeCurrency,
                 T::NativeEvmBridgePot,
-            >()?)
+            >(<NativeEvmBridgeMinimumBalance<
+                T,
+            >>::get())?)
                 == swappable_balance::<T::EvmAccountId, T::EvmCurrency, T::EvmNativeBridgePot>()?;
 
         Ok(is_balanced_native_evm && is_balanced_evm_native)
@@ -405,11 +457,13 @@ fn swappable_balance<AccountId, C: Currency<AccountId>, B: Get<AccountId>>(
 
 /// A helper function to calculate swap reserved balance.
 fn swap_reserved_balance<AccountId, C: Currency<AccountId>, B: Get<AccountId>>(
+    bridge_minimum_balance: C::Balance,
 ) -> Result<C::Balance, ArithmeticError> {
     let bridge = C::total_balance(&B::get());
-    let ed = C::minimum_balance();
 
-    let reserved = bridge.checked_sub(&ed).ok_or(ArithmeticError::Underflow)?;
+    let reserved = bridge
+        .checked_sub(&bridge_minimum_balance)
+        .ok_or(ArithmeticError::Underflow)?;
 
     Ok(reserved)
 }
