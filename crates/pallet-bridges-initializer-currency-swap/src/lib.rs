@@ -428,15 +428,14 @@ impl<T: Config> Pallet<T> {
                 T::EvmNativeBridgePot,
             >()?);
 
-        let is_balanced_evm_native =
-            T::BalanceConverterNativeToEvm::convert(swap_reserved_balance::<
-                T::AccountId,
-                T::NativeCurrency,
-                T::NativeEvmBridgePot,
-            >(<NativeEvmBridgeMinimumBalance<
-                T,
-            >>::get())?)
-                == swappable_balance::<T::EvmAccountId, T::EvmCurrency, T::EvmNativeBridgePot>()?;
+        let is_balanced_evm_native = T::BalanceConverterNativeToEvm::convert(swappable_balance::<
+            T::AccountId,
+            T::NativeCurrency,
+            T::NativeEvmBridgePot,
+        >()?)
+            == swap_reserved_balance::<T::EvmAccountId, T::EvmCurrency, T::EvmNativeBridgePot>(
+                <EvmNativeBridgeMinimumBalance<T>>::get(),
+            )?;
 
         Ok(is_balanced_native_evm && is_balanced_evm_native)
     }
