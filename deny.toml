@@ -29,6 +29,8 @@ ignore = [
   # we update to the substrate that includes the bumped dependency.
   # TODO(#606): tracking issue for this ignore clause.
   "RUSTSEC-2020-0071",
+  # TODO(#723): update the ed25519-dalek 1 internal dependency tp 2.0.0+
+  "RUSTSEC-2022-0093",
 ]
 
 [licenses]
