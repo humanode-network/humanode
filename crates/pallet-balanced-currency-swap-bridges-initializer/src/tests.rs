@@ -8,6 +8,8 @@ use crate::{
     swappable_balance, InitializerVersion, CURRENT_BRIDGES_INITIALIZER_VERSION,
 };
 
+/// This test verifies that balanced bridges initialization works in case bridge pot accounts
+/// have been created with existential deposit balance values at genesis.
 #[test]
 fn initialization_bridges_ed_works() {
     with_runtime_lock(|| {
@@ -82,6 +84,8 @@ fn initialization_bridges_ed_works() {
     })
 }
 
+/// This test verifies that balanced bridges initialization works in case bridge pot accounts
+/// have been created with existential deposit balance values plus some deltas at genesis.
 #[test]
 fn initialization_bridges_ed_delta_works() {
     with_runtime_lock(|| {
@@ -158,6 +162,8 @@ fn initialization_bridges_ed_delta_works() {
     })
 }
 
+/// This test verifies idempotency of balanced bridges initialization algorithm by changing
+/// balances state and applying initialization operation several times.
 #[test]
 fn initialization_idempotency() {
     with_runtime_lock(|| {
@@ -253,6 +259,8 @@ fn initialization_idempotency() {
     })
 }
 
+/// This test verifies that balanced bridges initialization works in case genesis configuration
+/// leads to 0 evm swappable balance.
 #[test]
 fn initialization_evm_swappable_zero() {
     with_runtime_lock(|| {
@@ -308,6 +316,8 @@ fn initialization_evm_swappable_zero() {
     })
 }
 
+/// This test verifies that balanced bridges initialization fails in case genesis configuration
+/// contains native treasury account with insufficient balance to properly perform initialization.
 #[test]
 #[should_panic = "error during bridges initialization: Module(ModuleError { index: 1, error: [2, 0, 0, 0], message: Some(\"InsufficientBalance\") })"]
 fn initialization_fails_treasury_insufficient_balance() {
@@ -352,6 +362,11 @@ fn initialization_fails_treasury_insufficient_balance() {
     })
 }
 
+/// This test simulates runtime upgrade operation by using different mocked runtime versions and
+/// verifies that balanced bridges initialization works as expected for `on_runtime_upgrade` call.
+///
+/// - v0: just contains native and evm balances.
+/// - v1: v0 with balanced bridges currency swap initializer pallet.
 #[test]
 fn runtime_upgrade() {
     with_runtime_lock(|| {
