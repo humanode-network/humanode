@@ -106,5 +106,11 @@ pub mod evm_fees {
     /// Ref: <https://ethereum.org/en/developers/docs/gas/#block-size>
     pub const BLOCK_GAS_LIMIT: u64 = 15_000_000;
 
-    pub const FEE_PER_GAS: u128 = 1_000_000_000u128;
+    /// The amount of fee per gas unit.
+    /// Comes from the following rationale:
+    /// - a simple transfer costs 21000 gas
+    /// - we want the cost of this transfer to be around ~0.2 HMND
+    /// - so we must charge about 0.2 * 10^18 / 21000 fee per a unit of gas
+    /// The value below is a nice round number that fits the requirements outlined above.
+    pub const FEE_PER_GAS: u128 = 10_000_000_000_000;
 }
