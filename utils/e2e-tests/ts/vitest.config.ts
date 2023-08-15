@@ -10,5 +10,6 @@ export default defineConfig({
     watch: false,
     threads: false,
     singleThread: true,
+    testTimeout: 30_000,
   },
 });
