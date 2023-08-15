@@ -5,7 +5,7 @@ use frame_support::{
 
 use crate::{
     mock::{new_test_ext_with, v0, v1, with_runtime_lock, *},
-    InitializerVersion, CURRENT_BRIDGES_INITIALIZER_VERSION,
+    swappable_balance, InitializerVersion, CURRENT_BRIDGES_INITIALIZER_VERSION,
 };
 
 #[test]
@@ -249,6 +249,61 @@ fn initialization_idempotency() {
                 // Initialize bridges one more time after a change.
                 assert_storage_noop!(v1::EvmNativeBridgesInitializer::initialize().unwrap());
             }
+        });
+    })
+}
+
+#[test]
+fn initialization_evm_swappable_zero() {
+    with_runtime_lock(|| {
+        let treasury = AccountInfo {
+            account: NativeTreasury::get(),
+            balance: EXISTENTIAL_DEPOSIT_NATIVE,
+        };
+        let swap_bridge_native_evm = AccountInfo {
+            account: v1::SwapBridgeNativeToEvmPot::account_id(),
+            balance: u64::MAX - EXISTENTIAL_DEPOSIT_NATIVE,
+        };
+
+        let swap_bridge_evm_native = AccountInfo {
+            account: v1::SwapBridgeEvmToNativePot::account_id(),
+            balance: EXISTENTIAL_DEPOSIT_EVM,
+        };
+
+        let config = v1::GenesisConfig {
+            balances: pallet_balances::GenesisConfig {
+                balances: vec![treasury.into(), swap_bridge_native_evm.into()],
+            },
+            evm_balances: pallet_balances::GenesisConfig {
+                balances: vec![swap_bridge_evm_native.into()],
+            },
+            swap_bridge_native_to_evm_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            swap_bridge_evm_to_native_pot: pallet_pot::GenesisConfig {
+                initial_state: pallet_pot::InitialState::Initialized,
+            },
+            ..Default::default()
+        };
+        new_test_ext_with(config).execute_with(move || {
+            assert_eq!(
+                swappable_balance::<
+                    EvmAccountId,
+                    v1::EvmBalances,
+                    v1::SwapBridgeEvmToNativePotAccountId,
+                >()
+                .unwrap(),
+                0
+            );
+            assert_eq!(
+                swappable_balance::<
+                    AccountId,
+                    v1::Balances,
+                    v1::SwapBridgeNativeToEvmPotAccountId,
+                >()
+                .unwrap(),
+                EXISTENTIAL_DEPOSIT_NATIVE + ((u64::MAX - EXISTENTIAL_DEPOSIT_NATIVE) - EXISTENTIAL_DEPOSIT_EVM)
+            );
         });
     })
 }
