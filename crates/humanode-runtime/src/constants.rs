@@ -98,3 +98,10 @@ pub mod fees {
     /// The multiplier to get the fee from length.
     pub const LENGTH_TO_FEE: Balance = 1;
 }
+
+/// EVM fees related constants.
+pub mod evm_fees {
+    /// The multiplier to get the base (in a sense this is what is used as a base for elasticily)
+    /// fee per gas.
+    pub const BASE_FEE_PER_GAS: u128 = 1_000_000_000u128;
+}

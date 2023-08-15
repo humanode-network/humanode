@@ -711,7 +711,7 @@ impl pallet_dynamic_fee::Config for Runtime {
 }
 
 parameter_types! {
-    pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
+    pub DefaultBaseFeePerGas: U256 = U256::from(constants::evm_fees::BASE_FEE_PER_GAS);
     pub DefaultElasticity: Permill = Permill::from_parts(0);
 }
 
