@@ -407,8 +407,13 @@ mod tests {
 
     use super::*;
 
-    fn assert_genesis_config(chain_spec_result: Result<ChainSpec, String>) {
-        let storage = chain_spec_result.unwrap().build_storage().unwrap();
+    fn assert_genesis_config(
+        chain_spec_result: Result<ChainSpec, String>,
+    ) -> sp_core::storage::Storage {
+        chain_spec_result.unwrap().build_storage().unwrap()
+    }
+
+    fn assert_balanced_currency_swap(storage: sp_core::storage::Storage) {
         Into::<sp_io::TestExternalities>::into(storage).execute_with(move || {
             assert!(
                 humanode_runtime::BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap()
@@ -418,17 +423,20 @@ mod tests {
 
     #[test]
     fn local_testnet_config_works() {
-        assert_genesis_config(local_testnet_config());
+        let storage = assert_genesis_config(local_testnet_config());
+        assert_balanced_currency_swap(storage);
     }
 
     #[test]
     fn development_config_works() {
-        assert_genesis_config(development_config());
+        let storage = assert_genesis_config(development_config());
+        assert_balanced_currency_swap(storage);
     }
 
     #[test]
     fn benchmark_config_works() {
-        assert_genesis_config(benchmark_config());
+        let storage = assert_genesis_config(benchmark_config());
+        assert_balanced_currency_swap(storage);
     }
 
     #[test]
