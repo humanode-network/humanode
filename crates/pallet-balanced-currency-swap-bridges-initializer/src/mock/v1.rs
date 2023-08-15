@@ -30,7 +30,7 @@ frame_support::construct_runtime!(
         EvmBalances: pallet_balances::<Instance2>,
         SwapBridgeNativeToEvmPot: pallet_pot::<Instance1>,
         SwapBridgeEvmToNativePot: pallet_pot::<Instance2>,
-        EvmNativeBridgesInitializer: pallet_bridges_initializer_currency_swap,
+        EvmNativeBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer,
     }
 );
 
@@ -122,7 +122,7 @@ parameter_types! {
     pub SwapBridgeEvmToNativePotAccountId: AccountId = SwapBridgeEvmToNativePot::account_id();
 }
 
-impl pallet_bridges_initializer_currency_swap::Config for Test {
+impl pallet_balanced_currency_swap_bridges_initializer::Config for Test {
     type EvmAccountId = EvmAccountId;
     type NativeCurrency = Balances;
     type EvmCurrency = EvmBalances;

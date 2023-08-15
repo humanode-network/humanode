@@ -2,7 +2,7 @@
 
 use frame_support::{parameter_types, sp_io, sp_runtime::BuildStorage};
 
-use crate::{self as pallet_bridges_initializer_currency_swap};
+use crate::{self as pallet_balanced_currency_swap_bridges_initializer};
 
 pub mod v0;
 pub mod v1;
