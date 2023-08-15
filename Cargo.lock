@@ -5831,6 +5831,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-balanced-currency-swap-bridges-initializer"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-pot",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-std",
+ "sp-tracing",
+]
+
+[[package]]
 name = "pallet-balances"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.38#9091bbcf8c8ae3524d9c46f50ab855044dcc51a2"
@@ -5910,21 +5925,6 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-std",
-]
-
-[[package]]
-name = "pallet-bridges-initializer-currency-swap"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-balances",
- "pallet-pot",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-std",
- "sp-tracing",
 ]
 
 [[package]]

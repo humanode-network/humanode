@@ -1,5 +1,5 @@
 [package]
-name = "pallet-bridges-initializer-currency-swap"
+name = "pallet-balanced-currency-swap-bridges-initializer"
 version = "0.1.0"
 edition = "2021"
 publish = false
