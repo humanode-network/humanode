@@ -3590,7 +3590,6 @@ dependencies = [
  "ngrok-api",
  "pallet-balances",
  "pallet-bioauth",
- "pallet-dynamic-fee",
  "pallet-im-online",
  "pallet-token-claims",
  "pallet-transaction-payment",
