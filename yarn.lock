@@ -762,7 +762,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/expect@npm:0.34.1":
+"@vitest/expect@npm:0.34.1, @vitest/expect@npm:^0.34.1":
   version: 0.34.1
   resolution: "@vitest/expect@npm:0.34.1"
   dependencies:
@@ -1549,6 +1549,7 @@ __metadata:
   dependencies:
     "@polkadot/api": ^10.9.1
     "@types/node": 16.18.39
+    "@vitest/expect": ^0.34.1
     axios: ^1.4.0
     ethers: ^6.7.0
     typescript: ^5.1.6
