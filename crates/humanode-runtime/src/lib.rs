@@ -630,17 +630,19 @@ impl pallet_offences::Config for Runtime {
     type OnOffenceHandler = OffenceSlasher;
 }
 
-const BLOCK_GAS_LIMIT: u64 = 75_000_000;
-
 const WEIGHT_MILLISECS_PER_BLOCK: u64 = EXPECTED_BLOCK_WEIGHT.ref_time()
     / frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS;
 // An assertion to ensure this value is what we expect it to be here.
 const_assert!(WEIGHT_MILLISECS_PER_BLOCK == 2000u64);
 
 parameter_types! {
-    pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
+    pub BlockGasLimit: U256 = U256::from(constants::evm_fees::BLOCK_GAS_LIMIT);
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
-    pub WeightPerGas: Weight = Weight::from_ref_time(fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK));
+    pub WeightPerGas: Weight = Weight::from_ref_time(fp_evm::weight_per_gas(
+        constants::evm_fees::BLOCK_GAS_LIMIT,
+        NORMAL_DISPATCH_RATIO,
+        WEIGHT_MILLISECS_PER_BLOCK,
+    ));
 }
 
 impl pallet_evm_system::Config for Runtime {
