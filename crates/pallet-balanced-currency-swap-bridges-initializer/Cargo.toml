@@ -1,0 +1,38 @@
+[package]
+name = "pallet-balanced-currency-swap-bridges-initializer"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
+frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
+sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+sp-tracing = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+
+[dev-dependencies]
+pallet-pot = { version = "0.1", path = "../pallet-pot", default-features = false }
+
+pallet-balances = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+
+[features]
+default = ["std"]
+std = [
+  "codec/std",
+  "frame-support/std",
+  "frame-system/std",
+  "pallet-balances/std",
+  "pallet-pot/std",
+  "scale-info/std",
+  "sp-std/std",
+  "sp-tracing/std",
+]
+try-runtime = [
+  "frame-support/try-runtime",
+  "frame-system/try-runtime",
+  "pallet-balances/try-runtime",
+  "pallet-pot/try-runtime",
+]
