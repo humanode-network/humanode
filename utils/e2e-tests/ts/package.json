@@ -12,7 +12,7 @@
     "@types/node": "16.18.39",
     "@vitest/expect": "^0.34.1",
     "axios": "^1.4.0",
-    "ethers": "^6.7.0",
+    "ethers": "^6.7.1",
     "typescript": "^5.1.6",
     "vitest": "^0.34.1"
   }
