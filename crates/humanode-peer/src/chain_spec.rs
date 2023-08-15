@@ -368,8 +368,6 @@ fn testnet_genesis(
         },
         evm_accounts_mapping: Default::default(),
         ethereum: EthereumConfig {},
-        dynamic_fee: Default::default(),
-        base_fee: Default::default(),
         transaction_payment: Default::default(),
         fees_pot: Default::default(),
         treasury_pot: Default::default(),

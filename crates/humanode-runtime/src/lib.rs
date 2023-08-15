@@ -670,9 +670,18 @@ impl pallet_currency_swap::Config for Runtime {
     type WeightInfo = ();
 }
 
+/// A simple fixed fee per gas calculator.
+pub struct EvmFeePerGas;
+
+impl fp_evm::FeeCalculator for EvmFeePerGas {
+    fn min_gas_price() -> (U256, Weight) {
+        (constants::evm_fees::FEE_PER_GAS.into(), Weight::zero())
+    }
+}
+
 impl pallet_evm::Config for Runtime {
     type AccountProvider = EvmSystem;
-    type FeeCalculator = BaseFee;
+    type FeeCalculator = EvmFeePerGas;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
@@ -702,39 +711,6 @@ impl pallet_ethereum::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
     type PostLogContent = PostBlockAndTxnHashes;
-}
-
-parameter_types! {
-    pub BoundDivision: U256 = U256::from(1024);
-}
-
-impl pallet_dynamic_fee::Config for Runtime {
-    type MinGasPriceBoundDivisor = BoundDivision;
-}
-
-parameter_types! {
-    pub DefaultBaseFeePerGas: U256 = U256::from(constants::evm_fees::BASE_FEE_PER_GAS);
-    pub DefaultElasticity: Permill = Permill::from_parts(0);
-}
-
-pub struct BaseFeeThreshold;
-impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
-    fn lower() -> Permill {
-        Permill::zero()
-    }
-    fn ideal() -> Permill {
-        Permill::from_parts(500_000)
-    }
-    fn upper() -> Permill {
-        Permill::from_parts(1_000_000)
-    }
-}
-
-impl pallet_base_fee::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type Threshold = BaseFeeThreshold;
-    type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
-    type DefaultElasticity = DefaultElasticity;
 }
 
 impl pallet_chain_properties::Config for Runtime {}
@@ -844,8 +820,6 @@ construct_runtime!(
         Grandpa: pallet_grandpa = 20,
         Ethereum: pallet_ethereum = 21,
         EVM: pallet_evm = 22,
-        DynamicFee: pallet_dynamic_fee = 23,
-        BaseFee: pallet_base_fee = 24,
         ImOnline: pallet_im_online = 25,
         EvmAccountsMapping: pallet_evm_accounts_mapping = 26,
         TokenClaims: pallet_token_claims = 27,
@@ -1406,7 +1380,7 @@ impl_runtime_apis! {
         }
 
         fn elasticity() -> Option<Permill> {
-            Some(BaseFee::elasticity())
+            None
         }
 
         fn gas_limit_multiplier_support() {}

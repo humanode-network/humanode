@@ -233,10 +233,7 @@ fn simple_evm_transaction() {
 
         // Prepare a sample call to transfer 1 HMND.
         let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
-        assert_eq!(
-            max_fee_per_gas,
-            constants::evm_fees::BASE_FEE_PER_GAS.into()
-        );
+        assert_eq!(max_fee_per_gas, constants::evm_fees::FEE_PER_GAS.into());
 
         let to = H160(hex_literal::hex!(
             "0000000000000000000000000000000000000000"
