@@ -14,6 +14,8 @@ use frame_support::{
 };
 pub use pallet::*;
 use sp_std::cmp::Ordering;
+#[cfg(feature = "try-runtime")]
+use sp_std::vec::Vec;
 pub use weights::*;
 
 pub mod weights;

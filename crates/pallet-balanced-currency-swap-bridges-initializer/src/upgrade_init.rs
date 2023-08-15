@@ -1,6 +1,8 @@
 //! Initialization of the bridge pot accounts on runtime upgrade.
 
 use frame_support::pallet_prelude::*;
+#[cfg(feature = "try-runtime")]
+use sp_std::vec::Vec;
 
 use crate::{Config, InitializerVersion, Pallet, CURRENT_BRIDGES_INITIALIZER_VERSION};
 
