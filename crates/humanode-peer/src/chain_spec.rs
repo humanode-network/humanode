@@ -408,7 +408,12 @@ mod tests {
     use super::*;
 
     fn assert_genesis_config(chain_spec_result: Result<ChainSpec, String>) {
-        chain_spec_result.unwrap().build_storage().unwrap();
+        let storage = chain_spec_result.unwrap().build_storage().unwrap();
+        Into::<sp_io::TestExternalities>::into(storage).execute_with(move || {
+            assert!(
+                humanode_runtime::BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap()
+            );
+        });
     }
 
     #[test]
