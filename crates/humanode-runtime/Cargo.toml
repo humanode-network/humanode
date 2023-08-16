@@ -17,6 +17,7 @@ eip712-account-claim = { version = "0.1", path = "../eip712-account-claim", defa
 eip712-common = { version = "0.1", path = "../eip712-common", default-features = false }
 eip712-token-claim = { version = "0.1", path = "../eip712-token-claim", default-features = false }
 keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id", default-features = false }
+pallet-balanced-currency-swap-bridges-initializer = { version = "0.1", path = "../pallet-balanced-currency-swap-bridges-initializer", default-features = false }
 pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
 pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
 pallet-chain-properties = { version = "0.1", path = "../pallet-chain-properties", default-features = false }
@@ -158,6 +159,7 @@ std = [
   "libsecp256k1/std",
   "pallet-authorship/std",
   "pallet-babe/std",
+  "pallet-balanced-currency-swap-bridges-initializer/std",
   "pallet-balances/std",
   "pallet-base-fee/std",
   "pallet-bioauth/std",
@@ -226,6 +228,7 @@ try-runtime = [
   "frame-try-runtime/try-runtime",
   "pallet-authorship/try-runtime",
   "pallet-babe/try-runtime",
+  "pallet-balanced-currency-swap-bridges-initializer/try-runtime",
   "pallet-balances/try-runtime",
   "pallet-base-fee/try-runtime",
   "pallet-bioauth/try-runtime",

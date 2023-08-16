@@ -23,14 +23,13 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
     let bootnodes = vec![account_id("Alice")];
 
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
-    let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
+    let pot_accounts = vec![FeesPot::account_id()];
 
     let evm_endowed_accounts = vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")];
     // Build test genesis.
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: {
-                let pot_accounts = pot_accounts.clone();
                 endowed_accounts
                     .iter()
                     .cloned()
@@ -38,14 +37,16 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     .map(|k| (k, INIT_BALANCE))
                     .chain(
                         [(
+                            TreasuryPot::account_id(),
+                            10 * INIT_BALANCE,
+                        ),
+                        (
                             TokenClaimsPot::account_id(),
                             <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         ),
                         (
                             NativeToEvmSwapBridgePot::account_id(),
-                            INIT_BALANCE * evm_endowed_accounts.len() as u128 +
-                                // Own bridge pot minimum balance.
-                                <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                            <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
                         .into_iter(),
                     )
@@ -91,12 +92,10 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                         [(
                             EvmToNativeSwapBridgePot::account_id(),
                             fp_evm::GenesisAccount {
-                                balance: (INIT_BALANCE * (endowed_accounts.len() + pot_accounts.len()) as u128 +
-                                    // Own bridge pot minimum balance.
-                                    <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::minimum_balance() +
-                                    // `TokenClaimsPot` minimum balance.
-                                    <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-                                ).into(),
+                                balance: <EvmBalances as frame_support::traits::Currency<
+                                    EvmAccountId,
+                                >>::minimum_balance()
+                                .into(),
                                 code: Default::default(),
                                 nonce: Default::default(),
                                 storage: Default::default(),
@@ -113,6 +112,19 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 
     // Make test externalities from the storage.
     storage.into()
+}
+
+/// This test verifies that bridges initialization has been applied at genesis.
+#[test]
+fn currencies_are_balanced() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        assert_eq!(
+            BalancedCurrencySwapBridgesInitializer::initializer_version(),
+            pallet_balanced_currency_swap_bridges_initializer::CURRENT_BRIDGES_INITIALIZER_VERSION
+        );
+        assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
+    })
 }
 
 /// This test verifies that swap native call works in the happy path.
@@ -136,6 +148,7 @@ fn currency_swap_native_call_works() {
         ));
 
         // Assert state changes.
+        assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
         assert_eq!(
             Balances::total_balance(&account_id("Alice")),
             alice_balance_before - swap_balance
@@ -204,6 +217,7 @@ fn currency_swap_precompile_call_works() {
         assert_eq!(execinfo.logs, Vec::new());
 
         // Assert state changes.
+        assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
         assert_eq!(
             Balances::total_balance(&FeesPot::account_id()),
             fees_pot_balance_before + expected_fee

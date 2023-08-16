@@ -62,7 +62,8 @@ use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
-        IdentifyAccount, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
+        IdentifyAccount, Identity, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup,
+        Verify,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -778,6 +779,27 @@ impl pallet_utility::Config for Runtime {
     type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
+parameter_types! {
+    pub NativeToEvmSwapBridgePotAccountId: AccountId = NativeToEvmSwapBridgePot::account_id();
+    pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
+}
+
+parameter_types! {
+    pub TreasuryPotAccountId: AccountId = TreasuryPot::account_id();
+}
+
+impl pallet_balanced_currency_swap_bridges_initializer::Config for Runtime {
+    type EvmAccountId = EvmAccountId;
+    type NativeCurrency = Balances;
+    type EvmCurrency = EvmBalances;
+    type BalanceConverterEvmToNative = Identity;
+    type BalanceConverterNativeToEvm = Identity;
+    type NativeEvmBridgePot = NativeToEvmSwapBridgePotAccountId;
+    type NativeTreasuryPot = TreasuryPotAccountId;
+    type EvmNativeBridgePot = EvmToNativeSwapBridgePotAccountId;
+    type WeightInfo = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -823,6 +845,7 @@ construct_runtime!(
         NativeToEvmSwapBridgePot: pallet_pot::<Instance4> = 33,
         EvmToNativeSwapBridgePot: pallet_pot::<Instance5> = 34,
         CurrencySwap: pallet_currency_swap = 35,
+        BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
     }
 );
 
