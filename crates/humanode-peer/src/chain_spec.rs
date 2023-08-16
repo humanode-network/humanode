@@ -386,8 +386,6 @@ fn testnet_genesis(
             )],
             total_claimable: Some(DEV_ACCOUNT_BALANCE),
         },
-        evm_to_native_swap_bridge: Default::default(),
-        native_to_evm_swap_bridge: Default::default(),
     }
 }
 

@@ -62,8 +62,7 @@ use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
-        IdentifyAccount, Identity, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup,
-        Verify,
+        IdentifyAccount, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -779,41 +778,6 @@ impl pallet_utility::Config for Runtime {
     type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
-parameter_types! {
-    pub const NativeToEvmSwapBridgePalletId: PalletId = PalletId(*b"hmsb/ne1");
-    pub const EvmToNativeSwapBridgePalletId: PalletId = PalletId(*b"hmsb/en1");
-}
-
-parameter_types! {
-    pub NativeToEvmSwapBridgePotAccountId: AccountId = NativeToEvmSwapBridgePot::account_id();
-    pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
-}
-
-type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
-type BridgeInstanceEvmToNativeSwap = pallet_bridge_pot_currency_swap::Instance2;
-
-impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Runtime {
-    type AccountIdFrom = AccountId;
-    type AccountIdTo = EvmAccountId;
-    type CurrencyFrom = Balances;
-    type CurrencyTo = EvmBalances;
-    type BalanceConverter = Identity;
-    type PotFrom = NativeToEvmSwapBridgePotAccountId;
-    type PotTo = EvmToNativeSwapBridgePotAccountId;
-    type GenesisVerifier = currency_swap::GenesisVerifier;
-}
-
-impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceEvmToNativeSwap> for Runtime {
-    type AccountIdFrom = EvmAccountId;
-    type AccountIdTo = AccountId;
-    type CurrencyFrom = EvmBalances;
-    type CurrencyTo = Balances;
-    type BalanceConverter = Identity;
-    type PotFrom = EvmToNativeSwapBridgePotAccountId;
-    type PotTo = NativeToEvmSwapBridgePotAccountId;
-    type GenesisVerifier = currency_swap::GenesisVerifier;
-}
-
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -859,8 +823,6 @@ construct_runtime!(
         NativeToEvmSwapBridgePot: pallet_pot::<Instance4> = 33,
         EvmToNativeSwapBridgePot: pallet_pot::<Instance5> = 34,
         CurrencySwap: pallet_currency_swap = 35,
-        NativeToEvmSwapBridge: pallet_bridge_pot_currency_swap::<Instance1> = 36,
-        EvmToNativeSwapBridge: pallet_bridge_pot_currency_swap::<Instance2> = 37,
     }
 );
 
