@@ -780,38 +780,8 @@ impl pallet_utility::Config for Runtime {
 }
 
 parameter_types! {
-    pub const NativeToEvmSwapBridgePalletId: PalletId = PalletId(*b"hmsb/ne1");
-    pub const EvmToNativeSwapBridgePalletId: PalletId = PalletId(*b"hmsb/en1");
-}
-
-parameter_types! {
     pub NativeToEvmSwapBridgePotAccountId: AccountId = NativeToEvmSwapBridgePot::account_id();
     pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
-}
-
-type BridgeInstanceNativeToEvmSwap = pallet_bridge_pot_currency_swap::Instance1;
-type BridgeInstanceEvmToNativeSwap = pallet_bridge_pot_currency_swap::Instance2;
-
-impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceNativeToEvmSwap> for Runtime {
-    type AccountIdFrom = AccountId;
-    type AccountIdTo = EvmAccountId;
-    type CurrencyFrom = Balances;
-    type CurrencyTo = EvmBalances;
-    type BalanceConverter = Identity;
-    type PotFrom = NativeToEvmSwapBridgePotAccountId;
-    type PotTo = EvmToNativeSwapBridgePotAccountId;
-    type GenesisVerifier = currency_swap::GenesisVerifier;
-}
-
-impl pallet_bridge_pot_currency_swap::Config<BridgeInstanceEvmToNativeSwap> for Runtime {
-    type AccountIdFrom = EvmAccountId;
-    type AccountIdTo = AccountId;
-    type CurrencyFrom = EvmBalances;
-    type CurrencyTo = Balances;
-    type BalanceConverter = Identity;
-    type PotFrom = EvmToNativeSwapBridgePotAccountId;
-    type PotTo = NativeToEvmSwapBridgePotAccountId;
-    type GenesisVerifier = currency_swap::GenesisVerifier;
 }
 
 parameter_types! {
@@ -876,8 +846,6 @@ construct_runtime!(
         EvmToNativeSwapBridgePot: pallet_pot::<Instance5> = 34,
         CurrencySwap: pallet_currency_swap = 35,
         BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
-        NativeToEvmSwapBridge: pallet_bridge_pot_currency_swap::<Instance1> = 37,
-        EvmToNativeSwapBridge: pallet_bridge_pot_currency_swap::<Instance2> = 38,
     }
 );
 
