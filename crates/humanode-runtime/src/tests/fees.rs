@@ -223,8 +223,9 @@ fn simple_balances_transfer_keep_alive() {
 }
 
 /// A test that validates that a simple EVM balance transfer with a keep alive costs 0.2 HMND.
+/// Computes the fee via [`TransactionPayment::query_call_info`].
 #[test]
-fn simple_evm_transaction() {
+fn simple_evm_transaction_via_query_call_info() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         switch_block();
