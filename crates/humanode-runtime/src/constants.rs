@@ -102,9 +102,9 @@ pub mod fees {
 /// EVM fees related constants.
 pub mod evm_fees {
     /// The max amount of gas per block.
-    /// Set to match the standard ethereum network block limit.
+    /// Set to the value that fits our fee requirements.
     /// Ref: <https://ethereum.org/en/developers/docs/gas/#block-size>
-    pub const BLOCK_GAS_LIMIT: u64 = 15_000_000;
+    pub const BLOCK_GAS_LIMIT: u64 = 60_000_000;
 
     /// The amount of fee per gas unit.
     /// Comes from the following rationale:

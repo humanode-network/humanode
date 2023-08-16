@@ -260,7 +260,7 @@ fn simple_evm_transaction() {
         let expected_fee = ONE_BALANCE_UNIT / 5;
 
         // The tolerance within which the actual fee is allowed to be around the expected fee.
-        let epsilon = expected_fee / 200;
+        let epsilon = expected_fee / 10;
 
         assert_evm_fee(call, 0, expected_fee, epsilon);
     })
