@@ -130,23 +130,6 @@ fn assert_fee(call: RuntimeCall, len: u32, expected_fee: Balance, epsilon: Balan
     );
 }
 
-fn assert_evm_fee(call: RuntimeCall, len: u32, expected_fee: Balance, epsilon: Balance) {
-    let dispath_info = TransactionPayment::query_call_info(call, len);
-    let effective_fee = dispath_info.partial_fee;
-
-    let lower_threshold = expected_fee - epsilon;
-    let upper_threshold = expected_fee + epsilon;
-
-    assert!(
-        effective_fee <= upper_threshold,
-        "{effective_fee} is not within {epsilon} above {expected_fee} ({effective_fee} > {upper_threshold})"
-    );
-    assert!(
-        effective_fee >= lower_threshold,
-        "{effective_fee} is not within {epsilon} below {expected_fee} ({effective_fee} < {lower_threshold})"
-    );
-}
-
 /// The testing cryptography to match the real one we use for the accounts.
 /// We use it to simulate the signatures in the test to estimate the tx size.
 pub mod crypto {
@@ -263,6 +246,6 @@ fn simple_evm_transaction_via_query_call_info() {
         // The tolerance within which the actual fee is allowed to be around the expected fee.
         let epsilon = expected_fee / 10;
 
-        assert_evm_fee(call, 0, expected_fee, epsilon);
+        assert_fee(call, 0, expected_fee, epsilon);
     })
 }
