@@ -3703,6 +3703,7 @@ dependencies = [
  "libsecp256k1",
  "pallet-authorship",
  "pallet-babe",
+ "pallet-balanced-currency-swap-bridges-initializer",
  "pallet-balances",
  "pallet-base-fee",
  "pallet-bioauth",
