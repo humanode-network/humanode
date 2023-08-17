@@ -762,7 +762,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/expect@npm:0.34.1, @vitest/expect@npm:^0.34.1":
+"@vitest/expect@npm:0.34.1":
   version: 0.34.1
   resolution: "@vitest/expect@npm:0.34.1"
   dependencies:
@@ -770,6 +770,17 @@ __metadata:
     "@vitest/utils": 0.34.1
     chai: ^4.3.7
   checksum: a2bc76f9242a05987983c6c6ad24091fb34282b0704b844e31d94d4ee2564fbd5e566a1ea8344240770dc8ae619a532e316155785d0ff6bee5e57be6c3e3d028
+  languageName: node
+  linkType: hard
+
+"@vitest/expect@npm:^0.34.2":
+  version: 0.34.2
+  resolution: "@vitest/expect@npm:0.34.2"
+  dependencies:
+    "@vitest/spy": 0.34.2
+    "@vitest/utils": 0.34.2
+    chai: ^4.3.7
+  checksum: 974ae239f2799d0fdba0ba8acba9146d09a16c64b5270b7aec768d35ea4ab77d0e4a70edbc24bf47160696d99183b8c761ba6701d6429bb87d3de8ded2b204ec
   languageName: node
   linkType: hard
 
@@ -804,6 +815,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@vitest/spy@npm:0.34.2":
+  version: 0.34.2
+  resolution: "@vitest/spy@npm:0.34.2"
+  dependencies:
+    tinyspy: ^2.1.1
+  checksum: 25f6a14219e6a90f2c0bd5017c7d8d872fb34832a4c30b60f47b64ff48d3970d90666ec67534b046dd9c550e67f92797ade6d3925d3e339003e7caddd458d901
+  languageName: node
+  linkType: hard
+
 "@vitest/utils@npm:0.34.1":
   version: 0.34.1
   resolution: "@vitest/utils@npm:0.34.1"
@@ -812,6 +832,17 @@ __metadata:
     loupe: ^2.3.6
     pretty-format: ^29.5.0
   checksum: 0015504f3af725ef84f9759f08bc051071d29b0024d6bbd27276450cdb9dccde367bb86cfede2ccfef803965f29f0ffb76104e92bf569169f87e0e74e5a720f1
+  languageName: node
+  linkType: hard
+
+"@vitest/utils@npm:0.34.2":
+  version: 0.34.2
+  resolution: "@vitest/utils@npm:0.34.2"
+  dependencies:
+    diff-sequences: ^29.4.3
+    loupe: ^2.3.6
+    pretty-format: ^29.5.0
+  checksum: 55081528a475413759bf752ec084ccfc013e1f549c4f9523535034c86aab6d2f8711ac44d462817d01d3ccb1608f9150809a94896a681be8602d78554b162037
   languageName: node
   linkType: hard
 
@@ -1549,7 +1580,7 @@ __metadata:
   dependencies:
     "@polkadot/api": ^10.9.1
     "@types/node": 16.18.40
-    "@vitest/expect": ^0.34.1
+    "@vitest/expect": ^0.34.2
     axios: ^1.4.0
     ethers: ^6.7.1
     typescript: ^5.1.6
