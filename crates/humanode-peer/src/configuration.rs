@@ -18,9 +18,6 @@ pub struct Configuration {
     /// always required.
     pub bioauth_flow: Option<BioauthFlow>,
 
-    /// EVM configuration.
-    pub evm: Evm,
-
     /// Ethereum RPC configuration.
     pub ethereum_rpc: Option<EthereumRpc>,
 
@@ -56,12 +53,6 @@ impl BioauthFlow {
         let rpc_url = self.rpc_url_resolver.resolve(&self.rpc_url).await?;
         Ok((webapp_url, rpc_url))
     }
-}
-
-/// EVM configuration parameters.
-pub struct Evm {
-    /// The dynamic-fee pallet target gas price set by block author.
-    pub target_gas_price: u64,
 }
 
 /// Ethereum RPC configuration parameters.

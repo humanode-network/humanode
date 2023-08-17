@@ -12,7 +12,8 @@ use crate::dev_utils::*;
 use crate::opaque::SessionKeys;
 
 pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x900));
-pub(crate) static GAS_PRICE: Lazy<U256> = Lazy::new(|| 1_000_000_000u128.into());
+pub(crate) static GAS_PRICE: Lazy<U256> =
+    Lazy::new(|| <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0);
 
 const INIT_BALANCE: Balance = 10u128.pow(18 + 6);
 

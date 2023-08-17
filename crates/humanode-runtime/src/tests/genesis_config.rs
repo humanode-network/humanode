@@ -94,14 +94,6 @@ fn works() {
                 }
             }
         },
-        "dynamicFee": {
-            "minGasPrice": "0x0"
-        },
-        "baseFee": {
-            "baseFeePerGas": "0x0",
-            "elasticity": 0,
-            "marker": null
-        },
         "imOnline": {
             "keys": []
         },
@@ -136,7 +128,7 @@ fn unknown_field() {
         "unknown field `qwe`, expected one of \
         `system`, `bootnodes`, `bioauth`, `babe`, `balances`, `treasuryPot`, \
         `feesPot`, `tokenClaimsPot`, `transactionPayment`, `session`, `chainProperties`, \
-        `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, `dynamicFee`, `baseFee`, \
+        `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, \
         `imOnline`, `evmAccountsMapping`, `tokenClaims`, `nativeToEvmSwapBridgePot`, \
         `evmToNativeSwapBridgePot`, `balancedCurrencySwapBridgesInitializer` at line 1 column 6"
     );

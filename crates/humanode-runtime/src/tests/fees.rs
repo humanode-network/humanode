@@ -3,12 +3,19 @@
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
 
+use ethereum::EIP1559Transaction;
+use frame_support::traits::Currency;
+
 use super::*;
 use crate::dev_utils::*;
 use crate::opaque::SessionKeys;
 
 const INIT_BALANCE: Balance = 10u128.pow(18 + 6);
 const ONE_BALANCE_UNIT: Balance = 10u128.pow(18);
+
+const EVM_TEST_ACCOUNT: H160 = H160(hex_literal::hex!(
+    "FFFF000000000000000000000000000000000000"
+));
 
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
@@ -69,21 +76,34 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
         },
         evm: EVMConfig {
             accounts: {
-                let evm_pot_accounts =
-                    vec![(
+                let evm_accounts = vec![
+                    (
                         EvmToNativeSwapBridgePot::account_id(),
-                        fp_evm::GenesisAccount {
-                            balance: <EvmBalances as frame_support::traits::Currency<
+                        <EvmBalances as frame_support::traits::Currency<
                                 EvmAccountId,
                             >>::minimum_balance()
-                            .into(),
-                            code: Default::default(),
-                            nonce: Default::default(),
-                            storage: Default::default(),
-                        },
-                    )];
+                            .into()
+                    ),
+                    (
+                        EVM_TEST_ACCOUNT,
+                        INIT_BALANCE.into()
+                    ),
+                ];
 
-                evm_pot_accounts.into_iter().collect()
+                evm_accounts
+                    .into_iter()
+                    .map(|(account_id, balance)| {
+                        (
+                            account_id,
+                            fp_evm::GenesisAccount {
+                                balance,
+                                code: Default::default(),
+                                nonce: Default::default(),
+                                storage: Default::default(),
+                            },
+                        )
+                    })
+                    .collect()
             },
         },
         ..Default::default()
@@ -111,10 +131,7 @@ fn keystore() -> sp_keystore::testing::KeyStore {
 }
 
 #[allow(clippy::integer_arithmetic)]
-fn assert_fee(call: RuntimeCall, len: u32, expected_fee: Balance, epsilon: Balance) {
-    let dispath_info = TransactionPayment::query_call_info(call, len);
-    let effective_fee = dispath_info.partial_fee;
-
+fn assert_within(effective_fee: Balance, expected_fee: Balance, epsilon: Balance) {
     let lower_threshold = expected_fee - epsilon;
     let upper_threshold = expected_fee + epsilon;
 
@@ -126,6 +143,11 @@ fn assert_fee(call: RuntimeCall, len: u32, expected_fee: Balance, epsilon: Balan
         effective_fee >= lower_threshold,
         "{effective_fee} is not within {epsilon} below {expected_fee} ({effective_fee} < {lower_threshold})"
     );
+}
+
+fn assert_fee(call: RuntimeCall, len: u32, expected_fee: Balance, epsilon: Balance) {
+    let dispath_info = TransactionPayment::query_call_info(call, len);
+    assert_within(dispath_info.partial_fee, expected_fee, epsilon)
 }
 
 /// The testing cryptography to match the real one we use for the accounts.
@@ -146,6 +168,16 @@ pub mod crypto {
         type GenericSignature = sp_core::sr25519::Signature;
         type GenericPublic = sp_core::sr25519::Public;
     }
+}
+
+fn switch_block() {
+    use frame_support::traits::{OnFinalize, OnInitialize};
+
+    if System::block_number() != 0 {
+        AllPalletsWithSystem::on_finalize(System::block_number());
+    }
+    System::set_block_number(System::block_number() + 1);
+    AllPalletsWithSystem::on_initialize(System::block_number());
 }
 
 /// A test that validates that a simple balance transfer with a keep alive costs 0.1 HMND.
@@ -190,5 +222,124 @@ fn simple_balances_transfer_keep_alive() {
         let epsilon = expected_fee / 200;
 
         assert_fee(call, len, expected_fee, epsilon);
+    })
+}
+
+/// A test that validates that a simple EVM balance transfer with a keep alive costs 0.2 HMND.
+/// Computes the fee via [`TransactionPayment::query_call_info`].
+#[test]
+fn simple_evm_transaction_via_query_call_info() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        switch_block();
+        Timestamp::set(RuntimeOrigin::none(), 1000).unwrap();
+        switch_block();
+
+        // Prepare a sample call to transfer 1 HMND.
+        let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
+        assert_eq!(max_fee_per_gas, constants::evm_fees::FEE_PER_GAS.into());
+
+        let to = H160(hex_literal::hex!(
+            "0000000000000000000000000000000000000000"
+        ));
+
+        let call = RuntimeCall::Ethereum(pallet_ethereum::Call::transact {
+            transaction: EthereumTransaction::EIP1559(EIP1559Transaction {
+                chain_id: <Runtime as pallet_evm::Config>::ChainId::get(),
+                nonce: 0.into(),
+                max_priority_fee_per_gas: 0.into(),
+                max_fee_per_gas,
+                gas_limit: 21000.into(), // simple transfer
+                action: ethereum::TransactionAction::Call(to),
+                value: U256::from(ONE_BALANCE_UNIT),
+                input: Default::default(),
+                access_list: Default::default(),
+                odd_y_parity: false,
+                r: Default::default(),
+                s: Default::default(),
+            }),
+        });
+
+        // The expected fee that we aim to target: 0.2 HMND.
+        let expected_fee = ONE_BALANCE_UNIT / 5;
+
+        // The tolerance within which the actual fee is allowed to be around the expected fee.
+        let epsilon = expected_fee / 10;
+
+        assert_fee(call, 0, expected_fee, epsilon);
+    })
+}
+
+/// A test that validates that a simple EVM balance transfer with a keep alive costs 0.2 HMND.
+/// Computes the fee via an estimate EVM runner invocation.
+#[test]
+fn simple_evm_transaction_via_runner_estimate() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        switch_block();
+        Timestamp::set(RuntimeOrigin::none(), 1000).unwrap();
+        switch_block();
+
+        let config = <Runtime as pallet_evm::Config>::config();
+
+        // Prepare a sample call to transfer 1 HMND.
+        let raw_value = ONE_BALANCE_UNIT;
+
+        let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
+        assert_eq!(max_fee_per_gas, constants::evm_fees::FEE_PER_GAS.into());
+
+        let before = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let from = EVM_TEST_ACCOUNT;
+        let to = H160(hex_literal::hex!(
+            "0000000000000000000000000000000000000000"
+        ));
+        let data = Default::default();
+        let value = raw_value.into();
+        let gas_limit = 21000;
+        let max_fee_per_gas = Some(max_fee_per_gas);
+        let max_priority_fee_per_gas = None;
+        let nonce = None;
+        let access_list = Default::default();
+        let is_transactional = true;
+        let validate = true;
+
+        let call_info =
+            <<Runtime as pallet_evm::Config>::Runner as pallet_evm::Runner<Runtime>>::call(
+                from,
+                to,
+                data,
+                value,
+                gas_limit,
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                access_list,
+                is_transactional,
+                validate,
+                config,
+            )
+            .unwrap();
+        assert_eq!(
+            call_info,
+            fp_evm::CallInfo {
+                exit_reason: fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Stopped),
+                value: vec![],
+                used_gas: 21000.into(),
+                logs: vec![]
+            }
+        );
+
+        // The expected fee that we aim to target: 0.2 HMND.
+        let expected_fee = ONE_BALANCE_UNIT / 5;
+
+        // The tolerance within which the actual fee is allowed to be around the expected fee.
+        let epsilon = expected_fee / 10;
+
+        let after = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let effective_fee = before - after - raw_value;
+
+        assert_within(effective_fee, expected_fee, epsilon);
     })
 }

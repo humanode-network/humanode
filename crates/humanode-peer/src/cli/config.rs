@@ -45,13 +45,6 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             }
         });
 
-        let evm = {
-            let params = self.evm_params();
-            configuration::Evm {
-                target_gas_price: params.map(|p| p.target_gas_price).unwrap_or(1),
-            }
-        };
-
         let ethereum_rpc = self
             .ethereum_rpc_params()
             .map(|params| configuration::EthereumRpc {
@@ -77,7 +70,6 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         Ok(Configuration {
             substrate,
             bioauth_flow,
-            evm,
             ethereum_rpc,
             time_warp,
         })

@@ -5,6 +5,8 @@
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
+// Runtime impl macros generate non-snake case names.
+#![allow(non_snake_case)]
 
 // If we're in standard compilation mode, embed the build-script generated code that pulls in
 // the WASM portion of the runtime, so that it is invocable from the native (aka host) side code.
@@ -104,6 +106,7 @@ pub use constants::{
     equivocation::REPORT_LONGEVITY,
     im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
 };
+use static_assertions::const_assert;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -232,11 +235,14 @@ pub fn native_version() -> NativeVersion {
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const MAX_BLOCK_LENGTH: u32 = 5 * 1024 * 1024;
 
+/// We allow for 2 seconds of compute with a 6 second average block time.
+const EXPECTED_BLOCK_WEIGHT: Weight =
+    Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX);
+
 parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
-    /// We allow for 2 seconds of compute with a 6 second average block time.
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
-        ::with_sensible_defaults(Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX), NORMAL_DISPATCH_RATIO);
+        ::with_sensible_defaults(EXPECTED_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(MAX_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
     pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
@@ -624,13 +630,19 @@ impl pallet_offences::Config for Runtime {
     type OnOffenceHandler = OffenceSlasher;
 }
 
-const BLOCK_GAS_LIMIT: u64 = 75_000_000;
-const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2000;
+const WEIGHT_MILLISECS_PER_BLOCK: u64 = EXPECTED_BLOCK_WEIGHT.ref_time()
+    / frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS;
+// An assertion to ensure this value is what we expect it to be here.
+const_assert!(WEIGHT_MILLISECS_PER_BLOCK == 2000u64);
 
 parameter_types! {
-    pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
+    pub BlockGasLimit: U256 = U256::from(constants::evm_fees::BLOCK_GAS_LIMIT);
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
-    pub WeightPerGas: Weight = Weight::from_ref_time(fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK));
+    pub WeightPerGas: Weight = Weight::from_ref_time(fp_evm::weight_per_gas(
+        constants::evm_fees::BLOCK_GAS_LIMIT,
+        NORMAL_DISPATCH_RATIO,
+        WEIGHT_MILLISECS_PER_BLOCK,
+    ));
 }
 
 impl pallet_evm_system::Config for Runtime {
@@ -658,9 +670,18 @@ impl pallet_currency_swap::Config for Runtime {
     type WeightInfo = ();
 }
 
+/// A simple fixed fee per gas calculator.
+pub struct EvmFeePerGas;
+
+impl fp_evm::FeeCalculator for EvmFeePerGas {
+    fn min_gas_price() -> (U256, Weight) {
+        (constants::evm_fees::FEE_PER_GAS.into(), Weight::zero())
+    }
+}
+
 impl pallet_evm::Config for Runtime {
     type AccountProvider = EvmSystem;
-    type FeeCalculator = BaseFee;
+    type FeeCalculator = EvmFeePerGas;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
@@ -690,39 +711,6 @@ impl pallet_ethereum::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
     type PostLogContent = PostBlockAndTxnHashes;
-}
-
-parameter_types! {
-    pub BoundDivision: U256 = U256::from(1024);
-}
-
-impl pallet_dynamic_fee::Config for Runtime {
-    type MinGasPriceBoundDivisor = BoundDivision;
-}
-
-parameter_types! {
-    pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
-    pub DefaultElasticity: Permill = Permill::from_parts(125_000);
-}
-
-pub struct BaseFeeThreshold;
-impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
-    fn lower() -> Permill {
-        Permill::zero()
-    }
-    fn ideal() -> Permill {
-        Permill::from_parts(500_000)
-    }
-    fn upper() -> Permill {
-        Permill::from_parts(1_000_000)
-    }
-}
-
-impl pallet_base_fee::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type Threshold = BaseFeeThreshold;
-    type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
-    type DefaultElasticity = DefaultElasticity;
 }
 
 impl pallet_chain_properties::Config for Runtime {}
@@ -832,8 +820,6 @@ construct_runtime!(
         Grandpa: pallet_grandpa = 20,
         Ethereum: pallet_ethereum = 21,
         EVM: pallet_evm = 22,
-        DynamicFee: pallet_dynamic_fee = 23,
-        BaseFee: pallet_base_fee = 24,
         ImOnline: pallet_im_online = 25,
         EvmAccountsMapping: pallet_evm_accounts_mapping = 26,
         TokenClaims: pallet_token_claims = 27,
@@ -1394,7 +1380,7 @@ impl_runtime_apis! {
         }
 
         fn elasticity() -> Option<Permill> {
-            Some(BaseFee::elasticity())
+            None
         }
 
         fn gas_limit_multiplier_support() {}

@@ -384,7 +384,7 @@ fn total_issuance_transaction_fee_ethereum_transact() {
 
         let evm_bob_origin =
             pallet_ethereum::RawOrigin::EthereumTransaction(evm_account_id("EvmBob"));
-        let gas_price = 20_000_000_000_u128;
+        let gas_price: u128 = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0.try_into().unwrap();
         let gas_limit = 21000;
 
         // This test legacy data transaction obtained from

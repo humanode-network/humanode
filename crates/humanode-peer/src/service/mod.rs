@@ -108,7 +108,6 @@ pub fn new_partial(
 > {
     let Configuration {
         substrate: config,
-        evm: evm_config,
         time_warp: time_warp_config,
         ..
     } = config;
@@ -181,10 +180,8 @@ pub fn new_partial(
     );
 
     let raw_slot_duration = babe_link.config().slot_duration();
-    let eth_target_gas_price = evm_config.target_gas_price;
     let inherent_data_providers_creator = inherents::Creator {
         raw_slot_duration,
-        eth_target_gas_price,
         client: Arc::clone(&client),
         time_warp: time_warp_config.clone(),
     };
@@ -243,7 +240,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let Configuration {
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
-        evm: _evm_config,
         ethereum_rpc: ethereum_rpc_config,
         ..
     } = config;

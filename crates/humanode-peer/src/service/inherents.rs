@@ -2,7 +2,6 @@
 
 use sc_client_api::ProvideUncles;
 use sc_service::Arc;
-use sp_core::U256;
 use sp_runtime::traits::Block;
 
 use crate::time_warp::TimeWarp;
@@ -12,8 +11,6 @@ use crate::time_warp::TimeWarp;
 pub struct Creator<Client> {
     /// Consensus slot duration.
     pub raw_slot_duration: sp_consensus_babe::SlotDuration,
-    /// Ethereum gas target price.
-    pub eth_target_gas_price: u64,
     /// Time warp peer mode.
     pub time_warp: Option<TimeWarp>,
     /// Client.
@@ -25,7 +22,6 @@ pub struct Creator<Client> {
 type InherentDataProviders = (
     sp_consensus_babe::inherents::InherentDataProvider,
     sp_timestamp::InherentDataProvider,
-    pallet_dynamic_fee::InherentDataProvider,
 );
 
 /// The inherents creator for block production.
@@ -63,10 +59,7 @@ where
                 self.0.raw_slot_duration,
             );
 
-        let dynamic_fee =
-            pallet_dynamic_fee::InherentDataProvider(U256::from(self.0.eth_target_gas_price));
-
-        Ok((slot, timestamp, dynamic_fee))
+        Ok((slot, timestamp))
     }
 }
 
@@ -98,10 +91,7 @@ where
                 self.0.raw_slot_duration,
             );
 
-        let dynamic_fee =
-            pallet_dynamic_fee::InherentDataProvider(U256::from(self.0.eth_target_gas_price));
-
-        Ok((slot, timestamp, dynamic_fee))
+        Ok((slot, timestamp))
     }
 }
 
@@ -109,7 +99,6 @@ impl<Client> Clone for Creator<Client> {
     fn clone(&self) -> Self {
         Self {
             raw_slot_duration: self.raw_slot_duration,
-            eth_target_gas_price: self.eth_target_gas_price,
             time_warp: self.time_warp.clone(),
             client: Arc::clone(&self.client),
         }

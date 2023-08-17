@@ -98,3 +98,19 @@ pub mod fees {
     /// The multiplier to get the fee from length.
     pub const LENGTH_TO_FEE: Balance = 1;
 }
+
+/// EVM fees related constants.
+pub mod evm_fees {
+    /// The max amount of gas per block.
+    /// Set to the value that fits our fee requirements.
+    /// Ref: <https://ethereum.org/en/developers/docs/gas/#block-size>
+    pub const BLOCK_GAS_LIMIT: u64 = 60_000_000;
+
+    /// The amount of fee per gas unit.
+    /// Comes from the following rationale:
+    /// - a simple transfer costs 21000 gas
+    /// - we want the cost of this transfer to be around ~0.2 HMND
+    /// - so we must charge about 0.2 * 10^18 / 21000 fee per a unit of gas
+    /// The value below is a nice round number that fits the requirements outlined above.
+    pub const FEE_PER_GAS: u128 = 10_000_000_000_000;
+}

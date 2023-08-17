@@ -43,7 +43,6 @@ futures = "0.3"
 hex = "0.4.3"
 hex-literal = "0.4"
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 qr2term = "0.3"
@@ -114,7 +113,6 @@ try-runtime = [
   "humanode-runtime/try-runtime",
   "pallet-balances/try-runtime",
   "pallet-bioauth/try-runtime",
-  "pallet-dynamic-fee/try-runtime",
   "pallet-im-online/try-runtime",
   "pallet-transaction-payment/try-runtime",
   "pallet-token-claims/try-runtime",

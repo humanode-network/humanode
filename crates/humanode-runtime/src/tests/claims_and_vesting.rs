@@ -329,14 +329,6 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
                 }}
             }}
         }},
-        "dynamicFee": {{
-            "minGasPrice": "0x0"
-        }},
-        "baseFee": {{
-            "baseFeePerGas": "0x0",
-            "elasticity": 0,
-            "marker": null
-        }},
         "imOnline": {{
             "keys": []
         }},
