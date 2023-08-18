@@ -748,10 +748,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.18.40":
-  version: 16.18.40
-  resolution: "@types/node@npm:16.18.40"
-  checksum: a683930491b4fd7cb2dc7684e32bbeedc4a83fb1949a7b15ea724fbfaa9988cec59091f169a3f1090cb91992caba8c1a7d50315b2c67c6e2579a3788bb09eec4
+"@types/node@npm:16.18.41":
+  version: 16.18.41
+  resolution: "@types/node@npm:16.18.41"
+  checksum: b12650d8e4289edafcf0453c8a66c00d6397d465a48b1c683babba4f16f92a6418f678e98a85751e3fef78d23c2b07f641df8da14bf5428ad8282b57b2695243
   languageName: node
   linkType: hard
 
@@ -1548,7 +1548,7 @@ __metadata:
   resolution: "humanode-e2e-tests-ts@workspace:utils/e2e-tests/ts"
   dependencies:
     "@polkadot/api": ^10.9.1
-    "@types/node": 16.18.40
+    "@types/node": 16.18.41
     "@vitest/expect": ^0.34.2
     axios: ^1.4.0
     ethers: ^6.7.1
