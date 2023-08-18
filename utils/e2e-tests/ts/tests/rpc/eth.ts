@@ -47,6 +47,17 @@ describe("eth rpc", () => {
 
         expect(fee).toBeWithin(expectedFee, { tolerance });
       });
+
+      it("has the corresponding estimate", async () => {
+        const [alice, bob] = devSigners;
+
+        const gas = await alice.estimateGas({
+          to: bob.address,
+          value: transferValue,
+        });
+
+        expect(gas).toBe(21000n);
+      });
     });
   });
 });
