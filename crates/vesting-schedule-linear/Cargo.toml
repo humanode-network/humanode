@@ -11,7 +11,7 @@ scale-info = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"], optional = true }
 
 [dev-dependencies]
-num = { workspace = true }
+num = { workspace = true, features = ["default"] }
 serde_json = { workspace = true }
 
 [features]

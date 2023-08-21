@@ -10,6 +10,6 @@ primitives-ethereum = { path = "../primitives-ethereum" }
 
 ethers-core = { workspace = true, features = ["eip712"] }
 hex-literal = { workspace = true }
-secp256k1 = { workspace = true }
+secp256k1 = { workspace = true, features = ["default"] }
 serde_json = { workspace = true }
 sp-core = { workspace = true }

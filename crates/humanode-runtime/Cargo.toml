@@ -96,8 +96,9 @@ static_assertions = { workspace = true }
 crypto-utils = { path = "../crypto-utils" }
 eip712-common-test-utils = { path = "../eip712-common-test-utils" }
 
-ethereum = { workspace = true }
+ethereum = { workspace = true, features = ["default"] }
 hex = { workspace = true }
+hex-literal = { workspace = true }
 serde_json = { workspace = true }
 sp-io = { workspace = true }
 sp-keystore = { workspace = true }
@@ -152,7 +153,6 @@ std = [
   "frame-system/std",
   "frame-try-runtime/std",
   "hex/std",
-  "hex-literal",
   "keystore-bioauth-account-id/std",
   "libsecp256k1/std",
   "pallet-authorship/std",

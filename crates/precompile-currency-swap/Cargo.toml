@@ -17,14 +17,14 @@ scale-info = { workspace = true, default-features = false, features = ["derive"]
 sp-core = { workspace = true, default-features = false }
 
 [dev-dependencies]
-frame-system = { workspace = true, default-features = false }
+frame-system = { workspace = true }
 hex-literal = { workspace = true }
 mockall = { workspace = true }
-pallet-balances = { workspace = true, default-features = false }
-pallet-evm = { workspace = true, default-features = false }
-pallet-evm-balances = { workspace = true, default-features = false }
-pallet-evm-system = { workspace = true, default-features = false }
-pallet-timestamp = { workspace = true, default-features = false }
+pallet-balances = { workspace = true, features = ["default"] }
+pallet-evm = { workspace = true }
+pallet-evm-balances = { workspace = true, features = ["default"] }
+pallet-evm-system = { workspace = true, features = ["default"] }
+pallet-timestamp = { workspace = true, features = ["default"] }
 
 [features]
 default = ["std"]

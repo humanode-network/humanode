@@ -33,9 +33,9 @@ fc-rpc = { workspace = true }
 fc-rpc-core = { workspace = true }
 fc-storage = { workspace = true }
 fdlimit = { workspace = true }
-fp-evm = { workspace = true }
+fp-evm = { workspace = true, features = ["default"] }
 frame-benchmarking = { workspace = true, optional = true }
-frame-benchmarking-cli = { workspace = true }
+frame-benchmarking-cli = { workspace = true, features = ["default", "rocksdb"] }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 frame-system-rpc-runtime-api = { workspace = true }
@@ -43,7 +43,7 @@ futures = { workspace = true }
 hex = { workspace = true }
 hex-literal = { workspace = true }
 pallet-balances = { workspace = true }
-pallet-im-online = { workspace = true }
+pallet-im-online = { workspace = true, features = ["default"] }
 pallet-transaction-payment = { workspace = true }
 qr2term = { workspace = true }
 reqwest = { workspace = true, features = ["default"] }

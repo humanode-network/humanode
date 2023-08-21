@@ -17,9 +17,9 @@ sp-std = { workspace = true, default-features = false }
 
 [dev-dependencies]
 mockall = { workspace = true }
-pallet-balances = { workspace = true }
-pallet-evm-balances = { workspace = true }
-pallet-evm-system = { workspace = true }
+pallet-balances = { workspace = true, features = ["default"] }
+pallet-evm-balances = { workspace = true, features = ["default"] }
+pallet-evm-system = { workspace = true, features = ["default"] }
 sp-core = { workspace = true }
 
 [features]
