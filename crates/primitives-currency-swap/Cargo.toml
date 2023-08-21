@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-frame-support = { workspace = true, default-features = false }
+frame-support = { workspace = true }
 
 [features]
 default = ["std"]

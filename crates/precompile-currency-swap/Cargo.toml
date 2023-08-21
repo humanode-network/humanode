@@ -8,13 +8,13 @@ publish = false
 precompile-utils = { path = "../precompile-utils", default-features = false }
 primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
 
-codec = { workspace = true, package = "parity-scale-codec", default-features = false, features = ["derive"] }
-fp-evm = { workspace = true, default-features = false }
-frame-support = { workspace = true, default-features = false }
-num_enum = { workspace = true, default-features = false }
-pallet-evm = { workspace = true, default-features = false }
-scale-info = { workspace = true, default-features = false, features = ["derive"] }
-sp-core = { workspace = true, default-features = false }
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+fp-evm = { workspace = true }
+frame-support = { workspace = true }
+num_enum = { workspace = true }
+pallet-evm = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
+sp-core = { workspace = true }
 
 [dev-dependencies]
 frame-system = { workspace = true }

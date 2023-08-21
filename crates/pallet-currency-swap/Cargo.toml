@@ -7,13 +7,13 @@ publish = false
 [dependencies]
 primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
 
-codec = { workspace = true, package = "parity-scale-codec", default-features = false, features = ["derive"] }
-frame-benchmarking = { workspace = true, default-features = false, optional = true }
-frame-support = { workspace = true, default-features = false }
-frame-system = { workspace = true, default-features = false }
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+frame-benchmarking = { workspace = true, optional = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
-sp-runtime = { workspace = true, default-features = false }
-sp-std = { workspace = true, default-features = false }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
 
 [dev-dependencies]
 mockall = { workspace = true }
