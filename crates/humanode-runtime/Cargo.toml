@@ -56,8 +56,6 @@ libsecp256k1 = { version = "0.7", default-features = false }
 pallet-authorship = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-babe = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
 pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm-balances = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
@@ -161,13 +159,11 @@ std = [
   "pallet-babe/std",
   "pallet-balanced-currency-swap-bridges-initializer/std",
   "pallet-balances/std",
-  "pallet-base-fee/std",
   "pallet-bioauth/std",
   "pallet-bootnodes/std",
   "pallet-chain-properties/std",
   "pallet-chain-start-moment/std",
   "pallet-currency-swap/std",
-  "pallet-dynamic-fee/std",
   "pallet-ethereum-chain-id/std",
   "pallet-ethereum/std",
   "pallet-evm-accounts-mapping/std",
@@ -230,13 +226,11 @@ try-runtime = [
   "pallet-babe/try-runtime",
   "pallet-balanced-currency-swap-bridges-initializer/try-runtime",
   "pallet-balances/try-runtime",
-  "pallet-base-fee/try-runtime",
   "pallet-bioauth/try-runtime",
   "pallet-bootnodes/try-runtime",
   "pallet-chain-properties/try-runtime",
   "pallet-chain-start-moment/try-runtime",
   "pallet-currency-swap/try-runtime",
-  "pallet-dynamic-fee/try-runtime",
   "pallet-ethereum-chain-id/try-runtime",
   "pallet-ethereum/try-runtime",
   "pallet-evm-accounts-mapping/try-runtime",

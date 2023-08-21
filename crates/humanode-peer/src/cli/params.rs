@@ -51,14 +51,6 @@ pub struct BioauthFlowParams {
     pub robonode_url: Option<String>,
 }
 
-/// Shared CLI parameters used to configure EVM.
-#[derive(Debug, clap::Parser, Clone)]
-pub struct EvmParams {
-    /// The dynamic-fee pallet target gas price set by block author.
-    #[arg(long, default_value = "1")]
-    pub target_gas_price: u64,
-}
-
 /// Shared CLI parameters used to configure Ethereum RPC.
 #[derive(Debug, clap::Parser, Clone)]
 pub struct EthereumRpcParams {

@@ -630,11 +630,6 @@ Options:
       --robonode-url <ROBONODE_URL>
           The URL of robonode to authenticate with
 
-      --target-gas-price <TARGET_GAS_PRICE>
-          The dynamic-fee pallet target gas price set by block author
-          
-          [default: 1]
-
       --max-past-logs <MAX_PAST_LOGS>
           Maximum number of logs to keep from the latest block; it is not possible to query logs older than this amount from the latest block in the past
           

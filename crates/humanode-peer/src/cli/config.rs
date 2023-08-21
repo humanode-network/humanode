@@ -80,11 +80,6 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         None
     }
 
-    /// Provide the evm params, if available.
-    fn evm_params(&self) -> Option<&params::EvmParams> {
-        None
-    }
-
     /// Provide the Ethereum RPC params.
     fn ethereum_rpc_params(&self) -> Option<&params::EthereumRpcParams> {
         None

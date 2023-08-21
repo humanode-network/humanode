@@ -931,9 +931,6 @@
   features:
     - default
     - std
-- name: fp-dynamic-fee 1.0.0
-  features:
-    - std
 - name: fp-ethereum 1.0.0-dev
   features:
     - default
@@ -1979,9 +1976,6 @@
   features:
     - default
     - std
-- name: pallet-base-fee 1.0.0
-  features:
-    - std
 - name: pallet-bioauth 0.1.0
   features:
     - default
@@ -2005,9 +1999,6 @@
 - name: pallet-currency-swap 0.1.0
   features:
     - default
-    - std
-- name: pallet-dynamic-fee 4.0.0-dev
-  features:
     - std
 - name: pallet-ethereum 4.0.0-dev
   features:
