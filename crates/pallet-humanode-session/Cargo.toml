@@ -5,18 +5,16 @@ edition = "2021"
 publish = false
 
 [dependencies]
-pallet-bioauth = { version = "0.1", path = "../pallet-bioauth", default-features = false }
-pallet-bootnodes = { version = "0.1", path = "../pallet-bootnodes", default-features = false }
+pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
+pallet-bootnodes = { path = "../pallet-bootnodes", default-features = false }
 
-codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-session = { default-features = false, features = [
-  "historical",
-], git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-session = { workspace = true, features = ["historical"] }
+scale-info = { workspace = true, features = ["derive"] }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
 
 [features]
 default = ["std"]

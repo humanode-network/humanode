@@ -5,20 +5,20 @@ edition = "2021"
 publish = false
 
 [dependencies]
-author-ext-api = { version = "0.1", path = "../author-ext-api" }
-bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
+author-ext-api = { path = "../author-ext-api" }
+bioauth-keys = { path = "../bioauth-keys" }
 rpc-deny-unsafe = { path = "../rpc-deny-unsafe" }
 rpc-error-response = { path = "../rpc-error-response" }
-rpc-validator-key-logic = { version = "0.1", path = "../rpc-validator-key-logic" }
+rpc-validator-key-logic = { path = "../rpc-validator-key-logic" }
 
-jsonrpsee = { version = "0.16.2", features = ["server", "macros"] }
-sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-serde = "1"
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-tracing = "0.1"
+jsonrpsee = { workspace = true, features = ["server", "macros"] }
+sc-transaction-pool-api = { workspace = true }
+serde = { workspace = true, features = ["default"] }
+sp-api = { workspace = true }
+sp-blockchain = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+tracing = { workspace = true }
 
 [dev-dependencies]
-serde_json = "1"
+serde_json = { workspace = true }

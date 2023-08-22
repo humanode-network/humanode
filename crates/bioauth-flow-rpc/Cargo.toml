@@ -5,24 +5,24 @@ edition = "2021"
 publish = false
 
 [dependencies]
-bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
-bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
-pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
-primitives-liveness-data = { version = "0.1", path = "../primitives-liveness-data" }
-robonode-client = { version = "0.1", path = "../robonode-client" }
+bioauth-flow-api = { path = "../bioauth-flow-api" }
+bioauth-keys = { path = "../bioauth-keys" }
+pallet-bioauth = { path = "../pallet-bioauth" }
+primitives-liveness-data = { path = "../primitives-liveness-data" }
+robonode-client = { path = "../robonode-client" }
 rpc-deny-unsafe = { path = "../rpc-deny-unsafe" }
 rpc-error-response = { path = "../rpc-error-response" }
-rpc-validator-key-logic = { version = "0.1", path = "../rpc-validator-key-logic" }
+rpc-validator-key-logic = { path = "../rpc-validator-key-logic" }
 
-anyhow = "1"
-async-trait = "0.1"
-jsonrpsee = { version = "0.16.2", features = ["server", "macros"] }
-sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-serde = "1"
-serde_json = "1"
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-thiserror = "1"
-tokio = "1"
-tracing = "0.1"
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+jsonrpsee = { workspace = true, features = ["server", "macros"] }
+sc-transaction-pool-api = { workspace = true }
+serde = { workspace = true, features = ["default"] }
+serde_json = { workspace = true }
+sp-api = { workspace = true }
+sp-blockchain = { workspace = true }
+sp-runtime = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }

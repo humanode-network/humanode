@@ -8,23 +8,23 @@ publish = false
 precompile-utils = { path = "../precompile-utils", default-features = false }
 primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
 
-codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-num_enum = { version = "0.6.0", default-features = false }
-pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
-scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
-sp-core = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+fp-evm = { workspace = true }
+frame-support = { workspace = true }
+num_enum = { workspace = true }
+pallet-evm = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
+sp-core = { workspace = true }
 
 [dev-dependencies]
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-hex-literal = "0.4"
-mockall = "0.11"
-pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-balances = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-system = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-timestamp = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+frame-system = { workspace = true }
+hex-literal = { workspace = true }
+mockall = { workspace = true }
+pallet-balances = { workspace = true, features = ["default"] }
+pallet-evm = { workspace = true }
+pallet-evm-balances = { workspace = true, features = ["default"] }
+pallet-evm-system = { workspace = true, features = ["default"] }
+pallet-timestamp = { workspace = true, features = ["default"] }
 
 [features]
 default = ["std"]

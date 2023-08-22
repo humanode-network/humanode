@@ -5,8 +5,8 @@ edition = "2021"
 publish = false
 
 [dependencies]
-frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-im-online = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+frame-support = { workspace = true }
+pallet-im-online = { workspace = true }
+sp-consensus-babe = { workspace = true }
+sp-finality-grandpa = { workspace = true }
+sp-runtime = { workspace = true }
