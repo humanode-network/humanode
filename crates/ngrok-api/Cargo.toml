@@ -6,14 +6,14 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
-async-trait = { version = "0.1", optional = true }
-http = { version = "0.2", optional = true }
-http-body = { version = "0.4", optional = true }
-reqwest = { version = "0.11", optional = true }
-serde = "1"
-serde_json = "1"
-thiserror = { version = "1", optional = true }
-url = { version = "2", optional = true }
+async-trait = { workspace = true, optional = true }
+http = { workspace = true, optional = true }
+http-body = { workspace = true, optional = true }
+reqwest = { workspace = true, optional = true, features = ["default"] }
+serde = { workspace = true, features = ["default"] }
+serde_json = { workspace = true }
+thiserror = { workspace = true, optional = true }
+url = { workspace = true, optional = true }
 
 [features]
 client = ["http", "url", "http-body", "thiserror", "async-trait", "reqwest"]

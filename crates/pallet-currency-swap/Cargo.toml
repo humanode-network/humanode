@@ -5,22 +5,22 @@ edition = "2021"
 publish = false
 
 [dependencies]
-primitives-currency-swap = { version = "0.1", path = "../primitives-currency-swap", default-features = false }
+primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
 
-codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
-frame-benchmarking = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", optional = true }
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-system = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
-sp-runtime = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+frame-benchmarking = { workspace = true, optional = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
 
 [dev-dependencies]
-mockall = "0.11"
-pallet-balances = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-balances = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-evm-system = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+mockall = { workspace = true }
+pallet-balances = { workspace = true, features = ["default"] }
+pallet-evm-balances = { workspace = true, features = ["default"] }
+pallet-evm-system = { workspace = true, features = ["default"] }
+sp-core = { workspace = true }
 
 [features]
 default = ["std"]
@@ -35,8 +35,12 @@ std = [
   "codec/std",
   "frame-support/std",
   "frame-system/std",
+  "pallet-balances/std",
+  "pallet-evm-balances/std",
+  "pallet-evm-system/std",
   "primitives-currency-swap/std",
   "scale-info/std",
+  "sp-core/std",
   "sp-runtime/std",
   "sp-std/std",
 ]

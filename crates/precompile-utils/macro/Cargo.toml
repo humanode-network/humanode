@@ -14,8 +14,8 @@ name = "tests"
 path = "tests/tests.rs"
 
 [dependencies]
-num_enum = { version = "0.5.3", default-features = false }
-proc-macro2 = "1.0"
-quote = "1.0"
-sha3 = "0.9"
-syn = { version = "1.0", features = ["extra-traits", "fold", "full", "visit"] }
+num_enum = { version = "0.5.3", default-features = false }                       # special case, exlucded from workspace dependencies
+proc-macro2 = { workspace = true }
+quote = { workspace = true }
+sha3 = "0.9"                                                                     # special case, exlucded from workspace dependencies
+syn = { workspace = true, features = ["extra-traits", "fold", "full", "visit"] }
