@@ -76,7 +76,7 @@ external-default-features = "allow"
 allow = []
 deny = [
   # Avoid using precompiled serde_derive.
-  { name = "serde_derive", version = "> 1.0.171" },
+  { name = "serde_derive", version = "> 1.0.171, < 1.0.184" },
 ]
 features = []
 skip = []
