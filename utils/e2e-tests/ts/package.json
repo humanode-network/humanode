@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@polkadot/api": "^10.9.1",
-    "@types/node": "16.18.41",
+    "@types/node": "16.18.43",
     "@vitest/expect": "^0.34.2",
     "axios": "^1.4.0",
     "ethers": "^6.7.1",
