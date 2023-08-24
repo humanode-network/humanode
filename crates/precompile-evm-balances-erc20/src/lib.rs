@@ -61,6 +61,7 @@ pub enum Action {
     BalanceOf = "balanceOf(address)",
     Allowance = "allowance(address,address)",
     Approve = "approve(address,uint256)",
+    Transfer = "transfer(address,uint256)",
 }
 
 pub struct EvmBalancesErc20<Runtime, Metadata, GasCost>(PhantomData<(Runtime, Metadata, GasCost)>)
@@ -91,6 +92,7 @@ where
             Action::BalanceOf => Self::balance_of(handle),
             Action::Allowance => Self::allowance(handle),
             Action::Approve => Self::approve(handle),
+            Action::Transfer => Self::transfer(handle),
         }
     }
 }
@@ -220,6 +222,47 @@ where
         }
 
         ApprovesStorage::<EvmBalancesT>::insert(owner.clone(), spender.clone(), amount);
+
+        Ok(succeed(EvmDataWriter::new().write(true).build()))
+    }
+
+    fn transfer(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.record_cost(GasCost::get())?;
+
+        let mut input = handle.read_input()?;
+
+        let from = handle.context().caller;
+        let from: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = from.into();
+
+        input
+            .expect_arguments(2)
+            .map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("exactly two argument is expected".into()),
+            })?;
+
+        let to: Address = input.read()?;
+        let to: H160 = to.into();
+        let to: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = to.into();
+
+        let amount: U256 = input.read()?;
+        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance =
+            amount.try_into().map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("value is out of bounds".into()),
+            })?;
+
+        let junk_data = input.read_till_end()?;
+        if !junk_data.is_empty() {
+            return Err(PrecompileFailure::Error {
+                exit_status: ExitError::Other("junk at the end of input".into()),
+            });
+        }
+
+        pallet_evm_balances::Pallet::<EvmBalancesT>::transfer(
+            &from,
+            &to,
+            amount,
+            frame_support::traits::ExistenceRequirement::AllowDeath,
+        );
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
