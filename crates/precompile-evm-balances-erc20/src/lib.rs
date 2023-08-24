@@ -62,17 +62,29 @@ pub type ApprovesStorage<Runtime> = StorageDoubleMap<
 #[precompile_utils::generate_function_selector]
 #[derive(Debug, PartialEq)]
 pub enum Action {
+    /// Returns the name of the token.
     Name = "name()",
+    /// Returns the symbol of the token.
     Symbol = "symbol()",
+    /// Returns the decimals places of the token.
     Decimals = "decimals()",
+    /// Returns the amount of tokens in existence.
     TotalSupply = "totalSupply()",
+    /// Returns the amount of tokens owned by provided account.
     BalanceOf = "balanceOf(address)",
+    /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
+    /// owner through transferFrom. This is zero by default.
     Allowance = "allowance(address,address)",
+    /// Sets amount as the allowance of spender over the caller’s tokens.
     Approve = "approve(address,uint256)",
+    /// Moves amount tokens from the caller’s account to recipient.
     Transfer = "transfer(address,uint256)",
+    /// Moves amount tokens from sender to recipient using the allowance mechanism,
+    /// amount is then deducted from the caller’s allowance.
     TransferFrom = "transferFrom(address,address,uint256)",
 }
 
+/// Precompile exposing a `pallet_evm_balance` as an ERC20.
 pub struct EvmBalancesErc20<Runtime, Metadata, GasCost>(PhantomData<(Runtime, Metadata, GasCost)>)
 where
     GasCost: Get<u64>;
@@ -115,24 +127,28 @@ where
     <EvmBalancesT as pallet_evm_balances::Config>::AccountId: From<H160>,
     GasCost: Get<u64>,
 {
+    /// Returns the name of the token.
     fn name(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let name: Bytes = Metadata::name().into();
 
         Ok(succeed(EvmDataWriter::new().write(name).build()))
     }
 
+    /// Returns the symbol of the token.
     fn symbol(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let symbol: Bytes = Metadata::symbol().into();
 
         Ok(succeed(EvmDataWriter::new().write(symbol).build()))
     }
 
+    /// Returns the decimals places of the token.
     fn decimals(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let decimals: u8 = Metadata::decimals();
 
         Ok(succeed(EvmDataWriter::new().write(decimals).build()))
     }
 
+    /// Returns the amount of tokens in existence.
     fn total_supply(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let total_supply: U256 =
             pallet_evm_balances::Pallet::<EvmBalancesT>::total_issuance().into();
@@ -140,6 +156,7 @@ where
         Ok(succeed(EvmDataWriter::new().write(total_supply).build()))
     }
 
+    /// Returns the amount of tokens owned by provided account.
     fn balance_of(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
 
@@ -165,6 +182,8 @@ where
         Ok(succeed(EvmDataWriter::new().write(total_balance).build()))
     }
 
+    /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
+    /// owner through transferFrom. This is zero by default.
     fn allowance(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
 
@@ -200,6 +219,7 @@ where
         ))
     }
 
+    /// Sets amount as the allowance of spender over the caller’s tokens.
     fn approve(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         handle.record_cost(GasCost::get())?;
 
@@ -248,6 +268,7 @@ where
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
 
+    /// Moves amount tokens from the caller’s account to recipient.
     fn transfer(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         handle.record_cost(GasCost::get())?;
 
@@ -301,6 +322,8 @@ where
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
 
+    /// Moves amount tokens from sender to recipient using the allowance mechanism,
+    /// amount is then deducted from the caller’s allowance.
     fn transfer_from(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         handle.record_cost(GasCost::get())?;
 
