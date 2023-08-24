@@ -190,7 +190,7 @@ where
         input
             .expect_arguments(2)
             .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly two argument is expected".into()),
+                exit_status: ExitError::Other("exactly two arguments are expected".into()),
             })?;
 
         let owner: Address = input.read()?;
@@ -231,7 +231,7 @@ where
         input
             .expect_arguments(2)
             .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly two argument is expected".into()),
+                exit_status: ExitError::Other("exactly two arguments are expected".into()),
             })?;
 
         let spender: Address = input.read()?;
@@ -280,7 +280,7 @@ where
         input
             .expect_arguments(2)
             .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly two argument is expected".into()),
+                exit_status: ExitError::Other("exactly two arguments are expected".into()),
             })?;
 
         let to: Address = input.read()?;
@@ -345,7 +345,7 @@ where
         input
             .expect_arguments(3)
             .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly three argument is expected".into()),
+                exit_status: ExitError::Other("exactly three argument are expected".into()),
             })?;
 
         let from: Address = input.read()?;
