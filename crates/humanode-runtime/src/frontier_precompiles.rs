@@ -37,7 +37,7 @@ where
     R: pallet_bioauth::Config,
     R: pallet_evm_accounts_mapping::Config,
     R: pallet_evm_balances::Config,
-    <R as pallet_evm_balances::Config>::Balance: Into<U256>,
+    <R as pallet_evm_balances::Config>::Balance: Into<U256> + TryFrom<U256>,
     <R as pallet_evm_balances::Config>::AccountId: From<H160>,
     R::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
