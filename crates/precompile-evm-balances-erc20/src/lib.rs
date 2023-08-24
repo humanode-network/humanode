@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
-    sp_runtime::traits::CheckedSub,
+    sp_runtime::{self, traits::CheckedSub},
     sp_std::{marker::PhantomData, prelude::*},
     storage::types::StorageDoubleMap,
     traits::{tokens::currency::Currency, StorageInstance},
@@ -252,7 +252,7 @@ where
             });
         }
 
-        ApprovesStorage::<EvmBalancesT>::insert(owner.clone(), spender.clone(), amount);
+        ApprovesStorage::<EvmBalancesT>::insert(owner, spender, amount);
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -306,7 +306,17 @@ where
             &to,
             amount,
             frame_support::traits::ExistenceRequirement::AllowDeath,
-        );
+        )
+        .map_err(|error| match error {
+            sp_runtime::DispatchError::Token(sp_runtime::TokenError::NoFunds) => {
+                PrecompileFailure::Error {
+                    exit_status: ExitError::OutOfFund,
+                }
+            }
+            _ => PrecompileFailure::Error {
+                exit_status: ExitError::Other("unable to transfer funds".into()),
+            },
+        })?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -383,7 +393,17 @@ where
             &to,
             amount,
             frame_support::traits::ExistenceRequirement::AllowDeath,
-        );
+        )
+        .map_err(|error| match error {
+            sp_runtime::DispatchError::Token(sp_runtime::TokenError::NoFunds) => {
+                PrecompileFailure::Error {
+                    exit_status: ExitError::OutOfFund,
+                }
+            }
+            _ => PrecompileFailure::Error {
+                exit_status: ExitError::Other("unable to transfer funds".into()),
+            },
+        })?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
