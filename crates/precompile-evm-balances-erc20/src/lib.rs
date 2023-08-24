@@ -36,19 +36,19 @@ pub trait Erc20Metadata {
     fn decimals() -> u8;
 }
 
+/// Approves storage instance to manage the allowance related data.
 pub struct Approves;
 
 impl StorageInstance for Approves {
     const STORAGE_PREFIX: &'static str = "Approves";
 
     fn pallet_prefix() -> &'static str {
-        "Erc20InstanceEvmBalances"
+        "EvmBalancesErc20Approves"
     }
 }
 
-/// Storage type used to store approvals, since `pallet_balances` doesn't
-/// handle this behavior.
-/// (Owner => Allowed => Amount)
+/// Storage type used to store approvals, since `pallet_evm_balances` doesn't handle this behavior.
+/// (Owner => Allowed => Amount).
 pub type ApprovesStorage<Runtime> = StorageDoubleMap<
     Approves,
     Blake2_128Concat,
