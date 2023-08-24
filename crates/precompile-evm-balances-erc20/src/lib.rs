@@ -3,20 +3,26 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
-    sp_runtime::{self, traits::CheckedSub},
+    sp_runtime::traits::CheckedSub,
     sp_std::{marker::PhantomData, prelude::*},
     storage::types::StorageDoubleMap,
-    traits::{fungible::Inspect, tokens::currency::Currency, StorageInstance},
+    traits::{tokens::currency::Currency, StorageInstance},
     Blake2_128Concat,
 };
 use pallet_evm::{
-    ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
-    PrecompileResult,
+    ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
 };
 use precompile_utils::{
-    revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, PrecompileHandleExt,
+    keccak256, revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, LogExt, LogsBuilder,
+    PrecompileHandleExt,
 };
-use sp_core::{Get, H160, H256, U256};
+use sp_core::{Get, H160, U256};
+
+/// Solidity selector of the Transfer log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_TRANSFER: [u8; 32] = keccak256!("Transfer(address,address,uint256)");
+
+/// Solidity selector of the Approval log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_APPROVAL: [u8; 32] = keccak256!("Approval(address,address,uint256)");
 
 /// Metadata of an ERC20 token.
 pub trait Erc20Metadata {
@@ -209,12 +215,13 @@ where
             })?;
 
         let spender: Address = input.read()?;
-        let spender: H160 = spender.into();
-        let spender: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = spender.into();
+        let spender_h160: H160 = spender.into();
+        let spender: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = spender_h160.into();
 
-        let amount: U256 = input.read()?;
-        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance =
-            amount.try_into().map_err(|_| PrecompileFailure::Error {
+        let amount_u256: U256 = input.read()?;
+        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance = amount_u256
+            .try_into()
+            .map_err(|_| PrecompileFailure::Error {
                 exit_status: ExitError::Other("value is out of bounds".into()),
             })?;
 
@@ -226,6 +233,17 @@ where
         }
 
         ApprovesStorage::<EvmBalancesT>::insert(owner.clone(), spender.clone(), amount);
+
+        let logs_builder = LogsBuilder::new(handle.context().address);
+
+        logs_builder
+            .log3(
+                SELECTOR_LOG_APPROVAL,
+                handle.context().caller,
+                spender_h160,
+                EvmDataWriter::new().write(amount_u256).build(),
+            )
+            .record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
@@ -245,12 +263,13 @@ where
             })?;
 
         let to: Address = input.read()?;
-        let to: H160 = to.into();
-        let to: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = to.into();
+        let to_h160: H160 = to.into();
+        let to: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = to_h160.into();
 
-        let amount: U256 = input.read()?;
-        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance =
-            amount.try_into().map_err(|_| PrecompileFailure::Error {
+        let amount_u256: U256 = input.read()?;
+        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance = amount_u256
+            .try_into()
+            .map_err(|_| PrecompileFailure::Error {
                 exit_status: ExitError::Other("value is out of bounds".into()),
             })?;
 
@@ -267,6 +286,17 @@ where
             amount,
             frame_support::traits::ExistenceRequirement::AllowDeath,
         );
+
+        let logs_builder = LogsBuilder::new(handle.context().address);
+
+        logs_builder
+            .log3(
+                SELECTOR_LOG_TRANSFER,
+                handle.context().caller,
+                to_h160,
+                EvmDataWriter::new().write(amount_u256).build(),
+            )
+            .record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
@@ -286,16 +316,17 @@ where
             })?;
 
         let from: Address = input.read()?;
-        let from: H160 = from.into();
-        let from: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = from.into();
+        let from_h160: H160 = from.into();
+        let from: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = from_h160.into();
 
         let to: Address = input.read()?;
-        let to: H160 = to.into();
-        let to: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = to.into();
+        let to_h160: H160 = to.into();
+        let to: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = to_h160.into();
 
-        let amount: U256 = input.read()?;
-        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance =
-            amount.try_into().map_err(|_| PrecompileFailure::Error {
+        let amount_u256: U256 = input.read()?;
+        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance = amount_u256
+            .try_into()
+            .map_err(|_| PrecompileFailure::Error {
                 exit_status: ExitError::Other("value is out of bounds".into()),
             })?;
 
@@ -330,6 +361,18 @@ where
             amount,
             frame_support::traits::ExistenceRequirement::AllowDeath,
         );
+
+        let logs_builder = LogsBuilder::new(handle.context().address);
+
+        logs_builder
+            .log4(
+                SELECTOR_LOG_TRANSFER,
+                handle.context().caller,
+                from_h160,
+                to_h160,
+                EvmDataWriter::new().write(amount_u256).build(),
+            )
+            .record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
