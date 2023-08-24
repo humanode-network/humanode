@@ -55,7 +55,9 @@ where
             // Humanode precompiles:
             a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
             a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
-            a if a == hash(2050) => Some(EvmBalancesErc20::<R, ConstU64<200>>::execute(handle)),
+            a if a == hash(2050) => {
+                Some(EvmBalancesErc20::<R, NativeErc20Metadata, ConstU64<200>>::execute(handle))
+            }
             a if a == hash(2304) => Some(CurrencySwap::<
                 currency_swap::EvmToNativeOneToOne,
                 EvmAccountId,
@@ -75,4 +77,24 @@ where
 
 fn hash(a: u64) -> H160 {
     H160::from_low_u64_be(a)
+}
+
+pub struct NativeErc20Metadata;
+
+/// ERC20 metadata for the native token.
+impl precompile_evm_balances_erc20::Erc20Metadata for NativeErc20Metadata {
+    /// Returns the name of the token.
+    fn name() -> &'static str {
+        "Humanode token"
+    }
+
+    /// Returns the symbol of the token.
+    fn symbol() -> &'static str {
+        "HMND"
+    }
+
+    /// Returns the decimals places of the token.
+    fn decimals() -> u8 {
+        18
+    }
 }
