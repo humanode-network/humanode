@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
-    sp_runtime,
+    sp_runtime::{self, traits::CheckedSub},
     sp_std::{marker::PhantomData, prelude::*},
     storage::types::StorageDoubleMap,
     traits::{fungible::Inspect, tokens::currency::Currency, StorageInstance},
@@ -13,7 +13,9 @@ use pallet_evm::{
     ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
     PrecompileResult,
 };
-use precompile_utils::{succeed, Address, Bytes, EvmDataWriter, EvmResult, PrecompileHandleExt};
+use precompile_utils::{
+    revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, PrecompileHandleExt,
+};
 use sp_core::{Get, H160, H256, U256};
 
 /// Metadata of an ERC20 token.
@@ -62,6 +64,7 @@ pub enum Action {
     Allowance = "allowance(address,address)",
     Approve = "approve(address,uint256)",
     Transfer = "transfer(address,uint256)",
+    TransferFrom = "transferFrom(address,address,uint256)",
 }
 
 pub struct EvmBalancesErc20<Runtime, Metadata, GasCost>(PhantomData<(Runtime, Metadata, GasCost)>)
@@ -93,6 +96,7 @@ where
             Action::Allowance => Self::allowance(handle),
             Action::Approve => Self::approve(handle),
             Action::Transfer => Self::transfer(handle),
+            Action::TransferFrom => Self::transfer_from(handle),
         }
     }
 }
@@ -255,6 +259,69 @@ where
             return Err(PrecompileFailure::Error {
                 exit_status: ExitError::Other("junk at the end of input".into()),
             });
+        }
+
+        pallet_evm_balances::Pallet::<EvmBalancesT>::transfer(
+            &from,
+            &to,
+            amount,
+            frame_support::traits::ExistenceRequirement::AllowDeath,
+        );
+
+        Ok(succeed(EvmDataWriter::new().write(true).build()))
+    }
+
+    fn transfer_from(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.record_cost(GasCost::get())?;
+
+        let mut input = handle.read_input()?;
+
+        let caller = handle.context().caller;
+        let caller: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = caller.into();
+
+        input
+            .expect_arguments(3)
+            .map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("exactly three argument is expected".into()),
+            })?;
+
+        let from: Address = input.read()?;
+        let from: H160 = from.into();
+        let from: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = from.into();
+
+        let to: Address = input.read()?;
+        let to: H160 = to.into();
+        let to: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = to.into();
+
+        let amount: U256 = input.read()?;
+        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance =
+            amount.try_into().map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("value is out of bounds".into()),
+            })?;
+
+        let junk_data = input.read_till_end()?;
+        if !junk_data.is_empty() {
+            return Err(PrecompileFailure::Error {
+                exit_status: ExitError::Other("junk at the end of input".into()),
+            });
+        }
+
+        // If caller is "from", it can spend as much as it wants.
+        if caller != from {
+            ApprovesStorage::<EvmBalancesT>::mutate(from.clone(), caller, |entry| {
+                // Get current allowed value, exit if None.
+                let allowed = entry.ok_or(revert("spender not allowed"))?;
+
+                // Remove "value" from allowed, exit if underflow.
+                let allowed = allowed
+                    .checked_sub(&amount)
+                    .ok_or_else(|| revert("trying to spend more than allowed"))?;
+
+                // Update allowed value.
+                *entry = Some(allowed);
+
+                EvmResult::Ok(())
+            })?;
         }
 
         pallet_evm_balances::Pallet::<EvmBalancesT>::transfer(
