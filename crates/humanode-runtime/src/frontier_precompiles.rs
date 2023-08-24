@@ -5,7 +5,8 @@ use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripe
 use precompile_bioauth::Bioauth;
 use precompile_currency_swap::CurrencySwap;
 use precompile_evm_accounts_mapping::EvmAccountsMapping;
-use sp_core::H160;
+use precompile_evm_balances_erc20::EvmBalancesErc20;
+use sp_core::{H160, U256};
 use sp_std::marker::PhantomData;
 
 use crate::{currency_swap, AccountId, ConstU64, EvmAccountId};
@@ -23,7 +24,7 @@ where
     R: pallet_evm::Config,
 {
     pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-        sp_std::vec![1_u64, 2, 3, 4, 5, 1024, 1025, 2048, 2049, 2304]
+        sp_std::vec![1_u64, 2, 3, 4, 5, 1024, 1025, 2048, 2049, 2050, 2304]
             .into_iter()
             .map(hash)
             .collect()
@@ -35,6 +36,9 @@ where
     R: pallet_evm::Config,
     R: pallet_bioauth::Config,
     R: pallet_evm_accounts_mapping::Config,
+    R: pallet_evm_balances::Config,
+    <R as pallet_evm_balances::Config>::Balance: Into<U256>,
+    <R as pallet_evm_balances::Config>::AccountId: From<H160>,
     R::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
     fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
@@ -51,6 +55,7 @@ where
             // Humanode precompiles:
             a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
             a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
+            a if a == hash(2050) => Some(EvmBalancesErc20::<R, ConstU64<200>>::execute(handle)),
             a if a == hash(2304) => Some(CurrencySwap::<
                 currency_swap::EvmToNativeOneToOne,
                 EvmAccountId,
