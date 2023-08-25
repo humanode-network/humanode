@@ -2214,6 +2214,10 @@
   features:
     - default
     - std
+- name: precompile-evm-balances-erc20 0.1.0
+  features:
+    - default
+    - std
 - name: precompile-utils 0.1.0
   features:
     - default
