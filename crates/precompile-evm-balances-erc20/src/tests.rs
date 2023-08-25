@@ -219,3 +219,76 @@ fn transfer_works() {
         );
     });
 }
+
+#[test]
+fn transfer_from_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let bob_evm = H160::from(hex_literal::hex!(
+            "7000000000000000000000000000000000000007"
+        ));
+        let approved_alice_bob_balance = 10 * 10u128.pow(18);
+        let charlie_evm = H160::from(hex_literal::hex!(
+            "9000000000000000000000000000000000000009"
+        ));
+        let bob_charlie_transfer_from_alice_balance = 5 * 10u128.pow(18);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        let approve_action = EvmDataWriter::new_with_selector(Action::Approve)
+            .write(Address::from(bob_evm))
+            .write(U256::from(approved_alice_bob_balance))
+            .build();
+
+        precompiles()
+            .prepare_test(alice_evm, *PRECOMPILE_ADDRESS, approve_action)
+            .expect_cost(GAS_COST)
+            .expect_log(
+                LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                    SELECTOR_LOG_APPROVAL,
+                    alice_evm,
+                    bob_evm,
+                    EvmDataWriter::new()
+                        .write(approved_alice_bob_balance)
+                        .build(),
+                ),
+            )
+            .execute_returns(EvmDataWriter::new().write(true).build());
+
+        let transfer_from_action = EvmDataWriter::new_with_selector(Action::TransferFrom)
+            .write(Address::from(alice_evm))
+            .write(Address::from(charlie_evm))
+            .write(U256::from(bob_charlie_transfer_from_alice_balance))
+            .build();
+
+        precompiles()
+            .prepare_test(bob_evm, *PRECOMPILE_ADDRESS, transfer_from_action)
+            .expect_cost(GAS_COST)
+            .expect_log(
+                LogsBuilder::new(*PRECOMPILE_ADDRESS).log4(
+                    SELECTOR_LOG_TRANSFER,
+                    bob_evm,
+                    alice_evm,
+                    charlie_evm,
+                    EvmDataWriter::new()
+                        .write(bob_charlie_transfer_from_alice_balance)
+                        .build(),
+                ),
+            )
+            .execute_returns(EvmDataWriter::new().write(true).build());
+
+        assert_eq!(
+            EvmBalances::total_balance(&alice_evm),
+            alice_evm_balance - bob_charlie_transfer_from_alice_balance
+        );
+        assert_eq!(EvmBalances::total_balance(&bob_evm), 0);
+        assert_eq!(
+            EvmBalances::total_balance(&charlie_evm),
+            bob_charlie_transfer_from_alice_balance
+        );
+    });
+}
