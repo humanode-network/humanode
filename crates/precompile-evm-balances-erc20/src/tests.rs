@@ -173,3 +173,49 @@ fn approve_works() {
             );
     });
 }
+
+#[test]
+fn transfer_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let bob_evm = H160::from(hex_literal::hex!(
+            "7000000000000000000000000000000000000007"
+        ));
+        let alice_bob_transfer_balance = 10 * 10u128.pow(18);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        let transfer_action = EvmDataWriter::new_with_selector(Action::Transfer)
+            .write(Address::from(bob_evm))
+            .write(U256::from(alice_bob_transfer_balance))
+            .build();
+
+        precompiles()
+            .prepare_test(alice_evm, *PRECOMPILE_ADDRESS, transfer_action)
+            .expect_cost(GAS_COST)
+            .expect_log(
+                LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                    SELECTOR_LOG_TRANSFER,
+                    alice_evm,
+                    bob_evm,
+                    EvmDataWriter::new()
+                        .write(alice_bob_transfer_balance)
+                        .build(),
+                ),
+            )
+            .execute_returns(EvmDataWriter::new().write(true).build());
+
+        assert_eq!(
+            EvmBalances::total_balance(&alice_evm),
+            alice_evm_balance - alice_bob_transfer_balance
+        );
+        assert_eq!(
+            EvmBalances::total_balance(&bob_evm),
+            alice_bob_transfer_balance
+        );
+    });
+}
