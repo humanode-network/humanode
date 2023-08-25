@@ -9,7 +9,7 @@ fn precompiles() -> Precompiles<Test> {
 }
 
 #[test]
-fn name_works() {
+fn metadata_name_works() {
     new_test_ext().execute_with_ext(|_| {
         let alice_evm = H160::from(hex_literal::hex!(
             "1000000000000000000000000000000000000001"
@@ -26,7 +26,7 @@ fn name_works() {
 }
 
 #[test]
-fn symbol_works() {
+fn metadata_symbol_works() {
     new_test_ext().execute_with_ext(|_| {
         let alice_evm = H160::from(hex_literal::hex!(
             "1000000000000000000000000000000000000001"
@@ -43,7 +43,7 @@ fn symbol_works() {
 }
 
 #[test]
-fn decimals_works() {
+fn metadata_decimals_works() {
     new_test_ext().execute_with_ext(|_| {
         let alice_evm = H160::from(hex_literal::hex!(
             "1000000000000000000000000000000000000001"
