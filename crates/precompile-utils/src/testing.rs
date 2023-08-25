@@ -1,3 +1,5 @@
+#![allow(clippy::integer_arithmetic)] // not a problem in tests
+
 use core::assert_matches::assert_matches;
 
 use fp_evm::{
