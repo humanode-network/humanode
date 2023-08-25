@@ -84,6 +84,12 @@ pub enum Action {
     TransferFrom = "transferFrom(address,address,uint256)",
 }
 
+/// Utility alias for easy access to the [`pallet_evm_balances::AccountId`].
+type AccountIdFor<T> = <T as pallet_evm_balances::Config>::AccountId;
+
+/// Utility alias for easy access to the [`pallet_evm_balances::Balance`].
+type BalanceFor<T> = <T as pallet_evm_balances::Config>::Balance;
+
 /// Precompile exposing a `pallet_evm_balance` as an ERC20.
 pub struct EvmBalancesErc20<Runtime, Metadata, GasCost>(PhantomData<(Runtime, Metadata, GasCost)>)
 where
@@ -94,8 +100,8 @@ impl<EvmBalancesT, Metadata, GasCost> Precompile
 where
     Metadata: Erc20Metadata,
     EvmBalancesT: pallet_evm_balances::Config,
-    <EvmBalancesT as pallet_evm_balances::Config>::Balance: Into<U256> + TryFrom<U256>,
-    <EvmBalancesT as pallet_evm_balances::Config>::AccountId: From<H160>,
+    BalanceFor<EvmBalancesT>: Into<U256> + TryFrom<U256>,
+    AccountIdFor<EvmBalancesT>: From<H160>,
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
@@ -123,8 +129,8 @@ impl<EvmBalancesT, Metadata, GasCost> EvmBalancesErc20<EvmBalancesT, Metadata, G
 where
     Metadata: Erc20Metadata,
     EvmBalancesT: pallet_evm_balances::Config,
-    <EvmBalancesT as pallet_evm_balances::Config>::Balance: Into<U256> + TryFrom<U256>,
-    <EvmBalancesT as pallet_evm_balances::Config>::AccountId: From<H160>,
+    BalanceFor<EvmBalancesT>: Into<U256> + TryFrom<U256>,
+    AccountIdFor<EvmBalancesT>: From<H160>,
     GasCost: Get<u64>,
 {
     /// Returns the name of the token.
@@ -181,11 +187,11 @@ where
 
         let owner: Address = input.read()?;
         let owner: H160 = owner.into();
-        let owner: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = owner.into();
+        let owner: AccountIdFor<EvmBalancesT> = owner.into();
 
         let spender: Address = input.read()?;
         let spender: H160 = spender.into();
-        let spender: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = spender.into();
+        let spender: AccountIdFor<EvmBalancesT> = spender.into();
 
         check_input_end(&mut input)?;
 
@@ -207,20 +213,21 @@ where
         let mut input = handle.read_input()?;
 
         let owner = handle.context().caller;
-        let owner: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = owner.into();
+        let owner: AccountIdFor<EvmBalancesT> = owner.into();
 
         check_input(&mut input, 2)?;
 
         let spender: Address = input.read()?;
         let spender_h160: H160 = spender.into();
-        let spender: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = spender_h160.into();
+        let spender: AccountIdFor<EvmBalancesT> = spender_h160.into();
 
         let amount_u256: U256 = input.read()?;
-        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance = amount_u256
-            .try_into()
-            .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("value is out of bounds".into()),
-            })?;
+        let amount: BalanceFor<EvmBalancesT> =
+            amount_u256
+                .try_into()
+                .map_err(|_| PrecompileFailure::Error {
+                    exit_status: ExitError::Other("value is out of bounds".into()),
+                })?;
 
         check_input_end(&mut input)?;
 
@@ -247,20 +254,21 @@ where
         let mut input = handle.read_input()?;
 
         let from = handle.context().caller;
-        let from: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = from.into();
+        let from: AccountIdFor<EvmBalancesT> = from.into();
 
         check_input(&mut input, 2)?;
 
         let to: Address = input.read()?;
         let to_h160: H160 = to.into();
-        let to: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = to_h160.into();
+        let to: AccountIdFor<EvmBalancesT> = to_h160.into();
 
         let amount_u256: U256 = input.read()?;
-        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance = amount_u256
-            .try_into()
-            .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("value is out of bounds".into()),
-            })?;
+        let amount: BalanceFor<EvmBalancesT> =
+            amount_u256
+                .try_into()
+                .map_err(|_| PrecompileFailure::Error {
+                    exit_status: ExitError::Other("value is out of bounds".into()),
+                })?;
 
         check_input_end(&mut input)?;
 
@@ -288,31 +296,27 @@ where
         let mut input = handle.read_input()?;
 
         let caller = handle.context().caller;
-        let caller: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = caller.into();
+        let caller: AccountIdFor<EvmBalancesT> = caller.into();
 
         check_input(&mut input, 3)?;
 
         let from: Address = input.read()?;
         let from_h160: H160 = from.into();
-        let from: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = from_h160.into();
+        let from: AccountIdFor<EvmBalancesT> = from_h160.into();
 
         let to: Address = input.read()?;
         let to_h160: H160 = to.into();
-        let to: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = to_h160.into();
+        let to: AccountIdFor<EvmBalancesT> = to_h160.into();
 
         let amount_u256: U256 = input.read()?;
-        let amount: <EvmBalancesT as pallet_evm_balances::Config>::Balance = amount_u256
-            .try_into()
-            .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("value is out of bounds".into()),
-            })?;
+        let amount: BalanceFor<EvmBalancesT> =
+            amount_u256
+                .try_into()
+                .map_err(|_| PrecompileFailure::Error {
+                    exit_status: ExitError::Other("value is out of bounds".into()),
+                })?;
 
-        let junk_data = input.read_till_end()?;
-        if !junk_data.is_empty() {
-            return Err(PrecompileFailure::Error {
-                exit_status: ExitError::Other("junk at the end of input".into()),
-            });
-        }
+        check_input_end(&mut input)?;
 
         // If caller is "from", it can spend as much as it wants.
         if caller != from {
