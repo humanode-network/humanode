@@ -6756,7 +6756,6 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
- "mockall",
  "num_enum 0.6.0",
  "pallet-balances",
  "pallet-evm",

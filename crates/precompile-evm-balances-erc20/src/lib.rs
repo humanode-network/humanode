@@ -18,6 +18,9 @@ use precompile_utils::{
 };
 use sp_core::{Get, H160, U256};
 
+#[cfg(test)]
+mod mock;
+
 /// Solidity selector of the Transfer log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_TRANSFER: [u8; 32] = keccak256!("Transfer(address,address,uint256)");
 
