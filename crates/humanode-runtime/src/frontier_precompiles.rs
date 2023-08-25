@@ -56,7 +56,9 @@ where
             a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
             a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
             a if a == hash(2050) => {
-                Some(EvmBalancesErc20::<R, NativeErc20Metadata, ConstU64<200>>::execute(handle))
+                Some(
+                    EvmBalancesErc20::<R, EvmBalancesErc20Metadata, ConstU64<200>>::execute(handle),
+                )
             }
             a if a == hash(2304) => Some(CurrencySwap::<
                 currency_swap::EvmToNativeOneToOne,
@@ -79,15 +81,15 @@ fn hash(a: u64) -> H160 {
     H160::from_low_u64_be(a)
 }
 
-pub struct NativeErc20Metadata;
+pub struct EvmBalancesErc20Metadata;
 
-impl precompile_evm_balances_erc20::Erc20Metadata for NativeErc20Metadata {
+impl precompile_evm_balances_erc20::Erc20Metadata for EvmBalancesErc20Metadata {
     fn name() -> &'static str {
-        "Humanode token"
+        "Ethereum humanode token"
     }
 
     fn symbol() -> &'static str {
-        "HMND"
+        "eHMND"
     }
 
     fn decimals() -> u8 {
