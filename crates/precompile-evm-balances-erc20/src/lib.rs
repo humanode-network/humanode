@@ -84,10 +84,10 @@ pub enum Action {
     TransferFrom = "transferFrom(address,address,uint256)",
 }
 
-/// Utility alias for easy access to the [`pallet_evm_balances::AccountId`].
+/// Utility alias for easy access to the [`pallet_evm_balances::Config::AccountId`].
 type AccountIdFor<T> = <T as pallet_evm_balances::Config>::AccountId;
 
-/// Utility alias for easy access to the [`pallet_evm_balances::Balance`].
+/// Utility alias for easy access to the [`pallet_evm_balances::Config::Balance`].
 type BalanceFor<T> = <T as pallet_evm_balances::Config>::Balance;
 
 /// Precompile exposing a `pallet_evm_balance` as an ERC20.
