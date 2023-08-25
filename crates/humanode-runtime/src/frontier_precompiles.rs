@@ -81,19 +81,15 @@ fn hash(a: u64) -> H160 {
 
 pub struct NativeErc20Metadata;
 
-/// ERC20 metadata for the native token.
 impl precompile_evm_balances_erc20::Erc20Metadata for NativeErc20Metadata {
-    /// Returns the name of the token.
     fn name() -> &'static str {
         "Humanode token"
     }
 
-    /// Returns the symbol of the token.
     fn symbol() -> &'static str {
         "HMND"
     }
 
-    /// Returns the decimals places of the token.
     fn decimals() -> u8 {
         18
     }
