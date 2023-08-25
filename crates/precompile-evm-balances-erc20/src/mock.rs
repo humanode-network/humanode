@@ -1,6 +1,5 @@
 //! The mock for the precompile.
 
-use fp_evm::PrecompileHandle;
 use frame_support::{
     once_cell::sync::Lazy,
     sp_io,
@@ -14,6 +13,7 @@ use frame_support::{
     weights::Weight,
 };
 use frame_system as system;
+use precompile_utils::precompile_set::{PrecompileAt, PrecompileSetBuilder};
 use sp_core::{ConstU128, H160, H256, U256};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -22,6 +22,10 @@ type Block = frame_system::mocking::MockBlock<Test>;
 pub(crate) type AccountId = sp_runtime::AccountId32;
 pub(crate) type EvmAccountId = H160;
 pub(crate) type Balance = u128;
+
+pub(crate) const NAME: &str = "Ethereum humanode token";
+pub(crate) const SYMBOL: &str = "eHMND";
+pub(crate) const DECIMALS: u8 = 18;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -116,10 +120,19 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
     }
 }
 
+pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x802));
+
+pub(crate) type EvmBalancesErc20Precompile =
+    crate::EvmBalancesErc20<Test, EvmBalancesErc20Metadata, ConstU64<200>>;
+
+pub type Precompiles<R> =
+    PrecompileSetBuilder<R, (PrecompileAt<PrecompileAddress, EvmBalancesErc20Precompile>,)>;
+
 frame_support::parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
     pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
-    pub MockPrecompiles: MockPrecompileSet = MockPrecompileSet;
+    pub PrecompileAddress: H160 = *PRECOMPILE_ADDRESS;
+    pub PrecompilesValue: Precompiles<Test> = Precompiles::new();
 }
 
 impl pallet_evm::Config for Test {
@@ -137,8 +150,8 @@ impl pallet_evm::Config for Test {
     type AddressMapping = pallet_evm::IdentityAddressMapping;
     type Currency = EvmBalances;
     type RuntimeEvent = RuntimeEvent;
-    type PrecompilesType = MockPrecompileSet;
-    type PrecompilesValue = MockPrecompiles;
+    type PrecompilesType = Precompiles<Self>;
+    type PrecompilesValue = PrecompilesValue;
     type ChainId = ();
     type BlockGasLimit = BlockGasLimit;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
@@ -151,45 +164,15 @@ pub struct EvmBalancesErc20Metadata;
 
 impl crate::Erc20Metadata for EvmBalancesErc20Metadata {
     fn name() -> &'static str {
-        "Ethereum humanode token"
+        NAME
     }
 
     fn symbol() -> &'static str {
-        "eHMND"
+        SYMBOL
     }
 
     fn decimals() -> u8 {
-        18
-    }
-}
-
-type EvmBalancesErc20Precompile =
-    crate::EvmBalancesErc20<Test, EvmBalancesErc20Metadata, ConstU64<200>>;
-
-/// The precompile set containing the precompile under test.
-pub struct MockPrecompileSet;
-
-pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x802));
-
-impl pallet_evm::PrecompileSet for MockPrecompileSet {
-    /// Tries to execute a precompile in the precompile set.
-    /// If the provided address is not a precompile, returns None.
-    fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<pallet_evm::PrecompileResult> {
-        use pallet_evm::Precompile;
-        let address = handle.code_address();
-
-        if address == *PRECOMPILE_ADDRESS {
-            return Some(EvmBalancesErc20Precompile::execute(handle));
-        }
-
-        None
-    }
-
-    /// Check if the given address is a precompile. Should only be called to
-    /// perform the check while not executing the precompile afterward, since
-    /// `execute` already performs a check internally.
-    fn is_precompile(&self, address: H160) -> bool {
-        address == *PRECOMPILE_ADDRESS
+        DECIMALS
     }
 }
 

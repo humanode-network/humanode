@@ -18,6 +18,8 @@ scale-info = { workspace = true, features = ["derive"] }
 sp-core = { workspace = true }
 
 [dev-dependencies]
+precompile-utils = { path = "../precompile-utils", features = ["testing"] }
+
 frame-system = { workspace = true }
 hex-literal = { workspace = true }
 pallet-balances = { workspace = true, features = ["default"] }
