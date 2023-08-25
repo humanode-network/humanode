@@ -13,8 +13,8 @@ use pallet_evm::{
     ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
 };
 use precompile_utils::{
-    keccak256, revert, succeed, Address, Bytes, EvmDataWriter, EvmResult, LogExt, LogsBuilder,
-    PrecompileHandleExt,
+    keccak256, revert, succeed, Address, Bytes, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
+    LogsBuilder, PrecompileHandleExt,
 };
 use sp_core::{Get, H160, U256};
 
@@ -159,22 +159,12 @@ where
     /// Returns the amount of tokens owned by provided account.
     fn balance_of(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
-
-        input
-            .expect_arguments(1)
-            .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly one argument is expected".into()),
-            })?;
+        check_input(&mut input, 1)?;
 
         let owner: Address = input.read()?;
         let owner: H160 = owner.into();
 
-        let junk_data = input.read_till_end()?;
-        if !junk_data.is_empty() {
-            return Err(PrecompileFailure::Error {
-                exit_status: ExitError::Other("junk at the end of input".into()),
-            });
-        }
+        check_input_end(&mut input)?;
 
         let total_balance: U256 =
             pallet_evm_balances::Pallet::<EvmBalancesT>::total_balance(&owner.into()).into();
@@ -187,11 +177,7 @@ where
     fn allowance(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
 
-        input
-            .expect_arguments(2)
-            .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly two arguments are expected".into()),
-            })?;
+        check_input(&mut input, 2)?;
 
         let owner: Address = input.read()?;
         let owner: H160 = owner.into();
@@ -201,12 +187,7 @@ where
         let spender: H160 = spender.into();
         let spender: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = spender.into();
 
-        let junk_data = input.read_till_end()?;
-        if !junk_data.is_empty() {
-            return Err(PrecompileFailure::Error {
-                exit_status: ExitError::Other("junk at the end of input".into()),
-            });
-        }
+        check_input_end(&mut input)?;
 
         Ok(succeed(
             EvmDataWriter::new()
@@ -228,11 +209,7 @@ where
         let owner = handle.context().caller;
         let owner: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = owner.into();
 
-        input
-            .expect_arguments(2)
-            .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly two arguments are expected".into()),
-            })?;
+        check_input(&mut input, 2)?;
 
         let spender: Address = input.read()?;
         let spender_h160: H160 = spender.into();
@@ -245,12 +222,7 @@ where
                 exit_status: ExitError::Other("value is out of bounds".into()),
             })?;
 
-        let junk_data = input.read_till_end()?;
-        if !junk_data.is_empty() {
-            return Err(PrecompileFailure::Error {
-                exit_status: ExitError::Other("junk at the end of input".into()),
-            });
-        }
+        check_input_end(&mut input)?;
 
         ApprovesStorage::<EvmBalancesT>::insert(owner, spender, amount);
 
@@ -277,11 +249,7 @@ where
         let from = handle.context().caller;
         let from: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = from.into();
 
-        input
-            .expect_arguments(2)
-            .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly two arguments are expected".into()),
-            })?;
+        check_input(&mut input, 2)?;
 
         let to: Address = input.read()?;
         let to_h160: H160 = to.into();
@@ -294,29 +262,9 @@ where
                 exit_status: ExitError::Other("value is out of bounds".into()),
             })?;
 
-        let junk_data = input.read_till_end()?;
-        if !junk_data.is_empty() {
-            return Err(PrecompileFailure::Error {
-                exit_status: ExitError::Other("junk at the end of input".into()),
-            });
-        }
+        check_input_end(&mut input)?;
 
-        pallet_evm_balances::Pallet::<EvmBalancesT>::transfer(
-            &from,
-            &to,
-            amount,
-            frame_support::traits::ExistenceRequirement::AllowDeath,
-        )
-        .map_err(|error| match error {
-            sp_runtime::DispatchError::Token(sp_runtime::TokenError::NoFunds) => {
-                PrecompileFailure::Error {
-                    exit_status: ExitError::OutOfFund,
-                }
-            }
-            _ => PrecompileFailure::Error {
-                exit_status: ExitError::Other("unable to transfer funds".into()),
-            },
-        })?;
+        do_transfer::<EvmBalancesT>(from, to, amount)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -342,11 +290,7 @@ where
         let caller = handle.context().caller;
         let caller: <EvmBalancesT as pallet_evm_balances::Config>::AccountId = caller.into();
 
-        input
-            .expect_arguments(3)
-            .map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("exactly three argument are expected".into()),
-            })?;
+        check_input(&mut input, 3)?;
 
         let from: Address = input.read()?;
         let from_h160: H160 = from.into();
@@ -388,22 +332,7 @@ where
             })?;
         }
 
-        pallet_evm_balances::Pallet::<EvmBalancesT>::transfer(
-            &from,
-            &to,
-            amount,
-            frame_support::traits::ExistenceRequirement::AllowDeath,
-        )
-        .map_err(|error| match error {
-            sp_runtime::DispatchError::Token(sp_runtime::TokenError::NoFunds) => {
-                PrecompileFailure::Error {
-                    exit_status: ExitError::OutOfFund,
-                }
-            }
-            _ => PrecompileFailure::Error {
-                exit_status: ExitError::Other("unable to transfer funds".into()),
-            },
-        })?;
+        do_transfer::<EvmBalancesT>(from, to, amount)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -419,4 +348,53 @@ where
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
+}
+
+/// A helper function to transfer `pallet_evm_balances` funds.
+fn do_transfer<T: pallet_evm_balances::Config>(
+    from: <T as pallet_evm_balances::Config>::AccountId,
+    to: <T as pallet_evm_balances::Config>::AccountId,
+    amount: <T as pallet_evm_balances::Config>::Balance,
+) -> Result<(), PrecompileFailure> {
+    pallet_evm_balances::Pallet::<T>::transfer(
+        &from,
+        &to,
+        amount,
+        frame_support::traits::ExistenceRequirement::AllowDeath,
+    )
+    .map_err(|error| match error {
+        sp_runtime::DispatchError::Token(sp_runtime::TokenError::NoFunds) => {
+            PrecompileFailure::Error {
+                exit_status: ExitError::OutOfFund,
+            }
+        }
+        _ => PrecompileFailure::Error {
+            exit_status: ExitError::Other("unable to transfer funds".into()),
+        },
+    })?;
+
+    Ok(())
+}
+
+/// A helper function to check expected arguments number.
+fn check_input(input: &mut EvmDataReader, args_number: u8) -> Result<(), PrecompileFailure> {
+    input
+        .expect_arguments(args_number.into())
+        .map_err(|_| PrecompileFailure::Error {
+            exit_status: ExitError::Other("not expected arguments number".into()),
+        })?;
+
+    Ok(())
+}
+
+/// A helper function that verifies possible junk at the end of input.
+fn check_input_end(input: &mut EvmDataReader) -> Result<(), PrecompileFailure> {
+    let junk_data = input.read_till_end()?;
+    if !junk_data.is_empty() {
+        return Err(PrecompileFailure::Error {
+            exit_status: ExitError::Other("junk at the end of input".into()),
+        });
+    }
+
+    Ok(())
 }
