@@ -26,6 +26,7 @@ pub(crate) type Balance = u128;
 pub(crate) const NAME: &str = "Ethereum humanode token";
 pub(crate) const SYMBOL: &str = "eHMND";
 pub(crate) const DECIMALS: u8 = 18;
+pub(crate) const GAS_COST: u64 = 200;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -123,7 +124,7 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
 pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x802));
 
 pub(crate) type EvmBalancesErc20Precompile =
-    crate::EvmBalancesErc20<Test, EvmBalancesErc20Metadata, ConstU64<200>>;
+    crate::EvmBalancesErc20<Test, EvmBalancesErc20Metadata, ConstU64<GAS_COST>>;
 
 pub type Precompiles<R> =
     PrecompileSetBuilder<R, (PrecompileAt<PrecompileAddress, EvmBalancesErc20Precompile>,)>;

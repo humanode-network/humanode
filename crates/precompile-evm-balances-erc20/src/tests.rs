@@ -118,3 +118,58 @@ fn balance_of_works() {
             );
     });
 }
+
+#[test]
+fn approve_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let bob_evm = H160::from(hex_literal::hex!(
+            "7000000000000000000000000000000000000007"
+        ));
+        let approved_alice_bob_balance = 10 * 10u128.pow(18);
+        let charlie_evm = H160::from(hex_literal::hex!(
+            "9000000000000000000000000000000000000009"
+        ));
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        let approve_action = EvmDataWriter::new_with_selector(Action::Approve)
+            .write(Address::from(bob_evm))
+            .write(U256::from(approved_alice_bob_balance))
+            .build();
+
+        precompiles()
+            .prepare_test(alice_evm, *PRECOMPILE_ADDRESS, approve_action)
+            .expect_cost(GAS_COST)
+            .expect_log(
+                LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                    SELECTOR_LOG_APPROVAL,
+                    alice_evm,
+                    bob_evm,
+                    EvmDataWriter::new()
+                        .write(approved_alice_bob_balance)
+                        .build(),
+                ),
+            )
+            .execute_returns(EvmDataWriter::new().write(true).build());
+
+        let allowance_action = EvmDataWriter::new_with_selector(Action::Allowance)
+            .write(Address::from(alice_evm))
+            .write(Address::from(bob_evm))
+            .build();
+
+        precompiles()
+            .prepare_test(charlie_evm, *PRECOMPILE_ADDRESS, allowance_action)
+            .expect_cost(0)
+            .expect_no_logs()
+            .execute_returns(
+                EvmDataWriter::new()
+                    .write(U256::from(approved_alice_bob_balance))
+                    .build(),
+            );
+    });
+}
