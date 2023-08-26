@@ -17,6 +17,6 @@ updates:
     schedule:
       interval: "weekly"
     groups:
-      all:
+      yarn:
         patterns:
           - '*'
