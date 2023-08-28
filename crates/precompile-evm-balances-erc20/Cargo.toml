@@ -5,6 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
+pallet-erc20 = { path = "../pallet-erc20", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
 primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
 
@@ -36,6 +37,7 @@ std = [
   "frame-system/std",
   "num_enum/std",
   "pallet-balances/std",
+  "pallet-erc20/std",
   "pallet-evm-balances/std",
   "pallet-evm-system/std",
   "pallet-evm/std",

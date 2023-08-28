@@ -5,9 +5,7 @@
 use frame_support::{
     sp_runtime::{self, traits::CheckedSub},
     sp_std::{marker::PhantomData, prelude::*},
-    storage::types::StorageDoubleMap,
-    traits::{tokens::currency::Currency, StorageInstance},
-    Blake2_128Concat,
+    traits::tokens::currency::Currency,
 };
 use pallet_evm::{
     ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
@@ -41,28 +39,6 @@ pub trait Erc20Metadata {
     /// Returns the decimals places of the token.
     fn decimals() -> u8;
 }
-
-/// Approves storage instance to manage the allowance related data.
-pub struct Approves;
-
-impl StorageInstance for Approves {
-    const STORAGE_PREFIX: &'static str = "Approves";
-
-    fn pallet_prefix() -> &'static str {
-        "EvmBalancesErc20Approves"
-    }
-}
-
-/// Storage type used to store approvals, since `pallet_evm_balances` doesn't handle this behavior.
-/// (Owner => Allowed => Amount).
-pub type ApprovesStorage<Runtime> = StorageDoubleMap<
-    Approves,
-    Blake2_128Concat,
-    <Runtime as pallet_evm_balances::Config>::AccountId,
-    Blake2_128Concat,
-    <Runtime as pallet_evm_balances::Config>::AccountId,
-    <Runtime as pallet_evm_balances::Config>::Balance,
->;
 
 /// Possible actions for this interface.
 #[precompile_utils::generate_function_selector]
@@ -101,13 +77,12 @@ pub struct EvmBalancesErc20<Runtime, Metadata, GasCost>(PhantomData<(Runtime, Me
 where
     GasCost: Get<u64>;
 
-impl<EvmBalancesT, Metadata, GasCost> Precompile
-    for EvmBalancesErc20<EvmBalancesT, Metadata, GasCost>
+impl<Runtime, Metadata, GasCost> Precompile for EvmBalancesErc20<Runtime, Metadata, GasCost>
 where
     Metadata: Erc20Metadata,
-    EvmBalancesT: pallet_evm_balances::Config,
-    BalanceFor<EvmBalancesT>: Into<U256> + TryFrom<U256>,
-    AccountIdFor<EvmBalancesT>: From<H160>,
+    Runtime: pallet_evm_balances::Config + pallet_erc20::Config,
+    BalanceFor<Runtime>: Into<U256> + TryFrom<U256>,
+    AccountIdFor<Runtime>: From<H160>,
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
@@ -131,12 +106,12 @@ where
     }
 }
 
-impl<EvmBalancesT, Metadata, GasCost> EvmBalancesErc20<EvmBalancesT, Metadata, GasCost>
+impl<Runtime, Metadata, GasCost> EvmBalancesErc20<Runtime, Metadata, GasCost>
 where
     Metadata: Erc20Metadata,
-    EvmBalancesT: pallet_evm_balances::Config,
-    BalanceFor<EvmBalancesT>: Into<U256> + TryFrom<U256>,
-    AccountIdFor<EvmBalancesT>: From<H160>,
+    Runtime: pallet_evm_balances::Config + pallet_erc20::Config,
+    BalanceFor<Runtime>: Into<U256> + TryFrom<U256>,
+    AccountIdFor<Runtime>: From<H160>,
     GasCost: Get<u64>,
 {
     /// Returns the name of the token.
@@ -162,8 +137,7 @@ where
 
     /// Returns the amount of tokens in existence.
     fn total_supply(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        let total_supply: U256 =
-            pallet_evm_balances::Pallet::<EvmBalancesT>::total_issuance().into();
+        let total_supply: U256 = pallet_evm_balances::Pallet::<Runtime>::total_issuance().into();
 
         Ok(succeed(EvmDataWriter::new().write(total_supply).build()))
     }
@@ -179,7 +153,7 @@ where
         check_input_end(&mut input)?;
 
         let total_balance: U256 =
-            pallet_evm_balances::Pallet::<EvmBalancesT>::total_balance(&owner.into()).into();
+            pallet_evm_balances::Pallet::<Runtime>::total_balance(&owner.into()).into();
 
         Ok(succeed(EvmDataWriter::new().write(total_balance).build()))
     }
@@ -193,18 +167,18 @@ where
 
         let owner: Address = input.read()?;
         let owner: H160 = owner.into();
-        let owner: AccountIdFor<EvmBalancesT> = owner.into();
+        let owner: AccountIdFor<Runtime> = owner.into();
 
         let spender: Address = input.read()?;
         let spender: H160 = spender.into();
-        let spender: AccountIdFor<EvmBalancesT> = spender.into();
+        let spender: AccountIdFor<Runtime> = spender.into();
 
         check_input_end(&mut input)?;
 
         Ok(succeed(
             EvmDataWriter::new()
                 .write(
-                    ApprovesStorage::<EvmBalancesT>::get(owner, spender)
+                    pallet_erc20::Approvals::<Runtime>::get(owner, spender)
                         .unwrap_or_default()
                         .into(),
                 )
@@ -219,16 +193,16 @@ where
         let mut input = handle.read_input()?;
 
         let owner = handle.context().caller;
-        let owner: AccountIdFor<EvmBalancesT> = owner.into();
+        let owner: AccountIdFor<Runtime> = owner.into();
 
         check_input(&mut input, 2)?;
 
         let spender: Address = input.read()?;
         let spender_h160: H160 = spender.into();
-        let spender: AccountIdFor<EvmBalancesT> = spender_h160.into();
+        let spender: AccountIdFor<Runtime> = spender_h160.into();
 
         let amount_u256: U256 = input.read()?;
-        let amount: BalanceFor<EvmBalancesT> =
+        let amount: BalanceFor<Runtime> =
             amount_u256
                 .try_into()
                 .map_err(|_| PrecompileFailure::Error {
@@ -237,7 +211,7 @@ where
 
         check_input_end(&mut input)?;
 
-        ApprovesStorage::<EvmBalancesT>::insert(owner, spender, amount);
+        pallet_erc20::Approvals::<Runtime>::insert(owner, spender, amount);
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -260,16 +234,16 @@ where
         let mut input = handle.read_input()?;
 
         let from = handle.context().caller;
-        let from: AccountIdFor<EvmBalancesT> = from.into();
+        let from: AccountIdFor<Runtime> = from.into();
 
         check_input(&mut input, 2)?;
 
         let to: Address = input.read()?;
         let to_h160: H160 = to.into();
-        let to: AccountIdFor<EvmBalancesT> = to_h160.into();
+        let to: AccountIdFor<Runtime> = to_h160.into();
 
         let amount_u256: U256 = input.read()?;
-        let amount: BalanceFor<EvmBalancesT> =
+        let amount: BalanceFor<Runtime> =
             amount_u256
                 .try_into()
                 .map_err(|_| PrecompileFailure::Error {
@@ -278,7 +252,7 @@ where
 
         check_input_end(&mut input)?;
 
-        do_transfer::<EvmBalancesT>(from, to, amount)?;
+        do_transfer::<Runtime>(from, to, amount)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -302,20 +276,20 @@ where
         let mut input = handle.read_input()?;
 
         let caller = handle.context().caller;
-        let caller: AccountIdFor<EvmBalancesT> = caller.into();
+        let caller: AccountIdFor<Runtime> = caller.into();
 
         check_input(&mut input, 3)?;
 
         let from: Address = input.read()?;
         let from_h160: H160 = from.into();
-        let from: AccountIdFor<EvmBalancesT> = from_h160.into();
+        let from: AccountIdFor<Runtime> = from_h160.into();
 
         let to: Address = input.read()?;
         let to_h160: H160 = to.into();
-        let to: AccountIdFor<EvmBalancesT> = to_h160.into();
+        let to: AccountIdFor<Runtime> = to_h160.into();
 
         let amount_u256: U256 = input.read()?;
-        let amount: BalanceFor<EvmBalancesT> =
+        let amount: BalanceFor<Runtime> =
             amount_u256
                 .try_into()
                 .map_err(|_| PrecompileFailure::Error {
@@ -326,7 +300,7 @@ where
 
         // If caller is "from", it can spend as much as it wants.
         if caller != from {
-            ApprovesStorage::<EvmBalancesT>::mutate(from.clone(), caller, |entry| {
+            pallet_erc20::Approvals::<Runtime>::mutate(from.clone(), caller, |entry| {
                 // Get current allowed value, exit if None.
                 let allowed = entry.ok_or(revert("spender not allowed"))?;
 
@@ -342,7 +316,7 @@ where
             })?;
         }
 
-        do_transfer::<EvmBalancesT>(from, to, amount)?;
+        do_transfer::<Runtime>(from, to, amount)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 

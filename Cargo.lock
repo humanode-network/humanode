@@ -6770,6 +6770,7 @@ dependencies = [
  "hex-literal",
  "num_enum 0.6.0",
  "pallet-balances",
+ "pallet-erc20",
  "pallet-evm",
  "pallet-evm-balances",
  "pallet-evm-system",
