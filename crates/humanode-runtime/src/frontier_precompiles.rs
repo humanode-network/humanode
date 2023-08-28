@@ -85,7 +85,7 @@ pub struct EvmBalancesErc20Metadata;
 
 impl precompile_evm_balances_erc20::Erc20Metadata for EvmBalancesErc20Metadata {
     fn name() -> &'static str {
-        "Ethereum humanode token"
+        "Wrapped eHMND"
     }
 
     fn symbol() -> &'static str {
