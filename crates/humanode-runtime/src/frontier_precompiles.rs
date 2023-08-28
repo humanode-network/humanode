@@ -89,7 +89,7 @@ impl precompile_evm_balances_erc20::Erc20Metadata for EvmBalancesErc20Metadata {
     }
 
     fn symbol() -> &'static str {
-        "eHMND"
+        "WeHMND"
     }
 
     fn decimals() -> u8 {
