@@ -1,8 +1,11 @@
-//! A substrate minimal Pallet that stores ERC20 related data in the runtime.
+//! A substrate pallet that exposes currency instance as ERC20 token.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::StorageVersion;
+use frame_support::{
+    sp_runtime::{traits::CheckedSub, DispatchError},
+    traits::{Currency, StorageVersion},
+};
 pub use pallet::*;
 
 #[cfg(test)]
@@ -10,6 +13,18 @@ mod mock;
 
 #[cfg(test)]
 mod tests;
+
+/// Metadata of an ERC20 token.
+pub trait Metadata {
+    /// Returns the name of the token.
+    fn name() -> &'static str;
+
+    /// Returns the symbol of the token.
+    fn symbol() -> &'static str;
+
+    /// Returns the decimals places of the token.
+    fn decimals() -> u8;
+}
 
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
@@ -19,23 +34,18 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::{
-        pallet_prelude::*,
-        sp_runtime::{traits::MaybeDisplay, FixedPointOperand},
-        sp_std::fmt::Debug,
-        traits::tokens::Balance,
-    };
+    use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug};
 
     use super::*;
 
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
     #[pallet::generate_store(pub(super) trait Store)]
-    pub struct Pallet<T>(_);
+    pub struct Pallet<T, I = ()>(_);
 
     /// Configuration trait of this pallet.
     #[pallet::config]
-    pub trait Config: frame_system::Config {
+    pub trait Config<I: 'static = ()>: frame_system::Config {
         /// The user account identifier type.
         type AccountId: Parameter
             + Member
@@ -45,24 +55,115 @@ pub mod pallet {
             + Ord
             + MaxEncodedLen;
 
-        /// The balance of an account.
-        type Balance: Balance
-            + MaybeSerializeDeserialize
-            + Debug
-            + MaxEncodedLen
-            + FixedPointOperand;
+        /// The currency to be exposed as ERC20 token.
+        type Currency: Currency<<Self as Config<I>>::AccountId>;
+
+        /// Interface into ERC20 metadata implementation.
+        type Metadata: Metadata;
     }
 
     /// ERC20-style approvals data.
     /// (Owner => Allowed => Amount).
     #[pallet::storage]
     #[pallet::getter(fn approvals)]
-    pub type Approvals<T> = StorageDoubleMap<
+    pub type Approvals<T: Config<I>, I: 'static = ()> = StorageDoubleMap<
         _,
         Blake2_128Concat,
-        <T as Config>::AccountId,
+        <T as Config<I>>::AccountId,
         Blake2_128Concat,
-        <T as Config>::AccountId,
-        <T as Config>::Balance,
+        <T as Config<I>>::AccountId,
+        <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance,
     >;
+
+    /// Possible errors.
+    #[pallet::error]
+    pub enum Error<T, I = ()> {
+        /// Spender not allowed to transfer tokens on behalf of owner.
+        SpenderNotAllowed,
+        /// Spender can't transfer tokens more than allowed.
+        SpendMoreThanAllowed,
+    }
+}
+
+impl<T: Config<I>, I: 'static> Pallet<T, I> {
+    /// Returns the amount of tokens in existence.
+    pub fn total_supply(
+    ) -> <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance {
+        T::Currency::total_issuance()
+    }
+
+    /// Returns the amount of tokens owned by provided account.
+    pub fn balance_of(
+        owner: &<T as Config<I>>::AccountId,
+    ) -> <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance {
+        T::Currency::total_balance(owner)
+    }
+
+    /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
+    /// owner. This is zero by default.
+    pub fn allowance(
+        owner: &<T as Config<I>>::AccountId,
+        spender: &<T as Config<I>>::AccountId,
+    ) -> <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance {
+        <Approvals<T, I>>::get(owner, spender).unwrap_or_default()
+    }
+
+    /// Sets amount as the allowance of spender over the caller’s tokens.
+    pub fn approve(
+        owner: <T as Config<I>>::AccountId,
+        spender: <T as Config<I>>::AccountId,
+        amount: <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance,
+    ) {
+        <Approvals<T, I>>::insert(owner, spender, amount);
+    }
+
+    /// Moves amount tokens from the caller’s account to recipient.
+    pub fn transfer(
+        caller: <T as Config<I>>::AccountId,
+        recipient: <T as Config<I>>::AccountId,
+        amount: <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance,
+    ) -> Result<(), DispatchError> {
+        T::Currency::transfer(
+            &caller,
+            &recipient,
+            amount,
+            frame_support::traits::ExistenceRequirement::AllowDeath,
+        )
+    }
+
+    /// Moves amount tokens from sender to recipient using the allowance mechanism,
+    /// amount is then deducted from the caller’s allowance.
+    pub fn transfer_from(
+        caller: <T as Config<I>>::AccountId,
+        sender: <T as Config<I>>::AccountId,
+        recipient: <T as Config<I>>::AccountId,
+        amount: <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance,
+    ) -> Result<(), DispatchError> {
+        // If caller is "sender", it can spend as much as it wants.
+        if caller != sender {
+            <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
+                // Get current allowed value, exit if None.
+                let allowed = entry.ok_or(Error::<T, I>::SpenderNotAllowed)?;
+
+                // Remove "value" from allowed, exit if underflow.
+                let allowed = allowed
+                    .checked_sub(&amount)
+                    .ok_or(Error::<T, I>::SpendMoreThanAllowed)?;
+
+                // Update allowed value.
+                *entry = Some(allowed);
+
+                Ok::<(), Error<T, I>>(())
+            })?;
+        }
+
+        T::Currency::transfer(
+            &sender,
+            &recipient,
+            amount,
+            frame_support::traits::ExistenceRequirement::AllowDeath,
+        )?;
+
+        Ok(())
+    }
 }
