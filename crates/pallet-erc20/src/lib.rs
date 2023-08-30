@@ -1,4 +1,4 @@
-//! A substrate pallet that exposes currency instance as ERC20 token.
+//! A substrate pallet that wraps currency instance.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -29,6 +29,12 @@ pub trait Metadata {
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
+/// Utility alias for easy access to the [`Config::AccountId`].
+type AccountIdOf<T, I> = <T as Config<I>>::AccountId;
+
+/// Utility alias for easy access to the [`Currency::Balance`] of the [`Config::Currency`] type.
+type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountIdOf<T, I>>>::Balance;
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -56,7 +62,7 @@ pub mod pallet {
             + MaxEncodedLen;
 
         /// The currency to be exposed as ERC20 token.
-        type Currency: Currency<<Self as Config<I>>::AccountId>;
+        type Currency: Currency<AccountIdOf<Self, I>>;
 
         /// Interface into ERC20 metadata implementation.
         type Metadata: Metadata;
@@ -69,10 +75,10 @@ pub mod pallet {
     pub type Approvals<T: Config<I>, I: 'static = ()> = StorageDoubleMap<
         _,
         Blake2_128Concat,
-        <T as Config<I>>::AccountId,
+        AccountIdOf<T, I>,
         Blake2_128Concat,
-        <T as Config<I>>::AccountId,
-        <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance,
+        AccountIdOf<T, I>,
+        BalanceOf<T, I>,
     >;
 
     /// Possible errors.
@@ -87,41 +93,31 @@ pub mod pallet {
 
 impl<T: Config<I>, I: 'static> Pallet<T, I> {
     /// Returns the amount of tokens in existence.
-    pub fn total_supply(
-    ) -> <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance {
+    pub fn total_supply() -> BalanceOf<T, I> {
         T::Currency::total_issuance()
     }
 
     /// Returns the amount of tokens owned by provided account.
-    pub fn balance_of(
-        owner: &<T as Config<I>>::AccountId,
-    ) -> <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance {
+    pub fn balance_of(owner: &AccountIdOf<T, I>) -> BalanceOf<T, I> {
         T::Currency::total_balance(owner)
     }
 
     /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
     /// owner. This is zero by default.
-    pub fn allowance(
-        owner: &<T as Config<I>>::AccountId,
-        spender: &<T as Config<I>>::AccountId,
-    ) -> <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance {
+    pub fn allowance(owner: &AccountIdOf<T, I>, spender: &AccountIdOf<T, I>) -> BalanceOf<T, I> {
         <Approvals<T, I>>::get(owner, spender).unwrap_or_default()
     }
 
     /// Sets amount as the allowance of spender over the caller’s tokens.
-    pub fn approve(
-        owner: <T as Config<I>>::AccountId,
-        spender: <T as Config<I>>::AccountId,
-        amount: <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance,
-    ) {
+    pub fn approve(owner: AccountIdOf<T, I>, spender: AccountIdOf<T, I>, amount: BalanceOf<T, I>) {
         <Approvals<T, I>>::insert(owner, spender, amount);
     }
 
     /// Moves amount tokens from the caller’s account to recipient.
     pub fn transfer(
-        caller: <T as Config<I>>::AccountId,
-        recipient: <T as Config<I>>::AccountId,
-        amount: <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance,
+        caller: AccountIdOf<T, I>,
+        recipient: AccountIdOf<T, I>,
+        amount: BalanceOf<T, I>,
     ) -> Result<(), DispatchError> {
         T::Currency::transfer(
             &caller,
@@ -134,10 +130,10 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     /// Moves amount tokens from sender to recipient using the allowance mechanism,
     /// amount is then deducted from the caller’s allowance.
     pub fn transfer_from(
-        caller: <T as Config<I>>::AccountId,
-        sender: <T as Config<I>>::AccountId,
-        recipient: <T as Config<I>>::AccountId,
-        amount: <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance,
+        caller: AccountIdOf<T, I>,
+        sender: AccountIdOf<T, I>,
+        recipient: AccountIdOf<T, I>,
+        amount: BalanceOf<T, I>,
     ) -> Result<(), DispatchError> {
         // If caller is "sender", it can spend as much as it wants.
         if caller != sender {
