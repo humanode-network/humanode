@@ -7,7 +7,6 @@ publish = false
 [dependencies]
 pallet-erc20 = { path = "../pallet-erc20", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
-primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
 
 codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
 fp-evm = { workspace = true }
@@ -43,7 +42,6 @@ std = [
   "pallet-evm/std",
   "pallet-timestamp/std",
   "precompile-utils/std",
-  "primitives-currency-swap/std",
   "scale-info/std",
   "sp-core/std",
 ]
