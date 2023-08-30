@@ -23,8 +23,8 @@ pub(crate) type AccountId = sp_runtime::AccountId32;
 pub(crate) type EvmAccountId = H160;
 pub(crate) type Balance = u128;
 
-pub(crate) const NAME: &str = "Ethereum humanode token";
-pub(crate) const SYMBOL: &str = "eHMND";
+pub(crate) const NAME: &str = "Wrapped eHMND";
+pub(crate) const SYMBOL: &str = "WeHMND";
 pub(crate) const DECIMALS: u8 = 18;
 pub(crate) const GAS_COST: u64 = 200;
 
@@ -41,6 +41,7 @@ frame_support::construct_runtime!(
         EvmSystem: pallet_evm_system,
         EvmBalances: pallet_evm_balances,
         EVM: pallet_evm,
+        Erc20: pallet_erc20,
     }
 );
 
@@ -111,6 +112,28 @@ impl pallet_evm_balances::Config for Test {
     type DustRemoval = ();
 }
 
+pub struct EvmBalancesErc20Metadata;
+
+impl pallet_erc20::Metadata for EvmBalancesErc20Metadata {
+    fn name() -> &'static str {
+        NAME
+    }
+
+    fn symbol() -> &'static str {
+        SYMBOL
+    }
+
+    fn decimals() -> u8 {
+        DECIMALS
+    }
+}
+
+impl pallet_erc20::Config for Test {
+    type AccountId = EvmAccountId;
+    type Currency = EvmBalances;
+    type Metadata = EvmBalancesErc20Metadata;
+}
+
 pub(crate) static GAS_PRICE: Lazy<U256> = Lazy::new(|| 1_000_000_000u128.into());
 
 pub struct FixedGasPrice;
@@ -123,8 +146,7 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
 
 pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x802));
 
-pub(crate) type EvmBalancesErc20Precompile =
-    crate::EvmBalancesErc20<Test, EvmBalancesErc20Metadata, ConstU64<GAS_COST>>;
+pub(crate) type EvmBalancesErc20Precompile = crate::WrappedCurrency<Test, ConstU64<GAS_COST>>;
 
 pub type Precompiles<R> =
     PrecompileSetBuilder<R, (PrecompileAt<PrecompileAddress, EvmBalancesErc20Precompile>,)>;
@@ -159,22 +181,6 @@ impl pallet_evm::Config for Test {
     type OnChargeTransaction = ();
     type OnCreate = ();
     type FindAuthor = ();
-}
-
-pub struct EvmBalancesErc20Metadata;
-
-impl crate::Erc20Metadata for EvmBalancesErc20Metadata {
-    fn name() -> &'static str {
-        NAME
-    }
-
-    fn symbol() -> &'static str {
-        SYMBOL
-    }
-
-    fn decimals() -> u8 {
-        DECIMALS
-    }
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
