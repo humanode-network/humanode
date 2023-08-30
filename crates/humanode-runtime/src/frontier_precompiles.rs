@@ -1,3 +1,4 @@
+use frame_support::traits::Currency;
 use pallet_evm::{Precompile, PrecompileHandle, PrecompileResult, PrecompileSet};
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
@@ -5,7 +6,7 @@ use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripe
 use precompile_bioauth::Bioauth;
 use precompile_currency_swap::CurrencySwap;
 use precompile_evm_accounts_mapping::EvmAccountsMapping;
-use precompile_evm_balances_erc20::EvmBalancesErc20;
+use precompile_token_wrapper::WrappedToken;
 use sp_core::{H160, U256};
 use sp_std::marker::PhantomData;
 
@@ -37,8 +38,11 @@ where
     R: pallet_bioauth::Config,
     R: pallet_evm_accounts_mapping::Config,
     R: pallet_evm_balances::Config,
-    <R as pallet_evm_balances::Config>::Balance: Into<U256> + TryFrom<U256>,
-    <R as pallet_evm_balances::Config>::AccountId: From<H160>,
+    R: pallet_token_wrapper::Config,
+    <R as pallet_token_wrapper::Config>::AccountId: From<H160>,
+    <<R as pallet_token_wrapper::Config>::Currency as Currency<
+        <R as pallet_token_wrapper::Config>::AccountId,
+    >>::Balance: Into<U256> + TryFrom<U256>,
     R::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
     fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
@@ -55,11 +59,7 @@ where
             // Humanode precompiles:
             a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
             a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
-            a if a == hash(2050) => {
-                Some(
-                    EvmBalancesErc20::<R, EvmBalancesErc20Metadata, ConstU64<200>>::execute(handle),
-                )
-            }
+            a if a == hash(2050) => Some(WrappedToken::<R, ConstU64<200>>::execute(handle)),
             a if a == hash(2304) => Some(CurrencySwap::<
                 currency_swap::EvmToNativeOneToOne,
                 EvmAccountId,
@@ -79,20 +79,4 @@ where
 
 fn hash(a: u64) -> H160 {
     H160::from_low_u64_be(a)
-}
-
-pub struct EvmBalancesErc20Metadata;
-
-impl precompile_evm_balances_erc20::Erc20Metadata for EvmBalancesErc20Metadata {
-    fn name() -> &'static str {
-        "Wrapped eHMND"
-    }
-
-    fn symbol() -> &'static str {
-        "WeHMND"
-    }
-
-    fn decimals() -> u8 {
-        18
-    }
 }
