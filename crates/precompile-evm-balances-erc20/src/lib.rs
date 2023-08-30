@@ -1,18 +1,18 @@
-//! A precompile to interact with `pallet_evm_balances` instances using the ERC20 interface standard.
+//! A precompile to interact with currency instances using the ERC20 interface standard.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use codec::FullCodec;
 use frame_support::{
-    sp_runtime::{self, traits::CheckedSub},
+    sp_runtime::{self, DispatchError},
     sp_std::{marker::PhantomData, prelude::*},
     traits::Currency,
 };
+use pallet_erc20::Metadata;
 use pallet_evm::{
     ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
 };
 use precompile_utils::{
-    keccak256, revert, succeed, Address, Bytes, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
+    keccak256, succeed, Address, Bytes, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
     LogsBuilder, PrecompileHandleExt,
 };
 use sp_core::{Get, H160, U256};
@@ -29,17 +29,11 @@ pub const SELECTOR_LOG_TRANSFER: [u8; 32] = keccak256!("Transfer(address,address
 /// Solidity selector of the Approval log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_APPROVAL: [u8; 32] = keccak256!("Approval(address,address,uint256)");
 
-/// Metadata of an ERC20 token.
-pub trait Erc20Metadata {
-    /// Returns the name of the token.
-    fn name() -> &'static str;
+/// Utility alias for easy access to the [`pallet_erc20::Config::AccountId`].
+type AccountIdOf<T> = <T as pallet_erc20::Config>::AccountId;
 
-    /// Returns the symbol of the token.
-    fn symbol() -> &'static str;
-
-    /// Returns the decimals places of the token.
-    fn decimals() -> u8;
-}
+/// Utility alias for easy access to the [`Currency::Balance`] of the [`pallet_erc20::Config::Currency`] type.
+type BalanceOf<T> = <<T as pallet_erc20::Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 
 /// Possible actions for this interface.
 #[precompile_utils::generate_function_selector]
@@ -68,23 +62,15 @@ pub enum Action {
 }
 
 /// Precompile exposing a currency as an ERC20.
-pub struct WrappedCurrency<AccountId, Currency, Metadata, GasCost>(
-    PhantomData<(AccountId, Currency, Metadata, GasCost)>,
-)
+pub struct WrappedCurrency<Erc20, GasCost>(PhantomData<(Erc20, GasCost)>)
 where
     GasCost: Get<u64>;
 
-impl<AccountId, CurrencyT, Metadata, GasCost> Precompile
-    for WrappedCurrency<AccountId, CurrencyT, Metadata, GasCost>
+impl<Erc20, GasCost> Precompile for WrappedCurrency<Erc20, GasCost>
 where
-    AccountId: Clone + FullCodec + PartialEq + From<H160>,
-    CurrencyT: Currency<AccountId>
-        + pallet_erc20::Config<
-            AccountId = AccountId,
-            Balance = <CurrencyT as Currency<AccountId>>::Balance,
-        >,
-    <CurrencyT as Currency<AccountId>>::Balance: Into<U256> + TryFrom<U256> + 'static,
-    Metadata: Erc20Metadata,
+    Erc20: pallet_erc20::Config,
+    AccountIdOf<Erc20>: From<H160>,
+    BalanceOf<Erc20>: Into<U256> + TryFrom<U256>,
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
@@ -108,43 +94,37 @@ where
     }
 }
 
-impl<AccountId, CurrencyT, Metadata, GasCost>
-    WrappedCurrency<AccountId, CurrencyT, Metadata, GasCost>
+impl<Erc20, GasCost> WrappedCurrency<Erc20, GasCost>
 where
-    AccountId: Clone + FullCodec + PartialEq + From<H160>,
-    CurrencyT: Currency<AccountId>
-        + pallet_erc20::Config<
-            AccountId = AccountId,
-            Balance = <CurrencyT as Currency<AccountId>>::Balance,
-        >,
-    <CurrencyT as Currency<AccountId>>::Balance: Into<U256> + TryFrom<U256> + 'static,
-    Metadata: Erc20Metadata,
+    Erc20: pallet_erc20::Config,
+    AccountIdOf<Erc20>: From<H160>,
+    BalanceOf<Erc20>: Into<U256> + TryFrom<U256>,
     GasCost: Get<u64>,
 {
     /// Returns the name of the token.
     fn name(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        let name: Bytes = Metadata::name().into();
+        let name: Bytes = Erc20::Metadata::name().into();
 
         Ok(succeed(EvmDataWriter::new().write(name).build()))
     }
 
     /// Returns the symbol of the token.
     fn symbol(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        let symbol: Bytes = Metadata::symbol().into();
+        let symbol: Bytes = Erc20::Metadata::symbol().into();
 
         Ok(succeed(EvmDataWriter::new().write(symbol).build()))
     }
 
     /// Returns the decimals places of the token.
     fn decimals(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        let decimals: u8 = Metadata::decimals();
+        let decimals: u8 = Erc20::Metadata::decimals();
 
         Ok(succeed(EvmDataWriter::new().write(decimals).build()))
     }
 
     /// Returns the amount of tokens in existence.
     fn total_supply(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        let total_supply: U256 = CurrencyT::total_issuance().into();
+        let total_supply: U256 = pallet_erc20::Pallet::<Erc20>::total_supply().into();
 
         Ok(succeed(EvmDataWriter::new().write(total_supply).build()))
     }
@@ -159,7 +139,7 @@ where
 
         check_input_end(&mut input)?;
 
-        let total_balance: U256 = CurrencyT::total_balance(&owner.into()).into();
+        let total_balance: U256 = pallet_erc20::Pallet::<Erc20>::balance_of(&owner.into()).into();
 
         Ok(succeed(EvmDataWriter::new().write(total_balance).build()))
     }
@@ -173,20 +153,16 @@ where
 
         let owner: Address = input.read()?;
         let owner: H160 = owner.into();
-        let owner: AccountId = owner.into();
 
         let spender: Address = input.read()?;
         let spender: H160 = spender.into();
-        let spender: AccountId = spender.into();
 
         check_input_end(&mut input)?;
 
         Ok(succeed(
             EvmDataWriter::new()
                 .write(
-                    pallet_erc20::Approvals::<CurrencyT>::get(owner, spender)
-                        .unwrap_or_default()
-                        .into(),
+                    pallet_erc20::Pallet::<Erc20>::allowance(&owner.into(), &spender.into()).into(),
                 )
                 .build(),
         ))
@@ -199,25 +175,23 @@ where
         let mut input = handle.read_input()?;
 
         let owner = handle.context().caller;
-        let owner: AccountId = owner.into();
 
         check_input(&mut input, 2)?;
 
         let spender: Address = input.read()?;
-        let spender_h160: H160 = spender.into();
-        let spender: AccountId = spender_h160.into();
+        let spender: H160 = spender.into();
 
-        let amount_u256: U256 = input.read()?;
-        let amount: <CurrencyT as Currency<AccountId>>::Balance =
-            amount_u256
-                .try_into()
-                .map_err(|_| PrecompileFailure::Error {
-                    exit_status: ExitError::Other("value is out of bounds".into()),
-                })?;
+        let amount: U256 = input.read()?;
 
         check_input_end(&mut input)?;
 
-        pallet_erc20::Approvals::<CurrencyT>::insert(owner, spender, amount);
+        pallet_erc20::Pallet::<Erc20>::approve(
+            owner.into(),
+            spender.into(),
+            amount.try_into().map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("value is out of bounds".into()),
+            })?,
+        );
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -225,8 +199,8 @@ where
             .log3(
                 SELECTOR_LOG_APPROVAL,
                 handle.context().caller,
-                spender_h160,
-                EvmDataWriter::new().write(amount_u256).build(),
+                spender,
+                EvmDataWriter::new().write(amount).build(),
             )
             .record(handle)?;
 
@@ -239,35 +213,34 @@ where
 
         let mut input = handle.read_input()?;
 
-        let from = handle.context().caller;
-        let from: AccountId = from.into();
+        let caller = handle.context().caller;
 
         check_input(&mut input, 2)?;
 
-        let to: Address = input.read()?;
-        let to_h160: H160 = to.into();
-        let to: AccountId = to_h160.into();
+        let recipient: Address = input.read()?;
+        let recipient: H160 = recipient.into();
 
-        let amount_u256: U256 = input.read()?;
-        let amount: <CurrencyT as Currency<AccountId>>::Balance =
-            amount_u256
-                .try_into()
-                .map_err(|_| PrecompileFailure::Error {
-                    exit_status: ExitError::Other("value is out of bounds".into()),
-                })?;
+        let amount: U256 = input.read()?;
 
         check_input_end(&mut input)?;
 
-        do_transfer::<AccountId, CurrencyT>(from, to, amount)?;
+        pallet_erc20::Pallet::<Erc20>::transfer(
+            caller.into(),
+            recipient.into(),
+            amount.try_into().map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("value is out of bounds".into()),
+            })?,
+        )
+        .map_err(process_transfer_error)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
         logs_builder
             .log3(
                 SELECTOR_LOG_TRANSFER,
-                handle.context().caller,
-                to_h160,
-                EvmDataWriter::new().write(amount_u256).build(),
+                caller,
+                recipient,
+                EvmDataWriter::new().write(amount).build(),
             )
             .record(handle)?;
 
@@ -282,57 +255,38 @@ where
         let mut input = handle.read_input()?;
 
         let caller = handle.context().caller;
-        let caller: AccountId = caller.into();
 
         check_input(&mut input, 3)?;
 
-        let from: Address = input.read()?;
-        let from_h160: H160 = from.into();
-        let from: AccountId = from_h160.into();
+        let sender: Address = input.read()?;
+        let sender: H160 = sender.into();
 
-        let to: Address = input.read()?;
-        let to_h160: H160 = to.into();
-        let to: AccountId = to_h160.into();
+        let recipient: Address = input.read()?;
+        let recipient: H160 = recipient.into();
 
-        let amount_u256: U256 = input.read()?;
-        let amount: <CurrencyT as Currency<AccountId>>::Balance =
-            amount_u256
-                .try_into()
-                .map_err(|_| PrecompileFailure::Error {
-                    exit_status: ExitError::Other("value is out of bounds".into()),
-                })?;
+        let amount: U256 = input.read()?;
 
         check_input_end(&mut input)?;
 
-        // If caller is "from", it can spend as much as it wants.
-        if caller != from {
-            pallet_erc20::Approvals::<CurrencyT>::mutate(from.clone(), caller, |entry| {
-                // Get current allowed value, exit if None.
-                let allowed = entry.ok_or(revert("spender not allowed"))?;
-
-                // Remove "value" from allowed, exit if underflow.
-                let allowed = allowed
-                    .checked_sub(&amount)
-                    .ok_or_else(|| revert("trying to spend more than allowed"))?;
-
-                // Update allowed value.
-                *entry = Some(allowed);
-
-                EvmResult::Ok(())
-            })?;
-        }
-
-        do_transfer::<AccountId, CurrencyT>(from, to, amount)?;
+        pallet_erc20::Pallet::<Erc20>::transfer_from(
+            caller.into(),
+            sender.into(),
+            recipient.into(),
+            amount.try_into().map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("value is out of bounds".into()),
+            })?,
+        )
+        .map_err(process_transfer_error)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
         logs_builder
             .log4(
                 SELECTOR_LOG_TRANSFER,
-                handle.context().caller,
-                from_h160,
-                to_h160,
-                EvmDataWriter::new().write(amount_u256).build(),
+                caller,
+                sender,
+                recipient,
+                EvmDataWriter::new().write(amount).build(),
             )
             .record(handle)?;
 
@@ -340,19 +294,9 @@ where
     }
 }
 
-/// A helper function to transfer currency funds.
-fn do_transfer<A, C: Currency<A>>(
-    from: A,
-    to: A,
-    amount: <C as Currency<A>>::Balance,
-) -> Result<(), PrecompileFailure> {
-    C::transfer(
-        &from,
-        &to,
-        amount,
-        frame_support::traits::ExistenceRequirement::AllowDeath,
-    )
-    .map_err(|error| match error {
+/// A helper function to process transfer related dispatch errors.
+fn process_transfer_error(error: DispatchError) -> PrecompileFailure {
+    match error {
         sp_runtime::DispatchError::Token(sp_runtime::TokenError::NoFunds) => {
             PrecompileFailure::Error {
                 exit_status: ExitError::OutOfFund,
@@ -361,9 +305,7 @@ fn do_transfer<A, C: Currency<A>>(
         _ => PrecompileFailure::Error {
             exit_status: ExitError::Other("unable to transfer funds".into()),
         },
-    })?;
-
-    Ok(())
+    }
 }
 
 /// A helper function to check expected arguments number.
