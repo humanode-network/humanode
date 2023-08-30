@@ -1,4 +1,4 @@
-//! A substrate pallet that wraps currency instance.
+//! A substrate pallet that wraps funds related instance.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 

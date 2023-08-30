@@ -11,7 +11,7 @@ use frame_support::{
 };
 use sp_core::H256;
 
-use crate::{self as pallet_erc20};
+use crate::{self as pallet_token_wrapper};
 
 pub(crate) const NAME: &str = "Wrapped HMND";
 pub(crate) const SYMBOL: &str = "WHMND";
@@ -29,7 +29,7 @@ frame_support::construct_runtime!(
     {
         System: frame_system,
         Balances: pallet_balances,
-        Erc20: pallet_erc20,
+        Erc20: pallet_token_wrapper,
     }
 );
 
@@ -88,7 +88,7 @@ impl crate::Metadata for BalancesErc20Metadata {
     }
 }
 
-impl pallet_erc20::Config for Test {
+impl pallet_token_wrapper::Config for Test {
     type AccountId = u64;
     type Currency = Balances;
     type Metadata = BalancesErc20Metadata;

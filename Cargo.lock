@@ -5939,18 +5939,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-erc20"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-balances",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
-]
-
-[[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.38#07429a3b559c7277fa20024587f67ae809556054"
@@ -6260,6 +6248,18 @@ dependencies = [
  "serde_json",
  "sp-core",
  "sp-runtime",
+]
+
+[[package]]
+name = "pallet-token-wrapper"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
 ]
 
 [[package]]
@@ -6770,11 +6770,11 @@ dependencies = [
  "hex-literal",
  "num_enum 0.6.0",
  "pallet-balances",
- "pallet-erc20",
  "pallet-evm",
  "pallet-evm-balances",
  "pallet-evm-system",
  "pallet-timestamp",
+ "pallet-token-wrapper",
  "parity-scale-codec",
  "precompile-utils",
  "scale-info",

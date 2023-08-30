@@ -41,7 +41,7 @@ frame_support::construct_runtime!(
         EvmSystem: pallet_evm_system,
         EvmBalances: pallet_evm_balances,
         EVM: pallet_evm,
-        Erc20: pallet_erc20,
+        Erc20: pallet_token_wrapper,
     }
 );
 
@@ -114,7 +114,7 @@ impl pallet_evm_balances::Config for Test {
 
 pub struct EvmBalancesErc20Metadata;
 
-impl pallet_erc20::Metadata for EvmBalancesErc20Metadata {
+impl pallet_token_wrapper::Metadata for EvmBalancesErc20Metadata {
     fn name() -> &'static str {
         NAME
     }
@@ -128,7 +128,7 @@ impl pallet_erc20::Metadata for EvmBalancesErc20Metadata {
     }
 }
 
-impl pallet_erc20::Config for Test {
+impl pallet_token_wrapper::Config for Test {
     type AccountId = EvmAccountId;
     type Currency = EvmBalances;
     type Metadata = EvmBalancesErc20Metadata;
@@ -146,7 +146,7 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
 
 pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x802));
 
-pub(crate) type EvmBalancesErc20Precompile = crate::WrappedCurrency<Test, ConstU64<GAS_COST>>;
+pub(crate) type EvmBalancesErc20Precompile = crate::WrappedToken<Test, ConstU64<GAS_COST>>;
 
 pub type Precompiles<R> =
     PrecompileSetBuilder<R, (PrecompileAt<PrecompileAddress, EvmBalancesErc20Precompile>,)>;
