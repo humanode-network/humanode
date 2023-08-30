@@ -13,6 +13,10 @@ use sp_core::H256;
 
 use crate::{self as pallet_erc20};
 
+pub(crate) const NAME: &str = "Wrapped HMND";
+pub(crate) const SYMBOL: &str = "WHMND";
+pub(crate) const DECIMALS: u8 = 18;
+
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
@@ -68,9 +72,26 @@ impl pallet_balances::Config for Test {
     type WeightInfo = ();
 }
 
+pub struct BalancesErc20Metadata;
+
+impl crate::Metadata for BalancesErc20Metadata {
+    fn name() -> &'static str {
+        NAME
+    }
+
+    fn symbol() -> &'static str {
+        SYMBOL
+    }
+
+    fn decimals() -> u8 {
+        DECIMALS
+    }
+}
+
 impl pallet_erc20::Config for Test {
     type AccountId = u64;
-    type Balance = u64;
+    type Currency = Balances;
+    type Metadata = BalancesErc20Metadata;
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
