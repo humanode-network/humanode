@@ -28,13 +28,13 @@ pallet-evm-accounts-mapping = { path = "../pallet-evm-accounts-mapping", default
 pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
 pallet-pot = { path = "../pallet-pot", default-features = false }
 pallet-token-claims = { path = "../pallet-token-claims", default-features = false }
-pallet-token-wrapper = { path = "../pallet-token-wrapper", default-features = false }
 pallet-vesting = { path = "../pallet-vesting", default-features = false }
+pallet-wrapped-token = { path = "../pallet-wrapped-token", default-features = false }
 precompile-bioauth = { path = "../precompile-bioauth", default-features = false }
 precompile-currency-swap = { path = "../precompile-currency-swap", default-features = false }
 precompile-evm-accounts-mapping = { path = "../precompile-evm-accounts-mapping", default-features = false }
-precompile-token-wrapper = { path = "../precompile-token-wrapper", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
+precompile-wrapped-token = { path = "../precompile-wrapped-token", default-features = false }
 primitives-auth-ticket = { path = "../primitives-auth-ticket", default-features = false }
 primitives-currency-swap-proxy = { path = "../primitives-currency-swap-proxy", default-features = false }
 primitives-ethereum = { path = "../primitives-ethereum", default-features = false }
@@ -185,16 +185,16 @@ std = [
   "pallet-sudo/std",
   "pallet-timestamp/std",
   "pallet-token-claims/std",
-  "pallet-token-wrapper/std",
   "pallet-transaction-payment-rpc-runtime-api/std",
   "pallet-transaction-payment/std",
   "pallet-utility/std",
   "pallet-vesting/std",
+  "pallet-wrapped-token/std",
   "precompile-bioauth/std",
   "precompile-currency-swap/std",
   "precompile-evm-accounts-mapping/std",
-  "precompile-token-wrapper/std",
   "precompile-utils/std",
+  "precompile-wrapped-token/std",
   "primitives-auth-ticket/std",
   "primitives-currency-swap-proxy/std",
   "primitives-ethereum/std",
@@ -254,10 +254,10 @@ try-runtime = [
   "pallet-sudo/try-runtime",
   "pallet-timestamp/try-runtime",
   "pallet-token-claims/try-runtime",
-  "pallet-token-wrapper/try-runtime",
   "pallet-transaction-payment/try-runtime",
   "pallet-utility/try-runtime",
   "pallet-vesting/try-runtime",
+  "pallet-wrapped-token/try-runtime",
   "primitives-currency-swap-proxy/try-runtime",
   "sp-runtime/try-runtime",
 ]

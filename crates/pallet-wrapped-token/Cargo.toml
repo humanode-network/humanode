@@ -1,5 +1,5 @@
 [package]
-name = "pallet-token-wrapper"
+name = "pallet-wrapped-token"
 version = "0.1.0"
 edition = "2021"
 publish = false

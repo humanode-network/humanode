@@ -6,7 +6,7 @@ use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripe
 use precompile_bioauth::Bioauth;
 use precompile_currency_swap::CurrencySwap;
 use precompile_evm_accounts_mapping::EvmAccountsMapping;
-use precompile_token_wrapper::WrappedToken;
+use precompile_wrapped_token::WrappedToken;
 use sp_core::{H160, U256};
 use sp_std::marker::PhantomData;
 
@@ -38,10 +38,10 @@ where
     R: pallet_bioauth::Config,
     R: pallet_evm_accounts_mapping::Config,
     R: pallet_evm_balances::Config,
-    R: pallet_token_wrapper::Config,
-    <R as pallet_token_wrapper::Config>::AccountId: From<H160>,
-    <<R as pallet_token_wrapper::Config>::Currency as Currency<
-        <R as pallet_token_wrapper::Config>::AccountId,
+    R: pallet_wrapped_token::Config,
+    <R as pallet_wrapped_token::Config>::AccountId: From<H160>,
+    <<R as pallet_wrapped_token::Config>::Currency as Currency<
+        <R as pallet_wrapped_token::Config>::AccountId,
     >>::Balance: Into<U256> + TryFrom<U256>,
     R::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {

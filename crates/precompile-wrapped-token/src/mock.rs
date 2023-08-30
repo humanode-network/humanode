@@ -41,7 +41,7 @@ frame_support::construct_runtime!(
         EvmSystem: pallet_evm_system,
         EvmBalances: pallet_evm_balances,
         EVM: pallet_evm,
-        Erc20: pallet_token_wrapper,
+        Erc20: pallet_wrapped_token,
     }
 );
 
@@ -114,7 +114,7 @@ impl pallet_evm_balances::Config for Test {
 
 pub struct EvmBalancesErc20Metadata;
 
-impl pallet_token_wrapper::Metadata for EvmBalancesErc20Metadata {
+impl pallet_wrapped_token::Metadata for EvmBalancesErc20Metadata {
     fn name() -> &'static str {
         NAME
     }
@@ -128,7 +128,7 @@ impl pallet_token_wrapper::Metadata for EvmBalancesErc20Metadata {
     }
 }
 
-impl pallet_token_wrapper::Config for Test {
+impl pallet_wrapped_token::Config for Test {
     type AccountId = EvmAccountId;
     type Currency = EvmBalances;
     type Metadata = EvmBalancesErc20Metadata;

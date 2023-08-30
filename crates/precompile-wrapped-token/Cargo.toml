@@ -1,11 +1,11 @@
 [package]
-name = "precompile-token-wrapper"
+name = "precompile-wrapped-token"
 version = "0.1.0"
 edition = "2021"
 publish = false
 
 [dependencies]
-pallet-token-wrapper = { path = "../pallet-token-wrapper", default-features = false }
+pallet-wrapped-token = { path = "../pallet-wrapped-token", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
 
 codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
@@ -40,7 +40,7 @@ std = [
   "pallet-evm-system/std",
   "pallet-evm/std",
   "pallet-timestamp/std",
-  "pallet-token-wrapper/std",
+  "pallet-wrapped-token/std",
   "precompile-utils/std",
   "scale-info/std",
   "sp-core/std",

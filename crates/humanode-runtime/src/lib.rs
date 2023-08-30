@@ -790,7 +790,7 @@ impl pallet_balanced_currency_swap_bridges_initializer::Config for Runtime {
 
 pub struct EvmBalancesErc20Metadata;
 
-impl pallet_token_wrapper::Metadata for EvmBalancesErc20Metadata {
+impl pallet_wrapped_token::Metadata for EvmBalancesErc20Metadata {
     fn name() -> &'static str {
         "Wrapped eHMND"
     }
@@ -804,7 +804,7 @@ impl pallet_token_wrapper::Metadata for EvmBalancesErc20Metadata {
     }
 }
 
-impl pallet_token_wrapper::Config for Runtime {
+impl pallet_wrapped_token::Config for Runtime {
     type AccountId = EvmAccountId;
     type Currency = EvmBalances;
     type Metadata = EvmBalancesErc20Metadata;
@@ -854,7 +854,7 @@ construct_runtime!(
         EvmToNativeSwapBridgePot: pallet_pot::<Instance5> = 34,
         CurrencySwap: pallet_currency_swap = 35,
         BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
-        EvmBalancesErc20: pallet_token_wrapper = 37,
+        EvmBalancesErc20: pallet_wrapped_token = 37,
     }
 );
 

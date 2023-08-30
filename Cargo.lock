@@ -3727,17 +3727,17 @@ dependencies = [
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-token-claims",
- "pallet-token-wrapper",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-utility",
  "pallet-vesting",
+ "pallet-wrapped-token",
  "parity-scale-codec",
  "precompile-bioauth",
  "precompile-currency-swap",
  "precompile-evm-accounts-mapping",
- "precompile-token-wrapper",
  "precompile-utils",
+ "precompile-wrapped-token",
  "primitives-auth-ticket",
  "primitives-currency-swap-proxy",
  "primitives-ethereum",
@@ -6252,18 +6252,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-token-wrapper"
-version = "0.1.0"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-balances",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
-]
-
-[[package]]
 name = "pallet-transaction-payment"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.38#9091bbcf8c8ae3524d9c46f50ab855044dcc51a2"
@@ -6337,6 +6325,18 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-api",
+ "sp-core",
+]
+
+[[package]]
+name = "pallet-wrapped-token"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
  "sp-core",
 ]
 
@@ -6762,27 +6762,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "precompile-token-wrapper"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex-literal",
- "num_enum 0.6.0",
- "pallet-balances",
- "pallet-evm",
- "pallet-evm-balances",
- "pallet-evm-system",
- "pallet-timestamp",
- "pallet-token-wrapper",
- "parity-scale-codec",
- "precompile-utils",
- "scale-info",
- "sp-core",
-]
-
-[[package]]
 name = "precompile-utils"
 version = "0.1.0"
 dependencies = [
@@ -6813,6 +6792,27 @@ dependencies = [
  "quote",
  "sha3 0.9.1",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "precompile-wrapped-token"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "num_enum 0.6.0",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
+ "pallet-wrapped-token",
+ "parity-scale-codec",
+ "precompile-utils",
+ "scale-info",
+ "sp-core",
 ]
 
 [[package]]
