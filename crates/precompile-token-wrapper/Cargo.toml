@@ -1,5 +1,5 @@
 [package]
-name = "precompile-evm-balances-erc20"
+name = "precompile-token-wrapper"
 version = "0.1.0"
 edition = "2021"
 publish = false

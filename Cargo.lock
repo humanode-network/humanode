@@ -3735,7 +3735,7 @@ dependencies = [
  "precompile-bioauth",
  "precompile-currency-swap",
  "precompile-evm-accounts-mapping",
- "precompile-evm-balances-erc20",
+ "precompile-token-wrapper",
  "precompile-utils",
  "primitives-auth-ticket",
  "primitives-currency-swap-proxy",
@@ -6761,7 +6761,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "precompile-evm-balances-erc20"
+name = "precompile-token-wrapper"
 version = "0.1.0"
 dependencies = [
  "fp-evm",
