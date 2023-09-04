@@ -3,7 +3,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
-    sp_runtime::{traits::CheckedSub, DispatchError},
+    sp_runtime::{traits::CheckedSub, DispatchResult},
+    storage::with_storage_layer,
     traits::{Currency, StorageVersion},
 };
 pub use pallet::*;
@@ -118,13 +119,17 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
         caller: AccountIdOf<T, I>,
         recipient: AccountIdOf<T, I>,
         amount: BalanceOf<T, I>,
-    ) -> Result<(), DispatchError> {
-        T::Currency::transfer(
-            &caller,
-            &recipient,
-            amount,
-            frame_support::traits::ExistenceRequirement::AllowDeath,
-        )
+    ) -> DispatchResult {
+        with_storage_layer(move || {
+            T::Currency::transfer(
+                &caller,
+                &recipient,
+                amount,
+                frame_support::traits::ExistenceRequirement::AllowDeath,
+            )?;
+
+            Ok(())
+        })
     }
 
     /// Moves amount tokens from sender to recipient using the allowance mechanism,
@@ -134,32 +139,34 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
         sender: AccountIdOf<T, I>,
         recipient: AccountIdOf<T, I>,
         amount: BalanceOf<T, I>,
-    ) -> Result<(), DispatchError> {
-        // If caller is "sender", it can spend as much as it wants.
-        if caller != sender {
-            <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
-                // Get current allowed value, exit if None.
-                let allowed = entry.ok_or(Error::<T, I>::SpenderNotAllowed)?;
+    ) -> DispatchResult {
+        with_storage_layer(move || {
+            // If caller is "sender", it can spend as much as it wants.
+            if caller != sender {
+                <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
+                    // Get current allowed value, exit if None.
+                    let allowed = entry.ok_or(Error::<T, I>::SpenderNotAllowed)?;
 
-                // Remove "value" from allowed, exit if underflow.
-                let allowed = allowed
-                    .checked_sub(&amount)
-                    .ok_or(Error::<T, I>::SpendMoreThanAllowed)?;
+                    // Remove "value" from allowed, exit if underflow.
+                    let allowed = allowed
+                        .checked_sub(&amount)
+                        .ok_or(Error::<T, I>::SpendMoreThanAllowed)?;
 
-                // Update allowed value.
-                *entry = Some(allowed);
+                    // Update allowed value.
+                    *entry = Some(allowed);
 
-                Ok::<(), Error<T, I>>(())
-            })?;
-        }
+                    Ok::<(), Error<T, I>>(())
+                })?;
+            }
 
-        T::Currency::transfer(
-            &sender,
-            &recipient,
-            amount,
-            frame_support::traits::ExistenceRequirement::AllowDeath,
-        )?;
+            T::Currency::transfer(
+                &sender,
+                &recipient,
+                amount,
+                frame_support::traits::ExistenceRequirement::AllowDeath,
+            )?;
 
-        Ok(())
+            Ok(())
+        })
     }
 }
