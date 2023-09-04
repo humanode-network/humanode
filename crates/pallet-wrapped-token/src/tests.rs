@@ -1,6 +1,6 @@
-use frame_support::{assert_ok, traits::Currency};
+use frame_support::{assert_noop, assert_ok, traits::Currency};
 
-use crate::mock::*;
+use crate::{mock::*, *};
 
 #[test]
 fn total_supply_works() {
@@ -111,6 +111,48 @@ fn transfer_from_works() {
         assert_eq!(
             WrappedBalances::approvals(alice, bob),
             Some(approved_balance - transferred_from_balance)
+        );
+    });
+}
+
+#[test]
+fn transfer_from_fails_spender_not_allowed() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42;
+        let alice_balance = 10000;
+        let bob = 43;
+        let charlie = 44;
+        let transferred_from_balance = 1000;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance);
+
+        // Execute transfer_from.
+        assert_noop!(
+            WrappedBalances::transfer_from(bob, alice, charlie, transferred_from_balance),
+            <Error<Test>>::SpenderNotAllowed
+        );
+    });
+}
+
+#[test]
+fn transfer_from_fails_spend_more_than_allowed() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42;
+        let alice_balance = 10000;
+        let bob = 43;
+        let approved_balance = 500;
+        let charlie = 44;
+        let transferred_from_balance = 1000;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance);
+        WrappedBalances::approve(alice, bob, approved_balance);
+
+        // Execute transfer_from.
+        assert_noop!(
+            WrappedBalances::transfer_from(bob, alice, charlie, transferred_from_balance),
+            <Error<Test>>::SpendMoreThanAllowed
         );
     });
 }
