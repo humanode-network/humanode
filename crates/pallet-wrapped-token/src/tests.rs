@@ -1,6 +1,6 @@
 use frame_support::traits::Currency;
 
-use crate::{mock::*, Approvals};
+use crate::mock::*;
 
 #[test]
 fn total_supply_works() {
@@ -19,21 +19,38 @@ fn total_supply_works() {
     });
 }
 
-/// This test verifies basic approvals related flow.
 #[test]
-fn approvals_works() {
+fn balance_of_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42;
+        let alice_balance = 1000;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance);
+
+        // Check Alice's balance value.
+        assert_eq!(WrappedBalances::balance_of(&alice), alice_balance);
+    });
+}
+
+/// This test verifies basic approve related flow.
+#[test]
+fn approve_works() {
     new_test_ext().execute_with_ext(|_| {
         let alice = 42_u64;
         let bob = 52_u64;
         let approved_balance = 999;
 
         // Check test preconditions.
-        assert_eq!(<Approvals<Test>>::get(alice, bob), None);
+        assert_eq!(WrappedBalances::approvals(alice, bob), None);
 
         // Store alice-bob approval.
-        <Approvals<Test>>::insert(alice, bob, approved_balance);
+        WrappedBalances::approve(alice, bob, approved_balance);
 
         // Verify alice-bob approval existence.
-        assert_eq!(<Approvals<Test>>::get(alice, bob), Some(approved_balance));
+        assert_eq!(
+            WrappedBalances::approvals(alice, bob),
+            Some(approved_balance)
+        );
     })
 }
