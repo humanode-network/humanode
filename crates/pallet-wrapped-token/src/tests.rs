@@ -1,4 +1,4 @@
-use frame_support::traits::Currency;
+use frame_support::{assert_ok, traits::Currency};
 
 use crate::mock::*;
 
@@ -53,4 +53,27 @@ fn approve_works() {
             Some(approved_balance)
         );
     })
+}
+
+#[test]
+fn transfer_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42;
+        let alice_balance = 10000;
+        let bob = 43;
+        let transferred_balance = 5000;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance);
+
+        // Execute transfer.
+        assert_ok!(WrappedBalances::transfer(alice, bob, transferred_balance));
+
+        // Check resulted balances.
+        assert_eq!(
+            Balances::total_balance(&alice),
+            alice_balance - transferred_balance
+        );
+        assert_eq!(Balances::total_balance(&bob), transferred_balance);
+    });
 }
