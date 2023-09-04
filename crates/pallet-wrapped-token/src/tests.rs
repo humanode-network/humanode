@@ -1,4 +1,23 @@
+use frame_support::traits::Currency;
+
 use crate::{mock::*, Approvals};
+
+#[test]
+fn total_supply_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42;
+        let alice_balance = 1000;
+        let bob = 43;
+        let bob_balance = 2000;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance);
+        Balances::make_free_balance_be(&bob, bob_balance);
+
+        // Check total supply.
+        assert_eq!(WrappedBalances::total_supply(), alice_balance + bob_balance);
+    });
+}
 
 /// This test verifies basic approvals related flow.
 #[test]

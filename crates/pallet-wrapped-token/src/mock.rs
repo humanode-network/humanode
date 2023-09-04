@@ -29,7 +29,7 @@ frame_support::construct_runtime!(
     {
         System: frame_system,
         Balances: pallet_balances,
-        Erc20: pallet_token_wrapper,
+        WrappedBalances: pallet_token_wrapper,
     }
 );
 
@@ -72,9 +72,9 @@ impl pallet_balances::Config for Test {
     type WeightInfo = ();
 }
 
-pub struct BalancesErc20Metadata;
+pub struct BalancesWrappedBalancesMetadata;
 
-impl crate::Metadata for BalancesErc20Metadata {
+impl crate::Metadata for BalancesWrappedBalancesMetadata {
     fn name() -> &'static str {
         NAME
     }
@@ -91,7 +91,7 @@ impl crate::Metadata for BalancesErc20Metadata {
 impl pallet_token_wrapper::Config for Test {
     type AccountId = u64;
     type Currency = Balances;
-    type Metadata = BalancesErc20Metadata;
+    type Metadata = BalancesWrappedBalancesMetadata;
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
