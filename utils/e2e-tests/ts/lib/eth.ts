@@ -17,6 +17,8 @@ export const ROOT_DEV_ACCOUNT_DERIVATION_PATH = "m/44'/60'/0'/0" as const;
 
 export const DEV_ACCOUNT_INDICIES = [0, 1] as const;
 
+export const INITIAL_DEV_ACCOUNT_BALANCE = Math.pow(10, 18 + 6);
+
 export const devHDNodeWalletRoot = HDNodeWallet.fromMnemonic(
   Mnemonic.fromPhrase(SUBSTRATE_DEV_SEED_PHRASE),
   ROOT_DEV_ACCOUNT_DERIVATION_PATH

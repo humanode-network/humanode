@@ -28,6 +28,15 @@ describe("eth rpc", () => {
     expect(network.chainId).toBe(5234n);
   });
 
+  it("has the expected initial dev balances", async () => {
+    const [alice, bob] = devSigners;
+    const aliceBalance = await provider.getBalance(alice);
+    const bobBalance = await provider.getBalance(bob);
+
+    expect(Number(aliceBalance)).toBe(eth.INITIAL_DEV_ACCOUNT_BALANCE);
+    expect(Number(bobBalance)).toBe(eth.INITIAL_DEV_ACCOUNT_BALANCE);
+  });
+
   describe("fee", () => {
     describe("when transferring 1 eHMND", () => {
       const transferValue = ethers.parseEther("1");
