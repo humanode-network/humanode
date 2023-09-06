@@ -247,6 +247,11 @@
     - default
     - sha2
     - std
+- name: bstr 0.2.17
+  features:
+    - lazy_static
+    - regex-automata
+    - unicode
 - name: bstr 1.4.0
   features:
     - alloc
@@ -389,6 +394,8 @@
   features:
     - default
     - std
+- name: console 0.15.5
+  features: []
 - name: const-oid 0.9.2
   features: []
 - name: constant_time_eq 0.2.5
@@ -749,6 +756,10 @@
     - group
     - hazmat
     - sec1
+    - std
+- name: encode_unicode 0.3.6
+  features:
+    - default
     - std
 - name: encoding_rs 0.8.32
   features:
@@ -2093,6 +2104,10 @@
     - frame-benchmarking
     - serde
     - std
+- name: pallet-wrapped-token 0.1.0
+  features:
+    - default
+    - std
 - name: parity-db 0.4.6
   features: []
 - name: parity-scale-codec 3.4.0
@@ -2214,16 +2229,18 @@
   features:
     - default
     - std
-- name: precompile-evm-balances-erc20 0.1.0
-  features:
-    - default
-    - std
 - name: precompile-utils 0.1.0
   features:
     - default
+    - similar-asserts
     - std
+    - testing
 - name: precompile-utils-macro 0.1.0
   features: []
+- name: precompile-wrapped-token 0.1.0
+  features:
+    - default
+    - std
 - name: predicates 2.1.5
   features:
     - default
@@ -2858,6 +2875,18 @@
 - name: simba 0.5.1
   features:
     - std
+- name: similar 2.2.1
+  features:
+    - bstr
+    - default
+    - inline
+    - text
+    - unicode
+    - unicode-segmentation
+- name: similar-asserts 1.4.2
+  features:
+    - default
+    - unicode
 - name: siphasher 0.3.10
   features:
     - default
@@ -3493,6 +3522,8 @@
   features:
     - default
     - std
+- name: unicode-segmentation 1.10.1
+  features: []
 - name: unicode-width 0.1.10
   features:
     - default
@@ -3812,9 +3843,15 @@
     - Win32_Security_Authentication_Identity
     - Win32_Security_Credentials
     - Win32_Security_Cryptography
+    - Win32_Storage
+    - Win32_Storage_FileSystem
     - Win32_System
+    - Win32_System_Console
     - Win32_System_Memory
     - Win32_System_Threading
+    - Win32_UI
+    - Win32_UI_Input
+    - Win32_UI_Input_KeyboardAndMouse
     - default
 - name: windows-sys 0.45.0
   features:
