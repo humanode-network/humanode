@@ -28,13 +28,21 @@ describe("eth rpc", () => {
     expect(network.chainId).toBe(5234n);
   });
 
-  it("has the expected initial dev balances", async () => {
-    const [alice, bob] = devSigners;
-    const aliceBalance = await provider.getBalance(alice);
-    const bobBalance = await provider.getBalance(bob);
+  it("has the expected balance value", async () => {
+    const [alice, _] = devSigners;
+    const charlie = ethers.ethers.Wallet.createRandom();
+    const transferBalance = 1000;
 
-    expect(Number(aliceBalance)).toBe(eth.INITIAL_DEV_ACCOUNT_BALANCE);
-    expect(Number(bobBalance)).toBe(eth.INITIAL_DEV_ACCOUNT_BALANCE);
+    const tx = await alice.sendTransaction({
+      to: charlie.address,
+      value: transferBalance,
+    });
+
+    await tx.wait(1, 12000);
+
+    const charlieBalance = await provider.getBalance(charlie);
+
+    expect(Number(charlieBalance)).toBe(transferBalance);
   });
 
   describe("fee", () => {
