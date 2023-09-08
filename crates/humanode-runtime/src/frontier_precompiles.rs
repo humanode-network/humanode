@@ -38,10 +38,10 @@ where
     R: pallet_bioauth::Config,
     R: pallet_evm_accounts_mapping::Config,
     R: pallet_evm_balances::Config,
-    R: pallet_wrapped_token::Config,
-    <R as pallet_wrapped_token::Config>::AccountId: From<H160>,
-    <<R as pallet_wrapped_token::Config>::Currency as Currency<
-        <R as pallet_wrapped_token::Config>::AccountId,
+    R: pallet_erc20_support::Config,
+    <R as pallet_erc20_support::Config>::AccountId: From<H160>,
+    <<R as pallet_erc20_support::Config>::Currency as Currency<
+        <R as pallet_erc20_support::Config>::AccountId,
     >>::Balance: Into<U256> + TryFrom<U256>,
     R::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {

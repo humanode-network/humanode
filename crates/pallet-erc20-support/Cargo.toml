@@ -1,5 +1,5 @@
 [package]
-name = "pallet-wrapped-token"
+name = "pallet-erc20-support"
 version = "0.1.0"
 edition = "2021"
 publish = false

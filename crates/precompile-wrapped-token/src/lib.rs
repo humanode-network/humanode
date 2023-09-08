@@ -7,10 +7,10 @@ use frame_support::{
     sp_std::{marker::PhantomData, prelude::*},
     traits::Currency,
 };
+use pallet_erc20_support::Metadata;
 use pallet_evm::{
     ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
 };
-use pallet_wrapped_token::Metadata;
 use precompile_utils::{
     keccak256, succeed, Address, Bytes, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
     LogsBuilder, PrecompileHandleExt,
@@ -29,12 +29,12 @@ pub const SELECTOR_LOG_TRANSFER: [u8; 32] = keccak256!("Transfer(address,address
 /// Solidity selector of the Approval log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_APPROVAL: [u8; 32] = keccak256!("Approval(address,address,uint256)");
 
-/// Utility alias for easy access to the [`pallet_wrapped_token::Config::AccountId`].
-type AccountIdOf<T> = <T as pallet_wrapped_token::Config>::AccountId;
+/// Utility alias for easy access to the [`pallet_erc20_support::Config::AccountId`].
+type AccountIdOf<T> = <T as pallet_erc20_support::Config>::AccountId;
 
-/// Utility alias for easy access to the [`Currency::Balance`] of the [`pallet_wrapped_token::Config::Currency`] type.
+/// Utility alias for easy access to the [`Currency::Balance`] of the [`pallet_erc20_support::Config::Currency`] type.
 type BalanceOf<T> =
-    <<T as pallet_wrapped_token::Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
+    <<T as pallet_erc20_support::Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
 
 /// Possible actions for this interface.
 #[precompile_utils::generate_function_selector]
@@ -69,7 +69,7 @@ where
 
 impl<WrappedTokenT, GasCost> Precompile for WrappedToken<WrappedTokenT, GasCost>
 where
-    WrappedTokenT: pallet_wrapped_token::Config,
+    WrappedTokenT: pallet_erc20_support::Config,
     AccountIdOf<WrappedTokenT>: From<H160>,
     BalanceOf<WrappedTokenT>: Into<U256> + TryFrom<U256>,
     GasCost: Get<u64>,
@@ -97,7 +97,7 @@ where
 
 impl<WrappedTokenT, GasCost> WrappedToken<WrappedTokenT, GasCost>
 where
-    WrappedTokenT: pallet_wrapped_token::Config,
+    WrappedTokenT: pallet_erc20_support::Config,
     AccountIdOf<WrappedTokenT>: From<H160>,
     BalanceOf<WrappedTokenT>: Into<U256> + TryFrom<U256>,
     GasCost: Get<u64>,
@@ -126,7 +126,7 @@ where
     /// Returns the amount of tokens in existence.
     fn total_supply(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let total_supply: U256 =
-            pallet_wrapped_token::Pallet::<WrappedTokenT>::total_supply().into();
+            pallet_erc20_support::Pallet::<WrappedTokenT>::total_supply().into();
 
         Ok(succeed(EvmDataWriter::new().write(total_supply).build()))
     }
@@ -142,7 +142,7 @@ where
         check_input_end(&mut input)?;
 
         let total_balance: U256 =
-            pallet_wrapped_token::Pallet::<WrappedTokenT>::balance_of(&owner.into()).into();
+            pallet_erc20_support::Pallet::<WrappedTokenT>::balance_of(&owner.into()).into();
 
         Ok(succeed(EvmDataWriter::new().write(total_balance).build()))
     }
@@ -165,7 +165,7 @@ where
         Ok(succeed(
             EvmDataWriter::new()
                 .write(
-                    pallet_wrapped_token::Pallet::<WrappedTokenT>::allowance(
+                    pallet_erc20_support::Pallet::<WrappedTokenT>::allowance(
                         &owner.into(),
                         &spender.into(),
                     )
@@ -192,7 +192,7 @@ where
 
         check_input_end(&mut input)?;
 
-        pallet_wrapped_token::Pallet::<WrappedTokenT>::approve(
+        pallet_erc20_support::Pallet::<WrappedTokenT>::approve(
             owner.into(),
             spender.into(),
             amount.try_into().map_err(|_| PrecompileFailure::Error {
@@ -231,7 +231,7 @@ where
 
         check_input_end(&mut input)?;
 
-        pallet_wrapped_token::Pallet::<WrappedTokenT>::transfer(
+        pallet_erc20_support::Pallet::<WrappedTokenT>::transfer(
             caller.into(),
             recipient.into(),
             amount.try_into().map_err(|_| PrecompileFailure::Error {
@@ -275,7 +275,7 @@ where
 
         check_input_end(&mut input)?;
 
-        pallet_wrapped_token::Pallet::<WrappedTokenT>::transfer_from(
+        pallet_erc20_support::Pallet::<WrappedTokenT>::transfer_from(
             caller.into(),
             sender.into(),
             recipient.into(),

@@ -11,7 +11,7 @@ use frame_support::{
 };
 use sp_core::H256;
 
-use crate::{self as pallet_token_wrapper};
+use crate::{self as pallet_erc20_support};
 
 pub(crate) const NAME: &str = "Wrapped HMND";
 pub(crate) const SYMBOL: &str = "WHMND";
@@ -29,7 +29,7 @@ frame_support::construct_runtime!(
     {
         System: frame_system,
         Balances: pallet_balances,
-        WrappedBalances: pallet_token_wrapper,
+        Erc20Balances: pallet_erc20_support,
     }
 );
 
@@ -72,9 +72,9 @@ impl pallet_balances::Config for Test {
     type WeightInfo = ();
 }
 
-pub struct BalancesWrappedBalancesMetadata;
+pub struct BalancesErc20BalancesMetadata;
 
-impl crate::Metadata for BalancesWrappedBalancesMetadata {
+impl crate::Metadata for BalancesErc20BalancesMetadata {
     fn name() -> &'static str {
         NAME
     }
@@ -88,10 +88,10 @@ impl crate::Metadata for BalancesWrappedBalancesMetadata {
     }
 }
 
-impl pallet_token_wrapper::Config for Test {
+impl pallet_erc20_support::Config for Test {
     type AccountId = u64;
     type Currency = Balances;
-    type Metadata = BalancesWrappedBalancesMetadata;
+    type Metadata = BalancesErc20BalancesMetadata;
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {

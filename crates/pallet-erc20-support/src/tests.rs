@@ -15,7 +15,7 @@ fn total_supply_works() {
         Balances::make_free_balance_be(&bob, bob_balance);
 
         // Check total supply.
-        assert_eq!(WrappedBalances::total_supply(), alice_balance + bob_balance);
+        assert_eq!(Erc20Balances::total_supply(), alice_balance + bob_balance);
     });
 }
 
@@ -29,7 +29,7 @@ fn balance_of_works() {
         Balances::make_free_balance_be(&alice, alice_balance);
 
         // Check Alice's balance value.
-        assert_eq!(WrappedBalances::balance_of(&alice), alice_balance);
+        assert_eq!(Erc20Balances::balance_of(&alice), alice_balance);
     });
 }
 
@@ -41,16 +41,13 @@ fn approve_works() {
         let approved_balance = 999;
 
         // Check test preconditions.
-        assert_eq!(WrappedBalances::approvals(alice, bob), None);
+        assert_eq!(Erc20Balances::approvals(alice, bob), None);
 
         // Store alice-bob approval.
-        WrappedBalances::approve(alice, bob, approved_balance);
+        Erc20Balances::approve(alice, bob, approved_balance);
 
         // Verify alice-bob approval existence.
-        assert_eq!(
-            WrappedBalances::approvals(alice, bob),
-            Some(approved_balance)
-        );
+        assert_eq!(Erc20Balances::approvals(alice, bob), Some(approved_balance));
     })
 }
 
@@ -66,7 +63,7 @@ fn transfer_works() {
         Balances::make_free_balance_be(&alice, alice_balance);
 
         // Execute transfer.
-        assert_ok!(WrappedBalances::transfer(alice, bob, transferred_balance));
+        assert_ok!(Erc20Balances::transfer(alice, bob, transferred_balance));
 
         // Check resulted balances.
         assert_eq!(
@@ -89,10 +86,10 @@ fn transfer_from_works() {
 
         // Prepare the test state.
         Balances::make_free_balance_be(&alice, alice_balance);
-        WrappedBalances::approve(alice, bob, approved_balance);
+        Erc20Balances::approve(alice, bob, approved_balance);
 
         // Execute transfer_from.
-        assert_ok!(WrappedBalances::transfer_from(
+        assert_ok!(Erc20Balances::transfer_from(
             bob,
             alice,
             charlie,
@@ -109,7 +106,7 @@ fn transfer_from_works() {
 
         // Check updated approvals changes.
         assert_eq!(
-            WrappedBalances::approvals(alice, bob),
+            Erc20Balances::approvals(alice, bob),
             Some(approved_balance - transferred_from_balance)
         );
     });
@@ -129,7 +126,7 @@ fn transfer_from_fails_spender_not_allowed() {
 
         // Execute transfer_from.
         assert_noop!(
-            WrappedBalances::transfer_from(bob, alice, charlie, transferred_from_balance),
+            Erc20Balances::transfer_from(bob, alice, charlie, transferred_from_balance),
             <Error<Test>>::SpenderNotAllowed
         );
     });
@@ -147,11 +144,11 @@ fn transfer_from_fails_spend_more_than_allowed() {
 
         // Prepare the test state.
         Balances::make_free_balance_be(&alice, alice_balance);
-        WrappedBalances::approve(alice, bob, approved_balance);
+        Erc20Balances::approve(alice, bob, approved_balance);
 
         // Execute transfer_from.
         assert_noop!(
-            WrappedBalances::transfer_from(bob, alice, charlie, transferred_from_balance),
+            Erc20Balances::transfer_from(bob, alice, charlie, transferred_from_balance),
             <Error<Test>>::SpendMoreThanAllowed
         );
     });
