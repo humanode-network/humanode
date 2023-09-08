@@ -31,7 +31,7 @@ describe("eth rpc", () => {
   it("has the expected balance value", async () => {
     const [alice, _] = devSigners;
     const charlie = ethers.ethers.Wallet.createRandom();
-    const transferBalance = 1000;
+    const transferBalance = 1000n;
 
     const tx = await alice.sendTransaction({
       to: charlie.address,
@@ -42,7 +42,7 @@ describe("eth rpc", () => {
 
     const charlieBalance = await provider.getBalance(charlie);
 
-    expect(Number(charlieBalance)).toBe(transferBalance);
+    expect(charlieBalance).toBe(transferBalance);
   });
 
   describe("fee", () => {
