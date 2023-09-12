@@ -2011,6 +2011,10 @@
   features:
     - default
     - std
+- name: pallet-erc20-support 0.1.0
+  features:
+    - default
+    - std
 - name: pallet-ethereum 4.0.0-dev
   features:
     - std
@@ -2103,10 +2107,6 @@
     - default
     - frame-benchmarking
     - serde
-    - std
-- name: pallet-wrapped-token 0.1.0
-  features:
-    - default
     - std
 - name: parity-db 0.4.6
   features: []
@@ -2225,6 +2225,10 @@
   features:
     - default
     - std
+- name: precompile-erc20-support 0.1.0
+  features:
+    - default
+    - std
 - name: precompile-evm-accounts-mapping 0.1.0
   features:
     - default
@@ -2237,10 +2241,6 @@
     - testing
 - name: precompile-utils-macro 0.1.0
   features: []
-- name: precompile-wrapped-token 0.1.0
-  features:
-    - default
-    - std
 - name: predicates 2.1.5
   features:
     - default
