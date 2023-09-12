@@ -238,7 +238,7 @@ where
                 exit_status: ExitError::Other("value is out of bounds".into()),
             })?,
         )
-        .map_err(process_transfer_error)?;
+        .map_err(process_transfer_error::<Erc20SupportT>)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -283,7 +283,7 @@ where
                 exit_status: ExitError::Other("value is out of bounds".into()),
             })?,
         )
-        .map_err(process_transfer_error)?;
+        .map_err(process_transfer_error::<Erc20SupportT>)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -302,16 +302,26 @@ where
 }
 
 /// A helper function to process transfer related dispatch errors.
-fn process_transfer_error(error: DispatchError) -> PrecompileFailure {
-    match error {
-        sp_runtime::DispatchError::Token(sp_runtime::TokenError::NoFunds) => {
-            PrecompileFailure::Error {
-                exit_status: ExitError::OutOfFund,
-            }
+fn process_transfer_error<Erc20SupportT: pallet_erc20_support::Config>(
+    error: DispatchError,
+) -> PrecompileFailure {
+    if error == pallet_erc20_support::Error::SpenderNotAllowed::<Erc20SupportT>.into() {
+        PrecompileFailure::Error {
+            exit_status: ExitError::Other("spender not allowed".into()),
         }
-        _ => PrecompileFailure::Error {
-            exit_status: ExitError::Other("unable to transfer funds".into()),
-        },
+    } else if error == pallet_erc20_support::Error::SpendMoreThanAllowed::<Erc20SupportT>.into() {
+        PrecompileFailure::Error {
+            exit_status: ExitError::Other("spend more than allowed".into()),
+        }
+    } else {
+        match error {
+            DispatchError::Token(sp_runtime::TokenError::NoFunds) => PrecompileFailure::Error {
+                exit_status: ExitError::OutOfFund,
+            },
+            _ => PrecompileFailure::Error {
+                exit_status: ExitError::Other("unable to transfer funds".into()),
+            },
+        }
     }
 }
 
