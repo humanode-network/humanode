@@ -2,6 +2,7 @@ use frame_support::{assert_noop, assert_ok, traits::Currency};
 
 use crate::{mock::*, *};
 
+/// This test verifies that getting total supply works as expected.
 #[test]
 fn total_supply_works() {
     new_test_ext().execute_with_ext(|_| {
@@ -19,6 +20,7 @@ fn total_supply_works() {
     });
 }
 
+/// This test verifies that getting balance of provided account works as expected.
 #[test]
 fn balance_of_works() {
     new_test_ext().execute_with_ext(|_| {
@@ -33,6 +35,7 @@ fn balance_of_works() {
     });
 }
 
+/// This test verifies that approval logic works as expected.
 #[test]
 fn approve_works() {
     new_test_ext().execute_with_ext(|_| {
@@ -51,6 +54,7 @@ fn approve_works() {
     })
 }
 
+/// This test verifies that transferring logic works as expected.
 #[test]
 fn transfer_works() {
     new_test_ext().execute_with_ext(|_| {
@@ -74,6 +78,7 @@ fn transfer_works() {
     });
 }
 
+/// This test verifies that transferring logic on behalf of provided account works as expected.
 #[test]
 fn transfer_from_works() {
     new_test_ext().execute_with_ext(|_| {
@@ -112,6 +117,8 @@ fn transfer_from_works() {
     });
 }
 
+/// This test verifies that transferring logic on behalf of provided account fails in case
+/// the corresponding approval doesn't exist.
 #[test]
 fn transfer_from_fails_spender_not_allowed() {
     new_test_ext().execute_with_ext(|_| {
@@ -132,6 +139,8 @@ fn transfer_from_fails_spender_not_allowed() {
     });
 }
 
+/// This test verifies that transferring logic on behalf of provided account fails in case
+/// the corresponding approval doesn't have sufficient balance.
 #[test]
 fn transfer_from_fails_spend_more_than_allowed() {
     new_test_ext().execute_with_ext(|_| {
