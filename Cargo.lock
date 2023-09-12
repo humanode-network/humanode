@@ -3735,9 +3735,9 @@ dependencies = [
  "parity-scale-codec",
  "precompile-bioauth",
  "precompile-currency-swap",
+ "precompile-erc20-support",
  "precompile-evm-accounts-mapping",
  "precompile-utils",
- "precompile-wrapped-token",
  "primitives-auth-ticket",
  "primitives-currency-swap-proxy",
  "primitives-ethereum",
@@ -6743,6 +6743,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "precompile-erc20-support"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "num_enum 0.6.0",
+ "pallet-balances",
+ "pallet-erc20-support",
+ "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "precompile-utils",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "precompile-evm-accounts-mapping"
 version = "0.1.0"
 dependencies = [
@@ -6792,27 +6813,6 @@ dependencies = [
  "quote",
  "sha3 0.9.1",
  "syn 1.0.109",
-]
-
-[[package]]
-name = "precompile-wrapped-token"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex-literal",
- "num_enum 0.6.0",
- "pallet-balances",
- "pallet-erc20-support",
- "pallet-evm",
- "pallet-evm-balances",
- "pallet-evm-system",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils",
- "scale-info",
- "sp-core",
 ]
 
 [[package]]

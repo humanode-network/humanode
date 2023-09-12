@@ -1,4 +1,4 @@
-//! A substrate pallet that wraps funds related instance.
+//! A substrate pallet that exposes currency instance using the ERC20 interface standard..
 
 #![cfg_attr(not(feature = "std"), no_std)]
 

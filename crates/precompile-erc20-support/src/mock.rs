@@ -146,7 +146,7 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
 
 pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x802));
 
-pub(crate) type EvmBalancesErc20Precompile = crate::WrappedToken<Test, ConstU64<GAS_COST>>;
+pub(crate) type EvmBalancesErc20Precompile = crate::Erc20Support<Test, ConstU64<GAS_COST>>;
 
 pub type Precompiles<R> =
     PrecompileSetBuilder<R, (PrecompileAt<PrecompileAddress, EvmBalancesErc20Precompile>,)>;

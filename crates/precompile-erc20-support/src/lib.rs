@@ -1,4 +1,4 @@
-//! A precompile to interact with wrapped funds related instances.
+//! A precompile to interact with currency instance using the ERC20 interface standard.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -62,16 +62,16 @@ pub enum Action {
     TransferFrom = "transferFrom(address,address,uint256)",
 }
 
-/// Precompile exposing wrapped token.
-pub struct WrappedToken<WrappedTokenT, GasCost>(PhantomData<(WrappedTokenT, GasCost)>)
+/// Precompile exposing currency instance as ERC20.
+pub struct Erc20Support<Erc20SupportT, GasCost>(PhantomData<(Erc20SupportT, GasCost)>)
 where
     GasCost: Get<u64>;
 
-impl<WrappedTokenT, GasCost> Precompile for WrappedToken<WrappedTokenT, GasCost>
+impl<Erc20SupportT, GasCost> Precompile for Erc20Support<Erc20SupportT, GasCost>
 where
-    WrappedTokenT: pallet_erc20_support::Config,
-    AccountIdOf<WrappedTokenT>: From<H160>,
-    BalanceOf<WrappedTokenT>: Into<U256> + TryFrom<U256>,
+    Erc20SupportT: pallet_erc20_support::Config,
+    AccountIdOf<Erc20SupportT>: From<H160>,
+    BalanceOf<Erc20SupportT>: Into<U256> + TryFrom<U256>,
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
@@ -95,30 +95,30 @@ where
     }
 }
 
-impl<WrappedTokenT, GasCost> WrappedToken<WrappedTokenT, GasCost>
+impl<Erc20SupportT, GasCost> Erc20Support<Erc20SupportT, GasCost>
 where
-    WrappedTokenT: pallet_erc20_support::Config,
-    AccountIdOf<WrappedTokenT>: From<H160>,
-    BalanceOf<WrappedTokenT>: Into<U256> + TryFrom<U256>,
+    Erc20SupportT: pallet_erc20_support::Config,
+    AccountIdOf<Erc20SupportT>: From<H160>,
+    BalanceOf<Erc20SupportT>: Into<U256> + TryFrom<U256>,
     GasCost: Get<u64>,
 {
     /// Returns the name of the token.
     fn name(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        let name: Bytes = WrappedTokenT::Metadata::name().into();
+        let name: Bytes = Erc20SupportT::Metadata::name().into();
 
         Ok(succeed(EvmDataWriter::new().write(name).build()))
     }
 
     /// Returns the symbol of the token.
     fn symbol(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        let symbol: Bytes = WrappedTokenT::Metadata::symbol().into();
+        let symbol: Bytes = Erc20SupportT::Metadata::symbol().into();
 
         Ok(succeed(EvmDataWriter::new().write(symbol).build()))
     }
 
     /// Returns the decimals places of the token.
     fn decimals(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        let decimals: u8 = WrappedTokenT::Metadata::decimals();
+        let decimals: u8 = Erc20SupportT::Metadata::decimals();
 
         Ok(succeed(EvmDataWriter::new().write(decimals).build()))
     }
@@ -126,7 +126,7 @@ where
     /// Returns the amount of tokens in existence.
     fn total_supply(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let total_supply: U256 =
-            pallet_erc20_support::Pallet::<WrappedTokenT>::total_supply().into();
+            pallet_erc20_support::Pallet::<Erc20SupportT>::total_supply().into();
 
         Ok(succeed(EvmDataWriter::new().write(total_supply).build()))
     }
@@ -142,7 +142,7 @@ where
         check_input_end(&mut input)?;
 
         let total_balance: U256 =
-            pallet_erc20_support::Pallet::<WrappedTokenT>::balance_of(&owner.into()).into();
+            pallet_erc20_support::Pallet::<Erc20SupportT>::balance_of(&owner.into()).into();
 
         Ok(succeed(EvmDataWriter::new().write(total_balance).build()))
     }
@@ -165,7 +165,7 @@ where
         Ok(succeed(
             EvmDataWriter::new()
                 .write(
-                    pallet_erc20_support::Pallet::<WrappedTokenT>::allowance(
+                    pallet_erc20_support::Pallet::<Erc20SupportT>::allowance(
                         &owner.into(),
                         &spender.into(),
                     )
@@ -192,7 +192,7 @@ where
 
         check_input_end(&mut input)?;
 
-        pallet_erc20_support::Pallet::<WrappedTokenT>::approve(
+        pallet_erc20_support::Pallet::<Erc20SupportT>::approve(
             owner.into(),
             spender.into(),
             amount.try_into().map_err(|_| PrecompileFailure::Error {
@@ -231,7 +231,7 @@ where
 
         check_input_end(&mut input)?;
 
-        pallet_erc20_support::Pallet::<WrappedTokenT>::transfer(
+        pallet_erc20_support::Pallet::<Erc20SupportT>::transfer(
             caller.into(),
             recipient.into(),
             amount.try_into().map_err(|_| PrecompileFailure::Error {
@@ -275,7 +275,7 @@ where
 
         check_input_end(&mut input)?;
 
-        pallet_erc20_support::Pallet::<WrappedTokenT>::transfer_from(
+        pallet_erc20_support::Pallet::<Erc20SupportT>::transfer_from(
             caller.into(),
             sender.into(),
             recipient.into(),
