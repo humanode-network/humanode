@@ -26,7 +26,7 @@ use crate::{
 };
 
 fn pot_account_balance() -> BalanceOf<Test> {
-    <CurrencyOf<Test>>::free_balance(&<Test as Config>::PotAccountId::get())
+    <CurrencyOf<Test>>::free_balance(<Test as Config>::PotAccountId::get())
 }
 
 fn total_claimable_balance() -> BalanceOf<Test> {

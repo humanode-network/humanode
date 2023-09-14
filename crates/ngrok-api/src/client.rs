@@ -61,7 +61,7 @@ impl Client {
             .json(req)
             .send()
             .await?;
-        self.check_response::<Request>(&res)?;
+        self.check_response(&res)?;
         let res: response::Envelope<Request::Response> = res.json().await?;
         Ok(res.payload)
     }
@@ -84,7 +84,7 @@ impl Client {
     }
 
     /// Check the response.
-    fn check_response<Request>(&self, res: &reqwest::Response) -> Result<(), Error> {
+    fn check_response(&self, res: &reqwest::Response) -> Result<(), Error> {
         let status = res.status();
         if !status.is_success() {
             return Err(Error::BadStatus(status));
