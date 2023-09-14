@@ -14,7 +14,7 @@ humanode-runtime = { path = "../humanode-runtime" }
 robonode-client = { path = "../robonode-client" }
 
 fc-db = { workspace = true }
-fc-rpc = { workspace = true }
+fc-rpc = { workspace = true, features = ["rpc-binary-search-estimate"] }
 fc-rpc-core = { workspace = true }
 fc-storage = { workspace = true }
 fp-rpc = { workspace = true }
