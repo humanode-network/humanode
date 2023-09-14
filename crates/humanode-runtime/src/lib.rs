@@ -854,7 +854,7 @@ construct_runtime!(
         EvmToNativeSwapBridgePot: pallet_pot::<Instance5> = 34,
         CurrencySwap: pallet_currency_swap = 35,
         BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
-        Erc20EvmBalances: pallet_erc20_support = 37,
+        EvmBalancesErc20Support: pallet_erc20_support = 37,
     }
 );
 
