@@ -106,7 +106,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
     /// owner. This is zero by default.
     pub fn allowance(owner: &AccountIdOf<T, I>, spender: &AccountIdOf<T, I>) -> BalanceOf<T, I> {
-        Self::approvals(owner, spender).unwrap_or_default()
+        <Approvals<T, I>>::get(owner, spender).unwrap_or_default()
     }
 
     /// Sets amount as the allowance of spender over the caller’s tokens.
