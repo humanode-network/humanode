@@ -139,16 +139,13 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
             // If caller is "sender", it can spend as much as it wants.
             if caller != sender {
                 <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
-                    // Get current allowed value, exit if None.
-                    let allowed = entry.ok_or(Error::<T, I>::SpenderNotAllowed)?;
-
                     // Remove "value" from allowed, exit if underflow.
-                    let allowed = allowed
+                    let allowed = entry
                         .checked_sub(&amount)
                         .ok_or(Error::<T, I>::SpendMoreThanAllowed)?;
 
                     // Update allowed value.
-                    *entry = Some(allowed);
+                    *entry = allowed;
 
                     Ok::<(), Error<T, I>>(())
                 })?;
