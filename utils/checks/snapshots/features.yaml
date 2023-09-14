@@ -2226,11 +2226,11 @@
   features:
     - default
     - std
-- name: precompile-erc20-support 0.1.0
+- name: precompile-evm-accounts-mapping 0.1.0
   features:
     - default
     - std
-- name: precompile-evm-accounts-mapping 0.1.0
+- name: precompile-native-currency 0.1.0
   features:
     - default
     - std
@@ -2298,7 +2298,7 @@
     - syn-error
 - name: proc-macro-error-attr 1.0.4
   features: []
-- name: proc-macro2 1.0.66
+- name: proc-macro2 1.0.56
   features:
     - default
     - proc-macro

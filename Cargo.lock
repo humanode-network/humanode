@@ -3735,8 +3735,8 @@ dependencies = [
  "parity-scale-codec",
  "precompile-bioauth",
  "precompile-currency-swap",
- "precompile-erc20-support",
  "precompile-evm-accounts-mapping",
+ "precompile-native-currency",
  "precompile-utils",
  "primitives-auth-ticket",
  "primitives-currency-swap-proxy",
@@ -6743,7 +6743,26 @@ dependencies = [
 ]
 
 [[package]]
-name = "precompile-erc20-support"
+name = "precompile-evm-accounts-mapping"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "mockall",
+ "pallet-evm-accounts-mapping",
+ "parity-scale-codec",
+ "primitives-ethereum",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "precompile-native-currency"
 version = "0.1.0"
 dependencies = [
  "fp-evm",
@@ -6761,25 +6780,6 @@ dependencies = [
  "precompile-utils",
  "scale-info",
  "sp-core",
-]
-
-[[package]]
-name = "precompile-evm-accounts-mapping"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex-literal",
- "mockall",
- "pallet-evm-accounts-mapping",
- "parity-scale-codec",
- "primitives-ethereum",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -6953,9 +6953,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.66"
+version = "1.0.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18fb31db3f9bddb2ea821cde30a9f70117e3f119938b5ee630b7403aa6e2ead9"
+checksum = "2b63bdb0cd06f1f4dedf69b254734f9b45af66e4a031e42a7480257d9898b435"
 dependencies = [
  "unicode-ident",
 ]

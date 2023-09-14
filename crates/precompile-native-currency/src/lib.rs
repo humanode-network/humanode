@@ -63,11 +63,11 @@ pub enum Action {
 }
 
 /// Precompile exposing currency instance as ERC20.
-pub struct Erc20Support<Erc20SupportT, GasCost>(PhantomData<(Erc20SupportT, GasCost)>)
+pub struct NativeCurrency<Erc20SupportT, GasCost>(PhantomData<(Erc20SupportT, GasCost)>)
 where
     GasCost: Get<u64>;
 
-impl<Erc20SupportT, GasCost> Precompile for Erc20Support<Erc20SupportT, GasCost>
+impl<Erc20SupportT, GasCost> Precompile for NativeCurrency<Erc20SupportT, GasCost>
 where
     Erc20SupportT: pallet_erc20_support::Config,
     AccountIdOf<Erc20SupportT>: From<H160>,
@@ -95,7 +95,7 @@ where
     }
 }
 
-impl<Erc20SupportT, GasCost> Erc20Support<Erc20SupportT, GasCost>
+impl<Erc20SupportT, GasCost> NativeCurrency<Erc20SupportT, GasCost>
 where
     Erc20SupportT: pallet_erc20_support::Config,
     AccountIdOf<Erc20SupportT>: From<H160>,

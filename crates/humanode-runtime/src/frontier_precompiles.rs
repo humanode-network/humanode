@@ -5,8 +5,8 @@ use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use precompile_bioauth::Bioauth;
 use precompile_currency_swap::CurrencySwap;
-use precompile_erc20_support::Erc20Support;
 use precompile_evm_accounts_mapping::EvmAccountsMapping;
+use precompile_native_currency::NativeCurrency;
 use sp_core::{H160, U256};
 use sp_std::marker::PhantomData;
 
@@ -59,7 +59,7 @@ where
             // Humanode precompiles:
             a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
             a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
-            a if a == hash(2050) => Some(Erc20Support::<R, ConstU64<200>>::execute(handle)),
+            a if a == hash(2050) => Some(NativeCurrency::<R, ConstU64<200>>::execute(handle)),
             a if a == hash(2304) => Some(CurrencySwap::<
                 currency_swap::EvmToNativeOneToOne,
                 EvmAccountId,

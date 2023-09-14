@@ -1,5 +1,5 @@
 [package]
-name = "precompile-erc20-support"
+name = "precompile-native-currency"
 version = "0.1.0"
 edition = "2021"
 publish = false
