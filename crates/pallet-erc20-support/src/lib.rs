@@ -72,7 +72,7 @@ pub mod pallet {
     /// ERC20-style approvals data.
     /// (Owner => Allowed => Amount).
     #[pallet::storage]
-    #[pallet::getter(fn approvals)]
+    #[pallet::getter(fn allowance)]
     pub type Approvals<T: Config<I>, I: 'static = ()> = StorageDoubleMap<
         _,
         Blake2_128Concat,
@@ -80,6 +80,7 @@ pub mod pallet {
         Blake2_128Concat,
         AccountIdOf<T, I>,
         BalanceOf<T, I>,
+        ValueQuery,
     >;
 
     /// Possible errors.
@@ -101,12 +102,6 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     /// Returns the amount of tokens owned by provided account.
     pub fn balance_of(owner: &AccountIdOf<T, I>) -> BalanceOf<T, I> {
         T::Currency::total_balance(owner)
-    }
-
-    /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
-    /// owner. This is zero by default.
-    pub fn allowance(owner: &AccountIdOf<T, I>, spender: &AccountIdOf<T, I>) -> BalanceOf<T, I> {
-        Self::approvals(owner, spender).unwrap_or_default()
     }
 
     /// Sets amount as the allowance of spender over the caller’s tokens.
