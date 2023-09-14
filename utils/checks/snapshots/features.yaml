@@ -867,7 +867,8 @@
 - name: fc-mapping-sync 2.0.0-dev
   features: []
 - name: fc-rpc 2.0.0-dev
-  features: []
+  features:
+    - rpc-binary-search-estimate
 - name: fc-rpc-core 1.1.0-dev
   features: []
 - name: fc-storage 1.0.0-dev
