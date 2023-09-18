@@ -3708,6 +3708,7 @@ dependencies = [
  "pallet-chain-properties",
  "pallet-chain-start-moment",
  "pallet-currency-swap",
+ "pallet-erc20-support",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
  "pallet-evm",
@@ -3735,6 +3736,7 @@ dependencies = [
  "precompile-bioauth",
  "precompile-currency-swap",
  "precompile-evm-accounts-mapping",
+ "precompile-native-currency",
  "precompile-utils",
  "primitives-auth-ticket",
  "primitives-currency-swap-proxy",
@@ -5938,6 +5940,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-erc20-support"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.38#8d3a2ef77867d1e40bd42078eb371436d49f0b1d"
@@ -6748,6 +6762,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "precompile-native-currency"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "num_enum 0.6.0",
+ "pallet-balances",
+ "pallet-erc20-support",
+ "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "precompile-utils",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "precompile-utils"
 version = "0.1.0"
 dependencies = [
@@ -6918,9 +6953,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.66"
+version = "1.0.56"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18fb31db3f9bddb2ea821cde30a9f70117e3f119938b5ee630b7403aa6e2ead9"
+checksum = "2b63bdb0cd06f1f4dedf69b254734f9b45af66e4a031e42a7480257d9898b435"
 dependencies = [
  "unicode-ident",
 ]
