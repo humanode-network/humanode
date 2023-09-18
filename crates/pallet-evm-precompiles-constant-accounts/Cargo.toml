@@ -1,0 +1,36 @@
+[package]
+name = "pallet-evm-precompiles-constant-accounts"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-evm = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
+sp-core = { workspace = true }
+
+[dev-dependencies]
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+  "codec/std",
+  "frame-support/std",
+  "frame-system/std",
+  "pallet-evm/std",
+  "scale-info/std",
+  "sp-core/std",
+  "sp-io/std",
+  "sp-runtime/std",
+]
+try-runtime = [
+  "frame-support/try-runtime",
+  "frame-system/try-runtime",
+  "pallet-evm/try-runtime",
+  "sp-runtime/try-runtime",
+]

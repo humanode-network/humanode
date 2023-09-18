@@ -6059,6 +6059,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-precompiles-constant-accounts"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-evm",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-evm-system"
 version = "1.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.38#8d3a2ef77867d1e40bd42078eb371436d49f0b1d"
