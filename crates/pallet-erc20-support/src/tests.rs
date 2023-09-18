@@ -177,6 +177,76 @@ fn approve_spend_all_in_several_transactions_works() {
     })
 }
 
+/// This test verifies that approval logic works as expected in case approved balance value
+/// is more than owner's balance value initially.
+#[test]
+fn approve_approval_value_more_than_balance_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42_u64;
+        let alice_stash = 43_u64;
+        let bob = 52_u64;
+        let charlie = 62_u64;
+        let alice_balance_initial = 1000;
+        let alice_stash_balance = 1000;
+        let approved_balance = 2000;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance_initial);
+        Balances::make_free_balance_be(&alice_stash, alice_stash_balance);
+        Erc20Balances::approve(alice, bob, approved_balance);
+
+        // Check test preconditions.
+        assert_eq!(Erc20Balances::approvals(&alice, &bob), approved_balance);
+
+        // Try to execute transfer_from with all approved balance.
+        assert_noop!(
+            Erc20Balances::transfer_from(bob, alice, charlie, approved_balance),
+            pallet_balances::Error::<Test>::InsufficientBalance
+        );
+
+        // Execute transfer_from with alice initial balance value.
+        assert_ok!(Erc20Balances::transfer_from(
+            bob,
+            alice,
+            charlie,
+            alice_balance_initial
+        ));
+
+        // Check resulted approvals.
+        assert_eq!(
+            Erc20Balances::approvals(&alice, &bob),
+            approved_balance - alice_balance_initial
+        );
+        // Check resulted balances.
+        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(Balances::total_balance(&bob), 0);
+        assert_eq!(Balances::total_balance(&charlie), alice_balance_initial);
+
+        // Send more tokens to alice.
+        assert_ok!(Erc20Balances::transfer(
+            alice_stash,
+            alice,
+            alice_stash_balance
+        ));
+
+        // Execute transfer_from with the rest approved balance value.
+        assert_ok!(Erc20Balances::transfer_from(
+            bob,
+            alice,
+            charlie,
+            approved_balance - alice_balance_initial
+        ));
+
+        // Check resulted approvals.
+        assert_eq!(Erc20Balances::approvals(&alice, &bob), 0);
+        // Check transfer_from failed execution.
+        assert_noop!(
+            Erc20Balances::transfer_from(bob, alice, charlie, 1),
+            <Error<Test>>::SpendMoreThanAllowed
+        );
+    })
+}
+
 /// This test verifies that transferring logic works as expected.
 #[test]
 fn transfer_works() {
