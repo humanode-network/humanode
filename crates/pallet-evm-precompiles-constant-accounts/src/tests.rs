@@ -22,5 +22,7 @@ fn genesis_build() {
         // Assert the state.
         assert_eq!(Evm::account_codes(precompile_a.0), precompile_a.1);
         assert_eq!(Evm::account_codes(precompile_b.0), precompile_b.1);
+        assert!(EvmSystem::account_exists(&precompile_a.0));
+        assert!(EvmSystem::account_exists(&precompile_b.0));
     })
 }

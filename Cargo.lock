@@ -6065,6 +6065,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
+ "hex-literal",
  "pallet-balances",
  "pallet-evm",
  "pallet-evm-balances",
