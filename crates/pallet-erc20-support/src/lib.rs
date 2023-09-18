@@ -141,23 +141,20 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
         amount: BalanceOf<T, I>,
     ) -> DispatchResult {
         with_storage_layer(move || {
-            // If caller is "sender", it can spend as much as it wants.
-            if caller != sender {
-                <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
-                    // Get current allowed value, exit if None.
-                    let allowed = entry.ok_or(Error::<T, I>::SpenderNotAllowed)?;
+            <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
+                // Get current allowed value, exit if None.
+                let allowed = entry.ok_or(Error::<T, I>::SpenderNotAllowed)?;
 
-                    // Remove "value" from allowed, exit if underflow.
-                    let allowed = allowed
-                        .checked_sub(&amount)
-                        .ok_or(Error::<T, I>::SpendMoreThanAllowed)?;
+                // Remove "value" from allowed, exit if underflow.
+                let allowed = allowed
+                    .checked_sub(&amount)
+                    .ok_or(Error::<T, I>::SpendMoreThanAllowed)?;
 
-                    // Update allowed value.
-                    *entry = Some(allowed);
+                // Update allowed value.
+                *entry = Some(allowed);
 
-                    Ok::<(), Error<T, I>>(())
-                })?;
-            }
+                Ok::<(), Error<T, I>>(())
+            })?;
 
             T::Currency::transfer(
                 &sender,
