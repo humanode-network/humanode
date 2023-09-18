@@ -54,6 +54,30 @@ fn approve_works() {
     })
 }
 
+/// This test verifies that approval logic works as expected in case approval has been overwritten.
+#[test]
+fn approve_overwrite_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42_u64;
+        let bob = 52_u64;
+        let approved_balance = 999;
+        let approved_balance_new = 1000;
+
+        // Check test preconditions.
+        assert_eq!(Erc20Balances::approvals(alice, bob), None);
+
+        // Alice approves balance value for Bob.
+        Erc20Balances::approve(alice, bob, approved_balance);
+        // Verify alice-bob approval existence.
+        assert_eq!(Erc20Balances::approvals(alice, bob), Some(approved_balance));
+
+        // Alice approves new balance value for Bob.
+        Erc20Balances::approve(alice, bob, approved_balance_new);
+        // Verify alice-bob approval existence.
+        assert_eq!(Erc20Balances::approvals(alice, bob), Some(approved_balance_new));
+    })
+}
+
 /// This test verifies that transferring logic works as expected.
 #[test]
 fn transfer_works() {
