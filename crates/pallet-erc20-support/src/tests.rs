@@ -78,6 +78,105 @@ fn approve_overwrite_works() {
     })
 }
 
+/// This test verifies that approval logic works as expected in case approved balanced
+/// has been transferred in single transaction.
+#[test]
+fn approve_spend_all_in_single_transaction_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42_u64;
+        let bob = 52_u64;
+        let charlie = 62_u64;
+        let alice_balance = 10000;
+        let approved_balance = 1000;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance);
+        Erc20Balances::approve(alice, bob, approved_balance);
+
+        // Check test preconditions.
+        assert_eq!(Erc20Balances::approvals(&alice, &bob), approved_balance);
+
+        // Execute transfer_from.
+        assert_ok!(Erc20Balances::transfer_from(
+            bob,
+            alice,
+            charlie,
+            approved_balance
+        ));
+
+        // Check resulted approvals.
+        assert_eq!(Erc20Balances::approvals(&alice, &bob), 0);
+        // Check resulted balances.
+        assert_eq!(
+            Balances::total_balance(&alice),
+            alice_balance - approved_balance
+        );
+        assert_eq!(Balances::total_balance(&bob), 0);
+        assert_eq!(Balances::total_balance(&charlie), approved_balance);
+        // Check transfer_from failed execution.
+        assert_noop!(
+            Erc20Balances::transfer_from(bob, alice, charlie, 1),
+            <Error<Test>>::SpendMoreThanAllowed
+        );
+    })
+}
+
+/// This test verifies that approval logic works as expected in case approved balanced
+/// has been transferred in several transactions.
+#[test]
+fn approve_spend_all_in_several_transactions_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42_u64;
+        let bob = 52_u64;
+        let charlie = 62_u64;
+        let alice_balance = 10000;
+        let approved_balance = 1000;
+
+        // Prepare the test state.
+        Balances::make_free_balance_be(&alice, alice_balance);
+        Erc20Balances::approve(alice, bob, approved_balance);
+
+        // Check test preconditions.
+        assert_eq!(Erc20Balances::approvals(&alice, &bob), approved_balance);
+
+        // Execute transfer_from.
+        assert_ok!(Erc20Balances::transfer_from(bob, alice, charlie, 500));
+
+        // Check resulted approvals.
+        assert_eq!(
+            Erc20Balances::approvals(&alice, &bob),
+            approved_balance - 500
+        );
+        // Check resulted balances.
+        assert_eq!(Balances::total_balance(&alice), alice_balance - 500);
+        assert_eq!(Balances::total_balance(&bob), 0);
+        assert_eq!(Balances::total_balance(&charlie), 500);
+
+        // Execute transfer_from again.
+        assert_ok!(Erc20Balances::transfer_from(
+            bob,
+            alice,
+            charlie,
+            approved_balance - 500
+        ));
+
+        // Check resulted approvals.
+        assert_eq!(Erc20Balances::approvals(&alice, &bob), 0);
+        // Check resulted balances.
+        assert_eq!(
+            Balances::total_balance(&alice),
+            alice_balance - approved_balance
+        );
+        assert_eq!(Balances::total_balance(&bob), 0);
+        assert_eq!(Balances::total_balance(&charlie), approved_balance);
+        // Check transfer_from failed execution.
+        assert_noop!(
+            Erc20Balances::transfer_from(bob, alice, charlie, 1),
+            <Error<Test>>::SpendMoreThanAllowed
+        );
+    })
+}
+
 /// This test verifies that transferring logic works as expected.
 #[test]
 fn transfer_works() {
