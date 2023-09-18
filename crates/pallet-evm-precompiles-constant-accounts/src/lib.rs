@@ -6,6 +6,9 @@ use frame_support::traits::StorageVersion;
 pub use pallet::*;
 use sp_core::H160;
 
+#[cfg(test)]
+mod mock;
+
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
