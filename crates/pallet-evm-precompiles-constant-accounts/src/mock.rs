@@ -39,6 +39,7 @@ frame_support::construct_runtime!(
         EvmSystem: pallet_evm_system,
         EvmBalances: pallet_evm_balances,
         Evm: pallet_evm,
+        EvmPrecompilesConstantAccounts: pallet_evm_precompiles_constant_accounts,
     }
 );
 
