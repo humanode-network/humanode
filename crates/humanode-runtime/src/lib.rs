@@ -658,7 +658,7 @@ impl pallet_evm_balances::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = EvmAccountId;
     type Balance = Balance;
-    type ExistentialDeposit = ConstU128<500>;
+    type ExistentialDeposit = ConstU128<1>;
     type AccountStore = EvmSystem;
     type DustRemoval = currency_swap::TreasuryPotProxy;
 }
