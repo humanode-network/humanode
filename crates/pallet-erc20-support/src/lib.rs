@@ -80,13 +80,12 @@ pub mod pallet {
         Blake2_128Concat,
         AccountIdOf<T, I>,
         BalanceOf<T, I>,
+        ValueQuery,
     >;
 
     /// Possible errors.
     #[pallet::error]
     pub enum Error<T, I = ()> {
-        /// Spender not allowed to transfer tokens on behalf of owner.
-        SpenderNotAllowed,
         /// Spender can't transfer tokens more than allowed.
         SpendMoreThanAllowed,
     }
@@ -106,7 +105,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
     /// owner. This is zero by default.
     pub fn allowance(owner: &AccountIdOf<T, I>, spender: &AccountIdOf<T, I>) -> BalanceOf<T, I> {
-        <Approvals<T, I>>::get(owner, spender).unwrap_or_default()
+        <Approvals<T, I>>::get(owner, spender)
     }
 
     /// Sets amount as the allowance of spender over the caller’s tokens.
@@ -142,16 +141,13 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     ) -> DispatchResult {
         with_storage_layer(move || {
             <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
-                // Get current allowed value, exit if None.
-                let allowed = entry.ok_or(Error::<T, I>::SpenderNotAllowed)?;
-
                 // Remove "value" from allowed, exit if underflow.
-                let allowed = allowed
+                let allowed = entry
                     .checked_sub(&amount)
                     .ok_or(Error::<T, I>::SpendMoreThanAllowed)?;
 
                 // Update allowed value.
-                *entry = Some(allowed);
+                *entry = allowed;
 
                 Ok::<(), Error<T, I>>(())
             })?;

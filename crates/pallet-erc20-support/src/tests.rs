@@ -44,13 +44,13 @@ fn approve_works() {
         let approved_balance = 999;
 
         // Check test preconditions.
-        assert_eq!(Erc20Balances::approvals(alice, bob), None);
+        assert_eq!(Erc20Balances::approvals(alice, bob), 0);
 
         // Store alice-bob approval.
         Erc20Balances::approve(alice, bob, approved_balance);
 
         // Verify alice-bob approval existence.
-        assert_eq!(Erc20Balances::approvals(alice, bob), Some(approved_balance));
+        assert_eq!(Erc20Balances::approvals(alice, bob), approved_balance);
     })
 }
 
@@ -64,17 +64,17 @@ fn approve_overwrite_works() {
         let approved_balance_new = 1000;
 
         // Check test preconditions.
-        assert_eq!(Erc20Balances::approvals(alice, bob), None);
+        assert_eq!(Erc20Balances::approvals(alice, bob), 0);
 
         // Alice approves balance value for Bob.
         Erc20Balances::approve(alice, bob, approved_balance);
         // Verify alice-bob approval existence.
-        assert_eq!(Erc20Balances::approvals(alice, bob), Some(approved_balance));
+        assert_eq!(Erc20Balances::approvals(alice, bob), approved_balance);
 
         // Alice approves new balance value for Bob.
         Erc20Balances::approve(alice, bob, approved_balance_new);
         // Verify alice-bob approval existence.
-        assert_eq!(Erc20Balances::approvals(alice, bob), Some(approved_balance_new));
+        assert_eq!(Erc20Balances::approvals(alice, bob), approved_balance_new);
     })
 }
 
@@ -136,29 +136,7 @@ fn transfer_from_works() {
         // Check updated approvals changes.
         assert_eq!(
             Erc20Balances::approvals(alice, bob),
-            Some(approved_balance - transferred_from_balance)
-        );
-    });
-}
-
-/// This test verifies that transferring logic on behalf of provided account fails in case
-/// the corresponding approval doesn't exist.
-#[test]
-fn transfer_from_fails_spender_not_allowed() {
-    new_test_ext().execute_with_ext(|_| {
-        let alice = 42;
-        let alice_balance = 10000;
-        let bob = 43;
-        let charlie = 44;
-        let transferred_from_balance = 1000;
-
-        // Prepare the test state.
-        Balances::make_free_balance_be(&alice, alice_balance);
-
-        // Execute transfer_from.
-        assert_noop!(
-            Erc20Balances::transfer_from(bob, alice, charlie, transferred_from_balance),
-            <Error<Test>>::SpenderNotAllowed
+            approved_balance - transferred_from_balance
         );
     });
 }

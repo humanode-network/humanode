@@ -305,11 +305,7 @@ where
 fn process_dispatch_error<Erc20SupportT: pallet_erc20_support::Config>(
     error: DispatchError,
 ) -> PrecompileFailure {
-    if error == pallet_erc20_support::Error::SpenderNotAllowed::<Erc20SupportT>.into() {
-        PrecompileFailure::Error {
-            exit_status: ExitError::Other("spender not allowed".into()),
-        }
-    } else if error == pallet_erc20_support::Error::SpendMoreThanAllowed::<Erc20SupportT>.into() {
+    if error == pallet_erc20_support::Error::SpendMoreThanAllowed::<Erc20SupportT>.into() {
         PrecompileFailure::Error {
             exit_status: ExitError::Other("spend more than allowed".into()),
         }
