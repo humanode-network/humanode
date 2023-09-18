@@ -238,7 +238,7 @@ where
                 exit_status: ExitError::Other("value is out of bounds".into()),
             })?,
         )
-        .map_err(process_transfer_error::<Erc20SupportT>)?;
+        .map_err(process_dispatch_error::<Erc20SupportT>)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -283,7 +283,7 @@ where
                 exit_status: ExitError::Other("value is out of bounds".into()),
             })?,
         )
-        .map_err(process_transfer_error::<Erc20SupportT>)?;
+        .map_err(process_dispatch_error::<Erc20SupportT>)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -301,8 +301,8 @@ where
     }
 }
 
-/// A helper function to process transfer related dispatch errors.
-fn process_transfer_error<Erc20SupportT: pallet_erc20_support::Config>(
+/// A helper function to process dispatch related errors.
+fn process_dispatch_error<Erc20SupportT: pallet_erc20_support::Config>(
     error: DispatchError,
 ) -> PrecompileFailure {
     if error == pallet_erc20_support::Error::SpenderNotAllowed::<Erc20SupportT>.into() {
