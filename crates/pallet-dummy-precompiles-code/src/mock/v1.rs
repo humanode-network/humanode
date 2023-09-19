@@ -15,7 +15,7 @@ use frame_support::{
 use sp_core::{H256, U256};
 
 use super::*;
-use crate::{self as pallet_evm_precompiles_constant_accounts};
+use crate::{self as pallet_dummy_precompiles_code};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -36,7 +36,7 @@ frame_support::construct_runtime!(
         EvmSystem: pallet_evm_system,
         EvmBalances: pallet_evm_balances,
         Evm: pallet_evm,
-        EvmPrecompilesConstantAccounts: pallet_evm_precompiles_constant_accounts,
+        DummyPrecompilesCode: pallet_dummy_precompiles_code,
     }
 );
 
@@ -152,6 +152,6 @@ frame_support::parameter_types! {
     pub PrecompilesAddresses: Vec<H160> = vec![H160::from_low_u64_be(5234)];
 }
 
-impl pallet_evm_precompiles_constant_accounts::Config for Test {
+impl pallet_dummy_precompiles_code::Config for Test {
     type PrecompilesAddresses = PrecompilesAddresses;
 }
