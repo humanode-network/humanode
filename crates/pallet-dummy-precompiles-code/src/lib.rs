@@ -26,7 +26,7 @@ pub const DUMMY_CODE: &str = "DUMMY_CODE";
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::pallet_prelude::*;
+    use frame_support::{pallet_prelude::*, sp_std::vec::Vec};
     use frame_system::pallet_prelude::*;
 
     use super::*;

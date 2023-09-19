@@ -23,6 +23,7 @@ pallet-bootnodes = { path = "../pallet-bootnodes", default-features = false }
 pallet-chain-properties = { path = "../pallet-chain-properties", default-features = false }
 pallet-chain-start-moment = { path = "../pallet-chain-start-moment", default-features = false }
 pallet-currency-swap = { path = "../pallet-currency-swap", default-features = false }
+pallet-dummy-precompiles-code = { path = "../pallet-dummy-precompiles-code", default-features = false }
 pallet-erc20-support = { path = "../pallet-erc20-support", default-features = false }
 pallet-ethereum-chain-id = { path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { path = "../pallet-evm-accounts-mapping", default-features = false }
@@ -166,6 +167,7 @@ std = [
   "pallet-chain-properties/std",
   "pallet-chain-start-moment/std",
   "pallet-currency-swap/std",
+  "pallet-dummy-precompiles-code/std",
   "pallet-erc20-support/std",
   "pallet-ethereum-chain-id/std",
   "pallet-ethereum/std",
@@ -238,6 +240,7 @@ try-runtime = [
   "pallet-chain-properties/try-runtime",
   "pallet-chain-start-moment/try-runtime",
   "pallet-currency-swap/try-runtime",
+  "pallet-dummy-precompiles-code/try-runtime",
   "pallet-erc20-support/try-runtime",
   "pallet-ethereum-chain-id/try-runtime",
   "pallet-ethereum/try-runtime",

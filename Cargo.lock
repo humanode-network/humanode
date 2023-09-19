@@ -3708,6 +3708,7 @@ dependencies = [
  "pallet-chain-properties",
  "pallet-chain-start-moment",
  "pallet-currency-swap",
+ "pallet-dummy-precompiles-code",
  "pallet-erc20-support",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
