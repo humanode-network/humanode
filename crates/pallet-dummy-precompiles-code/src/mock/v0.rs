@@ -1,31 +1,23 @@
-//! The mock for the pallet.
+//! The v1 mock for the pallet.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
 
 use frame_support::{
     once_cell::sync::Lazy,
-    sp_io,
     sp_runtime::{
         testing::Header,
         traits::{BlakeTwo256, IdentityLookup},
-        BuildStorage,
     },
     traits::{ConstU32, ConstU64},
     weights::Weight,
 };
-use sp_core::{H160, H256, U256};
+use sp_core::{H256, U256};
 
-use crate::{self as pallet_evm_precompiles_constant_accounts};
-
-pub(crate) const EXISTENTIAL_DEPOSIT: u64 = 10;
+use super::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
-
-pub(crate) type AccountId = u64;
-pub(crate) type EvmAccountId = H160;
-type Balance = u64;
 
 frame_support::construct_runtime!(
     pub enum Test where
@@ -39,7 +31,6 @@ frame_support::construct_runtime!(
         EvmSystem: pallet_evm_system,
         EvmBalances: pallet_evm_balances,
         Evm: pallet_evm,
-        EvmPrecompilesConstantAccounts: pallet_evm_precompiles_constant_accounts,
     }
 );
 
@@ -149,53 +140,4 @@ impl pallet_evm::Config for Test {
     type OnChargeTransaction = ();
     type OnCreate = ();
     type FindAuthor = ();
-}
-
-frame_support::parameter_types! {
-    pub PrecompilesAddresses: Vec<H160> = vec![H160::from_low_u64_be(5234)];
-}
-
-impl pallet_evm_precompiles_constant_accounts::Config for Test {
-    type PrecompilesAddresses = PrecompilesAddresses;
-}
-
-pub fn new_test_ext() -> sp_io::TestExternalities {
-    let genesis_config = GenesisConfig::default();
-    new_test_ext_with(genesis_config)
-}
-
-// This function basically just builds a genesis storage key/value store according to
-// our desired mockup.
-pub fn new_test_ext_with(genesis_config: GenesisConfig) -> sp_io::TestExternalities {
-    let storage = genesis_config.build_storage().unwrap();
-    storage.into()
-}
-
-pub fn runtime_lock() -> std::sync::MutexGuard<'static, ()> {
-    static MOCK_RUNTIME_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
-
-    // Ignore the poisoning for the tests that panic.
-    // We only care about concurrency here, not about the poisoning.
-    match MOCK_RUNTIME_MUTEX.lock() {
-        Ok(guard) => guard,
-        Err(poisoned) => poisoned.into_inner(),
-    }
-}
-
-pub trait TestExternalitiesExt {
-    fn execute_with_ext<R, E>(&mut self, execute: E) -> R
-    where
-        E: for<'e> FnOnce(&'e ()) -> R;
-}
-
-impl TestExternalitiesExt for frame_support::sp_io::TestExternalities {
-    fn execute_with_ext<R, E>(&mut self, execute: E) -> R
-    where
-        E: for<'e> FnOnce(&'e ()) -> R,
-    {
-        let guard = runtime_lock();
-        let result = self.execute_with(|| execute(&guard));
-        drop(guard);
-        result
-    }
 }
