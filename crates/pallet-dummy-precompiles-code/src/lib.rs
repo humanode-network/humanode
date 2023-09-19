@@ -13,7 +13,7 @@ mod mock;
 mod tests;
 
 /// The current storage version.
-const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 /// The dummy code used to be stored for precompiles addresses.
 const DUMMY_CODE: &str = "DUMMY_CODE";
