@@ -5940,6 +5940,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-dummy-precompiles-code"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "pallet-erc20-support"
 version = "0.1.0"
 dependencies = [
@@ -6070,24 +6088,6 @@ dependencies = [
  "fp-evm",
  "ripemd",
  "sp-io",
-]
-
-[[package]]
-name = "pallet-evm-precompiles-constant-accounts"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex-literal",
- "pallet-balances",
- "pallet-evm",
- "pallet-evm-balances",
- "pallet-evm-system",
- "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
 ]
 
 [[package]]
