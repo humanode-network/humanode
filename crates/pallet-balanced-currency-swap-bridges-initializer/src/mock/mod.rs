@@ -6,9 +6,11 @@ use crate::{self as pallet_balanced_currency_swap_bridges_initializer};
 
 pub mod v0;
 pub mod v1;
+pub mod v2;
 
 pub(crate) const EXISTENTIAL_DEPOSIT_NATIVE: u64 = 10;
 pub(crate) const EXISTENTIAL_DEPOSIT_EVM: u64 = 20;
+pub(crate) const EXISTENTIAL_DEPOSIT_EVM_NEW: u64 = 1;
 
 pub(crate) type AccountId = u64;
 pub(crate) type EvmAccountId = u64;

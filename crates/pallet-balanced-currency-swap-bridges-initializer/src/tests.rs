@@ -4,7 +4,7 @@ use frame_support::{
 };
 
 use crate::{
-    mock::{new_test_ext_with, v0, v1, with_runtime_lock, *},
+    mock::{new_test_ext_with, v0, v1, v2, with_runtime_lock, *},
     swappable_balance, InitializerVersion, CURRENT_BRIDGES_INITIALIZER_VERSION,
 };
 
@@ -399,12 +399,9 @@ fn runtime_upgrade() {
 
             // Do runtime upgrade hook.
             v1::AllPalletsWithoutSystem::on_runtime_upgrade();
+            <InitializerVersion<v1::Test>>::put(1);
 
             // Verify bridges initialization result.
-            assert_eq!(
-                <InitializerVersion<v1::Test>>::get(),
-                CURRENT_BRIDGES_INITIALIZER_VERSION
-            );
             assert!(v1::EvmNativeBridgesInitializer::is_balanced().unwrap());
             assert_eq!(
                 v1::Balances::total_balance(&v1::SwapBridgeNativeToEvmPot::account_id()),
@@ -426,11 +423,48 @@ fn runtime_upgrade() {
                     - (EXISTENTIAL_DEPOSIT_EVM - EXISTENTIAL_DEPOSIT_NATIVE)
             );
             assert_eq!(
-                v1::EvmBalances::total_balance(&v1::SwapBridgeEvmToNativePot::account_id(),),
+                v1::EvmBalances::total_balance(&v1::SwapBridgeEvmToNativePot::account_id()),
                 v1::Balances::total_balance(&NativeTreasury::get())
                     + ALICE.balance
                     + BOB.balance
                     + EXISTENTIAL_DEPOSIT_EVM
+            );
+
+            // Do runtime upgrade hook.
+            v2::AllPalletsWithoutSystem::on_runtime_upgrade();
+
+            let existential_deposit_balance =
+                EXISTENTIAL_DEPOSIT_EVM_NEW.max(EXISTENTIAL_DEPOSIT_NATIVE);
+
+            // Verify bridges initialization result.
+            assert_eq!(
+                <InitializerVersion<v2::Test>>::get(),
+                CURRENT_BRIDGES_INITIALIZER_VERSION
+            );
+            assert!(v2::EvmNativeBridgesInitializer::is_balanced().unwrap());
+            assert_eq!(
+                v2::Balances::total_balance(&v2::SwapBridgeNativeToEvmPot::account_id()),
+                LION.balance
+                    + DOG.balance
+                    + CAT.balance
+                    + FISH.balance
+                    + existential_deposit_balance
+            );
+            assert_eq!(
+                v1::Balances::total_balance(&NativeTreasury::get()),
+                treasury.balance
+                    - (LION.balance
+                        + DOG.balance
+                        + CAT.balance
+                        + FISH.balance
+                        + existential_deposit_balance)
+            );
+            assert_eq!(
+                v2::EvmBalances::total_balance(&v2::SwapBridgeEvmToNativePot::account_id(),),
+                v2::Balances::total_balance(&NativeTreasury::get())
+                    + ALICE.balance
+                    + BOB.balance
+                    + existential_deposit_balance
             );
         });
     })

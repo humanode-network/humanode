@@ -40,7 +40,7 @@ type EvmBalanceOf<T> =
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 /// The current bridges initializer version.
-pub const CURRENT_BRIDGES_INITIALIZER_VERSION: u16 = 1;
+pub const CURRENT_BRIDGES_INITIALIZER_VERSION: u16 = 2;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
