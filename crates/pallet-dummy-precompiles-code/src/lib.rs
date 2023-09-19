@@ -98,7 +98,9 @@ pub mod pallet {
 
         #[cfg(feature = "try-runtime")]
         fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-            let mut not_created_precompiles = vec![];
+            use sp_std::vec::Vec;
+
+            let mut not_created_precompiles = Vec::new();
 
             for precompile_address in &T::PrecompilesAddresses::get() {
                 let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);

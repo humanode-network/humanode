@@ -11,6 +11,7 @@ frame-system = { workspace = true }
 pallet-evm = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
 sp-core = { workspace = true }
+sp-std = { workspace = true }
 
 [dev-dependencies]
 fp-evm = { workspace = true }
@@ -34,6 +35,7 @@ std = [
   "pallet-timestamp/std",
   "scale-info/std",
   "sp-core/std",
+  "sp-std/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
