@@ -1,4 +1,4 @@
-//! The v1 mock that includes bridges initialization logic at runtime.
+//! The v2 mock.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
