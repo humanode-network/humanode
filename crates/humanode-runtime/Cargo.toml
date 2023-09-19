@@ -23,6 +23,7 @@ pallet-bootnodes = { path = "../pallet-bootnodes", default-features = false }
 pallet-chain-properties = { path = "../pallet-chain-properties", default-features = false }
 pallet-chain-start-moment = { path = "../pallet-chain-start-moment", default-features = false }
 pallet-currency-swap = { path = "../pallet-currency-swap", default-features = false }
+pallet-erc20-support = { path = "../pallet-erc20-support", default-features = false }
 pallet-ethereum-chain-id = { path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
@@ -32,6 +33,7 @@ pallet-vesting = { path = "../pallet-vesting", default-features = false }
 precompile-bioauth = { path = "../precompile-bioauth", default-features = false }
 precompile-currency-swap = { path = "../precompile-currency-swap", default-features = false }
 precompile-evm-accounts-mapping = { path = "../precompile-evm-accounts-mapping", default-features = false }
+precompile-native-currency = { path = "../precompile-native-currency", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
 primitives-auth-ticket = { path = "../primitives-auth-ticket", default-features = false }
 primitives-currency-swap-proxy = { path = "../primitives-currency-swap-proxy", default-features = false }
@@ -164,6 +166,7 @@ std = [
   "pallet-chain-properties/std",
   "pallet-chain-start-moment/std",
   "pallet-currency-swap/std",
+  "pallet-erc20-support/std",
   "pallet-ethereum-chain-id/std",
   "pallet-ethereum/std",
   "pallet-evm-accounts-mapping/std",
@@ -190,6 +193,7 @@ std = [
   "precompile-bioauth/std",
   "precompile-currency-swap/std",
   "precompile-evm-accounts-mapping/std",
+  "precompile-native-currency/std",
   "precompile-utils/std",
   "primitives-auth-ticket/std",
   "primitives-currency-swap-proxy/std",
@@ -234,6 +238,7 @@ try-runtime = [
   "pallet-chain-properties/try-runtime",
   "pallet-chain-start-moment/try-runtime",
   "pallet-currency-swap/try-runtime",
+  "pallet-erc20-support/try-runtime",
   "pallet-ethereum-chain-id/try-runtime",
   "pallet-ethereum/try-runtime",
   "pallet-evm-accounts-mapping/try-runtime",
