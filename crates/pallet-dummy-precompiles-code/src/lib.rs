@@ -15,6 +15,9 @@ mod tests;
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
+/// The current precompiles addresses creating version.
+pub const CURRENT_PRECOMPILES_ADDRESSES_CREATING_VERSION: u16 = 1;
+
 /// The dummy code used to be stored for precompiles addresses.
 const DUMMY_CODE: &str = "DUMMY_CODE";
 
