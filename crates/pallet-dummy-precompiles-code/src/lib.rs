@@ -15,6 +15,9 @@ mod tests;
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
+/// The dummy code used to be stored for precompiles addresses.
+const DUMMY_CODE: &str = "DUMMY_CODE";
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -31,20 +34,23 @@ pub mod pallet {
 
     /// Configuration trait of this pallet.
     #[pallet::config]
-    pub trait Config: frame_system::Config + pallet_evm::Config {}
+    pub trait Config: frame_system::Config + pallet_evm::Config {
+        /// The list of precompiles adresses to be stored at evm with dummy code.
+        type PrecompilesAddresses: Get<Vec<H160>>;
+    }
 
     #[pallet::genesis_config]
     #[derive(Default)]
-    pub struct GenesisConfig {
-        /// The list of precompiles to be stored as account codes at evm.
-        pub precompiles: Vec<(H160, Vec<u8>)>,
-    }
+    pub struct GenesisConfig {}
 
     #[pallet::genesis_build]
     impl<T: Config> GenesisBuild<T> for GenesisConfig {
         fn build(&self) {
-            for (address, code) in &self.precompiles {
-                pallet_evm::Pallet::<T>::create_account(*address, code.clone());
+            for precompile_address in &T::PrecompilesAddresses::get() {
+                pallet_evm::Pallet::<T>::create_account(
+                    *precompile_address,
+                    DUMMY_CODE.as_bytes().to_vec(),
+                );
             }
         }
     }

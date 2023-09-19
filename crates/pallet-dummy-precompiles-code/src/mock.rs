@@ -151,7 +151,13 @@ impl pallet_evm::Config for Test {
     type FindAuthor = ();
 }
 
-impl pallet_evm_precompiles_constant_accounts::Config for Test {}
+frame_support::parameter_types! {
+    pub PrecompilesAddresses: Vec<H160> = vec![H160::from_low_u64_be(5234)];
+}
+
+impl pallet_evm_precompiles_constant_accounts::Config for Test {
+    type PrecompilesAddresses = PrecompilesAddresses;
+}
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
     let genesis_config = GenesisConfig::default();
