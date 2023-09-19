@@ -2012,6 +2012,10 @@
   features:
     - default
     - std
+- name: pallet-dummy-precompiles-code 0.1.0
+  features:
+    - default
+    - std
 - name: pallet-erc20-support 0.1.0
   features:
     - default
