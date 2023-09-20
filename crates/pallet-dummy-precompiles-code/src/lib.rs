@@ -75,7 +75,7 @@ pub mod pallet {
                     let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
                     weight += T::DbWeight::get().reads(1);
 
-                    if code != DUMMY_CODE.to_vec() {
+                    if code != DUMMY_CODE {
                         pallet_evm::Pallet::<T>::create_account(
                             *precompile_address,
                             DUMMY_CODE.to_vec(),
@@ -104,7 +104,7 @@ pub mod pallet {
 
             for precompile_address in &T::PrecompilesAddresses::get() {
                 let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
-                if code != DUMMY_CODE.to_vec() {
+                if code != DUMMY_CODE {
                     not_created_precompiles.push(*precompile_address);
                 }
             }
