@@ -4,8 +4,8 @@ use frame_support::{
 };
 
 use crate::{
-    mock::{new_test_ext_with, v0, v1, with_runtime_lock, *},
-    swappable_balance, InitializerVersion, CURRENT_BRIDGES_INITIALIZER_VERSION,
+    mock::{new_test_ext_with, v0, v1, v2, with_runtime_lock, *},
+    swappable_balance, InitializerVersion,
 };
 
 /// This test verifies that balanced bridges initialization works in case bridge pot accounts
@@ -426,11 +426,31 @@ fn runtime_upgrade() {
                     - (EXISTENTIAL_DEPOSIT_EVM - EXISTENTIAL_DEPOSIT_NATIVE)
             );
             assert_eq!(
-                v1::EvmBalances::total_balance(&v1::SwapBridgeEvmToNativePot::account_id(),),
+                v1::EvmBalances::total_balance(&v1::SwapBridgeEvmToNativePot::account_id()),
                 v1::Balances::total_balance(&NativeTreasury::get())
                     + ALICE.balance
                     + BOB.balance
                     + EXISTENTIAL_DEPOSIT_EVM
+            );
+
+            // Get bridges balances before runtime upgrade.
+            let native_evm_bridge_balance_before =
+                v2::Balances::total_balance(&v1::SwapBridgeNativeToEvmPot::account_id());
+            let evm_native_bridge_balance_before =
+                v2::EvmBalances::total_balance(&v1::SwapBridgeEvmToNativePot::account_id());
+
+            // Do runtime upgrade hook.
+            v2::AllPalletsWithoutSystem::on_runtime_upgrade();
+
+            // Verify result.
+            assert!(v2::EvmNativeBridgesInitializer::is_balanced().unwrap());
+            assert_eq!(
+                v2::Balances::total_balance(&v1::SwapBridgeNativeToEvmPot::account_id()),
+                native_evm_bridge_balance_before
+            );
+            assert_eq!(
+                v2::EvmBalances::total_balance(&v1::SwapBridgeEvmToNativePot::account_id()),
+                evm_native_bridge_balance_before
             );
         });
     })
