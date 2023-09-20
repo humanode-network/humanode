@@ -39,9 +39,6 @@ type EvmBalanceOf<T> =
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
-/// The current bridges initializer version.
-pub const CURRENT_BRIDGES_INITIALIZER_VERSION: u16 = 1;
-
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -96,6 +93,13 @@ pub mod pallet {
         /// The evm-native bridge pot account.
         type EvmNativeBridgePot: Get<Self::EvmAccountId>;
 
+        /// The current bridges initializer version.
+        type InitializerVersion: Get<u16>;
+
+        /// Whether currencies balanced check required on runtime upgrade.
+        #[pallet::constant]
+        type IsBalancedCheckRequiredOnRuntimeUpgrade: Get<bool>;
+
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
     }
@@ -129,7 +133,7 @@ pub mod pallet {
                 }
             }
 
-            <InitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
+            <InitializerVersion<T>>::put(T::InitializerVersion::get());
         }
     }
 

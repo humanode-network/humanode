@@ -4,14 +4,14 @@ use frame_support::pallet_prelude::*;
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
 
-use crate::{Config, InitializerVersion, Pallet, CURRENT_BRIDGES_INITIALIZER_VERSION};
+use crate::{Config, InitializerVersion, Pallet};
 
 /// Initialize the bridges pot accounts.
 pub fn on_runtime_upgrade<T: Config>() -> Weight {
     let initializer_version = <InitializerVersion<T>>::get();
     let mut weight = T::DbWeight::get().reads(1);
 
-    if initializer_version != CURRENT_BRIDGES_INITIALIZER_VERSION {
+    if initializer_version < T::InitializerVersion::get() {
         let is_balanced = Pallet::<T>::is_balanced().unwrap_or_default();
         weight += T::DbWeight::get().reads(8);
 
@@ -22,7 +22,14 @@ pub fn on_runtime_upgrade<T: Config>() -> Weight {
             }
         }
 
-        <InitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
+        <InitializerVersion<T>>::put(T::InitializerVersion::get());
+    } else if T::IsBalancedCheckRequiredOnRuntimeUpgrade::get() {
+        let is_balanced = Pallet::<T>::is_balanced().unwrap_or_default();
+        weight += T::DbWeight::get().reads(8);
+
+        if !is_balanced {
+            sp_tracing::error!("currencies are not balanced");
+        }
     }
 
     weight
