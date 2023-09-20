@@ -74,6 +74,7 @@ pub mod pallet {
             }
 
             <CreationVersion<T>>::put(CURRENT_CREATION_VERSION);
+            <LastForceUpdateAskCounter<T>>::put(T::LastForceUpdateAskCounter::get());
         }
     }
 
@@ -88,6 +89,7 @@ pub mod pallet {
                 weight += Self::precompiles_addresses_add_dummy_code();
 
                 <CreationVersion<T>>::put(CURRENT_CREATION_VERSION);
+                <LastForceUpdateAskCounter<T>>::put(T::LastForceUpdateAskCounter::get());
                 weight += T::DbWeight::get().writes(1);
             } else if last_force_update_ask_counter != T::LastForceUpdateAskCounter::get() {
                 weight += Self::precompiles_addresses_add_dummy_code();
