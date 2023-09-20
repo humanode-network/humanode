@@ -811,7 +811,13 @@ impl pallet_erc20_support::Config for Runtime {
 }
 
 frame_support::parameter_types! {
-    pub PrecompilesAddresses: Vec<H160> = vec![frontier_precompiles::hash(precompiles_constants::NATIVE_CURRENCY)];
+    pub PrecompilesAddresses: Vec<H160> =
+        vec![
+            frontier_precompiles::hash(precompiles_constants::BIOAUTH),
+            frontier_precompiles::hash(precompiles_constants::EVM_ACCOUNTS_MAPPING),
+            frontier_precompiles::hash(precompiles_constants::NATIVE_CURRENCY),
+            frontier_precompiles::hash(precompiles_constants::CURRENCY_SWAP),
+        ];
 }
 
 impl pallet_dummy_precompiles_code::Config for Runtime {
