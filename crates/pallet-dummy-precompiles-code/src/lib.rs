@@ -15,9 +15,6 @@ mod tests;
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
-/// The current precompiles addresses creation version.
-pub const CURRENT_CREATION_VERSION: u16 = 1;
-
 /// The dummy code used to be stored for precompiles addresses - 0x5F5FFD (as raw bytes).
 ///
 /// This is actually a hand-crafted sequence of opcodes for a bare-bones revert.
@@ -42,6 +39,9 @@ pub mod pallet {
     /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_evm::Config {
+        /// The current precompiles addresses creation version.
+        type CreationVersion: Get<u16>;
+
         /// The list of precompiles adresses to be created at evm with dummy code.
         type PrecompilesAddresses: Get<Vec<H160>>;
     }
@@ -70,7 +70,7 @@ pub mod pallet {
             let creation_version = Self::creation_version();
             let mut weight = T::DbWeight::get().reads(1);
 
-            if creation_version != CURRENT_CREATION_VERSION {
+            if creation_version != T::CreationVersion::get() {
                 for precompile_address in &T::PrecompilesAddresses::get() {
                     let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
                     weight += T::DbWeight::get().reads(1);
@@ -84,7 +84,7 @@ pub mod pallet {
                     }
                 }
 
-                <CreationVersion<T>>::put(CURRENT_CREATION_VERSION);
+                <CreationVersion<T>>::put(T::CreationVersion::get());
             }
 
             weight

@@ -12,7 +12,7 @@ use frame_support::{
     traits::{ConstU32, ConstU64},
     weights::Weight,
 };
-use sp_core::{H256, U256};
+use sp_core::{ConstU16, H256, U256};
 
 use super::*;
 use crate::{self as pallet_dummy_precompiles_code};
@@ -153,5 +153,6 @@ frame_support::parameter_types! {
 }
 
 impl pallet_dummy_precompiles_code::Config for Test {
+    type CreationVersion = ConstU16<1>;
     type PrecompilesAddresses = PrecompilesAddresses;
 }
