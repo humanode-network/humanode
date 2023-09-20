@@ -2,7 +2,10 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::StorageVersion;
+use frame_support::{
+    traits::{Get, StorageVersion},
+    weights::Weight,
+};
 pub use pallet::*;
 use sp_core::H160;
 
@@ -14,6 +17,9 @@ mod tests;
 
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
+
+/// The current precompiles addresses creation version.
+pub const CURRENT_CREATION_VERSION: u16 = 1;
 
 /// The dummy code used to be stored for precompiles addresses - 0x5F5FFD (as raw bytes).
 ///
@@ -39,17 +45,22 @@ pub mod pallet {
     /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_evm::Config {
-        /// The current precompiles addresses creation version.
-        type CreationVersion: Get<u16>;
-
         /// The list of precompiles adresses to be created at evm with dummy code.
         type PrecompilesAddresses: Get<Vec<H160>>;
+
+        /// The last force update ask counter.
+        type LastForceUpdateAskCounter: Get<u16>;
     }
 
     /// The creation version.
     #[pallet::storage]
     #[pallet::getter(fn creation_version)]
     pub type CreationVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
+
+    /// The last force update ask counter.
+    #[pallet::storage]
+    #[pallet::getter(fn last_force_update_ask_counter)]
+    pub type LastForceUpdateAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
 
     #[pallet::genesis_config]
     #[derive(Default)]
@@ -61,6 +72,8 @@ pub mod pallet {
             for precompile_address in &T::PrecompilesAddresses::get() {
                 pallet_evm::Pallet::<T>::create_account(*precompile_address, DUMMY_CODE.to_vec());
             }
+
+            <CreationVersion<T>>::put(CURRENT_CREATION_VERSION);
         }
     }
 
@@ -68,23 +81,19 @@ pub mod pallet {
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         fn on_runtime_upgrade() -> Weight {
             let creation_version = Self::creation_version();
-            let mut weight = T::DbWeight::get().reads(1);
+            let last_force_update_ask_counter = Self::last_force_update_ask_counter();
+            let mut weight = T::DbWeight::get().reads(2);
 
-            if creation_version != T::CreationVersion::get() {
-                for precompile_address in &T::PrecompilesAddresses::get() {
-                    let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
-                    weight += T::DbWeight::get().reads(1);
+            if creation_version != CURRENT_CREATION_VERSION {
+                weight += Self::precompiles_addresses_add_dummy_code();
 
-                    if code != DUMMY_CODE {
-                        pallet_evm::Pallet::<T>::create_account(
-                            *precompile_address,
-                            DUMMY_CODE.to_vec(),
-                        );
-                        weight += T::DbWeight::get().reads_writes(1, 1);
-                    }
-                }
+                <CreationVersion<T>>::put(CURRENT_CREATION_VERSION);
+                weight += T::DbWeight::get().writes(1);
+            } else if last_force_update_ask_counter != T::LastForceUpdateAskCounter::get() {
+                weight += Self::precompiles_addresses_add_dummy_code();
 
-                <CreationVersion<T>>::put(T::CreationVersion::get());
+                <LastForceUpdateAskCounter<T>>::put(T::LastForceUpdateAskCounter::get());
+                weight += T::DbWeight::get().writes(1);
             }
 
             weight
@@ -115,5 +124,24 @@ pub mod pallet {
 
             Ok(())
         }
+    }
+}
+
+impl<T: Config> Pallet<T> {
+    /// A helper function to add dummy code for provided precompiles adrresses.
+    fn precompiles_addresses_add_dummy_code() -> Weight {
+        let mut weight = T::DbWeight::get().reads(0);
+
+        for precompile_address in &T::PrecompilesAddresses::get() {
+            let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
+            weight += T::DbWeight::get().reads(1);
+
+            if code != DUMMY_CODE {
+                pallet_evm::Pallet::<T>::create_account(*precompile_address, DUMMY_CODE.to_vec());
+                weight += T::DbWeight::get().reads_writes(1, 1);
+            }
+        }
+
+        weight
     }
 }

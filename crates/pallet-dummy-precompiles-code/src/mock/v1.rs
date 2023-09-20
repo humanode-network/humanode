@@ -153,6 +153,6 @@ frame_support::parameter_types! {
 }
 
 impl pallet_dummy_precompiles_code::Config for Test {
-    type CreationVersion = ConstU16<1>;
     type PrecompilesAddresses = PrecompilesAddresses;
+    type LastForceUpdateAskCounter = ConstU16<0>;
 }
