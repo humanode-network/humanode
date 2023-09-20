@@ -1,4 +1,4 @@
-//! The v1 mock that includes bridges initialization logic at runtime.
+//! The v2 mock.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
@@ -77,7 +77,7 @@ impl pallet_balances::Config<BalancesInstanceEvm> for Test {
     type Balance = u64;
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
-    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT_EVM>;
+    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT_EVM_NEW>;
     type AccountStore = StorageMapShim<
         pallet_balances::Account<Test, BalancesInstanceEvm>,
         frame_system::Provider<Test>,
@@ -132,6 +132,6 @@ impl pallet_balanced_currency_swap_bridges_initializer::Config for Test {
     type NativeTreasuryPot = NativeTreasury;
     type EvmNativeBridgePot = SwapBridgeEvmToNativePotAccountId;
     type InitializerVersion = ConstU16<1>;
-    type IsBalancedCheckRequiredOnRuntimeUpgrade = ConstBool<false>;
+    type IsBalancedCheckRequiredOnRuntimeUpgrade = ConstBool<true>;
     type WeightInfo = ();
 }
