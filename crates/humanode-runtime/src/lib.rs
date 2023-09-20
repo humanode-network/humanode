@@ -774,6 +774,7 @@ parameter_types! {
 
 parameter_types! {
     pub TreasuryPotAccountId: AccountId = TreasuryPot::account_id();
+    pub BridgesInitializerVersion: u16 = 1;
 }
 
 impl pallet_balanced_currency_swap_bridges_initializer::Config for Runtime {
@@ -785,6 +786,8 @@ impl pallet_balanced_currency_swap_bridges_initializer::Config for Runtime {
     type NativeEvmBridgePot = NativeToEvmSwapBridgePotAccountId;
     type NativeTreasuryPot = TreasuryPotAccountId;
     type EvmNativeBridgePot = EvmToNativeSwapBridgePotAccountId;
+    type InitializerVersion = BridgesInitializerVersion;
+    type IsBalancedCheckRequiredOnRuntimeUpgrade = ConstBool<false>;
     type WeightInfo = ();
 }
 
