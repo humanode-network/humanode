@@ -815,6 +815,7 @@ frame_support::parameter_types! {
 }
 
 impl pallet_dummy_precompiles_code::Config for Runtime {
+    type CreationVersion = ConstU16<1>;
     type PrecompilesAddresses = PrecompilesAddresses;
 }
 
