@@ -14,29 +14,29 @@ use crate::{currency_swap, AccountId, ConstU64, EvmAccountId};
 
 /// A set of constant values used to indicate precompiles.
 pub mod precompiles_constants {
-    /// [`ECRecover`] precompile constant.
+    /// `ECRecover` precompile constant.
     pub const EC_RECOVERY: u64 = 1;
-    /// [`Sha256`] precompile constant.
+    /// `Sha256` precompile constant.
     pub const SHA_256: u64 = 2;
-    /// [`Ripemd160`] precompile constant.
+    /// `Ripemd160` precompile constant.
     pub const RIPEMD_160: u64 = 3;
-    /// [`Identity`] precompile constant.
+    /// `Identity` precompile constant.
     pub const IDENTITY: u64 = 4;
-    /// [`Modexp]` precompile constant.
+    /// `Modexp` precompile constant.
     pub const MODEXP: u64 = 5;
 
-    /// [`Sha3FIPS256`] precompile constant.
+    /// `Sha3FIPS256` precompile constant.
     pub const SHA_3_FIPS256: u64 = 1024;
-    /// [`ECRecoverPublicKey`] precompile constant.
+    /// `ECRecoverPublicKey` precompile constant.
     pub const EC_RECOVER_PUBLIC_KEY: u64 = 1025;
 
-    /// [`Bioauth`] precompile constant.
+    /// `Bioauth` precompile constant.
     pub const BIOAUTH: u64 = 2048;
-    /// [`EvmAccountsMapping`] precompile constant.
+    /// `EvmAccountsMapping` precompile constant.
     pub const EVM_ACCOUNTS_MAPPING: u64 = 2049;
-    /// [`NativeCurrency`] precompile constant.
+    /// `NativeCurrency` precompile constant.
     pub const NATIVE_CURRENCY: u64 = 2050;
-    /// [`CurrencySwap`] precompile constant.
+    /// `CurrencySwap` precompile constant.
     pub const CURRENCY_SWAP: u64 = 2304;
 }
 
