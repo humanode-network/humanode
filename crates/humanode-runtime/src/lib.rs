@@ -80,7 +80,7 @@ use sp_version::RuntimeVersion;
 
 mod frontier_precompiles;
 mod vesting;
-use frontier_precompiles::FrontierPrecompiles;
+use frontier_precompiles::{precompiles_constants, FrontierPrecompiles};
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -811,7 +811,7 @@ impl pallet_erc20_support::Config for Runtime {
 }
 
 frame_support::parameter_types! {
-    pub PrecompilesAddresses: Vec<H160> = vec![frontier_precompiles::hash(2050)];
+    pub PrecompilesAddresses: Vec<H160> = vec![frontier_precompiles::hash(precompiles_constants::NATIVE_CURRENCY)];
 }
 
 impl pallet_dummy_precompiles_code::Config for Runtime {
