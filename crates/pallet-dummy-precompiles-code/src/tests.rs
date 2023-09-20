@@ -11,7 +11,7 @@ fn genesis_build() {
         for precompile_address in &v1::PrecompilesAddresses::get() {
             assert_eq!(
                 v1::Evm::account_codes(precompile_address),
-                DUMMY_CODE.as_bytes().to_vec()
+                DUMMY_CODE.to_vec()
             );
             assert!(v1::EvmSystem::account_exists(precompile_address));
         }
@@ -40,7 +40,7 @@ fn runtime_upgrade() {
             for precompile_address in &v1::PrecompilesAddresses::get() {
                 assert_eq!(
                     v1::Evm::account_codes(precompile_address),
-                    DUMMY_CODE.as_bytes().to_vec()
+                    DUMMY_CODE.to_vec()
                 );
                 assert!(v1::EvmSystem::account_exists(precompile_address));
             }

@@ -18,8 +18,11 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 /// The current precompiles addresses creation version.
 pub const CURRENT_CREATION_VERSION: u16 = 1;
 
-/// The dummy code used to be stored for precompiles addresses.
-pub const DUMMY_CODE: &str = "DUMMY_CODE";
+/// The dummy code used to be stored for precompiles addresses - 0x5F5FFD (as raw bytes).
+///
+/// This is actually a hand-crafted sequence of opcodes for a bare-bones revert.
+/// The REVERT opcode (which is FD) - it takes two arguments from the stack with PUSH0 (5F twice).
+pub const DUMMY_CODE: [u8; 3] = [95, 95, 253];
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -56,10 +59,7 @@ pub mod pallet {
     impl<T: Config> GenesisBuild<T> for GenesisConfig {
         fn build(&self) {
             for precompile_address in &T::PrecompilesAddresses::get() {
-                pallet_evm::Pallet::<T>::create_account(
-                    *precompile_address,
-                    DUMMY_CODE.as_bytes().to_vec(),
-                );
+                pallet_evm::Pallet::<T>::create_account(*precompile_address, DUMMY_CODE.to_vec());
             }
         }
     }
@@ -75,10 +75,10 @@ pub mod pallet {
                     let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
                     weight += T::DbWeight::get().reads(1);
 
-                    if code != DUMMY_CODE.as_bytes().to_vec() {
+                    if code != DUMMY_CODE.to_vec() {
                         pallet_evm::Pallet::<T>::create_account(
                             *precompile_address,
-                            DUMMY_CODE.as_bytes().to_vec(),
+                            DUMMY_CODE.to_vec(),
                         );
                         weight += T::DbWeight::get().reads_writes(1, 1);
                     }
@@ -104,7 +104,7 @@ pub mod pallet {
 
             for precompile_address in &T::PrecompilesAddresses::get() {
                 let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
-                if code != DUMMY_CODE.as_bytes().to_vec() {
+                if code != DUMMY_CODE.to_vec() {
                     not_created_precompiles.push(*precompile_address);
                 }
             }
