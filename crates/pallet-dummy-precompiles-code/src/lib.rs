@@ -19,7 +19,7 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 ///
 /// This is actually a hand-crafted sequence of opcodes for a bare-bones revert.
 /// The REVERT opcode (which is FD) - it takes two arguments from the stack with PUSH0 (5F twice).
-pub const DUMMY_CODE: [u8; 3] = [95, 95, 253];
+pub const DUMMY_CODE: &[u8] = &[0x5F, 0x5F, 0xFD];
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
