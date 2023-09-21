@@ -48,8 +48,8 @@ pub mod pallet {
         /// The list of precompiles adresses to be created at evm with dummy code.
         type PrecompilesAddresses: Get<Vec<H160>>;
 
-        /// The last force update ask counter.
-        type LastForceUpdateAskCounter: Get<u16>;
+        /// The force update ask counter.
+        type ForceUpdateAskCounter: Get<u16>;
     }
 
     /// The creation version.
@@ -57,10 +57,10 @@ pub mod pallet {
     #[pallet::getter(fn creation_version)]
     pub type CreationVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
 
-    /// The last force update ask counter.
+    /// The force update ask counter.
     #[pallet::storage]
-    #[pallet::getter(fn last_force_update_ask_counter)]
-    pub type LastForceUpdateAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
+    #[pallet::getter(fn force_update_ask_counter)]
+    pub type ForceUpdateAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
 
     #[pallet::genesis_config]
     #[derive(Default)]
@@ -74,7 +74,7 @@ pub mod pallet {
             }
 
             <CreationVersion<T>>::put(CURRENT_CREATION_VERSION);
-            <LastForceUpdateAskCounter<T>>::put(T::LastForceUpdateAskCounter::get());
+            <ForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
         }
     }
 
@@ -82,19 +82,19 @@ pub mod pallet {
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         fn on_runtime_upgrade() -> Weight {
             let creation_version = Self::creation_version();
-            let last_force_update_ask_counter = Self::last_force_update_ask_counter();
+            let force_update_ask_counter = Self::force_update_ask_counter();
             let mut weight = T::DbWeight::get().reads(2);
 
             if creation_version != CURRENT_CREATION_VERSION {
                 weight += Self::precompiles_addresses_add_dummy_code();
 
                 <CreationVersion<T>>::put(CURRENT_CREATION_VERSION);
-                <LastForceUpdateAskCounter<T>>::put(T::LastForceUpdateAskCounter::get());
+                <ForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
                 weight += T::DbWeight::get().writes(1);
-            } else if last_force_update_ask_counter != T::LastForceUpdateAskCounter::get() {
+            } else if force_update_ask_counter != T::ForceUpdateAskCounter::get() {
                 weight += Self::precompiles_addresses_add_dummy_code();
 
-                <LastForceUpdateAskCounter<T>>::put(T::LastForceUpdateAskCounter::get());
+                <ForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
                 weight += T::DbWeight::get().writes(1);
             }
 

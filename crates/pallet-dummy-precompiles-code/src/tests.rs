@@ -19,7 +19,7 @@ fn genesis_build() {
             v1::DummyPrecompilesCode::creation_version(),
             crate::CURRENT_CREATION_VERSION
         );
-        assert_eq!(v1::DummyPrecompilesCode::last_force_update_ask_counter(), 0);
+        assert_eq!(v1::DummyPrecompilesCode::force_update_ask_counter(), 0);
     })
 }
 
@@ -38,7 +38,7 @@ fn runtime_upgrade() {
                 assert!(!v0::EvmSystem::account_exists(precompile_address));
             }
             assert_eq!(v1::DummyPrecompilesCode::creation_version(), 0);
-            assert_eq!(v1::DummyPrecompilesCode::last_force_update_ask_counter(), 0);
+            assert_eq!(v1::DummyPrecompilesCode::force_update_ask_counter(), 0);
 
             // Do runtime upgrade hook.
             v1::AllPalletsWithoutSystem::on_runtime_upgrade();
@@ -55,7 +55,7 @@ fn runtime_upgrade() {
                 v1::DummyPrecompilesCode::creation_version(),
                 crate::CURRENT_CREATION_VERSION
             );
-            assert_eq!(v1::DummyPrecompilesCode::last_force_update_ask_counter(), 0);
+            assert_eq!(v1::DummyPrecompilesCode::force_update_ask_counter(), 0);
         });
     })
 }
