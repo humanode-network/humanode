@@ -786,8 +786,7 @@ impl pallet_balanced_currency_swap_bridges_initializer::Config for Runtime {
     type NativeEvmBridgePot = NativeToEvmSwapBridgePotAccountId;
     type NativeTreasuryPot = TreasuryPotAccountId;
     type EvmNativeBridgePot = EvmToNativeSwapBridgePotAccountId;
-    type InitializerVersion = BridgesInitializerVersion;
-    type IsBalancedCheckRequiredOnRuntimeUpgrade = ConstBool<false>;
+    type ForceRebalanceAskCounter = ConstU16<0>;
     type WeightInfo = ();
 }
 
