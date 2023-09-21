@@ -16,7 +16,7 @@ fn genesis_build() {
             assert!(v1::EvmSystem::account_exists(precompile_address));
         }
         assert_eq!(
-            v1::DummyPrecompilesCode::creation_version(),
+            v1::DummyPrecompilesCode::last_creation_version(),
             crate::CURRENT_CREATION_VERSION
         );
         assert_eq!(v1::DummyPrecompilesCode::force_update_ask_counter(), 0);
@@ -37,7 +37,7 @@ fn runtime_upgrade() {
                 assert!(v0::Evm::account_codes(precompile_address).is_empty());
                 assert!(!v0::EvmSystem::account_exists(precompile_address));
             }
-            assert_eq!(v1::DummyPrecompilesCode::creation_version(), 0);
+            assert_eq!(v1::DummyPrecompilesCode::last_creation_version(), 0);
             assert_eq!(v1::DummyPrecompilesCode::force_update_ask_counter(), 0);
 
             // Do runtime upgrade hook.
@@ -52,7 +52,7 @@ fn runtime_upgrade() {
                 assert!(v1::EvmSystem::account_exists(precompile_address));
             }
             assert_eq!(
-                v1::DummyPrecompilesCode::creation_version(),
+                v1::DummyPrecompilesCode::last_creation_version(),
                 crate::CURRENT_CREATION_VERSION
             );
             assert_eq!(v1::DummyPrecompilesCode::force_update_ask_counter(), 0);

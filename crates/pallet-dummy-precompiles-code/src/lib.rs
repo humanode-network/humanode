@@ -52,10 +52,10 @@ pub mod pallet {
         type ForceUpdateAskCounter: Get<u16>;
     }
 
-    /// The creation version.
+    /// The last creation version.
     #[pallet::storage]
-    #[pallet::getter(fn creation_version)]
-    pub type CreationVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
+    #[pallet::getter(fn last_creation_version)]
+    pub type LastCreationVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
 
     /// The force update ask counter.
     #[pallet::storage]
@@ -73,7 +73,7 @@ pub mod pallet {
                 pallet_evm::Pallet::<T>::create_account(*precompile_address, DUMMY_CODE.to_vec());
             }
 
-            <CreationVersion<T>>::put(CURRENT_CREATION_VERSION);
+            <LastCreationVersion<T>>::put(CURRENT_CREATION_VERSION);
             <ForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
         }
     }
@@ -81,14 +81,14 @@ pub mod pallet {
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         fn on_runtime_upgrade() -> Weight {
-            let creation_version = Self::creation_version();
+            let creation_version = Self::last_creation_version();
             let force_update_ask_counter = Self::force_update_ask_counter();
             let mut weight = T::DbWeight::get().reads(2);
 
             if creation_version != CURRENT_CREATION_VERSION {
                 weight += Self::precompiles_addresses_add_dummy_code();
 
-                <CreationVersion<T>>::put(CURRENT_CREATION_VERSION);
+                <LastCreationVersion<T>>::put(CURRENT_CREATION_VERSION);
                 <ForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
                 weight += T::DbWeight::get().writes(1);
             } else if force_update_ask_counter != T::ForceUpdateAskCounter::get() {
