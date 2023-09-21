@@ -822,7 +822,7 @@ frame_support::parameter_types! {
 
 impl pallet_dummy_precompiles_code::Config for Runtime {
     type PrecompilesAddresses = PrecompilesAddresses;
-    type LastForceUpdateAskCounter = ConstU16<0>;
+    type ForceExecuteAskCounter = ConstU16<0>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously
