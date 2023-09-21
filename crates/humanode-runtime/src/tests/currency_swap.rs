@@ -122,7 +122,7 @@ fn currencies_are_balanced() {
     new_test_ext_with().execute_with(move || {
         assert_eq!(
             BalancedCurrencySwapBridgesInitializer::last_initializer_version(),
-            BridgesInitializerVersion::get()
+            pallet_balanced_currency_swap_bridges_initializer::CURRENT_BRIDGES_INITIALIZER_VERSION
         );
         assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
     })
