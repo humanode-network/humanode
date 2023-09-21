@@ -48,7 +48,7 @@ pub mod pallet {
         /// The list of precompiles adresses to be created at evm with dummy code.
         type PrecompilesAddresses: Get<Vec<H160>>;
 
-        /// The force update ask counter.
+        /// The current force update ask counter.
         type ForceUpdateAskCounter: Get<u16>;
     }
 
@@ -57,10 +57,10 @@ pub mod pallet {
     #[pallet::getter(fn last_creation_version)]
     pub type LastCreationVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
 
-    /// The force update ask counter.
+    /// The last force update ask counter.
     #[pallet::storage]
-    #[pallet::getter(fn force_update_ask_counter)]
-    pub type ForceUpdateAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
+    #[pallet::getter(fn last_force_update_ask_counter)]
+    pub type LastForceUpdateAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
 
     #[pallet::genesis_config]
     #[derive(Default)]
@@ -74,28 +74,28 @@ pub mod pallet {
             }
 
             <LastCreationVersion<T>>::put(CURRENT_CREATION_VERSION);
-            <ForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
+            <LastForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
         }
     }
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         fn on_runtime_upgrade() -> Weight {
-            let creation_version = Self::last_creation_version();
-            let force_update_ask_counter = Self::force_update_ask_counter();
-            let mut weight = T::DbWeight::get().reads(2);
+            let last_creation_version = Self::last_creation_version();
+            let last_force_update_ask_counter = Self::last_force_update_ask_counter();
 
-            if creation_version != CURRENT_CREATION_VERSION {
+            let current_force_update_ask_counter = T::ForceUpdateAskCounter::get();
+            let mut weight = T::DbWeight::get().reads(3);
+
+            let is_version_mismatch = last_creation_version != CURRENT_CREATION_VERSION;
+            let is_forced = last_force_update_ask_counter != current_force_update_ask_counter;
+
+            if is_version_mismatch || is_forced {
                 weight += Self::precompiles_addresses_add_dummy_code();
 
                 <LastCreationVersion<T>>::put(CURRENT_CREATION_VERSION);
-                <ForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
-                weight += T::DbWeight::get().writes(1);
-            } else if force_update_ask_counter != T::ForceUpdateAskCounter::get() {
-                weight += Self::precompiles_addresses_add_dummy_code();
-
-                <ForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
-                weight += T::DbWeight::get().writes(1);
+                <LastForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
+                weight += T::DbWeight::get().writes(2);
             }
 
             weight
