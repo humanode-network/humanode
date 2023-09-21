@@ -4,32 +4,31 @@ use frame_support::pallet_prelude::*;
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
 
-use crate::{Config, InitializerVersion, Pallet};
+use crate::{
+    Config, LastForceRebalanceAskCounter, LastInitializerVersion, Pallet,
+    CURRENT_BRIDGES_INITIALIZER_VERSION,
+};
 
-/// Initialize the bridges pot accounts.
+/// Initialize the bridges pot accounts if required.
 pub fn on_runtime_upgrade<T: Config>() -> Weight {
-    let initializer_version = <InitializerVersion<T>>::get();
-    let mut weight = T::DbWeight::get().reads(1);
+    let last_initializer_version = <LastInitializerVersion<T>>::get();
+    let last_force_rebalance_ask_counter = <LastForceRebalanceAskCounter<T>>::get();
+    let current_force_rebalance_ask_counter = T::ForceRebalanceAskCounter::get();
 
-    if initializer_version < T::InitializerVersion::get() {
-        let is_balanced = Pallet::<T>::is_balanced().unwrap_or_default();
-        weight += T::DbWeight::get().reads(8);
+    let mut weight = T::DbWeight::get().reads(3);
 
-        if !is_balanced {
-            match Pallet::<T>::initialize() {
-                Ok(w) => weight += w,
-                Err(err) => sp_tracing::error!("error during bridges initialization: {err:?}"),
-            }
+    let is_version_mismatch = last_initializer_version != CURRENT_BRIDGES_INITIALIZER_VERSION;
+    let is_forced = last_force_rebalance_ask_counter != current_force_rebalance_ask_counter;
+
+    if is_version_mismatch || is_forced {
+        match Pallet::<T>::initialize() {
+            Ok(w) => weight += w,
+            Err(err) => sp_tracing::error!("error during bridges initialization: {err:?}"),
         }
 
-        <InitializerVersion<T>>::put(T::InitializerVersion::get());
-    } else if T::IsBalancedCheckRequiredOnRuntimeUpgrade::get() {
-        let is_balanced = Pallet::<T>::is_balanced().unwrap_or_default();
-        weight += T::DbWeight::get().reads(8);
-
-        if !is_balanced {
-            sp_tracing::error!("currencies are not balanced");
-        }
+        <LastInitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
+        <LastForceRebalanceAskCounter<T>>::put(current_force_rebalance_ask_counter);
+        weight += T::DbWeight::get().writes(2);
     }
 
     weight

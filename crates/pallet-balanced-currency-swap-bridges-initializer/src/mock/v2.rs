@@ -12,7 +12,9 @@ use frame_support::{
     traits::{ConstU32, ConstU64, StorageMapShim},
     PalletId,
 };
-use sp_core::{ConstBool, ConstU16, H256};
+use sp_core::{ConstU16, H256};
+
+pub(crate) const FORCE_REBALANCE_ASK_COUNTER: u16 = 1;
 
 use super::*;
 
@@ -131,7 +133,6 @@ impl pallet_balanced_currency_swap_bridges_initializer::Config for Test {
     type NativeEvmBridgePot = SwapBridgeNativeToEvmPotAccountId;
     type NativeTreasuryPot = NativeTreasury;
     type EvmNativeBridgePot = SwapBridgeEvmToNativePotAccountId;
-    type InitializerVersion = ConstU16<1>;
-    type IsBalancedCheckRequiredOnRuntimeUpgrade = ConstBool<true>;
+    type ForceRebalanceAskCounter = ConstU16<FORCE_REBALANCE_ASK_COUNTER>;
     type WeightInfo = ();
 }

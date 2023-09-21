@@ -39,6 +39,9 @@ type EvmBalanceOf<T> =
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
+/// The current bridges initializer version.
+pub const CURRENT_BRIDGES_INITIALIZER_VERSION: u16 = 1;
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -93,21 +96,22 @@ pub mod pallet {
         /// The evm-native bridge pot account.
         type EvmNativeBridgePot: Get<Self::EvmAccountId>;
 
-        /// The current bridges initializer version.
-        type InitializerVersion: Get<u16>;
-
-        /// Whether currencies balanced check required on runtime upgrade.
-        #[pallet::constant]
-        type IsBalancedCheckRequiredOnRuntimeUpgrade: Get<bool>;
+        /// The force rebalance ask counter.
+        type ForceRebalanceAskCounter: Get<u16>;
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
     }
 
-    /// The initializer version.
+    /// The last initializer version.
     #[pallet::storage]
-    #[pallet::getter(fn initializer_version)]
-    pub type InitializerVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
+    #[pallet::getter(fn last_initializer_version)]
+    pub type LastInitializerVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
+
+    /// The last force rebalance ask counter.
+    #[pallet::storage]
+    #[pallet::getter(fn last_force_rebalance_ask_counter)]
+    pub type LastForceRebalanceAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config>(PhantomData<T>);
@@ -133,7 +137,8 @@ pub mod pallet {
                 }
             }
 
-            <InitializerVersion<T>>::put(T::InitializerVersion::get());
+            <LastInitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
+            <LastForceRebalanceAskCounter<T>>::put(T::ForceRebalanceAskCounter::get());
         }
     }
 
