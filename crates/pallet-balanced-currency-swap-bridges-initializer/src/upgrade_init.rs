@@ -48,9 +48,15 @@ pub fn pre_upgrade<T: Config>() -> Result<Vec<u8>, &'static str> {
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
 pub fn post_upgrade<T: Config>(_state: Vec<u8>) -> Result<(), &'static str> {
+    use frame_support::{storage_root, StateVersion};
+
+    let storage_root_before = storage_root(StateVersion::V1);
+
     if !Pallet::<T>::is_balanced()? {
         return Err("currencies are not balanced");
     }
+
+    assert_eq!(storage_root_before, storage_root(StateVersion::V1));
 
     Ok(())
 }
