@@ -18,8 +18,8 @@ mod tests;
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
-/// The current precompiles addresses creation version.
-pub const CURRENT_CREATION_VERSION: u16 = 1;
+/// The current precompiles addresses execution version.
+pub const CURRENT_EXECUTION_VERSION: u16 = 1;
 
 /// The dummy code used to be stored for precompiles addresses - 0x5F5FFD (as raw bytes).
 ///
@@ -48,19 +48,19 @@ pub mod pallet {
         /// The list of precompiles adresses to be created at evm with dummy code.
         type PrecompilesAddresses: Get<Vec<H160>>;
 
-        /// The current force update ask counter.
-        type ForceUpdateAskCounter: Get<u16>;
+        /// The current force execute ask counter.
+        type ForceExecuteAskCounter: Get<u16>;
     }
 
-    /// The last creation version.
+    /// The last execution version.
     #[pallet::storage]
-    #[pallet::getter(fn last_creation_version)]
-    pub type LastCreationVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
+    #[pallet::getter(fn last_execution_version)]
+    pub type LastExecutionVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
 
-    /// The last force update ask counter.
+    /// The last force execute ask counter.
     #[pallet::storage]
-    #[pallet::getter(fn last_force_update_ask_counter)]
-    pub type LastForceUpdateAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
+    #[pallet::getter(fn last_force_execute_ask_counter)]
+    pub type LastForceExecuteAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
 
     #[pallet::genesis_config]
     #[derive(Default)]
@@ -73,28 +73,28 @@ pub mod pallet {
                 pallet_evm::Pallet::<T>::create_account(*precompile_address, DUMMY_CODE.to_vec());
             }
 
-            <LastCreationVersion<T>>::put(CURRENT_CREATION_VERSION);
-            <LastForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
+            <LastExecutionVersion<T>>::put(CURRENT_EXECUTION_VERSION);
+            <LastForceExecuteAskCounter<T>>::put(T::ForceExecuteAskCounter::get());
         }
     }
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         fn on_runtime_upgrade() -> Weight {
-            let last_creation_version = Self::last_creation_version();
-            let last_force_update_ask_counter = Self::last_force_update_ask_counter();
+            let last_execution_version = Self::last_execution_version();
+            let last_force_execute_ask_counter = Self::last_force_execute_ask_counter();
 
-            let current_force_update_ask_counter = T::ForceUpdateAskCounter::get();
+            let current_force_execute_ask_counter = T::ForceExecuteAskCounter::get();
             let mut weight = T::DbWeight::get().reads(3);
 
-            let is_version_mismatch = last_creation_version != CURRENT_CREATION_VERSION;
-            let is_forced = last_force_update_ask_counter != current_force_update_ask_counter;
+            let is_version_mismatch = last_execution_version != CURRENT_EXECUTION_VERSION;
+            let is_forced = last_force_execute_ask_counter != current_force_execute_ask_counter;
 
             if is_version_mismatch || is_forced {
                 weight += Self::precompiles_addresses_add_dummy_code();
 
-                <LastCreationVersion<T>>::put(CURRENT_CREATION_VERSION);
-                <LastForceUpdateAskCounter<T>>::put(T::ForceUpdateAskCounter::get());
+                <LastExecutionVersion<T>>::put(CURRENT_EXECUTION_VERSION);
+                <LastForceExecuteAskCounter<T>>::put(current_force_execute_ask_counter);
                 weight += T::DbWeight::get().writes(2);
             }
 
