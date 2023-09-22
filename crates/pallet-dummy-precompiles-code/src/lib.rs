@@ -88,7 +88,7 @@ pub mod pallet {
             let mut weight = T::DbWeight::get().reads(2);
 
             let is_version_mismatch = last_execution_version != CURRENT_EXECUTION_VERSION;
-            let is_forced = last_force_execute_ask_counter != current_force_execute_ask_counter;
+            let is_forced = last_force_execute_ask_counter < current_force_execute_ask_counter;
 
             if is_version_mismatch || is_forced {
                 weight += Self::precompiles_addresses_add_dummy_code();
