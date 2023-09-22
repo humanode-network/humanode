@@ -121,7 +121,7 @@ fn currencies_are_balanced() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         assert_eq!(
-            BalancedCurrencySwapBridgesInitializer::initializer_version(),
+            BalancedCurrencySwapBridgesInitializer::last_initializer_version(),
             pallet_balanced_currency_swap_bridges_initializer::CURRENT_BRIDGES_INITIALIZER_VERSION
         );
         assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
