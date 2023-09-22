@@ -374,7 +374,7 @@ fn deposit_works() {
 
         let deposit_action = EvmDataWriter::new_with_selector(Action::Deposit).build();
 
-        // Deposit
+        // Invoke deposit.
         // We need to call using EVM runner so we can check the EVM correctly sends the amount
         // to the precompile.
         let config = <Test as pallet_evm::Config>::config();
@@ -432,7 +432,7 @@ fn deposit_fails_zero_value() {
 
         let deposit_action = EvmDataWriter::new_with_selector(Action::Deposit).build();
 
-        // Deposit
+        // Invoke deposit.
         // We need to call using EVM runner so we can check the EVM correctly sends the amount
         // to the precompile.
         let config = <Test as pallet_evm::Config>::config();
@@ -454,6 +454,117 @@ fn deposit_fails_zero_value() {
         assert_eq!(
             execinfo.exit_reason,
             fp_evm::ExitReason::Error(ExitError::Other("deposited amount must be non-zero".into()))
+        );
+        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.value, EvmDataWriter::new().build());
+        assert_eq!(execinfo.logs, Vec::new());
+
+        assert_eq!(
+            EvmBalances::total_balance(&alice_evm),
+            alice_evm_balance - expected_fee
+        );
+    });
+}
+
+#[test]
+fn withdraw_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let alice_withdraw_balance = 10 * 10u128.pow(18);
+
+        let expected_gas_usage: u64 = 21464;
+        let expected_fee: Balance = gas_to_fee(expected_gas_usage);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        let withdraw_action = EvmDataWriter::new_with_selector(Action::Withdraw)
+            .write(U256::from(alice_withdraw_balance))
+            .build();
+
+        // Invoke withdraw.
+        let config = <Test as pallet_evm::Config>::config();
+        let execinfo = <Test as pallet_evm::Config>::Runner::call(
+            alice_evm,
+            *PRECOMPILE_ADDRESS,
+            withdraw_action,
+            0.into(),
+            50_000, // a reasonable upper bound for tests
+            Some(*GAS_PRICE),
+            Some(*GAS_PRICE),
+            None,
+            Vec::new(),
+            true,
+            true,
+            config,
+        )
+        .unwrap();
+        assert_eq!(
+            execinfo.exit_reason,
+            fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
+        );
+        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log2(
+                SELECTOR_LOG_WITHDRAWAL,
+                alice_evm,
+                EvmDataWriter::new().write(alice_withdraw_balance).build(),
+            )]
+        );
+
+        assert_eq!(
+            EvmBalances::total_balance(&alice_evm),
+            alice_evm_balance - expected_fee
+        );
+    });
+}
+
+#[test]
+fn withdraw_fails_more_than_allowed() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 2 * 10u128.pow(18);
+        let alice_withdraw_balance = 5 * 10u128.pow(18);
+
+        let expected_gas_usage: u64 = 50000;
+        let expected_fee: Balance = gas_to_fee(expected_gas_usage);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        let withdraw_action = EvmDataWriter::new_with_selector(Action::Withdraw)
+            .write(U256::from(alice_withdraw_balance))
+            .build();
+
+        // Invoke withdraw.
+        let config = <Test as pallet_evm::Config>::config();
+        let execinfo = <Test as pallet_evm::Config>::Runner::call(
+            alice_evm,
+            *PRECOMPILE_ADDRESS,
+            withdraw_action,
+            0.into(),
+            50_000, // a reasonable upper bound for tests
+            Some(*GAS_PRICE),
+            Some(*GAS_PRICE),
+            None,
+            Vec::new(),
+            true,
+            true,
+            config,
+        )
+        .unwrap();
+        assert_eq!(
+            execinfo.exit_reason,
+            fp_evm::ExitReason::Error(ExitError::Other(
+                "trying to withdraw more than owned".into()
+            ))
         );
         assert_eq!(execinfo.used_gas, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().build());
