@@ -29,6 +29,9 @@ pub const SELECTOR_LOG_TRANSFER: [u8; 32] = keccak256!("Transfer(address,address
 /// Solidity selector of the Approval log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_APPROVAL: [u8; 32] = keccak256!("Approval(address,address,uint256)");
 
+/// Solidity selector of the Deposit log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_DEPOSIT: [u8; 32] = keccak256!("Deposit(address,uint256)");
+
 /// Utility alias for easy access to the [`pallet_erc20_support::Config::AccountId`].
 type AccountIdOf<T> = <T as pallet_erc20_support::Config>::AccountId;
 
@@ -60,6 +63,8 @@ pub enum Action {
     /// Moves amount tokens from sender to recipient using the allowance mechanism,
     /// amount is then deducted from the caller’s allowance.
     TransferFrom = "transferFrom(address,address,uint256)",
+    /// Returns funds to sender as this precompile tokens and the native tokens are the same.
+    Deposit = "deposit()",
 }
 
 /// Precompile exposing currency instance as ERC20.
@@ -91,6 +96,7 @@ where
             Action::Approve => Self::approve(handle),
             Action::Transfer => Self::transfer(handle),
             Action::TransferFrom => Self::transfer_from(handle),
+            Action::Deposit => Self::deposit(handle),
         }
     }
 }
@@ -294,6 +300,45 @@ where
                 sender,
                 recipient,
                 EvmDataWriter::new().write(amount).build(),
+            )
+            .record(handle)?;
+
+        Ok(succeed(EvmDataWriter::new().write(true).build()))
+    }
+
+    /// Returns funds to sender as this precompile tokens and the native tokens are the same.
+    fn deposit(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.record_cost(GasCost::get())?;
+
+        let mut input = handle.read_input()?;
+
+        let fp_evm::Context {
+            address,
+            caller,
+            apparent_value: value,
+            ..
+        } = handle.context();
+
+        check_input(&mut input, 0)?;
+        check_input_end(&mut input)?;
+
+        pallet_erc20_support::Pallet::<Erc20SupportT>::transfer(
+            (*address).into(),
+            (*caller).into(),
+            (*value).try_into().map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("value is out of bounds".into()),
+            })?,
+        )
+        .map_err(process_dispatch_error::<Erc20SupportT>)?;
+
+        let logs_builder = LogsBuilder::new(handle.context().address);
+
+        logs_builder
+            .log3(
+                SELECTOR_LOG_DEPOSIT,
+                *address,
+                *caller,
+                EvmDataWriter::new().write(*value).build(),
             )
             .record(handle)?;
 
