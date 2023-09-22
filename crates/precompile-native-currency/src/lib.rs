@@ -331,6 +331,12 @@ where
         check_input(&mut input, 0)?;
         check_input_end(&mut input)?;
 
+        if value == &U256::from(0u32) {
+            return Err(PrecompileFailure::Error {
+                exit_status: ExitError::Other("deposited amount must be non-zero".into()),
+            });
+        }
+
         pallet_erc20_support::Pallet::<Erc20SupportT>::transfer(
             (*address).into(),
             (*caller).into(),
@@ -367,6 +373,15 @@ where
         let amount: U256 = input.read()?;
 
         check_input_end(&mut input)?;
+
+        let total_balance: U256 =
+            pallet_erc20_support::Pallet::<Erc20SupportT>::balance_of(&caller.into()).into();
+
+        if amount > total_balance {
+            return Err(PrecompileFailure::Error {
+                exit_status: ExitError::Other("trying to withdraw more than owned".into()),
+            });
+        }
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
