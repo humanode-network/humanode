@@ -32,6 +32,9 @@ pub const SELECTOR_LOG_APPROVAL: [u8; 32] = keccak256!("Approval(address,address
 /// Solidity selector of the Deposit log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_DEPOSIT: [u8; 32] = keccak256!("Deposit(address,uint256)");
 
+/// Solidity selector of the Withdraw log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_WITHDRAWAL: [u8; 32] = keccak256!("Withdrawal(address,uint256)");
+
 /// Utility alias for easy access to the [`pallet_erc20_support::Config::AccountId`].
 type AccountIdOf<T> = <T as pallet_erc20_support::Config>::AccountId;
 
@@ -63,8 +66,12 @@ pub enum Action {
     /// Moves amount tokens from sender to recipient using the allowance mechanism,
     /// amount is then deducted from the caller’s allowance.
     TransferFrom = "transferFrom(address,address,uint256)",
+    /// Simulate deposit logic as IWETH-like contract.
     /// Returns funds to sender as this precompile tokens and the native tokens are the same.
     Deposit = "deposit()",
+    /// Simulate withdraw logic as IWETH-like contract.
+    /// Do nothing.
+    Withdraw = "withdraw(uint256)",
 }
 
 /// Precompile exposing currency instance as ERC20.
@@ -97,6 +104,7 @@ where
             Action::Transfer => Self::transfer(handle),
             Action::TransferFrom => Self::transfer_from(handle),
             Action::Deposit => Self::deposit(handle),
+            Action::Withdraw => Self::withdraw(handle),
         }
     }
 }
@@ -306,6 +314,7 @@ where
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
 
+    /// Simulate deposit logic as IWETH-like contract.
     /// Returns funds to sender as this precompile tokens and the native tokens are the same.
     fn deposit(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         handle.record_cost(GasCost::get())?;
@@ -331,14 +340,41 @@ where
         )
         .map_err(process_dispatch_error::<Erc20SupportT>)?;
 
+        let logs_builder = LogsBuilder::new(*address);
+
+        logs_builder
+            .log2(
+                SELECTOR_LOG_DEPOSIT,
+                *caller,
+                EvmDataWriter::new().write(*value).build(),
+            )
+            .record(handle)?;
+
+        Ok(succeed(EvmDataWriter::new().write(true).build()))
+    }
+
+    /// Simulate withdraw logic as IWETH-like contract.
+    /// Do nothing.
+    fn withdraw(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.record_cost(GasCost::get())?;
+
+        let mut input = handle.read_input()?;
+
+        let caller = handle.context().caller;
+
+        check_input(&mut input, 1)?;
+
+        let amount: U256 = input.read()?;
+
+        check_input_end(&mut input)?;
+
         let logs_builder = LogsBuilder::new(handle.context().address);
 
         logs_builder
-            .log3(
-                SELECTOR_LOG_DEPOSIT,
-                *address,
-                *caller,
-                EvmDataWriter::new().write(*value).build(),
+            .log2(
+                SELECTOR_LOG_WITHDRAWAL,
+                caller,
+                EvmDataWriter::new().write(amount).build(),
             )
             .record(handle)?;
 
