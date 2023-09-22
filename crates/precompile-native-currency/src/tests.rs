@@ -1,11 +1,18 @@
 #![allow(clippy::integer_arithmetic)] // not a problem in tests
 
+use pallet_evm::Runner;
 use precompile_utils::{testing::*, EvmDataWriter};
 
 use crate::{mock::*, *};
 
 fn precompiles() -> Precompiles<Test> {
     PrecompilesValue::get()
+}
+
+/// A utility that performs gas to fee computation.
+/// Might not be explicitly correct, but does the job.
+fn gas_to_fee(gas: u64) -> Balance {
+    u128::from(gas) * u128::try_from(*GAS_PRICE).unwrap()
 }
 
 #[test]
@@ -347,5 +354,114 @@ fn transfer_from_fails_spend_more_than_allowed() {
         assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
         assert_eq!(EvmBalances::total_balance(&bob_evm), 0);
         assert_eq!(EvmBalances::total_balance(&charlie_evm), 0);
+    });
+}
+
+#[test]
+fn deposit_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let alice_deposit_balance = 10 * 10u128.pow(18);
+
+        let expected_gas_usage: u64 = 21264;
+        let expected_fee: Balance = gas_to_fee(expected_gas_usage);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        let deposit_action = EvmDataWriter::new_with_selector(Action::Deposit).build();
+
+        // Deposit
+        // We need to call using EVM runner so we can check the EVM correctly sends the amount
+        // to the precompile.
+        let config = <Test as pallet_evm::Config>::config();
+        let execinfo = <Test as pallet_evm::Config>::Runner::call(
+            alice_evm,
+            *PRECOMPILE_ADDRESS,
+            deposit_action,
+            alice_deposit_balance.into(),
+            50_000, // a reasonable upper bound for tests
+            Some(*GAS_PRICE),
+            Some(*GAS_PRICE),
+            None,
+            Vec::new(),
+            true,
+            true,
+            config,
+        )
+        .unwrap();
+        assert_eq!(
+            execinfo.exit_reason,
+            fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
+        );
+        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log2(
+                SELECTOR_LOG_DEPOSIT,
+                alice_evm,
+                EvmDataWriter::new().write(alice_deposit_balance).build(),
+            )]
+        );
+
+        assert_eq!(
+            EvmBalances::total_balance(&alice_evm),
+            alice_evm_balance - expected_fee
+        );
+    });
+}
+
+#[test]
+fn deposit_fails_zero_value() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let alice_deposit_balance = 0;
+
+        let expected_gas_usage: u64 = 50000;
+        let expected_fee: Balance = gas_to_fee(expected_gas_usage);
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        let deposit_action = EvmDataWriter::new_with_selector(Action::Deposit).build();
+
+        // Deposit
+        // We need to call using EVM runner so we can check the EVM correctly sends the amount
+        // to the precompile.
+        let config = <Test as pallet_evm::Config>::config();
+        let execinfo = <Test as pallet_evm::Config>::Runner::call(
+            alice_evm,
+            *PRECOMPILE_ADDRESS,
+            deposit_action,
+            alice_deposit_balance.into(),
+            50_000, // a reasonable upper bound for tests
+            Some(*GAS_PRICE),
+            Some(*GAS_PRICE),
+            None,
+            Vec::new(),
+            true,
+            true,
+            config,
+        )
+        .unwrap();
+        assert_eq!(
+            execinfo.exit_reason,
+            fp_evm::ExitReason::Error(ExitError::Other("deposited amount must be non-zero".into()))
+        );
+        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.value, EvmDataWriter::new().build());
+        assert_eq!(execinfo.logs, Vec::new());
+
+        assert_eq!(
+            EvmBalances::total_balance(&alice_evm),
+            alice_evm_balance - expected_fee
+        );
     });
 }
