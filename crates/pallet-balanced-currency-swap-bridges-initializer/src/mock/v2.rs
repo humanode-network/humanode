@@ -1,4 +1,4 @@
-//! The v1 mock that includes bridges initialization logic at runtime.
+//! The v2 mock.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::integer_arithmetic)]
@@ -14,9 +14,9 @@ use frame_support::{
 };
 use sp_core::{ConstU16, H256};
 
-use super::*;
+pub(crate) const FORCE_REBALANCE_ASK_COUNTER: u16 = 1;
 
-pub(crate) const FORCE_REBALANCE_ASK_COUNTER: u16 = 0;
+use super::*;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -79,7 +79,7 @@ impl pallet_balances::Config<BalancesInstanceEvm> for Test {
     type Balance = u64;
     type RuntimeEvent = RuntimeEvent;
     type DustRemoval = ();
-    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT_EVM>;
+    type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT_EVM_NEW>;
     type AccountStore = StorageMapShim<
         pallet_balances::Account<Test, BalancesInstanceEvm>,
         frame_system::Provider<Test>,

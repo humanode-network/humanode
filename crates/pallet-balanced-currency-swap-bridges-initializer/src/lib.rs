@@ -96,14 +96,22 @@ pub mod pallet {
         /// The evm-native bridge pot account.
         type EvmNativeBridgePot: Get<Self::EvmAccountId>;
 
+        /// The force rebalance ask counter.
+        type ForceRebalanceAskCounter: Get<u16>;
+
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
     }
 
-    /// The initializer version.
+    /// The last initializer version.
     #[pallet::storage]
-    #[pallet::getter(fn initializer_version)]
-    pub type InitializerVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
+    #[pallet::getter(fn last_initializer_version)]
+    pub type LastInitializerVersion<T: Config> = StorageValue<_, u16, ValueQuery>;
+
+    /// The last force rebalance ask counter.
+    #[pallet::storage]
+    #[pallet::getter(fn last_force_rebalance_ask_counter)]
+    pub type LastForceRebalanceAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
 
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config>(PhantomData<T>);
@@ -129,7 +137,8 @@ pub mod pallet {
                 }
             }
 
-            <InitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
+            <LastInitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
+            <LastForceRebalanceAskCounter<T>>::put(T::ForceRebalanceAskCounter::get());
         }
     }
 
