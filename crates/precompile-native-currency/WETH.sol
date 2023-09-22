@@ -3,7 +3,7 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 /**
- * @title IWETH Interface
+ * @title WETH Interface
  *
  * An interface exposing native eHMND tokens as IWETH-like contract.
  *
