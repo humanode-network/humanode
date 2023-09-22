@@ -18,7 +18,7 @@ pub fn on_runtime_upgrade<T: Config>() -> Weight {
     let mut weight = T::DbWeight::get().reads(2);
 
     let is_version_mismatch = last_initializer_version != CURRENT_BRIDGES_INITIALIZER_VERSION;
-    let is_forced = last_force_rebalance_ask_counter != current_force_rebalance_ask_counter;
+    let is_forced = last_force_rebalance_ask_counter < current_force_rebalance_ask_counter;
 
     if is_version_mismatch || is_forced {
         match Pallet::<T>::initialize() {
