@@ -85,7 +85,7 @@ pub mod pallet {
             let last_force_execute_ask_counter = Self::last_force_execute_ask_counter();
 
             let current_force_execute_ask_counter = T::ForceExecuteAskCounter::get();
-            let mut weight = T::DbWeight::get().reads(3);
+            let mut weight = T::DbWeight::get().reads(2);
 
             let is_version_mismatch = last_execution_version != CURRENT_EXECUTION_VERSION;
             let is_forced = last_force_execute_ask_counter != current_force_execute_ask_counter;
