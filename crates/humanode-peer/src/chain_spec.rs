@@ -385,6 +385,7 @@ fn testnet_genesis(
             total_claimable: Some(DEV_ACCOUNT_BALANCE),
         },
         balanced_currency_swap_bridges_initializer: Default::default(),
+        dummy_precompiles_code: Default::default(),
     }
 }
 

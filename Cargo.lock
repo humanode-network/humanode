@@ -3708,6 +3708,7 @@ dependencies = [
  "pallet-chain-properties",
  "pallet-chain-start-moment",
  "pallet-currency-swap",
+ "pallet-dummy-precompiles-code",
  "pallet-erc20-support",
  "pallet-ethereum",
  "pallet-ethereum-chain-id",
@@ -5936,6 +5937,25 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-dummy-precompiles-code"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
  "sp-std",
 ]
 

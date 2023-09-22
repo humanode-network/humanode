@@ -80,7 +80,7 @@ use sp_version::RuntimeVersion;
 
 mod frontier_precompiles;
 mod vesting;
-use frontier_precompiles::FrontierPrecompiles;
+use frontier_precompiles::{precompiles_constants, FrontierPrecompiles};
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -811,6 +811,21 @@ impl pallet_erc20_support::Config for Runtime {
     type Metadata = EvmBalancesErc20Metadata;
 }
 
+frame_support::parameter_types! {
+    pub PrecompilesAddresses: Vec<H160> =
+        vec![
+            frontier_precompiles::hash(precompiles_constants::BIOAUTH),
+            frontier_precompiles::hash(precompiles_constants::EVM_ACCOUNTS_MAPPING),
+            frontier_precompiles::hash(precompiles_constants::NATIVE_CURRENCY),
+            frontier_precompiles::hash(precompiles_constants::CURRENCY_SWAP),
+        ];
+}
+
+impl pallet_dummy_precompiles_code::Config for Runtime {
+    type PrecompilesAddresses = PrecompilesAddresses;
+    type ForceExecuteAskCounter = ConstU16<0>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
@@ -856,6 +871,7 @@ construct_runtime!(
         CurrencySwap: pallet_currency_swap = 35,
         BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
         EvmBalancesErc20Support: pallet_erc20_support = 37,
+        DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
     }
 );
 

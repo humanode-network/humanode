@@ -110,7 +110,8 @@ fn works() {
         "evmToNativeSwapBridgePot": {
             "initialState": "Initialized"
         },
-        "balancedCurrencySwapBridgesInitializer": null
+        "balancedCurrencySwapBridgesInitializer": null,
+        "dummyPrecompilesCode": {}
     }"#;
     let config: GenesisConfig = serde_json::from_str(json_input).unwrap();
     assert_ok!(config.build_storage());
@@ -130,7 +131,8 @@ fn unknown_field() {
         `feesPot`, `tokenClaimsPot`, `transactionPayment`, `session`, `chainProperties`, \
         `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, \
         `imOnline`, `evmAccountsMapping`, `tokenClaims`, `nativeToEvmSwapBridgePot`, \
-        `evmToNativeSwapBridgePot`, `balancedCurrencySwapBridgesInitializer` at line 1 column 6"
+        `evmToNativeSwapBridgePot`, `balancedCurrencySwapBridgesInitializer`, \
+        `dummyPrecompilesCode` at line 1 column 6"
     );
 }
 

@@ -12,6 +12,36 @@ use sp_std::marker::PhantomData;
 
 use crate::{currency_swap, AccountId, ConstU64, EvmAccountId};
 
+/// A set of constant values used to indicate precompiles.
+pub mod precompiles_constants {
+    /// `ECRecover` precompile constant.
+    pub const EC_RECOVERY: u64 = 1;
+    /// `Sha256` precompile constant.
+    pub const SHA_256: u64 = 2;
+    /// `Ripemd160` precompile constant.
+    pub const RIPEMD_160: u64 = 3;
+    /// `Identity` precompile constant.
+    pub const IDENTITY: u64 = 4;
+    /// `Modexp` precompile constant.
+    pub const MODEXP: u64 = 5;
+
+    /// `Sha3FIPS256` precompile constant.
+    pub const SHA_3_FIPS256: u64 = 1024;
+    /// `ECRecoverPublicKey` precompile constant.
+    pub const EC_RECOVER_PUBLIC_KEY: u64 = 1025;
+
+    /// `Bioauth` precompile constant.
+    pub const BIOAUTH: u64 = 2048;
+    /// `EvmAccountsMapping` precompile constant.
+    pub const EVM_ACCOUNTS_MAPPING: u64 = 2049;
+    /// `NativeCurrency` precompile constant.
+    pub const NATIVE_CURRENCY: u64 = 2050;
+    /// `CurrencySwap` precompile constant.
+    pub const CURRENCY_SWAP: u64 = 2304;
+}
+
+use precompiles_constants::*;
+
 pub struct FrontierPrecompiles<R>(PhantomData<R>);
 
 impl<R> Default for FrontierPrecompiles<R> {
@@ -25,10 +55,22 @@ where
     R: pallet_evm::Config,
 {
     pub fn used_addresses() -> sp_std::vec::Vec<H160> {
-        sp_std::vec![1_u64, 2, 3, 4, 5, 1024, 1025, 2048, 2049, 2050, 2304]
-            .into_iter()
-            .map(hash)
-            .collect()
+        sp_std::vec![
+            EC_RECOVERY,
+            SHA_256,
+            RIPEMD_160,
+            IDENTITY,
+            MODEXP,
+            SHA_3_FIPS256,
+            EC_RECOVER_PUBLIC_KEY,
+            BIOAUTH,
+            EVM_ACCOUNTS_MAPPING,
+            NATIVE_CURRENCY,
+            CURRENCY_SWAP
+        ]
+        .into_iter()
+        .map(hash)
+        .collect()
     }
 }
 
@@ -48,25 +90,29 @@ where
     fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
         match handle.code_address() {
             // Ethereum precompiles :
-            a if a == hash(1) => Some(ECRecover::execute(handle)),
-            a if a == hash(2) => Some(Sha256::execute(handle)),
-            a if a == hash(3) => Some(Ripemd160::execute(handle)),
-            a if a == hash(4) => Some(Identity::execute(handle)),
-            a if a == hash(5) => Some(Modexp::execute(handle)),
+            a if a == hash(EC_RECOVERY) => Some(ECRecover::execute(handle)),
+            a if a == hash(SHA_256) => Some(Sha256::execute(handle)),
+            a if a == hash(RIPEMD_160) => Some(Ripemd160::execute(handle)),
+            a if a == hash(IDENTITY) => Some(Identity::execute(handle)),
+            a if a == hash(MODEXP) => Some(Modexp::execute(handle)),
             // Non-Frontier specific nor Ethereum precompiles :
-            a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
-            a if a == hash(1025) => Some(ECRecoverPublicKey::execute(handle)),
+            a if a == hash(SHA_3_FIPS256) => Some(Sha3FIPS256::execute(handle)),
+            a if a == hash(EC_RECOVER_PUBLIC_KEY) => Some(ECRecoverPublicKey::execute(handle)),
             // Humanode precompiles:
-            a if a == hash(2048) => Some(Bioauth::<R>::execute(handle)),
-            a if a == hash(2049) => Some(EvmAccountsMapping::<R>::execute(handle)),
-            a if a == hash(2050) => Some(NativeCurrency::<R, ConstU64<200>>::execute(handle)),
-            a if a == hash(2304) => Some(CurrencySwap::<
-                currency_swap::EvmToNativeOneToOne,
-                EvmAccountId,
-                AccountId,
-                // TODO(#697): implement proper dynamic gas cost estimation.
-                ConstU64<200>,
-            >::execute(handle)),
+            a if a == hash(BIOAUTH) => Some(Bioauth::<R>::execute(handle)),
+            a if a == hash(EVM_ACCOUNTS_MAPPING) => Some(EvmAccountsMapping::<R>::execute(handle)),
+            a if a == hash(NATIVE_CURRENCY) => {
+                Some(NativeCurrency::<R, ConstU64<200>>::execute(handle))
+            }
+            a if a == hash(CURRENCY_SWAP) => {
+                Some(CurrencySwap::<
+                    currency_swap::EvmToNativeOneToOne,
+                    EvmAccountId,
+                    AccountId,
+                    // TODO(#697): implement proper dynamic gas cost estimation.
+                    ConstU64<200>,
+                >::execute(handle))
+            }
             // Fallback
             _ => None,
         }
@@ -77,6 +123,6 @@ where
     }
 }
 
-fn hash(a: u64) -> H160 {
+pub fn hash(a: u64) -> H160 {
     H160::from_low_u64_be(a)
 }
