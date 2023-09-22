@@ -9,7 +9,8 @@ use frame_support::{
 };
 use pallet_erc20_support::Metadata;
 use pallet_evm::{
-    ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
+    ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
+    PrecompileResult,
 };
 use precompile_utils::{
     keccak256, succeed, Address, Bytes, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
@@ -332,8 +333,9 @@ where
         check_input_end(&mut input)?;
 
         if value == &U256::from(0u32) {
-            return Err(PrecompileFailure::Error {
-                exit_status: ExitError::Other("deposited amount must be non-zero".into()),
+            return Err(PrecompileFailure::Revert {
+                exit_status: ExitRevert::Reverted,
+                output: "deposited amount must be non-zero".into(),
             });
         }
 
@@ -378,8 +380,9 @@ where
             pallet_erc20_support::Pallet::<Erc20SupportT>::balance_of(&caller.into()).into();
 
         if amount > total_balance {
-            return Err(PrecompileFailure::Error {
-                exit_status: ExitError::Other("trying to withdraw more than owned".into()),
+            return Err(PrecompileFailure::Revert {
+                exit_status: ExitRevert::Reverted,
+                output: "trying to withdraw more than owned".into(),
             });
         }
 
