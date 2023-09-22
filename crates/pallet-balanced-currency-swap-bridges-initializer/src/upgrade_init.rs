@@ -15,7 +15,7 @@ pub fn on_runtime_upgrade<T: Config>() -> Weight {
     let last_force_rebalance_ask_counter = <LastForceRebalanceAskCounter<T>>::get();
     let current_force_rebalance_ask_counter = T::ForceRebalanceAskCounter::get();
 
-    let mut weight = T::DbWeight::get().reads(3);
+    let mut weight = T::DbWeight::get().reads(2);
 
     let is_version_mismatch = last_initializer_version != CURRENT_BRIDGES_INITIALIZER_VERSION;
     let is_forced = last_force_rebalance_ask_counter != current_force_rebalance_ask_counter;
