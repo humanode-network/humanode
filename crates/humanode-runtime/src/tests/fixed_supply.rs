@@ -128,16 +128,18 @@ fn assert_total_issuance() {
     let evm_existential_deposit =
         <<Runtime as pallet_evm_balances::Config>::ExistentialDeposit as Get<u128>>::get();
 
+    let existential_deposit_balance = existential_deposit.max(evm_existential_deposit);
+
     let total_issuance = Balances::total_issuance();
     let evm_total_issuance = EvmBalances::total_issuance();
 
     assert_eq!(
         total_issuance - native_to_evm_swap_bridge_pot,
-        evm_to_native_swap_bridge_pot - evm_existential_deposit
+        evm_to_native_swap_bridge_pot - existential_deposit_balance
     );
     assert_eq!(
         evm_total_issuance - evm_to_native_swap_bridge_pot,
-        native_to_evm_swap_bridge_pot - existential_deposit
+        native_to_evm_swap_bridge_pot - existential_deposit_balance
     );
 }
 
