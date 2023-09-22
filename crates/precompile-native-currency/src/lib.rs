@@ -9,7 +9,8 @@ use frame_support::{
 };
 use pallet_erc20_support::Metadata;
 use pallet_evm::{
-    ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
+    ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
+    PrecompileResult,
 };
 use precompile_utils::{
     keccak256, succeed, Address, Bytes, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
@@ -28,6 +29,12 @@ pub const SELECTOR_LOG_TRANSFER: [u8; 32] = keccak256!("Transfer(address,address
 
 /// Solidity selector of the Approval log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_APPROVAL: [u8; 32] = keccak256!("Approval(address,address,uint256)");
+
+/// Solidity selector of the Deposit log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_DEPOSIT: [u8; 32] = keccak256!("Deposit(address,uint256)");
+
+/// Solidity selector of the Withdraw log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_WITHDRAWAL: [u8; 32] = keccak256!("Withdrawal(address,uint256)");
 
 /// Utility alias for easy access to the [`pallet_erc20_support::Config::AccountId`].
 type AccountIdOf<T> = <T as pallet_erc20_support::Config>::AccountId;
@@ -60,6 +67,12 @@ pub enum Action {
     /// Moves amount tokens from sender to recipient using the allowance mechanism,
     /// amount is then deducted from the caller’s allowance.
     TransferFrom = "transferFrom(address,address,uint256)",
+    /// Simulate deposit logic as IWETH-like contract.
+    /// Returns funds to sender as this precompile tokens and the native tokens are the same.
+    Deposit = "deposit()",
+    /// Simulate withdraw logic as IWETH-like contract.
+    /// Do nothing.
+    Withdraw = "withdraw(uint256)",
 }
 
 /// Precompile exposing currency instance as ERC20.
@@ -91,6 +104,8 @@ where
             Action::Approve => Self::approve(handle),
             Action::Transfer => Self::transfer(handle),
             Action::TransferFrom => Self::transfer_from(handle),
+            Action::Deposit => Self::deposit(handle),
+            Action::Withdraw => Self::withdraw(handle),
         }
     }
 }
@@ -293,6 +308,90 @@ where
                 caller,
                 sender,
                 recipient,
+                EvmDataWriter::new().write(amount).build(),
+            )
+            .record(handle)?;
+
+        Ok(succeed(EvmDataWriter::new().write(true).build()))
+    }
+
+    /// Simulate deposit logic as IWETH-like contract.
+    /// Returns funds to sender as this precompile tokens and the native tokens are the same.
+    fn deposit(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.record_cost(GasCost::get())?;
+
+        let mut input = handle.read_input()?;
+
+        let fp_evm::Context {
+            address,
+            caller,
+            apparent_value: value,
+            ..
+        } = handle.context();
+
+        check_input(&mut input, 0)?;
+        check_input_end(&mut input)?;
+
+        if value == &U256::from(0u32) {
+            return Err(PrecompileFailure::Revert {
+                exit_status: ExitRevert::Reverted,
+                output: "deposited amount must be non-zero".into(),
+            });
+        }
+
+        pallet_erc20_support::Pallet::<Erc20SupportT>::transfer(
+            (*address).into(),
+            (*caller).into(),
+            (*value).try_into().map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("value is out of bounds".into()),
+            })?,
+        )
+        .map_err(process_dispatch_error::<Erc20SupportT>)?;
+
+        let logs_builder = LogsBuilder::new(*address);
+
+        logs_builder
+            .log2(
+                SELECTOR_LOG_DEPOSIT,
+                *caller,
+                EvmDataWriter::new().write(*value).build(),
+            )
+            .record(handle)?;
+
+        Ok(succeed(EvmDataWriter::new().write(true).build()))
+    }
+
+    /// Simulate withdraw logic as IWETH-like contract.
+    /// Do nothing.
+    fn withdraw(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.record_cost(GasCost::get())?;
+
+        let mut input = handle.read_input()?;
+
+        let caller = handle.context().caller;
+
+        check_input(&mut input, 1)?;
+
+        let amount: U256 = input.read()?;
+
+        check_input_end(&mut input)?;
+
+        let total_balance: U256 =
+            pallet_erc20_support::Pallet::<Erc20SupportT>::balance_of(&caller.into()).into();
+
+        if amount > total_balance {
+            return Err(PrecompileFailure::Revert {
+                exit_status: ExitRevert::Reverted,
+                output: "trying to withdraw more than owned".into(),
+            });
+        }
+
+        let logs_builder = LogsBuilder::new(handle.context().address);
+
+        logs_builder
+            .log2(
+                SELECTOR_LOG_WITHDRAWAL,
+                caller,
                 EvmDataWriter::new().write(amount).build(),
             )
             .record(handle)?;
