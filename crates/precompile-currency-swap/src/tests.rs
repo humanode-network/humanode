@@ -3,6 +3,7 @@
 use mockall::predicate;
 use pallet_evm::Runner;
 use precompile_utils::EvmDataWriter;
+use sp_core::crypto::UncheckedFrom;
 
 use crate::{mock::*, *};
 
@@ -19,9 +20,10 @@ fn swap_works() {
         let alice_evm = H160::from(hex_literal::hex!(
             "1000000000000000000000000000000000000001"
         ));
-        let alice = AccountId::from(hex_literal::hex!(
+        let alice_h256 = H256::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
+        let alice = AccountId::unchecked_from(alice_h256);
         let alice_evm_balance = 100 * 10u128.pow(18);
         let swap_balance = 10 * 10u128.pow(18);
 
@@ -86,7 +88,15 @@ fn swap_works() {
         );
         assert_eq!(execinfo.used_gas, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
-        assert_eq!(execinfo.logs, Vec::new());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                SELECTOR_LOG_SWAP,
+                alice_evm,
+                alice_h256,
+                EvmDataWriter::new().write(swap_balance).build(),
+            )]
+        );
 
         // Assert state changes.
         assert_eq!(
@@ -111,9 +121,10 @@ fn swap_works_almost_full_balance() {
         let alice_evm = H160::from(hex_literal::hex!(
             "1000000000000000000000000000000000000001"
         ));
-        let alice = AccountId::from(hex_literal::hex!(
+        let alice_h256 = H256::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
+        let alice = AccountId::unchecked_from(alice_h256);
 
         let expected_gas_usage: u64 = 21216 + 200;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
@@ -179,7 +190,15 @@ fn swap_works_almost_full_balance() {
         );
         assert_eq!(execinfo.used_gas, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
-        assert_eq!(execinfo.logs, Vec::new());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                SELECTOR_LOG_SWAP,
+                alice_evm,
+                alice_h256,
+                EvmDataWriter::new().write(swap_balance).build(),
+            )]
+        );
 
         // Assert state changes.
         assert_eq!(
@@ -454,9 +473,10 @@ fn swap_works_full_balance() {
         let alice_evm = H160::from(hex_literal::hex!(
             "1000000000000000000000000000000000000001"
         ));
-        let alice = AccountId::from(hex_literal::hex!(
+        let alice_h256 = H256::from(hex_literal::hex!(
             "1000000000000000000000000000000000000000000000000000000000000001"
         ));
+        let alice = AccountId::unchecked_from(alice_h256);
 
         let expected_gas_usage: u64 = 21216 + 200;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
@@ -523,7 +543,15 @@ fn swap_works_full_balance() {
         );
         assert_eq!(execinfo.used_gas, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
-        assert_eq!(execinfo.logs, Vec::new());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                SELECTOR_LOG_SWAP,
+                alice_evm,
+                alice_h256,
+                EvmDataWriter::new().write(swap_balance).build(),
+            )]
+        );
 
         // Assert state changes.
         assert_eq!(
