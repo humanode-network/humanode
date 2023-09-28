@@ -11,7 +11,9 @@ use pallet_evm::{
     ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
     PrecompileResult,
 };
-use precompile_utils::{succeed, EvmDataWriter, EvmResult, PrecompileHandleExt};
+use precompile_utils::{
+    keccak256, succeed, EvmDataWriter, EvmResult, LogExt, LogsBuilder, PrecompileHandleExt,
+};
 use sp_core::{Get, H160, H256, U256};
 
 #[cfg(test)]
@@ -19,6 +21,9 @@ mod mock;
 
 #[cfg(test)]
 mod tests;
+
+/// Solidity selector of the Swap log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_SWAP: [u8; 32] = keccak256!("Swap(address,bytes32,uint256)");
 
 /// Possible actions for this interface.
 #[precompile_utils::generate_function_selector]
@@ -95,6 +100,7 @@ where
         // address), since the funds have already been transferred to us (precompile) as this point.
         let from: AccountIdFrom = (*address).into();
 
+        let value_u256 = *value;
         let value: FromBalanceFor<CurrencySwapT, AccountIdFrom, AccountIdTo> =
             (*value).try_into().map_err(|_| PrecompileFailure::Error {
                 exit_status: ExitError::Other("value is out of bounds".into()),
@@ -106,8 +112,8 @@ where
                 exit_status: ExitError::Other("exactly one argument is expected".into()),
             })?;
 
-        let to: H256 = input.read()?;
-        let to: [u8; 32] = to.into();
+        let to_h256: H256 = input.read()?;
+        let to: [u8; 32] = to_h256.into();
         let to: AccountIdTo = to.into();
 
         let junk_data = input.read_till_end()?;
@@ -158,6 +164,17 @@ where
         })?;
 
         CurrencySwapT::To::resolve_creating(&to, imbalance);
+
+        let logs_builder = LogsBuilder::new(handle.context().address);
+
+        logs_builder
+            .log3(
+                SELECTOR_LOG_SWAP,
+                handle.context().caller,
+                to_h256,
+                EvmDataWriter::new().write(value_u256).build(),
+            )
+            .record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }

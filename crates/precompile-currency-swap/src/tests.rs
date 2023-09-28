@@ -86,7 +86,15 @@ fn swap_works() {
         );
         assert_eq!(execinfo.used_gas, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
-        assert_eq!(execinfo.logs, Vec::new());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                SELECTOR_LOG_SWAP,
+                alice_evm,
+                H256::from(alice.as_ref()),
+                EvmDataWriter::new().write(swap_balance).build(),
+            )]
+        );
 
         // Assert state changes.
         assert_eq!(
@@ -179,7 +187,15 @@ fn swap_works_almost_full_balance() {
         );
         assert_eq!(execinfo.used_gas, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
-        assert_eq!(execinfo.logs, Vec::new());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                SELECTOR_LOG_SWAP,
+                alice_evm,
+                H256::from(alice.as_ref()),
+                EvmDataWriter::new().write(swap_balance).build(),
+            )]
+        );
 
         // Assert state changes.
         assert_eq!(
@@ -523,7 +539,15 @@ fn swap_works_full_balance() {
         );
         assert_eq!(execinfo.used_gas, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
-        assert_eq!(execinfo.logs, Vec::new());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                SELECTOR_LOG_SWAP,
+                alice_evm,
+                H256::from(alice.as_ref()),
+                EvmDataWriter::new().write(swap_balance).build(),
+            )]
+        );
 
         // Assert state changes.
         assert_eq!(

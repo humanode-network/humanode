@@ -4,7 +4,7 @@
 #![allow(clippy::integer_arithmetic)]
 
 use frame_support::{assert_ok, once_cell::sync::Lazy, traits::Currency};
-use precompile_utils::EvmDataWriter;
+use precompile_utils::{EvmDataWriter, LogsBuilder};
 use sp_core::H160;
 
 use super::*;
@@ -215,7 +215,15 @@ fn currency_swap_precompile_call_works() {
         );
         assert_eq!(execinfo.used_gas, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
-        assert_eq!(execinfo.logs, Vec::new());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                precompile_currency_swap::SELECTOR_LOG_SWAP,
+                evm_account_id("EvmAlice"),
+                H256::from(account_id("Alice").as_ref()),
+                EvmDataWriter::new().write(swap_balance).build(),
+            )]
+        );
 
         // Assert state changes.
         assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
