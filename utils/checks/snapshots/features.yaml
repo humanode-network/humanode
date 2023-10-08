@@ -1627,6 +1627,9 @@
   features: []
 - name: mockall_derive 0.11.4
   features: []
+- name: multer 2.1.0
+  features:
+    - default
 - name: multiaddr 0.16.0
   features:
     - default
@@ -1675,15 +1678,6 @@
     - std
 - name: multimap 0.8.3
   features: []
-- name: multiparty 0.1.0
-  features:
-    - futures-core
-    - futures03
-    - httparse
-    - memchr
-    - pin-project-lite
-    - server
-    - try-lock
 - name: multistream-select 0.12.1
   features: []
 - name: nalgebra 0.27.1
@@ -3165,6 +3159,10 @@
     - std
 - name: spin 0.5.2
   features: []
+- name: spin 0.9.8
+  features:
+    - mutex
+    - spin_mutex
 - name: spki 0.6.0
   features:
     - alloc
@@ -3360,7 +3358,7 @@
     - sync
     - time
     - tokio-util
-- name: tokio-tungstenite 0.18.0
+- name: tokio-tungstenite 0.20.1
   features:
     - connect
     - default
@@ -3490,9 +3488,9 @@
   features: []
 - name: tt-call 1.0.9
   features: []
-- name: tungstenite 0.18.0
+- name: tungstenite 0.20.1
   features:
-    - base64
+    - data-encoding
     - handshake
     - http
     - httparse
@@ -3602,11 +3600,11 @@
   features: []
 - name: want 0.3.0
   features: []
-- name: warp 0.3.4
+- name: warp 0.3.6
   features:
     - default
+    - multer
     - multipart
-    - multiparty
     - tokio-tungstenite
     - websocket
 - name: wasi 0.10.0+wasi-snapshot-preview1
