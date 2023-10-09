@@ -1,4 +1,4 @@
-#![allow(clippy::integer_arithmetic)] // not a problem in tests
+#![allow(clippy::arithmetic_side_effects)] // not a problem in tests
 
 use mockall::predicate;
 use pallet_evm::Runner;

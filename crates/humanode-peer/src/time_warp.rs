@@ -44,7 +44,7 @@ impl TimeWarp {
         let time_since_revival = timestamp.saturating_sub(self.revive_timestamp.into());
         // u64 is big enough for this oveflow to be practicly impossible.
         let warped_timestamp =
-            self.fork_timestamp + self.warp_factor.checked_add(time_since_revival).unwrap();
+            Timestamp::new(self.warp_factor.saturating_add(*self.fork_timestamp));
 
         let timestamp = if warped_timestamp < timestamp {
             tracing::debug!(target: "time-warp", message = format!("timestamp warped: {:?} to {:?} ({:?} since revival)",

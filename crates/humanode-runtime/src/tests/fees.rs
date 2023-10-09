@@ -1,7 +1,7 @@
 //! Tests to verify the fee prices.
 
 // Allow simple integer arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 
 use ethereum::EIP1559Transaction;
 use frame_support::traits::Currency;
@@ -31,7 +31,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                 endowed_accounts
                     .iter()
                     .cloned()
-                    .chain(pot_accounts.into_iter())
+                    .chain(pot_accounts)
                     .map(|k| (k, INIT_BALANCE))
                     .chain(
                         [(
@@ -46,7 +46,6 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                             NativeToEvmSwapBridgePot::account_id(),
                             <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
-                        .into_iter(),
                     )
                     .collect()
             },
@@ -130,7 +129,6 @@ fn keystore() -> sp_keystore::testing::KeyStore {
     store
 }
 
-#[allow(clippy::integer_arithmetic)]
 fn assert_within(effective_fee: Balance, expected_fee: Balance, epsilon: Balance) {
     let lower_threshold = expected_fee - epsilon;
     let upper_threshold = expected_fee + epsilon;

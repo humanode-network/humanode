@@ -1,7 +1,7 @@
 //! Tests to verify currency swap related basic operations.
 
 // Allow simple integer arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 
 use frame_support::{assert_ok, once_cell::sync::Lazy, traits::Currency};
 use precompile_utils::{EvmDataWriter, LogsBuilder};
@@ -34,7 +34,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                 endowed_accounts
                     .iter()
                     .cloned()
-                    .chain(pot_accounts.into_iter())
+                    .chain(pot_accounts)
                     .map(|k| (k, INIT_BALANCE))
                     .chain(
                         [(
@@ -49,7 +49,6 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                             NativeToEvmSwapBridgePot::account_id(),
                             <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
-                        .into_iter(),
                     )
                     .collect()
             },
@@ -89,21 +88,18 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                 evm_endowed_accounts
                     .into_iter()
                     .map(|k| (k, init_genesis_account.clone()))
-                    .chain(
-                        [(
-                            EvmToNativeSwapBridgePot::account_id(),
-                            fp_evm::GenesisAccount {
-                                balance: <EvmBalances as frame_support::traits::Currency<
-                                    EvmAccountId,
-                                >>::minimum_balance()
-                                .into(),
-                                code: Default::default(),
-                                nonce: Default::default(),
-                                storage: Default::default(),
-                            },
-                        )]
-                        .into_iter(),
-                    )
+                    .chain([(
+                        EvmToNativeSwapBridgePot::account_id(),
+                        fp_evm::GenesisAccount {
+                            balance: <EvmBalances as frame_support::traits::Currency<
+                                EvmAccountId,
+                            >>::minimum_balance()
+                            .into(),
+                            code: Default::default(),
+                            nonce: Default::default(),
+                            storage: Default::default(),
+                        },
+                    )])
                     .collect()
             },
         },

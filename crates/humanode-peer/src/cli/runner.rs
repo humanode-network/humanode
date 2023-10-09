@@ -18,7 +18,7 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     // Allow integer arithmetic for tokio select macro.
-    #![allow(clippy::integer_arithmetic)]
+    #![allow(clippy::arithmetic_side_effects)]
     tokio::select! {
         res = future => res?,
         _ = tokio::signal::ctrl_c() => {

@@ -7,7 +7,7 @@ rustflags = [
   "-Wclippy::missing_docs_in_private_items",
   "-Wclippy::clone_on_ref_ptr",
   "-Wclippy::await_holding_lock",
-  "-Wclippy::integer_arithmetic",
+  "-Wclippy::arithmetic_side_effects",
   "-Wclippy::float_arithmetic",
   "-Wclippy::modulo_arithmetic",
   "-Wclippy::cast_lossless",

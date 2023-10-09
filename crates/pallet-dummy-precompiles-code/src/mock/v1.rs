@@ -1,7 +1,7 @@
 //! The v1 mock for the pallet.
 
 // Allow simple integer arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 
 use frame_support::{
     once_cell::sync::Lazy,

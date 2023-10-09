@@ -22,13 +22,13 @@ pub fn on_runtime_upgrade<T: Config>() -> Weight {
 
     if is_version_mismatch || is_forced {
         match Pallet::<T>::initialize() {
-            Ok(w) => weight += w,
+            Ok(w) => weight.saturating_accrue(w),
             Err(err) => sp_tracing::error!("error during bridges initialization: {err:?}"),
         }
 
         <LastInitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
         <LastForceRebalanceAskCounter<T>>::put(current_force_rebalance_ask_counter);
-        weight += T::DbWeight::get().writes(2);
+        weight.saturating_accrue(T::DbWeight::get().writes(2));
     }
 
     weight

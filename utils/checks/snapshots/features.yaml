@@ -2296,7 +2296,7 @@
     - syn-error
 - name: proc-macro-error-attr 1.0.4
   features: []
-- name: proc-macro2 1.0.56
+- name: proc-macro2 1.0.69
   features:
     - default
     - proc-macro
