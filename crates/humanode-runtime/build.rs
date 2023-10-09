@@ -11,6 +11,7 @@ fn main() {
             .with_current_project()
             .import_memory()
             .export_heap_base()
+            .append_to_rust_flags("-C target-feature=-sign-ext")
             .build()
     }
 }
