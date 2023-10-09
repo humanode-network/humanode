@@ -190,7 +190,11 @@ pub mod pallet {
     use codec::MaxEncodedLen;
     use frame_support::{pallet_prelude::*, sp_tracing, storage::types::ValueQuery, BoundedVec};
     use frame_system::pallet_prelude::*;
-    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit, DispatchError};
+    use sp_runtime::{
+        app_crypto::MaybeHash,
+        traits::{AtLeast32Bit, CheckedAdd},
+        DispatchError,
+    };
 
     use super::*;
     use crate::weights::WeightInfo;
@@ -368,12 +372,12 @@ pub mod pallet {
         active_authentications: &'a [Authentication<T::ValidatorPublicKey, T::Moment>],
         auth_ticket: &AuthTicket<T::ValidatorPublicKey>,
     ) -> Result<(), AuthenticationAttemptValidationError> {
-        for consumed_auth_ticket_nonce in consumed_auth_ticket_nonces.iter() {
+        for consumed_auth_ticket_nonce in consumed_auth_ticket_nonces {
             if consumed_auth_ticket_nonce == &auth_ticket.nonce {
                 return Err(AuthenticationAttemptValidationError::NonceConflict);
             }
         }
-        for active_authentication in active_authentications.iter() {
+        for active_authentication in active_authentications {
             if active_authentication.public_key == auth_ticket.public_key {
                 return Err(AuthenticationAttemptValidationError::AlreadyAuthenticated);
             }
@@ -470,7 +474,9 @@ pub mod pallet {
 
                             let authentication = Authentication {
                                 public_key: public_key.clone(),
-                                expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
+                                expires_at: current_moment
+                                    .checked_add(&T::AuthenticationsExpireAfter::get())
+                                    .expect("32 bits should be enough for this overflow to be practicly impossible"),
                             };
 
                             // Run the before hook, abort if needed.

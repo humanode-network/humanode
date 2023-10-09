@@ -183,7 +183,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
             }
             Inactive::<T, I>::put(balance);
 
-            weight += T::DbWeight::get().writes(2);
+            weight.saturating_accrue(T::DbWeight::get().writes(2));
         }
 
         weight

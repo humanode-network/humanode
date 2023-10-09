@@ -191,7 +191,7 @@ impl<T: Config> Pallet<T> {
 
             let evm_total_issuance = T::EvmCurrency::total_issuance();
             let evm_bridge_balance = T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
-            weight += T::DbWeight::get().reads(2);
+            weight.saturating_accrue(T::DbWeight::get().reads(2));
 
             let evm_swappable = evm_total_issuance
                 .checked_sub(&evm_bridge_balance)
@@ -201,12 +201,12 @@ impl<T: Config> Pallet<T> {
             let native_bridge_balance = native_swap_reserved
                 .checked_add(&native_evm_bridge_minimum_balance)
                 .ok_or(ArithmeticError::Overflow)?;
-            weight += T::DbWeight::get().reads(1);
+            weight.saturating_accrue(T::DbWeight::get().reads(1));
 
-            weight += Self::make_native_bridge_balance_be(native_bridge_balance)?;
+            weight.saturating_accrue(Self::make_native_bridge_balance_be(native_bridge_balance)?);
 
             let native_total_issuance = T::NativeCurrency::total_issuance();
-            weight += T::DbWeight::get().reads(1);
+            weight.saturating_accrue(T::DbWeight::get().reads(1));
 
             let native_swappable = native_total_issuance
                 .checked_sub(&native_bridge_balance)
@@ -216,14 +216,14 @@ impl<T: Config> Pallet<T> {
             let evm_bridge_balance = evm_swap_reserved
                 .checked_add(&evm_native_bridge_minimum_balance)
                 .ok_or(ArithmeticError::Overflow)?;
-            weight += T::DbWeight::get().reads(1);
+            weight.saturating_accrue(T::DbWeight::get().reads(1));
 
-            weight += Self::make_evm_bridge_balance_be(evm_bridge_balance)?;
+            weight.saturating_accrue(Self::make_evm_bridge_balance_be(evm_bridge_balance)?);
 
             if !Self::is_balanced()? {
                 return Err::<(), DispatchError>(Error::<T>::NotBalanced.into());
             }
-            weight += T::DbWeight::get().reads(8);
+            weight.saturating_accrue(T::DbWeight::get().reads(8));
 
             debug_assert!(
                 T::NativeCurrency::total_issuance()
@@ -269,10 +269,10 @@ impl<T: Config> Pallet<T> {
                 frame_support::traits::WithdrawReasons::TRANSFER,
                 frame_support::traits::ExistenceRequirement::KeepAlive,
             )?;
-            weight += T::DbWeight::get().writes(1);
+            weight.saturating_accrue(T::DbWeight::get().writes(1));
 
             T::NativeCurrency::resolve_creating(&T::NativeEvmBridgePot::get(), imbalance);
-            weight += T::DbWeight::get().writes(1);
+            weight.saturating_accrue(T::DbWeight::get().writes(1));
 
             return Ok(weight);
         }
@@ -287,7 +287,7 @@ impl<T: Config> Pallet<T> {
                     frame_support::traits::WithdrawReasons::TRANSFER,
                     frame_support::traits::ExistenceRequirement::KeepAlive,
                 )?;
-                weight += T::DbWeight::get().writes(1);
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
 
                 // We can safely ignore the result as overflow can't be reached.
                 // current_native_bridge_balance < amount. The resulted balance is equal to amount.
@@ -295,7 +295,7 @@ impl<T: Config> Pallet<T> {
                     &T::NativeEvmBridgePot::get(),
                     imbalance,
                 );
-                weight += T::DbWeight::get().writes(1);
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
             }
             Ordering::Greater => {
                 let imbalance = T::NativeCurrency::withdraw(
@@ -306,7 +306,7 @@ impl<T: Config> Pallet<T> {
                     frame_support::traits::WithdrawReasons::TRANSFER,
                     frame_support::traits::ExistenceRequirement::KeepAlive,
                 )?;
-                weight += T::DbWeight::get().writes(1);
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
 
                 // We can safely ignore the result as overflow can't be reached.
                 // current_native_bridge_balance + current_native_treasury < total_issuance.
@@ -315,7 +315,7 @@ impl<T: Config> Pallet<T> {
                     &T::NativeTreasuryPot::get(),
                     imbalance,
                 );
-                weight += T::DbWeight::get().writes(1);
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
             }
             Ordering::Equal => {}
         }
@@ -342,10 +342,10 @@ impl<T: Config> Pallet<T> {
 
         if current_evm_bridge_balance == Zero::zero() {
             let imbalance = T::EvmCurrency::issue(amount);
-            weight += T::DbWeight::get().writes(1);
+            weight.saturating_accrue(T::DbWeight::get().writes(1));
 
             T::EvmCurrency::resolve_creating(&T::EvmNativeBridgePot::get(), imbalance);
-            weight += T::DbWeight::get().writes(1);
+            weight.saturating_accrue(T::DbWeight::get().writes(1));
 
             return Ok(weight);
         }
@@ -357,13 +357,13 @@ impl<T: Config> Pallet<T> {
                         .checked_sub(&current_evm_bridge_balance)
                         .expect("current_evm_bridge_balance is less than amount; qed."),
                 );
-                weight += T::DbWeight::get().writes(1);
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
 
                 // We can safely ignore the result as overflow can't be reached.
                 // current_evm_bridge_balance < amount. The resulted balance is equal to amount.
                 let _ =
                     T::EvmCurrency::resolve_into_existing(&T::EvmNativeBridgePot::get(), imbalance);
-                weight += T::DbWeight::get().writes(1);
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
             }
             Ordering::Greater => {
                 let imbalance = T::EvmCurrency::burn(
@@ -371,7 +371,7 @@ impl<T: Config> Pallet<T> {
                         .checked_sub(&amount)
                         .expect("current_evm_bridge_balance is greater than amount; qed."),
                 );
-                weight += T::DbWeight::get().writes(1);
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
 
                 // We can safely ignore the result as underflow can't be reached.
                 // current_evm_bridge_balance > amount => imbalance < current_evm_bridge_balance.
@@ -381,7 +381,7 @@ impl<T: Config> Pallet<T> {
                     frame_support::traits::WithdrawReasons::RESERVE,
                     frame_support::traits::ExistenceRequirement::KeepAlive,
                 );
-                weight += T::DbWeight::get().writes(1);
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
             }
             Ordering::Equal => {}
         }

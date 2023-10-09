@@ -1,4 +1,4 @@
-#![allow(clippy::integer_arithmetic)] // not a problem in tests
+#![allow(clippy::arithmetic_side_effects)] // not a problem in tests
 
 use pallet_evm::Runner;
 use precompile_utils::{testing::*, EvmDataWriter};

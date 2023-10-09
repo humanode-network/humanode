@@ -91,11 +91,11 @@ pub mod pallet {
             let is_forced = last_force_execute_ask_counter < current_force_execute_ask_counter;
 
             if is_version_mismatch || is_forced {
-                weight += Self::precompiles_addresses_add_dummy_code();
+                weight.saturating_accrue(Self::precompiles_addresses_add_dummy_code());
 
                 <LastExecutionVersion<T>>::put(CURRENT_EXECUTION_VERSION);
                 <LastForceExecuteAskCounter<T>>::put(current_force_execute_ask_counter);
-                weight += T::DbWeight::get().writes(2);
+                weight.saturating_accrue(T::DbWeight::get().writes(2));
             }
 
             weight
@@ -136,11 +136,11 @@ impl<T: Config> Pallet<T> {
 
         for precompile_address in &T::PrecompilesAddresses::get() {
             let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
-            weight += T::DbWeight::get().reads(1);
+            weight.saturating_accrue(T::DbWeight::get().reads(1));
 
             if code != DUMMY_CODE {
                 pallet_evm::Pallet::<T>::create_account(*precompile_address, DUMMY_CODE.to_vec());
-                weight += T::DbWeight::get().reads_writes(1, 1);
+                weight.saturating_accrue(T::DbWeight::get().reads_writes(1, 1));
             }
         }
 

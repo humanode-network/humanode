@@ -1,7 +1,7 @@
 //! Tests to verify token claims and vesting logic.
 
 // Allow simple integer arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
@@ -117,7 +117,7 @@ fn new_test_ext() -> sp_io::TestExternalities {
                 endowed_accounts
                     .iter()
                     .cloned()
-                    .chain(pot_accounts.into_iter())
+                    .chain(pot_accounts)
                     .map(|k| (k, INIT_BALANCE))
                     .chain(
                         [(
@@ -128,7 +128,6 @@ fn new_test_ext() -> sp_io::TestExternalities {
                             NativeToEvmSwapBridgePot::account_id(),
                             <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
-                        .into_iter(),
                     )
                     .collect()
             },
