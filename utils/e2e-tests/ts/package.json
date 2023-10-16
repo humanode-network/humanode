@@ -8,7 +8,7 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@polkadot/api": "^10.9.1",
+    "@polkadot/api": "^10.10.1",
     "@types/node": "16.18.54",
     "@vitest/expect": "^0.34.5",
     "axios": "^1.5.0",
