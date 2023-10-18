@@ -7715,9 +7715,9 @@ dependencies = [
 
 [[package]]
 name = "rustix"
-version = "0.35.13"
+version = "0.35.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "727a1a6d65f786ec22df8a81ca3121107f235970dc1705ed681d3e6e8b9cd5f9"
+checksum = "413c4d41e2f1b0814c63567d11618483de0bd64f451b452f2ca43896579486ba"
 dependencies = [
  "bitflags",
  "errno 0.2.8",
@@ -8167,7 +8167,7 @@ dependencies = [
  "libc",
  "log",
  "once_cell",
- "rustix 0.35.13",
+ "rustix 0.35.15",
  "sc-allocator",
  "sc-executor-common",
  "sp-runtime-interface",
@@ -11403,7 +11403,7 @@ dependencies = [
  "directories-next",
  "file-per-thread-logger",
  "log",
- "rustix 0.35.13",
+ "rustix 0.35.15",
  "serde",
  "sha2 0.9.9",
  "toml",
@@ -11466,7 +11466,7 @@ dependencies = [
  "log",
  "object 0.29.0",
  "rustc-demangle",
- "rustix 0.35.13",
+ "rustix 0.35.15",
  "serde",
  "target-lexicon",
  "thiserror",
@@ -11484,7 +11484,7 @@ checksum = "f671b588486f5ccec8c5a3dba6b4c07eac2e66ab8c60e6f4e53717c77f709731"
 dependencies = [
  "object 0.29.0",
  "once_cell",
- "rustix 0.35.13",
+ "rustix 0.35.15",
 ]
 
 [[package]]
@@ -11504,7 +11504,7 @@ dependencies = [
  "memoffset 0.6.5",
  "paste",
  "rand 0.8.5",
- "rustix 0.35.13",
+ "rustix 0.35.15",
  "thiserror",
  "wasmtime-asm-macros",
  "wasmtime-environ",
