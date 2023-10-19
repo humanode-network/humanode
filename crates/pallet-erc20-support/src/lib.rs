@@ -3,7 +3,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
-    sp_runtime::{traits::CheckedSub, DispatchResult},
+    sp_runtime::DispatchResult,
+    sp_std::ops::Sub,
     storage::with_storage_layer,
     traits::{Currency, StorageVersion},
 };
@@ -41,7 +42,11 @@ type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountIdOf<T, I>
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug};
+
+    use codec::EncodeLike;
+    use frame_support::{
+        dispatch::Codec, pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug,
+    };
 
     use super::*;
 
@@ -65,6 +70,17 @@ pub mod pallet {
         /// The currency to be exposed as ERC20 token.
         type Currency: Currency<AccountIdOf<Self, I>>;
 
+        /// Allowance balance type.
+        type AllowanceBalance: From<BalanceOf<Self, I>>
+            + Sub<Output = Self::AllowanceBalance>
+            + PartialOrd
+            + Default
+            + Copy
+            + Codec
+            + EncodeLike
+            + MaxEncodedLen
+            + scale_info::TypeInfo;
+
         /// Interface into ERC20 metadata implementation.
         type Metadata: Metadata;
     }
@@ -79,7 +95,7 @@ pub mod pallet {
         AccountIdOf<T, I>,
         Blake2_128Concat,
         AccountIdOf<T, I>,
-        BalanceOf<T, I>,
+        T::AllowanceBalance,
         ValueQuery,
     >;
 
@@ -104,12 +120,19 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
     /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
     /// owner. This is zero by default.
-    pub fn allowance(owner: &AccountIdOf<T, I>, spender: &AccountIdOf<T, I>) -> BalanceOf<T, I> {
+    pub fn allowance(
+        owner: &AccountIdOf<T, I>,
+        spender: &AccountIdOf<T, I>,
+    ) -> T::AllowanceBalance {
         <Approvals<T, I>>::get(owner, spender)
     }
 
     /// Sets amount as the allowance of spender over the caller’s tokens.
-    pub fn approve(owner: AccountIdOf<T, I>, spender: AccountIdOf<T, I>, amount: BalanceOf<T, I>) {
+    pub fn approve(
+        owner: AccountIdOf<T, I>,
+        spender: AccountIdOf<T, I>,
+        amount: T::AllowanceBalance,
+    ) {
         <Approvals<T, I>>::insert(owner, spender, amount);
     }
 
@@ -142,9 +165,12 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
         with_storage_layer(move || {
             <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
                 // Remove "value" from allowed, exit if underflow.
-                let allowed = entry
-                    .checked_sub(&amount)
-                    .ok_or(Error::<T, I>::SpendMoreThanAllowed)?;
+
+                if T::AllowanceBalance::from(amount) > *entry {
+                    return Err(Error::<T, I>::SpendMoreThanAllowed);
+                }
+
+                let allowed = entry.sub(amount.into());
 
                 // Update allowed value.
                 *entry = allowed;

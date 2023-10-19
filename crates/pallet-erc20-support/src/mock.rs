@@ -9,7 +9,7 @@ use frame_support::{
     },
     traits::{ConstU32, ConstU64},
 };
-use sp_core::H256;
+use sp_core::{H256, U256};
 
 use crate::{self as pallet_erc20_support};
 
@@ -91,6 +91,7 @@ impl crate::Metadata for BalancesErc20BalancesMetadata {
 impl pallet_erc20_support::Config for Test {
     type AccountId = u64;
     type Currency = Balances;
+    type AllowanceBalance = U256;
     type Metadata = BalancesErc20BalancesMetadata;
 }
 
