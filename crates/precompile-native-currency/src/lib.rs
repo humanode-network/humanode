@@ -88,7 +88,7 @@ where
     Erc20SupportT: pallet_erc20_support::Config,
     AccountIdOf<Erc20SupportT>: From<H160>,
     BalanceOf<Erc20SupportT>: Into<U256> + TryFrom<U256>,
-    AllowanceOf<Erc20SupportT>: From<U256> + EvmData,
+    AllowanceOf<Erc20SupportT>: TryFrom<U256> + EvmData,
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
@@ -119,7 +119,7 @@ where
     Erc20SupportT: pallet_erc20_support::Config,
     AccountIdOf<Erc20SupportT>: From<H160>,
     BalanceOf<Erc20SupportT>: Into<U256> + TryFrom<U256>,
-    AllowanceOf<Erc20SupportT>: From<U256> + EvmData,
+    AllowanceOf<Erc20SupportT>: TryFrom<U256> + EvmData,
     GasCost: Get<u64>,
 {
     /// Returns the name of the token.
@@ -212,7 +212,9 @@ where
         pallet_erc20_support::Pallet::<Erc20SupportT>::approve(
             owner.into(),
             spender.into(),
-            amount.into(),
+            amount.try_into().map_err(|_| PrecompileFailure::Error {
+                exit_status: ExitError::Other("allowance convertation error from U256".into()),
+            })?,
         );
 
         let logs_builder = LogsBuilder::new(handle.context().address);
