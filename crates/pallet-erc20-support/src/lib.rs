@@ -45,10 +45,7 @@ type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountIdOf<T, I>
 #[frame_support::pallet]
 pub mod pallet {
 
-    use codec::EncodeLike;
-    use frame_support::{
-        dispatch::Codec, pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug,
-    };
+    use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug};
     use frame_system::pallet_prelude::*;
 
     use super::*;
@@ -74,15 +71,13 @@ pub mod pallet {
         type Currency: Currency<AccountIdOf<Self, I>>;
 
         /// Allowance type.
-        type Allowance: From<BalanceOf<Self, I>>
-            + Sub<Output = Self::Allowance>
-            + PartialOrd
+        type Allowance: Parameter
             + Default
             + Copy
-            + Codec
-            + EncodeLike
-            + MaxEncodedLen
-            + scale_info::TypeInfo;
+            + From<BalanceOf<Self, I>>
+            + Sub<Output = Self::Allowance>
+            + PartialOrd
+            + MaxEncodedLen;
 
         /// Interface into ERC20 metadata implementation.
         type Metadata: Metadata;
