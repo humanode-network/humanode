@@ -1,4 +1,4 @@
-//! A substrate pallet that exposes currency instance using the ERC20 interface standard..
+//! A substrate pallet that exposes currency instance using the ERC20 interface standard.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -9,6 +9,8 @@ use frame_support::{
     traits::{Currency, StorageVersion},
 };
 pub use pallet::*;
+
+mod migrations;
 
 #[cfg(test)]
 mod mock;
@@ -29,7 +31,7 @@ pub trait Metadata {
 }
 
 /// The current storage version.
-const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 /// Utility alias for easy access to the [`Config::AccountId`].
 type AccountIdOf<T, I> = <T as Config<I>>::AccountId;
@@ -47,6 +49,7 @@ pub mod pallet {
     use frame_support::{
         dispatch::Codec, pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug,
     };
+    use frame_system::pallet_prelude::*;
 
     use super::*;
 
@@ -104,6 +107,24 @@ pub mod pallet {
     pub enum Error<T, I = ()> {
         /// Spender can't transfer tokens more than allowed.
         SpendMoreThanAllowed,
+    }
+
+    #[pallet::hooks]
+    impl<T: Config<I>, I: 'static> Hooks<BlockNumberFor<T>> for Pallet<T, I> {
+        fn on_runtime_upgrade() -> Weight {
+            migrations::v1::migrate::<T, I>()
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+            Ok(migrations::v1::pre_migrate::<T, I>())
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+            migrations::v1::post_migrate::<T, I>(state);
+            Ok(())
+        }
     }
 }
 
