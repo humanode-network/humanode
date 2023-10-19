@@ -175,11 +175,13 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
             <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
                 // Remove "value" from allowed, exit if underflow.
 
-                if T::Allowance::from(amount) > *entry {
+                let amount_as_allowance = T::Allowance::from(amount);
+
+                if amount_as_allowance > *entry {
                     return Err(Error::<T, I>::SpendMoreThanAllowed);
                 }
 
-                let allowed = entry.sub(amount.into());
+                let allowed = entry.sub(amount_as_allowance);
 
                 // Update allowed value.
                 *entry = allowed;
