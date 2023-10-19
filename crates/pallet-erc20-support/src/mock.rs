@@ -91,7 +91,7 @@ impl crate::Metadata for BalancesErc20BalancesMetadata {
 impl pallet_erc20_support::Config for Test {
     type AccountId = u64;
     type Currency = Balances;
-    type AllowanceBalance = U256;
+    type Allowance = U256;
     type Metadata = BalancesErc20BalancesMetadata;
 }
 

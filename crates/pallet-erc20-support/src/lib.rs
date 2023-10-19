@@ -73,9 +73,9 @@ pub mod pallet {
         /// The currency to be exposed as ERC20 token.
         type Currency: Currency<AccountIdOf<Self, I>>;
 
-        /// Allowance balance type.
-        type AllowanceBalance: From<BalanceOf<Self, I>>
-            + Sub<Output = Self::AllowanceBalance>
+        /// Allowance type.
+        type Allowance: From<BalanceOf<Self, I>>
+            + Sub<Output = Self::Allowance>
             + PartialOrd
             + Default
             + Copy
@@ -98,7 +98,7 @@ pub mod pallet {
         AccountIdOf<T, I>,
         Blake2_128Concat,
         AccountIdOf<T, I>,
-        T::AllowanceBalance,
+        T::Allowance,
         ValueQuery,
     >;
 
@@ -141,19 +141,12 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
     /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
     /// owner. This is zero by default.
-    pub fn allowance(
-        owner: &AccountIdOf<T, I>,
-        spender: &AccountIdOf<T, I>,
-    ) -> T::AllowanceBalance {
+    pub fn allowance(owner: &AccountIdOf<T, I>, spender: &AccountIdOf<T, I>) -> T::Allowance {
         <Approvals<T, I>>::get(owner, spender)
     }
 
     /// Sets amount as the allowance of spender over the caller’s tokens.
-    pub fn approve(
-        owner: AccountIdOf<T, I>,
-        spender: AccountIdOf<T, I>,
-        amount: T::AllowanceBalance,
-    ) {
+    pub fn approve(owner: AccountIdOf<T, I>, spender: AccountIdOf<T, I>, amount: T::Allowance) {
         <Approvals<T, I>>::insert(owner, spender, amount);
     }
 
@@ -187,7 +180,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
             <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
                 // Remove "value" from allowed, exit if underflow.
 
-                if T::AllowanceBalance::from(amount) > *entry {
+                if T::Allowance::from(amount) > *entry {
                     return Err(Error::<T, I>::SpendMoreThanAllowed);
                 }
 
