@@ -212,9 +212,7 @@ where
         pallet_erc20_support::Pallet::<Erc20SupportT>::approve(
             owner.into(),
             spender.into(),
-            amount.try_into().map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("value is out of bounds".into()),
-            })?,
+            amount.into(),
         );
 
         let logs_builder = LogsBuilder::new(handle.context().address);
