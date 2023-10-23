@@ -1,8 +1,6 @@
 //! Migration to Version 1.
 
 use frame_support::{sp_tracing::info, traits::Get, weights::Weight};
-#[cfg(feature = "try-runtime")]
-use sp_std::vec::Vec;
 
 use crate::BalanceOf;
 use crate::{Approvals, Config};
@@ -19,20 +17,4 @@ pub fn migrate<T: Config<I>, I: 'static>() -> Weight {
     });
 
     weight
-}
-
-/// Check the state before the migration.
-///
-/// Panics if anything goes wrong.
-#[cfg(feature = "try-runtime")]
-pub fn pre_migrate<T: Config<I>, I: 'static>() -> Vec<u8> {
-    sp_std::vec![]
-}
-
-/// Check the state after the migration.
-///
-/// Panics if anything goes wrong.
-#[cfg(feature = "try-runtime")]
-pub fn post_migrate<T: Config<I>, I: 'static>(_state: Vec<u8>) {
-    // Nothing to check.
 }

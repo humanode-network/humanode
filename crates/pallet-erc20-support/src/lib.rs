@@ -124,12 +124,11 @@ pub mod pallet {
 
         #[cfg(feature = "try-runtime")]
         fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-            Ok(migrations::v1::pre_migrate::<T, I>())
+            Ok(sp_std::vec![])
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
-            migrations::v1::post_migrate::<T, I>(state);
+        fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
             Ok(())
         }
     }
