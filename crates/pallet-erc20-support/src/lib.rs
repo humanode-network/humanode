@@ -117,8 +117,6 @@ pub mod pallet {
                 weight.saturating_accrue(T::DbWeight::get().writes(1));
             }
 
-            assert_eq!(<Pallet<T, I>>::on_chain_storage_version(), STORAGE_VERSION);
-
             weight
         }
 
@@ -129,6 +127,10 @@ pub mod pallet {
 
         #[cfg(feature = "try-runtime")]
         fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
+            assert_eq!(
+                <Pallet<T, I>>::on_chain_storage_version(),
+                <Pallet<T, I>>::current_storage_version()
+            );
             Ok(())
         }
     }
