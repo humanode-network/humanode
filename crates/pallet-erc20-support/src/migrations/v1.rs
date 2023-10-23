@@ -38,16 +38,16 @@ pub fn migrate<T: Config<I>, I: 'static>() -> Weight {
 ///
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
-pub fn pre_migrate<T: Config>() -> Vec<u8> {
-    vec![]
+pub fn pre_migrate<T: Config<I>, I: 'static>() -> Vec<u8> {
+    sp_std::vec![]
 }
 
 /// Check the state after the migration.
 ///
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
-pub fn post_migrate<T: Config>(state: Vec<u8>) {
+pub fn post_migrate<T: Config<I>, I: 'static>(_state: Vec<u8>) {
     // Ensure version is updated correctly.
-    let onchain = <Pallet<T>>::on_chain_storage_version();
+    let onchain = <Pallet<T, I>>::on_chain_storage_version();
     assert_eq!(onchain, 1);
 }

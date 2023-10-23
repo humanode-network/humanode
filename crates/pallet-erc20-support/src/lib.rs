@@ -47,6 +47,8 @@ pub mod pallet {
 
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug};
     use frame_system::pallet_prelude::*;
+    #[cfg(feature = "try-runtime")]
+    use sp_std::vec::Vec;
 
     use super::*;
 
