@@ -117,6 +117,8 @@ pub mod pallet {
                 weight.saturating_accrue(T::DbWeight::get().writes(1));
             }
 
+            assert_eq!(<Pallet<T, I>>::on_chain_storage_version(), STORAGE_VERSION);
+
             weight
         }
 
