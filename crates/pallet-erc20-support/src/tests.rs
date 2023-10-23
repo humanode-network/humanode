@@ -1,4 +1,5 @@
 use frame_support::{assert_noop, assert_ok, traits::Currency};
+use sp_core::U256;
 
 use crate::{mock::*, *};
 
@@ -54,6 +55,25 @@ fn approve_works() {
             Erc20Balances::approvals(alice, bob),
             approved_balance.into()
         );
+    })
+}
+
+/// This test verifies that approval logic works as expected in case approving `U256::MAX-1` value.
+#[test]
+fn approve_almost_max_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42_u64;
+        let bob = 52_u64;
+        let approved_balance = U256::MAX - 1;
+
+        // Check test preconditions.
+        assert_eq!(Erc20Balances::approvals(alice, bob), 0.into());
+
+        // Store alice-bob approval.
+        Erc20Balances::approve(alice, bob, approved_balance);
+
+        // Verify alice-bob approval existence.
+        assert_eq!(Erc20Balances::approvals(alice, bob), approved_balance);
     })
 }
 
