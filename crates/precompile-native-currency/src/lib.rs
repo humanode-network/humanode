@@ -213,7 +213,7 @@ where
             owner.into(),
             spender.into(),
             amount.try_into().map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("allowance convertation error from U256".into()),
+                exit_status: ExitError::Other("allowance is out of bounds".into()),
             })?,
         );
 
