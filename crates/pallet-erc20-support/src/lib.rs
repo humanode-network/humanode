@@ -109,7 +109,15 @@ pub mod pallet {
     #[pallet::hooks]
     impl<T: Config<I>, I: 'static> Hooks<BlockNumberFor<T>> for Pallet<T, I> {
         fn on_runtime_upgrade() -> Weight {
-            migrations::v1::migrate::<T, I>()
+            let mut weight = T::DbWeight::get().reads(1);
+
+            if StorageVersion::get::<Pallet<T, I>>() == 0 {
+                weight.saturating_accrue(migrations::v1::migrate::<T, I>());
+                StorageVersion::new(1).put::<Pallet<T, I>>();
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
+            }
+
+            weight
         }
 
         #[cfg(feature = "try-runtime")]

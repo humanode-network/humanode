@@ -1,36 +1,23 @@
 //! Migration to Version 1.
 
-use frame_support::{dispatch::GetStorageVersion, sp_tracing::info, traits::Get, weights::Weight};
+use frame_support::{sp_tracing::info, traits::Get, weights::Weight};
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
 
 use crate::BalanceOf;
-use crate::{Approvals, Config, Pallet};
+use crate::{Approvals, Config};
 
 /// Migrate from version 0 to 1.
 pub fn migrate<T: Config<I>, I: 'static>() -> Weight {
-    let current = <Pallet<T, I>>::current_storage_version();
-    let onchain = <Pallet<T, I>>::on_chain_storage_version();
+    info!("Running migration to v1");
 
-    // Read the onchain version.
-    let mut weight: Weight = T::DbWeight::get().reads(1);
+    let mut weight: Weight = T::DbWeight::get().reads(0);
 
-    info!(message = "Running migration to v1", from = ?onchain);
+    <Approvals<T, I>>::translate(|_owner, _spender, amount: BalanceOf<T, I>| {
+        weight.saturating_accrue(T::DbWeight::get().reads_writes(1, 1));
+        Some(amount.into())
+    });
 
-    if onchain == 1 {
-        info!(message = "Already at version 1, nothing to do");
-        return weight;
-    }
-
-    <Approvals<T, I>>::translate(|_owner, _spender, amount: BalanceOf<T, I>| Some(amount.into()));
-
-    // Set new version.
-    current.put::<Pallet<T, I>>();
-
-    // Write the onchain version.
-    weight = weight.saturating_add(T::DbWeight::get().writes(1));
-
-    // Done.
     weight
 }
 
