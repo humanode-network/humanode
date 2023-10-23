@@ -808,6 +808,7 @@ impl pallet_erc20_support::Metadata for EvmBalancesErc20Metadata {
 impl pallet_erc20_support::Config for Runtime {
     type AccountId = EvmAccountId;
     type Currency = EvmBalances;
+    type Allowance = U256;
     type Metadata = EvmBalancesErc20Metadata;
 }
 

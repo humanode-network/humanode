@@ -1,13 +1,16 @@
-//! A substrate pallet that exposes currency instance using the ERC20 interface standard..
+//! A substrate pallet that exposes currency instance using the ERC20 interface standard.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
-    sp_runtime::{traits::CheckedSub, DispatchResult},
+    sp_runtime::DispatchResult,
+    sp_std::ops::Sub,
     storage::with_storage_layer,
     traits::{Currency, StorageVersion},
 };
 pub use pallet::*;
+
+mod migrations;
 
 #[cfg(test)]
 mod mock;
@@ -28,7 +31,7 @@ pub trait Metadata {
 }
 
 /// The current storage version.
-const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
+const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 
 /// Utility alias for easy access to the [`Config::AccountId`].
 type AccountIdOf<T, I> = <T as Config<I>>::AccountId;
@@ -41,7 +44,11 @@ type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountIdOf<T, I>
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
+
+    #[cfg(feature = "try-runtime")]
+    use frame_support::sp_std::{vec, vec::Vec};
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug};
+    use frame_system::pallet_prelude::*;
 
     use super::*;
 
@@ -65,6 +72,15 @@ pub mod pallet {
         /// The currency to be exposed as ERC20 token.
         type Currency: Currency<AccountIdOf<Self, I>>;
 
+        /// Allowance type.
+        type Allowance: Parameter
+            + Default
+            + Copy
+            + From<BalanceOf<Self, I>>
+            + Sub<Output = Self::Allowance>
+            + PartialOrd
+            + MaxEncodedLen;
+
         /// Interface into ERC20 metadata implementation.
         type Metadata: Metadata;
     }
@@ -79,7 +95,7 @@ pub mod pallet {
         AccountIdOf<T, I>,
         Blake2_128Concat,
         AccountIdOf<T, I>,
-        BalanceOf<T, I>,
+        T::Allowance,
         ValueQuery,
     >;
 
@@ -88,6 +104,35 @@ pub mod pallet {
     pub enum Error<T, I = ()> {
         /// Spender can't transfer tokens more than allowed.
         SpendMoreThanAllowed,
+    }
+
+    #[pallet::hooks]
+    impl<T: Config<I>, I: 'static> Hooks<BlockNumberFor<T>> for Pallet<T, I> {
+        fn on_runtime_upgrade() -> Weight {
+            let mut weight = T::DbWeight::get().reads(1);
+
+            if StorageVersion::get::<Pallet<T, I>>() == 0 {
+                weight.saturating_accrue(migrations::v1::migrate::<T, I>());
+                StorageVersion::new(1).put::<Pallet<T, I>>();
+                weight.saturating_accrue(T::DbWeight::get().writes(1));
+            }
+
+            weight
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+            Ok(vec![])
+        }
+
+        #[cfg(feature = "try-runtime")]
+        fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
+            assert_eq!(
+                <Pallet<T, I>>::on_chain_storage_version(),
+                <Pallet<T, I>>::current_storage_version()
+            );
+            Ok(())
+        }
     }
 }
 
@@ -104,12 +149,12 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
     /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
     /// owner. This is zero by default.
-    pub fn allowance(owner: &AccountIdOf<T, I>, spender: &AccountIdOf<T, I>) -> BalanceOf<T, I> {
+    pub fn allowance(owner: &AccountIdOf<T, I>, spender: &AccountIdOf<T, I>) -> T::Allowance {
         <Approvals<T, I>>::get(owner, spender)
     }
 
     /// Sets amount as the allowance of spender over the caller’s tokens.
-    pub fn approve(owner: AccountIdOf<T, I>, spender: AccountIdOf<T, I>, amount: BalanceOf<T, I>) {
+    pub fn approve(owner: AccountIdOf<T, I>, spender: AccountIdOf<T, I>, amount: T::Allowance) {
         <Approvals<T, I>>::insert(owner, spender, amount);
     }
 
@@ -142,9 +187,14 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
         with_storage_layer(move || {
             <Approvals<T, I>>::mutate(sender.clone(), caller, |entry| {
                 // Remove "value" from allowed, exit if underflow.
-                let allowed = entry
-                    .checked_sub(&amount)
-                    .ok_or(Error::<T, I>::SpendMoreThanAllowed)?;
+
+                let amount_as_allowance = T::Allowance::from(amount);
+
+                if amount_as_allowance > *entry {
+                    return Err(Error::<T, I>::SpendMoreThanAllowed);
+                }
+
+                let allowed = entry.sub(amount_as_allowance);
 
                 // Update allowed value.
                 *entry = allowed;

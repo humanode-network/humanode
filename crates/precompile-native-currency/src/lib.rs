@@ -13,7 +13,7 @@ use pallet_evm::{
     PrecompileResult,
 };
 use precompile_utils::{
-    keccak256, succeed, Address, Bytes, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
+    keccak256, succeed, Address, Bytes, EvmData, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
     LogsBuilder, PrecompileHandleExt,
 };
 use sp_core::{Get, H160, U256};
@@ -42,6 +42,9 @@ type AccountIdOf<T> = <T as pallet_erc20_support::Config>::AccountId;
 /// Utility alias for easy access to the [`Currency::Balance`] of the [`pallet_erc20_support::Config::Currency`] type.
 type BalanceOf<T> =
     <<T as pallet_erc20_support::Config>::Currency as Currency<AccountIdOf<T>>>::Balance;
+
+/// Utility alias for easy access to the [`pallet_erc20_support::Config::Allowance`].
+type AllowanceOf<T> = <T as pallet_erc20_support::Config>::Allowance;
 
 /// Possible actions for this interface.
 #[precompile_utils::generate_function_selector]
@@ -85,6 +88,7 @@ where
     Erc20SupportT: pallet_erc20_support::Config,
     AccountIdOf<Erc20SupportT>: From<H160>,
     BalanceOf<Erc20SupportT>: Into<U256> + TryFrom<U256>,
+    AllowanceOf<Erc20SupportT>: TryFrom<U256> + EvmData,
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
@@ -115,6 +119,7 @@ where
     Erc20SupportT: pallet_erc20_support::Config,
     AccountIdOf<Erc20SupportT>: From<H160>,
     BalanceOf<Erc20SupportT>: Into<U256> + TryFrom<U256>,
+    AllowanceOf<Erc20SupportT>: TryFrom<U256> + EvmData,
     GasCost: Get<u64>,
 {
     /// Returns the name of the token.
@@ -179,13 +184,10 @@ where
 
         Ok(succeed(
             EvmDataWriter::new()
-                .write(
-                    pallet_erc20_support::Pallet::<Erc20SupportT>::allowance(
-                        &owner.into(),
-                        &spender.into(),
-                    )
-                    .into(),
-                )
+                .write(pallet_erc20_support::Pallet::<Erc20SupportT>::allowance(
+                    &owner.into(),
+                    &spender.into(),
+                ))
                 .build(),
         ))
     }
@@ -211,7 +213,7 @@ where
             owner.into(),
             spender.into(),
             amount.try_into().map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("value is out of bounds".into()),
+                exit_status: ExitError::Other("allowance is out of bounds".into()),
             })?,
         );
 

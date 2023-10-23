@@ -1,4 +1,5 @@
 use frame_support::{assert_noop, assert_ok, traits::Currency};
+use sp_core::U256;
 
 use crate::{mock::*, *};
 
@@ -44,7 +45,29 @@ fn approve_works() {
         let approved_balance = 999;
 
         // Check test preconditions.
-        assert_eq!(Erc20Balances::approvals(alice, bob), 0);
+        assert_eq!(Erc20Balances::approvals(alice, bob), 0.into());
+
+        // Store alice-bob approval.
+        Erc20Balances::approve(alice, bob, approved_balance.into());
+
+        // Verify alice-bob approval existence.
+        assert_eq!(
+            Erc20Balances::approvals(alice, bob),
+            approved_balance.into()
+        );
+    })
+}
+
+/// This test verifies that approval logic works as expected in case approving `U256::MAX-1` value.
+#[test]
+fn approve_max_works() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice = 42_u64;
+        let bob = 52_u64;
+        let approved_balance = U256::MAX - 1;
+
+        // Check test preconditions.
+        assert_eq!(Erc20Balances::approvals(alice, bob), 0.into());
 
         // Store alice-bob approval.
         Erc20Balances::approve(alice, bob, approved_balance);
@@ -64,17 +87,23 @@ fn approve_overwrite_works() {
         let approved_balance_new = 1000;
 
         // Check test preconditions.
-        assert_eq!(Erc20Balances::approvals(alice, bob), 0);
+        assert_eq!(Erc20Balances::approvals(alice, bob), 0.into());
 
         // Alice approves balance value for Bob.
-        Erc20Balances::approve(alice, bob, approved_balance);
+        Erc20Balances::approve(alice, bob, approved_balance.into());
         // Verify alice-bob approval existence.
-        assert_eq!(Erc20Balances::approvals(alice, bob), approved_balance);
+        assert_eq!(
+            Erc20Balances::approvals(alice, bob),
+            approved_balance.into()
+        );
 
         // Alice approves new balance value for Bob.
-        Erc20Balances::approve(alice, bob, approved_balance_new);
+        Erc20Balances::approve(alice, bob, approved_balance_new.into());
         // Verify alice-bob approval existence.
-        assert_eq!(Erc20Balances::approvals(alice, bob), approved_balance_new);
+        assert_eq!(
+            Erc20Balances::approvals(alice, bob),
+            approved_balance_new.into()
+        );
     })
 }
 
@@ -91,10 +120,13 @@ fn approve_spend_all_in_single_transaction_works() {
 
         // Prepare the test state.
         Balances::make_free_balance_be(&alice, alice_balance);
-        Erc20Balances::approve(alice, bob, approved_balance);
+        Erc20Balances::approve(alice, bob, approved_balance.into());
 
         // Check test preconditions.
-        assert_eq!(Erc20Balances::approvals(&alice, &bob), approved_balance);
+        assert_eq!(
+            Erc20Balances::approvals(&alice, &bob),
+            approved_balance.into()
+        );
 
         // Execute transfer_from.
         assert_ok!(Erc20Balances::transfer_from(
@@ -105,7 +137,7 @@ fn approve_spend_all_in_single_transaction_works() {
         ));
 
         // Check resulted approvals.
-        assert_eq!(Erc20Balances::approvals(&alice, &bob), 0);
+        assert_eq!(Erc20Balances::approvals(&alice, &bob), 0.into());
         // Check resulted balances.
         assert_eq!(
             Balances::total_balance(&alice),
@@ -134,10 +166,13 @@ fn approve_spend_all_in_several_transactions_works() {
 
         // Prepare the test state.
         Balances::make_free_balance_be(&alice, alice_balance);
-        Erc20Balances::approve(alice, bob, approved_balance);
+        Erc20Balances::approve(alice, bob, approved_balance.into());
 
         // Check test preconditions.
-        assert_eq!(Erc20Balances::approvals(&alice, &bob), approved_balance);
+        assert_eq!(
+            Erc20Balances::approvals(&alice, &bob),
+            approved_balance.into()
+        );
 
         // Execute transfer_from.
         assert_ok!(Erc20Balances::transfer_from(bob, alice, charlie, 500));
@@ -145,7 +180,7 @@ fn approve_spend_all_in_several_transactions_works() {
         // Check resulted approvals.
         assert_eq!(
             Erc20Balances::approvals(&alice, &bob),
-            approved_balance - 500
+            (approved_balance - 500).into()
         );
         // Check resulted balances.
         assert_eq!(Balances::total_balance(&alice), alice_balance - 500);
@@ -161,7 +196,7 @@ fn approve_spend_all_in_several_transactions_works() {
         ));
 
         // Check resulted approvals.
-        assert_eq!(Erc20Balances::approvals(&alice, &bob), 0);
+        assert_eq!(Erc20Balances::approvals(&alice, &bob), 0.into());
         // Check resulted balances.
         assert_eq!(
             Balances::total_balance(&alice),
@@ -193,10 +228,13 @@ fn approve_approval_value_more_than_balance_works() {
         // Prepare the test state.
         Balances::make_free_balance_be(&alice, alice_balance_initial);
         Balances::make_free_balance_be(&alice_stash, alice_stash_balance);
-        Erc20Balances::approve(alice, bob, approved_balance);
+        Erc20Balances::approve(alice, bob, approved_balance.into());
 
         // Check test preconditions.
-        assert_eq!(Erc20Balances::approvals(&alice, &bob), approved_balance);
+        assert_eq!(
+            Erc20Balances::approvals(&alice, &bob),
+            approved_balance.into()
+        );
 
         // Try to execute transfer_from with all approved balance.
         assert_noop!(
@@ -215,7 +253,7 @@ fn approve_approval_value_more_than_balance_works() {
         // Check resulted approvals.
         assert_eq!(
             Erc20Balances::approvals(&alice, &bob),
-            approved_balance - alice_balance_initial
+            (approved_balance - alice_balance_initial).into()
         );
         // Check resulted balances.
         assert_eq!(Balances::total_balance(&alice), 0);
@@ -238,7 +276,7 @@ fn approve_approval_value_more_than_balance_works() {
         ));
 
         // Check resulted approvals.
-        assert_eq!(Erc20Balances::approvals(&alice, &bob), 0);
+        assert_eq!(Erc20Balances::approvals(&alice, &bob), 0.into());
         // Check transfer_from failed execution.
         assert_noop!(
             Erc20Balances::transfer_from(bob, alice, charlie, 1),
@@ -284,7 +322,7 @@ fn transfer_from_works() {
 
         // Prepare the test state.
         Balances::make_free_balance_be(&alice, alice_balance);
-        Erc20Balances::approve(alice, bob, approved_balance);
+        Erc20Balances::approve(alice, bob, approved_balance.into());
 
         // Execute transfer_from.
         assert_ok!(Erc20Balances::transfer_from(
@@ -305,7 +343,7 @@ fn transfer_from_works() {
         // Check updated approvals changes.
         assert_eq!(
             Erc20Balances::approvals(alice, bob),
-            approved_balance - transferred_from_balance
+            (approved_balance - transferred_from_balance).into()
         );
     });
 }
@@ -324,7 +362,7 @@ fn transfer_from_fails_spend_more_than_allowed() {
 
         // Prepare the test state.
         Balances::make_free_balance_be(&alice, alice_balance);
-        Erc20Balances::approve(alice, bob, approved_balance);
+        Erc20Balances::approve(alice, bob, approved_balance.into());
 
         // Execute transfer_from.
         assert_noop!(

@@ -7,6 +7,7 @@ use precompile_bioauth::Bioauth;
 use precompile_currency_swap::CurrencySwap;
 use precompile_evm_accounts_mapping::EvmAccountsMapping;
 use precompile_native_currency::NativeCurrency;
+use precompile_utils::EvmData;
 use sp_core::{H160, U256};
 use sp_std::marker::PhantomData;
 
@@ -85,6 +86,7 @@ where
     <<R as pallet_erc20_support::Config>::Currency as Currency<
         <R as pallet_erc20_support::Config>::AccountId,
     >>::Balance: Into<U256> + TryFrom<U256>,
+    <R as pallet_erc20_support::Config>::Allowance: TryFrom<U256> + EvmData,
     R::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
     fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {

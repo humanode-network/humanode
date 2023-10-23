@@ -9,7 +9,7 @@ use frame_support::{
     },
     traits::{ConstU32, ConstU64},
 };
-use sp_core::H256;
+use sp_core::{H256, U256};
 
 use crate::{self as pallet_erc20_support};
 
@@ -91,6 +91,7 @@ impl crate::Metadata for BalancesErc20BalancesMetadata {
 impl pallet_erc20_support::Config for Test {
     type AccountId = u64;
     type Currency = Balances;
+    type Allowance = U256;
     type Metadata = BalancesErc20BalancesMetadata;
 }
 
@@ -123,7 +124,7 @@ pub trait TestExternalitiesExt {
         E: for<'e> FnOnce(&'e ()) -> R;
 }
 
-impl TestExternalitiesExt for frame_support::sp_io::TestExternalities {
+impl TestExternalitiesExt for sp_io::TestExternalities {
     fn execute_with_ext<R, E>(&mut self, execute: E) -> R
     where
         E: for<'e> FnOnce(&'e ()) -> R,
