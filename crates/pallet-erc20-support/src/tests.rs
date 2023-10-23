@@ -60,7 +60,7 @@ fn approve_works() {
 
 /// This test verifies that approval logic works as expected in case approving `U256::MAX-1` value.
 #[test]
-fn approve_almost_max_works() {
+fn approve_max_works() {
     new_test_ext().execute_with_ext(|_| {
         let alice = 42_u64;
         let bob = 52_u64;
