@@ -9,7 +9,7 @@ use crate::{Approvals, Config};
 pub fn migrate<T: Config<I>, I: 'static>() -> Weight {
     info!("Running migration to v1");
 
-    let mut weight: Weight = T::DbWeight::get().reads(0);
+    let mut weight = Weight::zero();
 
     <Approvals<T, I>>::translate(|_owner, _spender, amount: BalanceOf<T, I>| {
         weight.saturating_accrue(T::DbWeight::get().reads_writes(1, 1));
