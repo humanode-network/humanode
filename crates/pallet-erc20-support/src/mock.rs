@@ -124,7 +124,7 @@ pub trait TestExternalitiesExt {
         E: for<'e> FnOnce(&'e ()) -> R;
 }
 
-impl TestExternalitiesExt for frame_support::sp_io::TestExternalities {
+impl TestExternalitiesExt for sp_io::TestExternalities {
     fn execute_with_ext<R, E>(&mut self, execute: E) -> R
     where
         E: for<'e> FnOnce(&'e ()) -> R,
