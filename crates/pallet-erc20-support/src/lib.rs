@@ -45,10 +45,10 @@ type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountIdOf<T, I>
 #[frame_support::pallet]
 pub mod pallet {
 
+    #[cfg(feature = "try-runtime")]
+    use frame_support::sp_std::{vec, vec::Vec};
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug};
     use frame_system::pallet_prelude::*;
-    #[cfg(feature = "try-runtime")]
-    use sp_std::vec::Vec;
 
     use super::*;
 
@@ -122,7 +122,7 @@ pub mod pallet {
 
         #[cfg(feature = "try-runtime")]
         fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-            Ok(sp_std::vec![])
+            Ok(vec![])
         }
 
         #[cfg(feature = "try-runtime")]
