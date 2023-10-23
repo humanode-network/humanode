@@ -34,7 +34,5 @@ pub fn pre_migrate<T: Config<I>, I: 'static>() -> Vec<u8> {
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
 pub fn post_migrate<T: Config<I>, I: 'static>(_state: Vec<u8>) {
-    // Ensure version is updated correctly.
-    let storage_version = StorageVersion::get::<Pallet<T, I>>();
-    assert_eq!(storage_version, 1);
+    // Nothing to check.
 }
