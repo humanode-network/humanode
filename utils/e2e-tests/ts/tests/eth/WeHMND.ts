@@ -3,7 +3,7 @@ import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
 import { decodeEventLog, parseEther } from "viem";
 import { cleanupStack } from "../../lib/cleanup";
-import WeHMNDABI from "../../lib/abis/WeHMND";
+import erc20abi from "../../lib/abis/erc20";
 import "../../lib/expect";
 
 describe("WeHMND", () => {
@@ -35,7 +35,7 @@ describe("WeHMND", () => {
       beforeEach(async () => {
         const [alice, bob] = devClients;
         hash = await alice.writeContract({
-          abi: WeHMNDABI,
+          abi: erc20abi,
           address: contractAddress,
           functionName: "transfer",
           args: [bob.account.address, transferValue],
@@ -52,7 +52,7 @@ describe("WeHMND", () => {
 
         const log = receipt.logs[0]!;
         const event = decodeEventLog({
-          abi: WeHMNDABI,
+          abi: erc20abi,
           data: log.data,
           topics: log.topics,
         });
