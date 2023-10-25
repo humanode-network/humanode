@@ -1,6 +1,6 @@
 import { expect, describe, beforeEach, it } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
-import * as eth from "../../lib/eth";
+import * as eth from "../../lib/ethEthers";
 import { cleanupStack } from "../../lib/cleanup";
 import * as ethers from "ethers";
 import "../../lib/expect";
