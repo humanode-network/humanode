@@ -276,9 +276,8 @@ fn transfer_from_works() {
             .prepare_test(bob_evm, *PRECOMPILE_ADDRESS, transfer_from_action)
             .expect_cost(GAS_COST)
             .expect_log(
-                LogsBuilder::new(*PRECOMPILE_ADDRESS).log4(
+                LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
                     SELECTOR_LOG_TRANSFER,
-                    bob_evm,
                     alice_evm,
                     charlie_evm,
                     EvmDataWriter::new()

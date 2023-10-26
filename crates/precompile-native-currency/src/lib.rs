@@ -305,9 +305,8 @@ where
         let logs_builder = LogsBuilder::new(handle.context().address);
 
         logs_builder
-            .log4(
+            .log3(
                 SELECTOR_LOG_TRANSFER,
-                caller,
                 sender,
                 recipient,
                 EvmDataWriter::new().write(amount).build(),
