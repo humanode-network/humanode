@@ -24,7 +24,8 @@ describe("WeHMND", () => {
     return cleanup.run;
   }, 60 * 1000);
 
-  const contractAddress = "0x0000000000000000000000000000000000000802";
+  const address = "0x0000000000000000000000000000000000000802";
+  const abi = erc20abi;
 
   describe("transfer", () => {
     describe("when transferring 1 WeHMND", () => {
@@ -35,8 +36,8 @@ describe("WeHMND", () => {
       beforeEach(async () => {
         const [alice, bob] = devClients;
         hash = await alice.writeContract({
-          abi: erc20abi,
-          address: contractAddress,
+          abi,
+          address,
           functionName: "transfer",
           args: [bob.account.address, transferValue],
         });
@@ -52,7 +53,7 @@ describe("WeHMND", () => {
 
         const log = receipt.logs[0]!;
         const event = decodeEventLog({
-          abi: erc20abi,
+          abi,
           data: log.data,
           topics: log.topics,
         });
