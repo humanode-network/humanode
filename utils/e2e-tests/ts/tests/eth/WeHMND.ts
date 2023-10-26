@@ -69,4 +69,56 @@ describe("WeHMND", () => {
       });
     });
   });
+
+  describe("transferFrom", () => {
+    describe("when transferring 1 WeHMND", () => {
+      const transferValue = parseEther("1");
+
+      let hash: `0x${string}`;
+
+      beforeEach(async () => {
+        const [alice, bob] = devClients;
+
+        const approvalHash = await alice.writeContract({
+          abi,
+          address,
+          functionName: "approve",
+          args: [alice.account.address, transferValue],
+        });
+        await publicClient.waitForTransactionReceipt({ hash: approvalHash });
+
+        hash = await alice.writeContract({
+          abi,
+          address,
+          functionName: "transferFrom",
+          args: [alice.account.address, bob.account.address, transferValue],
+        });
+      });
+
+      it("has the Transfer event in the receipt", async () => {
+        const [alice, bob] = devClients;
+        const receipt = await publicClient.waitForTransactionReceipt({
+          hash,
+          timeout: 18_000,
+        });
+        expect(receipt.logs).toHaveLength(1);
+
+        const log = receipt.logs[0]!;
+        const event = decodeEventLog({
+          abi,
+          data: log.data,
+          topics: log.topics,
+        });
+
+        expect(event).toEqual({
+          eventName: "Transfer",
+          args: {
+            from: alice.account.address,
+            to: bob.account.address,
+            value: transferValue,
+          },
+        });
+      });
+    });
+  });
 });
