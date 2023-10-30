@@ -54,8 +54,8 @@ sc-cli = { workspace = true }
 sc-client-api = { workspace = true }
 sc-consensus = { workspace = true }
 sc-consensus-babe = { workspace = true }
+sc-consensus-grandpa = { workspace = true }
 sc-executor = { workspace = true }
-sc-finality-grandpa = { workspace = true }
 sc-network = { workspace = true }
 sc-rpc = { workspace = true }
 sc-service = { workspace = true }
@@ -69,8 +69,8 @@ sp-api = { workspace = true }
 sp-application-crypto = { workspace = true }
 sp-consensus = { workspace = true }
 sp-consensus-babe = { workspace = true }
+sp-consensus-grandpa = { workspace = true }
 sp-core = { workspace = true }
-sp-finality-grandpa = { workspace = true }
 sp-inherents = { workspace = true }
 sp-io = { workspace = true }
 sp-keyring = { workspace = true }

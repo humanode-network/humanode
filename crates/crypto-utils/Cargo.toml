@@ -8,5 +8,5 @@ publish = false
 frame-support = { workspace = true }
 pallet-im-online = { workspace = true }
 sp-consensus-babe = { workspace = true }
-sp-finality-grandpa = { workspace = true }
+sp-consensus-grandpa = { workspace = true }
 sp-runtime = { workspace = true }
