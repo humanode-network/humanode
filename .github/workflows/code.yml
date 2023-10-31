@@ -151,6 +151,12 @@ jobs:
                 sudo tar -xzvf - -C /usr/local/bin
             run: cargo-sort -cwg
 
+          - name: cargo-machete
+            download: >
+              curl -sSL "https://github.com/bnjbvr/cargo-machete/releases/download/v0.6.0/cargo-machete-v0.6.0-x86_64-unknown-linux-musl.tar.gz" |
+                sudo tar -xzvf - --strip-components=1 -C /usr/local/bin
+            run: cargo-machete
+
       fail-fast: false
     name: ${{ matrix.util.name }}
     runs-on: ubuntu-22.04
