@@ -5877,18 +5877,13 @@ dependencies = [
 name = "pallet-bootnodes"
 version = "0.1.0"
 dependencies = [
- "frame-benchmarking",
  "frame-support",
  "frame-system",
  "mockall",
  "parity-scale-codec",
  "scale-info",
- "serde",
- "sp-api",
  "sp-core",
  "sp-io",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -6042,7 +6037,6 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -6815,7 +6809,6 @@ dependencies = [
  "sha3 0.10.6",
  "similar-asserts",
  "sp-core",
- "sp-io",
  "sp-std",
 ]
 
@@ -6915,7 +6908,6 @@ name = "primitives-ethereum"
 version = "0.1.0"
 dependencies = [
  "frame-support",
- "frame-system",
  "parity-scale-codec",
  "rustc-hex",
  "scale-info",
