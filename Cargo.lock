@@ -5853,7 +5853,6 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "hex-literal",
  "mockall",
  "parity-scale-codec",
  "scale-info",
@@ -11059,7 +11058,6 @@ dependencies = [
  "mockall",
  "num-traits",
  "pallet-vesting",
- "serde",
  "serde_json",
  "vesting-schedule-linear",
 ]
