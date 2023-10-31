@@ -408,6 +408,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     eth_block_data_cache: Arc::clone(&eth_block_data_cache),
                     eth_execute_gas_limit_multiplier: ethereum_rpc_config
                         .execute_gas_limit_multiplier,
+                    eth_forced_parent_hashes: None,
                 },
                 subscription_task_executor,
             })?)

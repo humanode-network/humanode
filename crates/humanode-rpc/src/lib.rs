@@ -1,6 +1,6 @@
 //! RPC subsystem instantiation logic.
 
-use std::sync::Arc;
+use std::{collections::BTreeMap, sync::Arc};
 
 use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtServer};
@@ -38,6 +38,7 @@ use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_consensus::SelectChain;
 use sp_consensus_babe::BabeApi;
+use sp_core::H256;
 use sp_keystore::SyncCryptoStorePtr;
 
 /// Extra dependencies for `AuthorExt`.
@@ -101,6 +102,8 @@ pub struct EvmDeps {
     /// When using eth_call/eth_estimateGas, the maximum allowed gas limit will be
     /// block.gas_limit * execute_gas_limit_multiplier.
     pub eth_execute_gas_limit_multiplier: u64,
+    /// Mandated parent hashes for a given block hash.
+    pub eth_forced_parent_hashes: Option<BTreeMap<H256, H256>>,
 }
 
 /// RPC subsystem dependencies.
@@ -220,6 +223,7 @@ where
         eth_overrides,
         eth_block_data_cache,
         eth_execute_gas_limit_multiplier,
+        eth_forced_parent_hashes,
     } = evm;
 
     let chain_name = chain_spec.name().to_string();
@@ -295,6 +299,7 @@ where
             eth_fee_history_cache,
             eth_fee_history_limit,
             eth_execute_gas_limit_multiplier,
+            eth_forced_parent_hashes,
         )
         .into_rpc(),
     )?;
