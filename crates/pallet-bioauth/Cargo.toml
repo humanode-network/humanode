@@ -4,15 +4,11 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
-[package.metadata.cargo-machete]
-ignored = ["hex-literal"]
-
 [dependencies]
 codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
 frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
-hex-literal = { workspace = true, optional = true }
 scale-info = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"], optional = true }
 sp-runtime = { workspace = true }
@@ -28,7 +24,6 @@ default = ["std"]
 
 runtime-benchmarks = [
   "frame-benchmarking/runtime-benchmarks",
-  "hex-literal",
   "frame-support/runtime-benchmarks",
   "frame-system/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
