@@ -11058,7 +11058,6 @@ dependencies = [
  "mockall",
  "num-traits",
  "pallet-vesting",
- "serde",
  "serde_json",
  "vesting-schedule-linear",
 ]

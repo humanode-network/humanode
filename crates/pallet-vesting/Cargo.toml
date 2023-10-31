@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+[package.metadata.cargo-machete]
+ignored = ["serde"]
+
 [dependencies]
 codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
 frame-benchmarking = { workspace = true, optional = true }
