@@ -101,12 +101,12 @@ where
                 .map_err(SetKeysError::KeyExtraction)
                 .map_err(errtype)?;
 
-        let at = sp_api::BlockId::Hash(self.client.info().best_hash);
+        let at = self.client.info().best_hash;
 
         let signed_set_keys_extrinsic = self
             .client
             .runtime_api()
-            .create_signed_set_keys_extrinsic(&at, &validator_key, session_keys.0)
+            .create_signed_set_keys_extrinsic(at, &validator_key, session_keys.0)
             .map_err(SetKeysError::RuntimeApi)
             .map_err(errtype)?
             .map_err(SetKeysError::ExtrinsicCreation)
@@ -114,7 +114,7 @@ where
 
         self.pool
             .submit_and_watch(
-                &at,
+                &sp_api::BlockId::Hash(at),
                 sp_runtime::transaction_validity::TransactionSource::Local,
                 signed_set_keys_extrinsic,
             )

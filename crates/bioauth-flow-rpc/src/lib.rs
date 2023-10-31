@@ -294,12 +294,12 @@ where
         };
 
         // Extract an id of the last imported block.
-        let at = sp_api::BlockId::Hash(self.client.info().best_hash);
+        let at = self.client.info().best_hash;
 
         let status = self
             .client
             .runtime_api()
-            .bioauth_status(&at, &own_key)
+            .bioauth_status(at, &own_key)
             .map_err(StatusError::RuntimeApi)?;
 
         Ok(status.into())
@@ -354,13 +354,13 @@ where
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
 
-        let at = sp_api::BlockId::Hash(self.client.info().best_hash);
+        let at = self.client.info().best_hash;
 
         let ext = self
             .client
             .runtime_api()
             .create_authenticate_extrinsic(
-                &at,
+                at,
                 response.auth_ticket.into(),
                 response.auth_ticket_signature.into(),
             )
@@ -368,7 +368,7 @@ where
 
         self.pool
             .submit_and_watch(
-                &at,
+                &sp_api::BlockId::Hash(at),
                 sp_runtime::transaction_validity::TransactionSource::Local,
                 ext,
             )
