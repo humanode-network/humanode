@@ -8,6 +8,9 @@ authors = ["Humanode Core"]
 # Run the peer by default.
 default-run = "humanode-peer"
 
+[package.metadata.cargo-machete]
+ignored = ["tiny-bip39"]
+
 [dependencies]
 bioauth-flow-rpc = { path = "../bioauth-flow-rpc" }
 bioauth-keys = { path = "../bioauth-keys" }

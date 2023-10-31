@@ -6714,7 +6714,6 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "getrandom 0.2.9",
  "mockall",
  "num_enum 0.6.0",
  "pallet-bioauth",
