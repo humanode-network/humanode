@@ -609,7 +609,6 @@ dependencies = [
 name = "bioauth-flow-rpc"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "async-trait",
  "bioauth-flow-api",
  "bioauth-keys",
@@ -627,7 +626,6 @@ dependencies = [
  "sp-blockchain",
  "sp-runtime",
  "thiserror",
- "tokio",
  "tracing",
 ]
 
@@ -2010,7 +2008,6 @@ dependencies = [
  "hex",
  "numtoa",
  "primitives-ethereum",
- "sp-core-hashing-proc-macro",
  "sp-io",
  "sp-std",
 ]
@@ -2053,7 +2050,6 @@ version = "0.1.0"
 dependencies = [
  "eip712-common",
  "ethers-core",
- "hex-literal",
  "primitives-ethereum",
  "secp256k1 0.27.0",
  "serde_json",
@@ -3641,7 +3637,6 @@ dependencies = [
  "fc-rpc-core",
  "fc-storage",
  "fp-rpc",
- "fp-storage",
  "humanode-runtime",
  "jsonrpsee",
  "pallet-transaction-payment-rpc",
@@ -5428,12 +5423,9 @@ dependencies = [
 name = "ngrok-api"
 version = "0.1.0"
 dependencies = [
- "async-trait",
  "http",
- "http-body",
  "reqwest",
  "serde",
- "serde_json",
  "thiserror",
  "url",
 ]
@@ -5875,7 +5867,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-api",
  "sp-core",
  "sp-io",
  "sp-runtime",
