@@ -135,7 +135,7 @@ impl<T: Config> Pallet<T> {
         let mut weight = T::DbWeight::get().reads(0);
 
         for precompile_address in &T::PrecompilesAddresses::get() {
-            let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
+            let code = pallet_evm::AccountCodes::<T>::get(*precompile_address);
             weight.saturating_accrue(T::DbWeight::get().reads(1));
 
             if code != DUMMY_CODE {
