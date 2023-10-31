@@ -1605,14 +1605,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.5.1":
-  version: 1.5.1
-  resolution: "axios@npm:1.5.1"
+"axios@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "axios@npm:1.6.0"
   dependencies:
     follow-redirects: ^1.15.0
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
-  checksum: 4444f06601f4ede154183767863d2b8e472b4a6bfc5253597ed6d21899887e1fd0ee2b3de792ac4f8459fe2e359d2aa07c216e45fd8b9e4e0688a6ebf48a5a8d
+  checksum: c7c9f2ae9e0b9bad7d6f9a4dff030930b12ee667dedf54c3c776714f91681feb743c509ac0796ae5c01e12c4ab4a2bee74905068dd200fbc1ab86f9814578fb0
   languageName: node
   linkType: hard
 
@@ -2312,10 +2312,10 @@ __metadata:
     "@polkadot/api": ^10.10.1
     "@types/node": 16.18.59
     "@vitest/expect": ^0.34.6
-    axios: ^1.5.1
+    axios: ^1.6.0
     ethers: ^6.8.0
     typescript: ^5.2.2
-    viem: ^1.16.6
+    viem: ^1.18.0
     vitest: ^0.34.6
   languageName: unknown
   linkType: soft
@@ -3322,9 +3322,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^1.16.6":
-  version: 1.16.6
-  resolution: "viem@npm:1.16.6"
+"viem@npm:^1.18.0":
+  version: 1.18.0
+  resolution: "viem@npm:1.18.0"
   dependencies:
     "@adraffy/ens-normalize": 1.9.4
     "@noble/curves": 1.2.0
@@ -3339,7 +3339,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 2f116cad184cfc7a9584073451549edfb23c3847b1784f092b80a279b848fe011a054bc4141c923b5bcce1d8493db98284db65416ce72e8ba522225d02786a9a
+  checksum: a37e9052b7a4daa7dec2e3937046d2c84840cef5921574f0de500f855d466d160aff0f567daf9b507ee3e8eeccbb4637de60f34545229c0ed126f30673e94cfb
   languageName: node
   linkType: hard
 
