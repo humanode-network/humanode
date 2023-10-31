@@ -69,10 +69,7 @@ jobs:
         timeout-minutes: 10
 
       - name: Run cargo ${{ matrix.plan.mode.cargoCommand }}
-        uses: actions-rs/cargo@v1
-        with:
-          command: ${{ matrix.plan.mode.cargoCommand }}
-          args: ${{ matrix.plan.mode.cargoArgs }}
+        run: cargo ${{ matrix.plan.mode.cargoCommand }} ${{ matrix.plan.mode.cargoArgs }}
 
   e2e:
     name: End-to-end tests

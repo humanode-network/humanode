@@ -31,6 +31,10 @@ runs:
         shared-key: ${{ inputs.modeCacheKey != '' && format('{0}-{1}', inputs.platformCacheKey, inputs.modeCacheKey) || '' }}
       if: ${{ inputs.platformCacheKey != '' && inputs.isOnSelfHostedRunner != 'true' && inputs.requiresRust == 'true' }}
 
+    - name: Enable rust pattern matchers
+      uses: r7kamura/rust-problem-matchers@v1
+      if: ${{ inputs.requiresRust == 'true' }}
+
     - name: Install rust toolchain
       shell: bash
       run: rustup show
