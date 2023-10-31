@@ -2,6 +2,9 @@
 resolver = "2"
 members = ["crates/*"]
 
+[workspace.metadata.cargo-machete]
+ignored = ["codec", "scale-info", "num_enum", "serde"]
+
 [workspace.dependencies]
 # Crates.io deps.
 

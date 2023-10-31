@@ -1713,11 +1713,9 @@
     - tokio_socket
 - name: ngrok-api 0.1.0
   features:
-    - async-trait
     - client
     - default
     - http
-    - http-body
     - reqwest
     - thiserror
     - url
@@ -1991,8 +1989,6 @@
 - name: pallet-bootnodes 0.1.0
   features:
     - default
-    - frame-benchmarking
-    - serde
     - std
 - name: pallet-chain-properties 0.1.0
   features:

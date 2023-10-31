@@ -12,7 +12,6 @@ codec = { workspace = true, package = "parity-scale-codec", features = ["derive"
 fp-evm = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
-getrandom = { workspace = true, features = ["js"] }
 num_enum = { workspace = true }
 pallet-evm = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
@@ -32,7 +31,6 @@ std = [
   "fp-evm/std",
   "frame-support/std",
   "frame-system/std",
-  "getrandom/std",
   "num_enum/std",
   "pallet-bioauth/std",
   "pallet-evm/std",

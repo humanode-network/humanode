@@ -14,7 +14,6 @@ rpc-deny-unsafe = { path = "../rpc-deny-unsafe" }
 rpc-error-response = { path = "../rpc-error-response" }
 rpc-validator-key-logic = { path = "../rpc-validator-key-logic" }
 
-anyhow = { workspace = true }
 async-trait = { workspace = true }
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
 sc-transaction-pool-api = { workspace = true }
@@ -24,5 +23,4 @@ sp-api = { workspace = true }
 sp-blockchain = { workspace = true }
 sp-runtime = { workspace = true }
 thiserror = { workspace = true }
-tokio = { workspace = true }
 tracing = { workspace = true }

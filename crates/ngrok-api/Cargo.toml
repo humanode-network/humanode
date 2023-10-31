@@ -6,15 +6,12 @@ authors = ["Humanode Team <core@humanode.io>"]
 publish = false
 
 [dependencies]
-async-trait = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
-http-body = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true, features = ["default"] }
 serde = { workspace = true, features = ["default"] }
-serde_json = { workspace = true }
 thiserror = { workspace = true, optional = true }
 url = { workspace = true, optional = true }
 
 [features]
-client = ["http", "url", "http-body", "thiserror", "async-trait", "reqwest"]
+client = ["http", "url", "thiserror", "reqwest"]
 default = ["client", "http"]

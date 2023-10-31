@@ -8,6 +8,9 @@ authors = ["Humanode Core"]
 # Run the peer by default.
 default-run = "humanode-peer"
 
+[package.metadata.cargo-machete]
+ignored = ["tiny-bip39"]
+
 [dependencies]
 bioauth-flow-rpc = { path = "../bioauth-flow-rpc" }
 bioauth-keys = { path = "../bioauth-keys" }
@@ -17,11 +20,8 @@ humanode-rpc = { path = "../humanode-rpc" }
 humanode-runtime = { path = "../humanode-runtime" }
 keystore-bioauth-account-id = { path = "../keystore-bioauth-account-id" }
 ngrok-api = { path = "../ngrok-api" }
-pallet-bioauth = { path = "../pallet-bioauth" }
-pallet-token-claims = { path = "../pallet-token-claims" }
 robonode-client = { path = "../robonode-client" }
 
-anyhow = { workspace = true }
 async-trait = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
 codec = { workspace = true, package = "parity-scale-codec" }
@@ -44,7 +44,6 @@ hex = { workspace = true }
 hex-literal = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-im-online = { workspace = true, features = ["default"] }
-pallet-transaction-payment = { workspace = true }
 qr2term = { workspace = true }
 reqwest = { workspace = true, features = ["default"] }
 sc-basic-authorship = { workspace = true }
@@ -56,18 +55,13 @@ sc-consensus = { workspace = true }
 sc-consensus-babe = { workspace = true }
 sc-executor = { workspace = true }
 sc-finality-grandpa = { workspace = true }
-sc-network = { workspace = true }
-sc-rpc = { workspace = true }
 sc-service = { workspace = true }
 sc-telemetry = { workspace = true }
-sc-tracing = { workspace = true }
 sc-transaction-pool = { workspace = true }
-sc-utils = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 sp-api = { workspace = true }
 sp-application-crypto = { workspace = true }
-sp-consensus = { workspace = true }
 sp-consensus-babe = { workspace = true }
 sp-core = { workspace = true }
 sp-finality-grandpa = { workspace = true }
@@ -101,9 +95,7 @@ runtime-benchmarks = [
   "frame-system/runtime-benchmarks",
   "humanode-runtime/runtime-benchmarks",
   "pallet-balances/runtime-benchmarks",
-  "pallet-bioauth/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
-  "pallet-token-claims/runtime-benchmarks",
   "sc-service/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
 ]
@@ -112,10 +104,7 @@ try-runtime = [
   "frame-system/try-runtime",
   "humanode-runtime/try-runtime",
   "pallet-balances/try-runtime",
-  "pallet-bioauth/try-runtime",
   "pallet-im-online/try-runtime",
-  "pallet-transaction-payment/try-runtime",
-  "pallet-token-claims/try-runtime",
   "sp-runtime/try-runtime",
   "try-runtime-cli/try-runtime",
 ]
