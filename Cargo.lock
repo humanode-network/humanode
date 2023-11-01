@@ -3664,6 +3664,7 @@ dependencies = [
  "bioauth-flow-rpc",
  "bioauth-keys",
  "fc-db",
+ "fc-mapping-sync",
  "fc-rpc",
  "fc-rpc-core",
  "fc-storage",

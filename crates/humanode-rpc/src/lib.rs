@@ -104,6 +104,16 @@ pub struct EvmDeps {
     pub eth_execute_gas_limit_multiplier: u64,
     /// Mandated parent hashes for a given block hash.
     pub eth_forced_parent_hashes: Option<BTreeMap<H256, H256>>,
+    /// Sinks for pubsub notifications.
+    ///
+    /// Everytime a new subscription is created, a new mpsc channel is added to the sink pool.
+    /// The MappingSyncWorker sends through the channel on block import and the subscription
+    /// emits a notification to the subscriber on receiving a message through this channel.
+    pub eth_pubsub_notification_sinks: Arc<
+        fc_mapping_sync::EthereumBlockNotificationSinks<
+            fc_mapping_sync::EthereumBlockNotification<Block>,
+        >,
+    >,
 }
 
 /// RPC subsystem dependencies.
@@ -224,6 +234,7 @@ where
         eth_block_data_cache,
         eth_execute_gas_limit_multiplier,
         eth_forced_parent_hashes,
+        eth_pubsub_notification_sinks,
     } = evm;
 
     let chain_name = chain_spec.name().to_string();
@@ -313,6 +324,7 @@ where
             Arc::clone(&network),
             Arc::clone(&subscription_task_executor),
             Arc::clone(&eth_overrides),
+            Arc::clone(&eth_pubsub_notification_sinks),
         )
         .into_rpc(),
     )?;

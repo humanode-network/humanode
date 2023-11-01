@@ -283,6 +283,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let eth_fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
     let eth_fee_history_limit = ethereum_rpc_config.fee_history_limit;
     let eth_overrides = fc_storage::overrides_handle(Arc::clone(&client));
+    let eth_pubsub_notification_sinks =
+        Arc::new(fc_mapping_sync::EthereumBlockNotificationSinks::<
+            fc_mapping_sync::EthereumBlockNotification<Block>,
+        >::default());
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -409,6 +413,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     eth_execute_gas_limit_multiplier: ethereum_rpc_config
                         .execute_gas_limit_multiplier,
                     eth_forced_parent_hashes: None,
+                    eth_pubsub_notification_sinks: Arc::clone(&eth_pubsub_notification_sinks),
                 },
                 subscription_task_executor,
             })?)
@@ -476,7 +481,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let grandpa_config = sc_finality_grandpa::GrandpaParams {
             config: grandpa_config,
             link: grandpa_link,
-            network,
+            network: Arc::clone(&network),
             voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
             prometheus_registry,
             shared_voter_state: SharedVoterState::empty(),
@@ -505,6 +510,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             // sync_from: <Block::Header as HeaderT>::Number,
             0,
             SyncStrategy::Normal,
+            network,
+            eth_pubsub_notification_sinks,
         )
         .for_each(|()| futures::future::ready(())),
     );
