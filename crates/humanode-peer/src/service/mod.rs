@@ -17,7 +17,9 @@ use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
-use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager, WarpSyncParams};
+use sc_service::{
+    Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager, WarpSyncParams,
+};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use tracing::*;
 
@@ -371,6 +373,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             config.prometheus_registry().cloned(),
         ));
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
+        let eth_pubsub_notification_sinks = Arc::clone(&eth_pubsub_notification_sinks);
 
         Box::new(move |deny_unsafe, subscription_task_executor| {
             Ok(humanode_rpc::create::<
