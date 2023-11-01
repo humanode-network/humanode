@@ -373,7 +373,16 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
 
         Box::new(move |deny_unsafe, subscription_task_executor| {
-            Ok(humanode_rpc::create(humanode_rpc::Deps {
+            Ok(humanode_rpc::create::<
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                frontier::DefaultEthConfig<_, _>,
+            >(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
                 deny_unsafe,

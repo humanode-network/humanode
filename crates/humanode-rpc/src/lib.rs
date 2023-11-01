@@ -7,7 +7,7 @@ use author_ext_rpc::{AuthorExt, AuthorExtServer};
 use bioauth_flow_rpc::{Bioauth, BioauthServer, Signer, SignerFactory};
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use fc_rpc::{
-    Eth, EthApiServer, EthBlockDataCacheTask, EthFilter, EthFilterApiServer, EthPubSub,
+    Eth, EthApiServer, EthBlockDataCacheTask, EthConfig, EthFilter, EthFilterApiServer, EthPubSub,
     EthPubSubApiServer, Net, NetApiServer, Web3, Web3ApiServer,
 };
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
@@ -33,7 +33,7 @@ pub use sc_rpc_api::DenyUnsafe;
 use sc_rpc_spec_v2::chain_spec::{ChainSpec, ChainSpecApiServer};
 use sc_transaction_pool::{ChainApi, Pool};
 use sc_transaction_pool_api::TransactionPool;
-use sp_api::{Encode, ProvideRuntimeApi};
+use sp_api::{CallApiAt, Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_consensus::SelectChain;
@@ -149,7 +149,7 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, BE, VKE, VSF, A, SC>(
+pub fn create<C, P, BE, VKE, VSF, A, SC, EC>(
     deps: Deps<C, P, BE, VKE, VSF, A, SC>,
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
@@ -157,7 +157,10 @@ where
     BE::State: StateBackend<sp_runtime::traits::HashFor<Block>>,
     C: ProvideRuntimeApi<Block> + BlockBackend<Block> + StorageProvider<Block, BE> + AuxStore,
     C: BlockchainEvents<Block>,
-    C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
+    C: HeaderBackend<Block>
+        + CallApiAt<Block>
+        + HeaderMetadata<Block, Error = BlockChainError>
+        + 'static,
     C: Send + Sync + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
@@ -177,6 +180,7 @@ where
         std::error::Error + 'static,
     A: ChainApi<Block = Block> + 'static,
     SC: SelectChain<Block> + 'static,
+    EC: EthConfig<Block, C>,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
     use substrate_frame_rpc_system::{System, SystemApiServer};
@@ -312,6 +316,7 @@ where
             eth_execute_gas_limit_multiplier,
             eth_forced_parent_hashes,
         )
+        .replace_config::<EC>()
         .into_rpc(),
     )?;
 
