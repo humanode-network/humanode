@@ -114,7 +114,7 @@ pub mod pallet {
             let mut not_created_precompiles = Vec::new();
 
             for precompile_address in &T::PrecompilesAddresses::get() {
-                let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
+                let code = pallet_evm::AccountCodes::<T>::get(*precompile_address);
                 if code != DUMMY_CODE {
                     not_created_precompiles.push(*precompile_address);
                 }
