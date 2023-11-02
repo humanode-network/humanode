@@ -84,7 +84,7 @@ use frontier_precompiles::{precompiles_constants, FrontierPrecompiles};
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-mod constants;
+pub mod constants;
 mod currency_swap;
 #[cfg(test)]
 mod dev_utils;
