@@ -80,9 +80,7 @@
     - default
     - std
 - name: approx 0.5.1
-  features:
-    - default
-    - std
+  features: []
 - name: arc-swap 1.6.0
   features: []
 - name: array-bytes 4.2.0
@@ -236,6 +234,10 @@
   features: []
 - name: block-padding 0.2.1
   features: []
+- name: bounded-collections 0.1.9
+  features:
+    - serde
+    - std
 - name: bridge-pot-currency-swap 0.1.0
   features:
     - default
@@ -267,6 +269,8 @@
     - std
 - name: byte-tools 0.3.1
   features: []
+- name: bytemuck 1.14.0
+  features: []
 - name: byteorder 1.4.3
   features:
     - default
@@ -286,7 +290,7 @@
     - serde1
 - name: cargo-platform 0.1.2
   features: []
-- name: cargo_metadata 0.14.2
+- name: cargo_metadata 0.15.4
   features:
     - default
 - name: cc 1.0.79
@@ -413,34 +417,35 @@
     - std
 - name: cpufeatures 0.2.6
   features: []
-- name: cranelift-bforest 0.88.2
+- name: cranelift-bforest 0.93.2
   features: []
-- name: cranelift-codegen 0.88.2
+- name: cranelift-codegen 0.93.2
   features:
     - default
     - gimli
     - std
+    - trace-log
     - unwind
-- name: cranelift-codegen-meta 0.88.2
+- name: cranelift-codegen-meta 0.93.2
   features: []
-- name: cranelift-codegen-shared 0.88.2
+- name: cranelift-codegen-shared 0.93.2
   features: []
-- name: cranelift-entity 0.88.2
+- name: cranelift-entity 0.93.2
   features:
     - enable-serde
     - serde
-- name: cranelift-frontend 0.88.2
+- name: cranelift-frontend 0.93.2
   features:
     - default
     - std
-- name: cranelift-isle 0.88.2
+- name: cranelift-isle 0.93.2
   features:
     - default
-- name: cranelift-native 0.88.2
+- name: cranelift-native 0.93.2
   features:
     - default
     - std
-- name: cranelift-wasm 0.88.2
+- name: cranelift-wasm 0.93.2
   features:
     - default
     - std
@@ -777,8 +782,6 @@
 - name: environmental 1.1.4
   features:
     - std
-- name: errno 0.2.8
-  features: []
 - name: errno 0.3.1
   features: []
 - name: errno-dragonfly 0.1.2
@@ -939,6 +942,11 @@
   features: []
 - name: form_urlencoded 1.1.0
   features: []
+- name: fp-account 1.0.0-dev
+  features:
+    - impl-serde
+    - serde
+    - std
 - name: fp-consensus 2.0.0-dev
   features:
     - default
@@ -1164,6 +1172,7 @@
     - raw
 - name: hashbrown 0.13.2
   features:
+    - ahash
     - inline-more
     - raw
 - name: headers 0.3.8
@@ -1303,8 +1312,6 @@
 - name: integer-sqrt 0.1.5
   features: []
 - name: interceptor 0.8.2
-  features: []
-- name: io-lifetimes 0.7.5
   features: []
 - name: io-lifetimes 1.0.10
   features:
@@ -1529,9 +1536,9 @@
   features: []
 - name: linked_hash_set 0.1.4
   features: []
-- name: linregress 0.4.4
+- name: linregress 0.5.3
   features: []
-- name: linux-raw-sys 0.0.46
+- name: linux-raw-sys 0.1.4
   features:
     - errno
     - general
@@ -1680,18 +1687,14 @@
   features: []
 - name: multistream-select 0.12.1
   features: []
-- name: nalgebra 0.27.1
+- name: nalgebra 0.32.3
   features:
     - default
     - macros
     - matrixmultiply
     - nalgebra-macros
-    - rand
-    - rand-no-std
-    - rand-package
-    - rand_distr
     - std
-- name: nalgebra-macros 0.1.0
+- name: nalgebra-macros 0.2.1
   features: []
 - name: names 0.13.0
   features: []
@@ -1840,7 +1843,6 @@
   features:
     - default
     - i128
-    - libm
     - std
 - name: num_cpus 1.15.0
   features: []
@@ -2380,8 +2382,6 @@
     - alloc
     - getrandom
     - std
-- name: rand_distr 0.4.3
-  features: []
 - name: rand_hc 0.2.0
   features: []
 - name: rand_pcg 0.3.1
@@ -2411,7 +2411,7 @@
   features: []
 - name: ref-cast-impl 1.0.16
   features: []
-- name: regalloc2 0.3.2
+- name: regalloc2 0.5.1
   features:
     - checker
     - default
@@ -2450,6 +2450,8 @@
     - unicode-perl
     - unicode-script
     - unicode-segment
+- name: region 3.0.0
+  features: []
 - name: reqwest 0.11.16
   features:
     - __tls
@@ -2534,7 +2536,7 @@
   features: []
 - name: rusticata-macros 4.1.0
   features: []
-- name: rustix 0.35.13
+- name: rustix 0.36.17
   features:
     - default
     - fs
@@ -2581,6 +2583,10 @@
   features: []
 - name: ryu 1.0.13
   features: []
+- name: safe_arch 0.7.1
+  features:
+    - bytemuck
+    - default
 - name: same-file 1.0.6
   features: []
 - name: sc-allocator 4.1.0-dev
@@ -2690,6 +2696,7 @@
 - name: scale-info 2.5.0
   features:
     - decode
+    - default
     - derive
     - scale-info-derive
     - serde
@@ -2867,9 +2874,10 @@
     - digest
     - rand_core
     - std
-- name: simba 0.5.1
+- name: simba 0.8.1
   features:
     - std
+    - wide
 - name: similar 2.2.1
   features:
     - bstr
@@ -2895,7 +2903,10 @@
     - default
     - std
 - name: smallvec 1.10.0
-  features: []
+  features:
+    - const_generics
+    - const_new
+    - union
 - name: snap 1.1.0
   features: []
 - name: snow 0.9.0
@@ -3076,7 +3087,6 @@
 - name: sp-state-machine 0.13.0
   features:
     - default
-    - log
     - parking_lot
     - rand
     - sp-panic-handler
@@ -3143,6 +3153,7 @@
   features: []
 - name: sp-wasm-interface 7.0.0
   features:
+    - anyhow
     - default
     - log
     - std
@@ -3182,8 +3193,6 @@
   features:
     - default
 - name: static_init_macro 1.0.2
-  features: []
-- name: statrs 0.15.0
   features: []
 - name: strsim 0.10.0
   features: []
@@ -3252,7 +3261,7 @@
   features: []
 - name: target-lexicon 0.12.6
   features:
-    - default
+    - std
 - name: tempfile 3.5.0
   features: []
 - name: termcolor 1.2.0
@@ -3457,7 +3466,7 @@
   features: []
 - name: tracing-test-macro 0.2.4
   features: []
-- name: trie-db 0.24.0
+- name: trie-db 0.25.1
   features:
     - rustc-hex
     - std
@@ -3648,47 +3657,49 @@
   features:
     - default
     - std
+    - virtual_memory
 - name: wasmi-validation 0.5.0
   features:
     - std
 - name: wasmi_core 0.2.1
   features:
+    - region
     - std
-- name: wasmparser 0.89.1
+    - virtual_memory
+- name: wasmparser 0.100.0
   features: []
-- name: wasmtime 1.0.2
+- name: wasmtime 6.0.2
   features:
     - cache
     - cranelift
     - jitdump
-    - memory-init-cow
     - parallel-compilation
     - pooling-allocator
-- name: wasmtime-asm-macros 1.0.2
+- name: wasmtime-asm-macros 6.0.2
   features: []
-- name: wasmtime-cache 1.0.2
+- name: wasmtime-cache 6.0.2
   features: []
-- name: wasmtime-cranelift 1.0.2
+- name: wasmtime-cranelift 6.0.2
   features: []
-- name: wasmtime-environ 1.0.2
+- name: wasmtime-environ 6.0.2
   features: []
-- name: wasmtime-jit 1.0.2
+- name: wasmtime-jit 6.0.2
   features:
     - jitdump
     - wasmtime-jit-debug
-- name: wasmtime-jit-debug 1.0.2
+- name: wasmtime-jit-debug 6.0.2
   features:
     - gdb_jit_int
     - object
     - once_cell
     - perf_jitdump
     - rustix
-- name: wasmtime-runtime 1.0.2
+- name: wasmtime-jit-icache-coherence 6.0.2
+  features: []
+- name: wasmtime-runtime 6.0.2
   features:
-    - memfd
-    - memory-init-cow
     - pooling-allocator
-- name: wasmtime-types 1.0.2
+- name: wasmtime-types 6.0.2
   features: []
 - name: web-sys 0.3.61
   features:
@@ -3754,6 +3765,9 @@
     - vnet
 - name: which 4.4.0
   features: []
+- name: wide 0.7.13
+  features:
+    - std
 - name: widestring 0.5.1
   features:
     - alloc
@@ -3771,6 +3785,7 @@
     - impl-default
     - knownfolders
     - libloaderapi
+    - memoryapi
     - minwinbase
     - minwindef
     - ntdef
@@ -3814,28 +3829,10 @@
   features:
     - Globalization
     - default
-- name: windows-sys 0.36.1
-  features:
-    - Win32
-    - Win32_Security
-    - Win32_Storage
-    - Win32_Storage_FileSystem
-    - Win32_System
-    - Win32_System_Diagnostics
-    - Win32_System_Diagnostics_Debug
-    - Win32_System_Kernel
-    - Win32_System_Memory
-    - Win32_System_SystemInformation
-    - Win32_System_Threading
-    - default
 - name: windows-sys 0.42.0
   features:
     - Win32
     - Win32_Foundation
-    - Win32_NetworkManagement
-    - Win32_NetworkManagement_IpHelper
-    - Win32_Networking
-    - Win32_Networking_WinSock
     - Win32_Security
     - Win32_Security_Authentication
     - Win32_Security_Authentication_Identity
@@ -3845,7 +3842,11 @@
     - Win32_Storage_FileSystem
     - Win32_System
     - Win32_System_Console
+    - Win32_System_Diagnostics
+    - Win32_System_Diagnostics_Debug
+    - Win32_System_Kernel
     - Win32_System_Memory
+    - Win32_System_SystemInformation
     - Win32_System_Threading
     - Win32_UI
     - Win32_UI_Input
@@ -3855,6 +3856,8 @@
   features:
     - Win32
     - Win32_Foundation
+    - Win32_NetworkManagement
+    - Win32_NetworkManagement_IpHelper
     - Win32_Networking
     - Win32_Networking_WinSock
     - Win32_Security
@@ -3900,15 +3903,11 @@
   features: []
 - name: windows_aarch64_msvc 0.34.0
   features: []
-- name: windows_aarch64_msvc 0.36.1
-  features: []
 - name: windows_aarch64_msvc 0.42.2
   features: []
 - name: windows_aarch64_msvc 0.48.0
   features: []
 - name: windows_i686_gnu 0.34.0
-  features: []
-- name: windows_i686_gnu 0.36.1
   features: []
 - name: windows_i686_gnu 0.42.2
   features: []
@@ -3916,15 +3915,11 @@
   features: []
 - name: windows_i686_msvc 0.34.0
   features: []
-- name: windows_i686_msvc 0.36.1
-  features: []
 - name: windows_i686_msvc 0.42.2
   features: []
 - name: windows_i686_msvc 0.48.0
   features: []
 - name: windows_x86_64_gnu 0.34.0
-  features: []
-- name: windows_x86_64_gnu 0.36.1
   features: []
 - name: windows_x86_64_gnu 0.42.2
   features: []
@@ -3935,8 +3930,6 @@
 - name: windows_x86_64_gnullvm 0.48.0
   features: []
 - name: windows_x86_64_msvc 0.34.0
-  features: []
-- name: windows_x86_64_msvc 0.36.1
   features: []
 - name: windows_x86_64_msvc 0.42.2
   features: []
