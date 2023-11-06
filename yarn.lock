@@ -1366,10 +1366,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.18.59":
-  version: 16.18.59
-  resolution: "@types/node@npm:16.18.59"
-  checksum: 70f28744d239c48db056ff6355d2eb99305db54d1f9377b3f4458e92ffb4da8962a0c67665452d5f430cea2286ced256dac8f769660007aedd3676cf03ff28ad
+"@types/node@npm:16.18.60":
+  version: 16.18.60
+  resolution: "@types/node@npm:16.18.60"
+  checksum: aa0c81c3f20e663584bf17a5968e54c419277af7982ef41f9d83edd1b7ab4c8af2583a3c8a9e1cf659c6307e6f787e1be20522855121371f5a46d1d54f8a70e3
   languageName: node
   linkType: hard
 
@@ -2038,9 +2038,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.8.0":
-  version: 6.8.0
-  resolution: "ethers@npm:6.8.0"
+"ethers@npm:^6.8.1":
+  version: 6.8.1
+  resolution: "ethers@npm:6.8.1"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.2.0
@@ -2049,7 +2049,7 @@ __metadata:
     aes-js: 4.0.0-beta.5
     tslib: 2.4.0
     ws: 8.5.0
-  checksum: 967e4bdc23eae48444361ededa77cd884271ab7af059a0458b3c2ec52338124258cb92dbb28b37f53c7b532313dcbb209792ea3232c87927c94164697948182d
+  checksum: 78b48d2fd13cf77c7041379595a3155eaf6e4da423999b782e6ff14cc58e452ef8c52f3e2f6995fcd2b34dfdd55eaf5ece6067cd754fe0c72388b12e1768f1b3
   languageName: node
   linkType: hard
 
@@ -2310,12 +2310,12 @@ __metadata:
   resolution: "humanode-e2e-tests-ts@workspace:utils/e2e-tests/ts"
   dependencies:
     "@polkadot/api": ^10.10.1
-    "@types/node": 16.18.59
+    "@types/node": 16.18.60
     "@vitest/expect": ^0.34.6
     axios: ^1.6.0
-    ethers: ^6.8.0
+    ethers: ^6.8.1
     typescript: ^5.2.2
-    viem: ^1.18.0
+    viem: ^1.18.6
     vitest: ^0.34.6
   languageName: unknown
   linkType: soft
@@ -3322,9 +3322,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^1.18.0":
-  version: 1.18.0
-  resolution: "viem@npm:1.18.0"
+"viem@npm:^1.18.6":
+  version: 1.18.6
+  resolution: "viem@npm:1.18.6"
   dependencies:
     "@adraffy/ens-normalize": 1.9.4
     "@noble/curves": 1.2.0
@@ -3339,7 +3339,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: a37e9052b7a4daa7dec2e3937046d2c84840cef5921574f0de500f855d466d160aff0f567daf9b507ee3e8eeccbb4637de60f34545229c0ed126f30673e94cfb
+  checksum: 25869a88a1ac4ac6fd2f3956927e3d0a70b608423f8f6bca30e27395720c27aae521f2601042c59435a747b423457ce8d2011114af77eb9dacb00afefbf4a522
   languageName: node
   linkType: hard
 
