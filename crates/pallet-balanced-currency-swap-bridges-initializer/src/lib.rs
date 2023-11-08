@@ -56,7 +56,6 @@ pub mod pallet {
     /// The Bridge Pot Currency Swap Initializer Pallet.
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
-    #[pallet::generate_store(pub(super) trait Store)]
     pub struct Pallet<T>(_);
 
     /// Configuration trait of this pallet.
