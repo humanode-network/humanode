@@ -1366,10 +1366,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.18.59":
-  version: 16.18.59
-  resolution: "@types/node@npm:16.18.59"
-  checksum: 70f28744d239c48db056ff6355d2eb99305db54d1f9377b3f4458e92ffb4da8962a0c67665452d5f430cea2286ced256dac8f769660007aedd3676cf03ff28ad
+"@types/node@npm:16.18.61":
+  version: 16.18.61
+  resolution: "@types/node@npm:16.18.61"
+  checksum: fdd162829eddc9b0b82a1ec485ba3876428ff3bd94c5869b13f4a36eb2aa9bddd22ea7e8ee3b2faa91a0f70ff08d8fd8d4be7dd0d143f8ee776907d6a1d2ed25
   languageName: node
   linkType: hard
 
@@ -1605,14 +1605,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.6.0":
-  version: 1.6.0
-  resolution: "axios@npm:1.6.0"
+"axios@npm:^1.6.1":
+  version: 1.6.1
+  resolution: "axios@npm:1.6.1"
   dependencies:
     follow-redirects: ^1.15.0
     form-data: ^4.0.0
     proxy-from-env: ^1.1.0
-  checksum: c7c9f2ae9e0b9bad7d6f9a4dff030930b12ee667dedf54c3c776714f91681feb743c509ac0796ae5c01e12c4ab4a2bee74905068dd200fbc1ab86f9814578fb0
+  checksum: 573f03f59b7487d54551b16f5e155d1d130ad4864ed32d1da93d522b78a57123b34e3bde37f822a65ee297e79f1db840f9ad6514addff50d3cbf5caeed39e8dc
   languageName: node
   linkType: hard
 
@@ -2038,9 +2038,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.8.0":
-  version: 6.8.0
-  resolution: "ethers@npm:6.8.0"
+"ethers@npm:^6.8.1":
+  version: 6.8.1
+  resolution: "ethers@npm:6.8.1"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.2.0
@@ -2049,7 +2049,7 @@ __metadata:
     aes-js: 4.0.0-beta.5
     tslib: 2.4.0
     ws: 8.5.0
-  checksum: 967e4bdc23eae48444361ededa77cd884271ab7af059a0458b3c2ec52338124258cb92dbb28b37f53c7b532313dcbb209792ea3232c87927c94164697948182d
+  checksum: 78b48d2fd13cf77c7041379595a3155eaf6e4da423999b782e6ff14cc58e452ef8c52f3e2f6995fcd2b34dfdd55eaf5ece6067cd754fe0c72388b12e1768f1b3
   languageName: node
   linkType: hard
 
@@ -2310,12 +2310,12 @@ __metadata:
   resolution: "humanode-e2e-tests-ts@workspace:utils/e2e-tests/ts"
   dependencies:
     "@polkadot/api": ^10.10.1
-    "@types/node": 16.18.59
+    "@types/node": 16.18.61
     "@vitest/expect": ^0.34.6
-    axios: ^1.6.0
-    ethers: ^6.8.0
+    axios: ^1.6.1
+    ethers: ^6.8.1
     typescript: ^5.2.2
-    viem: ^1.18.0
+    viem: ^1.19.0
     vitest: ^0.34.6
   languageName: unknown
   linkType: soft
@@ -2324,7 +2324,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "humanode-tools@workspace:."
   dependencies:
-    prettier: ^2.8.8
+    prettier: ^3.1.0
   languageName: unknown
   linkType: soft
 
@@ -2879,12 +2879,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"prettier@npm:^2.8.8":
-  version: 2.8.8
-  resolution: "prettier@npm:2.8.8"
+"prettier@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "prettier@npm:3.1.0"
   bin:
-    prettier: bin-prettier.js
-  checksum: b49e409431bf129dd89238d64299ba80717b57ff5a6d1c1a8b1a28b590d998a34e083fa13573bc732bb8d2305becb4c9a4407f8486c81fa7d55100eb08263cf8
+    prettier: bin/prettier.cjs
+  checksum: 44b556bd56f74d7410974fbb2418bb4e53a894d3e7b42f6f87779f69f27a6c272fa7fc27cec0118cd11730ef3246478052e002cbd87e9a253f9cd04a56aa7d9b
   languageName: node
   linkType: hard
 
@@ -3322,9 +3322,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^1.18.0":
-  version: 1.18.0
-  resolution: "viem@npm:1.18.0"
+"viem@npm:^1.19.0":
+  version: 1.19.0
+  resolution: "viem@npm:1.19.0"
   dependencies:
     "@adraffy/ens-normalize": 1.9.4
     "@noble/curves": 1.2.0
@@ -3339,7 +3339,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: a37e9052b7a4daa7dec2e3937046d2c84840cef5921574f0de500f855d466d160aff0f567daf9b507ee3e8eeccbb4637de60f34545229c0ed126f30673e94cfb
+  checksum: d48344b20dfb4075493e39b1d173d22bcd3832bce0883ede24953dc6890e7b589f702066227dccbc5bc492a59b4ea33533e68341cf9332b3aeabe682686fd9c5
   languageName: node
   linkType: hard
 

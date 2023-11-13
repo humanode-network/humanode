@@ -9,12 +9,12 @@
   },
   "dependencies": {
     "@polkadot/api": "^10.10.1",
-    "@types/node": "16.18.59",
+    "@types/node": "16.18.61",
     "@vitest/expect": "^0.34.6",
-    "axios": "^1.6.0",
-    "ethers": "^6.8.0",
+    "axios": "^1.6.1",
+    "ethers": "^6.8.1",
     "typescript": "^5.2.2",
-    "viem": "^1.18.0",
+    "viem": "^1.19.0",
     "vitest": "^0.34.6"
   }
 }
