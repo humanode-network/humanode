@@ -411,7 +411,7 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// ### Complexity
-        /// `O(M + N) where M is the number of authentications and N is the number of nonces`
+        /// `O(M + N)` where `M` is the number of authentications and `N` is the number of nonces
         /// Cost incurred from decoding vec of length M or N. Charged as maximum.
         #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::authenticate(
