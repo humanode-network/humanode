@@ -155,12 +155,9 @@ pub fn create<C, P, BE, VKE, VSF, A, SC, EC>(
 where
     BE: Backend<Block> + 'static,
     BE::State: StateBackend<sp_runtime::traits::HashFor<Block>>,
-    C: ProvideRuntimeApi<Block> + BlockBackend<Block> + StorageProvider<Block, BE> + AuxStore,
-    C: BlockchainEvents<Block>,
-    C: HeaderBackend<Block>
-        + CallApiAt<Block>
-        + HeaderMetadata<Block, Error = BlockChainError>
-        + 'static,
+    C: ProvideRuntimeApi<Block> + CallApiAt<Block> + BlockBackend<Block>,
+    C: StorageProvider<Block, BE> + AuxStore + BlockchainEvents<Block>,
+    C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
     C: Send + Sync + 'static,
     C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
     C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
