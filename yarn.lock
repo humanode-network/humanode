@@ -908,10 +908,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.18.62":
-  version: 16.18.62
-  resolution: "@types/node@npm:16.18.62"
-  checksum: 816783dec474acdb476762ce6fed0cb92bbbf98327ba3f8946fcec9fe6824dd71f1189cc5bd9f00cd0db80947a64601caa8b87f6a2e0cee52c17ced466438e90
+"@types/node@npm:16.18.65":
+  version: 16.18.65
+  resolution: "@types/node@npm:16.18.65"
+  checksum: c53cd5bfff0b6868c2735c7afb24008b23ce204ce090cc4fd1bbe0515de32f1088d401183ecb1a329ea69ab81591ca4935875d0744abb4bd60f4f85810d8446e
   languageName: node
   linkType: hard
 
@@ -1580,9 +1580,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.8.1":
-  version: 6.8.1
-  resolution: "ethers@npm:6.8.1"
+"ethers@npm:^6.9.0":
+  version: 6.9.0
+  resolution: "ethers@npm:6.9.0"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.2.0
@@ -1591,7 +1591,7 @@ __metadata:
     aes-js: 4.0.0-beta.5
     tslib: 2.4.0
     ws: 8.5.0
-  checksum: 78b48d2fd13cf77c7041379595a3155eaf6e4da423999b782e6ff14cc58e452ef8c52f3e2f6995fcd2b34dfdd55eaf5ece6067cd754fe0c72388b12e1768f1b3
+  checksum: e7b3b912b92b818fe65a192b32f4dd87ce0b71f4ffc194b4b3764b4b17d3b6ed953b667293e4c9276f785fa8c8659934c513843350317c61178af8e6165afbdd
   languageName: node
   linkType: hard
 
@@ -1845,12 +1845,12 @@ __metadata:
   resolution: "humanode-e2e-tests-ts@workspace:utils/e2e-tests/ts"
   dependencies:
     "@polkadot/api": ^10.11.1
-    "@types/node": 16.18.62
+    "@types/node": 16.18.65
     "@vitest/expect": ^0.34.6
     axios: ^1.6.2
-    ethers: ^6.8.1
-    typescript: ^5.2.2
-    viem: ^1.19.4
+    ethers: ^6.9.0
+    typescript: ^5.3.2
+    viem: ^1.19.9
     vitest: ^0.34.6
   languageName: unknown
   linkType: soft
@@ -2762,23 +2762,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"typescript@npm:^5.2.2":
-  version: 5.2.2
-  resolution: "typescript@npm:5.2.2"
+"typescript@npm:^5.3.2":
+  version: 5.3.2
+  resolution: "typescript@npm:5.3.2"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 7912821dac4d962d315c36800fe387cdc0a6298dba7ec171b350b4a6e988b51d7b8f051317786db1094bd7431d526b648aba7da8236607febb26cf5b871d2d3c
+  checksum: d92534dda639eb825db013203404c1fabca8ac630564283c9e7dc9e64fd9c9346c2de95ecebdf3e6e8c1c32941bca1cfe0da37877611feb9daf8feeaea58d230
   languageName: node
   linkType: hard
 
-"typescript@patch:typescript@^5.2.2#~builtin<compat/typescript>":
-  version: 5.2.2
-  resolution: "typescript@patch:typescript@npm%3A5.2.2#~builtin<compat/typescript>::version=5.2.2&hash=14eedb"
+"typescript@patch:typescript@^5.3.2#~builtin<compat/typescript>":
+  version: 5.3.2
+  resolution: "typescript@patch:typescript@npm%3A5.3.2#~builtin<compat/typescript>::version=5.3.2&hash=14eedb"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 07106822b4305de3f22835cbba949a2b35451cad50888759b6818421290ff95d522b38ef7919e70fb381c5fe9c1c643d7dea22c8b31652a717ddbd57b7f4d554
+  checksum: c034461079fbfde3cb584ddee52afccb15b6e32a0ce186d0b2719968786f7ca73e1b07f71fac4163088790b16811c6ccf79680de190664ef66ff0ba9c1fe4a23
   languageName: node
   linkType: hard
 
@@ -2814,9 +2814,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^1.19.4":
-  version: 1.19.4
-  resolution: "viem@npm:1.19.4"
+"viem@npm:^1.19.9":
+  version: 1.19.9
+  resolution: "viem@npm:1.19.9"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.2.0
@@ -2831,7 +2831,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: d8fbbc4c519791b49214cde94c9026f24cf8affe549c1e0ab687667efc98a1d38e181fb2fe94f16ded3b9711f40f4ffb9617111af6910c38f5c37a4dfabbafd5
+  checksum: a18633f42f8075b16819b6914f5236c726875407e8e3741b1434af48193ac5a7c12cbe1e1522b0e13df7af4dd4c5daeea2371a21f9338f27c271700a7f6d1595
   languageName: node
   linkType: hard
 
