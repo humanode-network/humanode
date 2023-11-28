@@ -114,3 +114,11 @@ pub mod evm_fees {
     /// The value below is a nice round number that fits the requirements outlined above.
     pub const FEE_PER_GAS: u128 = 10_000_000_000_000;
 }
+
+/// Ethereum related constants.
+pub mod ethereum {
+    /// The maximum length of the extra data in the executed event.
+    ///
+    /// Current value has been taken based on moonbeam runtime ethereum pallet configuration.
+    pub const EXTRA_DATA_LENGTH: u32 = 30;
+}

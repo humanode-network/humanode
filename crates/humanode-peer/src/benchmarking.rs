@@ -14,7 +14,7 @@ use sp_consensus_babe::SlotDuration;
 use sp_core::{Encode, Pair};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{generic, OpaqueExtrinsic, SaturatedConversion};
+use sp_runtime::{OpaqueExtrinsic, SaturatedConversion};
 
 use crate::configuration::Configuration;
 use crate::service::FullClient;
@@ -168,6 +168,6 @@ fn fetch_nonce(client: &FullClient, account: sp_core::sr25519::Pair) -> u32 {
     let best_hash = client.chain_info().best_hash;
     client
         .runtime_api()
-        .account_nonce(&generic::BlockId::Hash(best_hash), account.public().into())
+        .account_nonce(best_hash, account.public().into())
         .expect("Fetching account nonce failed")
 }

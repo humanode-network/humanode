@@ -39,7 +39,6 @@ pub mod pallet {
 
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
-    #[pallet::generate_store(pub(super) trait Store)]
     pub struct Pallet<T>(_);
 
     /// Configuration trait of this pallet.
@@ -114,7 +113,7 @@ pub mod pallet {
             let mut not_created_precompiles = Vec::new();
 
             for precompile_address in &T::PrecompilesAddresses::get() {
-                let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
+                let code = pallet_evm::AccountCodes::<T>::get(*precompile_address);
                 if code != DUMMY_CODE {
                     not_created_precompiles.push(*precompile_address);
                 }
@@ -135,7 +134,7 @@ impl<T: Config> Pallet<T> {
         let mut weight = T::DbWeight::get().reads(0);
 
         for precompile_address in &T::PrecompilesAddresses::get() {
-            let code = pallet_evm::Pallet::<T>::account_codes(*precompile_address);
+            let code = pallet_evm::AccountCodes::<T>::get(*precompile_address);
             weight.saturating_accrue(T::DbWeight::get().reads(1));
 
             if code != DUMMY_CODE {

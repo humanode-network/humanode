@@ -10,7 +10,7 @@ fn genesis_build() {
         // Assert the state.
         for precompile_address in &v1::PrecompilesAddresses::get() {
             assert_eq!(
-                v1::Evm::account_codes(precompile_address),
+                pallet_evm::AccountCodes::<v1::Test>::get(precompile_address),
                 DUMMY_CODE.to_vec()
             );
             assert!(v1::EvmSystem::account_exists(precompile_address));
@@ -37,7 +37,7 @@ fn runtime_upgrade() {
         new_test_ext_with(v0::GenesisConfig::default()).execute_with(move || {
             // Check test preconditions.
             for precompile_address in &v1::PrecompilesAddresses::get() {
-                assert!(v0::Evm::account_codes(precompile_address).is_empty());
+                assert!(pallet_evm::AccountCodes::<v0::Test>::get(precompile_address).is_empty());
                 assert!(!v0::EvmSystem::account_exists(precompile_address));
             }
             assert_eq!(v1::DummyPrecompilesCode::last_execution_version(), 0);
@@ -52,7 +52,7 @@ fn runtime_upgrade() {
             // Verify precompiles addresses creation.
             for precompile_address in &v1::PrecompilesAddresses::get() {
                 assert_eq!(
-                    v1::Evm::account_codes(precompile_address),
+                    pallet_evm::AccountCodes::<v1::Test>::get(precompile_address),
                     DUMMY_CODE.to_vec()
                 );
                 assert!(v1::EvmSystem::account_exists(precompile_address));

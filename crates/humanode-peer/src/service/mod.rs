@@ -17,7 +17,9 @@ use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_finality_grandpa::SharedVoterState;
-use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
+use sc_service::{
+    Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager, WarpSyncParams,
+};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use tracing::*;
 
@@ -283,6 +285,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let eth_fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
     let eth_fee_history_limit = ethereum_rpc_config.fee_history_limit;
     let eth_overrides = fc_storage::overrides_handle(Arc::clone(&client));
+    let eth_pubsub_notification_sinks =
+        Arc::new(fc_mapping_sync::EthereumBlockNotificationSinks::<
+            fc_mapping_sync::EthereumBlockNotification<Block>,
+        >::default());
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -306,7 +312,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             spawn_handle: task_manager.spawn_handle(),
             import_queue,
             block_announce_validator_builder: None,
-            warp_sync: Some(warp_sync),
+            warp_sync_params: Some(WarpSyncParams::WithProvider(warp_sync)),
         })?;
 
     if config.offchain_worker.enabled {
@@ -367,9 +373,19 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             config.prometheus_registry().cloned(),
         ));
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
+        let eth_pubsub_notification_sinks = Arc::clone(&eth_pubsub_notification_sinks);
 
         Box::new(move |deny_unsafe, subscription_task_executor| {
-            Ok(humanode_rpc::create(humanode_rpc::Deps {
+            Ok(humanode_rpc::create::<
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                frontier::DefaultEthConfig<_, _>,
+            >(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
                 deny_unsafe,
@@ -408,6 +424,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     eth_block_data_cache: Arc::clone(&eth_block_data_cache),
                     eth_execute_gas_limit_multiplier: ethereum_rpc_config
                         .execute_gas_limit_multiplier,
+                    eth_forced_parent_hashes: None,
+                    eth_pubsub_notification_sinks: Arc::clone(&eth_pubsub_notification_sinks),
                 },
                 subscription_task_executor,
             })?)
@@ -475,7 +493,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let grandpa_config = sc_finality_grandpa::GrandpaParams {
             config: grandpa_config,
             link: grandpa_link,
-            network,
+            network: Arc::clone(&network),
             voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
             prometheus_registry,
             shared_voter_state: SharedVoterState::empty(),
@@ -504,6 +522,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             // sync_from: <Block::Header as HeaderT>::Number,
             0,
             SyncStrategy::Normal,
+            network,
+            eth_pubsub_notification_sinks,
         )
         .for_each(|()| futures::future::ready(())),
     );

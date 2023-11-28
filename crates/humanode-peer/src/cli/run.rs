@@ -9,6 +9,11 @@ use humanode_runtime::Runtime;
 use sc_service::PartialComponents;
 #[cfg(feature = "runtime-benchmarks")]
 use sp_core::Get;
+#[cfg(feature = "try-runtime")]
+use {
+    humanode_runtime::constants::babe::SLOT_DURATION,
+    try_runtime_cli::block_building_info::substrate_info,
+};
 
 use super::{bioauth, Root, Subcommand};
 #[cfg(feature = "runtime-benchmarks")]
@@ -248,11 +253,14 @@ pub async fn run() -> sc_cli::Result<()> {
                         registry,
                     )
                     .map_err(|e| sc_cli::Error::Service(sc_service::Error::Prometheus(e)))?;
+
+                    let info_provider = substrate_info(SLOT_DURATION);
+
                     Ok((
                         cmd.run::<Block, ExtendedHostFunctions<
                             sp_io::SubstrateHostFunctions,
                             <service::ExecutorDispatch as NativeExecutionDispatch>::ExtendHostFunctions,
-                        >>(),
+                        >, _>(Some(info_provider)),
                         task_manager,
                     ))
                 })

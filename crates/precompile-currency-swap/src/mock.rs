@@ -149,6 +149,8 @@ impl pallet_evm::Config for Test {
     type OnChargeTransaction = ();
     type OnCreate = ();
     type FindAuthor = ();
+    type Timestamp = Timestamp;
+    type WeightInfo = ();
 }
 
 type CurrencySwapPrecompile =

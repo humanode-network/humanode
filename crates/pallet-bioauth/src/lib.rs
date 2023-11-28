@@ -272,7 +272,6 @@ pub mod pallet {
 
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
-    #[pallet::generate_store(pub(super) trait Store)]
     pub struct Pallet<T>(_);
 
     /// The public key of the robonode.
@@ -409,16 +408,11 @@ pub mod pallet {
         }
     }
 
-    /// Dispatchable functions allow users to interact with the pallet and invoke state changes.
-    /// These functions materialize as "extrinsics", which are often compared to transactions.
-    /// Dispatchable functions must be annotated with a weight and must return
-    /// a [`frame_support::dispatch::DispatchResult`] or
-    /// or [`frame_support::dispatch::DispatchResultWithPostInfo`].
-    ///
-    /// Weight: `O(M + N) where M is the number of authentications and N is the number of nonces`
-    /// Cost incurred from decoding vec of length M or N. Charged as maximum
     #[pallet::call]
     impl<T: Config> Pallet<T> {
+        /// ### Complexity
+        /// `O(M + N)` where `M` is the number of authentications and `N` is the number of nonces
+        /// Cost incurred from decoding vec of length M or N. Charged as maximum.
         #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::authenticate(
             <ActiveAuthentications<T>>::get().len().try_into()
