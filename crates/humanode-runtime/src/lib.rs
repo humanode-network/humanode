@@ -104,6 +104,7 @@ pub use constants::{
     bioauth::{AUTHENTICATIONS_EXPIRE_AFTER, MAX_AUTHENTICATIONS, MAX_NONCES},
     block_time::MILLISECS_PER_BLOCK,
     equivocation::REPORT_LONGEVITY,
+    ethereum::EXTRA_DATA_LENGTH,
     im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
 };
 use static_assertions::const_assert;
@@ -713,7 +714,7 @@ impl pallet_ethereum::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
     type PostLogContent = PostBlockAndTxnHashes;
-    type ExtraDataLength = ConstU32<30>;
+    type ExtraDataLength = ConstU32<EXTRA_DATA_LENGTH>;
 }
 
 impl pallet_chain_properties::Config for Runtime {}
