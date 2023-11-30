@@ -75,8 +75,8 @@ pub struct GrandpaDeps<BE> {
     pub grandpa_shared_authority_set: SharedAuthoritySet<Hash, BlockNumber>,
     /// Receives notifications about justification events from Grandpa.
     pub grandpa_justification_stream: GrandpaJustificationStream<Block>,
-    /// consensus proof provider.
-    pub grandpa_consensus_provider: Arc<consensusProofProvider<BE, Block>>,
+    /// Finality proof provider.
+    pub grandpa_finality_provider: Arc<FinalityProofProvider<BE, Block>>,
 }
 
 /// Extra EVM related dependencies.
@@ -222,7 +222,7 @@ where
         grandpa_shared_voter_state,
         grandpa_shared_authority_set,
         grandpa_justification_stream,
-        grandpa_consensus_provider,
+        grandpa_finality_provider,
     } = grandpa;
 
     let EvmDeps {
@@ -270,7 +270,7 @@ where
             grandpa_shared_authority_set,
             grandpa_shared_voter_state,
             grandpa_justification_stream,
-            grandpa_consensus_provider,
+            grandpa_finality_provider,
         )
         .into_rpc(),
     )?;

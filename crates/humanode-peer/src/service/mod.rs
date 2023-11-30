@@ -15,8 +15,8 @@ use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
-pub use sc_executor::NativeElseWasmExecutor;
 use sc_consensus_grandpa::SharedVoterState;
+pub use sc_executor::NativeElseWasmExecutor;
 use sc_service::{
     Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager, WarpSyncParams,
 };
@@ -349,8 +349,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let grandpa_justification_stream = grandpa_link.justification_stream();
         let grandpa_shared_authority_set = grandpa_link.shared_authority_set().clone();
         let grandpa_shared_voter_state = sc_consensus_grandpa::SharedVoterState::empty();
-        let grandpa_consensus_proof_provider =
-            sc_consensus_grandpa::consensusProofProvider::new_for_service(
+        let grandpa_finality_proof_provider =
+            sc_consensus_grandpa::FinalityProofProvider::new_for_service(
                 Arc::clone(&backend),
                 Some(grandpa_shared_authority_set.clone()),
             );
@@ -410,7 +410,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     grandpa_shared_voter_state: grandpa_shared_voter_state.clone(),
                     grandpa_shared_authority_set: grandpa_shared_authority_set.clone(),
                     grandpa_justification_stream: grandpa_justification_stream.clone(),
-                    grandpa_consensus_provider: Arc::clone(&grandpa_consensus_proof_provider),
+                    grandpa_finality_provider: Arc::clone(&grandpa_finality_proof_provider),
                 },
                 select_chain: select_chain.clone(),
                 evm: humanode_rpc::EvmDeps {
