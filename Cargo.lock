@@ -1476,7 +1476,7 @@ dependencies = [
  "frame-support",
  "pallet-im-online",
  "sp-consensus-babe",
- "sp-finality-grandpa",
+ "sp-consensus-grandpa",
  "sp-runtime",
 ]
 
@@ -1486,7 +1486,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bip32",
- "hex-literal",
+ "hex-literal 0.4.1",
  "libsecp256k1",
  "sha3 0.10.6",
  "sp-core",
@@ -2038,7 +2038,7 @@ version = "0.1.0"
 dependencies = [
  "eip191-crypto",
  "hex",
- "hex-literal",
+ "hex-literal 0.4.1",
  "primitives-ethereum",
  "sp-std",
 ]
@@ -2049,14 +2049,14 @@ version = "0.1.0"
 dependencies = [
  "eip712-common",
  "eip712-common-test-utils",
- "hex-literal",
+ "hex-literal 0.4.1",
 ]
 
 [[package]]
 name = "eip712-common"
 version = "0.1.0"
 dependencies = [
- "hex-literal",
+ "hex-literal 0.4.1",
  "primitives-ethereum",
  "sp-core",
  "sp-core-hashing-proc-macro",
@@ -2082,7 +2082,7 @@ version = "0.1.0"
 dependencies = [
  "eip712-common",
  "eip712-common-test-utils",
- "hex-literal",
+ "hex-literal 0.4.1",
 ]
 
 [[package]]
@@ -2239,7 +2239,7 @@ checksum = "6a89fb87a9e103f71b903b80b670200b54cc67a07578f070681f1fffb7396fb7"
 dependencies = [
  "bytes",
  "ethereum-types",
- "hash-db",
+ "hash-db 0.15.2",
  "hash256-std-hasher",
  "parity-scale-codec",
  "rlp",
@@ -2321,6 +2321,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "evm"
+version = "1.0.0-dev"
+source = "git+https://github.com/rust-blockchain/evm?branch=master#53d082f0efeb4173a5bc4fc3f4a851a3b60fa149"
+dependencies = [
+ "evm-interpreter",
+ "primitive-types",
+ "sha3 0.10.6",
+]
+
+[[package]]
 name = "evm-core"
 version = "0.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2345,6 +2355,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "evm-interpreter"
+version = "1.0.0-dev"
+source = "git+https://github.com/rust-blockchain/evm?branch=master#53d082f0efeb4173a5bc4fc3f4a851a3b60fa149"
+dependencies = [
+ "parity-scale-codec",
+ "primitive-types",
+ "rlp",
+ "scale-info",
+ "serde",
+ "sha3 0.10.6",
+]
+
+[[package]]
 name = "evm-runtime"
 version = "0.37.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2364,6 +2387,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e43f2f1833d64e33f15592464d6fdd70f349dda7b1a53088eb83cd94014008c5"
 dependencies = [
  "futures",
+]
+
+[[package]]
+name = "expander"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f360349150728553f92e4c997a16af8915f418d3a0f21b440d34c5632f16ed84"
+dependencies = [
+ "blake2",
+ "fs-err",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -2405,7 +2441,7 @@ dependencies = [
 [[package]]
 name = "fc-cli"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "clap",
  "ethereum-types",
@@ -2423,16 +2459,14 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "async-trait",
- "fc-db",
  "fp-consensus",
  "fp-rpc",
  "sc-consensus",
  "sp-api",
  "sp-block-builder",
- "sp-blockchain",
  "sp-consensus",
  "sp-runtime",
  "thiserror",
@@ -2441,16 +2475,15 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
+ "async-trait",
  "fp-storage",
- "kvdb-rocksdb",
  "log",
  "parity-db",
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "sc-client-db",
- "smallvec",
  "sp-blockchain",
  "sp-core",
  "sp-database",
@@ -2460,7 +2493,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -2481,11 +2514,11 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "ethereum",
  "ethereum-types",
- "evm",
+ "evm 1.0.0-dev",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc-core",
@@ -2508,11 +2541,13 @@ dependencies = [
  "sc-client-api",
  "sc-network",
  "sc-network-common",
+ "sc-network-sync",
  "sc-rpc",
  "sc-service",
  "sc-transaction-pool",
  "sc-transaction-pool-api",
  "sc-utils",
+ "serde",
  "sp-api",
  "sp-block-builder",
  "sp-blockchain",
@@ -2529,7 +2564,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2542,7 +2577,7 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2692,7 +2727,7 @@ checksum = "00b0228411908ca8685dba7fc2cdd70ec9990a6e753e89b6ac91a84c40fbaf4b"
 [[package]]
 name = "fork-tree"
 version = "3.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
 ]
@@ -2709,7 +2744,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "hex",
  "impl-serde",
@@ -2721,13 +2756,14 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "sp-runtime-interface",
  "sp-std",
 ]
 
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -2739,7 +2775,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2753,9 +2789,9 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
- "evm",
+ "evm 1.0.0-dev",
  "frame-support",
  "parity-scale-codec",
  "serde",
@@ -2767,7 +2803,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2784,7 +2820,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -2796,7 +2832,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -2811,7 +2847,7 @@ checksum = "6c2141d6d6c8512188a7891b4b01590a45f6dac67afb4f255c4124dbb86d4eaa"
 [[package]]
 name = "frame-benchmarking"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support",
  "frame-support-procedural",
@@ -2836,7 +2872,7 @@ dependencies = [
 [[package]]
 name = "frame-benchmarking-cli"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "Inflector",
  "array-bytes",
@@ -2883,7 +2919,7 @@ dependencies = [
 [[package]]
 name = "frame-executive"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2912,7 +2948,7 @@ dependencies = [
 [[package]]
 name = "frame-remote-externalities"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "futures",
  "log",
@@ -2928,9 +2964,10 @@ dependencies = [
 [[package]]
 name = "frame-support"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "bitflags",
+ "environmental",
  "frame-metadata",
  "frame-support-procedural",
  "impl-trait-for-tuples",
@@ -2960,7 +2997,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "Inflector",
  "cfg-expr",
@@ -2975,7 +3012,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support-procedural-tools-derive",
  "proc-macro-crate",
@@ -2987,7 +3024,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools-derive"
 version = "3.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2997,7 +3034,7 @@ dependencies = [
 [[package]]
 name = "frame-system"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support",
  "log",
@@ -3015,7 +3052,7 @@ dependencies = [
 [[package]]
 name = "frame-system-benchmarking"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3030,7 +3067,7 @@ dependencies = [
 [[package]]
 name = "frame-system-rpc-runtime-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -3039,13 +3076,22 @@ dependencies = [
 [[package]]
 name = "frame-try-runtime"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
  "sp-api",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "fs-err"
+version = "2.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "88a41f105fe1d5b6b34b2055e3dc59bb79b46b48b2040b9e6c7b4b5de097aa41"
+dependencies = [
+ "autocfg",
 ]
 
 [[package]]
@@ -3056,6 +3102,16 @@ checksum = "9564fc758e15025b46aa6643b1b77d047d1a56a1aea6e01002ac0c7026876213"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "fs4"
+version = "0.6.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7672706608ecb74ab2e055c68327ffc25ae4cac1e12349204fd5fb0f3487cce2"
+dependencies = [
+ "rustix 0.37.11",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -3367,6 +3423,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d23bd4e7b5eda0d0f3a307e8b381fdc8ba9000f26fbe912250c0a4cc3956364a"
 
 [[package]]
+name = "hash-db"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8e7d7786361d7425ae2fe4f9e407eb0efaa0840f5212d109cc018c40c35c6ab4"
+
+[[package]]
 name = "hash256-std-hasher"
 version = "0.15.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3453,6 +3515,12 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+
+[[package]]
+name = "hex-literal"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
 
 [[package]]
 name = "hex-literal"
@@ -3607,7 +3675,7 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "futures",
  "hex",
- "hex-literal",
+ "hex-literal 0.4.1",
  "humanode-rpc",
  "humanode-runtime",
  "indoc",
@@ -3626,8 +3694,8 @@ dependencies = [
  "sc-client-api",
  "sc-consensus",
  "sc-consensus-babe",
+ "sc-consensus-grandpa",
  "sc-executor",
- "sc-finality-grandpa",
  "sc-service",
  "sc-telemetry",
  "sc-transaction-pool",
@@ -3636,8 +3704,8 @@ dependencies = [
  "sp-api",
  "sp-application-crypto",
  "sp-consensus-babe",
+ "sp-consensus-grandpa",
  "sp-core",
- "sp-finality-grandpa",
  "sp-inherents",
  "sp-io",
  "sp-keyring",
@@ -3678,8 +3746,8 @@ dependencies = [
  "sc-consensus-babe",
  "sc-consensus-babe-rpc",
  "sc-consensus-epochs",
- "sc-finality-grandpa",
- "sc-finality-grandpa-rpc",
+ "sc-consensus-grandpa",
+ "sc-consensus-grandpa-rpc",
  "sc-network",
  "sc-rpc",
  "sc-rpc-api",
@@ -3724,7 +3792,7 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "frame-try-runtime",
  "hex",
- "hex-literal",
+ "hex-literal 0.4.1",
  "keystore-bioauth-account-id",
  "libsecp256k1",
  "pallet-authorship",
@@ -5079,15 +5147,6 @@ dependencies = [
 
 [[package]]
 name = "memoffset"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5de893c32cde5f383baa4c04c5d6dbdd735cfd4a794b0debdb2bb1b421da5ff4"
-dependencies = [
- "autocfg",
-]
-
-[[package]]
-name = "memoffset"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d61c719bcfbcf5d62b3a09efa6088de8c54bc0bfcd3ea7ae39fcc186108b8de1"
@@ -5097,12 +5156,11 @@ dependencies = [
 
 [[package]]
 name = "memory-db"
-version = "0.31.0"
+version = "0.32.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e0c7cba9ce19ac7ffd2053ac9f49843bbd3f4318feedfd74e85c19d5fb0ba66"
+checksum = "808b50db46293432a45e63bc15ea51e0ab4c0a1647b8eb114e31a3e698dd6fbe"
 dependencies = [
- "hash-db",
- "hashbrown 0.12.3",
+ "hash-db 0.16.0",
 ]
 
 [[package]]
@@ -5467,20 +5525,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "nix"
-version = "0.26.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bfdda3d196821d6af13126e40375cdf7da646a96114af134d5f417a9a1dc8e1a"
-dependencies = [
- "bitflags",
- "cfg-if",
- "libc",
- "memoffset 0.7.1",
- "pin-utils",
- "static_assertions",
-]
-
-[[package]]
 name = "nohash-hasher"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5813,7 +5857,7 @@ dependencies = [
 [[package]]
 name = "pallet-authorship"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -5827,7 +5871,7 @@ dependencies = [
 [[package]]
 name = "pallet-babe"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5866,7 +5910,7 @@ dependencies = [
 [[package]]
 name = "pallet-balances"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -5959,7 +6003,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "hex-literal",
+ "hex-literal 0.4.1",
  "pallet-balances",
  "pallet-evm",
  "pallet-evm-balances",
@@ -5986,11 +6030,11 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "ethereum",
  "ethereum-types",
- "evm",
+ "evm 1.0.0-dev",
  "fp-consensus",
  "fp-ethereum",
  "fp-evm",
@@ -6022,16 +6066,17 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "environmental",
- "evm",
+ "evm 1.0.0-dev",
  "fp-account",
  "fp-evm",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex",
+ "hex-literal 0.3.4",
  "impl-trait-for-tuples",
  "log",
  "parity-scale-codec",
@@ -6061,7 +6106,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-balances"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6075,7 +6120,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "fp-evm",
  "num",
@@ -6084,7 +6129,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "fp-evm",
  "tiny-keccak",
@@ -6093,7 +6138,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -6103,7 +6148,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-system"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.39#a487de275b0bfa60f924fef5b3d6ba446fad1edd"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#de37e5347fda74321d7f64e9f888219e676722ec"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -6118,7 +6163,7 @@ dependencies = [
 [[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -6129,8 +6174,8 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-application-crypto",
+ "sp-consensus-grandpa",
  "sp-core",
- "sp-finality-grandpa",
  "sp-io",
  "sp-runtime",
  "sp-session",
@@ -6156,7 +6201,7 @@ dependencies = [
 [[package]]
 name = "pallet-im-online"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -6176,7 +6221,7 @@ dependencies = [
 [[package]]
 name = "pallet-multisig"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -6192,7 +6237,7 @@ dependencies = [
 [[package]]
 name = "pallet-offences"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6222,7 +6267,7 @@ dependencies = [
 [[package]]
 name = "pallet-session"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6243,7 +6288,7 @@ dependencies = [
 [[package]]
 name = "pallet-sudo"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6257,7 +6302,7 @@ dependencies = [
 [[package]]
 name = "pallet-timestamp"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -6294,7 +6339,7 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6310,7 +6355,7 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment-rpc"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "jsonrpsee",
  "pallet-transaction-payment-rpc-runtime-api",
@@ -6326,7 +6371,7 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment-rpc-runtime-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "pallet-transaction-payment",
  "parity-scale-codec",
@@ -6338,7 +6383,7 @@ dependencies = [
 [[package]]
 name = "pallet-utility"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -6754,7 +6799,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "hex-literal",
+ "hex-literal 0.4.1",
  "mockall",
  "num_enum 0.6.0",
  "pallet-balances",
@@ -6776,7 +6821,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "hex-literal",
+ "hex-literal 0.4.1",
  "mockall",
  "pallet-evm-accounts-mapping",
  "parity-scale-codec",
@@ -6795,7 +6840,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "hex-literal",
+ "hex-literal 0.4.1",
  "num_enum 0.6.0",
  "pallet-balances",
  "pallet-erc20-support",
@@ -6813,11 +6858,11 @@ dependencies = [
 name = "precompile-utils"
 version = "0.1.0"
 dependencies = [
- "evm",
+ "evm 0.37.0",
  "fp-evm",
  "frame-support",
  "frame-system",
- "hex-literal",
+ "hex-literal 0.4.1",
  "impl-trait-for-tuples",
  "log",
  "num_enum 0.6.0",
@@ -7546,7 +7591,7 @@ name = "robonode-crypto"
 version = "0.1.0"
 dependencies = [
  "ed25519-dalek 2.0.0",
- "hex-literal",
+ "hex-literal 0.4.1",
  "rand 0.8.5",
 ]
 
@@ -7651,7 +7696,7 @@ dependencies = [
  "log",
  "netlink-packet-route",
  "netlink-proto",
- "nix 0.24.3",
+ "nix",
  "thiserror",
  "tokio",
 ]
@@ -7834,7 +7879,7 @@ dependencies = [
 [[package]]
 name = "sc-allocator"
 version = "4.1.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "log",
  "sp-core",
@@ -7845,7 +7890,7 @@ dependencies = [
 [[package]]
 name = "sc-basic-authorship"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "futures",
  "futures-timer",
@@ -7868,7 +7913,7 @@ dependencies = [
 [[package]]
 name = "sc-block-builder"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "sc-client-api",
@@ -7878,28 +7923,31 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-state-machine",
 ]
 
 [[package]]
 name = "sc-chain-spec"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "memmap2",
  "sc-chain-spec-derive",
- "sc-network-common",
+ "sc-client-api",
+ "sc-executor",
+ "sc-network",
  "sc-telemetry",
  "serde",
  "serde_json",
+ "sp-blockchain",
  "sp-core",
  "sp-runtime",
+ "sp-state-machine",
 ]
 
 [[package]]
 name = "sc-chain-spec-derive"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -7910,7 +7958,7 @@ dependencies = [
 [[package]]
 name = "sc-cli"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "array-bytes",
  "chrono",
@@ -7950,7 +7998,7 @@ dependencies = [
 [[package]]
 name = "sc-client-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "fnv",
  "futures",
@@ -7976,9 +8024,9 @@ dependencies = [
 [[package]]
 name = "sc-client-db"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
- "hash-db",
+ "hash-db 0.16.0",
  "kvdb",
  "kvdb-memorydb",
  "kvdb-rocksdb",
@@ -8002,7 +8050,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "futures",
@@ -8027,7 +8075,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-babe"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "fork-tree",
@@ -8066,7 +8114,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-babe-rpc"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "futures",
  "jsonrpsee",
@@ -8088,7 +8136,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-epochs"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "fork-tree",
  "parity-scale-codec",
@@ -8099,100 +8147,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "sc-consensus-slots"
+name = "sc-consensus-grandpa"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
-dependencies = [
- "async-trait",
- "futures",
- "futures-timer",
- "log",
- "parity-scale-codec",
- "sc-client-api",
- "sc-consensus",
- "sc-telemetry",
- "sp-arithmetic",
- "sp-blockchain",
- "sp-consensus",
- "sp-consensus-slots",
- "sp-core",
- "sp-inherents",
- "sp-runtime",
- "sp-state-machine",
-]
-
-[[package]]
-name = "sc-executor"
-version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
-dependencies = [
- "lru",
- "parity-scale-codec",
- "parking_lot 0.12.1",
- "sc-executor-common",
- "sc-executor-wasmi",
- "sc-executor-wasmtime",
- "sp-api",
- "sp-core",
- "sp-externalities",
- "sp-io",
- "sp-panic-handler",
- "sp-runtime-interface",
- "sp-trie",
- "sp-version",
- "sp-wasm-interface",
- "tracing",
- "wasmi",
-]
-
-[[package]]
-name = "sc-executor-common"
-version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
-dependencies = [
- "sc-allocator",
- "sp-maybe-compressed-blob",
- "sp-wasm-interface",
- "thiserror",
- "wasm-instrument",
- "wasmi",
-]
-
-[[package]]
-name = "sc-executor-wasmi"
-version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
-dependencies = [
- "log",
- "sc-allocator",
- "sc-executor-common",
- "sp-runtime-interface",
- "sp-wasm-interface",
- "wasmi",
-]
-
-[[package]]
-name = "sc-executor-wasmtime"
-version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
-dependencies = [
- "anyhow",
- "cfg-if",
- "libc",
- "log",
- "once_cell",
- "rustix 0.36.17",
- "sc-allocator",
- "sc-executor-common",
- "sp-runtime-interface",
- "sp-wasm-interface",
- "wasmtime",
-]
-
-[[package]]
-name = "sc-finality-grandpa"
-version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "ahash 0.8.3",
  "array-bytes",
@@ -8221,8 +8178,8 @@ dependencies = [
  "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
+ "sp-consensus-grandpa",
  "sp-core",
- "sp-finality-grandpa",
  "sp-keystore",
  "sp-runtime",
  "substrate-prometheus-endpoint",
@@ -8230,9 +8187,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "sc-finality-grandpa-rpc"
+name = "sc-consensus-grandpa-rpc"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "finality-grandpa",
  "futures",
@@ -8240,7 +8197,7 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "sc-client-api",
- "sc-finality-grandpa",
+ "sc-consensus-grandpa",
  "sc-rpc",
  "serde",
  "sp-blockchain",
@@ -8250,15 +8207,107 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-consensus-slots"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
+dependencies = [
+ "async-trait",
+ "futures",
+ "futures-timer",
+ "log",
+ "parity-scale-codec",
+ "sc-client-api",
+ "sc-consensus",
+ "sc-telemetry",
+ "sp-arithmetic",
+ "sp-blockchain",
+ "sp-consensus",
+ "sp-consensus-slots",
+ "sp-core",
+ "sp-inherents",
+ "sp-runtime",
+ "sp-state-machine",
+]
+
+[[package]]
+name = "sc-executor"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
+dependencies = [
+ "lru",
+ "parity-scale-codec",
+ "parking_lot 0.12.1",
+ "sc-executor-common",
+ "sc-executor-wasmi",
+ "sc-executor-wasmtime",
+ "sp-api",
+ "sp-core",
+ "sp-externalities",
+ "sp-io",
+ "sp-panic-handler",
+ "sp-runtime-interface",
+ "sp-trie",
+ "sp-version",
+ "sp-wasm-interface",
+ "tracing",
+ "wasmi",
+]
+
+[[package]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
+dependencies = [
+ "sc-allocator",
+ "sp-maybe-compressed-blob",
+ "sp-wasm-interface",
+ "thiserror",
+ "wasm-instrument",
+ "wasmi",
+]
+
+[[package]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
+dependencies = [
+ "log",
+ "sc-allocator",
+ "sc-executor-common",
+ "sp-runtime-interface",
+ "sp-wasm-interface",
+ "wasmi",
+]
+
+[[package]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
+dependencies = [
+ "anyhow",
+ "cfg-if",
+ "libc",
+ "log",
+ "once_cell",
+ "rustix 0.36.17",
+ "sc-allocator",
+ "sc-executor-common",
+ "sp-runtime-interface",
+ "sp-wasm-interface",
+ "wasmtime",
+]
+
+[[package]]
 name = "sc-informant"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "ansi_term",
  "futures",
  "futures-timer",
  "log",
  "sc-client-api",
+ "sc-network",
  "sc-network-common",
  "sp-blockchain",
  "sp-runtime",
@@ -8267,7 +8316,7 @@ dependencies = [
 [[package]]
 name = "sc-keystore"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "array-bytes",
  "async-trait",
@@ -8282,12 +8331,12 @@ dependencies = [
 [[package]]
 name = "sc-network"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "array-bytes",
+ "async-channel",
  "async-trait",
  "asynchronous-codec",
- "backtrace",
  "bytes",
  "either",
  "fnv",
@@ -8295,6 +8344,7 @@ dependencies = [
  "futures-timer",
  "ip_network",
  "libp2p",
+ "linked_hash_set",
  "log",
  "lru",
  "mockall",
@@ -8325,7 +8375,7 @@ dependencies = [
 [[package]]
 name = "sc-network-bitswap"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "cid",
  "futures",
@@ -8334,6 +8384,7 @@ dependencies = [
  "prost",
  "prost-build",
  "sc-client-api",
+ "sc-network",
  "sc-network-common",
  "sp-blockchain",
  "sp-runtime",
@@ -8344,33 +8395,35 @@ dependencies = [
 [[package]]
 name = "sc-network-common"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
+ "array-bytes",
  "async-trait",
  "bitflags",
  "bytes",
  "futures",
  "futures-timer",
  "libp2p",
- "linked_hash_set",
  "parity-scale-codec",
  "prost-build",
  "sc-consensus",
  "sc-peerset",
+ "sc-utils",
  "serde",
  "smallvec",
  "sp-blockchain",
  "sp-consensus",
- "sp-finality-grandpa",
+ "sp-consensus-grandpa",
  "sp-runtime",
  "substrate-prometheus-endpoint",
  "thiserror",
+ "zeroize",
 ]
 
 [[package]]
 name = "sc-network-gossip"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "ahash 0.8.3",
  "futures",
@@ -8378,6 +8431,7 @@ dependencies = [
  "libp2p",
  "log",
  "lru",
+ "sc-network",
  "sc-network-common",
  "sc-peerset",
  "sp-runtime",
@@ -8388,7 +8442,7 @@ dependencies = [
 [[package]]
 name = "sc-network-light"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "array-bytes",
  "futures",
@@ -8398,6 +8452,7 @@ dependencies = [
  "prost",
  "prost-build",
  "sc-client-api",
+ "sc-network",
  "sc-network-common",
  "sc-peerset",
  "sp-blockchain",
@@ -8409,12 +8464,13 @@ dependencies = [
 [[package]]
 name = "sc-network-sync"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "array-bytes",
  "async-trait",
  "fork-tree",
  "futures",
+ "futures-timer",
  "libp2p",
  "log",
  "lru",
@@ -8424,6 +8480,7 @@ dependencies = [
  "prost-build",
  "sc-client-api",
  "sc-consensus",
+ "sc-network",
  "sc-network-common",
  "sc-peerset",
  "sc-utils",
@@ -8431,8 +8488,8 @@ dependencies = [
  "sp-arithmetic",
  "sp-blockchain",
  "sp-consensus",
+ "sp-consensus-grandpa",
  "sp-core",
- "sp-finality-grandpa",
  "sp-runtime",
  "substrate-prometheus-endpoint",
  "thiserror",
@@ -8441,7 +8498,7 @@ dependencies = [
 [[package]]
 name = "sc-network-transactions"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "array-bytes",
  "futures",
@@ -8449,6 +8506,7 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "pin-project",
+ "sc-network",
  "sc-network-common",
  "sc-peerset",
  "sc-utils",
@@ -8460,7 +8518,7 @@ dependencies = [
 [[package]]
 name = "sc-offchain"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "array-bytes",
  "bytes",
@@ -8476,6 +8534,7 @@ dependencies = [
  "parking_lot 0.12.1",
  "rand 0.8.5",
  "sc-client-api",
+ "sc-network",
  "sc-network-common",
  "sc-peerset",
  "sc-utils",
@@ -8490,7 +8549,7 @@ dependencies = [
 [[package]]
 name = "sc-peerset"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "futures",
  "libp2p",
@@ -8503,7 +8562,7 @@ dependencies = [
 [[package]]
 name = "sc-proposer-metrics"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "log",
  "substrate-prometheus-endpoint",
@@ -8512,7 +8571,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "futures",
  "jsonrpsee",
@@ -8542,7 +8601,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc-api"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "jsonrpsee",
  "parity-scale-codec",
@@ -8561,7 +8620,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc-server"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "http",
  "jsonrpsee",
@@ -8576,7 +8635,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc-spec-v2"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "array-bytes",
  "futures",
@@ -8602,7 +8661,7 @@ dependencies = [
 [[package]]
 name = "sc-service"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "directories",
@@ -8668,7 +8727,7 @@ dependencies = [
 [[package]]
 name = "sc-state-db"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "log",
  "parity-scale-codec",
@@ -8679,12 +8738,12 @@ dependencies = [
 [[package]]
 name = "sc-storage-monitor"
 version = "0.1.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "clap",
+ "fs4",
  "futures",
  "log",
- "nix 0.26.2",
  "sc-client-db",
  "sc-utils",
  "sp-core",
@@ -8695,7 +8754,7 @@ dependencies = [
 [[package]]
 name = "sc-sysinfo"
 version = "6.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "futures",
  "libc",
@@ -8714,7 +8773,7 @@ dependencies = [
 [[package]]
 name = "sc-telemetry"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "chrono",
  "futures",
@@ -8733,7 +8792,7 @@ dependencies = [
 [[package]]
 name = "sc-tracing"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "ansi_term",
  "atty",
@@ -8764,7 +8823,7 @@ dependencies = [
 [[package]]
 name = "sc-tracing-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
@@ -8775,7 +8834,7 @@ dependencies = [
 [[package]]
 name = "sc-transaction-pool"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "futures",
@@ -8802,7 +8861,7 @@ dependencies = [
 [[package]]
 name = "sc-transaction-pool-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "futures",
@@ -8816,15 +8875,16 @@ dependencies = [
 [[package]]
 name = "sc-utils"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
- "backtrace",
+ "async-channel",
  "futures",
  "futures-timer",
  "lazy_static",
  "log",
  "parking_lot 0.12.1",
  "prometheus",
+ "sp-arithmetic",
 ]
 
 [[package]]
@@ -9375,9 +9435,9 @@ dependencies = [
 [[package]]
 name = "sp-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
- "hash-db",
+ "hash-db 0.16.0",
  "log",
  "parity-scale-codec",
  "sp-api-proc-macro",
@@ -9393,9 +9453,11 @@ dependencies = [
 [[package]]
 name = "sp-api-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
+ "Inflector",
  "blake2",
+ "expander",
  "proc-macro-crate",
  "proc-macro2",
  "quote",
@@ -9405,7 +9467,7 @@ dependencies = [
 [[package]]
 name = "sp-application-crypto"
 version = "7.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -9418,7 +9480,7 @@ dependencies = [
 [[package]]
 name = "sp-arithmetic"
 version = "6.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "integer-sqrt",
  "num-traits",
@@ -9432,7 +9494,7 @@ dependencies = [
 [[package]]
 name = "sp-block-builder"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -9444,7 +9506,7 @@ dependencies = [
 [[package]]
 name = "sp-blockchain"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "futures",
  "log",
@@ -9462,25 +9524,22 @@ dependencies = [
 [[package]]
 name = "sp-consensus"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "futures",
  "log",
- "parity-scale-codec",
  "sp-core",
  "sp-inherents",
  "sp-runtime",
  "sp-state-machine",
- "sp-std",
- "sp-version",
  "thiserror",
 ]
 
 [[package]]
 name = "sp-consensus-aura"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "parity-scale-codec",
@@ -9498,7 +9557,7 @@ dependencies = [
 [[package]]
 name = "sp-consensus-babe"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "merlin",
@@ -9519,9 +9578,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-consensus-grandpa"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
+dependencies = [
+ "finality-grandpa",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-core",
+ "sp-keystore",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "sp-consensus-slots"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -9533,7 +9610,7 @@ dependencies = [
 [[package]]
 name = "sp-consensus-vrf"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -9546,7 +9623,7 @@ dependencies = [
 [[package]]
 name = "sp-core"
 version = "7.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "array-bytes",
  "base58",
@@ -9556,7 +9633,7 @@ dependencies = [
  "dyn-clonable",
  "ed25519-zebra",
  "futures",
- "hash-db",
+ "hash-db 0.16.0",
  "hash256-std-hasher",
  "impl-serde",
  "lazy_static",
@@ -9589,9 +9666,9 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing"
 version = "5.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
- "blake2",
+ "blake2b_simd",
  "byteorder",
  "digest 0.10.6",
  "sha2 0.10.6",
@@ -9603,7 +9680,7 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing-proc-macro"
 version = "5.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -9614,7 +9691,7 @@ dependencies = [
 [[package]]
 name = "sp-database"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "kvdb",
  "parking_lot 0.12.1",
@@ -9623,7 +9700,7 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "5.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -9633,7 +9710,7 @@ dependencies = [
 [[package]]
 name = "sp-externalities"
 version = "0.13.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "environmental",
  "parity-scale-codec",
@@ -9642,27 +9719,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "sp-finality-grandpa"
-version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
-dependencies = [
- "finality-grandpa",
- "log",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-api",
- "sp-application-crypto",
- "sp-core",
- "sp-keystore",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "sp-inherents"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "impl-trait-for-tuples",
@@ -9677,7 +9736,7 @@ dependencies = [
 [[package]]
 name = "sp-io"
 version = "7.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "bytes",
  "ed25519 1.5.3",
@@ -9702,7 +9761,7 @@ dependencies = [
 [[package]]
 name = "sp-keyring"
 version = "7.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "lazy_static",
  "sp-core",
@@ -9713,7 +9772,7 @@ dependencies = [
 [[package]]
 name = "sp-keystore"
 version = "0.13.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "futures",
@@ -9730,7 +9789,7 @@ dependencies = [
 [[package]]
 name = "sp-maybe-compressed-blob"
 version = "4.1.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "thiserror",
  "zstd",
@@ -9739,7 +9798,7 @@ dependencies = [
 [[package]]
 name = "sp-offchain"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "sp-api",
  "sp-core",
@@ -9749,7 +9808,7 @@ dependencies = [
 [[package]]
 name = "sp-panic-handler"
 version = "5.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "backtrace",
  "lazy_static",
@@ -9759,7 +9818,7 @@ dependencies = [
 [[package]]
 name = "sp-rpc"
 version = "6.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "rustc-hash",
  "serde",
@@ -9769,7 +9828,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime"
 version = "7.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "either",
  "hash256-std-hasher",
@@ -9791,7 +9850,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface"
 version = "7.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "bytes",
  "impl-trait-for-tuples",
@@ -9809,7 +9868,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface-proc-macro"
 version = "6.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "Inflector",
  "proc-macro-crate",
@@ -9821,7 +9880,7 @@ dependencies = [
 [[package]]
 name = "sp-session"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -9835,7 +9894,7 @@ dependencies = [
 [[package]]
 name = "sp-staking"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -9847,9 +9906,9 @@ dependencies = [
 [[package]]
 name = "sp-state-machine"
 version = "0.13.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
- "hash-db",
+ "hash-db 0.16.0",
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.1",
@@ -9867,12 +9926,12 @@ dependencies = [
 [[package]]
 name = "sp-std"
 version = "5.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 
 [[package]]
 name = "sp-storage"
 version = "7.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "impl-serde",
  "parity-scale-codec",
@@ -9885,7 +9944,7 @@ dependencies = [
 [[package]]
 name = "sp-timestamp"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "futures-timer",
@@ -9900,7 +9959,7 @@ dependencies = [
 [[package]]
 name = "sp-tracing"
 version = "6.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "sp-std",
@@ -9912,7 +9971,7 @@ dependencies = [
 [[package]]
 name = "sp-transaction-pool"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "sp-api",
  "sp-runtime",
@@ -9921,7 +9980,7 @@ dependencies = [
 [[package]]
 name = "sp-transaction-storage-proof"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "log",
@@ -9937,10 +9996,10 @@ dependencies = [
 [[package]]
 name = "sp-trie"
 version = "7.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "ahash 0.8.3",
- "hash-db",
+ "hash-db 0.16.0",
  "hashbrown 0.12.3",
  "lazy_static",
  "memory-db",
@@ -9960,7 +10019,7 @@ dependencies = [
 [[package]]
 name = "sp-version"
 version = "5.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "impl-serde",
  "parity-scale-codec",
@@ -9977,7 +10036,7 @@ dependencies = [
 [[package]]
 name = "sp-version-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "proc-macro2",
@@ -9988,7 +10047,7 @@ dependencies = [
 [[package]]
 name = "sp-wasm-interface"
 version = "7.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "anyhow",
  "impl-trait-for-tuples",
@@ -10002,7 +10061,7 @@ dependencies = [
 [[package]]
 name = "sp-weights"
 version = "4.0.0"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -10164,7 +10223,7 @@ dependencies = [
 [[package]]
 name = "substrate-frame-rpc-system"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "frame-system-rpc-runtime-api",
  "futures",
@@ -10183,7 +10242,7 @@ dependencies = [
 [[package]]
 name = "substrate-prometheus-endpoint"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "hyper",
  "log",
@@ -10195,7 +10254,7 @@ dependencies = [
 [[package]]
 name = "substrate-rpc-client"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "jsonrpsee",
@@ -10208,7 +10267,7 @@ dependencies = [
 [[package]]
 name = "substrate-wasm-builder"
 version = "5.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "ansi_term",
  "build-helper",
@@ -10749,11 +10808,11 @@ dependencies = [
 
 [[package]]
 name = "trie-db"
-version = "0.25.1"
+version = "0.27.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3390c0409daaa6027d6681393316f4ccd3ff82e1590a1e4725014e3ae2bf1920"
+checksum = "767abe6ffed88a1889671a102c2861ae742726f52e0a5a425b92c9fbfa7e9c85"
 dependencies = [
- "hash-db",
+ "hash-db 0.16.0",
  "hashbrown 0.13.2",
  "log",
  "rustc-hex",
@@ -10762,11 +10821,11 @@ dependencies = [
 
 [[package]]
 name = "trie-root"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9a36c5ca3911ed3c9a5416ee6c679042064b93fc637ded67e25f92e68d783891"
+checksum = "d4ed310ef5ab98f5fa467900ed906cb9232dd5376597e00fd4cba2a449d06c0b"
 dependencies = [
- "hash-db",
+ "hash-db 0.16.0",
 ]
 
 [[package]]
@@ -10775,7 +10834,7 @@ version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1631b201eb031b563d2e85ca18ec8092508e262a3196ce9bd10a67ec87b9f5c"
 dependencies = [
- "hash-db",
+ "hash-db 0.15.2",
  "rlp",
 ]
 
@@ -10834,7 +10893,7 @@ checksum = "3528ecfd12c466c6f163363caf2d02a71161dd5e1cc6ae7b34207ea2d42d81ed"
 [[package]]
 name = "try-runtime-cli"
 version = "0.10.0-dev"
-source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
  "clap",
@@ -11808,7 +11867,7 @@ dependencies = [
  "lazy_static",
  "libc",
  "log",
- "nix 0.24.3",
+ "nix",
  "rand 0.8.5",
  "thiserror",
  "tokio",
