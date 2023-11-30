@@ -97,9 +97,9 @@ sc-consensus = { git = "https://github.com/humanode-network/substrate", branch =
 sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sc-consensus-babe-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sc-consensus-epochs = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
+sc-consensus-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
+sc-consensus-grandpa-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
-sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
-sc-finality-grandpa-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sc-network = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
@@ -116,9 +116,9 @@ sp-block-builder = { git = "https://github.com/humanode-network/substrate", bran
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
+sp-consensus-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sp-core-hashing-proc-macro = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
-sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }
 sp-keyring = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.40", default-features = false }

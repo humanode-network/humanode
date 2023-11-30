@@ -16,7 +16,7 @@ use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
 pub use sc_executor::NativeElseWasmExecutor;
-use sc_finality_grandpa::SharedVoterState;
+use sc_consensus_grandpa::SharedVoterState;
 use sc_service::{
     Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager, WarpSyncParams,
 };
@@ -61,7 +61,7 @@ type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 /// Full type for `GrandpaBlockImport`.
 type FullGrandpa =
-    sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
+    sc_consensus_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
 /// Full type for `BabeBlockImport`.
 type FullBabe = sc_consensus_babe::BabeBlockImport<Block, FullClient, FullGrandpa>;
 /// Full type for `FrontierBlockImport`.
@@ -98,7 +98,7 @@ pub fn new_partial(
         sc_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
-            sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
+            sc_consensus_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
             EffectiveFullBlockImport,
             inherents::Creator<FullClient>,
@@ -157,7 +157,7 @@ pub fn new_partial(
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
 
-    let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
+    let (grandpa_block_import, grandpa_link) = sc_consensus_grandpa::block_import(
         Arc::clone(&client),
         &(Arc::clone(&client) as Arc<_>),
         select_chain.clone(),
@@ -246,7 +246,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         ..
     } = config;
 
-    let grandpa_protocol_name = sc_finality_grandpa::protocol_standard_name(
+    let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
         &client
             .block_hash(0)
             .ok()
@@ -258,11 +258,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     config
         .network
         .extra_sets
-        .push(sc_finality_grandpa::grandpa_peers_set_config(
+        .push(sc_consensus_grandpa::grandpa_peers_set_config(
             grandpa_protocol_name.clone(),
         ));
 
-    let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
+    let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
         Arc::clone(&backend),
         grandpa_link.shared_authority_set().clone(),
         Vec::default(),
@@ -348,9 +348,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
         let grandpa_justification_stream = grandpa_link.justification_stream();
         let grandpa_shared_authority_set = grandpa_link.shared_authority_set().clone();
-        let grandpa_shared_voter_state = sc_finality_grandpa::SharedVoterState::empty();
-        let grandpa_finality_proof_provider =
-            sc_finality_grandpa::FinalityProofProvider::new_for_service(
+        let grandpa_shared_voter_state = sc_consensus_grandpa::SharedVoterState::empty();
+        let grandpa_consensus_proof_provider =
+            sc_consensus_grandpa::consensusProofProvider::new_for_service(
                 Arc::clone(&backend),
                 Some(grandpa_shared_authority_set.clone()),
             );
@@ -410,7 +410,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     grandpa_shared_voter_state: grandpa_shared_voter_state.clone(),
                     grandpa_shared_authority_set: grandpa_shared_authority_set.clone(),
                     grandpa_justification_stream: grandpa_justification_stream.clone(),
-                    grandpa_finality_provider: Arc::clone(&grandpa_finality_proof_provider),
+                    grandpa_consensus_provider: Arc::clone(&grandpa_consensus_proof_provider),
                 },
                 select_chain: select_chain.clone(),
                 evm: humanode_rpc::EvmDeps {
@@ -476,7 +476,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         babe,
     );
 
-    let grandpa_config = sc_finality_grandpa::Config {
+    let grandpa_config = sc_consensus_grandpa::Config {
         // See substrate#1578: make this available through chainspec.
         // Ref: https://github.com/paritytech/substrate/issues/1578
         gossip_duration: Duration::from_millis(333),
@@ -490,11 +490,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     };
 
     if enable_grandpa {
-        let grandpa_config = sc_finality_grandpa::GrandpaParams {
+        let grandpa_config = sc_consensus_grandpa::GrandpaParams {
             config: grandpa_config,
             link: grandpa_link,
             network: Arc::clone(&network),
-            voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
+            voting_rule: sc_consensus_grandpa::VotingRulesBuilder::default().build(),
             prometheus_registry,
             shared_voter_state: SharedVoterState::empty(),
             telemetry: telemetry.as_ref().map(|x| x.handle()),
@@ -503,7 +503,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         task_manager.spawn_essential_handle().spawn_blocking(
             "grandpa-voter",
             Some("block-finalization"),
-            sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
+            sc_consensus_grandpa::run_grandpa_voter(grandpa_config)?,
         );
     }
 

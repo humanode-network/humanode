@@ -24,10 +24,10 @@ use sc_client_api::{
 use sc_consensus_babe::{BabeConfiguration, Epoch};
 use sc_consensus_babe_rpc::{Babe, BabeApiServer};
 use sc_consensus_epochs::SharedEpochChanges;
-use sc_finality_grandpa::{
+use sc_consensus_grandpa::{
     FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
 };
-use sc_finality_grandpa_rpc::{Grandpa, GrandpaApiServer};
+use sc_consensus_grandpa_rpc::{Grandpa, GrandpaApiServer};
 use sc_network::NetworkService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_rpc_spec_v2::chain_spec::{ChainSpec, ChainSpecApiServer};
@@ -75,8 +75,8 @@ pub struct GrandpaDeps<BE> {
     pub grandpa_shared_authority_set: SharedAuthoritySet<Hash, BlockNumber>,
     /// Receives notifications about justification events from Grandpa.
     pub grandpa_justification_stream: GrandpaJustificationStream<Block>,
-    /// Finality proof provider.
-    pub grandpa_finality_provider: Arc<FinalityProofProvider<BE, Block>>,
+    /// consensus proof provider.
+    pub grandpa_consensus_provider: Arc<consensusProofProvider<BE, Block>>,
 }
 
 /// Extra EVM related dependencies.
@@ -222,7 +222,7 @@ where
         grandpa_shared_voter_state,
         grandpa_shared_authority_set,
         grandpa_justification_stream,
-        grandpa_finality_provider,
+        grandpa_consensus_provider,
     } = grandpa;
 
     let EvmDeps {
@@ -270,7 +270,7 @@ where
             grandpa_shared_authority_set,
             grandpa_shared_voter_state,
             grandpa_justification_stream,
-            grandpa_finality_provider,
+            grandpa_consensus_provider,
         )
         .into_rpc(),
     )?;
