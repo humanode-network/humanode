@@ -312,19 +312,12 @@ impl pallet_babe::Config for Runtime {
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
 
-    type KeyOwnerProofSystem = Historical;
-
     type KeyOwnerProof =
-        <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, BabeId)>>::Proof;
-
-    type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-        KeyTypeId,
-        BabeId,
-    )>>::IdentificationTuple;
-
-    type HandleEquivocation = pallet_babe::EquivocationHandler<
-        Self::KeyOwnerIdentification,
+        <Historical as KeyOwnerProofSystem<(KeyTypeId, pallet_babe::AuthorityId)>>::Proof;
+    type EquivocationReportSystem = pallet_babe::EquivocationReportSystem<
+        Self,
         Offences,
+        Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
 
@@ -361,19 +354,11 @@ impl pallet_session::historical::Config for Runtime {
 impl pallet_grandpa::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
 
-    type KeyOwnerProofSystem = Historical;
-
-    type KeyOwnerProof =
-        <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
-
-    type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-        KeyTypeId,
-        GrandpaId,
-    )>>::IdentificationTuple;
-
-    type HandleEquivocation = pallet_grandpa::EquivocationHandler<
-        Self::KeyOwnerIdentification,
+    type KeyOwnerProof = <Historical as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
+    type EquivocationReportSystem = pallet_grandpa::EquivocationReportSystem<
+        Self,
         Offences,
+        Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
 
