@@ -13,7 +13,7 @@ pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_evm_accounts_mapping::WeightInfo for WeightInfo<T> {
   fn claim_account() -> Weight {
     // Minimum execution time: 58_000 nanoseconds.
-    Weight::from_ref_time(58_000_000)
+    Weight::from_parts(58_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(4))
       .saturating_add(T::DbWeight::get().writes(2))
   }

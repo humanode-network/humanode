@@ -639,11 +639,11 @@ const_assert!(WEIGHT_MILLISECS_PER_BLOCK == 2000u64);
 parameter_types! {
     pub BlockGasLimit: U256 = U256::from(constants::evm_fees::BLOCK_GAS_LIMIT);
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
-    pub WeightPerGas: Weight = Weight::from_ref_time(fp_evm::weight_per_gas(
+    pub WeightPerGas: Weight = Weight::from_parts(fp_evm::weight_per_gas(
         constants::evm_fees::BLOCK_GAS_LIMIT,
         NORMAL_DISPATCH_RATIO,
         WEIGHT_MILLISECS_PER_BLOCK,
-    ));
+    ), 0);
 }
 
 impl pallet_evm_system::Config for Runtime {
