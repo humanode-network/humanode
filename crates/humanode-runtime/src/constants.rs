@@ -113,6 +113,12 @@ pub mod evm_fees {
     /// - so we must charge about 0.2 * 10^18 / 21000 fee per a unit of gas
     /// The value below is a nice round number that fits the requirements outlined above.
     pub const FEE_PER_GAS: u128 = 10_000_000_000_000;
+
+    /// The max proof size ratio per block.
+    /// Set to the zero as humanode is solo chain. Otherwise, additional used gas has
+    /// been added to transactions cost.
+    /// Ref: <https://github.com/paritytech/frontier/pull/1039>
+    pub const GAS_LIMIT_POV_SIZE_RATIO: u64 = 0;
 }
 
 /// Ethereum related constants.

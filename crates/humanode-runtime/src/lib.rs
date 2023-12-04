@@ -623,6 +623,7 @@ const_assert!(WEIGHT_MILLISECS_PER_BLOCK == 2000u64);
 
 parameter_types! {
     pub BlockGasLimit: U256 = U256::from(constants::evm_fees::BLOCK_GAS_LIMIT);
+    pub GasLimitPovSizeRatio: u64 = constants::evm_fees::GAS_LIMIT_POV_SIZE_RATIO;
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
     pub WeightPerGas: Weight = Weight::from_parts(fp_evm::weight_per_gas(
         constants::evm_fees::BLOCK_GAS_LIMIT,
@@ -687,6 +688,7 @@ impl pallet_evm::Config for Runtime {
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
     >;
+    type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
     type Timestamp = Timestamp;
     type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
 }
