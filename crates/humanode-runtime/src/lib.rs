@@ -1338,6 +1338,10 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 validate,
+                // TODO: should we define limit for weight and transaction len.
+                // <https://github.com/paritytech/frontier/pull/1039>.
+                None,
+                None,
                 &config,
             ).map_err(|err| err.error.into())
         }
@@ -1374,6 +1378,10 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 validate,
+                // TODO: should we define limit for weight and transaction len.
+                // <https://github.com/paritytech/frontier/pull/1039>.
+                None,
+                None,
                 &config,
             ).map_err(|err| err.error.into())
         }
