@@ -21,7 +21,7 @@ pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
         ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get,
-        KeyOwnerProofSystem, Randomness,
+        KeyOwnerProofSystem, OnFinalize, Randomness,
     },
     weights::{
         constants::{
