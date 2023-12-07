@@ -29,6 +29,7 @@ use sc_consensus_grandpa::{
 };
 use sc_consensus_grandpa_rpc::{Grandpa, GrandpaApiServer};
 use sc_network::NetworkService;
+use sc_network_sync::SyncingService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_rpc_spec_v2::chain_spec::{ChainSpec, ChainSpecApiServer};
 use sc_transaction_pool::{ChainApi, Pool};
@@ -126,8 +127,10 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub deny_unsafe: DenyUnsafe,
     /// Graph pool instance.
     pub graph: Arc<Pool<A>>,
-    /// Network service
+    /// Network service.
     pub network: Arc<NetworkService<Block, Hash>>,
+    /// Chain syncing service.
+    pub sync: Arc<SyncingService<Block>>,
     /// A copy of the chain spec.
     pub chain_spec: Box<dyn sc_chain_spec::ChainSpec>,
     /// AuthorExt specific dependencies.
@@ -191,6 +194,7 @@ where
         deny_unsafe,
         graph,
         network,
+        sync,
         chain_spec,
         author_ext,
         is_authority,
@@ -303,7 +307,7 @@ where
             Arc::clone(&pool),
             graph,
             Some(humanode_runtime::TransactionConverter),
-            Arc::clone(&network),
+            Arc::clone(&sync),
             Vec::new(),
             Arc::clone(&eth_overrides),
             Arc::clone(&eth_backend),
@@ -324,7 +328,7 @@ where
         EthPubSub::new(
             Arc::clone(&pool),
             Arc::clone(&client),
-            Arc::clone(&network),
+            Arc::clone(&sync),
             Arc::clone(&subscription_task_executor),
             Arc::clone(&eth_overrides),
             Arc::clone(&eth_pubsub_notification_sinks),

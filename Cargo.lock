@@ -3722,6 +3722,7 @@ dependencies = [
  "sc-consensus-grandpa",
  "sc-consensus-grandpa-rpc",
  "sc-network",
+ "sc-network-sync",
  "sc-rpc",
  "sc-rpc-api",
  "sc-rpc-spec-v2",
