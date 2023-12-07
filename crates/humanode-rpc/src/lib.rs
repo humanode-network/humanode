@@ -87,7 +87,7 @@ pub struct EvmDeps {
     /// Maximum number of stored filters.
     pub eth_max_stored_filters: usize,
     /// Backend.
-    pub eth_backend: Arc<fc_db::Backend<Block>>,
+    pub eth_backend: Arc<dyn fc_db::BackendReader<Block> + Send + Sync>,
     /// Maximum number of logs in a query.
     pub eth_max_past_logs: u32,
     /// Maximum fee history cache size.
