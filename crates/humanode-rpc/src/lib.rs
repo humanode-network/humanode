@@ -8,7 +8,7 @@ use bioauth_flow_rpc::{Bioauth, BioauthServer, Signer, SignerFactory};
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use fc_rpc::{
     Eth, EthApiServer, EthBlockDataCacheTask, EthConfig, EthFilter, EthFilterApiServer, EthPubSub,
-    EthPubSubApiServer, Net, NetApiServer, Web3, Web3ApiServer,
+    EthPubSubApiServer, Net, NetApiServer, TxPool, TxPoolApiServer, Web3, Web3ApiServer,
 };
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use fc_storage::OverrideHandle;
@@ -305,7 +305,7 @@ where
         Eth::new(
             Arc::clone(&client),
             Arc::clone(&pool),
-            graph,
+            Arc::clone(&graph),
             Some(humanode_runtime::TransactionConverter),
             Arc::clone(&sync),
             Vec::new(),
@@ -346,11 +346,14 @@ where
         .into_rpc(),
     )?;
 
+    let eth_tx_pool = TxPool::new(Arc::clone(&client), graph);
+
     if let Some(eth_filter_pool) = eth_filter_pool {
         io.merge(
             EthFilter::new(
                 client,
                 eth_backend,
+                eth_tx_pool.clone(),
                 eth_filter_pool,
                 eth_max_stored_filters,
                 eth_max_past_logs,
@@ -359,6 +362,8 @@ where
             .into_rpc(),
         )?;
     }
+
+    io.merge(eth_tx_pool.into_rpc())?;
 
     Ok(io)
 }
