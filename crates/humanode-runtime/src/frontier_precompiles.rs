@@ -122,7 +122,7 @@ where
         }
     }
 
-    fn is_precompile(&self, address: H160, _gas: u64) -> bool {
+    fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
         IsPrecompileResult::Answer {
             is_precompile: Self::used_addresses().contains(&address),
             extra_cost: 0,
