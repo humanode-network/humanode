@@ -8,7 +8,6 @@ use std::{
 };
 
 use fc_consensus::FrontierBlockImport;
-use fc_mapping_sync::SyncStrategy;
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
@@ -102,7 +101,7 @@ pub fn new_partial(
             sc_consensus_babe::BabeLink<Block>,
             EffectiveFullBlockImport,
             inherents::Creator<FullClient>,
-            Arc<FrontierBackend>,
+            FrontierBackend,
             Option<Telemetry>,
         ),
     >,
@@ -111,6 +110,7 @@ pub fn new_partial(
     let Configuration {
         substrate: config,
         time_warp: time_warp_config,
+        ethereum_rpc: eth_rpc,
         ..
     } = config;
 
@@ -170,16 +170,13 @@ pub fn new_partial(
         Arc::clone(&client),
     )?;
 
-    let frontier_backend = Arc::new(FrontierBackend::open(
+    let frontier_backend = frontier::frontier_backend(
+        config,
         Arc::clone(&client),
-        &config.database,
-        &frontier::db_config_dir(config),
-    )?);
-    let frontier_block_import = FrontierBlockImport::new(
-        babe_block_import,
-        Arc::clone(&client),
-        Arc::clone(&frontier_backend),
+        &eth_rpc,
+        fc_storage::overrides_handle(Arc::clone(&client)),
     );
+    let frontier_block_import = FrontierBlockImport::new(babe_block_import, Arc::clone(&client));
 
     let raw_slot_duration = babe_link.config().slot_duration();
     let inherent_data_providers_creator = inherents::Creator {
@@ -364,7 +361,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let select_chain = select_chain.clone();
 
         let eth_filter_pool = eth_filter_pool.clone();
-        let frontier_backend = Arc::clone(&frontier_backend);
+        let frontier_backend = frontier_backend.clone();
         let eth_overrides = Arc::clone(&eth_overrides);
         let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
             task_manager.spawn_handle(),
@@ -418,7 +415,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 evm: humanode_rpc::EvmDeps {
                     eth_filter_pool: eth_filter_pool.clone(),
                     eth_max_stored_filters: ethereum_rpc_config.max_stored_filters,
-                    eth_backend: Arc::clone(&frontier_backend),
+                    eth_backend: match frontier_backend.clone() {
+                        fc_db::Backend::KeyValue(b) => Arc::new(b),
+                        fc_db::Backend::Sql(b) => Arc::new(b),
+                    },
                     eth_max_past_logs: ethereum_rpc_config.max_past_logs,
                     eth_fee_history_limit,
                     eth_fee_history_cache: Arc::clone(&eth_fee_history_cache),
@@ -497,7 +497,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             config: grandpa_config,
             link: grandpa_link,
             network: Arc::clone(&network),
-            sync: sync_service,
+            sync: Arc::clone(&sync_service),
             voting_rule: sc_consensus_grandpa::VotingRulesBuilder::default().build(),
             prometheus_registry,
             shared_voter_state: SharedVoterState::empty(),
@@ -511,26 +511,49 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         );
     }
 
-    task_manager.spawn_essential_handle().spawn_blocking(
-        "frontier-mapping-sync-worker",
-        Some("evm"),
-        MappingSyncWorker::new(
-            client.import_notification_stream(),
-            Duration::from_millis(humanode_runtime::SLOT_DURATION),
-            Arc::clone(&client),
-            backend,
-            Arc::clone(&eth_overrides),
-            frontier_backend,
-            // retry_times: usize,
-            3,
-            // sync_from: <Block::Header as HeaderT>::Number,
-            0,
-            SyncStrategy::Normal,
-            network,
-            eth_pubsub_notification_sinks,
-        )
-        .for_each(|()| futures::future::ready(())),
-    );
+    match frontier_backend {
+        fc_db::Backend::KeyValue(b) => {
+            task_manager.spawn_essential_handle().spawn(
+                "frontier-mapping-sync-worker",
+                Some("evm"),
+                fc_mapping_sync::kv::MappingSyncWorker::new(
+                    client.import_notification_stream(),
+                    Duration::from_millis(humanode_runtime::SLOT_DURATION),
+                    Arc::clone(&client),
+                    backend,
+                    Arc::clone(&eth_overrides),
+                    Arc::new(b),
+                    // retry_times: usize.
+                    3,
+                    // sync_from: <Block::Header as HeaderT>::Number.
+                    0,
+                    fc_mapping_sync::SyncStrategy::Normal,
+                    sync_service,
+                    eth_pubsub_notification_sinks,
+                )
+                .for_each(|()| futures::future::ready(())),
+            );
+        }
+        fc_db::Backend::Sql(b) => {
+            task_manager.spawn_essential_handle().spawn_blocking(
+                "frontier-mapping-sync-worker",
+                Some("evm"),
+                fc_mapping_sync::sql::SyncWorker::run(
+                    Arc::clone(&client),
+                    backend,
+                    Arc::new(b),
+                    client.import_notification_stream(),
+                    fc_mapping_sync::sql::SyncWorkerConfig {
+                        read_notification_timeout: Duration::from_secs(10),
+                        check_indexed_blocks_interval: Duration::from_secs(60),
+                    },
+                    fc_mapping_sync::SyncStrategy::Parachain,
+                    sync_service,
+                    eth_pubsub_notification_sinks,
+                ),
+            );
+        }
+    }
 
     // Spawn Frontier FeeHistory cache maintenance task.
     task_manager.spawn_essential_handle().spawn(

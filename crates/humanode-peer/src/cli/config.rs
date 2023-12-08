@@ -52,6 +52,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 max_stored_filters: params.max_stored_filters,
                 fee_history_limit: params.fee_history_limit,
                 execute_gas_limit_multiplier: params.execute_gas_limit_multiplier,
+                frontier_backend_type: params.frontier_backend_type,
+                frontier_sql_backend_pool_size: params.frontier_sql_backend_pool_size,
+                frontier_sql_backend_num_ops_timeout: params.frontier_sql_backend_num_ops_timeout,
+                frontier_sql_backend_thread_count: params.frontier_sql_backend_thread_count,
+                frontier_sql_backend_cache_size: params.frontier_sql_backend_cache_size,
             });
 
         let time_warp = self.time_warp_params().and_then(|params| {
