@@ -8,7 +8,7 @@ use std::{
 };
 
 use fc_consensus::FrontierBlockImport;
-use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
+use fc_mapping_sync::SyncStrategy;
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
@@ -304,7 +304,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             bioauth_keys::OneOfOneSelector,
         ));
 
-    let (network, system_rpc_tx, tx_handler_controller, network_starter) =
+    let (network, system_rpc_tx, tx_handler_controller, network_starter, sync_service) =
         sc_service::build_network(sc_service::BuildNetworkParams {
             config: &config,
             client: Arc::clone(&client),
@@ -345,6 +345,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             })
         };
         let network = Arc::clone(&network);
+        let sync_service = Arc::clone(&sync_service);
 
         let grandpa_justification_stream = grandpa_link.justification_stream();
         let grandpa_shared_authority_set = grandpa_link.shared_authority_set().clone();
@@ -391,6 +392,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 deny_unsafe,
                 graph: Arc::clone(pool.pool()),
                 network: Arc::clone(&network),
+                sync: Arc::clone(&sync_service),
                 chain_spec: chain_spec.cloned_box(),
                 author_ext: humanode_rpc::AuthorExtDeps {
                     author_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
@@ -449,6 +451,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         system_rpc_tx,
         tx_handler_controller,
         config,
+        sync_service: Arc::clone(&sync_service),
         telemetry: telemetry.as_mut(),
     })?;
 
@@ -458,8 +461,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         select_chain,
         env: proposer_factory,
         block_import,
-        sync_oracle: Arc::clone(&network),
-        justification_sync_link: Arc::clone(&network),
+        sync_oracle: Arc::clone(&sync_service),
+        justification_sync_link: Arc::clone(&sync_service),
         create_inherent_data_providers: inherents::ForProduction(inherent_data_providers_creator),
         force_authoring,
         backoff_authoring_blocks,
@@ -494,6 +497,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             config: grandpa_config,
             link: grandpa_link,
             network: Arc::clone(&network),
+            sync: sync_service,
             voting_rule: sc_consensus_grandpa::VotingRulesBuilder::default().build(),
             prometheus_registry,
             shared_voter_state: SharedVoterState::empty(),
