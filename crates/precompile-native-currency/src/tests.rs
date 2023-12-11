@@ -389,6 +389,8 @@ fn deposit_works() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -396,7 +398,7 @@ fn deposit_works() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
         assert_eq!(
             execinfo.logs,
@@ -447,6 +449,8 @@ fn deposit_fails_zero_value() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -454,7 +458,7 @@ fn deposit_fails_zero_value() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Revert(ExitRevert::Reverted)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(
             execinfo.value,
             "deposited amount must be non-zero".as_bytes()
@@ -501,6 +505,8 @@ fn withdraw_works() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -508,7 +514,7 @@ fn withdraw_works() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
         assert_eq!(
             execinfo.logs,
@@ -559,6 +565,8 @@ fn withdraw_fails_more_than_allowed() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -566,7 +574,7 @@ fn withdraw_fails_more_than_allowed() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Revert(ExitRevert::Reverted)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(
             execinfo.value,
             "trying to withdraw more than owned".as_bytes()

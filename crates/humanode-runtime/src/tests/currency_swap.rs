@@ -202,6 +202,8 @@ fn currency_swap_precompile_call_works() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -209,7 +211,7 @@ fn currency_swap_precompile_call_works() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
         assert_eq!(
             execinfo.logs,

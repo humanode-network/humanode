@@ -3,7 +3,7 @@
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::arithmetic_side_effects)]
 
-use fp_evm::PrecompileHandle;
+use fp_evm::{IsPrecompileResult, PrecompileHandle};
 use frame_support::{
     once_cell::sync::Lazy,
     sp_io,
@@ -122,6 +122,7 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
 
 frame_support::parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
+    pub GasLimitPovSizeRatio: u64 = 0;
     pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
     pub MockPrecompiles: MockPrecompileSet = MockPrecompileSet;
 }
@@ -149,6 +150,7 @@ impl pallet_evm::Config for Test {
     type OnChargeTransaction = ();
     type OnCreate = ();
     type FindAuthor = ();
+    type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
     type Timestamp = Timestamp;
     type WeightInfo = ();
 }
@@ -178,8 +180,11 @@ impl pallet_evm::PrecompileSet for MockPrecompileSet {
     /// Check if the given address is a precompile. Should only be called to
     /// perform the check while not executing the precompile afterward, since
     /// `execute` already performs a check internally.
-    fn is_precompile(&self, address: H160) -> bool {
-        address == *PRECOMPILE_ADDRESS
+    fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
+        IsPrecompileResult::Answer {
+            is_precompile: address == *PRECOMPILE_ADDRESS,
+            extra_cost: 0,
+        }
     }
 }
 

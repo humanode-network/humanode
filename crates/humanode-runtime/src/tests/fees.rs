@@ -169,7 +169,7 @@ pub mod crypto {
 }
 
 fn switch_block() {
-    use frame_support::traits::{OnFinalize, OnInitialize};
+    use frame_support::traits::OnInitialize;
 
     if System::block_number() != 0 {
         AllPalletsWithSystem::on_finalize(System::block_number());
@@ -315,6 +315,8 @@ fn simple_evm_transaction_via_runner_estimate() {
                 access_list,
                 is_transactional,
                 validate,
+                None,
+                None,
                 config,
             )
             .unwrap();
@@ -323,7 +325,11 @@ fn simple_evm_transaction_via_runner_estimate() {
             fp_evm::CallInfo {
                 exit_reason: fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Stopped),
                 value: vec![],
-                used_gas: 21000.into(),
+                used_gas: fp_evm::UsedGas {
+                    standard: 21000.into(),
+                    effective: 21000.into(),
+                },
+                weight_info: Default::default(),
                 logs: vec![]
             }
         );

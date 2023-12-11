@@ -154,6 +154,7 @@ pub type Precompiles<R> =
 
 frame_support::parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
+    pub GasLimitPovSizeRatio: u64 = 0;
     pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
     pub PrecompileAddress: H160 = *PRECOMPILE_ADDRESS;
     pub PrecompilesValue: Precompiles<Test> = Precompiles::new();
@@ -182,6 +183,7 @@ impl pallet_evm::Config for Test {
     type OnChargeTransaction = ();
     type OnCreate = ();
     type FindAuthor = ();
+    type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
     type Timestamp = Timestamp;
     type WeightInfo = ();
 }

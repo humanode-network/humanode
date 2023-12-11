@@ -114,6 +114,7 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
 
 frame_support::parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
+    pub GasLimitPovSizeRatio: u64 = 0;
     pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
 }
 
@@ -140,6 +141,7 @@ impl pallet_evm::Config for Test {
     type OnChargeTransaction = ();
     type OnCreate = ();
     type FindAuthor = ();
+    type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
     type Timestamp = Timestamp;
     type WeightInfo = ();
 }
