@@ -230,7 +230,10 @@ pub async fn run() -> sc_cli::Result<()> {
             let runner = root.create_humanode_runner(cmd)?;
             runner.sync_run(|config| {
                 let partial = service::new_partial(&config)?;
-                let frontier_backend = partial.other.4;
+                let frontier_backend = match partial.other.4 {
+                    fc_db::Backend::KeyValue(kv) => Arc::new(kv),
+                    _ => panic!("Only fc_db::Backend::KeyValue supported"),
+                };
                 cmd.run(partial.client, frontier_backend)
             })
         }
