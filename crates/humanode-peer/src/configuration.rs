@@ -91,16 +91,11 @@ pub struct EthereumRpc {
 }
 
 /// Avalailable frontier backend types.
-#[derive(Debug, Copy, Clone, clap::ValueEnum)]
+#[derive(Default, Debug, Copy, Clone, clap::ValueEnum)]
 pub enum FrontierBackendType {
     /// Either RocksDb or ParityDb as per inherited from the global backend settings.
+    #[default]
     KeyValue,
     /// Sql database with custom log indexing.
     Sql,
-}
-
-impl Default for FrontierBackendType {
-    fn default() -> FrontierBackendType {
-        FrontierBackendType::KeyValue
-    }
 }
