@@ -76,7 +76,7 @@ pub struct EthereumRpc {
     /// Sets the frontier backend type (KeyValue or Sql).
     pub frontier_backend_type: FrontierBackendType,
 
-    // Sets the SQL backend's pool size.
+    /// Sets the SQL backend's pool size.
     pub frontier_sql_backend_pool_size: u32,
 
     /// Sets the SQL backend's query timeout in number of VM ops.
