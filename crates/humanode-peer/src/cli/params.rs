@@ -80,7 +80,7 @@ pub struct EthereumRpcParams {
     #[arg(long, value_enum, ignore_case = true, default_value_t = FrontierBackendType::default())]
     pub frontier_backend_type: FrontierBackendType,
 
-    // Sets the SQL backend's pool size.
+    /// Sets the SQL backend's pool size.
     #[arg(long, default_value = "100")]
     pub frontier_sql_backend_pool_size: u32,
 

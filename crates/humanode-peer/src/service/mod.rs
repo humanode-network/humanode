@@ -173,7 +173,7 @@ pub fn new_partial(
     let frontier_backend = frontier::frontier_backend(
         config,
         Arc::clone(&client),
-        &eth_rpc,
+        eth_rpc,
         fc_storage::overrides_handle(Arc::clone(&client)),
     );
     let frontier_block_import = FrontierBlockImport::new(babe_block_import, Arc::clone(&client));
