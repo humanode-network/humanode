@@ -12,7 +12,7 @@ use super::{FrontierBackend, FullClient};
 use crate::configuration::{EthereumRpc, FrontierBackendType};
 
 /// Create frontier dir.
-pub fn db_config_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
+fn db_config_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
     config
         .base_path
         .as_ref()
@@ -23,6 +23,7 @@ pub fn db_config_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
         })
 }
 
+/// Create frontier backend.
 pub fn frontier_backend(
     config: &Configuration,
     client: Arc<FullClient>,
