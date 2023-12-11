@@ -21,6 +21,9 @@ pub struct Configuration {
     /// Ethereum RPC configuration.
     pub ethereum_rpc: Option<EthereumRpc>,
 
+    /// Frontier backend configuration.
+    pub frontier_backend: FrontierBackend,
+
     /// Time warp mode configuration.
     /// If not defined, time warp mode isn't enabled.
     pub time_warp: Option<TimeWarp>,
@@ -72,7 +75,10 @@ pub struct EthereumRpc {
     /// When using eth_call/eth_estimateGas, the maximum allowed gas limit will be
     /// block.gas_limit * execute_gas_limit_multiplier.
     pub execute_gas_limit_multiplier: u64,
+}
 
+/// Frontier backend configuration parameters.
+pub struct FrontierBackend {
     /// Sets the frontier backend type (KeyValue or Sql).
     pub frontier_backend_type: FrontierBackendType,
 

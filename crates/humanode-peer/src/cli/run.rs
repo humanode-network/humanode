@@ -231,8 +231,8 @@ pub async fn run() -> sc_cli::Result<()> {
             runner.sync_run(|config| {
                 let partial = service::new_partial(&config)?;
                 let frontier_backend = match partial.other.4 {
-                    fc_db::Backend::KeyValue(kv) => Arc::new(kv),
-                    _ => panic!("Only fc_db::Backend::KeyValue supported"),
+                    fc_db::Backend::KeyValue(kv_fb) => Arc::new(kv_fb),
+                    _ => panic!("Only fc_db::Backend::KeyValue supported for FrontierDb command"),
                 };
                 cmd.run(partial.client, frontier_backend)
             })

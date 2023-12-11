@@ -52,12 +52,16 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 max_stored_filters: params.max_stored_filters,
                 fee_history_limit: params.fee_history_limit,
                 execute_gas_limit_multiplier: params.execute_gas_limit_multiplier,
-                frontier_backend_type: params.frontier_backend_type,
-                frontier_sql_backend_pool_size: params.frontier_sql_backend_pool_size,
-                frontier_sql_backend_num_ops_timeout: params.frontier_sql_backend_num_ops_timeout,
-                frontier_sql_backend_thread_count: params.frontier_sql_backend_thread_count,
-                frontier_sql_backend_cache_size: params.frontier_sql_backend_cache_size,
             });
+
+        let fb_params = self.frontier_backend();
+        let frontier_backend = configuration::FrontierBackend {
+            frontier_backend_type: fb_params.frontier_backend_type,
+            frontier_sql_backend_pool_size: fb_params.frontier_sql_backend_pool_size,
+            frontier_sql_backend_num_ops_timeout: fb_params.frontier_sql_backend_num_ops_timeout,
+            frontier_sql_backend_thread_count: fb_params.frontier_sql_backend_thread_count,
+            frontier_sql_backend_cache_size: fb_params.frontier_sql_backend_cache_size,
+        };
 
         let time_warp = self.time_warp_params().and_then(|params| {
             params
@@ -76,6 +80,7 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             substrate,
             bioauth_flow,
             ethereum_rpc,
+            frontier_backend,
             time_warp,
         })
     }
@@ -88,6 +93,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
     /// Provide the Ethereum RPC params.
     fn ethereum_rpc_params(&self) -> Option<&params::EthereumRpcParams> {
         None
+    }
+
+    /// Provide the Frontier backend params.
+    fn frontier_backend(&self) -> params::FrontierBackendParams {
+        Default::default()
     }
 
     /// Provide the time warp related params, if available.

@@ -110,7 +110,7 @@ pub fn new_partial(
     let Configuration {
         substrate: config,
         time_warp: time_warp_config,
-        ethereum_rpc: eth_rpc,
+        frontier_backend: fronter_backend_config,
         ..
     } = config;
 
@@ -173,7 +173,7 @@ pub fn new_partial(
     let frontier_backend = frontier::frontier_backend(
         config,
         Arc::clone(&client),
-        eth_rpc,
+        fronter_backend_config,
         fc_storage::overrides_handle(Arc::clone(&client)),
     );
     let frontier_block_import = FrontierBlockImport::new(babe_block_import, Arc::clone(&client));

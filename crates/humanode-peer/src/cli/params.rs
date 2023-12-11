@@ -75,7 +75,11 @@ pub struct EthereumRpcParams {
     /// block.gas_limit * execute_gas_limit_multiplier.
     #[arg(long, default_value = "10")]
     pub execute_gas_limit_multiplier: u64,
+}
 
+/// Shared CLI parameters used to configure Frontier backend.
+#[derive(Debug, Default, clap::Parser, Clone)]
+pub struct FrontierBackendParams {
     /// Sets the frontier backend type (KeyValue or Sql).
     #[arg(long, value_enum, ignore_case = true, default_value_t = FrontierBackendType::default())]
     pub frontier_backend_type: FrontierBackendType,
