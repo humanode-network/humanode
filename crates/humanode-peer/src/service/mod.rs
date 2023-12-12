@@ -87,7 +87,7 @@ pub fn keystore_container(
 }
 
 /// Extract substrate partial components.
-pub fn new_partial(
+pub async fn new_partial(
     config: &Configuration,
 ) -> Result<
     PartialComponents<
@@ -175,7 +175,9 @@ pub fn new_partial(
         Arc::clone(&client),
         fronter_backend_config,
         fc_storage::overrides_handle(Arc::clone(&client)),
-    );
+    )
+    .await?;
+
     let frontier_block_import = FrontierBlockImport::new(babe_block_import, Arc::clone(&client));
 
     let raw_slot_duration = babe_link.config().slot_duration();
@@ -235,7 +237,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 frontier_backend,
                 mut telemetry,
             ),
-    } = new_partial(&config)?;
+    } = new_partial(&config).await?;
     let Configuration {
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
