@@ -87,7 +87,8 @@ sp-io = { workspace = true }
 vergen = { workspace = true, features = ["cargo", "git", "gitcl"] }
 
 [features]
-default = []
+default = ["rocksdb"]
+rocksdb = ["fc-db/rocksdb"]
 runtime-benchmarks = [
   "frame-benchmarking-cli/runtime-benchmarks",
   "frame-benchmarking/runtime-benchmarks",

@@ -86,7 +86,13 @@ pub async fn run() -> sc_cli::Result<()> {
         }
         Some(Subcommand::PurgeChain(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
-            runner.sync_run(|config| cmd.run(config.substrate.database))
+            runner.sync_run(|config| {
+                match config.frontier_backend.frontier_backend_type {
+                    crate::configuration::FrontierBackendType::KeyValue => todo!(),
+                    crate::configuration::FrontierBackendType::Sql => todo!(),
+                }
+                cmd.run(config.substrate.database)
+            })
         }
         Some(Subcommand::Revert(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
