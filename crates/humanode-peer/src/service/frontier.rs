@@ -12,7 +12,7 @@ use super::{FrontierBackend, FullClient, ServiceError};
 use crate::configuration::{self, FrontierBackendType};
 
 /// Create frontier dir.
-fn db_config_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
+pub fn db_config_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
     config
         .base_path
         .as_ref()
