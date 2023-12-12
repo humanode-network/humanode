@@ -8,7 +8,7 @@ use sc_cli::SubstrateCli;
 use sc_client_api::backend::Backend;
 use sc_service::{BasePath, Configuration};
 
-use super::{FrontierBackend, FullClient};
+use super::{FrontierBackend, FullClient, ServiceError};
 use crate::configuration::{self, FrontierBackendType};
 
 /// Create frontier dir.
@@ -24,31 +24,29 @@ fn db_config_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
 }
 
 /// Create frontier backend.
-pub fn frontier_backend(
+pub async fn frontier_backend(
     config: &Configuration,
     client: Arc<FullClient>,
     fb_config: &configuration::FrontierBackend,
     eth_overrides: Arc<OverrideHandle<Block>>,
-) -> FrontierBackend {
+) -> Result<FrontierBackend, ServiceError> {
     match fb_config.frontier_backend_type {
-        FrontierBackendType::KeyValue => FrontierBackend::KeyValue(
-            fc_db::kv::Backend::open(
-                Arc::clone(&client),
-                &config.database,
-                &db_config_dir(config),
-            )
-            .unwrap(),
-        ),
+        FrontierBackendType::KeyValue => Ok(FrontierBackend::KeyValue(fc_db::kv::Backend::open(
+            Arc::clone(&client),
+            &config.database,
+            &db_config_dir(config),
+        )?)),
         FrontierBackendType::Sql => {
             let db_path = db_config_dir(config).join("sql");
-            std::fs::create_dir_all(&db_path).expect("failed creating sql db directory");
-            let backend = futures::executor::block_on(fc_db::sql::Backend::new(
+            std::fs::create_dir_all(&db_path)?;
+
+            let backend = fc_db::sql::Backend::new(
                 fc_db::sql::BackendConfig::Sqlite(fc_db::sql::SqliteBackendConfig {
                     path: Path::new("sqlite:///")
                         .join(db_path)
                         .join("frontier.db3")
                         .to_str()
-                        .unwrap(),
+                        .ok_or(ServiceError::Other("invalid sqlite path".to_owned()))?,
                     create_if_missing: true,
                     thread_count: fb_config.frontier_sql_backend_thread_count,
                     cache_size: fb_config.frontier_sql_backend_cache_size,
@@ -56,9 +54,11 @@ pub fn frontier_backend(
                 fb_config.frontier_sql_backend_pool_size,
                 std::num::NonZeroU32::new(fb_config.frontier_sql_backend_num_ops_timeout),
                 Arc::clone(&eth_overrides),
-            ))
-            .unwrap_or_else(|err| panic!("failed creating sql backend: {:?}", err));
-            FrontierBackend::Sql(backend)
+            )
+            .await
+            .map_err(|err| ServiceError::Application(err.into()))?;
+
+            Ok(FrontierBackend::Sql(backend))
         }
     }
 }
