@@ -431,12 +431,12 @@ Options:
       --out-peers <COUNT>
           Specify the number of outgoing connections we're trying to maintain
 
-          [default: 15]
+          [default: 8]
 
       --in-peers <COUNT>
           Maximum number of inbound full nodes peers
 
-          [default: 25]
+          [default: 32]
 
       --in-peers-light <COUNT>
           Maximum number of inbound light nodes peers
