@@ -910,8 +910,11 @@
     - fp-consensus
     - fp-rpc
     - futures
+    - kvdb-rocksdb
     - parity-db
+    - rocksdb
     - sc-client-api
+    - smallvec
     - sp-api
     - sp-storage
     - sql
@@ -1315,6 +1318,7 @@
 - name: humanode-peer 0.1.0
   features:
     - default
+    - rocksdb
 - name: humanode-rpc 0.1.0
   features: []
 - name: humanode-runtime 0.1.0
