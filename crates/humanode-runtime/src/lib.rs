@@ -1428,7 +1428,7 @@ impl_runtime_apis! {
         fn pending_block(
             xts: Vec<<Block as BlockT>::Extrinsic>,
         ) -> (Option<pallet_ethereum::Block>, Option<Vec<TransactionStatus>>) {
-            for ext in xts.into_iter() {
+            for ext in xts {
                 let _ = Executive::apply_extrinsic(ext);
             }
 
