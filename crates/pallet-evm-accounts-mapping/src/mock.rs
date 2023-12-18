@@ -62,7 +62,7 @@ impl TestExternalitiesExt for frame_support::sp_io::TestExternalities {
 }
 
 frame_support::construct_runtime!(
-    pub enum Test where
+    pub struct Test where
         Block = Block,
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
