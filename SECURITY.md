@@ -5,9 +5,9 @@
 To report a security vulnerability, send an email to `security@humanode.io` or
 use Github Private Security Vulnerability Reporting feature.
 
-> Please reach out to us in private; do not create a GitHub issue (since they
-> are visible to anyone), or use public Discord server, public Telegram groups
-> or other public communication channels.
+> Please reach out to us in private via methods above; do **not** create a GitHub
+> issue (since they are visible to anyone), or use public Discord server,
+> public Telegram groups or other public communication channels.
 
 We will reply to you with a confirmation that we received your message, and
 provide our feedback. You can expect a reply from us within 24 hours - usually
