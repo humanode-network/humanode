@@ -562,14 +562,14 @@ pub struct OffenceSlasher;
 impl
     sp_staking::offence::OnOffenceHandler<
         AccountId,
-        pallet_im_online::IdentificationTuple<Runtime>,
+        <Runtime as pallet_offences::Config>::IdentificationTuple,
         Weight,
     > for OffenceSlasher
 {
     fn on_offence(
         offenders: &[sp_staking::offence::OffenceDetails<
             AccountId,
-            pallet_im_online::IdentificationTuple<Runtime>,
+            <Runtime as pallet_offences::Config>::IdentificationTuple,
         >],
         _slash_fraction: &[Perbill],
         _session: sp_staking::SessionIndex,
