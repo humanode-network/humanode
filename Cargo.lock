@@ -2381,16 +2381,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "evm"
-version = "1.0.0-dev"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#9fdc7fe450a173c4452a0adee7d59ec784297e8c"
-dependencies = [
- "evm-interpreter",
- "primitive-types",
- "sha3 0.10.6",
-]
-
-[[package]]
 name = "evm-core"
 version = "0.39.0"
 source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
@@ -2410,19 +2400,6 @@ dependencies = [
  "evm-core",
  "evm-runtime",
  "primitive-types",
-]
-
-[[package]]
-name = "evm-interpreter"
-version = "1.0.0-dev"
-source = "git+https://github.com/rust-blockchain/evm?branch=master#9fdc7fe450a173c4452a0adee7d59ec784297e8c"
-dependencies = [
- "parity-scale-codec",
- "primitive-types",
- "rlp",
- "scale-info",
- "serde",
- "sha3 0.10.6",
 ]
 
 [[package]]
@@ -2589,7 +2566,7 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/polkado
 dependencies = [
  "ethereum",
  "ethereum-types",
- "evm 0.39.1",
+ "evm",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc-core",
@@ -2879,7 +2856,7 @@ name = "fp-evm"
 version = "3.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#9f01d682957d0a2bcc022e0f0264941342fb5305"
 dependencies = [
- "evm 0.39.1",
+ "evm",
  "frame-support",
  "parity-scale-codec",
  "serde",
@@ -6216,7 +6193,7 @@ source = "git+https://github.com/humanode-network/frontier?branch=locked/polkado
 dependencies = [
  "ethereum",
  "ethereum-types",
- "evm 0.39.1",
+ "evm",
  "fp-consensus",
  "fp-ethereum",
  "fp-evm",
@@ -6251,7 +6228,7 @@ version = "6.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#9f01d682957d0a2bcc022e0f0264941342fb5305"
 dependencies = [
  "environmental",
- "evm 0.39.1",
+ "evm",
  "fp-account",
  "fp-evm",
  "frame-benchmarking",
@@ -7060,7 +7037,7 @@ dependencies = [
 name = "precompile-utils"
 version = "0.1.0"
 dependencies = [
- "evm 1.0.0-dev",
+ "evm",
  "fp-evm",
  "frame-support",
  "frame-system",
