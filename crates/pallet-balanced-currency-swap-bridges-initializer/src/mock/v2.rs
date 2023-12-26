@@ -28,7 +28,7 @@ frame_support::construct_runtime!(
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
-        System: frame_system,
+        System: frame_system = 0,
         Balances: pallet_balances::<Instance1>,
         EvmBalances: pallet_balances::<Instance2>,
         SwapBridgeNativeToEvmPot: pallet_pot::<Instance1>,
