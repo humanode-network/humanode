@@ -3,7 +3,7 @@
 use std::marker::PhantomData;
 
 use sp_application_crypto::{AppKey, CryptoTypePublicPair};
-use sp_keystore::SyncCryptoStorePtr;
+use sp_keystore::KeystorePtr;
 
 pub mod traits;
 
@@ -19,7 +19,7 @@ pub trait KeySelector<Key> {
 /// Extracts a public key of a certain type from the keystore.
 pub struct KeyExtractor<Id, Selector> {
     /// Keystore to extract author.
-    keystore: SyncCryptoStorePtr,
+    keystore: KeystorePtr,
     /// The validator key selector.
     selector: Selector,
     /// The identity type.
@@ -42,7 +42,7 @@ pub enum KeyExtractorError<SelectorError> {
 
 impl<Id, Selector> KeyExtractor<Id, Selector> {
     /// Create a new [`KeyExtractor`].
-    pub fn new(keystore: SyncCryptoStorePtr, selector: Selector) -> Self {
+    pub fn new(keystore: KeystorePtr, selector: Selector) -> Self {
         Self {
             keystore,
             selector,
@@ -62,7 +62,7 @@ where
     fn extract_key(&self) -> Result<Option<Self::PublicKeyType>, Self::Error> {
         let keystore_ref = self.keystore.as_ref();
 
-        let crypto_type_public_pairs = sp_keystore::SyncCryptoStore::keys(keystore_ref, Id::ID)
+        let crypto_type_public_pairs = sp_keystore::KeystorePtr::keys(keystore_ref, Id::ID)
             .map_err(KeyExtractorError::Keystore)?;
 
         let matching_crypto_public_keys = crypto_type_public_pairs.into_iter().filter_map(
