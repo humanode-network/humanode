@@ -2,9 +2,10 @@
 
 use codec::{Decode, Encode};
 use frame_support::sp_runtime::DispatchError;
+use scale_info::TypeInfo;
 
 /// An error that can occur while evaluating the lock logic.
-#[derive(Debug, Encode, Decode, PartialEq, Eq)]
+#[derive(Debug, Encode, Decode, PartialEq, Eq, TypeInfo)]
 pub enum EvaluationError {
     /// No vesting is found for the given account.
     NoVesting,
