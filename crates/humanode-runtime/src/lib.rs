@@ -1121,7 +1121,9 @@ impl_runtime_apis! {
             session_keys: Vec<u8>
         ) -> Result<<Block as BlockT>::Extrinsic, author_ext_api::CreateSignedSetKeysExtrinsicError> {
             let account_id =
-                AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
+                AccountId::new(
+                    <<KeystoreBioauthAccountId as sp_application_crypto::AppCrypto>::Public as sp_application_crypto::AppPublic>::Generic::from(id.clone()).0
+                );
             let public_id = <KeystoreBioauthAccountId as frame_system::offchain::AppCrypto<
                     <Runtime as frame_system::offchain::SigningTypes>::Public,
                     <Runtime as frame_system::offchain::SigningTypes>::Signature
@@ -1145,7 +1147,9 @@ impl_runtime_apis! {
     impl bioauth_flow_api::BioauthFlowApi<Block, KeystoreBioauthAccountId, UnixMilliseconds> for Runtime {
         fn bioauth_status(id: &KeystoreBioauthAccountId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
             let id =
-                AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
+                AccountId::new(
+                    <<KeystoreBioauthAccountId as sp_application_crypto::AppCrypto>::Public as sp_application_crypto::AppPublic>::Generic::from(id.clone()).0
+                );
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()
