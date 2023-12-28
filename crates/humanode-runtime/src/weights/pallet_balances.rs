@@ -11,7 +11,7 @@ use sp_std::marker::PhantomData;
 /// Weight functions for `pallet_balances`.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_balances::WeightInfo for WeightInfo<T> {
-  fn transfer() -> Weight {
+  fn transfer_allow_death() -> Weight {
     // Minimum execution time: 37_000 nanoseconds.
     Weight::from_parts(37_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(2))
@@ -23,13 +23,13 @@ impl<T: frame_system::Config> pallet_balances::WeightInfo for WeightInfo<T> {
       .saturating_add(T::DbWeight::get().reads(1))
       .saturating_add(T::DbWeight::get().writes(1))
   }
-  fn set_balance_creating() -> Weight {
+  fn force_set_balance_creating() -> Weight {
     // Minimum execution time: 20_000 nanoseconds.
     Weight::from_parts(20_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(1))
       .saturating_add(T::DbWeight::get().writes(1))
   }
-  fn set_balance_killing() -> Weight {
+  fn force_set_balance_killing() -> Weight {
     // Minimum execution time: 21_000 nanoseconds.
     Weight::from_parts(21_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(1))
@@ -52,5 +52,8 @@ impl<T: frame_system::Config> pallet_balances::WeightInfo for WeightInfo<T> {
     Weight::from_parts(17_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(1))
       .saturating_add(T::DbWeight::get().writes(1))
+  }
+  fn upgrade_accounts(u: u32, ) -> Weight {
+    todo!()
   }
 }
