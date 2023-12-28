@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::{fungible::Inspect, Currency};
+use frame_support::traits::{fungible::Inspect, tokens::Provenance, Currency};
 pub use pallet::*;
 use primitives_currency_swap::CurrencySwap as CurrencySwapT;
 pub use weights::*;
@@ -140,7 +140,8 @@ pub mod pallet {
             existence_requirement: ExistenceRequirement,
         ) -> DispatchResult {
             let estimated_swapped_balance = T::CurrencySwap::estimate_swapped_balance(amount);
-            ToCurrencyOf::<T>::can_deposit(&to, estimated_swapped_balance, false).into_result()?;
+            ToCurrencyOf::<T>::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
+                .into_result()?;
 
             let withdrawed_imbalance = FromCurrencyOf::<T>::withdraw(
                 &who,
