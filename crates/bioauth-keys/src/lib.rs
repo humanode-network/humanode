@@ -2,7 +2,7 @@
 
 use std::marker::PhantomData;
 
-use sp_application_crypto::{AppKey, CryptoTypePublicPair};
+use sp_application_crypto::AppCrypto;
 use sp_keystore::KeystorePtr;
 
 pub mod traits;
@@ -53,34 +53,23 @@ impl<Id, Selector> KeyExtractor<Id, Selector> {
 
 impl<Id, Selector> traits::KeyExtractor for KeyExtractor<Id, Selector>
 where
-    Id: for<'a> TryFrom<&'a [u8]> + AppKey,
+    Id: for<'a> TryFrom<&'a [u8]> + AppCrypto,
     Selector: KeySelector<Id>,
 {
     type Error = KeyExtractorError<Selector::Error>;
     type PublicKeyType = Id;
 
     fn extract_key(&self) -> Result<Option<Self::PublicKeyType>, Self::Error> {
-        let keystore_ref = self.keystore.as_ref();
-
-        let crypto_type_public_pairs = sp_keystore::KeystorePtr::keys(keystore_ref, Id::ID)
-            .map_err(KeyExtractorError::Keystore)?;
-
-        let matching_crypto_public_keys = crypto_type_public_pairs.into_iter().filter_map(
-            |CryptoTypePublicPair(crypto_type_id, public_key)| {
-                if crypto_type_id == Id::CRYPTO_ID {
-                    Some(public_key)
-                } else {
-                    None
-                }
-            },
-        );
-
-        let matching_keys =
-            matching_crypto_public_keys.filter_map(|bytes| Id::try_from(&bytes).ok());
+        let public_keys = self
+            .keystore
+            .keys(Id::ID)
+            .map_err(KeyExtractorError::Keystore)?
+            .into_iter()
+            .filter_map(|bytes| Id::try_from(&bytes).ok());
 
         let key = self
             .selector
-            .select_key(matching_keys)
+            .select_key(public_keys)
             .map_err(KeyExtractorError::Selector)?;
 
         Ok(key)
