@@ -40,7 +40,7 @@ use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_consensus::SelectChain;
 use sp_consensus_babe::BabeApi;
 use sp_core::H256;
-use sp_keystore::SyncCryptoStorePtr;
+use sp_keystore::KeystorePtr;
 
 /// Extra dependencies for `AuthorExt`.
 pub struct AuthorExtDeps<VKE> {
@@ -65,7 +65,7 @@ pub struct BabeDeps {
     /// BABE pending epoch changes.
     pub babe_shared_epoch_changes: SharedEpochChanges<Block, Epoch>,
     /// The keystore that manages the keys of the node.
-    pub keystore: SyncCryptoStorePtr,
+    pub keystore: KeystorePtr,
 }
 
 /// Extra dependencies for GRANDPA.
