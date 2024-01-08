@@ -21,9 +21,8 @@ use sc_client_api::{
     client::BlockchainEvents,
     BlockBackend,
 };
-use sc_consensus_babe::{BabeConfiguration, Epoch};
+use sc_consensus_babe::BabeWorkerHandle;
 use sc_consensus_babe_rpc::{Babe, BabeApiServer};
-use sc_consensus_epochs::SharedEpochChanges;
 use sc_consensus_grandpa::{
     FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
 };
@@ -60,10 +59,8 @@ pub struct BioauthDeps<VKE, VSF> {
 
 /// Extra dependencies for BABE.
 pub struct BabeDeps {
-    /// BABE protocol config.
-    pub babe_config: BabeConfiguration,
-    /// BABE pending epoch changes.
-    pub babe_shared_epoch_changes: SharedEpochChanges<Block, Epoch>,
+    /// A handle to the BABE worker for issuing requests.
+    pub babe_worker_handle: BabeWorkerHandle<Block>,
     /// The keystore that manages the keys of the node.
     pub keystore: KeystorePtr,
 }
@@ -218,8 +215,7 @@ where
 
     let BabeDeps {
         keystore,
-        babe_config,
-        babe_shared_epoch_changes,
+        babe_worker_handle,
     } = babe;
 
     let GrandpaDeps {
@@ -259,9 +255,8 @@ where
     io.merge(
         Babe::new(
             Arc::clone(&client),
-            babe_shared_epoch_changes,
+            babe_worker_handle,
             keystore,
-            babe_config,
             select_chain,
             deny_unsafe,
         )
