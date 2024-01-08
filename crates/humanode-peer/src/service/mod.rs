@@ -273,7 +273,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let role = config.role.clone();
     let name = config.network.node_name.clone();
-    let keystore = Some(keystore_container.sync_keystore());
+    let keystore = Some(keystore_container.keystore());
     let enable_grandpa = !config.disable_grandpa;
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
@@ -297,7 +297,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let account_validator_key_extractor =
         Arc::new(bioauth_keys::KeyExtractor::<KeystoreBioauthId, _>::new(
-            keystore_container.sync_keystore(),
+            keystore_container.keystore(),
             bioauth_keys::OneOfOneSelector,
         ));
 
@@ -358,7 +358,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let babe_config = babe_link.config().clone();
         let babe_shared_epoch_changes = babe_link.epoch_changes().clone();
 
-        let keystore = keystore_container.sync_keystore();
+        let keystore = keystore_container.keystore();
         let chain_spec = config.chain_spec.cloned_box();
         let select_chain = select_chain.clone();
 
@@ -439,7 +439,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     };
 
     {
-        let keystore = keystore_container.sync_keystore();
+        let keystore = keystore_container.keystore();
         init_dev_bioauth_keystore_keys(keystore.as_ref(), config.dev_key_seed.as_deref())
             .map_err(|err| sc_service::Error::Other(err.to_string()))?;
     }
@@ -447,7 +447,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network: Arc::clone(&network) as _,
         client: Arc::clone(&client),
-        keystore: keystore_container.sync_keystore(),
+        keystore: keystore_container.keystore(),
         task_manager: &mut task_manager,
         transaction_pool: Arc::clone(&transaction_pool),
         rpc_builder: rpc_extensions_builder,
@@ -460,7 +460,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     })?;
 
     let babe_config = sc_consensus_babe::BabeParams {
-        keystore: keystore_container.sync_keystore(),
+        keystore: keystore_container.keystore(),
         client: Arc::clone(&client),
         select_chain,
         env: proposer_factory,
@@ -610,13 +610,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 /// is not a part of the session keys set, so it wont be populated that way.
 ///
 /// We need [`KeystoreBioauthId`] for the block production though, so we initialize it manually.
-fn init_dev_bioauth_keystore_keys<Keystore: sp_keystore::SyncCryptoStore + ?Sized>(
+fn init_dev_bioauth_keystore_keys<Keystore: sp_keystore::Keystore + ?Sized>(
     keystore: &Keystore,
     seed: Option<&str>,
 ) -> Result<(), sp_keystore::Error> {
     if let Some(seed) = seed {
-        use sp_application_crypto::AppKey;
-        let _public = sp_keystore::SyncCryptoStore::sr25519_generate_new(
+        use sp_application_crypto::AppCrypto;
+        let _public = sp_keystore::Keystore::sr25519_generate_new(
             keystore,
             KeystoreBioauthId::ID,
             Some(seed),

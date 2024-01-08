@@ -4,7 +4,7 @@ use std::{fmt::Display, sync::Arc};
 
 use bioauth_flow_rpc::Signer;
 use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
-use sp_keystore::CryptoStore;
+use sp_keystore::Keystore;
 
 /// The validator public key implementation using the app crypto public key.
 #[derive(Clone)]
@@ -13,14 +13,14 @@ pub struct AppCryptoPublic<T>(pub T);
 /// The validator signer implementation using the keystore and app crypto public key.
 pub struct AppCryptoSigner<PK> {
     /// The keystore to use for signing.
-    pub keystore: Arc<dyn CryptoStore>,
+    pub keystore: Arc<dyn Keystore>,
     /// The public key to provide the signature for.
     pub public_key: AppCryptoPublic<PK>,
 }
 
 impl<PK> AppCryptoSigner<PK> {
     /// Create a new [`AppCryptoSigner`].
-    pub fn new(keystore: Arc<dyn CryptoStore>, public_key: AppCryptoPublic<PK>) -> Self {
+    pub fn new(keystore: Arc<dyn Keystore>, public_key: AppCryptoPublic<PK>) -> Self {
         Self {
             keystore,
             public_key,
@@ -54,7 +54,6 @@ where
         let outcome = self
             .keystore
             .sign_with(PK::ID, &self.public_key.0.to_public_crypto_pair(), data)
-            .await
             .map_err(SignerError::Keystore)?;
 
         outcome.ok_or(SignerError::NoSignature)
@@ -76,9 +75,9 @@ where
 {
     /// List all public keys in the keystore.
     pub async fn list(
-        keystore: &dyn CryptoStore,
+        keystore: &dyn Keystore,
     ) -> Result<impl Iterator<Item = Self>, sp_keystore::Error> {
-        let crypto_type_public_pairs = keystore.keys(T::ID).await?;
+        let crypto_type_public_pairs = keystore.keys(T::ID)?;
         let filtered = crypto_type_public_pairs.into_iter().filter_map(
             |CryptoTypePublicPair(crypto_type, public_key)| {
                 if crypto_type == T::CRYPTO_ID {
