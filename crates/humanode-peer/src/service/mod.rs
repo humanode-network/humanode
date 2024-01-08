@@ -73,12 +73,7 @@ type FrontierBackend = fc_db::Backend<Block>;
 pub fn keystore_container(
     config: &Configuration,
 ) -> Result<(KeystoreContainer, TaskManager), ServiceError> {
-    let executor = Executor::new(
-        config.substrate.wasm_method,
-        config.substrate.default_heap_pages,
-        config.substrate.max_runtime_instances,
-        config.substrate.runtime_cache_size,
-    );
+    let executor = sc_service::new_native_or_wasm_executor::<ExecutorDispatch>(&config.substrate);
 
     let (_client, _backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, _>(&config.substrate, None, executor)?;
@@ -125,12 +120,7 @@ pub fn new_partial(
         })
         .transpose()?;
 
-    let executor = Executor::new(
-        config.wasm_method,
-        config.default_heap_pages,
-        config.max_runtime_instances,
-        config.runtime_cache_size,
-    );
+    let executor = sc_service::new_native_or_wasm_executor(&config);
 
     let (client, backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, _>(
