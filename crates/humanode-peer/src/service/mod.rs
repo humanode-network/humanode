@@ -97,6 +97,7 @@ pub fn new_partial(
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
             sc_consensus_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
+            sc_consensus_babe::BabeWorkerHandle<Block>,
             sc_consensus_babe::BabeLink<Block>,
             EffectiveFullBlockImport,
             inherents::Creator<FullClient>,
@@ -185,7 +186,7 @@ pub fn new_partial(
         time_warp: time_warp_config.clone(),
     };
 
-    let import_queue = sc_consensus_babe::import_queue(
+    let (import_queue, babe_worker_handle) = sc_consensus_babe::import_queue(
         babe_link.clone(),
         frontier_block_import.clone(),
         Some(Box::new(grandpa_block_import)),
@@ -206,6 +207,7 @@ pub fn new_partial(
         transaction_pool,
         other: (
             grandpa_link,
+            babe_worker_handle,
             babe_link,
             frontier_block_import,
             inherent_data_providers_creator,
@@ -229,6 +231,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         other:
             (
                 grandpa_link,
+                babe_worker_handle,
                 babe_link,
                 block_import,
                 inherent_data_providers_creator,
@@ -355,9 +358,6 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 Some(grandpa_shared_authority_set.clone()),
             );
 
-        let babe_config = babe_link.config().clone();
-        let babe_shared_epoch_changes = babe_link.epoch_changes().clone();
-
         let keystore = keystore_container.keystore();
         let chain_spec = config.chain_spec.cloned_box();
         let select_chain = select_chain.clone();
@@ -403,8 +403,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     bioauth_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
                 },
                 babe: humanode_rpc::BabeDeps {
-                    babe_config: babe_config.clone(),
-                    babe_shared_epoch_changes: babe_shared_epoch_changes.clone(),
+                    babe_worker_handle: babe_worker_handle.clone(),
                     keystore: Arc::clone(&keystore),
                 },
                 grandpa: humanode_rpc::GrandpaDeps {
