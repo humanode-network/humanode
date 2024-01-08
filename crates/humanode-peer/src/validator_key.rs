@@ -3,7 +3,7 @@
 use std::{fmt::Display, sync::Arc};
 
 use bioauth_flow_rpc::Signer;
-use sp_application_crypto::{AppPublic, CryptoTypePublicPair};
+use sp_application_crypto::AppPublic;
 use sp_keystore::Keystore;
 
 /// The validator public key implementation using the app crypto public key.
@@ -53,7 +53,7 @@ where
         let data = data.as_ref();
         let outcome = self
             .keystore
-            .sign_with(PK::ID, &self.public_key.0.to_public_crypto_pair(), data)
+            .sign_with(PK::ID, PK::CRYPTO_ID, self.public_key.0.as_slice(), data)
             .map_err(SignerError::Keystore)?;
 
         outcome.ok_or(SignerError::NoSignature)
@@ -78,18 +78,12 @@ where
         keystore: &dyn Keystore,
     ) -> Result<impl Iterator<Item = Self>, sp_keystore::Error> {
         let crypto_type_public_pairs = keystore.keys(T::ID)?;
-        let filtered = crypto_type_public_pairs.into_iter().filter_map(
-            |CryptoTypePublicPair(crypto_type, public_key)| {
-                if crypto_type == T::CRYPTO_ID {
-                    match T::from_slice(&public_key) {
-                        Ok(id) => Some(Self(id)),
-                        Err(_) => None,
-                    }
-                } else {
-                    None
-                }
-            },
-        );
+        let filtered = crypto_type_public_pairs
+            .into_iter()
+            .filter_map(|public_key| match T::from_slice(&public_key) {
+                Ok(id) => Some(Self(id)),
+                Err(_) => None,
+            });
         Ok(filtered)
     }
 }
