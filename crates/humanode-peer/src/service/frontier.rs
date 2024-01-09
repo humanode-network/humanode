@@ -24,7 +24,7 @@ pub fn db_config_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
 }
 
 /// Create frontier backend.
-pub async fn frontier_backend(
+pub fn backend(
     config: &Configuration,
     client: Arc<FullClient>,
     fb_config: &configuration::FrontierBackend,
@@ -40,7 +40,7 @@ pub async fn frontier_backend(
             let db_path = db_config_dir(config).join("sql");
             std::fs::create_dir_all(&db_path)?;
 
-            let backend = fc_db::sql::Backend::new(
+            let backend = futures::executor::block_on(fc_db::sql::Backend::new(
                 fc_db::sql::BackendConfig::Sqlite(fc_db::sql::SqliteBackendConfig {
                     path: Path::new("sqlite:///")
                         .join(db_path)
@@ -54,8 +54,7 @@ pub async fn frontier_backend(
                 fb_config.frontier_sql_backend_pool_size,
                 std::num::NonZeroU32::new(fb_config.frontier_sql_backend_num_ops_timeout),
                 Arc::clone(&eth_overrides),
-            )
-            .await
+            ))
             .map_err(|err| ServiceError::Application(err.into()))?;
 
             Ok(FrontierBackend::Sql(backend))

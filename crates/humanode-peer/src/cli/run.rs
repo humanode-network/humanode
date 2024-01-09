@@ -39,7 +39,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         import_queue,
                         ..
-                    } = service::new_partial(&config).await?;
+                    } = service::new_partial(&config)?;
                     Ok((cmd.run(client, import_queue), task_manager))
                 })
                 .await
@@ -52,7 +52,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         client,
                         task_manager,
                         ..
-                    } = service::new_partial(&config).await?;
+                    } = service::new_partial(&config)?;
                     Ok((cmd.run(client, config.substrate.database), task_manager))
                 })
                 .await
@@ -65,7 +65,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         client,
                         task_manager,
                         ..
-                    } = service::new_partial(&config).await?;
+                    } = service::new_partial(&config)?;
                     Ok((cmd.run(client, config.substrate.chain_spec), task_manager))
                 })
                 .await
@@ -79,7 +79,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         import_queue,
                         ..
-                    } = service::new_partial(&config).await?;
+                    } = service::new_partial(&config)?;
                     Ok((cmd.run(client, import_queue), task_manager))
                 })
                 .await
@@ -100,7 +100,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         backend,
                         ..
-                    } = service::new_partial(&config).await?;
+                    } = service::new_partial(&config)?;
                     let aux_revert = Box::new(|client, backend, blocks| {
                         sc_consensus_babe::revert(Arc::clone(&client), backend, blocks)?;
                         sc_consensus_grandpa::revert(client, blocks)?;
@@ -146,7 +146,7 @@ pub async fn run() -> sc_cli::Result<()> {
             let cmd = &**cmd;
             let runner = root.create_humanode_runner(cmd)?;
 
-            runner.async_run(|config| async move {
+            runner.sync_run(|config| {
                 // This switch needs to be in the client, since the client decides
                 // which sub-commands it wants to support.
                 match cmd {
@@ -162,7 +162,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         cmd.run::<Block, service::ExecutorDispatch>(config.substrate)
                     }
                     BenchmarkCmd::Block(cmd) => {
-                        let partial = service::new_partial(&config).await?;
+                        let partial = service::new_partial(&config)?;
                         cmd.run(partial.client)
                     }
                     #[cfg(not(feature = "runtime-benchmarks"))]
@@ -172,7 +172,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     ),
                     #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Storage(cmd) => {
-                        let partial = service::new_partial(&config).await?;
+                        let partial = service::new_partial(&config)?;
                         let db = partial.backend.expose_db();
                         let storage = partial.backend.expose_storage();
 
@@ -184,7 +184,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     ),
                     #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Overhead(cmd) => {
-                        let partial = service::new_partial(&config).await?;
+                        let partial = service::new_partial(&config)?;
                         let ext_builder = RemarkBuilder {
                             client: Arc::clone(&partial.client),
                         };
@@ -203,7 +203,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     ),
                     #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Extrinsic(cmd) => {
-                        let partial = service::new_partial(&config).await?;
+                        let partial = service::new_partial(&config)?;
                         let existential_deposit = <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
                         let ext_factory = ExtrinsicFactory(vec![
                             Box::new(RemarkBuilder {
@@ -227,22 +227,20 @@ pub async fn run() -> sc_cli::Result<()> {
                         cmd.run(&config.substrate, SUBSTRATE_REFERENCE_HARDWARE.clone())
                     }
                 }
-            }).await
+            })
         }
         Some(Subcommand::FrontierDb(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
-            runner
-                .async_run(|config| async move {
-                    let partial = service::new_partial(&config).await?;
-                    let frontier_backend = match partial.other.4 {
-                        fc_db::Backend::KeyValue(kv_fb) => Arc::new(kv_fb),
-                        _ => {
-                            panic!("Only fc_db::Backend::KeyValue supported for FrontierDb command")
-                        }
-                    };
-                    cmd.run(partial.client, frontier_backend)
-                })
-                .await
+            runner.sync_run(|config| {
+                let partial = service::new_partial(&config)?;
+                let frontier_backend = match partial.other.4 {
+                    fc_db::Backend::KeyValue(kv_fb) => Arc::new(kv_fb),
+                    _ => {
+                        panic!("Only fc_db::Backend::KeyValue supported for FrontierDb command")
+                    }
+                };
+                cmd.run(partial.client, frontier_backend)
+            })
         }
         Some(Subcommand::ExportEmbeddedRuntime(cmd)) => cmd.run().await,
         #[cfg(feature = "try-runtime")]
