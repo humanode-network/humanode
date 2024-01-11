@@ -1,14 +1,14 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
 use crypto_utils::{authority_keys_from_seed, get_account_id_from_seed};
-use frame_support::BoundedVec;
+use frame_support::{BasicExternalities, BoundedVec};
 use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, token_claims::types::ClaimInfo, AccountId, BabeConfig, Balance,
     BalancesConfig, BioauthConfig, BootnodesConfig, ChainPropertiesConfig, EVMConfig,
-    EthereumAddress, EthereumChainIdConfig, EthereumConfig, EvmAccountId, GenesisConfig,
-    GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig, SystemConfig,
-    TokenClaimsConfig, WASM_BINARY,
+    EnableManualSeal, EthereumAddress, EthereumChainIdConfig, EthereumConfig, EvmAccountId,
+    GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig,
+    SystemConfig, TokenClaimsConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -16,10 +16,33 @@ use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_runtime::{app_crypto::sr25519, traits::Verify};
+use sp_runtime::{app_crypto::sr25519, traits::Verify, Storage};
 
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
+
+/// Specialized `ChainSpec` for development.
+pub type DevChainSpec = sc_service::GenericChainSpec<DevGenesisConfig, Extensions>;
+
+/// Extension for the dev genesis config to support a custom changes to the genesis state.
+#[derive(Serialize, Deserialize)]
+pub struct DevGenesisConfig {
+    /// Genesis config.
+    genesis_config: GenesisConfig,
+    /// The flag that if enable manual-seal mode.
+    enable_manual_seal: Option<bool>,
+}
+
+impl sp_runtime::BuildStorage for DevGenesisConfig {
+    fn assimilate_storage(&self, storage: &mut Storage) -> Result<(), String> {
+        BasicExternalities::execute_with_storage(storage, || {
+            if let Some(enable_manual_seal) = &self.enable_manual_seal {
+                EnableManualSeal::set(enable_manual_seal);
+            }
+        });
+        self.genesis_config.assimilate_storage(storage)
+    }
+}
 
 /// Extensions for `ChainSpec`.
 #[derive(
@@ -150,38 +173,41 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 }
 
 /// A configuration for dev.
-pub fn development_config() -> Result<ChainSpec, String> {
+pub fn development_config(enable_manual_seal: Option<bool>) -> Result<DevChainSpec, String> {
     let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
     let robonode_public_key = dev_robonode_public_key(&DEFAULT_DEV_ROBONODE_PUBLIC_KEY)?;
 
-    Ok(ChainSpec::from_genesis(
+    Ok(DevChainSpec::from_genesis(
         // Name
         "Development",
         // ID
         "dev",
         ChainType::Development,
         move || {
-            testnet_genesis(
-                wasm_binary,
-                // Initial PoA authorities
-                vec![authority_keys("Alice")],
-                // Sudo account
-                account_id("Alice"),
-                // Pre-funded accounts
-                vec![
+            DevGenesisConfig {
+                genesis_config: testnet_genesis(
+                    wasm_binary,
+                    // Initial PoA authorities
+                    vec![authority_keys("Alice")],
+                    // Sudo account
                     account_id("Alice"),
-                    account_id("Bob"),
-                    account_id("Alice//stash"),
-                    account_id("Bob//stash"),
-                ],
-                vec![
-                    evm_account_id_from_dev_seed(0),
-                    evm_account_id_from_dev_seed(1),
-                ],
-                robonode_public_key,
-                vec![account_id("Alice")],
-            )
+                    // Pre-funded accounts
+                    vec![
+                        account_id("Alice"),
+                        account_id("Bob"),
+                        account_id("Alice//stash"),
+                        account_id("Bob//stash"),
+                    ],
+                    vec![
+                        evm_account_id_from_dev_seed(0),
+                        evm_account_id_from_dev_seed(1),
+                    ],
+                    robonode_public_key,
+                    vec![account_id("Alice")],
+                ),
+                enable_manual_seal,
+            }
         },
         // Bootnodes
         vec![],
@@ -410,6 +436,12 @@ mod tests {
         chain_spec_result.unwrap().build_storage().unwrap()
     }
 
+    fn assert_dev_genesis_config(
+        dev_chain_spec_result: Result<DevChainSpec, String>,
+    ) -> sp_core::storage::Storage {
+        dev_chain_spec_result.unwrap().build_storage().unwrap()
+    }
+
     fn assert_balanced_currency_swap(storage: sp_core::storage::Storage) {
         Into::<sp_io::TestExternalities>::into(storage).execute_with(move || {
             assert!(
@@ -426,7 +458,7 @@ mod tests {
 
     #[test]
     fn development_config_works() {
-        let storage = assert_genesis_config(development_config());
+        let storage = assert_dev_genesis_config(development_config(None));
         assert_balanced_currency_swap(storage);
     }
 
