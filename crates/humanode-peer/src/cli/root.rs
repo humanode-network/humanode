@@ -5,12 +5,26 @@ use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use super::{CliConfigurationExt, Runner, Subcommand};
 use crate::chain_spec;
 
+/// Available Sealing methods.
+#[derive(Debug, Default, Copy, Clone, clap::ValueEnum)]
+pub enum Sealing {
+    /// Seal using rpc method.
+    #[default]
+    Manual,
+    /// Seal when transaction is executed.
+    Instant,
+}
+
 /// The root of the CLI commands hierarchy.
 #[derive(Debug, clap::Parser)]
 pub struct Root {
     /// Additional subcommands.
     #[command(subcommand)]
     pub subcommand: Option<Subcommand>,
+
+    /// Choose sealing method.
+    #[arg(long, value_enum, ignore_case = true)]
+    pub sealing: Option<Sealing>,
 
     /// The `run` command used to run a node.
     #[command(flatten)]
@@ -44,7 +58,10 @@ impl SubstrateCli for Root {
 
     fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
         Ok(match id {
-            "dev" => Box::new(chain_spec::development_config()?),
+            "dev" => {
+                let enable_manual_seal = self.sealing.map(|_| true);
+                Box::new(chain_spec::development_config(enable_manual_seal)?)
+            }
             "" | "local" => Box::new(chain_spec::local_testnet_config()?),
             "benchmark" => Box::new(chain_spec::benchmark_config()?),
             path => Box::new(chain_spec::ChainSpec::from_json_file(
