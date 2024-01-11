@@ -19,6 +19,7 @@ fc-rpc = { workspace = true, features = ["rpc-binary-search-estimate"] }
 fc-rpc-core = { workspace = true }
 fc-storage = { workspace = true }
 fp-rpc = { workspace = true }
+futures = { workspace = true }
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
 pallet-transaction-payment-rpc = { workspace = true }
 sc-chain-spec = { workspace = true }
@@ -26,6 +27,7 @@ sc-client-api = { workspace = true }
 sc-consensus-babe = { workspace = true }
 sc-consensus-babe-rpc = { workspace = true }
 sc-consensus-epochs = { workspace = true }
+sc-consensus-manual-seal = { workspace = true }
 sc-finality-grandpa = { workspace = true }
 sc-finality-grandpa-rpc = { workspace = true }
 sc-network = { workspace = true }

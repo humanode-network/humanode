@@ -12,6 +12,7 @@ use fc_rpc::{
 };
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use fc_storage::OverrideHandle;
+use futures::channel::mpsc;
 use humanode_runtime::{
     opaque::Block, AccountId, Balance, BlockNumber, Hash, Index, UnixMilliseconds,
 };
@@ -24,6 +25,7 @@ use sc_client_api::{
 use sc_consensus_babe::{BabeConfiguration, Epoch};
 use sc_consensus_babe_rpc::{Babe, BabeApiServer};
 use sc_consensus_epochs::SharedEpochChanges;
+use sc_consensus_manual_seal::rpc::EngineCommand;
 use sc_finality_grandpa::{
     FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
 };
@@ -146,6 +148,8 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub evm: EvmDeps,
     /// Subscription task executor instance.
     pub subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
+    /// Manual seal command sink.
+    pub command_sink: Option<mpsc::Sender<EngineCommand<Hash>>>,
 }
 
 /// Instantiate all RPC extensions.
@@ -181,6 +185,7 @@ where
     EC: EthConfig<Block, C>,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+    use sc_consensus_manual_seal::rpc::{ManualSeal, ManualSealApiServer};
     use substrate_frame_rpc_system::{System, SystemApiServer};
 
     let mut io = RpcModule::new(());
@@ -200,6 +205,7 @@ where
         select_chain,
         evm,
         subscription_task_executor,
+        command_sink,
     } = deps;
 
     let AuthorExtDeps {
@@ -353,6 +359,14 @@ where
                 eth_block_data_cache,
             )
             .into_rpc(),
+        )?;
+    }
+
+    if let Some(command_sink) = command_sink {
+        io.merge(
+            // We provide the rpc handler with the sending end of the channel to allow the rpc
+            // send EngineCommands to the background block authorship task.
+            ManualSeal::new(command_sink).into_rpc(),
         )?;
     }
 

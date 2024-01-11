@@ -3669,6 +3669,7 @@ dependencies = [
  "fc-rpc-core",
  "fc-storage",
  "fp-rpc",
+ "futures",
  "humanode-runtime",
  "jsonrpsee",
  "pallet-transaction-payment-rpc",
@@ -3678,6 +3679,7 @@ dependencies = [
  "sc-consensus-babe",
  "sc-consensus-babe-rpc",
  "sc-consensus-epochs",
+ "sc-consensus-manual-seal",
  "sc-finality-grandpa",
  "sc-finality-grandpa-rpc",
  "sc-network",
@@ -8025,6 +8027,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "sc-consensus-aura"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+dependencies = [
+ "async-trait",
+ "futures",
+ "log",
+ "parity-scale-codec",
+ "sc-block-builder",
+ "sc-client-api",
+ "sc-consensus",
+ "sc-consensus-slots",
+ "sc-telemetry",
+ "sp-api",
+ "sp-application-crypto",
+ "sp-block-builder",
+ "sp-blockchain",
+ "sp-consensus",
+ "sp-consensus-aura",
+ "sp-consensus-slots",
+ "sp-core",
+ "sp-inherents",
+ "sp-keystore",
+ "sp-runtime",
+ "substrate-prometheus-endpoint",
+ "thiserror",
+]
+
+[[package]]
 name = "sc-consensus-babe"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
@@ -8096,6 +8127,40 @@ dependencies = [
  "sc-consensus",
  "sp-blockchain",
  "sp-runtime",
+]
+
+[[package]]
+name = "sc-consensus-manual-seal"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.39#5b23f49147d482eadf96a1bb95924e8b661a931a"
+dependencies = [
+ "assert_matches",
+ "async-trait",
+ "futures",
+ "jsonrpsee",
+ "log",
+ "parity-scale-codec",
+ "sc-client-api",
+ "sc-consensus",
+ "sc-consensus-aura",
+ "sc-consensus-babe",
+ "sc-consensus-epochs",
+ "sc-transaction-pool",
+ "sc-transaction-pool-api",
+ "serde",
+ "sp-api",
+ "sp-blockchain",
+ "sp-consensus",
+ "sp-consensus-aura",
+ "sp-consensus-babe",
+ "sp-consensus-slots",
+ "sp-core",
+ "sp-inherents",
+ "sp-keystore",
+ "sp-runtime",
+ "sp-timestamp",
+ "substrate-prometheus-endpoint",
+ "thiserror",
 ]
 
 [[package]]
