@@ -21,7 +21,7 @@ pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
         ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get,
-        KeyOwnerProofSystem, Randomness,
+        KeyOwnerProofSystem, OnTimestampSet, Randomness,
     },
     weights::{
         constants::{
@@ -73,7 +73,7 @@ use sp_runtime::{
     ApplyExtrinsicResult, MultiSignature,
 };
 pub use sp_runtime::{Perbill, Permill};
-use sp_std::prelude::*;
+use sp_std::{marker::PhantomData, prelude::*};
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
@@ -384,6 +384,20 @@ impl pallet_grandpa::Config for Runtime {
 
 /// A timestamp: milliseconds since the unix epoch.
 pub type UnixMilliseconds = u64;
+
+parameter_types! {
+    pub storage EnableManualSeal: bool = false;
+}
+
+pub struct ConsensusOnTimestampSet<T>(PhantomData<T>);
+impl<T: pallet_babe::Config> OnTimestampSet<T::Moment> for ConsensusOnTimestampSet<T> {
+    fn on_timestamp_set(moment: T::Moment) {
+        if EnableManualSeal::get() {
+            return;
+        }
+        <pallet_babe::Pallet<T> as OnTimestampSet<T::Moment>>::on_timestamp_set(moment)
+    }
+}
 
 impl pallet_timestamp::Config for Runtime {
     type Moment = UnixMilliseconds;
