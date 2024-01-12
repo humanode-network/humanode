@@ -122,7 +122,10 @@ pub mod sealing {
             inherent_data: &mut sp_inherents::InherentData,
         ) -> Result<(), sp_inherents::Error> {
             TIMESTAMP.with(|x| {
-                *x.borrow_mut() += humanode_runtime::SLOT_DURATION;
+                let current_timestamp = *x.borrow();
+                *x.borrow_mut() = current_timestamp
+                    .checked_add(humanode_runtime::SLOT_DURATION)
+                    .expect("operation is under control, sealing case is allowed only in dev mode");
                 inherent_data.put_data(sp_timestamp::INHERENT_IDENTIFIER, &*x.borrow())
             })
         }
@@ -132,7 +135,7 @@ pub mod sealing {
             _identifier: &sp_inherents::InherentIdentifier,
             _error: &[u8],
         ) -> Option<Result<(), sp_inherents::Error>> {
-            // The pallet never reports error.
+            // Never report errors in sealing dev mode.
             None
         }
     }
