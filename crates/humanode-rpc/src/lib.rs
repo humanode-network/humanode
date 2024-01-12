@@ -363,11 +363,7 @@ where
     }
 
     if let Some(command_sink) = command_sink {
-        io.merge(
-            // We provide the rpc handler with the sending end of the channel to allow the rpc
-            // send EngineCommands to the background block authorship task.
-            ManualSeal::new(command_sink).into_rpc(),
-        )?;
+        io.merge(ManualSeal::new(command_sink).into_rpc())?;
     }
 
     Ok(io)
