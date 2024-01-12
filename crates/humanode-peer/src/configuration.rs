@@ -26,7 +26,7 @@ pub struct Configuration {
     /// If not defined, time warp mode isn't enabled.
     pub time_warp: Option<TimeWarp>,
 
-    /// The flag that if enable sealing mode.
+    /// Dev block import sealing mode configuration.
     pub dev_block_import_sealing: Option<DevBlockImportSealing>,
 }
 
