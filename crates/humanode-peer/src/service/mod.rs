@@ -2,6 +2,7 @@
 
 #![allow(clippy::type_complexity)]
 use std::{
+    cell::RefCell,
     collections::BTreeMap,
     sync::{Arc, Mutex},
     time::Duration,
@@ -474,59 +475,130 @@ pub async fn new_full(
         telemetry: telemetry.as_mut(),
     })?;
 
-    let babe_config = sc_consensus_babe::BabeParams {
-        keystore: keystore_container.sync_keystore(),
-        client: Arc::clone(&client),
-        select_chain,
-        env: proposer_factory,
-        block_import,
-        sync_oracle: Arc::clone(&network),
-        justification_sync_link: Arc::clone(&network),
-        create_inherent_data_providers: inherents::ForProduction(inherent_data_providers_creator),
-        force_authoring,
-        backoff_authoring_blocks,
-        babe_link,
-        block_proposal_slot_portion: SlotProportion::new(0.5),
-        max_block_proposal_slot_portion: None,
-        telemetry: telemetry.as_ref().map(|x| x.handle()),
-    };
+    if let Some(sealing) = sealing {
+        thread_local!(static TIMESTAMP: RefCell<u64> = RefCell::new(0));
 
-    let babe = sc_consensus_babe::start_babe(babe_config)?;
-    task_manager.spawn_essential_handle().spawn_blocking(
-        "babe-proposer",
-        Some("block-authoring"),
-        babe,
-    );
+        /// Provide a mock duration starting at 0 in millisecond for timestamp inherent.
+        /// Each call will increment timestamp by slot duration making Babe think time has passed.
+        struct MockTimestampInherentDataProvider;
 
-    let grandpa_config = sc_finality_grandpa::Config {
-        // See substrate#1578: make this available through chainspec.
-        // Ref: https://github.com/paritytech/substrate/issues/1578
-        gossip_duration: Duration::from_millis(333),
-        justification_period: 512,
-        name: Some(name),
-        observer_enabled: false,
-        keystore,
-        local_role: role,
-        telemetry: telemetry.as_ref().map(|x| x.handle()),
-        protocol_name: grandpa_protocol_name,
-    };
+        #[async_trait::async_trait]
+        impl sp_inherents::InherentDataProvider for MockTimestampInherentDataProvider {
+            async fn provide_inherent_data(
+                &self,
+                inherent_data: &mut sp_inherents::InherentData,
+            ) -> Result<(), sp_inherents::Error> {
+                TIMESTAMP.with(|x| {
+                    *x.borrow_mut() += humanode_runtime::SLOT_DURATION;
+                    inherent_data.put_data(sp_timestamp::INHERENT_IDENTIFIER, &*x.borrow())
+                })
+            }
 
-    if enable_grandpa {
-        let grandpa_config = sc_finality_grandpa::GrandpaParams {
-            config: grandpa_config,
-            link: grandpa_link,
-            network: Arc::clone(&network),
-            voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
-            prometheus_registry,
-            shared_voter_state: SharedVoterState::empty(),
+            async fn try_handle_error(
+                &self,
+                _identifier: &sp_inherents::InherentIdentifier,
+                _error: &[u8],
+            ) -> Option<Result<(), sp_inherents::Error>> {
+                // The pallet never reports error.
+                None
+            }
+        }
+
+        let create_inherent_data_providers = move |_, ()| async move {
+            let timestamp = MockTimestampInherentDataProvider;
+            Ok(timestamp)
+        };
+
+        let sealing = match sealing {
+            Sealing::Manual => {
+                futures::future::Either::Left(sc_consensus_manual_seal::run_manual_seal(
+                    sc_consensus_manual_seal::ManualSealParams {
+                        block_import,
+                        env: proposer_factory,
+                        client: Arc::clone(&client),
+                        pool: transaction_pool,
+                        commands_stream,
+                        select_chain,
+                        consensus_data_provider: None,
+                        create_inherent_data_providers,
+                    },
+                ))
+            }
+            Sealing::Instant => {
+                futures::future::Either::Right(sc_consensus_manual_seal::run_instant_seal(
+                    sc_consensus_manual_seal::InstantSealParams {
+                        block_import,
+                        env: proposer_factory,
+                        client: Arc::clone(&client),
+                        pool: transaction_pool,
+                        select_chain,
+                        consensus_data_provider: None,
+                        create_inherent_data_providers,
+                    },
+                ))
+            }
+        };
+
+        task_manager
+            .spawn_essential_handle()
+            .spawn_blocking("manual-block-import", None, sealing);
+    } else {
+        let babe_config = sc_consensus_babe::BabeParams {
+            keystore: keystore_container.sync_keystore(),
+            client: Arc::clone(&client),
+            select_chain,
+            env: proposer_factory,
+            block_import,
+            sync_oracle: Arc::clone(&network),
+            justification_sync_link: Arc::clone(&network),
+            create_inherent_data_providers: inherents::ForProduction(
+                inherent_data_providers_creator,
+            ),
+            force_authoring,
+            backoff_authoring_blocks,
+            babe_link,
+            block_proposal_slot_portion: SlotProportion::new(0.5),
+            max_block_proposal_slot_portion: None,
             telemetry: telemetry.as_ref().map(|x| x.handle()),
         };
 
+        let babe = sc_consensus_babe::start_babe(babe_config)?;
         task_manager.spawn_essential_handle().spawn_blocking(
-            "grandpa-voter",
-            Some("block-finalization"),
-            sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
+            "babe-proposer",
+            Some("block-authoring"),
+            babe,
         );
+
+        let grandpa_config = sc_finality_grandpa::Config {
+            // See substrate#1578: make this available through chainspec.
+            // Ref: https://github.com/paritytech/substrate/issues/1578
+            gossip_duration: Duration::from_millis(333),
+            justification_period: 512,
+            name: Some(name),
+            observer_enabled: false,
+            keystore,
+            local_role: role,
+            telemetry: telemetry.as_ref().map(|x| x.handle()),
+            protocol_name: grandpa_protocol_name,
+        };
+
+        if enable_grandpa {
+            let grandpa_config = sc_finality_grandpa::GrandpaParams {
+                config: grandpa_config,
+                link: grandpa_link,
+                network: Arc::clone(&network),
+                voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
+                prometheus_registry,
+                shared_voter_state: SharedVoterState::empty(),
+                telemetry: telemetry.as_ref().map(|x| x.handle()),
+            };
+
+            task_manager.spawn_essential_handle().spawn_blocking(
+                "grandpa-voter",
+                Some("block-finalization"),
+                sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
+            );
+        }
     }
 
     task_manager.spawn_essential_handle().spawn_blocking(
