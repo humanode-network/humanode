@@ -2,7 +2,6 @@
 
 #![allow(clippy::type_complexity)]
 use std::{
-    cell::RefCell,
     collections::BTreeMap,
     sync::{Arc, Mutex},
     time::Duration,
@@ -472,36 +471,8 @@ pub async fn new_full(
     })?;
 
     if let Some(sealing) = sealing {
-        thread_local!(static TIMESTAMP: RefCell<u64> = RefCell::new(0));
-
-        /// Provide a mock duration starting at 0 in millisecond for timestamp inherent.
-        /// Each call will increment timestamp by slot duration making Babe think time has passed.
-        struct MockTimestampInherentDataProvider;
-
-        #[async_trait::async_trait]
-        impl sp_inherents::InherentDataProvider for MockTimestampInherentDataProvider {
-            async fn provide_inherent_data(
-                &self,
-                inherent_data: &mut sp_inherents::InherentData,
-            ) -> Result<(), sp_inherents::Error> {
-                TIMESTAMP.with(|x| {
-                    *x.borrow_mut() += humanode_runtime::SLOT_DURATION;
-                    inherent_data.put_data(sp_timestamp::INHERENT_IDENTIFIER, &*x.borrow())
-                })
-            }
-
-            async fn try_handle_error(
-                &self,
-                _identifier: &sp_inherents::InherentIdentifier,
-                _error: &[u8],
-            ) -> Option<Result<(), sp_inherents::Error>> {
-                // The pallet never reports error.
-                None
-            }
-        }
-
         let create_inherent_data_providers = move |_, ()| async move {
-            let timestamp = MockTimestampInherentDataProvider;
+            let timestamp = inherents::sealing::SimulatedTimestampInherentDataProvider;
             Ok(timestamp)
         };
 

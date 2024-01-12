@@ -104,3 +104,36 @@ impl<Client> Clone for Creator<Client> {
         }
     }
 }
+
+/// Sealing case related inherent data providers.
+pub mod sealing {
+    use std::cell::RefCell;
+
+    thread_local!(static TIMESTAMP: RefCell<u64> = RefCell::new(0));
+
+    /// Provide a simulated duration starting at 0 in millisecond for timestamp inherent.
+    /// Each call will increment timestamp by slot duration making Babe think time has passed.
+    pub struct SimulatedTimestampInherentDataProvider;
+
+    #[async_trait::async_trait]
+    impl sp_inherents::InherentDataProvider for SimulatedTimestampInherentDataProvider {
+        async fn provide_inherent_data(
+            &self,
+            inherent_data: &mut sp_inherents::InherentData,
+        ) -> Result<(), sp_inherents::Error> {
+            TIMESTAMP.with(|x| {
+                *x.borrow_mut() += humanode_runtime::SLOT_DURATION;
+                inherent_data.put_data(sp_timestamp::INHERENT_IDENTIFIER, &*x.borrow())
+            })
+        }
+
+        async fn try_handle_error(
+            &self,
+            _identifier: &sp_inherents::InherentIdentifier,
+            _error: &[u8],
+        ) -> Option<Result<(), sp_inherents::Error>> {
+            // The pallet never reports error.
+            None
+        }
+    }
+}
