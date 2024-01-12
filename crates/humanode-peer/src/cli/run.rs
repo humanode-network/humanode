@@ -39,7 +39,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         import_queue,
                         ..
-                    } = service::new_partial(&config)?;
+                    } = service::new_partial(&config, root.sealing)?;
                     Ok((cmd.run(client, import_queue), task_manager))
                 })
                 .await
@@ -52,7 +52,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         client,
                         task_manager,
                         ..
-                    } = service::new_partial(&config)?;
+                    } = service::new_partial(&config, root.sealing)?;
                     Ok((cmd.run(client, config.substrate.database), task_manager))
                 })
                 .await
@@ -65,7 +65,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         client,
                         task_manager,
                         ..
-                    } = service::new_partial(&config)?;
+                    } = service::new_partial(&config, root.sealing)?;
                     Ok((cmd.run(client, config.substrate.chain_spec), task_manager))
                 })
                 .await
@@ -79,7 +79,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         import_queue,
                         ..
-                    } = service::new_partial(&config)?;
+                    } = service::new_partial(&config, root.sealing)?;
                     Ok((cmd.run(client, import_queue), task_manager))
                 })
                 .await
@@ -97,7 +97,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         task_manager,
                         backend,
                         ..
-                    } = service::new_partial(&config)?;
+                    } = service::new_partial(&config, root.sealing)?;
                     let aux_revert = Box::new(|client, backend, blocks| {
                         sc_consensus_babe::revert(Arc::clone(&client), backend, blocks)?;
                         sc_finality_grandpa::revert(client, blocks)?;
@@ -159,7 +159,7 @@ pub async fn run() -> sc_cli::Result<()> {
                         cmd.run::<Block, service::ExecutorDispatch>(config.substrate)
                     }
                     BenchmarkCmd::Block(cmd) => {
-                        let partial = service::new_partial(&config)?;
+                        let partial = service::new_partial(&config, root.sealing)?;
                         cmd.run(partial.client)
                     }
                     #[cfg(not(feature = "runtime-benchmarks"))]
@@ -169,7 +169,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     ),
                     #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Storage(cmd) => {
-                        let partial = service::new_partial(&config)?;
+                        let partial = service::new_partial(&config, root.sealing)?;
                         let db = partial.backend.expose_db();
                         let storage = partial.backend.expose_storage();
 
@@ -181,7 +181,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     ),
                     #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Overhead(cmd) => {
-                        let partial = service::new_partial(&config)?;
+                        let partial = service::new_partial(&config, root.sealing)?;
                         let ext_builder = RemarkBuilder {
                             client: Arc::clone(&partial.client),
                         };
@@ -200,7 +200,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     ),
                     #[cfg(feature = "runtime-benchmarks")]
                     BenchmarkCmd::Extrinsic(cmd) => {
-                        let partial = service::new_partial(&config)?;
+                        let partial = service::new_partial(&config, root.sealing)?;
                         let existential_deposit = <<Runtime as pallet_balances::Config>::ExistentialDeposit as Get<u128>>::get();
                         let ext_factory = ExtrinsicFactory(vec![
                             Box::new(RemarkBuilder {
@@ -229,7 +229,7 @@ pub async fn run() -> sc_cli::Result<()> {
         Some(Subcommand::FrontierDb(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
             runner.sync_run(|config| {
-                let partial = service::new_partial(&config)?;
+                let partial = service::new_partial(&config, root.sealing)?;
                 let frontier_backend = partial.other.4;
                 cmd.run(partial.client, frontier_backend)
             })
@@ -276,7 +276,7 @@ pub async fn run() -> sc_cli::Result<()> {
             print_build_info();
             runner
                 .run_node(|config| async move {
-                    service::new_full(config)
+                    service::new_full(config, root.sealing)
                         .await
                         .map_err(sc_cli::Error::Service)
                 })

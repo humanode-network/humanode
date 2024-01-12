@@ -5,7 +5,7 @@ use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use super::{CliConfigurationExt, Runner, Subcommand};
 use crate::chain_spec;
 
-/// Available Sealing methods.
+/// Available sealing methods.
 #[derive(Debug, Default, Copy, Clone, clap::ValueEnum)]
 pub enum Sealing {
     /// Seal using rpc method.
@@ -22,13 +22,13 @@ pub struct Root {
     #[command(subcommand)]
     pub subcommand: Option<Subcommand>,
 
-    /// Choose sealing method.
-    #[arg(long, value_enum, ignore_case = true)]
-    pub sealing: Option<Sealing>,
-
     /// The `run` command used to run a node.
     #[command(flatten)]
     pub run: super::RunCmd,
+
+    /// Choose sealing method.
+    #[arg(long, value_enum, ignore_case = true)]
+    pub sealing: Option<Sealing>,
 }
 
 impl SubstrateCli for Root {

@@ -23,7 +23,7 @@ use sc_service::{
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use tracing::*;
 
-use crate::configuration::Configuration;
+use crate::{cli::Sealing, configuration::Configuration};
 
 pub mod frontier;
 pub mod inherents;
@@ -90,6 +90,7 @@ pub fn keystore_container(
 /// Extract substrate partial components.
 pub fn new_partial(
     config: &Configuration,
+    sealing: Option<Sealing>,
 ) -> Result<
     PartialComponents<
         FullClient,
@@ -188,17 +189,26 @@ pub fn new_partial(
         time_warp: time_warp_config.clone(),
     };
 
-    let import_queue = sc_consensus_babe::import_queue(
-        babe_link.clone(),
-        frontier_block_import.clone(),
-        Some(Box::new(grandpa_block_import)),
-        Arc::clone(&client),
-        select_chain.clone(),
-        inherents::ForImport(inherent_data_providers_creator.clone()),
-        &task_manager.spawn_essential_handle(),
-        config.prometheus_registry(),
-        telemetry.as_ref().map(|x| x.handle()),
-    )?;
+    let import_queue = if sealing.is_some() {
+        sc_consensus_manual_seal::import_queue(
+            Box::new(frontier_block_import.clone()),
+            &task_manager.spawn_essential_handle(),
+            config.prometheus_registry(),
+        )
+    } else {
+        sc_consensus_babe::import_queue(
+            babe_link.clone(),
+            frontier_block_import.clone(),
+            Some(Box::new(grandpa_block_import)),
+            Arc::clone(&client),
+            select_chain.clone(),
+            inherents::ForImport(inherent_data_providers_creator.clone()),
+            &task_manager.spawn_essential_handle(),
+            config.prometheus_registry(),
+            telemetry.as_ref().map(|x| x.handle()),
+        )?
+    };
+
     Ok(PartialComponents {
         client,
         backend,
@@ -220,7 +230,10 @@ pub fn new_partial(
 
 /// Create a "full" node (full is in terms of substrate).
 /// We don't support other node types yet either way, so this is the only way to create a node.
-pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
+pub async fn new_full(
+    config: Configuration,
+    sealing: Option<Sealing>,
+) -> Result<TaskManager, ServiceError> {
     let sc_service::PartialComponents {
         client,
         backend,
@@ -238,7 +251,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 frontier_backend,
                 mut telemetry,
             ),
-    } = new_partial(&config)?;
+    } = new_partial(&config, sealing)?;
     let Configuration {
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
@@ -329,6 +342,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         reqwest: reqwest::Client::new(),
     });
 
+    // Channel for the rpc handler to communicate with the authorship task.
+    let (command_sink, commands_stream) = futures::channel::mpsc::channel(1000);
+
     let rpc_extensions_builder = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
@@ -374,6 +390,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         ));
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
         let eth_pubsub_notification_sinks = Arc::clone(&eth_pubsub_notification_sinks);
+        let command_sink = if sealing.is_some() {
+            Some(command_sink.clone())
+        } else {
+            None
+        };
 
         Box::new(move |deny_unsafe, subscription_task_executor| {
             Ok(humanode_rpc::create::<
@@ -428,6 +449,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     eth_pubsub_notification_sinks: Arc::clone(&eth_pubsub_notification_sinks),
                 },
                 subscription_task_executor,
+                command_sink: command_sink.clone(),
             })?)
         })
     };

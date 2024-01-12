@@ -53,6 +53,7 @@ sc-cli = { workspace = true }
 sc-client-api = { workspace = true }
 sc-consensus = { workspace = true }
 sc-consensus-babe = { workspace = true }
+sc-consensus-manual-seal = { workspace = true }
 sc-executor = { workspace = true }
 sc-finality-grandpa = { workspace = true }
 sc-service = { workspace = true }
