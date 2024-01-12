@@ -21,7 +21,8 @@ use sc_finality_grandpa::SharedVoterState;
 use sc_service::{
     Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager, WarpSyncParams,
 };
-use sc_telemetry::{Telemetry, TelemetryWorker};
+use sc_telemetry::{Telemetry, TelemetryHandle, TelemetryWorker};
+use sp_api::TransactionFor;
 use tracing::*;
 
 use crate::{cli::Sealing, configuration::Configuration};
@@ -67,6 +68,7 @@ type FullGrandpa =
 type FullBabe = sc_consensus_babe::BabeBlockImport<Block, FullClient, FullGrandpa>;
 /// Full type for `FrontierBlockImport`.
 type FullFrontier = FrontierBlockImport<Block, FullBabe, FullClient>;
+type FullBoxBlockImport = sc_consensus::BoxBlockImport<Block, TransactionFor<FullClient, Block>>;
 /// Whatever we currently use as the block import.
 type EffectiveFullBlockImport = FullFrontier;
 /// Frontier backend type.
@@ -102,7 +104,7 @@ pub fn new_partial(
         (
             sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
-            EffectiveFullBlockImport,
+            FullBoxBlockImport,
             inherents::Creator<FullClient>,
             Arc<FrontierBackend>,
             Option<Telemetry>,
@@ -177,11 +179,6 @@ pub fn new_partial(
         &config.database,
         &frontier::db_config_dir(config),
     )?);
-    let frontier_block_import = FrontierBlockImport::new(
-        babe_block_import,
-        Arc::clone(&client),
-        Arc::clone(&frontier_backend),
-    );
 
     let raw_slot_duration = babe_link.config().slot_duration();
     let inherent_data_providers_creator = inherents::Creator {
@@ -190,23 +187,22 @@ pub fn new_partial(
         time_warp: time_warp_config.clone(),
     };
 
-    let import_queue = if sealing.is_some() {
-        sc_consensus_manual_seal::import_queue(
-            Box::new(frontier_block_import.clone()),
-            &task_manager.spawn_essential_handle(),
-            config.prometheus_registry(),
+    let (block_import, import_queue) = if sealing.is_some() {
+        sealing_block_import(
+            Arc::clone(&frontier_backend),
+            Arc::clone(&client),
+            &task_manager,
+            config,
         )
     } else {
-        sc_consensus_babe::import_queue(
-            babe_link.clone(),
-            frontier_block_import.clone(),
-            Some(Box::new(grandpa_block_import)),
+        babe_grandpa_block_import(
+            Arc::clone(&frontier_backend),
             Arc::clone(&client),
-            select_chain.clone(),
-            inherents::ForImport(inherent_data_providers_creator.clone()),
-            &task_manager.spawn_essential_handle(),
-            config.prometheus_registry(),
+            &task_manager,
+            config,
             telemetry.as_ref().map(|x| x.handle()),
+            select_chain.clone(),
+            inherent_data_providers_creator.clone(),
         )?
     };
 
@@ -221,12 +217,85 @@ pub fn new_partial(
         other: (
             grandpa_link,
             babe_link,
-            frontier_block_import,
+            block_import,
             inherent_data_providers_creator,
             frontier_backend,
             telemetry,
         ),
     })
+}
+
+fn sealing_block_import(
+    frontier_backend: Arc<FrontierBackend>,
+    client: Arc<FullClient>,
+    task_manager: &TaskManager,
+    config: &sc_service::Configuration,
+) -> (
+    FullBoxBlockImport,
+    sc_consensus::DefaultImportQueue<Block, FullClient>,
+) {
+    let block_import = FrontierBlockImport::new(
+        Arc::clone(&client),
+        Arc::clone(&client),
+        Arc::clone(&frontier_backend),
+    );
+
+    let import_queue = sc_consensus_manual_seal::import_queue(
+        Box::new(block_import.clone()),
+        &task_manager.spawn_essential_handle(),
+        config.prometheus_registry(),
+    );
+
+    (Box::new(block_import), import_queue)
+}
+
+fn babe_grandpa_block_import(
+    frontier_backend: Arc<FrontierBackend>,
+    client: Arc<FullClient>,
+    task_manager: &TaskManager,
+    config: &sc_service::Configuration,
+    telemetry: Option<TelemetryHandle>,
+    select_chain: FullSelectChain,
+    inherent_data_providers_creator: inherents::Creator<FullClient>,
+) -> Result<
+    (
+        FullBoxBlockImport,
+        sc_consensus::DefaultImportQueue<Block, FullClient>,
+    ),
+    ServiceError,
+> {
+    let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
+        Arc::clone(&client),
+        &(Arc::clone(&client) as Arc<_>),
+        select_chain.clone(),
+        telemetry.clone(),
+    )?;
+
+    let (babe_block_import, babe_link) = sc_consensus_babe::block_import(
+        sc_consensus_babe::configuration(&*client)?,
+        grandpa_block_import.clone(),
+        Arc::clone(&client),
+    )?;
+
+    let block_import = FrontierBlockImport::new(
+        babe_block_import,
+        Arc::clone(&client),
+        Arc::clone(&frontier_backend),
+    );
+
+    let import_queue = sc_consensus_babe::import_queue(
+        babe_link.clone(),
+        block_import.clone(),
+        Some(Box::new(grandpa_block_import)),
+        Arc::clone(&client),
+        select_chain.clone(),
+        inherents::ForImport(inherent_data_providers_creator),
+        &task_manager.spawn_essential_handle(),
+        config.prometheus_registry(),
+        telemetry,
+    )?;
+
+    Ok((Box::new(block_import), import_queue))
 }
 
 /// Create a "full" node (full is in terms of substrate).
