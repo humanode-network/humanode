@@ -5,16 +5,6 @@ use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use super::{CliConfigurationExt, Runner, Subcommand};
 use crate::chain_spec;
 
-/// Available sealing methods.
-#[derive(Debug, Default, Copy, Clone, clap::ValueEnum)]
-pub enum Sealing {
-    /// Seal using rpc method.
-    #[default]
-    Manual,
-    /// Seal when transaction is executed.
-    Instant,
-}
-
 /// The root of the CLI commands hierarchy.
 #[derive(Debug, clap::Parser)]
 pub struct Root {
