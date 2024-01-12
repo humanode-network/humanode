@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 
 use crate::{
-    cli::Sealing,
+    cli::DevBlockImportSealing,
     rpc_url::{RpcUrl, RpcUrlResolver},
     time_warp::TimeWarp,
 };
@@ -27,7 +27,7 @@ pub struct Configuration {
     pub time_warp: Option<TimeWarp>,
 
     /// The flag that if enable sealing mode.
-    pub sealing: Option<Sealing>,
+    pub dev_block_import_sealing: Option<DevBlockImportSealing>,
 }
 
 /// Bioauth flow configuration parameters.

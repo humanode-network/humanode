@@ -23,7 +23,7 @@ use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_api::TransactionFor;
 use tracing::*;
 
-use crate::{cli::Sealing, configuration::Configuration};
+use crate::{cli::DevBlockImportSealing, configuration::Configuration};
 
 pub mod frontier;
 pub mod import_queue;
@@ -110,7 +110,7 @@ pub fn new_partial(
     let Configuration {
         substrate: config,
         time_warp: time_warp_config,
-        sealing,
+        dev_block_import_sealing,
         ..
     } = config;
 
@@ -183,7 +183,7 @@ pub fn new_partial(
         time_warp: time_warp_config.clone(),
     };
 
-    let (import_queue, block_import) = if sealing.is_some() {
+    let (import_queue, block_import) = if dev_block_import_sealing.is_some() {
         import_queue::sealing(
             Arc::clone(&client),
             config,
@@ -249,7 +249,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
         ethereum_rpc: ethereum_rpc_config,
-        sealing,
+        dev_block_import_sealing,
         ..
     } = config;
 
@@ -384,7 +384,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         ));
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
         let eth_pubsub_notification_sinks = Arc::clone(&eth_pubsub_notification_sinks);
-        let command_sink = if sealing.is_some() {
+        let command_sink = if dev_block_import_sealing.is_some() {
             Some(command_sink.clone())
         } else {
             None
@@ -468,14 +468,14 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         telemetry: telemetry.as_mut(),
     })?;
 
-    if let Some(sealing) = sealing {
+    if let Some(sealing) = dev_block_import_sealing {
         let create_inherent_data_providers = move |_, ()| async move {
             let timestamp = inherents::sealing::SimulatedTimestampInherentDataProvider;
             Ok(timestamp)
         };
 
         let sealing = match sealing {
-            Sealing::Manual => {
+            DevBlockImportSealing::Manual => {
                 futures::future::Either::Left(sc_consensus_manual_seal::run_manual_seal(
                     sc_consensus_manual_seal::ManualSealParams {
                         block_import,
@@ -489,7 +489,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     },
                 ))
             }
-            Sealing::Instant => {
+            DevBlockImportSealing::Instant => {
                 futures::future::Either::Right(sc_consensus_manual_seal::run_instant_seal(
                     sc_consensus_manual_seal::InstantSealParams {
                         block_import,

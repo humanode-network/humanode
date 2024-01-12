@@ -20,7 +20,7 @@ pub use subcommand::*;
 
 /// Available sealing methods.
 #[derive(Debug, Clone, clap::ValueEnum)]
-pub enum Sealing {
+pub enum DevBlockImportSealing {
     /// Seal using rpc method.
     Manual,
     /// Seal when transaction is executed.

@@ -2,7 +2,7 @@
 
 use sc_chain_spec::get_extension;
 
-use super::{params, BioauthFlowParams, RpcUrlSchemePreference, Sealing};
+use super::{params, BioauthFlowParams, DevBlockImportSealing, RpcUrlSchemePreference};
 use crate::{
     chain_spec::Extensions,
     configuration::{self, Configuration},
@@ -67,14 +67,14 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 })
         });
 
-        let sealing = self.sealing().unwrap().clone();
+        let dev_block_import_sealing = self.dev_block_import_sealing().unwrap().clone();
 
         Ok(Configuration {
             substrate,
             bioauth_flow,
             ethereum_rpc,
             time_warp,
-            sealing,
+            dev_block_import_sealing,
         })
     }
 
@@ -93,7 +93,8 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         None
     }
 
-    fn sealing(&self) -> Option<&Option<Sealing>> {
+    /// Provide the dev block import sealing params, if available.
+    fn dev_block_import_sealing(&self) -> Option<&Option<DevBlockImportSealing>> {
         None
     }
 }

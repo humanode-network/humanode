@@ -55,8 +55,11 @@ impl SubstrateCli for Root {
     fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
         Ok(match id {
             "dev" => {
-                let enable_manual_seal = self.run.sealing.clone().map(|_| true);
-                Box::new(chain_spec::development_config(enable_manual_seal)?)
+                let enable_dev_block_import_seal =
+                    self.run.dev_block_import_sealing.clone().map(|_| true);
+                Box::new(chain_spec::development_config(
+                    enable_dev_block_import_seal,
+                )?)
             }
             "" | "local" => Box::new(chain_spec::local_testnet_config()?),
             "benchmark" => Box::new(chain_spec::benchmark_config()?),
