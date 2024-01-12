@@ -1,6 +1,6 @@
 //! The "default" command implementation, used when no subcommands are provided.
 
-use super::{params, CliConfigurationExt, SubstrateCliConfigurationProvider};
+use super::{params, CliConfigurationExt, Sealing, SubstrateCliConfigurationProvider};
 
 /// The `run` command used to run a node.
 /// Expands the [`sc_cli::RunCmd`] with Humanode options.
@@ -22,6 +22,10 @@ pub struct RunCmd {
     #[allow(missing_docs, clippy::missing_docs_in_private_items)]
     #[command(flatten)]
     pub time_warp_params: params::TimeWarpParams,
+
+    #[allow(missing_docs, clippy::missing_docs_in_private_items)]
+    #[arg(long, value_enum, ignore_case = true)]
+    pub sealing: Option<Sealing>,
 }
 
 impl SubstrateCliConfigurationProvider for RunCmd {
@@ -43,5 +47,9 @@ impl CliConfigurationExt for RunCmd {
 
     fn time_warp_params(&self) -> Option<&params::TimeWarpParams> {
         Some(&self.time_warp_params)
+    }
+
+    fn sealing(&self) -> Option<&Option<Sealing>> {
+        Some(&self.sealing)
     }
 }

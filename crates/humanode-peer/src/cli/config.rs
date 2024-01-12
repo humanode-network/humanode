@@ -2,7 +2,7 @@
 
 use sc_chain_spec::get_extension;
 
-use super::{params, BioauthFlowParams, RpcUrlSchemePreference};
+use super::{params, BioauthFlowParams, RpcUrlSchemePreference, Sealing};
 use crate::{
     chain_spec::Extensions,
     configuration::{self, Configuration},
@@ -67,11 +67,14 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 })
         });
 
+        let sealing = self.sealing().unwrap().clone();
+
         Ok(Configuration {
             substrate,
             bioauth_flow,
             ethereum_rpc,
             time_warp,
+            sealing,
         })
     }
 
@@ -87,6 +90,10 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
 
     /// Provide the time warp related params, if available.
     fn time_warp_params(&self) -> Option<&params::TimeWarpParams> {
+        None
+    }
+
+    fn sealing(&self) -> Option<&Option<Sealing>> {
         None
     }
 }

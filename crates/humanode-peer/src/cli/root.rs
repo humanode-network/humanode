@@ -25,10 +25,6 @@ pub struct Root {
     /// The `run` command used to run a node.
     #[command(flatten)]
     pub run: super::RunCmd,
-
-    /// Choose sealing method.
-    #[arg(long, value_enum, ignore_case = true)]
-    pub sealing: Option<Sealing>,
 }
 
 impl SubstrateCli for Root {
@@ -59,7 +55,7 @@ impl SubstrateCli for Root {
     fn load_spec(&self, id: &str) -> std::result::Result<Box<dyn ChainSpec>, String> {
         Ok(match id {
             "dev" => {
-                let enable_manual_seal = self.sealing.map(|_| true);
+                let enable_manual_seal = self.run.sealing.clone().map(|_| true);
                 Box::new(chain_spec::development_config(enable_manual_seal)?)
             }
             "" | "local" => Box::new(chain_spec::local_testnet_config()?),

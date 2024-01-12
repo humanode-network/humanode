@@ -89,7 +89,6 @@ pub fn keystore_container(
 /// Extract substrate partial components.
 pub fn new_partial(
     config: &Configuration,
-    sealing: Option<Sealing>,
 ) -> Result<
     PartialComponents<
         FullClient,
@@ -111,6 +110,7 @@ pub fn new_partial(
     let Configuration {
         substrate: config,
         time_warp: time_warp_config,
+        sealing,
         ..
     } = config;
 
@@ -226,10 +226,7 @@ pub fn new_partial(
 
 /// Create a "full" node (full is in terms of substrate).
 /// We don't support other node types yet either way, so this is the only way to create a node.
-pub async fn new_full(
-    config: Configuration,
-    sealing: Option<Sealing>,
-) -> Result<TaskManager, ServiceError> {
+pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError> {
     let sc_service::PartialComponents {
         client,
         backend,
@@ -247,11 +244,12 @@ pub async fn new_full(
                 frontier_backend,
                 mut telemetry,
             ),
-    } = new_partial(&config, sealing)?;
+    } = new_partial(&config)?;
     let Configuration {
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
         ethereum_rpc: ethereum_rpc_config,
+        sealing,
         ..
     } = config;
 

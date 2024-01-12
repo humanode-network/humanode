@@ -17,3 +17,12 @@ pub use run::*;
 pub use run_cmd::*;
 pub use runner::*;
 pub use subcommand::*;
+
+/// Available sealing methods.
+#[derive(Debug, Clone, clap::ValueEnum)]
+pub enum Sealing {
+    /// Seal using rpc method.
+    Manual,
+    /// Seal when transaction is executed.
+    Instant,
+}
