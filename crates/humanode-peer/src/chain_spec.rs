@@ -431,15 +431,9 @@ mod tests {
     use super::*;
 
     fn assert_genesis_config(
-        chain_spec_result: Result<ChainSpec, String>,
+        chain_spec_result: Result<impl BuildStorage, String>,
     ) -> sp_core::storage::Storage {
         chain_spec_result.unwrap().build_storage().unwrap()
-    }
-
-    fn assert_dev_genesis_config(
-        dev_chain_spec_result: Result<DevChainSpec, String>,
-    ) -> sp_core::storage::Storage {
-        dev_chain_spec_result.unwrap().build_storage().unwrap()
     }
 
     fn assert_balanced_currency_swap(storage: sp_core::storage::Storage) {
@@ -458,7 +452,7 @@ mod tests {
 
     #[test]
     fn development_config_works() {
-        let storage = assert_dev_genesis_config(development_config(None));
+        let storage = assert_genesis_config(development_config(None));
         assert_balanced_currency_swap(storage);
     }
 
