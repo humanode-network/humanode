@@ -401,7 +401,7 @@ impl<T: pallet_babe::Config> OnTimestampSet<T::Moment> for ConsensusOnTimestampS
 
 impl pallet_timestamp::Config for Runtime {
     type Moment = UnixMilliseconds;
-    type OnTimestampSet = Babe;
+    type OnTimestampSet = ConsensusOnTimestampSet<Self>;
     type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
     type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
 }
