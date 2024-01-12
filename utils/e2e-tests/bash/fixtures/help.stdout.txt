@@ -661,6 +661,13 @@ Options:
       --time-warp-factor <TIME_WARP_FACTOR>
           Warp factor that is going to be adopted
 
+      --sealing <SEALING>
+          Choose sealing method
+
+          Possible values:
+          - manual:  Seal using rpc method
+          - instant: Seal when transaction is executed
+
   -h, --help
           Print help (see a summary with '-h')
 
