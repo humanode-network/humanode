@@ -6,7 +6,7 @@ use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, token_claims::types::ClaimInfo, AccountId, BabeConfig, Balance,
     BalancesConfig, BioauthConfig, BootnodesConfig, ChainPropertiesConfig, EVMConfig,
-    EnableManualSeal, EthereumAddress, EthereumChainIdConfig, EthereumConfig, EvmAccountId,
+    EnableDevBlockImportSeal, EthereumAddress, EthereumChainIdConfig, EthereumConfig, EvmAccountId,
     GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig,
     SystemConfig, TokenClaimsConfig, WASM_BINARY,
 };
@@ -29,15 +29,15 @@ pub type DevChainSpec = sc_service::GenericChainSpec<DevGenesisConfig, Extension
 pub struct DevGenesisConfig {
     /// Genesis config.
     genesis_config: GenesisConfig,
-    /// The flag that if enable manual-seal mode.
-    enable_manual_seal: Option<bool>,
+    /// The flag that if enable block import manual seal mode.
+    enable_block_import_manual_seal: Option<bool>,
 }
 
 impl sp_runtime::BuildStorage for DevGenesisConfig {
     fn assimilate_storage(&self, storage: &mut Storage) -> Result<(), String> {
         BasicExternalities::execute_with_storage(storage, || {
-            if let Some(enable_manual_seal) = &self.enable_manual_seal {
-                EnableManualSeal::set(enable_manual_seal);
+            if let Some(enable_block_import_manual_seal) = &self.enable_block_import_manual_seal {
+                EnableDevBlockImportSeal::set(enable_block_import_manual_seal);
             }
         });
         self.genesis_config.assimilate_storage(storage)
@@ -173,7 +173,9 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 }
 
 /// A configuration for dev.
-pub fn development_config(enable_manual_seal: Option<bool>) -> Result<DevChainSpec, String> {
+pub fn development_config(
+    enable_block_import_manual_seal: Option<bool>,
+) -> Result<DevChainSpec, String> {
     let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
 
     let robonode_public_key = dev_robonode_public_key(&DEFAULT_DEV_ROBONODE_PUBLIC_KEY)?;
@@ -206,7 +208,7 @@ pub fn development_config(enable_manual_seal: Option<bool>) -> Result<DevChainSp
                     robonode_public_key,
                     vec![account_id("Alice")],
                 ),
-                enable_manual_seal,
+                enable_block_import_manual_seal,
             }
         },
         // Bootnodes
