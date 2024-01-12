@@ -2612,11 +2612,15 @@
     - rocksdb
 - name: sc-consensus 0.10.0-dev
   features: []
+- name: sc-consensus-aura 0.10.0-dev
+  features: []
 - name: sc-consensus-babe 0.10.0-dev
   features: []
 - name: sc-consensus-babe-rpc 0.10.0-dev
   features: []
 - name: sc-consensus-epochs 0.10.0-dev
+  features: []
+- name: sc-consensus-manual-seal 0.10.0-dev
   features: []
 - name: sc-consensus-slots 0.10.0-dev
   features: []
@@ -2960,6 +2964,12 @@
 - name: sp-consensus 0.10.0-dev
   features:
     - default
+- name: sp-consensus-aura 0.10.0-dev
+  features:
+    - async-trait
+    - default
+    - sp-consensus
+    - std
 - name: sp-consensus-babe 0.10.0-dev
   features:
     - async-trait
