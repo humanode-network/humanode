@@ -81,13 +81,13 @@ pub struct GrandpaDeps<BE> {
 }
 
 /// Extra EVM related dependencies.
-pub struct EvmDeps {
+pub struct EvmDeps<EthBackend> {
     /// EthFilterApi pool.
     pub eth_filter_pool: Option<FilterPool>,
     /// Maximum number of stored filters.
     pub eth_max_stored_filters: usize,
     /// Backend.
-    pub eth_backend: Arc<dyn fc_db::BackendReader<Block> + Send + Sync>,
+    pub eth_backend: Arc<EthBackend>,
     /// Maximum number of logs in a query.
     pub eth_max_past_logs: u32,
     /// Maximum fee history cache size.
@@ -118,7 +118,7 @@ pub struct EvmDeps {
 }
 
 /// RPC subsystem dependencies.
-pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
+pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC, EthBackend> {
     /// The client instance to use.
     pub client: Arc<C>,
     /// Transaction pool instance.
@@ -146,14 +146,14 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     /// The SelectChain Strategy
     pub select_chain: SC,
     /// EVM specific dependencies.
-    pub evm: EvmDeps,
+    pub evm: EvmDeps<EthBackend>,
     /// Subscription task executor instance.
     pub subscription_task_executor: sc_rpc::SubscriptionTaskExecutor,
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, BE, VKE, VSF, A, SC, EC>(
-    deps: Deps<C, P, BE, VKE, VSF, A, SC>,
+pub fn create<C, P, BE, VKE, VSF, A, SC, EC, EthBackend>(
+    deps: Deps<C, P, BE, VKE, VSF, A, SC, EthBackend>,
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
     BE: Backend<Block> + 'static,
@@ -182,6 +182,7 @@ where
     A: ChainApi<Block = Block> + 'static,
     SC: SelectChain<Block> + 'static,
     EC: EthConfig<Block, C>,
+    EthBackend: fc_db::BackendReader<Block> + Send + Sync,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
     use substrate_frame_rpc_system::{System, SystemApiServer};
