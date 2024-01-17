@@ -210,6 +210,8 @@ impl<T: Config<I>, I: 'static> OnUnbalanced<NegativeImbalanceOf<T, I>> for Palle
     }
 }
 
+/// A helper to handle `OnUnbalanced` implementation over `CreditOf`
+/// to avoid conflicting implmentation.
 pub struct OnUnbalancedOverCredit<T, I>(Pallet<T, I>);
 
 impl<T: Config<I>, I: 'static> OnUnbalanced<CreditOf<T, I>> for OnUnbalancedOverCredit<T, I> {
