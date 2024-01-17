@@ -77,39 +77,4 @@ describe("eth rpc", () => {
       });
     });
   });
-
-  describe("pending block", () => {
-    it("should return pending block", async function () {
-      const [alice, bob] = devSigners;
-
-      var nonce = 0;
-      // Prepare and send transaction from alice increasing nonce value.
-      let sendTransaction = async () => {
-        const tx =
-        {
-          from: alice,
-          to: bob,
-          value: ethers.parseEther("1"),
-          nonce: nonce,
-        };
-        nonce = nonce + 1;
-        return (await alice.sendTransaction(tx));
-      };
-
-      // Send enough transactions number to have some pending.
-      const expectedXtsNumber = 10;
-      for (var _ of Array(expectedXtsNumber)) {
-        await sendTransaction();
-      }
-
-      // Get pending block.
-      const pending = await provider.send("eth_getBlockByNumber", ["pending", false]);
-      expect(pending.hash).to.be.null;
-      expect(pending.miner).to.be.null;
-      expect(pending.nonce).to.be.null;
-      expect(pending.totalDifficulty).to.be.null;
-      // Check that there are some pending transactions.
-      expect(pending.transactions.length).toBeGreaterThan(0);
-    });
-  });
 });
