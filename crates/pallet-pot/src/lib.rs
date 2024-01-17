@@ -6,7 +6,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::traits::{
-    fungible::{Balanced, Credit, Inspect, Mutate, Unbalanced},
+    fungible::{Balanced, Credit, Inspect},
     Imbalance, OnUnbalanced, StorageVersion,
 };
 use frame_support::{pallet_prelude::*, traits::Currency, PalletId};
@@ -71,10 +71,7 @@ pub mod pallet {
 
         /// The fungible asset to operate with.
         type Currency: Currency<<Self as Config<I>>::AccountId>
-            + Inspect<<Self as Config<I>>::AccountId, Balance = BalanceOf<Self, I>>
-            + Balanced<<Self as Config<I>>::AccountId, Balance = BalanceOf<Self, I>>
-            + Unbalanced<<Self as Config<I>>::AccountId, Balance = BalanceOf<Self, I>>
-            + Mutate<<Self as Config<I>>::AccountId, Balance = BalanceOf<Self, I>>;
+            + Balanced<<Self as Config<I>>::AccountId, Balance = BalanceOf<Self, I>>;
 
         /// The pot's pallet id, used for deriving its sovereign account ID.
         #[pallet::constant]
