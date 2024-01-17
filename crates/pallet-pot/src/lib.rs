@@ -216,7 +216,8 @@ impl<T: Config<I>, I: 'static> OnUnbalanced<CreditOf<T, I>> for OnUnbalancedOver
     fn on_nonzero_unbalanced(amount: CreditOf<T, I>) {
         let numeric_amount = amount.peek();
 
-        T::Currency::resolve(&Pallet::<T, I>::account_id(), amount);
+        // Pot account already exists.
+        let _ = T::Currency::resolve(&Pallet::<T, I>::account_id(), amount);
         T::Currency::done_deposit(&Pallet::<T, I>::account_id(), numeric_amount);
 
         Pallet::<T, I>::deposit_event(Event::Deposit {
