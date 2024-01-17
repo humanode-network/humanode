@@ -20,14 +20,14 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
 /// The balance of accessor for the currency.
 pub type BalanceOf<T, I = ()> =
-    <<T as Config<I>>::FungibleAsset as Currency<<T as Config<I>>::AccountId>>::Balance;
+    <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance;
 
 /// The negative implanace accessor.
 pub type NegativeImbalanceOf<T, I = ()> =
-    <<T as Config<I>>::FungibleAsset as Currency<<T as Config<I>>::AccountId>>::NegativeImbalance;
+    <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::NegativeImbalance;
 
 /// The credit accessor.
-pub type CreditOf<T, I = ()> = Credit<<T as Config<I>>::AccountId, <T as Config<I>>::FungibleAsset>;
+pub type CreditOf<T, I = ()> = Credit<<T as Config<I>>::AccountId, <T as Config<I>>::Currency>;
 
 /// The initial state of the pot, for use in genesis.
 #[cfg(feature = "std")]
@@ -70,7 +70,7 @@ pub mod pallet {
             + MaxEncodedLen;
 
         /// The fungible asset to operate with.
-        type FungibleAsset: Currency<<Self as Config<I>>::AccountId>
+        type Currency: Currency<<Self as Config<I>>::AccountId>
             + Inspect<<Self as Config<I>>::AccountId, Balance = BalanceOf<Self, I>>
             + Balanced<<Self as Config<I>>::AccountId, Balance = BalanceOf<Self, I>>
             + Unbalanced<<Self as Config<I>>::AccountId, Balance = BalanceOf<Self, I>>
@@ -137,20 +137,20 @@ pub mod pallet {
                     // Just pass though.
                 }
                 InitialState::Initialized => {
-                    let current = T::FungibleAsset::balance(&account_id);
-                    let min = <T::FungibleAsset as Inspect<_>>::minimum_balance();
+                    let current = T::Currency::free_balance(&account_id);
+                    let min = <T::Currency as Currency<_>>::minimum_balance();
                     assert!(
                         current >= min,
                         "the initial pot balance must be greater or equal than the existential balance"
                     );
                 }
                 InitialState::Balance { balance } => {
-                    let min = <T::FungibleAsset as Inspect<_>>::minimum_balance();
+                    let min = <T::Currency as Currency<_>>::minimum_balance();
                     assert!(
                         balance >= min,
                         "the configured initial pot balance must be greater or equal than the existential balance"
                     );
-                    let _ = T::FungibleAsset::set_balance(&account_id, balance);
+                    let _ = T::Currency::make_free_balance_be(&account_id, balance);
                 }
             }
         }
@@ -169,9 +169,9 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     // The existential deposit (`minimum_balance`) is not part of
     // the pot so the pot account never gets killed.
     pub fn balance() -> BalanceOf<T, I> {
-        T::FungibleAsset::balance(&Self::account_id())
+        T::Currency::balance(&Self::account_id())
             // Must never be less than 0 but better be safe.
-            .saturating_sub(<T::FungibleAsset as Inspect<_>>::minimum_balance())
+            .saturating_sub(<T::Currency as Currency<_>>::minimum_balance())
     }
 
     /// Update the inactive supply for this pot.
@@ -179,17 +179,17 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     /// This function uses the whole balance of the account, unlike [`Self::balance`],
     /// which subtracts the existential balance.
     fn update_inactive() -> Weight {
-        let balance = T::FungibleAsset::balance(&Self::account_id());
+        let balance = T::Currency::free_balance(&Self::account_id());
         let current = Inactive::<T, I>::get();
 
         let mut weight = T::DbWeight::get().reads(2);
 
         if balance != current {
             if let Some(delta) = balance.checked_sub(&current) {
-                <T::FungibleAsset as Unbalanced<_>>::deactivate(delta)
+                <T::Currency as Currency<_>>::deactivate(delta)
             }
             if let Some(delta) = current.checked_sub(&balance) {
-                <T::FungibleAsset as Unbalanced<_>>::reactivate(delta)
+                <T::Currency as Currency<_>>::reactivate(delta)
             }
             Inactive::<T, I>::put(balance);
 
@@ -205,7 +205,7 @@ impl<T: Config<I>, I: 'static> OnUnbalanced<NegativeImbalanceOf<T, I>> for Palle
         let numeric_amount = amount.peek();
 
         // Must resolve into existing but better to be safe.
-        T::FungibleAsset::resolve_creating(&Self::account_id(), amount);
+        T::Currency::resolve_creating(&Self::account_id(), amount);
 
         Self::deposit_event(Event::Deposit {
             value: numeric_amount,
@@ -219,8 +219,8 @@ impl<T: Config<I>, I: 'static> OnUnbalanced<CreditOf<T, I>> for OnUnbalancedOver
     fn on_nonzero_unbalanced(amount: CreditOf<T, I>) {
         let numeric_amount = amount.peek();
 
-        T::FungibleAsset::resolve(&Pallet::<T, I>::account_id(), amount);
-        T::FungibleAsset::done_deposit(&Pallet::<T, I>::account_id(), numeric_amount);
+        T::Currency::resolve(&Pallet::<T, I>::account_id(), amount);
+        T::Currency::done_deposit(&Pallet::<T, I>::account_id(), numeric_amount);
 
         Pallet::<T, I>::deposit_event(Event::Deposit {
             value: numeric_amount,
