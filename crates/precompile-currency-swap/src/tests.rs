@@ -77,6 +77,8 @@ fn swap_works() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -84,7 +86,7 @@ fn swap_works() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
         assert_eq!(
             execinfo.logs,
@@ -178,6 +180,8 @@ fn swap_works_almost_full_balance() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -185,7 +189,7 @@ fn swap_works_almost_full_balance() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
         assert_eq!(
             execinfo.logs,
@@ -264,6 +268,8 @@ fn swap_fail_no_funds() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap_err();
@@ -343,6 +349,8 @@ fn swap_fail_below_ed() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -350,7 +358,7 @@ fn swap_fail_below_ed() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Error(fp_evm::ExitError::OutOfFund)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, Vec::<u8>::new());
         assert_eq!(execinfo.logs, Vec::new());
 
@@ -438,6 +446,8 @@ fn swap_fail_trait_error() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -445,7 +455,7 @@ fn swap_fail_trait_error() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Revert(ExitRevert::Reverted)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, "unable to swap the currency".as_bytes());
         assert_eq!(execinfo.logs, Vec::new());
 
@@ -530,6 +540,8 @@ fn swap_works_full_balance() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -537,7 +549,7 @@ fn swap_works_full_balance() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
         assert_eq!(
             execinfo.logs,
@@ -617,6 +629,8 @@ fn swap_fail_bad_selector() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -624,7 +638,7 @@ fn swap_fail_bad_selector() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Error(fp_evm::ExitError::Other("invalid function selector".into()))
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, Vec::<u8>::new());
         assert_eq!(execinfo.logs, Vec::new());
 
@@ -697,6 +711,8 @@ fn swap_fail_value_overflow() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap_err();
@@ -769,6 +785,8 @@ fn swap_fail_no_arguments() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -778,7 +796,7 @@ fn swap_fail_no_arguments() {
                 "exactly one argument is expected".into()
             ))
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, Vec::<u8>::new());
         assert_eq!(execinfo.logs, Vec::new());
 
@@ -848,6 +866,8 @@ fn swap_fail_short_argument() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -857,7 +877,7 @@ fn swap_fail_short_argument() {
                 "exactly one argument is expected".into()
             ))
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, Vec::<u8>::new());
         assert_eq!(execinfo.logs, Vec::new());
 
@@ -929,6 +949,8 @@ fn swap_fail_trailing_junk() {
             Vec::new(),
             true,
             true,
+            None,
+            None,
             config,
         )
         .unwrap();
@@ -936,7 +958,7 @@ fn swap_fail_trailing_junk() {
             execinfo.exit_reason,
             fp_evm::ExitReason::Error(fp_evm::ExitError::Other("junk at the end of input".into()))
         );
-        assert_eq!(execinfo.used_gas, expected_gas_usage.into());
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, Vec::<u8>::new());
         assert_eq!(execinfo.logs, Vec::new());
 

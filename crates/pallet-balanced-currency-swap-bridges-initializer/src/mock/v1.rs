@@ -22,12 +22,13 @@ type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
 frame_support::construct_runtime!(
-    pub enum Test where
+    pub struct Test
+    where
         Block = Block,
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
     {
-        System: frame_system,
+        System: frame_system = 0,
         Balances: pallet_balances::<Instance1>,
         EvmBalances: pallet_balances::<Instance2>,
         SwapBridgeNativeToEvmPot: pallet_pot::<Instance1>,

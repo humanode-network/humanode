@@ -6,7 +6,7 @@ use frame_benchmarking_cli::*;
 use humanode_runtime::Block;
 #[cfg(feature = "runtime-benchmarks")]
 use humanode_runtime::Runtime;
-use sc_service::PartialComponents;
+use sc_service::{DatabaseSource, PartialComponents};
 #[cfg(feature = "runtime-benchmarks")]
 use sp_core::Get;
 #[cfg(feature = "try-runtime")]
@@ -18,7 +18,7 @@ use {
 use super::{bioauth, Root, Subcommand};
 #[cfg(feature = "runtime-benchmarks")]
 use crate::benchmarking::{inherent_benchmark_data, RemarkBuilder, TransferKeepAliveBuilder};
-use crate::service;
+use crate::{configuration, service};
 
 /// Parse command line arguments and run the requested operation.
 pub async fn run() -> sc_cli::Result<()> {
@@ -86,7 +86,10 @@ pub async fn run() -> sc_cli::Result<()> {
         }
         Some(Subcommand::PurgeChain(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
-            runner.sync_run(|config| cmd.run(config.substrate.database))
+            runner.sync_run(|config| {
+                remove_frontier_offchain_db(cmd, &config)?;
+                cmd.run(config.substrate.database)
+            })
         }
         Some(Subcommand::Revert(cmd)) => {
             let runner = root.create_humanode_runner(cmd)?;
@@ -100,7 +103,7 @@ pub async fn run() -> sc_cli::Result<()> {
                     } = service::new_partial(&config)?;
                     let aux_revert = Box::new(|client, backend, blocks| {
                         sc_consensus_babe::revert(Arc::clone(&client), backend, blocks)?;
-                        sc_finality_grandpa::revert(client, blocks)?;
+                        sc_consensus_grandpa::revert(client, blocks)?;
                         Ok(())
                     });
                     Ok((cmd.run(client, backend, Some(aux_revert)), task_manager))
@@ -230,7 +233,12 @@ pub async fn run() -> sc_cli::Result<()> {
             let runner = root.create_humanode_runner(cmd)?;
             runner.sync_run(|config| {
                 let partial = service::new_partial(&config)?;
-                let frontier_backend = partial.other.4;
+                let frontier_backend = match partial.other.4 {
+                    fc_db::Backend::KeyValue(kv_fb) => Arc::new(kv_fb),
+                    _ => {
+                        panic!("Only fc_db::Backend::KeyValue supported for FrontierDb command")
+                    }
+                };
                 cmd.run(partial.client, frontier_backend)
             })
         }
@@ -296,4 +304,45 @@ fn print_build_info() {
         "   Build info - cargo features: {}",
         crate::build_info::CARGO_FEATURES
     );
+}
+
+/// Remove Frontier offchain db.
+fn remove_frontier_offchain_db(
+    cmd: &sc_cli::PurgeChainCmd,
+    config: &configuration::Configuration,
+) -> sc_cli::Result<()> {
+    let fdb_config_dir = service::frontier::db_config_dir(&config.substrate);
+
+    match config.frontier_backend.frontier_backend_type {
+        crate::configuration::FrontierBackendType::KeyValue => {
+            let frontier_database_config = match config.substrate.database {
+                DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
+                    path: fc_db::kv::frontier_database_dir(&fdb_config_dir, "db"),
+                    cache_size: 0,
+                },
+                DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
+                    path: fc_db::kv::frontier_database_dir(&fdb_config_dir, "paritydb"),
+                },
+                _ => panic!("frontier supports either rocksdb or paritydb"),
+            };
+            cmd.run(frontier_database_config)?;
+        }
+        crate::configuration::FrontierBackendType::Sql => {
+            let db_path = fdb_config_dir.join("sql");
+
+            match std::fs::remove_dir_all(&db_path) {
+                Ok(_) => {
+                    tracing::info!("{:?} removed.", &db_path);
+                }
+                Err(ref err) if err.kind() == std::io::ErrorKind::NotFound => {
+                    tracing::error!("{:?} did not exist.", &db_path);
+                }
+                Err(err) => {
+                    return Err(format!("Cannot purge `{:?}` database: {:?}", db_path, err).into())
+                }
+            };
+        }
+    };
+
+    Ok(())
 }

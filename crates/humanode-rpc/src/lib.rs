@@ -8,7 +8,7 @@ use bioauth_flow_rpc::{Bioauth, BioauthServer, Signer, SignerFactory};
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use fc_rpc::{
     Eth, EthApiServer, EthBlockDataCacheTask, EthConfig, EthFilter, EthFilterApiServer, EthPubSub,
-    EthPubSubApiServer, Net, NetApiServer, Web3, Web3ApiServer,
+    EthPubSubApiServer, Net, NetApiServer, TxPoolApiServer, Web3, Web3ApiServer,
 };
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use fc_storage::OverrideHandle;
@@ -24,11 +24,12 @@ use sc_client_api::{
 use sc_consensus_babe::{BabeConfiguration, Epoch};
 use sc_consensus_babe_rpc::{Babe, BabeApiServer};
 use sc_consensus_epochs::SharedEpochChanges;
-use sc_finality_grandpa::{
+use sc_consensus_grandpa::{
     FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
 };
-use sc_finality_grandpa_rpc::{Grandpa, GrandpaApiServer};
+use sc_consensus_grandpa_rpc::{Grandpa, GrandpaApiServer};
 use sc_network::NetworkService;
+use sc_network_sync::SyncingService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_rpc_spec_v2::chain_spec::{ChainSpec, ChainSpecApiServer};
 use sc_transaction_pool::{ChainApi, Pool};
@@ -86,7 +87,7 @@ pub struct EvmDeps {
     /// Maximum number of stored filters.
     pub eth_max_stored_filters: usize,
     /// Backend.
-    pub eth_backend: Arc<fc_db::Backend<Block>>,
+    pub eth_backend: Arc<dyn fc_db::BackendReader<Block> + Send + Sync>,
     /// Maximum number of logs in a query.
     pub eth_max_past_logs: u32,
     /// Maximum fee history cache size.
@@ -126,8 +127,10 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub deny_unsafe: DenyUnsafe,
     /// Graph pool instance.
     pub graph: Arc<Pool<A>>,
-    /// Network service
+    /// Network service.
     pub network: Arc<NetworkService<Block, Hash>>,
+    /// Chain syncing service.
+    pub sync: Arc<SyncingService<Block>>,
     /// A copy of the chain spec.
     pub chain_spec: Box<dyn sc_chain_spec::ChainSpec>,
     /// AuthorExt specific dependencies.
@@ -191,6 +194,7 @@ where
         deny_unsafe,
         graph,
         network,
+        sync,
         chain_spec,
         author_ext,
         is_authority,
@@ -301,9 +305,9 @@ where
         Eth::new(
             Arc::clone(&client),
             Arc::clone(&pool),
-            graph,
+            Arc::clone(&graph),
             Some(humanode_runtime::TransactionConverter),
-            Arc::clone(&network),
+            Arc::clone(&sync),
             Vec::new(),
             Arc::clone(&eth_overrides),
             Arc::clone(&eth_backend),
@@ -324,7 +328,7 @@ where
         EthPubSub::new(
             Arc::clone(&pool),
             Arc::clone(&client),
-            Arc::clone(&network),
+            Arc::clone(&sync),
             Arc::clone(&subscription_task_executor),
             Arc::clone(&eth_overrides),
             Arc::clone(&eth_pubsub_notification_sinks),
@@ -342,11 +346,14 @@ where
         .into_rpc(),
     )?;
 
+    let eth_tx_pool = fc_rpc::TxPool::new(Arc::clone(&client), graph);
+
     if let Some(eth_filter_pool) = eth_filter_pool {
         io.merge(
             EthFilter::new(
                 client,
                 eth_backend,
+                eth_tx_pool.clone(),
                 eth_filter_pool,
                 eth_max_stored_filters,
                 eth_max_past_logs,
@@ -355,6 +362,8 @@ where
             .into_rpc(),
         )?;
     }
+
+    io.merge(eth_tx_pool.into_rpc())?;
 
     Ok(io)
 }

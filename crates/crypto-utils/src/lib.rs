@@ -2,7 +2,7 @@
 
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_finality_grandpa::AuthorityId as GrandpaId;
+use sp_consensus_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{
     app_crypto::{Pair, Public},
     traits::IdentifyAccount,

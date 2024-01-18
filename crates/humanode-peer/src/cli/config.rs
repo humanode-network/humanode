@@ -54,6 +54,15 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 execute_gas_limit_multiplier: params.execute_gas_limit_multiplier,
             });
 
+        let fb_params = self.frontier_backend();
+        let frontier_backend = configuration::FrontierBackend {
+            frontier_backend_type: fb_params.frontier_backend_type,
+            frontier_sql_backend_pool_size: fb_params.frontier_sql_backend_pool_size,
+            frontier_sql_backend_num_ops_timeout: fb_params.frontier_sql_backend_num_ops_timeout,
+            frontier_sql_backend_thread_count: fb_params.frontier_sql_backend_thread_count,
+            frontier_sql_backend_cache_size: fb_params.frontier_sql_backend_cache_size,
+        };
+
         let time_warp = self.time_warp_params().and_then(|params| {
             params
                 .time_warp_fork_timestamp
@@ -71,6 +80,7 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             substrate,
             bioauth_flow,
             ethereum_rpc,
+            frontier_backend,
             time_warp,
         })
     }
@@ -83,6 +93,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
     /// Provide the Ethereum RPC params.
     fn ethereum_rpc_params(&self) -> Option<&params::EthereumRpcParams> {
         None
+    }
+
+    /// Provide the Frontier backend params.
+    fn frontier_backend(&self) -> params::FrontierBackendParams {
+        Default::default()
     }
 
     /// Provide the time warp related params, if available.

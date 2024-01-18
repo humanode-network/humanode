@@ -209,7 +209,7 @@ fn total_issuance_transaction_payment_validate() {
         }
         .into();
         let normal = DispatchInfo {
-            weight: Weight::from_ref_time(10),
+            weight: Weight::from_parts(10, 0),
             class: DispatchClass::Normal,
             pays_fee: Pays::Yes,
         };

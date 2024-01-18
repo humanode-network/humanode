@@ -3,7 +3,7 @@
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::arithmetic_side_effects)]
 
-use fp_evm::PrecompileHandle;
+use fp_evm::{IsPrecompileResult, PrecompileHandle};
 use frame_support::{
     once_cell::sync::Lazy,
     sp_io,
@@ -29,7 +29,8 @@ pub(crate) type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
-    pub enum Test where
+    pub struct Test
+    where
         Block = Block,
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
@@ -116,13 +117,14 @@ pub struct FixedGasPrice;
 impl fp_evm::FeeCalculator for FixedGasPrice {
     fn min_gas_price() -> (U256, Weight) {
         // Return some meaningful gas price and weight
-        (*GAS_PRICE, Weight::from_ref_time(7u64))
+        (*GAS_PRICE, Weight::from_parts(7u64, 0))
     }
 }
 
 frame_support::parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
-    pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+    pub GasLimitPovSizeRatio: u64 = 0;
+    pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
     pub MockPrecompiles: MockPrecompileSet = MockPrecompileSet;
 }
 
@@ -149,6 +151,7 @@ impl pallet_evm::Config for Test {
     type OnChargeTransaction = ();
     type OnCreate = ();
     type FindAuthor = ();
+    type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
     type Timestamp = Timestamp;
     type WeightInfo = ();
 }
@@ -178,8 +181,11 @@ impl pallet_evm::PrecompileSet for MockPrecompileSet {
     /// Check if the given address is a precompile. Should only be called to
     /// perform the check while not executing the precompile afterward, since
     /// `execute` already performs a check internally.
-    fn is_precompile(&self, address: H160) -> bool {
-        address == *PRECOMPILE_ADDRESS
+    fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
+        IsPrecompileResult::Answer {
+            is_precompile: address == *PRECOMPILE_ADDRESS,
+            extra_cost: 0,
+        }
     }
 }
 

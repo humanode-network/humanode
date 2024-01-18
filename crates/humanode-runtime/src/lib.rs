@@ -21,7 +21,7 @@ pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
         ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get,
-        KeyOwnerProofSystem, Randomness,
+        KeyOwnerProofSystem, OnFinalize, Randomness,
     },
     weights::{
         constants::{
@@ -312,19 +312,12 @@ impl pallet_babe::Config for Runtime {
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
 
-    type KeyOwnerProofSystem = Historical;
-
     type KeyOwnerProof =
-        <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, BabeId)>>::Proof;
-
-    type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-        KeyTypeId,
-        BabeId,
-    )>>::IdentificationTuple;
-
-    type HandleEquivocation = pallet_babe::EquivocationHandler<
-        Self::KeyOwnerIdentification,
+        <Historical as KeyOwnerProofSystem<(KeyTypeId, pallet_babe::AuthorityId)>>::Proof;
+    type EquivocationReportSystem = pallet_babe::EquivocationReportSystem<
+        Self,
         Offences,
+        Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
 
@@ -361,19 +354,11 @@ impl pallet_session::historical::Config for Runtime {
 impl pallet_grandpa::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
 
-    type KeyOwnerProofSystem = Historical;
-
-    type KeyOwnerProof =
-        <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
-
-    type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-        KeyTypeId,
-        GrandpaId,
-    )>>::IdentificationTuple;
-
-    type HandleEquivocation = pallet_grandpa::EquivocationHandler<
-        Self::KeyOwnerIdentification,
+    type KeyOwnerProof = <Historical as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
+    type EquivocationReportSystem = pallet_grandpa::EquivocationReportSystem<
+        Self,
         Offences,
+        Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
 
@@ -638,12 +623,13 @@ const_assert!(WEIGHT_MILLISECS_PER_BLOCK == 2000u64);
 
 parameter_types! {
     pub BlockGasLimit: U256 = U256::from(constants::evm_fees::BLOCK_GAS_LIMIT);
+    pub GasLimitPovSizeRatio: u64 = constants::evm_fees::GAS_LIMIT_POV_SIZE_RATIO;
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
-    pub WeightPerGas: Weight = Weight::from_ref_time(fp_evm::weight_per_gas(
+    pub WeightPerGas: Weight = Weight::from_parts(fp_evm::weight_per_gas(
         constants::evm_fees::BLOCK_GAS_LIMIT,
         NORMAL_DISPATCH_RATIO,
         WEIGHT_MILLISECS_PER_BLOCK,
-    ));
+    ), 0);
 }
 
 impl pallet_evm_system::Config for Runtime {
@@ -702,6 +688,7 @@ impl pallet_evm::Config for Runtime {
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
     >;
+    type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
     type Timestamp = Timestamp;
     type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
 }
@@ -834,7 +821,7 @@ impl pallet_dummy_precompiles_code::Config for Runtime {
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
-    pub enum Runtime where
+    pub struct Runtime where
         Block = Block,
         NodeBlock = opaque::Block,
         UncheckedExtrinsic = UncheckedExtrinsic
@@ -1351,6 +1338,9 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 validate,
+                // TODO(#864): set proper values.
+                None,
+                None,
                 &config,
             ).map_err(|err| err.error.into())
         }
@@ -1387,6 +1377,9 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 validate,
+                // TODO(#864): set proper values.
+                None,
+                None,
                 &config,
             ).map_err(|err| err.error.into())
         }
@@ -1429,6 +1422,21 @@ impl_runtime_apis! {
         }
 
         fn gas_limit_multiplier_support() {}
+
+        fn pending_block(
+            xts: Vec<<Block as BlockT>::Extrinsic>,
+        ) -> (Option<pallet_ethereum::Block>, Option<Vec<TransactionStatus>>) {
+            for ext in xts {
+                let _ = Executive::apply_extrinsic(ext);
+            }
+
+            Ethereum::on_finalize(System::block_number() + 1);
+
+            (
+                pallet_ethereum::CurrentBlock::<Runtime>::get(),
+                pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
+            )
+        }
     }
 
     impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>

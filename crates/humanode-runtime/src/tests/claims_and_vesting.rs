@@ -88,7 +88,7 @@ fn prepare_applyable_data(
     );
 
     let normal_dispatch_info = DispatchInfo {
-        weight: Weight::from_ref_time(100),
+        weight: Weight::from_parts(100, 0),
         class: DispatchClass::Normal,
         pays_fee: Pays::No,
     };

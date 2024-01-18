@@ -25,7 +25,8 @@ pub(crate) type EvmAccountId = H160;
 type Balance = u64;
 
 frame_support::construct_runtime!(
-    pub enum Test where
+    pub struct Test
+    where
         Block = Block,
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
@@ -114,13 +115,14 @@ pub struct FixedGasPrice;
 impl fp_evm::FeeCalculator for FixedGasPrice {
     fn min_gas_price() -> (U256, Weight) {
         // Return some meaningful gas price and weight
-        (*GAS_PRICE, Weight::from_ref_time(7u64))
+        (*GAS_PRICE, Weight::from_parts(7u64, 0))
     }
 }
 
 frame_support::parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
-    pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+    pub GasLimitPovSizeRatio: u64 = 0;
+    pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
 }
 
 impl pallet_evm::Config for Test {
@@ -146,6 +148,7 @@ impl pallet_evm::Config for Test {
     type OnChargeTransaction = ();
     type OnCreate = ();
     type FindAuthor = ();
+    type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
     type Timestamp = Timestamp;
     type WeightInfo = ();
 }
