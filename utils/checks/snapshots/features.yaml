@@ -782,6 +782,8 @@
 - name: environmental 1.1.4
   features:
     - std
+- name: equivalent 1.0.1
+  features: []
 - name: errno 0.3.1
   features: []
 - name: errno-dragonfly 0.1.2
@@ -1152,7 +1154,7 @@
 - name: group 0.13.0
   features:
     - alloc
-- name: h2 0.3.18
+- name: h2 0.3.24
   features: []
 - name: handlebars 4.3.6
   features:
@@ -1174,6 +1176,9 @@
   features:
     - ahash
     - inline-more
+    - raw
+- name: hashbrown 0.14.3
+  features:
     - raw
 - name: headers 0.3.8
   features: []
@@ -1300,6 +1305,10 @@
   features:
     - serde
     - serde-1
+    - std
+- name: indexmap 2.1.0
+  features:
+    - default
     - std
 - name: indoc 2.0.1
   features: []
