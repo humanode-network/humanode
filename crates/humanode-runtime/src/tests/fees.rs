@@ -119,10 +119,10 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 }
 
 /// Crate a new keystore and populate it with some keys to use in tests.
-fn keystore() -> sp_keystore::testing::KeyStore {
-    use sp_keystore::SyncCryptoStore;
+fn keystore() -> sp_keystore::testing::MemoryKeystore {
+    use sp_keystore::Keystore;
 
-    let store = sp_keystore::testing::KeyStore::new();
+    let store = sp_keystore::testing::MemoryKeystore::new();
     store
         .sr25519_generate_new(crypto::KEY_TYPE, Some("//Alice"))
         .unwrap();
