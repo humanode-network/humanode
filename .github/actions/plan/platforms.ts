@@ -2,12 +2,14 @@ export const selfHostedRunners = {
   macosAarch64: ["self-hosted", "macOS", "aarch64"],
 } as const;
 
-export type RunnerOS =
-  | "ubuntu-22.04-custom1"
-  | "ubuntu-20.04-custom1"
-  | "windows-latest"
-  | "macos-latest"
-  | (typeof selfHostedRunners)[keyof typeof selfHostedRunners];
+export type StandardRunnerOS = "macos-14" | "windows-latest";
+
+export type CustomRunnerOS = "ubuntu-22.04-custom1" | "ubuntu-20.04-custom1";
+
+export type SelfHostedRunnerOS =
+  (typeof selfHostedRunners)[keyof typeof selfHostedRunners];
+
+export type RunnerOS = StandardRunnerOS | CustomRunnerOS | SelfHostedRunnerOS;
 
 export type Platform = {
   name: string;
