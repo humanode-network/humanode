@@ -3,8 +3,8 @@ export const selfHostedRunners = {
 } as const;
 
 export type RunnerOS =
-  | "ubuntu-22.04"
-  | "ubuntu-20.04"
+  | "ubuntu-22.04-custom1"
+  | "ubuntu-20.04-custom1"
   | "windows-latest"
   | "macos-latest"
   | (typeof selfHostedRunners)[keyof typeof selfHostedRunners];
@@ -31,7 +31,7 @@ const buildEnvScriptPath = (script: string) =>
 export const all = {
   ubuntu2204: {
     name: "Ubuntu 22.04",
-    os: "ubuntu-22.04",
+    os: "ubuntu-22.04-custom1",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     isOnSelfHostedRunner: false,
     essential: true,
@@ -42,7 +42,7 @@ export const all = {
   },
   ubuntu2004: {
     name: "Ubuntu 20.04",
-    os: "ubuntu-20.04",
+    os: "ubuntu-20.04-custom1",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     isOnSelfHostedRunner: false,
     essential: false,
