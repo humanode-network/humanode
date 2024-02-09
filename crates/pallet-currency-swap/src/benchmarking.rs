@@ -48,8 +48,8 @@ benchmarks! {
 
         let _ = <FromCurrencyOf<T>>::deposit_creating(&from, init_balance.into());
 
-        let from_balance_before = <FromCurrencyOf<T>>::total_balance(&from);
-        let to_balance_before = <ToCurrencyOf<T>>::total_balance(&to);
+        let from_balance_before = <FromCurrencyOf<T> as Currency<_>>::total_balance(&from);
+        let to_balance_before = <ToCurrencyOf<T> as Currency<_>>::total_balance(&to);
 
         let currency_swap = <T as Interface>::prepare();
 
@@ -57,8 +57,8 @@ benchmarks! {
 
     }: _(origin, to.clone(), from_balance)
     verify {
-        let from_balance_after = <FromCurrencyOf<T>>::total_balance(&from);
-        let to_balance_after = <ToCurrencyOf<T>>::total_balance(&to);
+        let from_balance_after = <FromCurrencyOf<T> as Currency<_>>::total_balance(&from);
+        let to_balance_after = <ToCurrencyOf<T> as Currency<_>>::total_balance(&to);
 
         assert_eq!(from_balance_before - from_balance_after, from_balance);
         assert_eq!(to_balance_after - to_balance_before, to_balance);
