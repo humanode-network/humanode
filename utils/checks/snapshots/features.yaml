@@ -2422,7 +2422,7 @@
     - std
 - name: quicksink 0.1.2
   features: []
-- name: quinn-proto 0.9.3
+- name: quinn-proto 0.9.6
   features:
     - ring
     - rustls
