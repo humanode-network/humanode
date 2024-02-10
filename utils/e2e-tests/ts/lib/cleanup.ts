@@ -1,6 +1,11 @@
 export type CleanupFn = () => void | Promise<void>;
 
-export const cleanupStack = (...init: CleanupFn[]) => {
+export type CleanupStack = {
+  push: (fn: CleanupFn) => void;
+  run: () => Promise<void>;
+};
+
+export const cleanupStack = (...init: CleanupFn[]): CleanupStack => {
   const stack = [...init];
 
   const push = (fn: CleanupFn) => {
