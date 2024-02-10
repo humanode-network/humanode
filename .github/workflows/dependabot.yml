@@ -36,7 +36,7 @@ jobs:
           platformCacheKey: ubuntu2204-amd64
         timeout-minutes: 10
 
-      - run: utils/checks/features-snapshot
+      - run: utils/checks/features-snapshot || true
 
       - run: mv utils/checks/snapshots/features.new.yaml utils/checks/snapshots/features.yaml
 
