@@ -24,8 +24,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: 20
     permissions:
-      contents: write
-      pull-requests: write
+      contents: read
     env:
       IS_DEPENDABOT: ${{ secrets.DEPENDABOT_COMMIT_APP_PRIVATE_KEY != '' }}
     steps:
