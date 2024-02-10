@@ -1,4 +1,4 @@
-import { expect, describe, beforeEach, it, afterEach } from "vitest";
+import { expect, describe, beforeEach, it } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
 import { decodeEventLog, parseEther } from "viem";
