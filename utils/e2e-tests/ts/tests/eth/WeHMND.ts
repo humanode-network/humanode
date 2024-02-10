@@ -1,18 +1,16 @@
-import { expect, describe, beforeEach, it } from "vitest";
+import { expect, describe, beforeEach, it, afterEach } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
 import { decodeEventLog, parseEther } from "viem";
-import { cleanupStack } from "../../lib/cleanup";
 import erc20abi from "../../lib/abis/erc20";
 import "../../lib/expect";
+import { beforeEachWithCleanup } from "../../lib/lifecycle";
 
 describe("WeHMND", () => {
   let node: RunNodeState;
   let publicClient: eth.PublicClient;
   let devClients: eth.DevClients;
-  beforeEach(async () => {
-    const cleanup = cleanupStack();
-
+  beforeEachWithCleanup(async (cleanup) => {
     node = runNode({ args: ["--dev", "--tmp"] });
     cleanup.push(node.cleanup);
 
@@ -20,8 +18,6 @@ describe("WeHMND", () => {
 
     publicClient = eth.publicClientFromNode(node);
     devClients = eth.devClientsFromNode(node);
-
-    return cleanup.run;
   }, 60 * 1000);
 
   const address = "0x0000000000000000000000000000000000000802";
