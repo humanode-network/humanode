@@ -1,0 +1,49 @@
+name: dependabot
+
+on:
+  push:
+    branches:
+      - "dependabot/cargo/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' && github.event_name != 'merge_group' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_INCREMENTAL: "0"
+  RUSTDOCFLAGS: "-D warnings"
+
+jobs:
+  update-features-snapshot:
+    name: Update features snapshot
+    runs-on: ubuntu-22.04-custom1
+    timeout-minutes: 20
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        timeout-minutes: 5
+
+      - uses: ./.github/actions/common-setup
+        with:
+          platformCacheKey: ubuntu2204-amd64
+        timeout-minutes: 10
+
+      - run: utils/checks/features-snapshot
+
+      - run: mv utils/checks/snapshots/features.new.yaml utils/checks/snapshots/features.yaml
+
+      - run: |
+          git reset HEAD
+          git add utils/checks/snapshots/features.yaml
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git commit -m "[dependabot skip] Update features snapshot"
+          git push --set-upstream origin "${{ github.ref }}"
