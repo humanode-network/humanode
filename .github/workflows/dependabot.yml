@@ -21,7 +21,7 @@ env:
 jobs:
   update-features-snapshot:
     name: Update features snapshot
-    runs-on: ubuntu-22.04-custom1
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     permissions:
       contents: write

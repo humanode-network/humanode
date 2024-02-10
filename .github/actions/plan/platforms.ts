@@ -2,9 +2,14 @@ export const selfHostedRunners = {
   macosAarch64: ["self-hosted", "macOS", "aarch64"],
 } as const;
 
-export type StandardRunnerOS = "macos-14" | "windows-latest";
+export type StandardRunnerOS =
+  | "ubuntu-22.04"
+  | "ubuntu-20.04"
+  | "macos-13"
+  | "macos-14"
+  | "windows-latest";
 
-export type CustomRunnerOS = "ubuntu-22.04-custom1" | "ubuntu-20.04-custom1";
+export type CustomRunnerOS = never;
 
 export type SelfHostedRunnerOS =
   (typeof selfHostedRunners)[keyof typeof selfHostedRunners];
@@ -33,7 +38,7 @@ const buildEnvScriptPath = (script: string) =>
 export const all = {
   ubuntu2204: {
     name: "Ubuntu 22.04",
-    os: "ubuntu-22.04-custom1",
+    os: "ubuntu-22.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     isOnSelfHostedRunner: false,
     essential: true,
@@ -44,7 +49,7 @@ export const all = {
   },
   ubuntu2004: {
     name: "Ubuntu 20.04",
-    os: "ubuntu-20.04-custom1",
+    os: "ubuntu-20.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     isOnSelfHostedRunner: false,
     essential: false,
@@ -68,7 +73,7 @@ export const all = {
   },
   macos: {
     name: "macOS (amd64)",
-    os: "macos-latest",
+    os: "macos-13",
     buildEnvScript: buildEnvScriptPath("macos.sh"),
     isOnSelfHostedRunner: false,
     essential: false,
