@@ -1440,7 +1440,7 @@
   features: []
 - name: js-sys 0.3.61
   features: []
-- name: jsonrpsee 0.16.2
+- name: jsonrpsee 0.16.3
   features:
     - client-core
     - jsonrpsee-core
@@ -1451,7 +1451,7 @@
     - server
     - server-core
     - tracing
-- name: jsonrpsee-core 0.16.2
+- name: jsonrpsee-core 0.16.3
   features:
     - arrayvec
     - client
@@ -1466,11 +1466,11 @@
     - server
     - soketto
     - tokio
-- name: jsonrpsee-proc-macros 0.16.2
+- name: jsonrpsee-proc-macros 0.16.3
   features: []
-- name: jsonrpsee-server 0.16.2
+- name: jsonrpsee-server 0.16.3
   features: []
-- name: jsonrpsee-types 0.16.2
+- name: jsonrpsee-types 0.16.3
   features: []
 - name: k256 0.11.6
   features:
