@@ -59,6 +59,8 @@
 - name: allocator-api2 0.2.16
   features:
     - alloc
+- name: android-tzdata 0.1.1
+  features: []
 - name: android_system_properties 0.1.5
   features: []
 - name: ansi_term 0.12.1
@@ -332,18 +334,21 @@
     - rand_core
 - name: checked_int_cast 1.0.0
   features: []
-- name: chrono 0.4.24
+- name: chrono 0.4.33
   features:
+    - alloc
+    - android-tzdata
     - clock
     - default
     - iana-time-zone
     - js-sys
+    - now
     - oldtime
     - std
-    - time
     - wasm-bindgen
     - wasmbind
     - winapi
+    - windows-targets
 - name: cid 0.8.6
   features:
     - alloc
@@ -3457,8 +3462,6 @@
     - background_threads_runtime_support
     - default
     - unprefixed_malloc_on_supported_platforms
-- name: time 0.1.45
-  features: []
 - name: time 0.3.20
   features:
     - alloc
@@ -3790,10 +3793,6 @@
     - multipart
     - tokio-tungstenite
     - websocket
-- name: wasi 0.10.0+wasi-snapshot-preview1
-  features:
-    - default
-    - std
 - name: wasi 0.11.0+wasi-snapshot-preview1
   features:
     - default
@@ -3969,13 +3968,11 @@
     - memoryapi
     - minwinbase
     - minwindef
-    - ntdef
     - ntsecapi
     - ntstatus
     - objbase
     - processenv
     - processthreadsapi
-    - profileapi
     - shlobj
     - std
     - synchapi
@@ -4080,9 +4077,13 @@
   features: []
 - name: windows-targets 0.48.0
   features: []
+- name: windows-targets 0.52.0
+  features: []
 - name: windows_aarch64_gnullvm 0.42.2
   features: []
 - name: windows_aarch64_gnullvm 0.48.0
+  features: []
+- name: windows_aarch64_gnullvm 0.52.0
   features: []
 - name: windows_aarch64_msvc 0.34.0
   features: []
@@ -4090,11 +4091,15 @@
   features: []
 - name: windows_aarch64_msvc 0.48.0
   features: []
+- name: windows_aarch64_msvc 0.52.0
+  features: []
 - name: windows_i686_gnu 0.34.0
   features: []
 - name: windows_i686_gnu 0.42.2
   features: []
 - name: windows_i686_gnu 0.48.0
+  features: []
+- name: windows_i686_gnu 0.52.0
   features: []
 - name: windows_i686_msvc 0.34.0
   features: []
@@ -4102,21 +4107,29 @@
   features: []
 - name: windows_i686_msvc 0.48.0
   features: []
+- name: windows_i686_msvc 0.52.0
+  features: []
 - name: windows_x86_64_gnu 0.34.0
   features: []
 - name: windows_x86_64_gnu 0.42.2
   features: []
 - name: windows_x86_64_gnu 0.48.0
   features: []
+- name: windows_x86_64_gnu 0.52.0
+  features: []
 - name: windows_x86_64_gnullvm 0.42.2
   features: []
 - name: windows_x86_64_gnullvm 0.48.0
+  features: []
+- name: windows_x86_64_gnullvm 0.52.0
   features: []
 - name: windows_x86_64_msvc 0.34.0
   features: []
 - name: windows_x86_64_msvc 0.42.2
   features: []
 - name: windows_x86_64_msvc 0.48.0
+  features: []
+- name: windows_x86_64_msvc 0.52.0
   features: []
 - name: winreg 0.10.1
   features: []
