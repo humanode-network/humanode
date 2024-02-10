@@ -32,10 +32,6 @@ export const makeChain = (url: string) =>
         http: [url],
         webSocket: [url],
       },
-      public: {
-        http: [""],
-        webSocket: [""],
-      },
     },
     nativeCurrency: {
       decimals: 18,
