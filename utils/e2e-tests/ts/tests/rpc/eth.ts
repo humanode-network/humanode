@@ -1,17 +1,15 @@
-import { expect, describe, beforeEach, it } from "vitest";
+import { expect, describe, it } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethEthers";
-import { cleanupStack } from "../../lib/cleanup";
 import * as ethers from "ethers";
 import "../../lib/expect";
+import { beforeEachWithCleanup } from "../../lib/lifecycle";
 
 describe("eth rpc", () => {
   let node: RunNodeState;
   let provider: eth.Provider;
   let devSigners: eth.DevSigners;
-  beforeEach(async () => {
-    const cleanup = cleanupStack();
-
+  beforeEachWithCleanup(async (cleanup) => {
     node = runNode({ args: ["--dev", "--tmp"] });
     cleanup.push(node.cleanup);
 
@@ -19,8 +17,6 @@ describe("eth rpc", () => {
 
     provider = eth.providerFromNode(node);
     devSigners = eth.devSigners(provider);
-
-    return cleanup.run;
   }, 60 * 1000);
 
   it("has the expected Chain ID", async () => {
