@@ -24,6 +24,19 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Clear space on the runner
+      shell: bash
+      run: |
+        pwd
+        df -h
+        sudo rm -rf \
+          "/usr/share/dotnet" \
+          "/opt/ghc" \
+          "/usr/local/share/boost" \
+          "$AGENT_TOOLSDIRECTORY"
+        df -h
+      if: ${{ inputs.isOnSelfHostedRunner != 'true' }}
+
     - name: Cache
       uses: Swatinem/rust-cache@v2
       with:

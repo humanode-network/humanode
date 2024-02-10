@@ -24,7 +24,7 @@ env:
 jobs:
   plan:
     name: Plan the execution
-    runs-on: ubuntu-22.04-custom1
+    runs-on: ubuntu-22.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     permissions:
@@ -73,7 +73,7 @@ jobs:
 
   e2e:
     name: End-to-end tests
-    runs-on: ubuntu-22.04-custom1
+    runs-on: ubuntu-22.04
     timeout-minutes: 50
     permissions:
       contents: read
@@ -111,7 +111,7 @@ jobs:
             run: utils/checks/features-snapshot
       fail-fast: false
     name: ${{ matrix.util.name }}
-    runs-on: ubuntu-22.04-custom1
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -159,7 +159,7 @@ jobs:
 
       fail-fast: false
     name: ${{ matrix.util.name }}
-    runs-on: ubuntu-22.04-custom1
+    runs-on: ubuntu-22.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -182,7 +182,7 @@ jobs:
 
   prettier:
     name: prettier:check
-    runs-on: ubuntu-22.04-custom1
+    runs-on: ubuntu-22.04
     timeout-minutes: 50
     permissions:
       contents: read
