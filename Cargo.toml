@@ -28,7 +28,7 @@ http = { version = "0.2", default-features = false }
 http-body = { version = "0.4", default-features = false }
 impl-trait-for-tuples = { version = "0.2", default-features = false }
 indoc = { version = "2.0", default-features = false }
-jsonrpsee = { version = "0.16.2", default-features = false }
+jsonrpsee = { version = "0.16.3", default-features = false }
 libsecp256k1 = { version = "0.7", default-features = false }
 log = { version = "0.4", default-features = false }
 mockall = { version = "0.11", default-features = false }
