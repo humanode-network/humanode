@@ -12,16 +12,15 @@ no-default-features = true
 feature-depth = 1
 
 [advisories]
-db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
 vulnerability = "deny"
-unmaintained = "warn"
-yanked = "warn"
-notice = "warn"
+unmaintained = "allow"
+yanked = "allow"
+notice = "deny"
 ignore = [
-  # TODO(#723): update the ed25519-dalek 1 internal dependency tp 2.0.0+
+  # TODO(#723): update the ed25519-dalek 1 internal dependency to 2.0.0+
   "RUSTSEC-2022-0093",
-  # TODO(#742): vulerable webpki.
+  # TODO(#742): vulnerable webpki.
   "RUSTSEC-2023-0052",
 ]
 
@@ -75,10 +74,10 @@ skip = []
 skip-tree = []
 
 [sources]
-unknown-registry = "warn"
-unknown-git = "warn"
+unknown-registry = "deny"
+unknown-git = "deny"
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-allow-git = []
+allow-git = ["https://github.com/rust-blockchain/evm"]
 
 [sources.allow-org]
 github = ["humanode-network"]
