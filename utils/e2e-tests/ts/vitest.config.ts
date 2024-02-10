@@ -8,8 +8,12 @@ export default defineConfig({
       shuffle: true,
     },
     watch: false,
-    threads: false,
-    singleThread: true,
+    pool: "threads",
+    poolOptions: {
+      threads: {
+        singleThread: true
+      }
+    },
     testTimeout: 30_000,
   },
 });
