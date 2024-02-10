@@ -34,9 +34,17 @@ export type RunNodeState = {
 export const runNode = (params: RunNodeParams): RunNodeState => {
   const { args, stdio = "inherit" } = params;
   const childProcess = spawn(PEER_PATH, args, { stdio });
+  console.log(`Spawned peer as pid ${childProcess.pid}`);
 
-  const kill = () => childProcess.kill();
-  process.once("exit", kill);
+  const sendSig = (sig: number) => {
+    console.log(`Sending signal ${sig} to pid ${childProcess.pid}`);
+    childProcess.kill(sig);
+  };
+
+  const sendSigKill = () => sendSig(9);
+  const sendSigTerm = () => sendSig(15);
+
+  process.once("exit", sendSigKill);
 
   const waitForExit = new Promise<ExitInfo>((resolve, reject) => {
     childProcess.once("close", (code, signal) => resolve({ code, signal }));
@@ -67,7 +75,7 @@ export const runNode = (params: RunNodeParams): RunNodeState => {
   });
 
   const cleanup = async () => {
-    childProcess.kill();
+    sendSigTerm();
     await waitForExit;
   };
 
