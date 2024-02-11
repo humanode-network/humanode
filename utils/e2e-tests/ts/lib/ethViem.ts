@@ -6,6 +6,7 @@ import {
   SUBSTRATE_DEV_SEED_PHRASE,
 } from "./eth";
 import {
+  TransportConfig,
   WebSocketTransport,
   createPublicClient,
   createWalletClient,
@@ -14,6 +15,7 @@ import {
 } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
 import { socketClientCache } from "viem/utils";
+import { AddCleanup } from "./cleanup";
 
 export type ExtraParams = {
   defaultChainId?: number;
@@ -48,16 +50,23 @@ export type Chain = typeof chain;
 
 export const provider = (url: string): Provider => webSocket(url);
 
-export const publicClient = (url: string) =>
-  createPublicClient({
+export const publicClient = (url: string, addCleanup: AddCleanup) => {
+  const client = createPublicClient({
     chain,
     transport: provider(url),
   });
+  addCleanup(() =>
+    client.transport.getRpcClient().then((rpcClient) => rpcClient.close()),
+  );
+  return client;
+};
 
 export type PublicClient = ReturnType<typeof publicClient>;
 
-export const publicClientFromNode = (node: RunNodeState): PublicClient =>
-  publicClient(node.meta.rpcUrlWs);
+export const publicClientFromNode = (
+  node: RunNodeState,
+  addCleanup: AddCleanup,
+): PublicClient => publicClient(node.meta.rpcUrlWs, addCleanup);
 
 export const devAccounts = arrayMap(DEV_ACCOUNT_INDICIES, (accountIndex) =>
   mnemonicToAccount(SUBSTRATE_DEV_SEED_PHRASE, {
@@ -67,20 +76,22 @@ export const devAccounts = arrayMap(DEV_ACCOUNT_INDICIES, (accountIndex) =>
 
 export type DevAccounts = typeof devAccounts;
 
-export const devClients = (url: string) =>
-  arrayMap(devAccounts, (account) =>
-    createWalletClient({
+export const devClients = (url: string, addCleanup: AddCleanup) =>
+  arrayMap(devAccounts, (account) => {
+    const client = createWalletClient({
       account,
       chain,
       transport: provider(url),
-    }),
-  );
+    });
+    addCleanup(() =>
+      client.transport.getRpcClient().then((rpcClient) => rpcClient.close()),
+    );
+    return client;
+  });
 
 export type DevClients = ReturnType<typeof devClients>;
 
-export const devClientsFromNode = (node: RunNodeState): DevClients =>
-  devClients(node.meta.rpcUrlWs);
-
-export const cleanup = () => {
-  socketClientCache.clear();
-};
+export const devClientsFromNode = (
+  node: RunNodeState,
+  addCleanup: AddCleanup,
+): DevClients => devClients(node.meta.rpcUrlWs, addCleanup);

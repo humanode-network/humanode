@@ -16,9 +16,8 @@ describe("WeHMND", () => {
 
     await node.waitForBoot;
 
-    publicClient = eth.publicClientFromNode(node);
-    devClients = eth.devClientsFromNode(node);
-    cleanup.push(eth.cleanup);
+    publicClient = eth.publicClientFromNode(node, cleanup.push);
+    devClients = eth.devClientsFromNode(node, cleanup.push);
   }, 60 * 1000);
 
   const address = "0x0000000000000000000000000000000000000802";

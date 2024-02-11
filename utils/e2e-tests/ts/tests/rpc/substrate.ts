@@ -12,8 +12,7 @@ describe("substrate rpc", () => {
 
     await node.waitForBoot;
 
-    api = await substrate.apiFromNode(node);
-    cleanup.push(() => api.disconnect());
+    api = await substrate.apiFromNode(node, cleanup.push);
   }, 60 * 1000);
 
   it("has the expected SS58", async () => {
