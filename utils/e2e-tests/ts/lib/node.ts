@@ -2,6 +2,7 @@ import { ChildProcess, StdioOptions, spawn } from "child_process";
 import { PEER_PATH } from "./paths";
 import { setTimeout } from "timers/promises";
 import axios from "axios";
+import { AddCleanup } from "./cleanup";
 
 export type RunNodeParams = {
   args: string[];
@@ -31,7 +32,10 @@ export type RunNodeState = {
   meta: Readonly<NodeMeta>;
 };
 
-export const runNode = (params: RunNodeParams): RunNodeState => {
+export const runNode = (
+  params: RunNodeParams,
+  addCleanup: AddCleanup,
+): RunNodeState => {
   const { args, stdio = "inherit" } = params;
   const childProcess = spawn(PEER_PATH, args, { stdio });
   console.log(`Spawned peer as pid ${childProcess.pid}`);
@@ -78,6 +82,8 @@ export const runNode = (params: RunNodeParams): RunNodeState => {
     sendSigTerm();
     await waitForExit;
   };
+
+  addCleanup(cleanup);
 
   return { childProcess, cleanup, waitForExit, waitForBoot, meta };
 };

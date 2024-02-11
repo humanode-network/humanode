@@ -11,8 +11,7 @@ describe("WeHMND", () => {
   let publicClient: eth.PublicClient;
   let devClients: eth.DevClients;
   beforeEachWithCleanup(async (cleanup) => {
-    node = runNode({ args: ["--dev", "--tmp"] });
-    cleanup.push(node.cleanup);
+    node = runNode({ args: ["--dev", "--tmp"] }, cleanup.push);
 
     await node.waitForBoot;
 

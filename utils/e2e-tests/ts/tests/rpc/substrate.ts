@@ -7,8 +7,7 @@ describe("substrate rpc", () => {
   let node: RunNodeState;
   let api: substrate.Api;
   beforeEachWithCleanup(async (cleanup) => {
-    node = runNode({ args: ["--dev", "--tmp"] });
-    cleanup.push(node.cleanup);
+    node = runNode({ args: ["--dev", "--tmp"] }, cleanup.push);
 
     await node.waitForBoot;
 
