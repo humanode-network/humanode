@@ -18,6 +18,7 @@ describe("WeHMND", () => {
 
     publicClient = eth.publicClientFromNode(node);
     devClients = eth.devClientsFromNode(node);
+    cleanup.push(eth.cleanup);
   }, 60 * 1000);
 
   const address = "0x0000000000000000000000000000000000000802";

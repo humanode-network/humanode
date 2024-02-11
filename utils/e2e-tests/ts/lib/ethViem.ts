@@ -13,6 +13,7 @@ import {
   webSocket,
 } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
+import { socketClientCache } from "viem/utils";
 
 export type ExtraParams = {
   defaultChainId?: number;
@@ -79,3 +80,7 @@ export type DevClients = ReturnType<typeof devClients>;
 
 export const devClientsFromNode = (node: RunNodeState): DevClients =>
   devClients(node.meta.rpcUrlWs);
+
+export const cleanup = () => {
+  socketClientCache.clear();
+};
