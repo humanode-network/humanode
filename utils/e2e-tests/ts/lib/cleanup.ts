@@ -1,18 +1,21 @@
 export type CleanupFn = () => void | Promise<void>;
 
+export type AddCleanup = (fn: CleanupFn) => void;
+export type RunCleanup = () => Promise<void>;
+
 export type CleanupStack = {
-  push: (fn: CleanupFn) => void;
-  run: () => Promise<void>;
+  push: AddCleanup;
+  run: RunCleanup;
 };
 
 export const cleanupStack = (...init: CleanupFn[]): CleanupStack => {
   const stack = [...init];
 
-  const push = (fn: CleanupFn) => {
+  const push: AddCleanup = (fn) => {
     stack.push(fn);
   };
 
-  const run = async (): Promise<void> => {
+  const run: RunCleanup = async () => {
     while (true) {
       const fn = stack.pop();
       if (fn === undefined) {
