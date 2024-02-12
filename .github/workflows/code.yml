@@ -197,4 +197,4 @@ jobs:
 
       - run: yarn install --immutable
 
-      - run: yarn prettier:fix
+      - run: yarn prettier:check
