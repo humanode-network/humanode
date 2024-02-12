@@ -199,7 +199,7 @@
 - name: bioauth-keys 0.1.0
   features:
     - default
-- name: bip32 0.5.0
+- name: bip32 0.5.1
   features:
     - alloc
     - bip39
@@ -258,10 +258,12 @@
 - name: bs58 0.4.0
   features:
     - alloc
-    - check
     - default
-    - sha2
     - std
+- name: bs58 0.5.0
+  features:
+    - check
+    - sha2
 - name: bstr 0.2.17
   features:
     - lazy_static
