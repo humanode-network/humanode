@@ -8,18 +8,38 @@ import {
 } from "./eth";
 import { AddCleanup } from "./cleanup";
 
-export type Provider = ethers.WebSocketProvider;
+export type ProviderHttp = ethers.JsonRpcProvider;
+export type ProviderWebSocket = ethers.WebSocketProvider;
 
-export const provider = (url: string, addCleanup: AddCleanup): Provider => {
+export type Provider = ProviderWebSocket | ProviderHttp;
+
+export const providerHttp = (
+  url: string,
+  addCleanup: AddCleanup,
+): ProviderHttp => {
+  const provider = new ethers.JsonRpcProvider(url);
+  addCleanup(() => provider.destroy());
+  return provider;
+};
+
+export const providerWebSocket = (
+  url: string,
+  addCleanup: AddCleanup,
+): ProviderWebSocket => {
   const provider = new ethers.WebSocketProvider(url);
   addCleanup(() => provider.destroy());
   return provider;
 };
 
-export const providerFromNode = (
+export const providerFromNodeHttp = (
   node: RunNodeState,
   addCleanup: AddCleanup,
-): Provider => provider(node.meta.rpcUrlWs, addCleanup);
+): Provider => providerHttp(node.meta.rpcUrlHttp, addCleanup);
+
+export const providerFromNodeWebSocket = (
+  node: RunNodeState,
+  addCleanup: AddCleanup,
+): Provider => providerWebSocket(node.meta.rpcUrlWs, addCleanup);
 
 export const devHDNodeWalletRoot = HDNodeWallet.fromMnemonic(
   Mnemonic.fromPhrase(SUBSTRATE_DEV_SEED_PHRASE),

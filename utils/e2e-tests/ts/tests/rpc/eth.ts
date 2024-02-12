@@ -14,7 +14,7 @@ describe("eth rpc", () => {
 
     await node.waitForBoot;
 
-    provider = eth.providerFromNode(node, cleanup.push);
+    provider = eth.providerFromNodeHttp(node, cleanup.push);
     devSigners = eth.devSigners(provider);
   }, 60 * 1000);
 
