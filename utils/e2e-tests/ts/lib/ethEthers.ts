@@ -17,17 +17,17 @@ export const providerFromNode = (node: RunNodeState): Provider =>
 
 export const devHDNodeWalletRoot = HDNodeWallet.fromMnemonic(
   Mnemonic.fromPhrase(SUBSTRATE_DEV_SEED_PHRASE),
-  ROOT_DEV_ACCOUNT_DERIVATION_PATH
+  ROOT_DEV_ACCOUNT_DERIVATION_PATH,
 );
 
 export const devHDNodeWallets = arrayMap(DEV_ACCOUNT_INDICIES, (accountIndex) =>
-  devHDNodeWalletRoot.deriveChild(accountIndex)
+  devHDNodeWalletRoot.deriveChild(accountIndex),
 );
 
 export const devSigners = (provider: Provider) =>
   arrayMap(
     devHDNodeWallets,
-    (hdnodeWallet) => new Wallet(hdnodeWallet.privateKey, provider)
+    (hdnodeWallet) => new Wallet(hdnodeWallet.privateKey, provider),
   );
 
 export type DevSigners = ReturnType<typeof devSigners>;

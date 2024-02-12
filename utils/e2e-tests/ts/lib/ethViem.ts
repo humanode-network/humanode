@@ -62,7 +62,7 @@ export const publicClientFromNode = (node: RunNodeState): PublicClient =>
 export const devAccounts = arrayMap(DEV_ACCOUNT_INDICIES, (accountIndex) =>
   mnemonicToAccount(SUBSTRATE_DEV_SEED_PHRASE, {
     path: `${ROOT_DEV_ACCOUNT_DERIVATION_PATH}/${accountIndex}`,
-  })
+  }),
 );
 
 export type DevAccounts = typeof devAccounts;
@@ -73,7 +73,7 @@ export const devClients = (url: string) =>
       account,
       chain,
       transport: provider(url),
-    })
+    }),
   );
 
 export type DevClients = ReturnType<typeof devClients>;
