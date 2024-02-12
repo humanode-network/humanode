@@ -94,11 +94,10 @@ pub mod pallet {
         },
     }
 
-    #[pallet::call]
+    #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Swap balances.
         #[pallet::call_index(0)]
-        #[pallet::weight(T::WeightInfo::swap())]
         pub fn swap(
             origin: OriginFor<T>,
             to: T::AccountIdTo,
@@ -115,7 +114,6 @@ pub mod pallet {
 
         /// Same as the swap call, but with a check that the swap will not kill the origin account.
         #[pallet::call_index(1)]
-        #[pallet::weight(T::WeightInfo::swap_keep_alive())]
         pub fn swap_keep_alive(
             origin: OriginFor<T>,
             to: T::AccountIdTo,
