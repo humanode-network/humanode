@@ -4133,7 +4133,7 @@
   features: []
 - name: winreg 0.10.1
   features: []
-- name: wiremock 0.5.18
+- name: wiremock 0.5.22
   features: []
 - name: wyz 0.5.1
   features: []
