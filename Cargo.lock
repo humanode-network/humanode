@@ -7074,7 +7074,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "sha3 0.9.1",
- "syn 1.0.109",
+ "syn 2.0.13",
 ]
 
 [[package]]

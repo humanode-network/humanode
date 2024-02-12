@@ -3423,6 +3423,7 @@
     - default
     - derive
     - extra-traits
+    - fold
     - full
     - parsing
     - printing
