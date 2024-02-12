@@ -32,8 +32,8 @@ bounty programs**.
 > They will likely direct you here, but you should mention you did not receive
 > a reply from the security team in time. They will be able to use the internal
 > communication channels to help establish the contact.
-> *Please try reaching the security team directly first, and only involve
-> the community assistants if the direct communication did not work.*
+> _Please try reaching the security team directly first, and only involve
+> the community assistants if the direct communication did not work._
 
 ## Bounty Program
 

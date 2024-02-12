@@ -4,7 +4,7 @@ import { logMatrix, matrixItemsFiltered, evalMatrix } from "./matrix.js";
 
 export const buildMatrix = <M extends modes.Modes>(
   modes: M,
-  platformsFilter: (platform: platforms.Platform) => boolean
+  platformsFilter: (platform: platforms.Platform) => boolean,
 ) => {
   // Compute the effective list of platforms to use.
   const activePlatforms = matrixItemsFiltered(platforms.all, platformsFilter);
@@ -15,14 +15,14 @@ export const buildMatrix = <M extends modes.Modes>(
   // Compute the effective list of modes that should run for each of the platforms.
   const activeModes = matrixItemsFiltered(
     modes,
-    (mode) => !isPlatformIndependentMode(mode)
+    (mode) => !isPlatformIndependentMode(mode),
   );
 
   // Compute the effective list of modes that are platform indepedent and only
   // have to be run once.
   const activePlatformIndependentModes = matrixItemsFiltered(
     modes,
-    isPlatformIndependentMode
+    isPlatformIndependentMode,
   );
 
   // Compute the individual mixins for indep modes.
@@ -38,7 +38,7 @@ export const buildMatrix = <M extends modes.Modes>(
       platform: activePlatforms,
       mode: activeModes,
     },
-    includes
+    includes,
   );
   const matrix = { plan };
 
@@ -52,7 +52,7 @@ export const buildMatrix = <M extends modes.Modes>(
 export const code = () =>
   buildMatrix(
     modes.code,
-    (platform) => !platform.isBroken && platform.essential
+    (platform) => !platform.isBroken && platform.essential,
   );
 
 export const build = () =>
