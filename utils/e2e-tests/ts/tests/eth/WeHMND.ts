@@ -8,15 +8,15 @@ import { beforeEachWithCleanup } from "../../lib/lifecycle";
 
 describe("WeHMND", () => {
   let node: RunNodeState;
-  let publicClient: eth.PublicClient;
-  let devClients: eth.DevClients;
+  let publicClient: eth.PublicClientWebSocket;
+  let devClients: eth.DevClientsWebSocket;
   beforeEachWithCleanup(async (cleanup) => {
     node = runNode({ args: ["--dev", "--tmp"] }, cleanup.push);
 
     await node.waitForBoot;
 
-    publicClient = eth.publicClientFromNode(node, cleanup.push);
-    devClients = eth.devClientsFromNode(node, cleanup.push);
+    publicClient = eth.publicClientFromNodeWebSocket(node, cleanup.push);
+    devClients = eth.devClientsFromNodeWebSocket(node, cleanup.push);
   }, 60 * 1000);
 
   const address = "0x0000000000000000000000000000000000000802";

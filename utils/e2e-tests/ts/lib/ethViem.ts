@@ -6,15 +6,15 @@ import {
   SUBSTRATE_DEV_SEED_PHRASE,
 } from "./eth";
 import {
-  TransportConfig,
+  HttpTransport,
   WebSocketTransport,
   createPublicClient,
   createWalletClient,
   defineChain,
+  http,
   webSocket,
 } from "viem";
 import { mnemonicToAccount } from "viem/accounts";
-import { socketClientCache } from "viem/utils";
 import { AddCleanup } from "./cleanup";
 
 export type ExtraParams = {
@@ -45,15 +45,27 @@ export const makeChain = (url: string) =>
 
 export const chain = makeChain("");
 
-export type Provider = WebSocketTransport;
+export type ProviderHttp = HttpTransport;
+export type ProviderWebSocket = WebSocketTransport;
+
+export type Provider = ProviderHttp | ProviderWebSocket;
+
 export type Chain = typeof chain;
 
-export const provider = (url: string): Provider => webSocket(url);
+export const providerHttp = (url: string): ProviderHttp => http(url);
+export const providerWebSocket = (url: string): ProviderWebSocket =>
+  webSocket(url);
 
-export const publicClient = (url: string, addCleanup: AddCleanup) => {
+export const publicClientHttp = (url: string) =>
+  createPublicClient({
+    chain,
+    transport: providerHttp(url),
+  });
+
+export const publicClientWebSocket = (url: string, addCleanup: AddCleanup) => {
   const client = createPublicClient({
     chain,
-    transport: provider(url),
+    transport: providerWebSocket(url),
   });
   addCleanup(() =>
     client.transport.getRpcClient().then((rpcClient) => rpcClient.close()),
@@ -61,12 +73,18 @@ export const publicClient = (url: string, addCleanup: AddCleanup) => {
   return client;
 };
 
-export type PublicClient = ReturnType<typeof publicClient>;
+export type PublicClientHttp = ReturnType<typeof publicClientHttp>;
+export type PublicClientWebSocket = ReturnType<typeof publicClientWebSocket>;
 
-export const publicClientFromNode = (
+export const publicClientFromNodeHttp = (
+  node: RunNodeState,
+): PublicClientHttp => publicClientHttp(node.meta.rpcUrlHttp);
+
+export const publicClientFromNodeWebSocket = (
   node: RunNodeState,
   addCleanup: AddCleanup,
-): PublicClient => publicClient(node.meta.rpcUrlWs, addCleanup);
+): PublicClientWebSocket =>
+  publicClientWebSocket(node.meta.rpcUrlWs, addCleanup);
 
 export const devAccounts = arrayMap(DEV_ACCOUNT_INDICIES, (accountIndex) =>
   mnemonicToAccount(SUBSTRATE_DEV_SEED_PHRASE, {
@@ -76,12 +94,21 @@ export const devAccounts = arrayMap(DEV_ACCOUNT_INDICIES, (accountIndex) =>
 
 export type DevAccounts = typeof devAccounts;
 
-export const devClients = (url: string, addCleanup: AddCleanup) =>
+export const devClientsHttp = (url: string) =>
+  arrayMap(devAccounts, (account) =>
+    createWalletClient({
+      account,
+      chain,
+      transport: providerHttp(url),
+    }),
+  );
+
+export const devClientsWebSocket = (url: string, addCleanup: AddCleanup) =>
   arrayMap(devAccounts, (account) => {
     const client = createWalletClient({
       account,
       chain,
-      transport: provider(url),
+      transport: providerWebSocket(url),
     });
     addCleanup(() =>
       client.transport.getRpcClient().then((rpcClient) => rpcClient.close()),
@@ -89,9 +116,13 @@ export const devClients = (url: string, addCleanup: AddCleanup) =>
     return client;
   });
 
-export type DevClients = ReturnType<typeof devClients>;
+export type DevClientsHttp = ReturnType<typeof devClientsHttp>;
+export type DevClientsWebSocket = ReturnType<typeof devClientsWebSocket>;
 
-export const devClientsFromNode = (
+export const devClientsFromNodeHttp = (node: RunNodeState): DevClientsHttp =>
+  devClientsHttp(node.meta.rpcUrlHttp);
+
+export const devClientsFromNodeWebSocket = (
   node: RunNodeState,
   addCleanup: AddCleanup,
-): DevClients => devClients(node.meta.rpcUrlWs, addCleanup);
+): DevClientsWebSocket => devClientsWebSocket(node.meta.rpcUrlWs, addCleanup);
