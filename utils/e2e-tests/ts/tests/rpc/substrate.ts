@@ -7,13 +7,11 @@ describe("substrate rpc", () => {
   let node: RunNodeState;
   let api: substrate.Api;
   beforeEachWithCleanup(async (cleanup) => {
-    node = runNode({ args: ["--dev", "--tmp"] });
-    cleanup.push(node.cleanup);
+    node = runNode({ args: ["--dev", "--tmp"] }, cleanup.push);
 
     await node.waitForBoot;
 
-    api = await substrate.apiFromNode(node);
-    cleanup.push(() => api.disconnect());
+    api = await substrate.apiFromNodeWebSocket(node, cleanup.push);
   }, 60 * 1000);
 
   it("has the expected SS58", async () => {

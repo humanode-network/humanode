@@ -10,12 +10,11 @@ describe("eth rpc", () => {
   let provider: eth.Provider;
   let devSigners: eth.DevSigners;
   beforeEachWithCleanup(async (cleanup) => {
-    node = runNode({ args: ["--dev", "--tmp"] });
-    cleanup.push(node.cleanup);
+    node = runNode({ args: ["--dev", "--tmp"] }, cleanup.push);
 
     await node.waitForBoot;
 
-    provider = eth.providerFromNode(node);
+    provider = eth.providerFromNodeHttp(node, cleanup.push);
     devSigners = eth.devSigners(provider);
   }, 60 * 1000);
 
