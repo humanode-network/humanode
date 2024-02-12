@@ -7,6 +7,10 @@ export default defineConfig({
       concurrent: false,
       shuffle: true,
     },
+    typecheck: {
+      enabled: true,
+      checker: "tsc",
+    },
     watch: false,
     pool: "threads",
     poolOptions: {
