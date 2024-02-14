@@ -1666,7 +1666,7 @@
     - no_std
 - name: lock_api 0.4.9
   features: []
-- name: log 0.4.17
+- name: log 0.4.20
   features:
     - std
 - name: lru 0.8.1
