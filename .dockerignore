@@ -1,0 +1,10 @@
+**/*
+!rust-toolchain.toml
+!Cargo.toml
+!Cargo.lock
+!.cargo
+!crates
+!.git
+.git/hooks/**/*
+.git/info/**/*
+.git/logs/**/*
