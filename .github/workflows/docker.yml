@@ -26,10 +26,17 @@ jobs:
         uses: actions/checkout@v4
         timeout-minutes: 5
 
-      - name: Docker meta
-        id: meta
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Docker meta for aio
+        id: meta-aio
         uses: docker/metadata-action@v5
         with:
+          bake-target: docker-metadata-action-aio
           images: |
             ghcr.io/${{ github.repository }}
           tags: |
@@ -41,8 +48,60 @@ jobs:
             type=semver,pattern={{major}}
             type=sha
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Docker meta for humanode-peer
+        id: meta-humanode-peer
+        uses: docker/metadata-action@v5
+        with:
+          bake-target: docker-metadata-action-humanode-peer
+          images: |
+            ghcr.io/${{ github.repository }}-humanode-peer
+            ghcr.io/${{ github.repository }}-only
+          labels: |
+            org.opencontainers.image.title=${{ github.repository }}-humanode-peer
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Docker meta for robonode-server
+        id: meta-robonode-server
+        uses: docker/metadata-action@v5
+        with:
+          bake-target: docker-metadata-action-robonode-server
+          images: |
+            ghcr.io/${{ github.repository }}-robonode-server
+          labels: |
+            org.opencontainers.image.title=${{ github.repository }}-robonode-server
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
+
+      - name: Docker meta for robonode-keygen
+        id: meta-robonode-keygen
+        uses: docker/metadata-action@v5
+        with:
+          bake-target: docker-metadata-action-robonode-keygen
+          images: |
+            ghcr.io/${{ github.repository }}-robonode-keygen
+          labels: |
+            org.opencontainers.image.title=${{ github.repository }}-robonode-keygen
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=sha
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
@@ -52,26 +111,16 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cache code build
-        uses: actions/cache@v4
+      - name: Build and push
+        uses: docker/bake-action@v4
         with:
-          path: |
-            target/docker/*/*/rustup/
-            !target/docker/*/*/rustup/tmp/
-            !target/docker/*/*/rustup/downloads/
-            target/docker/*/*/cargo/bin/
-            target/docker/*/*/cargo/registry/index/
-            target/docker/*/*/cargo/registry/cache/
-            target/docker/*/*/cargo/git/db/
-            target/docker/*/*/target/
-          key: docker-cargo-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
-
-      - name: Build the code and docker image
-        run: docker/build.sh
-
-      - name: Tag and push
-        if: github.event_name != 'pull_request'
-        run: |
-          xargs docker/tag-and-push.sh humanode <<EOF
-            ${{ steps.meta.outputs.tags }}
-          EOF
+          files: |
+            ./docker-bake.hcl
+            ${{ steps.meta-aio.outputs.bake-file }}
+            ${{ steps.meta-humanode-peer.outputs.bake-file }}
+            ${{ steps.meta-robonode-server.outputs.bake-file }}
+            ${{ steps.meta-robonode-keygen.outputs.bake-file }}
+          push: ${{ github.event_name != 'pull_request' }}
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
