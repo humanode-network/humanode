@@ -4,36 +4,21 @@ Usage: humanode-peer [OPTIONS]
        humanode-peer <COMMAND>
 
 Commands:
-  key
-          Key management cli utilities
-  build-spec
-          Build a chain specification
-  check-block
-          Validate blocks
-  export-blocks
-          Export blocks
-  export-state
-          Export the state of a given block into a chain spec
-  import-blocks
-          Import blocks
-  purge-chain
-          Remove the whole chain
-  revert
-          Revert the chain to a previous state
-  bioauth
-          Biometric authentication related subcommands
-  evm
-          EVM related subcommands
-  benchmark
-          Benchmark runtime pallets.
-  frontier-db
-          Db meta columns information
-  export-embedded-runtime
-          Export the runtime WASM code embedded in this binary
-  try-runtime
-          Try some command against runtime state. Note: `try-runtime` feature must be enabled
-  help
-          Print this message or the help of the given subcommand(s)
+  key                      Key management cli utilities
+  build-spec               Build a chain specification
+  check-block              Validate blocks
+  export-blocks            Export blocks
+  export-state             Export the state of a given block into a chain spec
+  import-blocks            Import blocks
+  purge-chain              Remove the whole chain
+  revert                   Revert the chain to a previous state
+  bioauth                  Biometric authentication related subcommands
+  evm                      EVM related subcommands
+  benchmark                Benchmark runtime pallets.
+  frontier-db              Db meta columns information
+  export-embedded-runtime  Export the runtime WASM code embedded in this binary
+  try-runtime              Try some command against runtime state. Note: `try-runtime` feature must be enabled
+  help                     Print this message or the help of the given subcommand(s)
 
 Options:
       --validator
@@ -65,12 +50,9 @@ Options:
           [default: auto]
 
           Possible values:
-          - auto:
-            Expose every RPC method only when RPC is listening on `localhost`, otherwise serve only safe RPC methods
-          - safe:
-            Allow only a safe subset of RPC methods
-          - unsafe:
-            Expose every RPC method (even potentially unsafe ones)
+          - auto:   Expose every RPC method only when RPC is listening on `localhost`, otherwise serve only safe RPC methods
+          - safe:   Allow only a safe subset of RPC methods
+          - unsafe: Expose every RPC method (even potentially unsafe ones)
 
       --ws-external
           Listen to all Websocket interfaces.
@@ -150,12 +132,9 @@ Options:
           [default: when-authority]
 
           Possible values:
-          - always:
-            Always have offchain worker enabled
-          - never:
-            Never enable the offchain worker
-          - when-authority:
-            Only enable the offchain worker when running as a validator (or collator, if this is a parachain node)
+          - always:         Always have offchain worker enabled
+          - never:          Never enable the offchain worker
+          - when-authority: Only enable the offchain worker when running as a validator (or collator, if this is a parachain node)
 
       --enable-offchain-indexing <ENABLE_OFFCHAIN_INDEXING>
           Enable Offchain Indexing API, which allows block import to write to Offchain DB.
@@ -257,14 +236,10 @@ Options:
           Select database backend to use
 
           Possible values:
-          - rocksdb:
-            Facebooks RocksDB
-          - paritydb:
-            ParityDb. <https://github.com/paritytech/parity-db/>
-          - auto:
-            Detect whether there is an existing database. Use it, if there is, if not, create new instance of ParityDb
-          - paritydb-experimental:
-            ParityDb. <https://github.com/paritytech/parity-db/>
+          - rocksdb:               Facebooks RocksDB
+          - paritydb:              ParityDb. <https://github.com/paritytech/parity-db/>
+          - auto:                  Detect whether there is an existing database. Use it, if there is, if not, create new instance of ParityDb
+          - paritydb-experimental: ParityDb. <https://github.com/paritytech/parity-db/>
 
       --db-cache <MiB>
           Limit the memory the database cache can use
@@ -292,16 +267,11 @@ Options:
           [default: pooling-copy-on-write]
 
           Possible values:
-          - pooling-copy-on-write:
-            Pool the instances to avoid initializing everything from scratch on each instantiation. Use copy-on-write memory when possible
-          - recreate-instance-copy-on-write:
-            Recreate the instance from scratch on every instantiation. Use copy-on-write memory when possible
-          - pooling:
-            Pool the instances to avoid initializing everything from scratch on each instantiation
-          - recreate-instance:
-            Recreate the instance from scratch on every instantiation. Very slow
-          - legacy-instance-reuse:
-            Legacy instance reuse mechanism. DEPRECATED. Will be removed in the future
+          - pooling-copy-on-write:           Pool the instances to avoid initializing everything from scratch on each instantiation. Use copy-on-write memory when possible
+          - recreate-instance-copy-on-write: Recreate the instance from scratch on every instantiation. Use copy-on-write memory when possible
+          - pooling:                         Pool the instances to avoid initializing everything from scratch on each instantiation
+          - recreate-instance:               Recreate the instance from scratch on every instantiation. Very slow
+          - legacy-instance-reuse:           Legacy instance reuse mechanism. DEPRECATED. Will be removed in the future
 
       --wasm-runtime-overrides <PATH>
           Specify the path where local WASM runtimes are stored.
@@ -312,79 +282,55 @@ Options:
           The means of execution used when calling into the runtime for importing blocks as part of an initial sync
 
           Possible values:
-          - native:
-            Execute with native build (if available, WebAssembly otherwise)
-          - wasm:
-            Only execute with the WebAssembly build
-          - both:
-            Execute with both native (where available) and WebAssembly builds
-          - native-else-wasm:
-            Execute with the native build if possible; if it fails, then execute with WebAssembly
+          - native:           Execute with native build (if available, WebAssembly otherwise)
+          - wasm:             Only execute with the WebAssembly build
+          - both:             Execute with both native (where available) and WebAssembly builds
+          - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --execution-import-block <STRATEGY>
           The means of execution used when calling into the runtime for general block import (including locally authored blocks)
 
           Possible values:
-          - native:
-            Execute with native build (if available, WebAssembly otherwise)
-          - wasm:
-            Only execute with the WebAssembly build
-          - both:
-            Execute with both native (where available) and WebAssembly builds
-          - native-else-wasm:
-            Execute with the native build if possible; if it fails, then execute with WebAssembly
+          - native:           Execute with native build (if available, WebAssembly otherwise)
+          - wasm:             Only execute with the WebAssembly build
+          - both:             Execute with both native (where available) and WebAssembly builds
+          - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --execution-block-construction <STRATEGY>
           The means of execution used when calling into the runtime while constructing blocks
 
           Possible values:
-          - native:
-            Execute with native build (if available, WebAssembly otherwise)
-          - wasm:
-            Only execute with the WebAssembly build
-          - both:
-            Execute with both native (where available) and WebAssembly builds
-          - native-else-wasm:
-            Execute with the native build if possible; if it fails, then execute with WebAssembly
+          - native:           Execute with native build (if available, WebAssembly otherwise)
+          - wasm:             Only execute with the WebAssembly build
+          - both:             Execute with both native (where available) and WebAssembly builds
+          - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --execution-offchain-worker <STRATEGY>
           The means of execution used when calling into the runtime while using an off-chain worker
 
           Possible values:
-          - native:
-            Execute with native build (if available, WebAssembly otherwise)
-          - wasm:
-            Only execute with the WebAssembly build
-          - both:
-            Execute with both native (where available) and WebAssembly builds
-          - native-else-wasm:
-            Execute with the native build if possible; if it fails, then execute with WebAssembly
+          - native:           Execute with native build (if available, WebAssembly otherwise)
+          - wasm:             Only execute with the WebAssembly build
+          - both:             Execute with both native (where available) and WebAssembly builds
+          - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --execution-other <STRATEGY>
           The means of execution used when calling into the runtime while not syncing, importing or constructing blocks
 
           Possible values:
-          - native:
-            Execute with native build (if available, WebAssembly otherwise)
-          - wasm:
-            Only execute with the WebAssembly build
-          - both:
-            Execute with both native (where available) and WebAssembly builds
-          - native-else-wasm:
-            Execute with the native build if possible; if it fails, then execute with WebAssembly
+          - native:           Execute with native build (if available, WebAssembly otherwise)
+          - wasm:             Only execute with the WebAssembly build
+          - both:             Execute with both native (where available) and WebAssembly builds
+          - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --execution <STRATEGY>
           The execution strategy that should be used by all execution contexts
 
           Possible values:
-          - native:
-            Execute with native build (if available, WebAssembly otherwise)
-          - wasm:
-            Only execute with the WebAssembly build
-          - both:
-            Execute with both native (where available) and WebAssembly builds
-          - native-else-wasm:
-            Execute with the native build if possible; if it fails, then execute with WebAssembly
+          - native:           Execute with native build (if available, WebAssembly otherwise)
+          - wasm:             Only execute with the WebAssembly build
+          - both:             Execute with both native (where available) and WebAssembly builds
+          - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --trie-cache-size <Bytes>
           Specify the state cache size.
@@ -517,14 +463,10 @@ Options:
           [default: full]
 
           Possible values:
-          - full:
-            Full sync. Download end verify all blocks
-          - fast:
-            Download blocks without executing them. Download latest state with proofs
-          - fast-unsafe:
-            Download blocks without executing them. Download latest state without proofs
-          - warp:
-            Prove finality and download the latest state
+          - full:        Full sync. Download end verify all blocks
+          - fast:        Download blocks without executing them. Download latest state with proofs
+          - fast-unsafe: Download blocks without executing them. Download latest state without proofs
+          - warp:        Prove finality and download the latest state
 
       --pool-limit <COUNT>
           Maximum number of transactions in the transaction pool
