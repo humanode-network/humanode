@@ -12,13 +12,19 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_timestamp::WeightInfo for WeightInfo<T> {
   fn set() -> Weight {
-    // Minimum execution time: 11_000 nanoseconds.
-    Weight::from_parts(11_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `278`
+    //  Estimated: `0`
+    // Minimum execution time: 10_000_000 picoseconds.
+    Weight::from_parts(10_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(2))
       .saturating_add(T::DbWeight::get().writes(1))
   }
   fn on_finalize() -> Weight {
-    // Minimum execution time: 4_000 nanoseconds.
+    // Proof Size summary in bytes:
+    //  Measured:  `94`
+    //  Estimated: `0`
+    // Minimum execution time: 4_000_000 picoseconds.
     Weight::from_parts(4_000_000, 0)
   }
 }

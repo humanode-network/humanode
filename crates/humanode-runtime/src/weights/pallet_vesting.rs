@@ -12,15 +12,21 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_vesting::WeightInfo for WeightInfo<T> {
   fn unlock() -> Weight {
-    // Minimum execution time: 35_000 nanoseconds.
-    Weight::from_parts(35_000_000, 0)
-      .saturating_add(T::DbWeight::get().reads(5))
+    // Proof Size summary in bytes:
+    //  Measured:  `488`
+    //  Estimated: `0`
+    // Minimum execution time: 36_000_000 picoseconds.
+    Weight::from_parts(36_000_000, 0)
+      .saturating_add(T::DbWeight::get().reads(6))
       .saturating_add(T::DbWeight::get().writes(3))
   }
   fn update_schedule() -> Weight {
-    // Minimum execution time: 38_000 nanoseconds.
-    Weight::from_parts(38_000_000, 0)
-      .saturating_add(T::DbWeight::get().reads(5))
+    // Proof Size summary in bytes:
+    //  Measured:  `488`
+    //  Estimated: `0`
+    // Minimum execution time: 32_000_000 picoseconds.
+    Weight::from_parts(32_000_000, 0)
+      .saturating_add(T::DbWeight::get().reads(6))
       .saturating_add(T::DbWeight::get().writes(3))
   }
 }
