@@ -3574,16 +3574,16 @@
   features: []
 - name: tower-service 0.3.2
   features: []
-- name: tracing 0.1.37
+- name: tracing 0.1.40
   features:
     - attributes
     - default
     - log
     - std
     - tracing-attributes
-- name: tracing-attributes 0.1.23
+- name: tracing-attributes 0.1.27
   features: []
-- name: tracing-core 0.1.30
+- name: tracing-core 0.1.32
   features:
     - default
     - once_cell
