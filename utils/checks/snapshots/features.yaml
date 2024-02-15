@@ -2545,7 +2545,7 @@
     - unicode-segment
 - name: region 3.0.0
   features: []
-- name: reqwest 0.11.16
+- name: reqwest 0.11.20
   features:
     - __tls
     - default
@@ -4070,7 +4070,9 @@
     - Win32_System_Diagnostics_Debug
     - Win32_System_IO
     - Win32_System_LibraryLoader
+    - Win32_System_Registry
     - Win32_System_Threading
+    - Win32_System_Time
     - Win32_System_WindowsProgramming
     - Win32_UI
     - Win32_UI_Shell
@@ -4134,6 +4136,8 @@
 - name: windows_x86_64_msvc 0.52.0
   features: []
 - name: winreg 0.10.1
+  features: []
+- name: winreg 0.50.0
   features: []
 - name: wiremock 0.5.22
   features: []
