@@ -23,6 +23,19 @@ RUN mkdir /protobuf \
   && rm -rf /protobuf \
   && protoc --version
 
+# ARG CARGO_CHEF_VERSION="0.1.63"
+# RUN mkdir /cargo-chef \
+#   && cd /cargo-chef \
+#   && export HOST_TRIPLE="$(rustc -vV | awk '/^host/ { print $2 }')" \
+#   && curl -sSL -o cargo-chef.tar.gz "https://github.com/LukeMathWalker/cargo-chef/releases/download/${CARGO_CHEF_VERSION}/cargo-chef-${HOST_TRIPLE}.tar.gz" \
+#   && tar -xzf cargo-chef.tar.gz \
+#   && cp cargo-chef /usr/local/bin/cargo-chef \
+#   && cd .. \
+#   && rm -rf /cargo-chef \
+#   && cargo-chef --version
+
+RUN cargo install cargo-chef
+
 FROM --platform=${TARGETPLATFORM} ${RUNTIME_BASE} AS runtime
 
 RUN apt-get update \
@@ -33,9 +46,33 @@ RUN apt-get update \
   curl \
   && rm -rf /var/lib/apt/lists/*
 
+FROM --platform=${TARGETPLATFORM} builder AS planner
+
+WORKDIR /build
+
+RUN \
+  --mount=type=bind,target=.,readwrite \
+  --mount=type=cache,target=/usr/local/rustup,id=${TARGETPLATFORM} \
+  --mount=type=cache,target=/usr/local/cargo/registry,id=${TARGETPLATFORM} \
+  --mount=type=cache,target=target,id=${TARGETPLATFORM} \
+  RUST_BACKTRACE=1 \
+  cargo chef prepare --recipe-path /recipe.json
+
 FROM --platform=${TARGETPLATFORM} builder AS build
 
 WORKDIR /build
+
+# Copy chef build plan.
+COPY --from=planner /recipe.json /recipe.json
+
+# Build the dependencies.
+RUN \
+  --mount=type=bind,target=.,readwrite \
+  --mount=type=cache,target=/usr/local/rustup,id=${TARGETPLATFORM} \
+  --mount=type=cache,target=/usr/local/cargo/registry,id=${TARGETPLATFORM} \
+  --mount=type=cache,target=target,id=${TARGETPLATFORM} \
+  RUST_BACKTRACE=1 \
+  cargo chef cook --release --workspace --recipe-path /recipe.json
 
 # Build the binaries.
 RUN \
