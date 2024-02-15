@@ -1194,7 +1194,7 @@
 - name: getrandom 0.1.16
   features:
     - std
-- name: getrandom 0.2.9
+- name: getrandom 0.2.12
   features:
     - js
     - js-sys
@@ -1517,7 +1517,7 @@
     - spin_no_std
 - name: lazycell 1.3.0
   features: []
-- name: libc 0.2.141
+- name: libc 0.2.153
   features:
     - default
     - extra_traits
