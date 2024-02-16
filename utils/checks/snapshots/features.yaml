@@ -1974,18 +1974,11 @@
 - name: num_enum 0.5.11
   features:
     - std
-- name: num_enum 0.6.1
-  features:
-    - std
 - name: num_enum 0.7.2
   features:
     - default
     - std
 - name: num_enum_derive 0.5.11
-  features:
-    - proc-macro-crate
-    - std
-- name: num_enum_derive 0.6.1
   features:
     - proc-macro-crate
     - std
