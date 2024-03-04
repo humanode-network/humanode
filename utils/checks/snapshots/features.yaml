@@ -1772,7 +1772,7 @@
 - name: miniz_oxide 0.7.2
   features:
     - with-alloc
-- name: mio 0.8.10
+- name: mio 0.8.11
   features:
     - default
     - log
