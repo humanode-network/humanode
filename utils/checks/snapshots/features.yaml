@@ -351,7 +351,7 @@
     - rand_core
 - name: checked_int_cast 1.0.0
   features: []
-- name: chrono 0.4.34
+- name: chrono 0.4.35
   features:
     - alloc
     - android-tzdata
@@ -4130,9 +4130,6 @@
     - Win32_Networking_WinSock
     - default
 - name: windows-core 0.51.1
-  features:
-    - default
-- name: windows-core 0.52.0
   features:
     - default
 - name: windows-sys 0.42.0
