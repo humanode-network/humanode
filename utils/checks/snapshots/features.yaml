@@ -883,7 +883,7 @@
     - scale-info
     - serialize
     - std
-- name: ethers-core 2.0.13
+- name: ethers-core 2.0.14
   features:
     - eip712
 - name: event-listener 2.5.3
@@ -3483,7 +3483,7 @@
     - derive
     - std
     - strum_macros
-- name: strum 0.25.0
+- name: strum 0.26.1
   features:
     - default
     - derive
@@ -3491,7 +3491,7 @@
     - strum_macros
 - name: strum_macros 0.24.3
   features: []
-- name: strum_macros 0.25.3
+- name: strum_macros 0.26.1
   features: []
 - name: stun 0.4.4
   features:
