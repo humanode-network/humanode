@@ -1340,7 +1340,7 @@
 - name: hostname 0.3.1
   features:
     - default
-- name: http 0.2.11
+- name: http 0.2.12
   features: []
 - name: http-body 0.4.6
   features: []
