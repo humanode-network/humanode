@@ -113,15 +113,8 @@ pub mod pallet {
     pub type LastForceRebalanceAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
 
     #[pallet::genesis_config]
+    #[derive(frame_support::DefaultNoBound)]
     pub struct GenesisConfig<T: Config>(PhantomData<T>);
-
-    // The default value for the genesis config type.
-    #[cfg(feature = "std")]
-    impl<T: Config> Default for GenesisConfig<T> {
-        fn default() -> Self {
-            Self(PhantomData)
-        }
-    }
 
     // The build of genesis for the pallet.
     #[pallet::genesis_build]
