@@ -4,23 +4,15 @@ use std::{path::Path, sync::Arc};
 
 use fc_storage::OverrideHandle;
 use humanode_runtime::opaque::Block;
-use sc_cli::SubstrateCli;
 use sc_client_api::backend::Backend;
-use sc_service::{BasePath, Configuration};
+use sc_service::Configuration;
 
 use super::{FrontierBackend, FullClient, ServiceError};
 use crate::configuration::{self, FrontierBackendType};
 
 /// Create frontier dir.
 pub fn db_config_dir(config: &sc_service::Configuration) -> std::path::PathBuf {
-    config
-        .base_path
-        .as_ref()
-        .map(|base_path| base_path.config_dir(config.chain_spec.id()))
-        .unwrap_or_else(|| {
-            BasePath::from_project("", "", &crate::cli::Root::executable_name())
-                .config_dir(config.chain_spec.id())
-        })
+    config.base_path.config_dir(config.chain_spec.id())
 }
 
 /// Create frontier backend.
