@@ -29,9 +29,8 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             .unwrap_or_default();
 
         let bioauth_flow = self.bioauth_params().map(|params| {
-            let rpc_http_port = substrate.rpc_http.map(|v| v.port());
-            let rpc_ws_port = substrate.rpc_ws.map(|v| v.port());
-            let rpc_url = rpc_url_from_params(params, rpc_http_port, rpc_ws_port);
+            let rpc_port = substrate.rpc_addr.map(|v| v.port());
+            let rpc_url = rpc_url_from_params(params, rpc_port);
 
             configuration::BioauthFlow {
                 rpc_url_resolver: Default::default(),
@@ -124,11 +123,7 @@ impl<T: sc_cli::CliConfiguration> SubstrateCliConfigurationProvider for T {
 }
 
 /// Construct an RPC URL from the bioauth flow params and an RPC endpoint port.
-fn rpc_url_from_params(
-    params: &BioauthFlowParams,
-    rpc_http_port: Option<u16>,
-    rpc_ws_port: Option<u16>,
-) -> RpcUrl {
+fn rpc_url_from_params(params: &BioauthFlowParams, rpc_port: Option<u16>) -> RpcUrl {
     if let Some(val) = &params.rpc_url {
         return RpcUrl::Set(val.clone());
     }
@@ -136,36 +131,25 @@ fn rpc_url_from_params(
         return RpcUrl::Unset;
     }
     if params.rpc_url_ngrok_detect {
-        let ws_rpc_endpoint_port = match params.rpc_url_scheme_preference {
-            // If there's no preference - try switching to WebSocket if it's available.
-            RpcUrlSchemePreference::NoPreference | RpcUrlSchemePreference::Ws => rpc_ws_port,
-            RpcUrlSchemePreference::Http => None,
-        };
         return RpcUrl::DetectFromNgrok {
             tunnel_name: params.rpc_url_ngrok_detect_from.clone(),
-            ws_rpc_endpoint_port,
+            ws_rpc_endpoint_port: rpc_port,
         };
     }
 
-    match (
-        &params.rpc_url_scheme_preference,
-        rpc_http_port,
-        rpc_ws_port,
-    ) {
+    match (&params.rpc_url_scheme_preference, rpc_port) {
         // Try WebSocket first if the user has no preference.
-        (RpcUrlSchemePreference::Ws | RpcUrlSchemePreference::NoPreference, _, Some(port)) => {
+        (RpcUrlSchemePreference::Ws | RpcUrlSchemePreference::NoPreference, Some(port)) => {
             RpcUrl::LocalhostWithPort {
                 rpc_endpoint_port: port,
                 scheme: "ws",
             }
         }
         // Try HTTP second if the user has no preference.
-        (RpcUrlSchemePreference::Http | RpcUrlSchemePreference::NoPreference, Some(port), _) => {
-            RpcUrl::LocalhostWithPort {
-                rpc_endpoint_port: port,
-                scheme: "http",
-            }
-        }
+        (RpcUrlSchemePreference::Http, Some(port)) => RpcUrl::LocalhostWithPort {
+            rpc_endpoint_port: port,
+            scheme: "http",
+        },
         // If everything fails - fallback to unset.
         _ => RpcUrl::Unset,
     }
