@@ -131,6 +131,7 @@ runtime-benchmarks = [
   "pallet-humanode-session/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
   "pallet-multisig/runtime-benchmarks",
+  "pallet-sudo/runtime-benchmarks",
   "pallet-timestamp/runtime-benchmarks",
   "pallet-token-claims/runtime-benchmarks",
   "pallet-utility/runtime-benchmarks",
