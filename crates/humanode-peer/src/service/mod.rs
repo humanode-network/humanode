@@ -230,7 +230,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             ),
     } = new_partial(&config)?;
     let Configuration {
-        substrate: mut config,
+        substrate: config,
         bioauth_flow: bioauth_flow_config,
         ethereum_rpc: ethereum_rpc_config,
         ..
@@ -245,12 +245,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         &config.chain_spec,
     );
 
-    config
-        .network
-        .extra_sets
-        .push(sc_consensus_grandpa::grandpa_peers_set_config(
-            grandpa_protocol_name.clone(),
-        ));
+    let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
+    net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
+        grandpa_protocol_name.clone(),
+    ));
 
     let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
         Arc::clone(&backend),
@@ -297,6 +295,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let (network, system_rpc_tx, tx_handler_controller, network_starter, sync_service) =
         sc_service::build_network(sc_service::BuildNetworkParams {
             config: &config,
+            net_config,
             client: Arc::clone(&client),
             transaction_pool: Arc::clone(&transaction_pool),
             spawn_handle: task_manager.spawn_handle(),
