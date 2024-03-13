@@ -43,7 +43,7 @@
             0
           ]
         ],
-        "extrinsic_time": 0,
+        "extrinsic_time": 1000,
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -164,7 +164,7 @@
             1000000
           ]
         ],
-        "extrinsic_time": 0,
+        "extrinsic_time": 1000,
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -282,8 +282,13 @@
     "time_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 13947000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 14305000,
+        "storage_root_time": 2000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -294,8 +299,13 @@
     "db_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 13943000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 14620000,
+        "storage_root_time": 3000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -331,8 +341,13 @@
             100
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 3839000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 3858000,
+        "storage_root_time": 2000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -363,7 +378,11 @@
             100
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 3865000,
+=======
+        "extrinsic_time": 3839000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 2000,
         "reads": 0,
         "repeat_reads": 0,
@@ -400,7 +419,11 @@
             3932160
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 297000,
+=======
+        "extrinsic_time": 187000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -432,7 +455,11 @@
             3932160
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 307000,
+=======
+        "extrinsic_time": 166000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -469,7 +496,11 @@
             3932160
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 4095000,
+=======
+        "extrinsic_time": 4035000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -501,8 +532,13 @@
             3932160
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 4120000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 4021000,
+        "storage_root_time": 2000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -543,6 +579,35 @@
   {
     "pallet": "frame_system",
     "instance": "SystemBench :: < Runtime >",
+    "benchmark": "set_code",
+    "time_results": [
+      {
+        "components": [],
+        "extrinsic_time": 82797000,
+        "storage_root_time": 4000,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      }
+    ],
+    "db_results": [
+      {
+        "components": [],
+        "extrinsic_time": 82033000,
+        "storage_root_time": 4000,
+        "reads": 1,
+        "repeat_reads": 0,
+        "writes": 2,
+        "repeat_writes": 0,
+        "proof_size": 0
+      }
+    ]
+  },
+  {
+    "pallet": "frame_system",
+    "instance": "SystemBench :: < Runtime >",
     "benchmark": "set_storage",
     "time_results": [
       {
@@ -567,8 +632,13 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 610000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 623000,
+        "storage_root_time": 6000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -584,8 +654,13 @@
             0
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 2000,
         "storage_root_time": 0,
+=======
+        "extrinsic_time": 3000,
+        "storage_root_time": 1000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -599,8 +674,13 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 674000,
         "storage_root_time": 3000,
+=======
+        "extrinsic_time": 637000,
+        "storage_root_time": 4000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 1000,
@@ -621,6 +701,7 @@
             0
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 2000,
         "storage_root_time": 1000,
         "reads": 0,
@@ -653,6 +734,8 @@
             0
           ]
         ],
+=======
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "extrinsic_time": 2000,
         "storage_root_time": 1000,
         "reads": 0,
@@ -668,8 +751,44 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 486000,
+=======
+        "extrinsic_time": 547000,
+        "storage_root_time": 5000,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      }
+    ],
+    "db_results": [
+      {
+        "components": [
+          [
+            "i",
+            0
+          ]
+        ],
+        "extrinsic_time": 3000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      },
+      {
+        "components": [
+          [
+            "i",
+            1000
+          ]
+        ],
+        "extrinsic_time": 535000,
+        "storage_root_time": 3000,
         "reads": 0,
         "repeat_reads": 0,
         "writes": 1000,
@@ -705,8 +824,13 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 1185000,
         "storage_root_time": 2000,
+=======
+        "extrinsic_time": 1329000,
+        "storage_root_time": 5000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -722,7 +846,7 @@
             0
           ]
         ],
-        "extrinsic_time": 5000,
+        "extrinsic_time": 6000,
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -737,8 +861,13 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 1601000,
         "storage_root_time": 2000,
+=======
+        "extrinsic_time": 1740000,
+        "storage_root_time": 6000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 1000,
         "repeat_reads": 0,
         "writes": 1000,
@@ -791,8 +920,13 @@
             0
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 80000,
         "storage_root_time": 0,
+=======
+        "extrinsic_time": 83000,
+        "storage_root_time": 2000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -806,7 +940,11 @@
             1
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 79000,
+=======
+        "extrinsic_time": 80000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -823,8 +961,13 @@
     "time_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 38000,
         "storage_root_time": 0,
+=======
+        "extrinsic_time": 39000,
+        "storage_root_time": 1000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -835,7 +978,11 @@
     "db_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 47000,
+=======
+        "extrinsic_time": 50000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 2,
         "repeat_reads": 11,
@@ -881,8 +1028,8 @@
     "time_results": [
       {
         "components": [],
-        "extrinsic_time": 9000,
-        "storage_root_time": 1000,
+        "extrinsic_time": 10000,
+        "storage_root_time": 0,
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -894,7 +1041,11 @@
       {
         "components": [],
         "extrinsic_time": 11000,
+<<<<<<< HEAD
         "storage_root_time": 1000,
+=======
+        "storage_root_time": 0,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 1,
         "repeat_reads": 3,
         "writes": 1,
@@ -939,7 +1090,11 @@
     "time_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 41000,
+=======
+        "extrinsic_time": 43000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -968,7 +1123,11 @@
     "time_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 26000,
+=======
+        "extrinsic_time": 27000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -980,7 +1139,11 @@
     "db_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 32000,
+=======
+        "extrinsic_time": 33000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 1,
         "repeat_reads": 5,
@@ -997,7 +1160,11 @@
     "time_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 11000,
+=======
+        "extrinsic_time": 12000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1009,7 +1176,7 @@
     "db_results": [
       {
         "components": [],
-        "extrinsic_time": 13000,
+        "extrinsic_time": 15000,
         "storage_root_time": 1000,
         "reads": 1,
         "repeat_reads": 3,
@@ -1032,7 +1199,11 @@
           ]
         ],
         "extrinsic_time": 10000,
+<<<<<<< HEAD
         "storage_root_time": 1000,
+=======
+        "storage_root_time": 0,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -1046,8 +1217,13 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 8348000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 8893000,
+        "storage_root_time": 6000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -1078,8 +1254,13 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 10522000,
         "storage_root_time": 2000,
+=======
+        "extrinsic_time": 11093000,
+        "storage_root_time": 4000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 1000,
         "repeat_reads": 2000,
         "writes": 1000,
@@ -1104,7 +1285,11 @@
             30719999
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 3536127000,
+=======
+        "extrinsic_time": 3449333000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 7000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1123,8 +1308,13 @@
             30719999
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 3323295000,
         "storage_root_time": 6000,
+=======
+        "extrinsic_time": 3473815000,
+        "storage_root_time": 7000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -1161,8 +1351,13 @@
             30719999
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 3761076000,
         "storage_root_time": 7000,
+=======
+        "extrinsic_time": 3442508000,
+        "storage_root_time": 8000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -1182,8 +1377,13 @@
             30719999
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 4540184000,
         "storage_root_time": 6000,
+=======
+        "extrinsic_time": 4600797000,
+        "storage_root_time": 7000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 4,
         "repeat_reads": 0,
         "writes": 2,
@@ -1201,8 +1401,13 @@
             30719999
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 4135377000,
         "storage_root_time": 7000,
+=======
+        "extrinsic_time": 3886253000,
+        "storage_root_time": 8000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 4,
         "repeat_reads": 0,
         "writes": 2,
@@ -1220,7 +1425,11 @@
             0
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 127000,
+=======
+        "extrinsic_time": 134000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 4,
         "repeat_reads": 0,
@@ -1239,7 +1448,11 @@
             30719999
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 4540042000,
+=======
+        "extrinsic_time": 4361607000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 7000,
         "reads": 4,
         "repeat_reads": 0,
@@ -1293,8 +1506,13 @@
             0
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 4000,
         "storage_root_time": 2000,
+=======
+        "extrinsic_time": 5000,
+        "storage_root_time": 1000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 2,
@@ -1345,7 +1563,11 @@
             3072
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 98000,
+=======
+        "extrinsic_time": 85000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1377,7 +1599,11 @@
             3072
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 129000,
+=======
+        "extrinsic_time": 99000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 2,
         "repeat_reads": 0,
@@ -1394,8 +1620,8 @@
     "time_results": [
       {
         "components": [],
-        "extrinsic_time": 54000,
-        "storage_root_time": 1000,
+        "extrinsic_time": 53000,
+        "storage_root_time": 0,
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -1443,7 +1669,11 @@
             1
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 83000,
+=======
+        "extrinsic_time": 78000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1475,8 +1705,13 @@
             1
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 78000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 76000,
+        "storage_root_time": 0,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -1493,7 +1728,7 @@
       {
         "components": [],
         "extrinsic_time": 2000,
-        "storage_root_time": 1000,
+        "storage_root_time": 0,
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -1530,7 +1765,7 @@
             100
           ]
         ],
-        "extrinsic_time": 85000,
+        "extrinsic_time": 90000,
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1549,7 +1784,11 @@
             100
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 125000,
+=======
+        "extrinsic_time": 135000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 2000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1568,7 +1807,11 @@
             1
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 99000,
+=======
+        "extrinsic_time": 91000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 2000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1587,7 +1830,11 @@
             100
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 127000,
+=======
+        "extrinsic_time": 130000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 2000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1627,8 +1874,13 @@
             100
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 164000,
         "storage_root_time": 3000,
+=======
+        "extrinsic_time": 134000,
+        "storage_root_time": 2000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 4,
         "repeat_reads": 2,
         "writes": 1,
@@ -1646,7 +1898,11 @@
             1
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 98000,
+=======
+        "extrinsic_time": 113000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 2000,
         "reads": 4,
         "repeat_reads": 2,
@@ -1665,8 +1921,13 @@
             100
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 170000,
         "storage_root_time": 3000,
+=======
+        "extrinsic_time": 161000,
+        "storage_root_time": 2000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 4,
         "repeat_reads": 2,
         "writes": 1,
@@ -1734,7 +1995,11 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 9000,
+=======
+        "extrinsic_time": 11000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1760,7 +2025,7 @@
             10000
           ]
         ],
-        "extrinsic_time": 31000,
+        "extrinsic_time": 33000,
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1779,7 +2044,11 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 36000,
+=======
+        "extrinsic_time": 38000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1817,7 +2086,11 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 34000,
+=======
+        "extrinsic_time": 37000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -1857,7 +2130,11 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 43000,
+=======
+        "extrinsic_time": 40000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 1,
         "repeat_reads": 0,
@@ -1895,7 +2172,11 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 40000,
+=======
+        "extrinsic_time": 43000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 1,
         "repeat_reads": 0,
@@ -1940,8 +2221,13 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 30000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 37000,
+        "storage_root_time": 2000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -1978,7 +2264,11 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 27000,
+=======
+        "extrinsic_time": 33000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2001,6 +2291,7 @@
         ],
         "extrinsic_time": 27000,
         "storage_root_time": 1000,
+<<<<<<< HEAD
         "reads": 1,
         "repeat_reads": 0,
         "writes": 1,
@@ -2039,6 +2330,8 @@
         ],
         "extrinsic_time": 19000,
         "storage_root_time": 0,
+=======
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 1,
         "repeat_reads": 0,
         "writes": 1,
@@ -2058,6 +2351,47 @@
         ],
         "extrinsic_time": 30000,
         "storage_root_time": 1000,
+<<<<<<< HEAD
+=======
+        "reads": 1,
+        "repeat_reads": 0,
+        "writes": 1,
+        "repeat_writes": 0,
+        "proof_size": 248
+      },
+      {
+        "components": [
+          [
+            "s",
+            128
+          ],
+          [
+            "z",
+            0
+          ]
+        ],
+        "extrinsic_time": 21000,
+        "storage_root_time": 1000,
+        "reads": 1,
+        "repeat_reads": 0,
+        "writes": 1,
+        "repeat_writes": 0,
+        "proof_size": 248
+      },
+      {
+        "components": [
+          [
+            "s",
+            128
+          ],
+          [
+            "z",
+            10000
+          ]
+        ],
+        "extrinsic_time": 34000,
+        "storage_root_time": 2000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 1,
         "repeat_reads": 0,
         "writes": 1,
@@ -2082,7 +2416,11 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 32000,
+=======
+        "extrinsic_time": 33000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2101,8 +2439,13 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 39000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 44000,
+        "storage_root_time": 2000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -2120,7 +2463,11 @@
             0
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 29000,
+=======
+        "extrinsic_time": 28000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2179,7 +2526,11 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 45000,
+=======
+        "extrinsic_time": 47000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 2,
         "repeat_reads": 3,
@@ -2198,7 +2549,11 @@
             0
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 33000,
+=======
+        "extrinsic_time": 42000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 2,
         "repeat_reads": 3,
@@ -2217,7 +2572,11 @@
             10000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 52000,
+=======
+        "extrinsic_time": 48000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 2,
         "repeat_reads": 3,
@@ -2254,7 +2613,11 @@
             128
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 34000,
+=======
+        "extrinsic_time": 25000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2286,7 +2649,11 @@
             128
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 30000,
+=======
+        "extrinsic_time": 31000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 1,
         "repeat_reads": 0,
@@ -2340,7 +2707,11 @@
             2
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 16000,
+=======
+        "extrinsic_time": 15000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 1,
         "repeat_reads": 0,
@@ -2355,7 +2726,7 @@
             128
           ]
         ],
-        "extrinsic_time": 20000,
+        "extrinsic_time": 22000,
         "storage_root_time": 1000,
         "reads": 1,
         "repeat_reads": 0,
@@ -2392,7 +2763,11 @@
             128
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 25000,
+=======
+        "extrinsic_time": 26000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2424,13 +2799,107 @@
             128
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 31000,
+=======
+        "extrinsic_time": 30000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 1,
         "repeat_reads": 0,
         "writes": 1,
         "repeat_writes": 0,
         "proof_size": 719
+      }
+    ]
+  },
+  {
+    "pallet": "pallet_sudo",
+    "instance": "Sudo",
+    "benchmark": "set_key",
+    "time_results": [
+      {
+        "components": [],
+        "extrinsic_time": 9000,
+        "storage_root_time": 1000,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      }
+    ],
+    "db_results": [
+      {
+        "components": [],
+<<<<<<< HEAD
+        "extrinsic_time": 16000,
+=======
+        "extrinsic_time": 13000,
+        "storage_root_time": 1000,
+        "reads": 1,
+        "repeat_reads": 1,
+        "writes": 1,
+        "repeat_writes": 0,
+        "proof_size": 132
+      }
+    ]
+  },
+  {
+    "pallet": "pallet_sudo",
+    "instance": "Sudo",
+    "benchmark": "sudo",
+    "time_results": [
+      {
+        "components": [],
+        "extrinsic_time": 9000,
+        "storage_root_time": 1000,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      }
+    ],
+    "db_results": [
+      {
+        "components": [],
+        "extrinsic_time": 12000,
+        "storage_root_time": 1000,
+        "reads": 1,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 132
+      }
+    ]
+  },
+  {
+    "pallet": "pallet_sudo",
+    "instance": "Sudo",
+    "benchmark": "sudo_as",
+    "time_results": [
+      {
+        "components": [],
+        "extrinsic_time": 9000,
+        "storage_root_time": 1000,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      }
+    ],
+    "db_results": [
+      {
+        "components": [],
+        "extrinsic_time": 12000,
+        "storage_root_time": 1000,
+        "reads": 1,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 132
       }
     ]
   },
@@ -2453,7 +2922,8 @@
     "db_results": [
       {
         "components": [],
-        "extrinsic_time": 16000,
+        "extrinsic_time": 14000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 2,
         "repeat_reads": 0,
@@ -2482,7 +2952,7 @@
     "db_results": [
       {
         "components": [],
-        "extrinsic_time": 6000,
+        "extrinsic_time": 5000,
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2499,7 +2969,11 @@
     "time_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 88000,
+=======
+        "extrinsic_time": 87000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2511,7 +2985,11 @@
     "db_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 114000,
+=======
+        "extrinsic_time": 104000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 9,
         "repeat_reads": 8,
@@ -2529,7 +3007,11 @@
       {
         "components": [],
         "extrinsic_time": 26000,
+<<<<<<< HEAD
         "storage_root_time": 1000,
+=======
+        "storage_root_time": 0,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -2540,7 +3022,11 @@
     "db_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 33000,
+=======
+        "extrinsic_time": 39000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 3,
         "repeat_reads": 7,
@@ -2557,7 +3043,11 @@
     "time_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 27000,
+=======
+        "extrinsic_time": 25000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2569,8 +3059,13 @@
     "db_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 31000,
         "storage_root_time": 1000,
+=======
+        "extrinsic_time": 33000,
+        "storage_root_time": 0,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 3,
         "repeat_reads": 7,
         "writes": 4,
@@ -2620,6 +3115,7 @@
             0
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 3000,
         "storage_root_time": 1000,
         "reads": 0,
@@ -2653,6 +3149,9 @@
           ]
         ],
         "extrinsic_time": 5000,
+=======
+        "extrinsic_time": 4000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2667,7 +3166,43 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 2271000,
+=======
+        "extrinsic_time": 1866000,
+        "storage_root_time": 1000,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      }
+    ],
+    "db_results": [
+      {
+        "components": [
+          [
+            "c",
+            0
+          ]
+        ],
+        "extrinsic_time": 5000,
+        "storage_root_time": 1000,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      },
+      {
+        "components": [
+          [
+            "c",
+            1000
+          ]
+        ],
+        "extrinsic_time": 2307000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2684,7 +3219,11 @@
     "time_results": [
       {
         "components": [],
+<<<<<<< HEAD
         "extrinsic_time": 3000,
+=======
+        "extrinsic_time": 4000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2733,8 +3272,13 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 2008000,
         "storage_root_time": 0,
+=======
+        "extrinsic_time": 2011000,
+        "storage_root_time": 1000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -2765,7 +3309,11 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 2414000,
+=======
+        "extrinsic_time": 2444000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
@@ -2831,8 +3379,13 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 1884000,
         "storage_root_time": 0,
+=======
+        "extrinsic_time": 1850000,
+        "storage_root_time": 1000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "reads": 0,
         "repeat_reads": 0,
         "writes": 0,
@@ -2863,7 +3416,11 @@
             1000
           ]
         ],
+<<<<<<< HEAD
         "extrinsic_time": 2275000,
+=======
+        "extrinsic_time": 2328000,
+>>>>>>> 38a14103 (Update weights after running benchmarking)
         "storage_root_time": 1000,
         "reads": 0,
         "repeat_reads": 0,
