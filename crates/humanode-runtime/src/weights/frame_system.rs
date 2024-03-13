@@ -36,6 +36,19 @@ impl<T: frame_system::Config> frame_system::WeightInfo for WeightInfo<T> {
       .saturating_add(T::DbWeight::get().reads(1))
       .saturating_add(T::DbWeight::get().writes(2))
   }
+  /// Storage: System Digest (r:1 w:1)
+  /// Proof Skipped: System Digest (max_values: Some(1), max_size: None, mode: Measured)
+  /// Storage: unknown `0x3a636f6465` (r:0 w:1)
+  /// Proof Skipped: unknown `0x3a636f6465` (r:0 w:1)
+  fn set_code() -> Weight {
+	// Proof Size summary in bytes:
+	//  Measured:  `0`
+	//  Estimated: `1485`
+	// Minimum execution time: 58_606_683_000 picoseconds.
+	Weight::from_parts(59_115_121_000, 1485)
+      .saturating_add(T::DbWeight::get().reads(1_u64))
+	  .saturating_add(T::DbWeight::get().writes(2_u64))
+  }
   /// The range of component `i` is `[0, 1000]`.
   fn set_storage(_i: u32, ) -> Weight {
     // Proof Size summary in bytes:
