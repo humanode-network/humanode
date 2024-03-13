@@ -298,23 +298,12 @@ pub mod pallet {
     >;
 
     #[pallet::genesis_config]
+    #[derive(frame_support::DefaultNoBound)]
     pub struct GenesisConfig<T: Config> {
         pub robonode_public_key: T::RobonodePublicKey,
         pub consumed_auth_ticket_nonces: BoundedVec<BoundedAuthTicketNonce, T::MaxNonces>,
         pub active_authentications:
             BoundedVec<Authentication<T::ValidatorPublicKey, T::Moment>, T::MaxAuthentications>,
-    }
-
-    // The default value for the genesis config type.
-    #[cfg(feature = "std")]
-    impl<T: Config> Default for GenesisConfig<T> {
-        fn default() -> Self {
-            Self {
-                robonode_public_key: Default::default(),
-                consumed_auth_ticket_nonces: Default::default(),
-                active_authentications: Default::default(),
-            }
-        }
     }
 
     // The build of genesis for the pallet.
