@@ -33,8 +33,8 @@ pub type NegativeImbalanceOf<T, I = ()> =
 pub type CreditOf<T, I = ()> = Credit<<T as Config<I>>::AccountId, <T as Config<I>>::Currency>;
 
 /// The initial state of the pot, for use in genesis.
-#[cfg(feature = "std")]
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum InitialState<Balance> {
     /// The state of the pot account is not checked at genesis.
     Unchecked,
@@ -117,7 +117,6 @@ pub mod pallet {
         pub initial_state: InitialState<BalanceOf<T, I>>,
     }
 
-    #[cfg(feature = "std")]
     impl<T: Config<I>, I: 'static> Default for GenesisConfig<T, I> {
         fn default() -> Self {
             Self {
