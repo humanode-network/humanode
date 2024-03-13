@@ -3682,6 +3682,7 @@ dependencies = [
  "sc-consensus-babe",
  "sc-consensus-grandpa",
  "sc-executor",
+ "sc-network",
  "sc-service",
  "sc-telemetry",
  "sc-transaction-pool",
