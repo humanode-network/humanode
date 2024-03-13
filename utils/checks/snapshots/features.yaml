@@ -351,7 +351,7 @@
     - rand_core
 - name: checked_int_cast 1.0.0
   features: []
-- name: chrono 0.4.34
+- name: chrono 0.4.35
   features:
     - alloc
     - android-tzdata
@@ -883,7 +883,7 @@
     - scale-info
     - serialize
     - std
-- name: ethers-core 2.0.13
+- name: ethers-core 2.0.14
   features:
     - eip712
 - name: event-listener 2.5.3
@@ -1340,7 +1340,7 @@
 - name: hostname 0.3.1
   features:
     - default
-- name: http 0.2.11
+- name: http 0.2.12
   features: []
 - name: http-body 0.4.6
   features: []
@@ -3483,7 +3483,7 @@
     - derive
     - std
     - strum_macros
-- name: strum 0.25.0
+- name: strum 0.26.1
   features:
     - default
     - derive
@@ -3491,7 +3491,7 @@
     - strum_macros
 - name: strum_macros 0.24.3
   features: []
-- name: strum_macros 0.25.3
+- name: strum_macros 0.26.1
   features: []
 - name: stun 0.4.4
   features:
@@ -3525,7 +3525,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.50
+- name: syn 2.0.52
   features:
     - clone-impls
     - default
@@ -4130,9 +4130,6 @@
     - Win32_Networking_WinSock
     - default
 - name: windows-core 0.51.1
-  features:
-    - default
-- name: windows-core 0.52.0
   features:
     - default
 - name: windows-sys 0.42.0
