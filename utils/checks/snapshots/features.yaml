@@ -2891,7 +2891,7 @@
   features:
     - default
     - metered
-- name: scale-info 2.10.0
+- name: scale-info 2.11.0
   features:
     - decode
     - default
