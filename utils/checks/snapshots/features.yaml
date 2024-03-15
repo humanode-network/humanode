@@ -392,7 +392,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.2
+- name: clap 4.5.3
   features:
     - color
     - default
@@ -414,7 +414,7 @@
     - string
     - suggestions
     - usage
-- name: clap_derive 4.5.0
+- name: clap_derive 4.5.3
   features:
     - default
     - deprecated
@@ -1308,6 +1308,8 @@
     - default
     - unicode
     - unicode-segmentation
+- name: heck 0.5.0
+  features: []
 - name: hermit-abi 0.1.19
   features:
     - default
