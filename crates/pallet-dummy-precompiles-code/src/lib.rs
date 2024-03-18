@@ -32,6 +32,8 @@ pub const DUMMY_CODE: &[u8] = &[0x5F, 0x5F, 0xFD];
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
+    #[cfg(feature = "try-runtime")]
+    use frame_support::sp_runtime::TryRuntimeError;
     use frame_support::{pallet_prelude::*, sp_std::vec::Vec};
     use frame_system::pallet_prelude::*;
 
@@ -101,13 +103,13 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
             // Do nothing.
             Ok(Vec::new())
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
+        fn post_upgrade(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
             use sp_std::vec::Vec;
 
             let mut not_created_precompiles = Vec::new();
@@ -120,7 +122,9 @@ pub mod pallet {
             }
 
             if !not_created_precompiles.is_empty() {
-                return Err("precompiles not created properly: {:not_created_precompiles}");
+                return Err(TryRuntimeError::Other(
+                    "precompiles not created properly: {:not_created_precompiles}",
+                ));
             }
 
             Ok(())
