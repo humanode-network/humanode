@@ -47,6 +47,8 @@ pub const CURRENT_BRIDGES_INITIALIZER_VERSION: u16 = 1;
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
+    #[cfg(feature = "try-runtime")]
+    use frame_support::sp_runtime::TryRuntimeError;
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay};
     use frame_system::pallet_prelude::*;
     use sp_std::fmt::Debug;
@@ -147,12 +149,12 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
             upgrade_init::pre_upgrade()
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+        fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
             upgrade_init::post_upgrade::<T>(state)
         }
     }
