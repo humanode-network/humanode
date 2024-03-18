@@ -1,5 +1,7 @@
 use core::marker::PhantomData;
 
+#[cfg(feature = "try-runtime")]
+use frame_support::sp_runtime::TryRuntimeError;
 use frame_support::{
     log::info,
     traits::{Get, GetStorageVersion, OnRuntimeUpgrade, PalletInfoAccess},
@@ -49,14 +51,17 @@ where
     }
 
     #[cfg(feature = "try-runtime")]
-    fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+    fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
         // Do nothing.
         Ok(Vec::new())
     }
 
     #[cfg(feature = "try-runtime")]
-    fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-        assert_eq!(P::on_chain_storage_version(), P::current_storage_version());
+    fn post_upgrade(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
+        ensure!(
+            P::on_chain_storage_version() == P::current_storage_version(),
+            "the current storage version and onchain storage version should be the same"
+        );
         Ok(())
     }
 }
