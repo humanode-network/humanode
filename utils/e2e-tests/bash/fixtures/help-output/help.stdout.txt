@@ -37,7 +37,7 @@ Options:
           RPC methods to expose.
           - `unsafe`: Exposes every RPC method.
           - `safe`: Exposes only a safe subset of RPC methods, denying unsafe RPC methods.
-          - `auto`: Acts as `safe` if RPC is served externally, e.g. when `--{rpc,ws}-external` is
+          - `auto`: Acts as `safe` if RPC is served externally, e.g. when `--rpc--external` is
             passed, otherwise acts as `unsafe`.
           
           [default: auto]
@@ -47,38 +47,28 @@ Options:
           - safe:   Allow only a safe subset of RPC methods
           - unsafe: Expose every RPC method (even potentially unsafe ones)
 
-      --ws-external
-          Listen to all Websocket interfaces. Default is local. Note: not all RPC methods are safe to be exposed publicly. Use an RPC proxy server to filter out dangerous methods. More details: <https://docs.substrate.io/main-docs/build/custom-rpc/#public-rpcs>. Use `--unsafe-ws-external` to suppress the warning if you understand the risks
-
-      --unsafe-ws-external
-          Listen to all Websocket interfaces. Same as `--ws-external` but doesn't warn you about it
-
-      --rpc-max-payload <RPC_MAX_PAYLOAD>
-          DEPRECATED, this has no affect anymore. Use `rpc_max_request_size` or `rpc_max_response_size` instead
-
       --rpc-max-request-size <RPC_MAX_REQUEST_SIZE>
-          Set the the maximum RPC request payload size for both HTTP and WS in megabytes. Default is 15MiB
+          Set the the maximum RPC request payload size for both HTTP and WS in megabytes
+          
+          [default: 15]
 
       --rpc-max-response-size <RPC_MAX_RESPONSE_SIZE>
-          Set the the maximum RPC response payload size for both HTTP and WS in megabytes. Default is 15MiB
+          Set the the maximum RPC response payload size for both HTTP and WS in megabytes
+          
+          [default: 15]
 
       --rpc-max-subscriptions-per-connection <RPC_MAX_SUBSCRIPTIONS_PER_CONNECTION>
-          Set the the maximum concurrent subscriptions per connection. Default is 1024
-
-      --ipc-path <PATH>
-          DEPRECATED, IPC support has been removed
+          Set the the maximum concurrent subscriptions per connection
+          
+          [default: 1024]
 
       --rpc-port <PORT>
-          Specify HTTP RPC server TCP port
+          Specify JSON-RPC server TCP port
 
-      --ws-port <PORT>
-          Specify WebSockets RPC server TCP port
-
-      --ws-max-connections <COUNT>
-          Maximum number of WS RPC server connections
-
-      --ws-max-out-buffer-capacity <WS_MAX_OUT_BUFFER_CAPACITY>
-          DEPRECATED, this has no affect anymore. Use `rpc_max_response_size` instead
+      --rpc-max-connections <COUNT>
+          Maximum number of RPC server connections
+          
+          [default: 100]
 
       --rpc-cors <ORIGINS>
           Specify browser Origins allowed to access the HTTP & WS RPC servers. A comma-separated list of origins (protocol://domain or special `null` value). Value of `all` will disable origin validation. Default is to allow localhost and <https://polkadot.js.org> origins. When running in --dev mode the default is to allow all origins
@@ -185,7 +175,7 @@ Options:
           [default: compiled]
 
           Possible values:
-          - interpreted-i-know-what-i-do: Uses an interpreter
+          - interpreted-i-know-what-i-do: Uses an interpreter which now is deprecated
           - compiled:                     Uses a compiled runtime
 
       --wasmtime-instantiation-strategy <STRATEGY>
