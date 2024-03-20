@@ -583,7 +583,7 @@ impl
         }
         let mut weight: Weight = Weight::zero();
         let weights = <Runtime as frame_system::Config>::DbWeight::get();
-        let mut should_be_deauthenticated = vec![];
+        let mut should_be_deauthenticated = Vec::with_capacity(offenders.len());
         for details in offenders {
             let (_offender, identity) = &details.offender;
             match identity {
