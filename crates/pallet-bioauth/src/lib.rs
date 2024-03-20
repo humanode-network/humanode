@@ -407,7 +407,7 @@ pub mod pallet {
             public_keys: Vec<<T as Config>::ValidatorPublicKey>,
             reason: <T as Config>::DeauthenticationReason,
         ) -> Vec<<T as Config>::ValidatorPublicKey> {
-            let mut removed_public_keys = vec![];
+            let mut removed_public_keys = Vec::with_capacity(public_keys.len());
             ActiveAuthentications::<T>::mutate(|active_authentications| {
                 active_authentications.retain(|authentication| {
                     if public_keys.contains(&authentication.public_key) {
