@@ -598,9 +598,12 @@ impl
         if !should_be_deauthenticated.is_empty() {
             let deauthenticated_public_keys =
                 Bioauth::deauthenticate(should_be_deauthenticated, DeauthenticationReason::Offence);
-            weight = weight.saturating_add(
-                weights.reads_writes(1, u64::from(!deauthenticated_public_keys.is_empty())),
-            );
+            weight = weight.saturating_add(weights.reads_writes(
+                1,
+                deauthenticated_public_keys.len().try_into().expect(
+                    "64 bits should be enough for this overflow to be practicly impossible",
+                ),
+            ));
         }
         weight
     }
