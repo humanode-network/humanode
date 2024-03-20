@@ -1,0 +1,13 @@
+[package]
+name = "primitives-currency-swap"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+frame-support = { workspace = true }
+
+[features]
+default = ["std"]
+std = ["frame-support/std"]
+try-runtime = ["frame-support/try-runtime"]

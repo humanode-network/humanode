@@ -5,16 +5,16 @@ edition = "2021"
 publish = false
 
 [dependencies]
-primitives-ethereum = { version = "0.1", path = "../primitives-ethereum", default-features = false }
+primitives-ethereum = { path = "../primitives-ethereum", default-features = false }
 
-sp-core-hashing-proc-macro = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-io = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-std = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+sp-core-hashing-proc-macro = { workspace = true }
+sp-io = { workspace = true }
+sp-std = { workspace = true }
 
 [dev-dependencies]
-hex-literal = "0.4"
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+hex-literal = { workspace = true }
+sp-core = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["primitives-ethereum/std", "sp-io/std", "sp-std/std"]
+std = ["primitives-ethereum/std", "sp-core/std", "sp-io/std", "sp-std/std"]

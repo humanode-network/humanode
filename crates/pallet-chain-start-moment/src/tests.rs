@@ -1,5 +1,5 @@
 // Allow simple integer arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 
 use frame_support::traits::Hooks;
 

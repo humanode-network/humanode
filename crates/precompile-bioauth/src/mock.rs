@@ -1,5 +1,5 @@
 // Allow simple integer arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use fp_evm::{Context, ExitError, ExitReason, PrecompileHandle, Transfer};
@@ -29,7 +29,7 @@ pub type BlockNumber = u64;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
-    pub enum Test where
+    pub struct Test where
         Block = Block,
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
@@ -214,6 +214,14 @@ mock! {
         fn is_static(&self) -> bool;
 
         fn gas_limit(&self) -> Option<u64>;
+
+        fn record_external_cost(
+            &mut self,
+            ref_time: Option<u64>,
+            proof_size: Option<u64>,
+        ) -> Result<(), ExitError>;
+
+        fn refund_external_cost(&mut self, ref_time: Option<u64>, proof_size: Option<u64>);
     }
 }
 

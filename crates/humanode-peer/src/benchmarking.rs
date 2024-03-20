@@ -11,10 +11,10 @@ use humanode_runtime::{AccountId, Balance, BalancesCall, SystemCall, SLOT_DURATI
 use sc_client_api::BlockBackend;
 use sp_api::ProvideRuntimeApi;
 use sp_consensus_babe::SlotDuration;
-use sp_core::{Encode, Pair, U256};
+use sp_core::{Encode, Pair};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
-use sp_runtime::{generic, OpaqueExtrinsic, SaturatedConversion};
+use sp_runtime::{OpaqueExtrinsic, SaturatedConversion};
 
 use crate::configuration::Configuration;
 use crate::service::FullClient;
@@ -87,7 +87,7 @@ impl ExtrinsicBuilder for TransferKeepAliveBuilder {
 }
 
 /// Generates inherent data for the `benchmark overhead` command.
-pub fn inherent_benchmark_data(config: &Configuration) -> sc_cli::Result<InherentData> {
+pub fn inherent_benchmark_data(_config: &Configuration) -> sc_cli::Result<InherentData> {
     let mut inherent_data = InherentData::new();
 
     let d = Duration::from_millis(0);
@@ -103,10 +103,6 @@ pub fn inherent_benchmark_data(config: &Configuration) -> sc_cli::Result<Inheren
     futures::executor::block_on(slot.provide_inherent_data(&mut inherent_data))
         .map_err(|e| format!("creating slot inherent data: {:?}", e))?;
 
-    let dynamic_fees =
-        pallet_dynamic_fee::InherentDataProvider(U256::from(config.evm.target_gas_price));
-    futures::executor::block_on(dynamic_fees.provide_inherent_data(&mut inherent_data))
-        .map_err(|e| format!("creating dynamic fee inherent data: {:?}", e))?;
     Ok(inherent_data)
 }
 
@@ -172,6 +168,6 @@ fn fetch_nonce(client: &FullClient, account: sp_core::sr25519::Pair) -> u32 {
     let best_hash = client.chain_info().best_hash;
     client
         .runtime_api()
-        .account_nonce(&generic::BlockId::Hash(best_hash), account.public().into())
+        .account_nonce(best_hash, account.public().into())
         .expect("Fetching account nonce failed")
 }

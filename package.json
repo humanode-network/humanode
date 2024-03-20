@@ -1,8 +1,15 @@
 {
   "name": "humanode-tools",
-  "version": "0.0.0",
-  "private": true,
-  "dependencies": {
-    "@polkadot/api-cli": "^0.53"
-  }
+  "workspaces": [
+    "utils/e2e-tests/bash",
+    "utils/e2e-tests/ts"
+  ],
+  "scripts": {
+    "prettier:check": "prettier -l .",
+    "prettier:fix": "prettier -w ."
+  },
+  "devDependencies": {
+    "prettier": "^3.2.5"
+  },
+  "packageManager": "yarn@3.6.1"
 }

@@ -3,11 +3,11 @@ name: code
 on:
   push:
     branches:
-      - '**'
-      - '!gh-readonly-queue/**'
+      - "**"
+      - "!gh-readonly-queue/**"
   merge_group:
   schedule:
-    - cron: '0 20 * * 0'
+    - cron: "0 20 * * 0"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -22,7 +22,6 @@ env:
   RUSTDOCFLAGS: "-D warnings"
 
 jobs:
-
   plan:
     name: Plan the execution
     runs-on: ubuntu-22.04
@@ -32,7 +31,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Compute matrix
         uses: ./.github/actions/plan
         id: set-matrix
@@ -52,44 +51,25 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Job config
         run: printf "%s\n" "$MATRIX_CONTEXT"
         env:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         timeout-minutes: 5
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/common-setup
         with:
-          shared-key: ${{ matrix.plan.platform.cacheKey }}-${{ matrix.plan.mode.cargoCacheKey }}
-        if: "!matrix.plan.platform.isOnSelfHostedRunner"
+          platformCacheKey: ${{ matrix.plan.platform.cacheKey }}
+          modeCacheKey: ${{ matrix.plan.mode.cargoCacheKey }}
+          isOnSelfHostedRunner: ${{ matrix.plan.platform.isOnSelfHostedRunner }}
+          buildEnvScript: ${{ matrix.plan.platform.buildEnvScript }}
         timeout-minutes: 10
-
-      - name: Install rust toolchain
-        run: rustup show
-        timeout-minutes: 10
-
-      - name: Prepare the build environment
-        uses: ./.github/actions/env
-        with:
-          script: ${{ matrix.plan.platform.buildEnvScript }}
-
-      - name: Print build environment info
-        run: |
-          set -x
-          cargo --version
-          cargo clippy --version
-          env
 
       - name: Run cargo ${{ matrix.plan.mode.cargoCommand }}
-        uses: actions-rs/cargo@v1
-        with:
-          command: ${{ matrix.plan.mode.cargoCommand }}
-          args: ${{ matrix.plan.mode.cargoArgs }}
+        run: cargo ${{ matrix.plan.mode.cargoCommand }} ${{ matrix.plan.mode.cargoArgs }}
 
   e2e:
     name: End-to-end tests
@@ -98,33 +78,26 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         timeout-minutes: 5
 
-      - name: Set up polkadot tools
-        run: yarn install --frozen-lockfile
+      - run: yarn install --immutable
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 10
-
-      - name: Install rust toolchain
-        run: rustup show
-        timeout-minutes: 10
-
-      - name: Prepare the build environment
-        uses: ./.github/actions/env
+      - uses: ./.github/actions/common-setup
         with:
-          script: .github/scripts/build_env/ubuntu.sh
-
+          platformCacheKey: ubuntu2204-amd64
+          buildEnvScript: .github/scripts/build_env/ubuntu.sh
+        timeout-minutes: 10
 
       - name: Build binaries
-        run: cargo build --release
+        run: cargo build --release --locked
 
-      - name: Run e2e tests
-        run: utils/e2e-tests/run-tests "target/release/humanode-peer"
+      - name: Run bash e2e tests
+        run: utils/e2e-tests/bash/run-tests "target/release/humanode-peer"
+
+      - name: Run ts e2e tests
+        run: utils/e2e-tests/ts/run-tests "target/release/humanode-peer"
 
   embedded-utils:
     strategy:
@@ -134,6 +107,8 @@ jobs:
             run: utils/checks/require-fork-deps
           - name: Check features
             run: utils/checks/features
+          - name: Check features snapshot
+            run: utils/checks/features-snapshot
       fail-fast: false
     name: ${{ matrix.util.name }}
     runs-on: ubuntu-22.04
@@ -141,17 +116,13 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         timeout-minutes: 5
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-        timeout-minutes: 10
-
-      - name: Install rust toolchain
-        run: rustup show
+      - uses: ./.github/actions/common-setup
+        with:
+          platformCacheKey: ubuntu2204-amd64
         timeout-minutes: 10
 
       - run: ${{ matrix.util.run }}
@@ -180,6 +151,12 @@ jobs:
                 sudo tar -xzvf - -C /usr/local/bin
             run: cargo-sort -cwg
 
+          - name: cargo-machete
+            download: >
+              curl -sSL "https://github.com/bnjbvr/cargo-machete/releases/download/v0.6.0/cargo-machete-v0.6.0-x86_64-unknown-linux-musl.tar.gz" |
+                sudo tar -xzvf - --strip-components=1 -C /usr/local/bin
+            run: cargo-machete
+
       fail-fast: false
     name: ${{ matrix.util.name }}
     runs-on: ubuntu-22.04
@@ -187,19 +164,13 @@ jobs:
     permissions:
       contents: read
     steps:
-
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         timeout-minutes: 5
 
-      - name: Cache
-        uses: Swatinem/rust-cache@v2
-        if: ${{ matrix.util.requiresRust }}
-        timeout-minutes: 10
-
-      - name: Install rust toolchain
-        run: rustup show
-        if: ${{ matrix.util.requiresRust }}
+      - uses: ./.github/actions/common-setup
+        with:
+          requiresRust: ${{ matrix.util.requiresRust }}
         timeout-minutes: 10
 
       - name: Download ${{ matrix.util.name }}
@@ -208,3 +179,22 @@ jobs:
 
       - run: ${{ matrix.util.run }}
         timeout-minutes: 10
+
+  prettier:
+    name: prettier:check
+    runs-on: ubuntu-22.04
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        timeout-minutes: 5
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+
+      - run: yarn install --immutable
+
+      - run: yarn prettier:check

@@ -1,14 +1,14 @@
 //! RPC subsystem instantiation logic.
 
-use std::sync::Arc;
+use std::{collections::BTreeMap, sync::Arc};
 
 use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtServer};
 use bioauth_flow_rpc::{Bioauth, BioauthServer, Signer, SignerFactory};
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use fc_rpc::{
-    Eth, EthApiServer, EthBlockDataCacheTask, EthFilter, EthFilterApiServer, EthPubSub,
-    EthPubSubApiServer, Net, NetApiServer, Web3, Web3ApiServer,
+    Eth, EthApiServer, EthBlockDataCacheTask, EthConfig, EthFilter, EthFilterApiServer, EthPubSub,
+    EthPubSubApiServer, Net, NetApiServer, TxPoolApiServer, Web3, Web3ApiServer,
 };
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use fc_storage::OverrideHandle;
@@ -24,20 +24,22 @@ use sc_client_api::{
 use sc_consensus_babe::{BabeConfiguration, Epoch};
 use sc_consensus_babe_rpc::{Babe, BabeApiServer};
 use sc_consensus_epochs::SharedEpochChanges;
-use sc_finality_grandpa::{
+use sc_consensus_grandpa::{
     FinalityProofProvider, GrandpaJustificationStream, SharedAuthoritySet, SharedVoterState,
 };
-use sc_finality_grandpa_rpc::{Grandpa, GrandpaApiServer};
+use sc_consensus_grandpa_rpc::{Grandpa, GrandpaApiServer};
 use sc_network::NetworkService;
+use sc_network_sync::SyncingService;
 pub use sc_rpc_api::DenyUnsafe;
 use sc_rpc_spec_v2::chain_spec::{ChainSpec, ChainSpecApiServer};
 use sc_transaction_pool::{ChainApi, Pool};
 use sc_transaction_pool_api::TransactionPool;
-use sp_api::{Encode, ProvideRuntimeApi};
+use sp_api::{CallApiAt, Encode, ProvideRuntimeApi};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
 use sp_consensus::SelectChain;
 use sp_consensus_babe::BabeApi;
+use sp_core::H256;
 use sp_keystore::SyncCryptoStorePtr;
 
 /// Extra dependencies for `AuthorExt`.
@@ -85,7 +87,7 @@ pub struct EvmDeps {
     /// Maximum number of stored filters.
     pub eth_max_stored_filters: usize,
     /// Backend.
-    pub eth_backend: Arc<fc_db::Backend<Block>>,
+    pub eth_backend: Arc<dyn fc_db::BackendReader<Block> + Send + Sync>,
     /// Maximum number of logs in a query.
     pub eth_max_past_logs: u32,
     /// Maximum fee history cache size.
@@ -101,6 +103,18 @@ pub struct EvmDeps {
     /// When using eth_call/eth_estimateGas, the maximum allowed gas limit will be
     /// block.gas_limit * execute_gas_limit_multiplier.
     pub eth_execute_gas_limit_multiplier: u64,
+    /// Mandated parent hashes for a given block hash.
+    pub eth_forced_parent_hashes: Option<BTreeMap<H256, H256>>,
+    /// Sinks for pubsub notifications.
+    ///
+    /// Everytime a new subscription is created, a new mpsc channel is added to the sink pool.
+    /// The MappingSyncWorker sends through the channel on block import and the subscription
+    /// emits a notification to the subscriber on receiving a message through this channel.
+    pub eth_pubsub_notification_sinks: Arc<
+        fc_mapping_sync::EthereumBlockNotificationSinks<
+            fc_mapping_sync::EthereumBlockNotification<Block>,
+        >,
+    >,
 }
 
 /// RPC subsystem dependencies.
@@ -113,8 +127,10 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub deny_unsafe: DenyUnsafe,
     /// Graph pool instance.
     pub graph: Arc<Pool<A>>,
-    /// Network service
+    /// Network service.
     pub network: Arc<NetworkService<Block, Hash>>,
+    /// Chain syncing service.
+    pub sync: Arc<SyncingService<Block>>,
     /// A copy of the chain spec.
     pub chain_spec: Box<dyn sc_chain_spec::ChainSpec>,
     /// AuthorExt specific dependencies.
@@ -136,13 +152,14 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
 }
 
 /// Instantiate all RPC extensions.
-pub fn create<C, P, BE, VKE, VSF, A, SC>(
+pub fn create<C, P, BE, VKE, VSF, A, SC, EC>(
     deps: Deps<C, P, BE, VKE, VSF, A, SC>,
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
     BE: Backend<Block> + 'static,
     BE::State: StateBackend<sp_runtime::traits::HashFor<Block>>,
-    C: ProvideRuntimeApi<Block> + BlockBackend<Block> + StorageProvider<Block, BE> + AuxStore,
+    C: ProvideRuntimeApi<Block> + CallApiAt<Block>,
+    C: BlockBackend<Block> + StorageProvider<Block, BE> + AuxStore,
     C: BlockchainEvents<Block>,
     C: HeaderBackend<Block> + HeaderMetadata<Block, Error = BlockChainError> + 'static,
     C: Send + Sync + 'static,
@@ -164,6 +181,7 @@ where
         std::error::Error + 'static,
     A: ChainApi<Block = Block> + 'static,
     SC: SelectChain<Block> + 'static,
+    EC: EthConfig<Block, C>,
 {
     use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
     use substrate_frame_rpc_system::{System, SystemApiServer};
@@ -176,6 +194,7 @@ where
         deny_unsafe,
         graph,
         network,
+        sync,
         chain_spec,
         author_ext,
         is_authority,
@@ -220,6 +239,8 @@ where
         eth_overrides,
         eth_block_data_cache,
         eth_execute_gas_limit_multiplier,
+        eth_forced_parent_hashes,
+        eth_pubsub_notification_sinks,
     } = evm;
 
     let chain_name = chain_spec.name().to_string();
@@ -284,9 +305,9 @@ where
         Eth::new(
             Arc::clone(&client),
             Arc::clone(&pool),
-            graph,
+            Arc::clone(&graph),
             Some(humanode_runtime::TransactionConverter),
-            Arc::clone(&network),
+            Arc::clone(&sync),
             Vec::new(),
             Arc::clone(&eth_overrides),
             Arc::clone(&eth_backend),
@@ -295,7 +316,9 @@ where
             eth_fee_history_cache,
             eth_fee_history_limit,
             eth_execute_gas_limit_multiplier,
+            eth_forced_parent_hashes,
         )
+        .replace_config::<EC>()
         .into_rpc(),
     )?;
 
@@ -305,9 +328,10 @@ where
         EthPubSub::new(
             Arc::clone(&pool),
             Arc::clone(&client),
-            Arc::clone(&network),
+            Arc::clone(&sync),
             Arc::clone(&subscription_task_executor),
             Arc::clone(&eth_overrides),
+            Arc::clone(&eth_pubsub_notification_sinks),
         )
         .into_rpc(),
     )?;
@@ -322,11 +346,14 @@ where
         .into_rpc(),
     )?;
 
+    let eth_tx_pool = fc_rpc::TxPool::new(Arc::clone(&client), graph);
+
     if let Some(eth_filter_pool) = eth_filter_pool {
         io.merge(
             EthFilter::new(
                 client,
                 eth_backend,
+                eth_tx_pool.clone(),
                 eth_filter_pool,
                 eth_max_stored_filters,
                 eth_max_past_logs,
@@ -335,6 +362,8 @@ where
             .into_rpc(),
         )?;
     }
+
+    io.merge(eth_tx_pool.into_rpc())?;
 
     Ok(io)
 }

@@ -5,13 +5,13 @@
 pub use ed25519_dalek::{self, Signer, Verifier};
 
 /// Robonode keypair.
-pub type Keypair = ed25519_dalek::Keypair;
+pub type Keypair = ed25519_dalek::SigningKey;
 
 /// Robonode signature.
 pub type Signature = ed25519_dalek::Signature;
 
 /// Robonode public key.
-pub type PublicKey = ed25519_dalek::PublicKey;
+pub type PublicKey = ed25519_dalek::VerifyingKey;
 
 /// Robonode secret key.
 pub type SecretKey = ed25519_dalek::SecretKey;
@@ -33,9 +33,9 @@ mod tests {
 
     #[test]
     fn test_vectors() {
-        let pair = Keypair::from_bytes(&SK[..]).unwrap();
-        let public = PublicKey::from_bytes(&PK[..]).unwrap();
-        assert_eq!(pair.public, public);
+        let pair = Keypair::from_keypair_bytes(&SK).unwrap();
+        let public = PublicKey::from_bytes(&PK).unwrap();
+        assert_eq!(pair.verifying_key(), public);
 
         let signature: Signature = SM.try_into().unwrap();
 

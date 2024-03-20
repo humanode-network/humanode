@@ -8,16 +8,17 @@ use std::{
 };
 
 use fc_consensus::FrontierBlockImport;
-use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::EthTask;
 use fc_rpc_core::types::{FeeHistoryCache, FilterPool};
 use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
+use sc_consensus_grandpa::SharedVoterState;
 pub use sc_executor::NativeElseWasmExecutor;
-use sc_finality_grandpa::SharedVoterState;
-use sc_service::{Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager};
+use sc_service::{
+    Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager, WarpSyncParams,
+};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use tracing::*;
 
@@ -59,7 +60,7 @@ type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
 /// Full type for `GrandpaBlockImport`.
 type FullGrandpa =
-    sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
+    sc_consensus_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>;
 /// Full type for `BabeBlockImport`.
 type FullBabe = sc_consensus_babe::BabeBlockImport<Block, FullClient, FullGrandpa>;
 /// Full type for `FrontierBlockImport`.
@@ -96,11 +97,11 @@ pub fn new_partial(
         sc_consensus::DefaultImportQueue<Block, FullClient>,
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
-            sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
+            sc_consensus_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
             sc_consensus_babe::BabeLink<Block>,
             EffectiveFullBlockImport,
             inherents::Creator<FullClient>,
-            Arc<FrontierBackend>,
+            FrontierBackend,
             Option<Telemetry>,
         ),
     >,
@@ -108,8 +109,8 @@ pub fn new_partial(
 > {
     let Configuration {
         substrate: config,
-        evm: evm_config,
         time_warp: time_warp_config,
+        frontier_backend: fronter_backend_config,
         ..
     } = config;
 
@@ -156,7 +157,7 @@ pub fn new_partial(
 
     let select_chain = sc_consensus::LongestChain::new(Arc::clone(&backend));
 
-    let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
+    let (grandpa_block_import, grandpa_link) = sc_consensus_grandpa::block_import(
         Arc::clone(&client),
         &(Arc::clone(&client) as Arc<_>),
         select_chain.clone(),
@@ -169,22 +170,18 @@ pub fn new_partial(
         Arc::clone(&client),
     )?;
 
-    let frontier_backend = Arc::new(FrontierBackend::open(
+    let frontier_backend = frontier::backend(
+        config,
         Arc::clone(&client),
-        &config.database,
-        &frontier::db_config_dir(config),
-    )?);
-    let frontier_block_import = FrontierBlockImport::new(
-        babe_block_import,
-        Arc::clone(&client),
-        Arc::clone(&frontier_backend),
-    );
+        fronter_backend_config,
+        fc_storage::overrides_handle(Arc::clone(&client)),
+    )?;
+
+    let frontier_block_import = FrontierBlockImport::new(babe_block_import, Arc::clone(&client));
 
     let raw_slot_duration = babe_link.config().slot_duration();
-    let eth_target_gas_price = evm_config.target_gas_price;
     let inherent_data_providers_creator = inherents::Creator {
         raw_slot_duration,
-        eth_target_gas_price,
         client: Arc::clone(&client),
         time_warp: time_warp_config.clone(),
     };
@@ -243,12 +240,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let Configuration {
         substrate: mut config,
         bioauth_flow: bioauth_flow_config,
-        evm: _evm_config,
         ethereum_rpc: ethereum_rpc_config,
         ..
     } = config;
 
-    let grandpa_protocol_name = sc_finality_grandpa::protocol_standard_name(
+    let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
         &client
             .block_hash(0)
             .ok()
@@ -260,11 +256,11 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     config
         .network
         .extra_sets
-        .push(sc_finality_grandpa::grandpa_peers_set_config(
+        .push(sc_consensus_grandpa::grandpa_peers_set_config(
             grandpa_protocol_name.clone(),
         ));
 
-    let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
+    let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
         Arc::clone(&backend),
         grandpa_link.shared_authority_set().clone(),
         Vec::default(),
@@ -287,6 +283,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let eth_fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
     let eth_fee_history_limit = ethereum_rpc_config.fee_history_limit;
     let eth_overrides = fc_storage::overrides_handle(Arc::clone(&client));
+    let eth_pubsub_notification_sinks =
+        Arc::new(fc_mapping_sync::EthereumBlockNotificationSinks::<
+            fc_mapping_sync::EthereumBlockNotification<Block>,
+        >::default());
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -302,7 +302,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             bioauth_keys::OneOfOneSelector,
         ));
 
-    let (network, system_rpc_tx, tx_handler_controller, network_starter) =
+    let (network, system_rpc_tx, tx_handler_controller, network_starter, sync_service) =
         sc_service::build_network(sc_service::BuildNetworkParams {
             config: &config,
             client: Arc::clone(&client),
@@ -310,7 +310,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             spawn_handle: task_manager.spawn_handle(),
             import_queue,
             block_announce_validator_builder: None,
-            warp_sync: Some(warp_sync),
+            warp_sync_params: Some(WarpSyncParams::WithProvider(warp_sync)),
         })?;
 
     if config.offchain_worker.enabled {
@@ -343,12 +343,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             })
         };
         let network = Arc::clone(&network);
+        let sync_service = Arc::clone(&sync_service);
 
         let grandpa_justification_stream = grandpa_link.justification_stream();
         let grandpa_shared_authority_set = grandpa_link.shared_authority_set().clone();
-        let grandpa_shared_voter_state = sc_finality_grandpa::SharedVoterState::empty();
+        let grandpa_shared_voter_state = sc_consensus_grandpa::SharedVoterState::empty();
         let grandpa_finality_proof_provider =
-            sc_finality_grandpa::FinalityProofProvider::new_for_service(
+            sc_consensus_grandpa::FinalityProofProvider::new_for_service(
                 Arc::clone(&backend),
                 Some(grandpa_shared_authority_set.clone()),
             );
@@ -361,7 +362,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let select_chain = select_chain.clone();
 
         let eth_filter_pool = eth_filter_pool.clone();
-        let frontier_backend = Arc::clone(&frontier_backend);
+        let frontier_backend = frontier_backend.clone();
         let eth_overrides = Arc::clone(&eth_overrides);
         let eth_block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
             task_manager.spawn_handle(),
@@ -371,14 +372,25 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             config.prometheus_registry().cloned(),
         ));
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
+        let eth_pubsub_notification_sinks = Arc::clone(&eth_pubsub_notification_sinks);
 
         Box::new(move |deny_unsafe, subscription_task_executor| {
-            Ok(humanode_rpc::create(humanode_rpc::Deps {
+            Ok(humanode_rpc::create::<
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                _,
+                frontier::DefaultEthConfig<_, _>,
+            >(humanode_rpc::Deps {
                 client: Arc::clone(&client),
                 pool: Arc::clone(&pool),
                 deny_unsafe,
                 graph: Arc::clone(pool.pool()),
                 network: Arc::clone(&network),
+                sync: Arc::clone(&sync_service),
                 chain_spec: chain_spec.cloned_box(),
                 author_ext: humanode_rpc::AuthorExtDeps {
                     author_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
@@ -404,7 +416,10 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 evm: humanode_rpc::EvmDeps {
                     eth_filter_pool: eth_filter_pool.clone(),
                     eth_max_stored_filters: ethereum_rpc_config.max_stored_filters,
-                    eth_backend: Arc::clone(&frontier_backend),
+                    eth_backend: match frontier_backend.clone() {
+                        fc_db::Backend::KeyValue(b) => Arc::new(b),
+                        fc_db::Backend::Sql(b) => Arc::new(b),
+                    },
                     eth_max_past_logs: ethereum_rpc_config.max_past_logs,
                     eth_fee_history_limit,
                     eth_fee_history_cache: Arc::clone(&eth_fee_history_cache),
@@ -412,6 +427,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     eth_block_data_cache: Arc::clone(&eth_block_data_cache),
                     eth_execute_gas_limit_multiplier: ethereum_rpc_config
                         .execute_gas_limit_multiplier,
+                    eth_forced_parent_hashes: None,
+                    eth_pubsub_notification_sinks: Arc::clone(&eth_pubsub_notification_sinks),
                 },
                 subscription_task_executor,
             })?)
@@ -435,6 +452,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         system_rpc_tx,
         tx_handler_controller,
         config,
+        sync_service: Arc::clone(&sync_service),
         telemetry: telemetry.as_mut(),
     })?;
 
@@ -444,8 +462,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         select_chain,
         env: proposer_factory,
         block_import,
-        sync_oracle: Arc::clone(&network),
-        justification_sync_link: Arc::clone(&network),
+        sync_oracle: Arc::clone(&sync_service),
+        justification_sync_link: Arc::clone(&sync_service),
         create_inherent_data_providers: inherents::ForProduction(inherent_data_providers_creator),
         force_authoring,
         backoff_authoring_blocks,
@@ -462,7 +480,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         babe,
     );
 
-    let grandpa_config = sc_finality_grandpa::Config {
+    let grandpa_config = sc_consensus_grandpa::Config {
         // See substrate#1578: make this available through chainspec.
         // Ref: https://github.com/paritytech/substrate/issues/1578
         gossip_duration: Duration::from_millis(333),
@@ -476,11 +494,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     };
 
     if enable_grandpa {
-        let grandpa_config = sc_finality_grandpa::GrandpaParams {
+        let grandpa_config = sc_consensus_grandpa::GrandpaParams {
             config: grandpa_config,
             link: grandpa_link,
-            network,
-            voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
+            network: Arc::clone(&network),
+            sync: Arc::clone(&sync_service),
+            voting_rule: sc_consensus_grandpa::VotingRulesBuilder::default().build(),
             prometheus_registry,
             shared_voter_state: SharedVoterState::empty(),
             telemetry: telemetry.as_ref().map(|x| x.handle()),
@@ -489,28 +508,53 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         task_manager.spawn_essential_handle().spawn_blocking(
             "grandpa-voter",
             Some("block-finalization"),
-            sc_finality_grandpa::run_grandpa_voter(grandpa_config)?,
+            sc_consensus_grandpa::run_grandpa_voter(grandpa_config)?,
         );
     }
 
-    task_manager.spawn_essential_handle().spawn_blocking(
-        "frontier-mapping-sync-worker",
-        Some("evm"),
-        MappingSyncWorker::new(
-            client.import_notification_stream(),
-            Duration::from_millis(humanode_runtime::SLOT_DURATION),
-            Arc::clone(&client),
-            backend,
-            Arc::clone(&eth_overrides),
-            frontier_backend,
-            // retry_times: usize,
-            3,
-            // sync_from: <Block::Header as HeaderT>::Number,
-            0,
-            SyncStrategy::Normal,
-        )
-        .for_each(|()| futures::future::ready(())),
-    );
+    match frontier_backend {
+        fc_db::Backend::KeyValue(b) => {
+            task_manager.spawn_essential_handle().spawn(
+                "frontier-mapping-sync-worker",
+                Some("evm"),
+                fc_mapping_sync::kv::MappingSyncWorker::new(
+                    client.import_notification_stream(),
+                    Duration::from_millis(humanode_runtime::SLOT_DURATION),
+                    Arc::clone(&client),
+                    backend,
+                    Arc::clone(&eth_overrides),
+                    Arc::new(b),
+                    // retry_times: usize.
+                    3,
+                    // sync_from: <Block::Header as HeaderT>::Number.
+                    0,
+                    fc_mapping_sync::SyncStrategy::Normal,
+                    sync_service,
+                    eth_pubsub_notification_sinks,
+                )
+                .for_each(|()| futures::future::ready(())),
+            );
+        }
+        fc_db::Backend::Sql(b) => {
+            task_manager.spawn_essential_handle().spawn_blocking(
+                "frontier-mapping-sync-worker",
+                Some("evm"),
+                fc_mapping_sync::sql::SyncWorker::run(
+                    Arc::clone(&client),
+                    backend,
+                    Arc::new(b),
+                    client.import_notification_stream(),
+                    fc_mapping_sync::sql::SyncWorkerConfig {
+                        read_notification_timeout: Duration::from_secs(10),
+                        check_indexed_blocks_interval: Duration::from_secs(60),
+                    },
+                    fc_mapping_sync::SyncStrategy::Parachain,
+                    sync_service,
+                    eth_pubsub_notification_sinks,
+                ),
+            );
+        }
+    }
 
     // Spawn Frontier FeeHistory cache maintenance task.
     task_manager.spawn_essential_handle().spawn(

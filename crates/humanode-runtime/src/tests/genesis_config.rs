@@ -39,6 +39,10 @@ fn works() {
                 [
                     "5EYCAe5h8DABNonG7tbqC8bjDUw9jM1ewHJWssszZYbjkH2e",
                     500
+                ],
+                [
+                    "5EYCAe5h8D3eoqQjYNXVzehEzFAnY7cFnhV8ahjqgo5VxmeP",
+                    500
                 ]
             ]
         },
@@ -81,15 +85,14 @@ fn works() {
         },
         "ethereum": {},
         "evm": {
-            "accounts": {}
-        },
-        "dynamicFee": {
-            "minGasPrice": "0x0"
-        },
-        "baseFee": {
-            "baseFeePerGas": "0x0",
-            "elasticity": 0,
-            "marker": null
+            "accounts": {
+                "0x6d6f646c686d63732f656e310000000000000000": {
+                    "nonce": "0x0",
+                    "balance": "0xd3c21bcecceda10001f4",
+                    "storage": {},
+                    "code": []
+                }
+            }
         },
         "imOnline": {
             "keys": []
@@ -100,7 +103,15 @@ fn works() {
         "tokenClaims": {
             "claims": [],
             "totalClaimable": 0
-        }
+        },
+        "nativeToEvmSwapBridgePot": {
+            "initialState": "Initialized"
+        },
+        "evmToNativeSwapBridgePot": {
+            "initialState": "Initialized"
+        },
+        "balancedCurrencySwapBridgesInitializer": null,
+        "dummyPrecompilesCode": {}
     }"#;
     let config: GenesisConfig = serde_json::from_str(json_input).unwrap();
     assert_ok!(config.build_storage());
@@ -118,8 +129,10 @@ fn unknown_field() {
         "unknown field `qwe`, expected one of \
         `system`, `bootnodes`, `bioauth`, `babe`, `balances`, `treasuryPot`, \
         `feesPot`, `tokenClaimsPot`, `transactionPayment`, `session`, `chainProperties`, \
-        `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, `dynamicFee`, `baseFee`, \
-        `imOnline`, `evmAccountsMapping`, `tokenClaims` at line 1 column 6"
+        `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, \
+        `imOnline`, `evmAccountsMapping`, `tokenClaims`, `nativeToEvmSwapBridgePot`, \
+        `evmToNativeSwapBridgePot`, `balancedCurrencySwapBridgesInitializer`, \
+        `dummyPrecompilesCode` at line 1 column 6"
     );
 }
 

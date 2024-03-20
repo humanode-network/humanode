@@ -190,7 +190,11 @@ pub mod pallet {
     use codec::MaxEncodedLen;
     use frame_support::{pallet_prelude::*, sp_tracing, storage::types::ValueQuery, BoundedVec};
     use frame_system::pallet_prelude::*;
-    use sp_runtime::{app_crypto::MaybeHash, traits::AtLeast32Bit, DispatchError};
+    use sp_runtime::{
+        app_crypto::MaybeHash,
+        traits::{AtLeast32Bit, CheckedAdd},
+        DispatchError,
+    };
 
     use super::*;
     use crate::weights::WeightInfo;
@@ -271,7 +275,6 @@ pub mod pallet {
 
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
-    #[pallet::generate_store(pub(super) trait Store)]
     pub struct Pallet<T>(_);
 
     /// The public key of the robonode.
@@ -378,12 +381,12 @@ pub mod pallet {
         active_authentications: &'a [Authentication<T::ValidatorPublicKey, T::Moment>],
         auth_ticket: &AuthTicket<T::ValidatorPublicKey>,
     ) -> Result<(), AuthenticationAttemptValidationError> {
-        for consumed_auth_ticket_nonce in consumed_auth_ticket_nonces.iter() {
+        for consumed_auth_ticket_nonce in consumed_auth_ticket_nonces {
             if consumed_auth_ticket_nonce == &auth_ticket.nonce {
                 return Err(AuthenticationAttemptValidationError::NonceConflict);
             }
         }
-        for active_authentication in active_authentications.iter() {
+        for active_authentication in active_authentications {
             if active_authentication.public_key == auth_ticket.public_key {
                 return Err(AuthenticationAttemptValidationError::AlreadyAuthenticated);
             }
@@ -425,16 +428,11 @@ pub mod pallet {
         }
     }
 
-    /// Dispatchable functions allow users to interact with the pallet and invoke state changes.
-    /// These functions materialize as "extrinsics", which are often compared to transactions.
-    /// Dispatchable functions must be annotated with a weight and must return
-    /// a [`frame_support::dispatch::DispatchResult`] or
-    /// or [`frame_support::dispatch::DispatchResultWithPostInfo`].
-    ///
-    /// Weight: `O(M + N) where M is the number of authentications and N is the number of nonces`
-    /// Cost incurred from decoding vec of length M or N. Charged as maximum
     #[pallet::call]
     impl<T: Config> Pallet<T> {
+        /// ### Complexity
+        /// `O(M + N)` where `M` is the number of authentications and `N` is the number of nonces
+        /// Cost incurred from decoding vec of length M or N. Charged as maximum.
         #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::authenticate(
             <ActiveAuthentications<T>>::get().len().try_into()
@@ -490,7 +488,9 @@ pub mod pallet {
 
                             let authentication = Authentication {
                                 public_key: public_key.clone(),
-                                expires_at: current_moment + T::AuthenticationsExpireAfter::get(),
+                                expires_at: current_moment
+                                    .checked_add(&T::AuthenticationsExpireAfter::get())
+                                    .expect("32 bits should be enough for this overflow to be practicly impossible"),
                             };
 
                             // Run the before hook, abort if needed.

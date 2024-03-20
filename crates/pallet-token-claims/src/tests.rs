@@ -1,7 +1,7 @@
 //! The tests for the pallet.
 
 // Allow simple integer arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 
 use frame_support::{
     assert_noop, assert_ok, assert_storage_noop,
@@ -26,7 +26,7 @@ use crate::{
 };
 
 fn pot_account_balance() -> BalanceOf<Test> {
-    <CurrencyOf<Test>>::free_balance(&<Test as Config>::PotAccountId::get())
+    <CurrencyOf<Test>>::free_balance(<Test as Config>::PotAccountId::get())
 }
 
 fn total_claimable_balance() -> BalanceOf<Test> {
@@ -1156,7 +1156,7 @@ fn signed_ext_validate_works() {
 
         // Invoke the function under test.
         let normal = DispatchInfo {
-            weight: Weight::from_ref_time(100),
+            weight: Weight::from_parts(100, 0),
             class: DispatchClass::Normal,
             pays_fee: Pays::No,
         };
@@ -1208,7 +1208,7 @@ fn signed_ext_validate_fails_invalid_eth_signature() {
 
         // Invoke the function under test.
         let normal = DispatchInfo {
-            weight: Weight::from_ref_time(100),
+            weight: Weight::from_parts(100, 0),
             class: DispatchClass::Normal,
             pays_fee: Pays::No,
         };
@@ -1260,7 +1260,7 @@ fn signed_ext_validate_fails_when_claim_is_absent() {
 
         // Invoke the function under test.
         let normal = DispatchInfo {
-            weight: Weight::from_ref_time(100),
+            weight: Weight::from_parts(100, 0),
             class: DispatchClass::Normal,
             pays_fee: Pays::No,
         };

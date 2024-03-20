@@ -8,7 +8,7 @@
 use frame_support::traits::{Imbalance, OnUnbalanced, StorageVersion};
 use frame_support::{pallet_prelude::*, traits::Currency, PalletId};
 use frame_system::pallet_prelude::*;
-use sp_runtime::traits::{AccountIdConversion, CheckedSub, Saturating};
+use sp_runtime::traits::{AccountIdConversion, CheckedSub, MaybeDisplay, Saturating};
 
 pub use self::pallet::*;
 
@@ -17,12 +17,11 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
 /// The balance of accessor for the currency.
 pub type BalanceOf<T, I = ()> =
-    <<T as Config<I>>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+    <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::Balance;
 
 /// The negative implanace accessor.
-pub type NegativeImbalanceOf<T, I = ()> = <<T as Config<I>>::Currency as Currency<
-    <T as frame_system::Config>::AccountId,
->>::NegativeImbalance;
+pub type NegativeImbalanceOf<T, I = ()> =
+    <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::NegativeImbalance;
 
 /// The initial state of the pot, for use in genesis.
 #[cfg(feature = "std")]
@@ -44,6 +43,8 @@ pub enum InitialState<Balance> {
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
+    use sp_std::fmt::Debug;
+
     use super::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
@@ -53,8 +54,17 @@ pub mod pallet {
         type RuntimeEvent: From<Event<Self, I>>
             + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
+        /// The user account identifier type.
+        type AccountId: Parameter
+            + Member
+            + MaybeSerializeDeserialize
+            + Debug
+            + MaybeDisplay
+            + Ord
+            + MaxEncodedLen;
+
         /// The currency to operate with.
-        type Currency: Currency<Self::AccountId>;
+        type Currency: Currency<<Self as Config<I>>::AccountId>;
 
         /// The pot's pallet id, used for deriving its sovereign account ID.
         #[pallet::constant]
@@ -68,7 +78,7 @@ pub mod pallet {
         /// This actually performs computation.
         /// If you need to keep using it, then make sure you cache the value and
         /// only call this once.
-        pub fn account_id() -> T::AccountId {
+        pub fn account_id() -> <T as Config<I>>::AccountId {
             T::PalletId::get().into_account_truncating()
         }
     }
@@ -173,7 +183,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
             }
             Inactive::<T, I>::put(balance);
 
-            weight += T::DbWeight::get().writes(2);
+            weight.saturating_accrue(T::DbWeight::get().writes(2));
         }
 
         weight

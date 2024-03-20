@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-robonode-crypto = { version = "0.1", path = "../robonode-crypto" }
+robonode-crypto = { path = "../robonode-crypto" }
 
-hex = "0.4"
-rand = "0.7"
+hex = { workspace = true }
+rand = { workspace = true }

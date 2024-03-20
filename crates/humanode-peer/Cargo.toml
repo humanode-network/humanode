@@ -8,95 +8,87 @@ authors = ["Humanode Core"]
 # Run the peer by default.
 default-run = "humanode-peer"
 
-[dependencies]
-bioauth-flow-rpc = { version = "0.1", path = "../bioauth-flow-rpc" }
-bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
-crypto-utils = { version = "0.1", path = "../crypto-utils" }
-humanode-rpc = { version = "0.1", path = "../humanode-rpc" }
-humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
-keystore-bioauth-account-id = { version = "0.1", path = "../keystore-bioauth-account-id" }
-ngrok-api = { version = "0.1", path = "../ngrok-api" }
-pallet-bioauth = { version = "0.1", path = "../pallet-bioauth" }
-pallet-token-claims = { version = "0.1", path = "../pallet-token-claims" }
-robonode-client = { version = "0.1", path = "../robonode-client" }
+[package.metadata.cargo-machete]
+ignored = ["tiny-bip39"]
 
-anyhow = "1"
-async-trait = "0.1"
-bip32 = "0.5.0"
-clap = { version = "4.1", features = ["derive"] }
-codec = { package = "parity-scale-codec", version = "3.2.2" }
-fc-cli = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-consensus = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-db = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-mapping-sync = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-rpc = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-rpc-core = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-storage = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fdlimit = "0.2"
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-frame-benchmarking = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", optional = true }
-frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-system = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-frame-system-rpc-runtime-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-futures = "0.3"
-hex = "0.4.3"
-hex-literal = "0.4"
-libsecp256k1 = "0.7"
-pallet-balances = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-pallet-im-online = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-qr2term = "0.3"
-reqwest = "0.11"
-sc-basic-authorship = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-chain-spec = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-chain-spec-derive = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-executor = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-network = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-service = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-telemetry = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-tracing = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-utils = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-sha3 = "0.10"
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-application-crypto = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-inherents = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-keyring = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-panic-handler = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-timestamp = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-thiserror = "1"
-tiny-bip39 = "1.0"
-tokio = { version = "1", features = ["full"] }
-tracing = "0.1"
-try-runtime-cli = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", optional = true }
-url = "2"
+[dependencies]
+bioauth-flow-rpc = { path = "../bioauth-flow-rpc" }
+bioauth-keys = { path = "../bioauth-keys" }
+crypto-utils = { path = "../crypto-utils" }
+crypto-utils-evm = { path = "../crypto-utils-evm" }
+humanode-rpc = { path = "../humanode-rpc" }
+humanode-runtime = { path = "../humanode-runtime" }
+keystore-bioauth-account-id = { path = "../keystore-bioauth-account-id" }
+ngrok-api = { path = "../ngrok-api" }
+robonode-client = { path = "../robonode-client" }
+
+async-trait = { workspace = true }
+clap = { workspace = true, features = ["derive"] }
+codec = { workspace = true, package = "parity-scale-codec" }
+fc-cli = { workspace = true }
+fc-consensus = { workspace = true }
+fc-db = { workspace = true, features = ["sql"] }
+fc-mapping-sync = { workspace = true, features = ["sql"] }
+fc-rpc = { workspace = true }
+fc-rpc-core = { workspace = true }
+fc-storage = { workspace = true }
+fdlimit = { workspace = true }
+fp-evm = { workspace = true, features = ["default"] }
+frame-benchmarking = { workspace = true, optional = true }
+frame-benchmarking-cli = { workspace = true, features = ["default", "rocksdb"] }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+frame-system-rpc-runtime-api = { workspace = true }
+futures = { workspace = true }
+hex = { workspace = true }
+hex-literal = { workspace = true }
+pallet-balances = { workspace = true }
+pallet-im-online = { workspace = true, features = ["default"] }
+qr2term = { workspace = true }
+reqwest = { workspace = true, features = ["default"] }
+sc-basic-authorship = { workspace = true }
+sc-chain-spec = { workspace = true }
+sc-chain-spec-derive = { workspace = true }
+sc-cli = { workspace = true }
+sc-client-api = { workspace = true }
+sc-consensus = { workspace = true }
+sc-consensus-babe = { workspace = true }
+sc-consensus-grandpa = { workspace = true }
+sc-executor = { workspace = true }
+sc-service = { workspace = true }
+sc-telemetry = { workspace = true }
+sc-transaction-pool = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+sp-api = { workspace = true }
+sp-application-crypto = { workspace = true }
+sp-consensus-babe = { workspace = true }
+sp-consensus-grandpa = { workspace = true }
+sp-core = { workspace = true }
+sp-inherents = { workspace = true }
+sp-io = { workspace = true }
+sp-keyring = { workspace = true }
+sp-keystore = { workspace = true }
+sp-panic-handler = { workspace = true }
+sp-runtime = { workspace = true }
+sp-timestamp = { workspace = true }
+thiserror = { workspace = true }
+tiny-bip39 = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
+tracing = { workspace = true }
+try-runtime-cli = { workspace = true, optional = true }
+url = { workspace = true }
 
 [dev-dependencies]
-indoc = "2.0"
-sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+indoc = { workspace = true }
+sp-io = { workspace = true }
 
 [build-dependencies]
-vergen = { version = "8", default-features = false, features = ["cargo", "git", "gitcl"] }
+vergen = { workspace = true, features = ["cargo", "git", "gitcl"] }
 
 [features]
-default = []
+default = ["rocksdb"]
+rocksdb = ["fc-db/rocksdb"]
 runtime-benchmarks = [
   "frame-benchmarking-cli/runtime-benchmarks",
   "frame-benchmarking/runtime-benchmarks",
@@ -104,9 +96,7 @@ runtime-benchmarks = [
   "frame-system/runtime-benchmarks",
   "humanode-runtime/runtime-benchmarks",
   "pallet-balances/runtime-benchmarks",
-  "pallet-bioauth/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
-  "pallet-token-claims/runtime-benchmarks",
   "sc-service/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
 ]
@@ -115,11 +105,7 @@ try-runtime = [
   "frame-system/try-runtime",
   "humanode-runtime/try-runtime",
   "pallet-balances/try-runtime",
-  "pallet-bioauth/try-runtime",
-  "pallet-dynamic-fee/try-runtime",
   "pallet-im-online/try-runtime",
-  "pallet-transaction-payment/try-runtime",
-  "pallet-token-claims/try-runtime",
   "sp-runtime/try-runtime",
   "try-runtime-cli/try-runtime",
 ]

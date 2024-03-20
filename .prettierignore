@@ -1,0 +1,6 @@
+/node_modules
+/.pnp.*
+/.yarn/*
+
+/utils/weights/assets/template.hbs
+/crates/humanode-runtime/assets/benchmark.json

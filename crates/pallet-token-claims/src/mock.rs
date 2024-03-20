@@ -1,7 +1,7 @@
 //! The mock for the pallet.
 
 // Allow simple integer_arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 
 use frame_support::{
     parameter_types, sp_io,
@@ -25,7 +25,7 @@ type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
 frame_support::construct_runtime!(
-    pub enum Test where
+    pub struct Test where
         Block = Block,
         NodeBlock = Block,
         UncheckedExtrinsic = UncheckedExtrinsic,
@@ -82,6 +82,7 @@ parameter_types! {
 
 impl pallet_pot::Config for Test {
     type RuntimeEvent = RuntimeEvent;
+    type AccountId = u64;
     type Currency = Balances;
     type PalletId = PotPalletId;
 }

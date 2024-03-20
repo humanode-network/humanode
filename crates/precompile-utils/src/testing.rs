@@ -1,3 +1,5 @@
+#![allow(clippy::arithmetic_side_effects)] // not a problem in tests
+
 use core::assert_matches::assert_matches;
 
 use fp_evm::{
@@ -170,6 +172,16 @@ impl PrecompileHandle for MockHandle {
     fn gas_limit(&self) -> Option<u64> {
         Some(self.gas_limit)
     }
+
+    fn record_external_cost(
+        &mut self,
+        _ref_time: Option<u64>,
+        _proof_size: Option<u64>,
+    ) -> Result<(), ExitError> {
+        Ok(())
+    }
+
+    fn refund_external_cost(&mut self, _ref_time: Option<u64>, _proof_size: Option<u64>) {}
 }
 
 pub struct PrecompilesTester<'p, P> {
@@ -192,7 +204,7 @@ impl<'p, P: PrecompileSet> PrecompilesTester<'p, P> {
     ) -> Self {
         let to = to.into();
         let mut handle = MockHandle::new(
-            to.clone(),
+            to,
             Context {
                 address: to,
                 caller: from.into(),
@@ -241,7 +253,7 @@ impl<'p, P: PrecompileSet> PrecompilesTester<'p, P> {
 
     pub fn expect_log(mut self, log: Log) -> Self {
         self.expected_logs = Some({
-            let mut logs = self.expected_logs.unwrap_or_else(Vec::new);
+            let mut logs = self.expected_logs.unwrap_or_default();
             logs.push(PrettyLog(log));
             logs
         });
@@ -360,7 +372,7 @@ impl core::fmt::Debug for PrettyLog {
             .0
             .data
             .iter()
-            .map(|b| format!("{:02X}", b))
+            .map(|b| format!("{b:02X}"))
             .collect::<Vec<String>>()
             .join("");
 

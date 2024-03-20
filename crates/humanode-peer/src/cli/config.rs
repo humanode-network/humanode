@@ -45,13 +45,6 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
             }
         });
 
-        let evm = {
-            let params = self.evm_params();
-            configuration::Evm {
-                target_gas_price: params.map(|p| p.target_gas_price).unwrap_or(1),
-            }
-        };
-
         let ethereum_rpc = self
             .ethereum_rpc_params()
             .map(|params| configuration::EthereumRpc {
@@ -60,6 +53,15 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 fee_history_limit: params.fee_history_limit,
                 execute_gas_limit_multiplier: params.execute_gas_limit_multiplier,
             });
+
+        let fb_params = self.frontier_backend();
+        let frontier_backend = configuration::FrontierBackend {
+            frontier_backend_type: fb_params.frontier_backend_type,
+            frontier_sql_backend_pool_size: fb_params.frontier_sql_backend_pool_size,
+            frontier_sql_backend_num_ops_timeout: fb_params.frontier_sql_backend_num_ops_timeout,
+            frontier_sql_backend_thread_count: fb_params.frontier_sql_backend_thread_count,
+            frontier_sql_backend_cache_size: fb_params.frontier_sql_backend_cache_size,
+        };
 
         let time_warp = self.time_warp_params().and_then(|params| {
             params
@@ -77,8 +79,8 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         Ok(Configuration {
             substrate,
             bioauth_flow,
-            evm,
             ethereum_rpc,
+            frontier_backend,
             time_warp,
         })
     }
@@ -88,14 +90,14 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
         None
     }
 
-    /// Provide the evm params, if available.
-    fn evm_params(&self) -> Option<&params::EvmParams> {
-        None
-    }
-
     /// Provide the Ethereum RPC params.
     fn ethereum_rpc_params(&self) -> Option<&params::EthereumRpcParams> {
         None
+    }
+
+    /// Provide the Frontier backend params.
+    fn frontier_backend(&self) -> params::FrontierBackendParams {
+        Default::default()
     }
 
     /// Provide the time warp related params, if available.

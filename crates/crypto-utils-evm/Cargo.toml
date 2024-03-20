@@ -1,0 +1,20 @@
+[package]
+name = "crypto-utils-evm"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[package.metadata.cargo-machete]
+ignored = ["tiny-bip39"]
+
+[dependencies]
+anyhow = { workspace = true }
+bip32 = { workspace = true, features = ["default"] }
+libsecp256k1 = { workspace = true }
+sha3 = { workspace = true, features = ["default"] }
+sp-core = { workspace = true }
+thiserror = { workspace = true }
+tiny-bip39 = { workspace = true }
+
+[dev-dependencies]
+hex-literal = { workspace = true }

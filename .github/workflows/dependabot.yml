@@ -1,0 +1,69 @@
+name: dependabot
+
+on:
+  push:
+    branches:
+      - "dependabot/cargo/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' && github.event_name != 'merge_group' }}
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  CARGO_INCREMENTAL: "0"
+  RUSTDOCFLAGS: "-D warnings"
+
+jobs:
+  update-features-snapshot:
+    name: Update features snapshot
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      IS_DEPENDABOT: ${{ secrets.DEPENDABOT_COMMIT_APP_PRIVATE_KEY != '' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+        timeout-minutes: 5
+        if: ${{ env.IS_DEPENDABOT == 'true' }}
+
+      - uses: ./.github/actions/common-setup
+        with:
+          platformCacheKey: ubuntu2204-amd64
+        timeout-minutes: 10
+        if: ${{ env.IS_DEPENDABOT == 'true' }}
+
+      - uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.DEPENDABOT_COMMIT_APP_ID }}
+          private-key: ${{ secrets.DEPENDABOT_COMMIT_APP_PRIVATE_KEY }}
+        timeout-minutes: 5
+        if: ${{ env.IS_DEPENDABOT == 'true' }}
+
+      - run: |
+          if ! utils/checks/features-snapshot; then
+            if [[ "$(git log -1 --pretty=%B)" == "Update features snapshot"* ]]; then
+              printf "Loop detected; breaking" >&2
+              exit 1
+            fi
+
+            mv utils/checks/snapshots/features.new.yaml utils/checks/snapshots/features.yaml
+
+            git reset HEAD
+            git add utils/checks/snapshots/features.yaml
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git config user.name "github-actions[bot]"
+            git remote set-url origin "https://x-access-token:${{ steps.app-token.outputs.token }}@github.com/${{ github.repository }}.git"
+            git commit -m "Update features snapshot"
+            git push --set-upstream origin "${{ github.ref }}"
+          fi
+        if: ${{ env.IS_DEPENDABOT == 'true' }}

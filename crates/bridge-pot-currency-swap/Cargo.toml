@@ -1,0 +1,15 @@
+[package]
+name = "bridge-pot-currency-swap"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
+
+frame-support = { workspace = true }
+
+[features]
+default = ["std"]
+std = ["frame-support/std", "primitives-currency-swap/std"]
+try-runtime = ["frame-support/try-runtime", "primitives-currency-swap/try-runtime"]

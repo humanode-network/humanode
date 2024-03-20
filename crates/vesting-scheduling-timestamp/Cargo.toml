@@ -5,17 +5,22 @@ edition = "2021"
 publish = false
 
 [dependencies]
-pallet-vesting = { version = "0.1", path = "../pallet-vesting", default-features = false }
-vesting-schedule-linear = { version = "0.1", path = "../vesting-schedule-linear", default-features = false }
+pallet-vesting = { path = "../pallet-vesting", default-features = false }
+vesting-schedule-linear = { path = "../vesting-schedule-linear", default-features = false }
 
-frame-support = { default-features = false, git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-num-traits = { version = "0.2", default-features = false }
-serde = { version = "1", optional = true }
+frame-support = { workspace = true }
+num-traits = { workspace = true }
 
 [dev-dependencies]
-mockall = "0.11"
-serde_json = "1"
+mockall = { workspace = true }
+serde_json = { workspace = true }
 
 [features]
 default = ["std"]
-std = ["frame-support/std", "num-traits/std", "pallet-vesting/std", "serde", "vesting-schedule-linear/std"]
+std = [
+  "frame-support/std",
+  "num-traits/std",
+  "pallet-vesting/std",
+  "serde_json/std",
+  "vesting-schedule-linear/std",
+]

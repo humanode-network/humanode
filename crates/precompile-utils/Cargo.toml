@@ -7,29 +7,28 @@ version = "0.1.0"
 publish = false
 
 [dependencies]
-impl-trait-for-tuples = "0.2.2"
-log = "0.4"
-num_enum = { version = "0.6.0", default-features = false }
-sha3 = { version = "0.10", default-features = false }
-similar-asserts = { version = "1.1.0", optional = true }
+impl-trait-for-tuples = { workspace = true }
+log = { workspace = true }
+num_enum = { workspace = true }
+sha3 = { workspace = true }
+similar-asserts = { workspace = true, optional = true, features = ["default"] }
 
 precompile-utils-macro = { path = "macro" }
 
 # Substrate
-codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false }
-frame-support = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
-frame-system = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
-sp-core = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
-sp-io = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
-sp-std = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38", default-features = false }
+codec = { workspace = true, package = "parity-scale-codec" }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+sp-core = { workspace = true }
+sp-std = { workspace = true }
 
 # Frontier
-evm = { version = "0.37", default-features = false, features = ["with-codec"] }
-fp-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
-pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38", default-features = false }
+evm = { workspace = true, features = ["with-codec"] }
+fp-evm = { workspace = true }
+pallet-evm = { workspace = true }
 
 [dev-dependencies]
-hex-literal = "0.4.1"
+hex-literal = { workspace = true }
 
 [features]
 default = ["std"]
@@ -44,7 +43,6 @@ std = [
   "pallet-evm/std",
   "sha3/std",
   "sp-core/std",
-  "sp-io/std",
   "sp-std/std",
 ]
 testing = ["similar-asserts", "std"]

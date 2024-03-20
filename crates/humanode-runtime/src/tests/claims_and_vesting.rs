@@ -1,7 +1,7 @@
 //! Tests to verify token claims and vesting logic.
 
 // Allow simple integer arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+#![allow(clippy::arithmetic_side_effects)]
 
 use eip712_common_test_utils::{ecdsa_pair, ecdsa_sign, ethereum_address_from_seed, U256};
 use fp_self_contained::{CheckedExtrinsic, CheckedSignature};
@@ -88,7 +88,7 @@ fn prepare_applyable_data(
     );
 
     let normal_dispatch_info = DispatchInfo {
-        weight: Weight::from_ref_time(100),
+        weight: Weight::from_parts(100, 0),
         class: DispatchClass::Normal,
         pays_fee: Pays::No,
     };
@@ -107,23 +107,27 @@ fn prepare_applyable_data(
 fn new_test_ext() -> sp_io::TestExternalities {
     let authorities = vec![authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
+
     let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
+    let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
     // Build test genesis.
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: {
-                let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
                 endowed_accounts
                     .iter()
                     .cloned()
-                    .chain(pot_accounts.into_iter())
+                    .chain(pot_accounts)
                     .map(|k| (k, INIT_BALANCE))
                     .chain(
                         [(
                             TokenClaimsPot::account_id(),
                             2 * VESTING_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                        ),
+                        (
+                            NativeToEvmSwapBridgePot::account_id(),
+                            <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
                         )]
-                        .into_iter(),
                     )
                     .collect()
             },
@@ -175,6 +179,25 @@ fn new_test_ext() -> sp_io::TestExternalities {
                 ),
             ],
             total_claimable: Some(2 * VESTING_BALANCE),
+        },
+        evm: EVMConfig {
+            accounts: {
+                let evm_pot_accounts =
+                    vec![(
+                        EvmToNativeSwapBridgePot::account_id(),
+                        fp_evm::GenesisAccount {
+                            balance: <EvmBalances as frame_support::traits::Currency<
+                                EvmAccountId,
+                            >>::minimum_balance()
+                            .into(),
+                            code: Default::default(),
+                            nonce: Default::default(),
+                            storage: Default::default(),
+                        },
+                    )];
+
+                evm_pot_accounts.into_iter().collect()
+            },
         },
         ethereum_chain_id: EthereumChainIdConfig { chain_id: 1 },
         ..Default::default()
@@ -248,6 +271,10 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
                     500
                 ],
                 [
+                    "5EYCAe5h8D3eoqQjYNXVzehEzFAnY7cFnhV8ahjqgo5VxmeP",
+                    500
+                ],
+                [
                     "5EYCAe5h8DABNonG7tbqC8bjDUw9jM1ewHJWssszZYbjkH2e",
                     {token_claim_pot_balance}
                 ]
@@ -292,15 +319,14 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         }},
         "ethereum": {{}},
         "evm": {{
-            "accounts": {{}}
-        }},
-        "dynamicFee": {{
-            "minGasPrice": "0x0"
-        }},
-        "baseFee": {{
-            "baseFeePerGas": "0x0",
-            "elasticity": 0,
-            "marker": null
+            "accounts": {{
+                "0x6d6f646c686d63732f656e310000000000000000": {{
+                    "nonce": "0x0",
+                    "balance": "0xd3c21bcecceda10001f4",
+                    "storage": {{}},
+                    "code": []
+                }}
+            }}
         }},
         "imOnline": {{
             "keys": []
@@ -308,7 +334,15 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         "evmAccountsMapping": {{
             "mappings": []
         }},
-        "tokenClaims": {token_claims}
+        "tokenClaims": {token_claims},
+        "nativeToEvmSwapBridgePot": {{
+            "initialState": "Initialized"
+        }},
+        "evmToNativeSwapBridgePot": {{
+            "initialState": "Initialized"
+        }},
+        "balancedCurrencySwapBridgesInitializer": null,
+        "dummyPrecompilesCode": {{}}
     }}"#
     )
 }

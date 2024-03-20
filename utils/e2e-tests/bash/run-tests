@@ -1,0 +1,11 @@
+#!/bin/bash
+set -euo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+cd "$SCRIPT_DIR/../../.."
+
+# Run all e2e tests.
+for TESTFILE in "$SCRIPT_DIR"/tests/*.sh; do
+  printf "=> Running test %s\n" "$TESTFILE" >&2
+  "$TESTFILE" "$@"
+  printf "=> Test %s passed\n" "$TESTFILE" >&2
+done

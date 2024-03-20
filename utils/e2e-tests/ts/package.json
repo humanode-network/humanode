@@ -1,0 +1,20 @@
+{
+  "name": "humanode-e2e-tests-ts",
+  "type": "module",
+  "packageManager": "yarn@3.6.1",
+  "scripts": {
+    "test": "vitest --run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui"
+  },
+  "dependencies": {
+    "@polkadot/api": "^10.12.2",
+    "@types/node": "16.18.89",
+    "@vitest/expect": "^1.4.0",
+    "axios": "^1.6.8",
+    "ethers": "^6.11.1",
+    "typescript": "^5.4.2",
+    "viem": "^2.8.11",
+    "vitest": "^1.4.0"
+  }
+}

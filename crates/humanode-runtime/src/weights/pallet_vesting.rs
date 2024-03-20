@@ -13,13 +13,13 @@ pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_vesting::WeightInfo for WeightInfo<T> {
   fn unlock() -> Weight {
     // Minimum execution time: 35_000 nanoseconds.
-    Weight::from_ref_time(35_000_000)
+    Weight::from_parts(35_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(5))
       .saturating_add(T::DbWeight::get().writes(3))
   }
   fn update_schedule() -> Weight {
     // Minimum execution time: 38_000 nanoseconds.
-    Weight::from_ref_time(38_000_000)
+    Weight::from_parts(38_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(5))
       .saturating_add(T::DbWeight::get().writes(3))
   }

@@ -5,40 +5,42 @@ edition = "2021"
 publish = false
 
 [dependencies]
-author-ext-api = { version = "0.1", path = "../author-ext-api" }
-author-ext-rpc = { version = "0.1", path = "../author-ext-rpc" }
-bioauth-flow-api = { version = "0.1", path = "../bioauth-flow-api" }
-bioauth-flow-rpc = { version = "0.1", path = "../bioauth-flow-rpc" }
-bioauth-keys = { version = "0.1", path = "../bioauth-keys" }
-humanode-runtime = { version = "0.1", path = "../humanode-runtime" }
-robonode-client = { version = "0.1", path = "../robonode-client" }
+author-ext-api = { path = "../author-ext-api" }
+author-ext-rpc = { path = "../author-ext-rpc" }
+bioauth-flow-api = { path = "../bioauth-flow-api" }
+bioauth-flow-rpc = { path = "../bioauth-flow-rpc" }
+bioauth-keys = { path = "../bioauth-keys" }
+humanode-runtime = { path = "../humanode-runtime" }
+robonode-client = { path = "../robonode-client" }
 
-fc-db = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-rpc = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-rpc-core = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fc-storage = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fp-rpc = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-fp-storage = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
-jsonrpsee = { version = "0.16.2", features = ["server", "macros"] }
-pallet-transaction-payment-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-chain-spec = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-client-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-consensus-babe-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-consensus-epochs = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-finality-grandpa = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-finality-grandpa-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-network = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-rpc = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-rpc-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-rpc-spec-v2 = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-transaction-pool = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sc-transaction-pool-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-api = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-block-builder = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-blockchain = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-consensus = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-keystore = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-sp-runtime = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
-substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", branch = "locked/polkadot-v0.9.38" }
+fc-db = { workspace = true }
+fc-mapping-sync = { workspace = true }
+fc-rpc = { workspace = true, features = ["rpc-binary-search-estimate"] }
+fc-rpc-core = { workspace = true }
+fc-storage = { workspace = true }
+fp-rpc = { workspace = true }
+jsonrpsee = { workspace = true, features = ["server", "macros"] }
+pallet-transaction-payment-rpc = { workspace = true }
+sc-chain-spec = { workspace = true }
+sc-client-api = { workspace = true }
+sc-consensus-babe = { workspace = true }
+sc-consensus-babe-rpc = { workspace = true }
+sc-consensus-epochs = { workspace = true }
+sc-consensus-grandpa = { workspace = true }
+sc-consensus-grandpa-rpc = { workspace = true }
+sc-network = { workspace = true }
+sc-network-sync = { workspace = true }
+sc-rpc = { workspace = true }
+sc-rpc-api = { workspace = true }
+sc-rpc-spec-v2 = { workspace = true }
+sc-transaction-pool = { workspace = true }
+sc-transaction-pool-api = { workspace = true }
+sp-api = { workspace = true }
+sp-block-builder = { workspace = true }
+sp-blockchain = { workspace = true }
+sp-consensus = { workspace = true }
+sp-consensus-babe = { workspace = true }
+sp-core = { workspace = true }
+sp-keystore = { workspace = true }
+sp-runtime = { workspace = true }
+substrate-frame-rpc-system = { workspace = true }

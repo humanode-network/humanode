@@ -5,6 +5,8 @@
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
 // Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
+// Runtime impl macros generate non-snake case names.
+#![allow(non_snake_case)]
 
 // If we're in standard compilation mode, embed the build-script generated code that pulls in
 // the WASM portion of the runtime, so that it is invocable from the native (aka host) side code.
@@ -19,7 +21,7 @@ pub use frame_support::{
     construct_runtime, parameter_types,
     traits::{
         ConstBool, ConstU128, ConstU16, ConstU32, ConstU64, ConstU8, FindAuthor, Get,
-        KeyOwnerProofSystem, Randomness,
+        KeyOwnerProofSystem, OnFinalize, Randomness,
     },
     weights::{
         constants::{
@@ -37,7 +39,7 @@ use pallet_ethereum::{
     Call::transact, PostLogContent as EthereumPostLogContent, Transaction as EthereumTransaction,
 };
 use pallet_evm::FeeCalculator;
-use pallet_evm::{Account as EVMAccount, EnsureAddressTruncated, HashedAddressMapping, Runner};
+use pallet_evm::{Account as EVMAccount, Runner};
 use pallet_grandpa::{
     fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -62,7 +64,8 @@ use sp_runtime::{
     create_runtime_str, generic, impl_opaque_keys,
     traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
-        IdentifyAccount, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup, Verify,
+        IdentifyAccount, Identity, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup,
+        Verify,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -77,13 +80,13 @@ use sp_version::RuntimeVersion;
 
 mod frontier_precompiles;
 mod vesting;
-use frontier_precompiles::FrontierPrecompiles;
+use frontier_precompiles::{precompiles_constants, FrontierPrecompiles};
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
-mod constants;
+pub mod constants;
+mod currency_swap;
 mod deauthentication_reason;
-use deauthentication_reason::DeauthenticationReason;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
@@ -102,8 +105,11 @@ pub use constants::{
     bioauth::{AUTHENTICATIONS_EXPIRE_AFTER, MAX_AUTHENTICATIONS, MAX_NONCES},
     block_time::MILLISECS_PER_BLOCK,
     equivocation::REPORT_LONGEVITY,
+    ethereum::EXTRA_DATA_LENGTH,
     im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
 };
+use deauthentication_reason::DeauthenticationReason;
+use static_assertions::const_assert;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -151,6 +157,9 @@ pub type Signature = MultiSignature;
 /// the [`frame_system::Config::Lookup`] the amount of work at the surrounding ecosystem
 /// (i.e. Polkadot.js) is beyond the reasonable effort for us now.
 pub type AccountId = AccountId32;
+
+/// Evm account identifier.
+pub type EvmAccountId = H160;
 
 // Ensure that the `AccountId` it equivalent to the public key of our transaction signing scheme.
 static_assertions::assert_type_eq_all!(
@@ -210,7 +219,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 105,
+    spec_version: 115,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -229,11 +238,14 @@ pub fn native_version() -> NativeVersion {
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const MAX_BLOCK_LENGTH: u32 = 5 * 1024 * 1024;
 
+/// We allow for 2 seconds of compute with a 6 second average block time.
+const EXPECTED_BLOCK_WEIGHT: Weight =
+    Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX);
+
 parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
-    /// We allow for 2 seconds of compute with a 6 second average block time.
     pub BlockWeights: frame_system::limits::BlockWeights = frame_system::limits::BlockWeights
-        ::with_sensible_defaults(Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX), NORMAL_DISPATCH_RATIO);
+        ::with_sensible_defaults(EXPECTED_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO);
     pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength
         ::max_with_normal_ratio(MAX_BLOCK_LENGTH, NORMAL_DISPATCH_RATIO);
     pub SS58Prefix: u16 = ChainProperties::ss58_prefix();
@@ -302,19 +314,12 @@ impl pallet_babe::Config for Runtime {
     type EpochChangeTrigger = pallet_babe::ExternalTrigger;
     type DisabledValidators = Session;
 
-    type KeyOwnerProofSystem = Historical;
-
     type KeyOwnerProof =
-        <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, BabeId)>>::Proof;
-
-    type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-        KeyTypeId,
-        BabeId,
-    )>>::IdentificationTuple;
-
-    type HandleEquivocation = pallet_babe::EquivocationHandler<
-        Self::KeyOwnerIdentification,
+        <Historical as KeyOwnerProofSystem<(KeyTypeId, pallet_babe::AuthorityId)>>::Proof;
+    type EquivocationReportSystem = pallet_babe::EquivocationReportSystem<
+        Self,
         Offences,
+        Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
 
@@ -351,19 +356,11 @@ impl pallet_session::historical::Config for Runtime {
 impl pallet_grandpa::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
 
-    type KeyOwnerProofSystem = Historical;
-
-    type KeyOwnerProof =
-        <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
-
-    type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
-        KeyTypeId,
-        GrandpaId,
-    )>>::IdentificationTuple;
-
-    type HandleEquivocation = pallet_grandpa::EquivocationHandler<
-        Self::KeyOwnerIdentification,
+    type KeyOwnerProof = <Historical as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
+    type EquivocationReportSystem = pallet_grandpa::EquivocationReportSystem<
+        Self,
         Offences,
+        Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
 
@@ -395,28 +392,49 @@ parameter_types! {
     pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
     pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
     pub const TokenClaimsPotPalletId: PalletId = PalletId(*b"hmnd/tc1");
+    pub const NativeToEvmSwapBridgePotPalletId: PalletId = PalletId(*b"hmcs/ne1");
+    pub const EvmToNativeSwapBridgePotPalletId: PalletId = PalletId(*b"hmcs/en1");
 }
 
 type PotInstanceTreasury = pallet_pot::Instance1;
 type PotInstanceFees = pallet_pot::Instance2;
 type PotInstanceTokenClaims = pallet_pot::Instance3;
+type PotInstanceNativeToEvmSwapBridge = pallet_pot::Instance4;
+type PotInstanceEvmToNativeSwapBridge = pallet_pot::Instance5;
 
 impl pallet_pot::Config<PotInstanceTreasury> for Runtime {
     type RuntimeEvent = RuntimeEvent;
+    type AccountId = AccountId;
     type PalletId = TreasuryPotPalletId;
     type Currency = Balances;
 }
 
 impl pallet_pot::Config<PotInstanceFees> for Runtime {
     type RuntimeEvent = RuntimeEvent;
+    type AccountId = AccountId;
     type PalletId = FeesPotPalletId;
     type Currency = Balances;
 }
 
 impl pallet_pot::Config<PotInstanceTokenClaims> for Runtime {
     type RuntimeEvent = RuntimeEvent;
+    type AccountId = AccountId;
     type PalletId = TokenClaimsPotPalletId;
     type Currency = Balances;
+}
+
+impl pallet_pot::Config<PotInstanceNativeToEvmSwapBridge> for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = AccountId;
+    type PalletId = NativeToEvmSwapBridgePotPalletId;
+    type Currency = Balances;
+}
+
+impl pallet_pot::Config<PotInstanceEvmToNativeSwapBridge> for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = EvmAccountId;
+    type PalletId = EvmToNativeSwapBridgePotPalletId;
+    type Currency = EvmBalances;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -547,14 +565,14 @@ pub struct OffenceSlasher;
 impl
     sp_staking::offence::OnOffenceHandler<
         AccountId,
-        pallet_im_online::IdentificationTuple<Runtime>,
+        <Runtime as pallet_offences::Config>::IdentificationTuple,
         Weight,
     > for OffenceSlasher
 {
     fn on_offence(
         offenders: &[sp_staking::offence::OffenceDetails<
             AccountId,
-            pallet_im_online::IdentificationTuple<Runtime>,
+            <Runtime as pallet_offences::Config>::IdentificationTuple,
         >],
         _slash_fraction: &[Perbill],
         _session: sp_staking::SessionIndex,
@@ -607,32 +625,81 @@ impl pallet_offences::Config for Runtime {
     type OnOffenceHandler = OffenceSlasher;
 }
 
+const WEIGHT_MILLISECS_PER_BLOCK: u64 = EXPECTED_BLOCK_WEIGHT.ref_time()
+    / frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS;
+// An assertion to ensure this value is what we expect it to be here.
+const_assert!(WEIGHT_MILLISECS_PER_BLOCK == 2000u64);
+
 parameter_types! {
-    pub BlockGasLimit: U256 = U256::from(u32::max_value());
+    pub BlockGasLimit: U256 = U256::from(constants::evm_fees::BLOCK_GAS_LIMIT);
+    pub GasLimitPovSizeRatio: u64 = constants::evm_fees::GAS_LIMIT_POV_SIZE_RATIO;
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
-    pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+    pub WeightPerGas: Weight = Weight::from_parts(fp_evm::weight_per_gas(
+        constants::evm_fees::BLOCK_GAS_LIMIT,
+        NORMAL_DISPATCH_RATIO,
+        WEIGHT_MILLISECS_PER_BLOCK,
+    ), 0);
+}
+
+impl pallet_evm_system::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = EvmAccountId;
+    type Index = Index;
+    type AccountData = pallet_evm_balances::AccountData<Balance>;
+    type OnNewAccount = ();
+    type OnKilledAccount = ();
+}
+
+impl pallet_evm_balances::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountId = EvmAccountId;
+    type Balance = Balance;
+    type ExistentialDeposit = ConstU128<1>;
+    type AccountStore = EvmSystem;
+    type DustRemoval = currency_swap::TreasuryPotProxy;
+}
+
+impl pallet_currency_swap::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type AccountIdTo = EvmAccountId;
+    type CurrencySwap = currency_swap::NativeToEvmOneToOne;
+    type WeightInfo = ();
+}
+
+/// A simple fixed fee per gas calculator.
+pub struct EvmFeePerGas;
+
+impl fp_evm::FeeCalculator for EvmFeePerGas {
+    fn min_gas_price() -> (U256, Weight) {
+        (constants::evm_fees::FEE_PER_GAS.into(), Weight::zero())
+    }
 }
 
 impl pallet_evm::Config for Runtime {
-    type FeeCalculator = BaseFee;
+    type AccountProvider = EvmSystem;
+    type FeeCalculator = EvmFeePerGas;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
-    type CallOrigin = EnsureAddressTruncated;
-    type WithdrawOrigin = EnsureAddressTruncated;
-    type AddressMapping = HashedAddressMapping<BlakeTwo256>;
-    type Currency = Balances;
+    type CallOrigin = pallet_evm::EnsureAddressNever<EvmAccountId>;
+    type WithdrawOrigin = pallet_evm::EnsureAddressNever<EvmAccountId>;
+    type AddressMapping = pallet_evm::IdentityAddressMapping;
+    type Currency = EvmBalances;
     type RuntimeEvent = RuntimeEvent;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = FrontierPrecompiles<Self>;
     type PrecompilesValue = PrecompilesValue;
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
-    type OnChargeTransaction = fixed_supply::EvmTransactionCharger<Balances, FeesPot>;
+    type OnChargeTransaction =
+        fixed_supply::EvmTransactionCharger<EvmBalances, currency_swap::FeesPotProxy>;
     type OnCreate = ();
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
     >;
+    type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
+    type Timestamp = Timestamp;
+    type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -643,39 +710,7 @@ impl pallet_ethereum::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
     type PostLogContent = PostBlockAndTxnHashes;
-}
-
-parameter_types! {
-    pub BoundDivision: U256 = U256::from(1024);
-}
-
-impl pallet_dynamic_fee::Config for Runtime {
-    type MinGasPriceBoundDivisor = BoundDivision;
-}
-
-parameter_types! {
-    pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
-    pub DefaultElasticity: Permill = Permill::from_parts(125_000);
-}
-
-pub struct BaseFeeThreshold;
-impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
-    fn lower() -> Permill {
-        Permill::zero()
-    }
-    fn ideal() -> Permill {
-        Permill::from_parts(500_000)
-    }
-    fn upper() -> Permill {
-        Permill::from_parts(1_000_000)
-    }
-}
-
-impl pallet_base_fee::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type Threshold = BaseFeeThreshold;
-    type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
-    type DefaultElasticity = DefaultElasticity;
+    type ExtraDataLength = ConstU32<EXTRA_DATA_LENGTH>;
 }
 
 impl pallet_chain_properties::Config for Runtime {}
@@ -732,10 +767,70 @@ impl pallet_utility::Config for Runtime {
     type WeightInfo = weights::pallet_utility::WeightInfo<Runtime>;
 }
 
+parameter_types! {
+    pub NativeToEvmSwapBridgePotAccountId: AccountId = NativeToEvmSwapBridgePot::account_id();
+    pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
+}
+
+parameter_types! {
+    pub TreasuryPotAccountId: AccountId = TreasuryPot::account_id();
+}
+
+impl pallet_balanced_currency_swap_bridges_initializer::Config for Runtime {
+    type EvmAccountId = EvmAccountId;
+    type NativeCurrency = Balances;
+    type EvmCurrency = EvmBalances;
+    type BalanceConverterEvmToNative = Identity;
+    type BalanceConverterNativeToEvm = Identity;
+    type NativeEvmBridgePot = NativeToEvmSwapBridgePotAccountId;
+    type NativeTreasuryPot = TreasuryPotAccountId;
+    type EvmNativeBridgePot = EvmToNativeSwapBridgePotAccountId;
+    type ForceRebalanceAskCounter = ConstU16<0>;
+    type WeightInfo = ();
+}
+
+pub struct EvmBalancesErc20Metadata;
+
+impl pallet_erc20_support::Metadata for EvmBalancesErc20Metadata {
+    fn name() -> &'static str {
+        "Wrapped eHMND"
+    }
+
+    fn symbol() -> &'static str {
+        "WeHMND"
+    }
+
+    fn decimals() -> u8 {
+        18
+    }
+}
+
+impl pallet_erc20_support::Config for Runtime {
+    type AccountId = EvmAccountId;
+    type Currency = EvmBalances;
+    type Allowance = U256;
+    type Metadata = EvmBalancesErc20Metadata;
+}
+
+frame_support::parameter_types! {
+    pub PrecompilesAddresses: Vec<H160> =
+        vec![
+            frontier_precompiles::hash(precompiles_constants::BIOAUTH),
+            frontier_precompiles::hash(precompiles_constants::EVM_ACCOUNTS_MAPPING),
+            frontier_precompiles::hash(precompiles_constants::NATIVE_CURRENCY),
+            frontier_precompiles::hash(precompiles_constants::CURRENCY_SWAP),
+        ];
+}
+
+impl pallet_dummy_precompiles_code::Config for Runtime {
+    type PrecompilesAddresses = PrecompilesAddresses;
+    type ForceExecuteAskCounter = ConstU16<0>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously
 // configured.
 construct_runtime!(
-    pub enum Runtime where
+    pub struct Runtime where
         Block = Block,
         NodeBlock = opaque::Block,
         UncheckedExtrinsic = UncheckedExtrinsic
@@ -764,14 +859,20 @@ construct_runtime!(
         Grandpa: pallet_grandpa = 20,
         Ethereum: pallet_ethereum = 21,
         EVM: pallet_evm = 22,
-        DynamicFee: pallet_dynamic_fee = 23,
-        BaseFee: pallet_base_fee = 24,
         ImOnline: pallet_im_online = 25,
         EvmAccountsMapping: pallet_evm_accounts_mapping = 26,
         TokenClaims: pallet_token_claims = 27,
         Vesting: pallet_vesting = 28,
         Multisig: pallet_multisig = 29,
         Utility: pallet_utility = 30,
+        EvmSystem: pallet_evm_system = 31,
+        EvmBalances: pallet_evm_balances = 32,
+        NativeToEvmSwapBridgePot: pallet_pot::<Instance4> = 33,
+        EvmToNativeSwapBridgePot: pallet_pot::<Instance5> = 34,
+        CurrencySwap: pallet_currency_swap = 35,
+        BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
+        EvmBalancesErc20Support: pallet_erc20_support = 37,
+        DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
     }
 );
 
@@ -1199,7 +1300,7 @@ impl_runtime_apis! {
         }
 
         fn account_code_at(address: H160) -> Vec<u8> {
-            EVM::account_codes(address)
+            pallet_evm::AccountCodes::<Runtime>::get(address)
         }
 
         fn author() -> H160 {
@@ -1209,7 +1310,7 @@ impl_runtime_apis! {
         fn storage_at(address: H160, index: U256) -> H256 {
             let mut tmp = [0u8; 32];
             index.to_big_endian(&mut tmp);
-            EVM::account_storages(address, H256::from_slice(&tmp[..]))
+            pallet_evm::AccountStorages::<Runtime>::get(address, H256::from_slice(&tmp[..]))
         }
 
         fn call(
@@ -1246,6 +1347,9 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 validate,
+                // TODO(#864): set proper values.
+                None,
+                None,
                 &config,
             ).map_err(|err| err.error.into())
         }
@@ -1282,20 +1386,23 @@ impl_runtime_apis! {
                 access_list.unwrap_or_default(),
                 is_transactional,
                 validate,
+                // TODO(#864): set proper values.
+                None,
+                None,
                 &config,
             ).map_err(|err| err.error.into())
         }
 
         fn current_transaction_statuses() -> Option<Vec<TransactionStatus>> {
-            Ethereum::current_transaction_statuses()
+            pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
         }
 
         fn current_block() -> Option<pallet_ethereum::Block> {
-            Ethereum::current_block()
+            pallet_ethereum::CurrentBlock::<Runtime>::get()
         }
 
         fn current_receipts() -> Option<Vec<pallet_ethereum::Receipt>> {
-            Ethereum::current_receipts()
+            pallet_ethereum::CurrentReceipts::<Runtime>::get()
         }
 
         fn current_all() -> (
@@ -1304,9 +1411,9 @@ impl_runtime_apis! {
             Option<Vec<TransactionStatus>>
         ) {
             (
-                Ethereum::current_block(),
-                Ethereum::current_receipts(),
-                Ethereum::current_transaction_statuses()
+                pallet_ethereum::CurrentBlock::<Runtime>::get(),
+                pallet_ethereum::CurrentReceipts::<Runtime>::get(),
+                pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
             )
         }
 
@@ -1320,10 +1427,25 @@ impl_runtime_apis! {
         }
 
         fn elasticity() -> Option<Permill> {
-            Some(BaseFee::elasticity())
+            None
         }
 
         fn gas_limit_multiplier_support() {}
+
+        fn pending_block(
+            xts: Vec<<Block as BlockT>::Extrinsic>,
+        ) -> (Option<pallet_ethereum::Block>, Option<Vec<TransactionStatus>>) {
+            for ext in xts {
+                let _ = Executive::apply_extrinsic(ext);
+            }
+
+            Ethereum::on_finalize(System::block_number() + 1);
+
+            (
+                pallet_ethereum::CurrentBlock::<Runtime>::get(),
+                pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
+            )
+        }
     }
 
     impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance>

@@ -16,8 +16,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let facetec_public_face_map_encryption_key = env("FACETEC_PUBLIC_FACE_MAP_ENCRYPTION_KEY")?;
     let facetec_production_key: Option<String> = maybe_env("FACETEC_PRODUCTION_KEY")?;
     let robonode_keypair_string: String = env("ROBONODE_KEYPAIR")?;
-    let robonode_keypair_bytes = hex::decode(robonode_keypair_string)?;
-    let robonode_keypair = robonode_crypto::Keypair::from_bytes(robonode_keypair_bytes.as_slice())?;
+    let mut robonode_keypair_bytes: [u8; 64] = [0; 64];
+    hex::decode_to_slice(robonode_keypair_string, &mut robonode_keypair_bytes)?;
+    let robonode_keypair = robonode_crypto::Keypair::from_keypair_bytes(&robonode_keypair_bytes)?;
 
     let facetec_api_client = facetec_api_client::Client {
         base_url: facetec_server_url,

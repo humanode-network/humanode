@@ -18,11 +18,11 @@ pub struct Configuration {
     /// always required.
     pub bioauth_flow: Option<BioauthFlow>,
 
-    /// EVM configuration.
-    pub evm: Evm,
-
     /// Ethereum RPC configuration.
     pub ethereum_rpc: Option<EthereumRpc>,
+
+    /// Frontier backend configuration.
+    pub frontier_backend: FrontierBackend,
 
     /// Time warp mode configuration.
     /// If not defined, time warp mode isn't enabled.
@@ -58,12 +58,6 @@ impl BioauthFlow {
     }
 }
 
-/// EVM configuration parameters.
-pub struct Evm {
-    /// The dynamic-fee pallet target gas price set by block author.
-    pub target_gas_price: u64,
-}
-
 /// Ethereum RPC configuration parameters.
 pub struct EthereumRpc {
     /// Maximum number of blocks to keep the log information available
@@ -81,4 +75,33 @@ pub struct EthereumRpc {
     /// When using eth_call/eth_estimateGas, the maximum allowed gas limit will be
     /// block.gas_limit * execute_gas_limit_multiplier.
     pub execute_gas_limit_multiplier: u64,
+}
+
+/// Frontier backend configuration parameters.
+pub struct FrontierBackend {
+    /// Sets the frontier backend type (KeyValue or Sql).
+    pub frontier_backend_type: FrontierBackendType,
+
+    /// Sets the SQL backend's pool size.
+    pub frontier_sql_backend_pool_size: u32,
+
+    /// Sets the SQL backend's query timeout in number of VM ops.
+    pub frontier_sql_backend_num_ops_timeout: u32,
+
+    /// Sets the SQL backend's auxiliary thread limit.
+    pub frontier_sql_backend_thread_count: u32,
+
+    /// Sets the SQL backend's query timeout in number of VM ops.
+    /// Default value is 200MB.
+    pub frontier_sql_backend_cache_size: u64,
+}
+
+/// Avalailable frontier backend types.
+#[derive(Default, Debug, Copy, Clone, clap::ValueEnum)]
+pub enum FrontierBackendType {
+    /// Either RocksDb or ParityDb as per inherited from the global backend settings.
+    #[default]
+    KeyValue,
+    /// Sql database with custom log indexing.
+    Sql,
 }
