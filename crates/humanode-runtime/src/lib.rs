@@ -86,6 +86,7 @@ use frontier_precompiles::{precompiles_constants, FrontierPrecompiles};
 mod benchmarking;
 pub mod constants;
 mod currency_swap;
+mod deauthentication_reason;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
@@ -107,6 +108,7 @@ pub use constants::{
     ethereum::EXTRA_DATA_LENGTH,
     im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
 };
+use deauthentication_reason::DeauthenticationReason;
 use static_assertions::const_assert;
 
 /// An index to a block.
@@ -530,6 +532,7 @@ impl pallet_bioauth::Config for Runtime {
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
+    type DeauthenticationReason = DeauthenticationReason;
 }
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -580,18 +583,30 @@ impl
         }
         let mut weight: Weight = Weight::zero();
         let weights = <Runtime as frame_system::Config>::DbWeight::get();
+        let mut should_be_deauthenticated = Vec::with_capacity(offenders.len());
         for details in offenders {
             let (_offender, identity) = &details.offender;
             match identity {
                 pallet_humanode_session::Identification::Bioauth(authentication) => {
-                    let has_deauthenticated = Bioauth::deauthenticate(&authentication.public_key);
-                    weight = weight
-                        .saturating_add(weights.reads_writes(1, u64::from(has_deauthenticated)));
+                    should_be_deauthenticated.push(authentication.public_key.clone());
                 }
                 pallet_humanode_session::Identification::Bootnode(..) => {
                     // Never slash the bootnodes.
                 }
             }
+        }
+        if !should_be_deauthenticated.is_empty() {
+            let deauthenticated_public_keys =
+                Bioauth::deauthenticate(should_be_deauthenticated, DeauthenticationReason::Offence);
+            weight = weight.saturating_add(
+                weights.reads_writes(
+                    1,
+                    deauthenticated_public_keys
+                        .len()
+                        .try_into()
+                        .expect("casting usize to u64 never fails in 64bit and 32bit word cpus"),
+                ),
+            );
         }
         weight
     }

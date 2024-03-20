@@ -269,6 +269,7 @@ impl pallet_bioauth::Config for Test {
     type MaxNonces = ConstU32<MAX_NONCES>;
     type BeforeAuthHook = MockBeforeAuthHookProvider;
     type AfterAuthHook = MockAfterAuthHookProvider;
+    type DeauthenticationReason = ();
 }
 
 /// Build test externalities from the default genesis.
