@@ -543,8 +543,8 @@ pub mod pallet {
             let current_moment = T::CurrentMoment::now();
             let possibly_expired_authentications = <ActiveAuthentications<T>>::get();
             let possibly_expired_authentications_len = possibly_expired_authentications.len();
-            let mut expired_validator_public_keys = vec![];
-            let mut active_authentications = vec![];
+            let mut expired_validator_public_keys = Vec::with_capacity(possibly_expired_authentications_len);
+            let mut active_authentications = Vec::with_capacity(possibly_expired_authentications_len);
             for possible_expired_authentication in possibly_expired_authentications {
                 if possible_expired_authentication.expires_at > current_moment {
                     active_authentications.push(possible_expired_authentication);
