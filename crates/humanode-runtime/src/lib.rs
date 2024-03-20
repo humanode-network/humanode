@@ -598,12 +598,15 @@ impl
         if !should_be_deauthenticated.is_empty() {
             let deauthenticated_public_keys =
                 Bioauth::deauthenticate(should_be_deauthenticated, DeauthenticationReason::Offence);
-            weight = weight.saturating_add(weights.reads_writes(
-                1,
-                deauthenticated_public_keys.len().try_into().expect(
-                    "64 bits should be enough for this overflow to be practicly impossible",
+            weight = weight.saturating_add(
+                weights.reads_writes(
+                    1,
+                    deauthenticated_public_keys
+                        .len()
+                        .try_into()
+                        .expect("casting usize to u64 never fails in 64bit and 32bit word cpus"),
                 ),
-            ));
+            );
         }
         weight
     }
