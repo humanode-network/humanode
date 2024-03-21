@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::pallet_prelude::*;
+use frame_support::{inherent::Vec, pallet_prelude::*};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
@@ -92,19 +92,10 @@ pub mod pallet {
     pub struct Pallet<T>(_);
 
     #[pallet::genesis_config]
+    #[derive(frame_support::DefaultNoBound)]
     pub struct GenesisConfig<T: Config> {
         /// The mappings to set at genesis.
         pub mappings: Vec<(T::AccountId, EthereumAddress)>,
-    }
-
-    // The default value for the genesis config type.
-    #[cfg(feature = "std")]
-    impl<T: Config> Default for GenesisConfig<T> {
-        fn default() -> Self {
-            Self {
-                mappings: Default::default(),
-            }
-        }
     }
 
     #[pallet::genesis_build]
@@ -117,13 +108,12 @@ pub mod pallet {
         }
     }
 
-    #[pallet::call]
+    #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Create a permanent two-way binding between an Ethereum address and a native address.
         /// The native address of the exstrinsic signer is used as a native address, while
         /// the address of the payload signature creator is used as Ethereum address.
         #[pallet::call_index(0)]
-        #[pallet::weight(T::WeightInfo::claim_account())]
         pub fn claim_account(
             origin: OriginFor<T>,
             // Due to the fact that ethereum address can be extracted from any signature

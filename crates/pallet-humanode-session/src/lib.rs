@@ -22,6 +22,8 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 pub mod pallet {
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
+    #[cfg(feature = "try-runtime")]
+    use sp_runtime::TryRuntimeError;
 
     use super::*;
 
@@ -79,12 +81,12 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
             Ok(migrations::v1::pre_migrate::<T>())
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+        fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
             migrations::v1::post_migrate::<T>(state);
             Ok(())
         }

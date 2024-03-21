@@ -5,7 +5,10 @@
 use frame_support::{
     sp_runtime,
     sp_std::{marker::PhantomData, prelude::*},
-    traits::{fungible::Inspect, tokens::currency::Currency},
+    traits::{
+        fungible::Inspect,
+        tokens::{currency::Currency, Provenance},
+    },
 };
 use pallet_evm::{
     ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
@@ -124,7 +127,7 @@ where
         }
 
         let estimated_swapped_balance = CurrencySwapT::estimate_swapped_balance(value);
-        CurrencySwapT::To::can_deposit(&to, estimated_swapped_balance, false)
+        CurrencySwapT::To::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
             .into_result()
             .map_err(|error| match error {
                 sp_runtime::DispatchError::Token(sp_runtime::TokenError::BelowMinimum) => {
@@ -144,7 +147,7 @@ where
             frame_support::traits::ExistenceRequirement::AllowDeath,
         )
         .map_err(|error| match error {
-            sp_runtime::DispatchError::Token(sp_runtime::TokenError::NoFunds) => {
+            sp_runtime::DispatchError::Token(sp_runtime::TokenError::FundsUnavailable) => {
                 PrecompileFailure::Error {
                     exit_status: ExitError::OutOfFund,
                 }

@@ -42,12 +42,18 @@ fn lock_under_vesting_works() {
         assert_eq!(Balances::free_balance(42), 1000);
         assert_eq!(Balances::usable_balance(42), 900);
         assert!(<Schedules<Test>>::get(42).is_some());
-        assert_eq!(System::events().len(), 2);
+        assert_eq!(System::events().len(), 3);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::Locked {
             who: 42,
             schedule: MockSchedule,
             balance_under_lock: 100,
         }));
+        System::assert_has_event(mock::RuntimeEvent::Balances(
+            pallet_balances::Event::Locked {
+                who: 42,
+                amount: 100,
+            },
+        ));
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
             who: 42,
             balance_left_under_lock: 100,
@@ -178,12 +184,18 @@ fn lock_under_vesting_can_lock_balance_greater_than_free_balance() {
         assert_eq!(Balances::free_balance(42), 1000);
         assert_eq!(Balances::usable_balance(42), 0);
         assert!(<Schedules<Test>>::get(42).is_some());
-        assert_eq!(System::events().len(), 2);
+        assert_eq!(System::events().len(), 3);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::Locked {
             who: 42,
             schedule: MockSchedule,
             balance_under_lock: 1100,
         }));
+        System::assert_has_event(mock::RuntimeEvent::Balances(
+            pallet_balances::Event::Locked {
+                who: 42,
+                amount: 1100,
+            },
+        ));
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
             who: 42,
             balance_left_under_lock: 1100,
@@ -228,10 +240,16 @@ fn unlock_works_full() {
         assert_eq!(Balances::free_balance(42), 1000);
         assert_eq!(Balances::usable_balance(42), 1000);
         assert!(<Schedules<Test>>::get(42).is_none());
-        assert_eq!(System::events().len(), 1);
+        assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::FullyUnlocked {
             who: 42,
         }));
+        System::assert_has_event(mock::RuntimeEvent::Balances(
+            pallet_balances::Event::Unlocked {
+                who: 42,
+                amount: 100,
+            },
+        ));
 
         // Assert mock invocations.
         compute_balance_under_lock_ctx.checkpoint();
@@ -272,11 +290,17 @@ fn unlock_works_partial() {
         assert_eq!(Balances::free_balance(42), 1000);
         assert_eq!(Balances::usable_balance(42), 910);
         assert_eq!(<Schedules<Test>>::get(42).unwrap(), schedule_before);
-        assert_eq!(System::events().len(), 1);
+        assert_eq!(System::events().len(), 2);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::PartiallyUnlocked {
             who: 42,
             balance_left_under_lock: 90,
         }));
+        System::assert_has_event(mock::RuntimeEvent::Balances(
+            pallet_balances::Event::Unlocked {
+                who: 42,
+                amount: 10,
+            },
+        ));
 
         // Assert mock invocations.
         compute_balance_under_lock_ctx.checkpoint();
@@ -402,7 +426,7 @@ fn update_vesting_works_partial_unlock() {
         assert_eq!(Balances::free_balance(42), 1000);
         assert_eq!(Balances::usable_balance(42), 950);
         assert!(<Schedules<Test>>::get(42).is_some());
-        assert_eq!(System::events().len(), 2);
+        assert_eq!(System::events().len(), 3);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdated {
             account_id: 42,
             old_schedule: MockSchedule,
@@ -413,6 +437,12 @@ fn update_vesting_works_partial_unlock() {
             who: 42,
             balance_left_under_lock: 50,
         }));
+        System::assert_has_event(mock::RuntimeEvent::Balances(
+            pallet_balances::Event::Unlocked {
+                who: 42,
+                amount: 50,
+            },
+        ));
 
         // Assert mock invocations.
         compute_balance_under_lock_ctx.checkpoint();
@@ -456,7 +486,7 @@ fn update_vesting_works_full_unlock() {
         assert_eq!(Balances::free_balance(42), 1000);
         assert_eq!(Balances::usable_balance(42), 1000);
         assert!(<Schedules<Test>>::get(42).is_none());
-        assert_eq!(System::events().len(), 2);
+        assert_eq!(System::events().len(), 3);
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::VestingUpdated {
             account_id: 42,
             old_schedule: MockSchedule,
@@ -466,6 +496,12 @@ fn update_vesting_works_full_unlock() {
         System::assert_has_event(mock::RuntimeEvent::Vesting(Event::FullyUnlocked {
             who: 42,
         }));
+        System::assert_has_event(mock::RuntimeEvent::Balances(
+            pallet_balances::Event::Unlocked {
+                who: 42,
+                amount: 100,
+            },
+        ));
 
         // Assert mock invocations.
         compute_balance_under_lock_ctx.checkpoint();
