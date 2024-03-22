@@ -80,6 +80,7 @@ jobs:
             extend-build-args: ""
           - qualifier: "try-runtime"
             extend-build-args: "--features try-runtime"
+      fail-fast: false
     name: End-to-end tests
     runs-on: ubuntu-22.04
     timeout-minutes: 50
