@@ -31,7 +31,7 @@ trap 'rm -rf "$TEMPDIR"; pkill -P "$$"' EXIT
 # Run the node.
 "$COMMAND" --dev --base-path "$TEMPDIR" &
 
-# Kepp the node running until 5th block is imported.
+# Keep the node running until 5th block is imported.
 wait_block_with_timeout 5 50
 
 # Run try-runtime execute-block command.
