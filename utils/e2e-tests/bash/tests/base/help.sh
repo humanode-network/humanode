@@ -8,7 +8,7 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 # the help text changes.
 
 OUTPUT="$("$@" --help)"
-TEMPLATE="$(cat "$SCRIPT_DIR/../fixtures/help.stdout.txt")"
+TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/help.stdout.txt")"
 
 DIFF_CMD_ARGS=(
   -u
