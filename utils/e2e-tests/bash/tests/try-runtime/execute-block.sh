@@ -35,6 +35,6 @@ trap 'rm -rf "$TEMPDIR"; pkill -P "$$"' EXIT
 wait_block_with_timeout 5 50
 
 # Run try-runtime execute-block command.
-"$COMMAND" try-runtime --runtime existing execute-block live --uri "ws://127.0.0.1:9944"
+"$COMMAND" try-runtime --runtime existing --detailed-log-output execute-block live --uri "ws://127.0.0.1:9944"
 
 printf "Test succeded\n" >&2
