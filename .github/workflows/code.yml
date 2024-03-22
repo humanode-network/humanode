@@ -72,6 +72,9 @@ jobs:
         run: cargo ${{ matrix.plan.mode.cargoCommand }} ${{ matrix.plan.mode.cargoArgs }}
 
   e2e:
+    strategy:
+      matrix:
+        qualifier: ["base", "try-runtime"]
     name: End-to-end tests
     runs-on: ubuntu-22.04
     timeout-minutes: 50
@@ -90,13 +93,19 @@ jobs:
           buildEnvScript: .github/scripts/build_env/ubuntu.sh
         timeout-minutes: 10
 
-      - name: Build binaries
+      - if: matrix.qualifier == 'base'
+        name: Build binaries
+        run: cargo build --release --locked
+
+      - if: matrix.qualifier == 'try-runtime'
+        name: Build binaries (try-runtime feature is enabled)
         run: cargo build --release --locked --features try-runtime
 
       - name: Run bash e2e tests
-        run: utils/e2e-tests/bash/run-tests "target/release/humanode-peer"
+        run: utils/e2e-tests/bash/run-tests ${{ matrix.qualifier }} "target/release/humanode-peer"
 
-      - name: Run ts e2e tests
+      - if: matrix.qualifier == 'base'
+        name: Run base ts e2e tests
         run: utils/e2e-tests/ts/run-tests "target/release/humanode-peer"
 
   embedded-utils:
