@@ -74,14 +74,13 @@ jobs:
   e2e:
     strategy:
       matrix:
-        qualifier: ["base", "try-runtime"]
-        include:
-          - qualifier: "base"
-            extend-build-args: ""
-          - qualifier: "try-runtime"
-            extend-build-args: "--features try-runtime"
+        test:
+          - suite: "base"
+            build-args: ""
+          - suite: "try-runtime"
+            build-args: "--features try-runtime"
       fail-fast: false
-    name: End-to-end tests / ${{ matrix.qualifier }}
+    name: End-to-end tests / ${{ matrix.test.suite }}
     runs-on: ubuntu-22.04
     timeout-minutes: 50
     permissions:
@@ -100,13 +99,13 @@ jobs:
         timeout-minutes: 10
 
       - name: Build binaries
-        run: cargo build --release --locked ${{ matrix.extend-build-args }}
+        run: cargo build --release --locked ${{ matrix.test.build-args }}
 
       - name: Run bash e2e tests
-        run: utils/e2e-tests/bash/run-tests ${{ matrix.qualifier }} "target/release/humanode-peer"
+        run: utils/e2e-tests/bash/run-tests ${{ matrix.test.suite }} "target/release/humanode-peer"
 
       - name: Run ts e2e tests
-        run: utils/e2e-tests/ts/run-tests ${{ matrix.qualifier }} "target/release/humanode-peer"
+        run: utils/e2e-tests/ts/run-tests ${{ matrix.test.suite }} "target/release/humanode-peer"
 
   embedded-utils:
     strategy:
