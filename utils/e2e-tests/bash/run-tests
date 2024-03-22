@@ -3,13 +3,12 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 cd "$SCRIPT_DIR/../../.."
 
-TESTS_QUALIFIER="$1"
-
-HUMANODE_PEER_EXECUTABLE="$2"
+TESTS_QUALIFIER="${1?Provide tests qualifier parameter as the first arguemnt}"
+shift
 
 # Run all e2e tests.
 for TESTFILE in "$SCRIPT_DIR"/tests/"$TESTS_QUALIFIER"/*.sh; do
   printf "=> Running test %s\n" "$TESTFILE" >&2
-  "$TESTFILE" "$HUMANODE_PEER_EXECUTABLE"
+  "$TESTFILE" "$@"
   printf "=> Test %s passed\n" "$TESTFILE" >&2
 done

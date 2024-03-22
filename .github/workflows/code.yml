@@ -105,9 +105,8 @@ jobs:
       - name: Run bash e2e tests
         run: utils/e2e-tests/bash/run-tests ${{ matrix.qualifier }} "target/release/humanode-peer"
 
-      - if: matrix.qualifier == 'base'
-        name: Run ts e2e tests
-        run: utils/e2e-tests/ts/run-tests "target/release/humanode-peer"
+      - name: Run ts e2e tests
+        run: utils/e2e-tests/ts/run-tests ${{ matrix.qualifier }} "target/release/humanode-peer"
 
   embedded-utils:
     strategy:
