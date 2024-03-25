@@ -7,8 +7,6 @@ cd "$SCRIPT_DIR/../../.."
 TEST_SUITE="${1?Provide the test suite as the first argument}"
 shift
 
-HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the second argument}"
-
 if [[ "$TEST_SUITE" == "base" ]]; then
-  exec yarn utils/e2e-tests/ts test "$HUMANODE_PEER_PATH"
+  exec yarn utils/e2e-tests/ts test
 fi

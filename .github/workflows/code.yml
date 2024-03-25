@@ -109,7 +109,7 @@ jobs:
           TEST_SUITE: ${{ matrix.test.suite }}
 
       - name: Run ts e2e tests
-        run: utils/e2e-tests/ts/run-tests $TEST_SUITE "target/release/humanode-peer"
+        run: utils/e2e-tests/ts/run-tests $TEST_SUITE
         env:
           TEST_SUITE: ${{ matrix.test.suite }}
 
