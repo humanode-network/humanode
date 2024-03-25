@@ -107,10 +107,11 @@ jobs:
           BUILD_ARGS: ${{ matrix.test.build-args }}
 
       - name: Run bash e2e tests
-        run: utils/e2e-tests/bash/run-tests $TEST_SUITE "$TEST_PEER"
+        run: utils/e2e-tests/bash/run-tests $TEST_SUITE "$TEST_PEER" "$TEST_RUNTIME_WASM"
         env:
           TEST_SUITE: ${{ matrix.test.suite }}
           TEST_PEER: ${{ matrix.test.peer }}
+          TEST_RUNTIME_WASM: ${{ matrix.test.runtime-wasm }}
 
       - name: Run ts e2e tests
         run: utils/e2e-tests/ts/run-tests $TEST_SUITE "$TEST_PEER" "$TEST_RUNTIME_WASM"
