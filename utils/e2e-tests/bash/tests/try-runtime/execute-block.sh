@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the first arguemnt}"
+
 # A helper function to keep the node running until a requested block number is imported.
 wait_block_with_timeout() {
   REQUESTED_BLOCK_NUMBER="$1"
@@ -21,20 +23,17 @@ wait_block_with_timeout() {
   done
 }
 
-# Set up command.
-COMMAND="$1"
-
 # Make temporary test directory.
 TEMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TEMPDIR"; pkill -P "$$"' EXIT
 
 # Run the node.
-"$COMMAND" --dev --base-path "$TEMPDIR" &
+"$HUMANODE_PEER_PATH" --dev --base-path "$TEMPDIR" &
 
 # Keep the node running until 5th block is imported.
 wait_block_with_timeout 5 50
 
 # Run try-runtime execute-block command.
-"$COMMAND" try-runtime --runtime existing --detailed-log-output execute-block live --uri "ws://127.0.0.1:9944"
+"$HUMANODE_PEER_PATH" try-runtime --runtime existing --detailed-log-output execute-block live --uri "ws://127.0.0.1:9944"
 
 printf "Test succeded\n" >&2

@@ -1,13 +1,15 @@
 #!/bin/bash
 set -euo pipefail
 
-# Set up command.
-COMMAND="$1"
+HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the first arguemnt}"
+shift
+
+RUNTIME_WASM="${1?Provide the path to runtime wasm file as the second arguemnt}"
 
 # Run try-runtime on-runtime-upgrade command.
-"$COMMAND" try-runtime \
+"$HUMANODE_PEER_PATH" try-runtime \
   --detailed-log-output \
-  --runtime ./target/release/wbuild/humanode-runtime/humanode_runtime.wasm  \
+  --runtime "$RUNTIME_WASM"  \
   on-runtime-upgrade \
   live \
   --uri "wss://explorer-rpc-ws.it6.stages.humanode.io:443"
