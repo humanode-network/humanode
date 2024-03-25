@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the first arguemnt}"
+HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the first argument}"
 
 # A helper function to keep the node running until a requested block number is imported.
 wait_block_with_timeout() {
