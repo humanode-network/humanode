@@ -76,11 +76,8 @@ jobs:
       matrix:
         test:
           - suite: "base"
-            peer: "target/release/humanode-peer"
             build-args: ""
           - suite: "try-runtime"
-            peer: "target/release/humanode-peer"
-            runtime-wasm: "target/release/wbuild/humanode-runtime/humanode_runtime.wasm"
             build-args: "--features try-runtime"
       fail-fast: false
     name: End-to-end tests / ${{ matrix.test.suite }}
@@ -107,18 +104,14 @@ jobs:
           BUILD_ARGS: ${{ matrix.test.build-args }}
 
       - name: Run bash e2e tests
-        run: utils/e2e-tests/bash/run-tests $TEST_SUITE "$TEST_PEER" "$TEST_RUNTIME_WASM"
+        run: utils/e2e-tests/bash/run-tests $TEST_SUITE "target/release/humanode-peer" "target/release/wbuild/humanode-runtime/humanode_runtime.wasm"
         env:
           TEST_SUITE: ${{ matrix.test.suite }}
-          TEST_PEER: ${{ matrix.test.peer }}
-          TEST_RUNTIME_WASM: ${{ matrix.test.runtime-wasm }}
 
       - name: Run ts e2e tests
-        run: utils/e2e-tests/ts/run-tests $TEST_SUITE "$TEST_PEER" "$TEST_RUNTIME_WASM"
+        run: utils/e2e-tests/ts/run-tests $TEST_SUITE "target/release/humanode-peer"
         env:
           TEST_SUITE: ${{ matrix.test.suite }}
-          TEST_PEER: ${{ matrix.test.peer }}
-          TEST_RUNTIME_WASM: ${{ matrix.test.runtime-wasm }}
 
   embedded-utils:
     strategy:
