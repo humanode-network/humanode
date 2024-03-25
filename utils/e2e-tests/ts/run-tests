@@ -7,6 +7,11 @@ cd "$SCRIPT_DIR/../../.."
 TEST_SUITE="${1?Provide the test suite as the first argument}"
 shift
 
+HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the second argument}"
+
+HUMANODE_PEER_PATH="$(realpath -s "$HUMANODE_PEER_PATH")"
+export HUMANODE_PEER_PATH
+
 if [[ "$TEST_SUITE" == "base" ]]; then
   exec yarn utils/e2e-tests/ts test
 fi
