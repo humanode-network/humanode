@@ -4,7 +4,7 @@ set -euo pipefail
 # Set up command.
 COMMAND="$1"
 
-# Run try-runtime live command.
+# Run try-runtime on-runtime-upgrade command.
 "$COMMAND" try-runtime \
   --detailed-log-output \
   --runtime ./target/release/wbuild/humanode-runtime/humanode_runtime.wasm  \
