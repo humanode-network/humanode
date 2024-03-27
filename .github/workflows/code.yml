@@ -104,12 +104,12 @@ jobs:
           BUILD_ARGS: ${{ matrix.test.build-args }}
 
       - name: Run bash e2e tests
-        run: utils/e2e-tests/bash/run-tests $TEST_SUITE "target/release/humanode-peer" "target/release/wbuild/humanode-runtime/humanode_runtime.wasm"
+        run: utils/e2e-tests/bash/run-tests "$TEST_SUITE" "target/release/humanode-peer" "target/release/wbuild/humanode-runtime/humanode_runtime.wasm"
         env:
           TEST_SUITE: ${{ matrix.test.suite }}
 
       - name: Run ts e2e tests
-        run: utils/e2e-tests/ts/run-tests $TEST_SUITE "target/release/humanode-peer"
+        run: utils/e2e-tests/ts/run-tests "$TEST_SUITE" "target/release/humanode-peer"
         env:
           TEST_SUITE: ${{ matrix.test.suite }}
 
