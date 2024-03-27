@@ -5,8 +5,10 @@ set -euo pipefail
 TEMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TEMPDIR"' EXIT
 
+HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the first argument}"
+
 # Set up command.
-COMMAND_TO_RUN=("$@" --dev --base-path "$TEMPDIR")
+COMMAND_TO_RUN=("$HUMANODE_PEER_PATH" --dev --base-path "$TEMPDIR")
 
 # Set up timeout.
 TIME_IN_SEC=20
