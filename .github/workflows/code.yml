@@ -72,7 +72,15 @@ jobs:
         run: cargo ${{ matrix.plan.mode.cargoCommand }} ${{ matrix.plan.mode.cargoArgs }}
 
   e2e:
-    name: End-to-end tests
+    strategy:
+      matrix:
+        test:
+          - suite: "base"
+            build-args: ""
+          - suite: "try-runtime"
+            build-args: "--features try-runtime"
+      fail-fast: false
+    name: End-to-end tests / ${{ matrix.test.suite }}
     runs-on: ubuntu-22.04
     timeout-minutes: 50
     permissions:
@@ -91,13 +99,19 @@ jobs:
         timeout-minutes: 10
 
       - name: Build binaries
-        run: cargo build --release --locked
+        run: cargo build --release --locked $BUILD_ARGS
+        env:
+          BUILD_ARGS: ${{ matrix.test.build-args }}
 
       - name: Run bash e2e tests
-        run: utils/e2e-tests/bash/run-tests "target/release/humanode-peer"
+        run: utils/e2e-tests/bash/run-tests "$TEST_SUITE" "target/release/humanode-peer" "target/release/wbuild/humanode-runtime/humanode_runtime.wasm"
+        env:
+          TEST_SUITE: ${{ matrix.test.suite }}
 
       - name: Run ts e2e tests
-        run: utils/e2e-tests/ts/run-tests "target/release/humanode-peer"
+        run: utils/e2e-tests/ts/run-tests "$TEST_SUITE" "target/release/humanode-peer"
+        env:
+          TEST_SUITE: ${{ matrix.test.suite }}
 
   embedded-utils:
     strategy:
