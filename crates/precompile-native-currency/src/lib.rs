@@ -411,9 +411,11 @@ fn process_dispatch_error<Erc20SupportT: pallet_erc20_support::Config>(
         }
     } else {
         match error {
-            DispatchError::Token(sp_runtime::TokenError::NoFunds) => PrecompileFailure::Error {
-                exit_status: ExitError::OutOfFund,
-            },
+            DispatchError::Token(sp_runtime::TokenError::FundsUnavailable) => {
+                PrecompileFailure::Error {
+                    exit_status: ExitError::OutOfFund,
+                }
+            }
             _ => PrecompileFailure::Error {
                 exit_status: ExitError::Other("unable to transfer funds".into()),
             },

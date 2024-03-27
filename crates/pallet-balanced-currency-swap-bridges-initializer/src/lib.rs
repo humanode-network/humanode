@@ -164,11 +164,10 @@ pub mod pallet {
         }
     }
 
-    #[pallet::call]
+    #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Verify if currencies are balanced.
         #[pallet::call_index(0)]
-        #[pallet::weight(T::WeightInfo::verify_balanced())]
         pub fn verify_balanced(_origin: OriginFor<T>) -> DispatchResult {
             if !Pallet::<T>::is_balanced()? {
                 return Err(Error::<T>::NotBalanced.into());

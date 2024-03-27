@@ -4,7 +4,7 @@ use frame_system as system;
 use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
-use sp_core::{crypto::Infallible, H256};
+use sp_core::{crypto::DeriveError, H256};
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
@@ -56,7 +56,7 @@ impl From<Vec<u8>> for MockOpaqueAuthTicket {
 pub struct MockAuthTicketConverter;
 
 impl TryConvert<MockOpaqueAuthTicket, AuthTicket<ValidatorPublicKey>> for MockAuthTicketConverter {
-    type Error = Infallible;
+    type Error = DeriveError;
 
     fn try_convert(
         value: MockOpaqueAuthTicket,
@@ -79,7 +79,7 @@ impl Default for MockVerifier {
 }
 
 impl crate::Verifier<Vec<u8>> for MockVerifier {
-    type Error = Infallible;
+    type Error = DeriveError;
 
     fn verify<'a, D>(&self, _data: D, _signature: Vec<u8>) -> Result<bool, Self::Error>
     where
