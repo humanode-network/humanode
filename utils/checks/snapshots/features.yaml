@@ -351,7 +351,7 @@
     - rand_core
 - name: checked_int_cast 1.0.0
   features: []
-- name: chrono 0.4.35
+- name: chrono 0.4.37
   features:
     - alloc
     - android-tzdata
