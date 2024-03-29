@@ -9,8 +9,8 @@ shift
 HUMANODE_PEER_PATH="$(realpath -s "$HUMANODE_PEER_PATH")"
 export HUMANODE_PEER_PATH
 
-RUNTIME_WASM="$(realpath -s "$RUNTIME_WASM")"
-export RUNTIME_WASM
+RUNTIME_WASM_PATH="$(realpath -s "$RUNTIME_WASM_PATH")"
+export RUNTIME_WASM_PATH
 
 # Run all e2e tests.
 for TESTFILE in "$SCRIPT_DIR"/tests/"$TEST_SUITE"/*.sh; do

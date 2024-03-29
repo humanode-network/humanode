@@ -108,7 +108,7 @@ jobs:
         env:
           TEST_SUITE: ${{ matrix.test.suite }}
           HUMANODE_PEER_PATH: "target/release/humanode-peer"
-          RUNTIME_WASM: "target/release/wbuild/humanode-runtime/humanode_runtime.wasm"
+          RUNTIME_WASM_PATH: "target/release/wbuild/humanode-runtime/humanode_runtime.wasm"
 
       - name: Run ts e2e tests
         run: utils/e2e-tests/ts/run-tests "$TEST_SUITE"
