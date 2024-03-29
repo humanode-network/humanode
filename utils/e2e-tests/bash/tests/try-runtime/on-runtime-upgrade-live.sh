@@ -1,6 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
+LIVE_NETWORK_URL="wss://explorer-rpc-ws.mainnet.stages.humanode.io:443"
+
 # Run try-runtime on-runtime-upgrade command.
 "$HUMANODE_PEER_PATH" try-runtime \
   --detailed-log-output \
