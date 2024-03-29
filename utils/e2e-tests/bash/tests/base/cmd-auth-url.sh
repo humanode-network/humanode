@@ -1,8 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the first argument}"
-
 # Make temporary test directory.
 TEMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TEMPDIR"' EXIT
