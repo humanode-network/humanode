@@ -1,0 +1,15 @@
+[settings]
+enable_tracing = false
+
+[relaychain]
+default_command = "./target/release/humanode-peer"
+chain = "local"
+# chain_spec_command = "./target/release/humanode-peer build-spec --chain local --raw > ./zombienet-test/local-raw.json"
+
+  [[relaychain.nodes]]
+  name = "alice"
+  validator = true
+
+  [[relaychain.nodes]]
+  name = "minsk"
+  validator = true

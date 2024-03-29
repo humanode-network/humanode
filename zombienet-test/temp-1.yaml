@@ -1,0 +1,36 @@
+metadata:
+  name: temp-1
+  namespace: zombie-afc756a2d779a2d18ba9c9a727eb9a76
+  labels:
+    zombie-role: temp
+    app: zombienet
+    zombie-ns: zombie-afc756a2d779a2d18ba9c9a727eb9a76
+    name: zombie-afc756a2d779a2d18ba9c9a727eb9a76
+    instance: temp-1
+spec:
+  cfgPath: ./zombienet-test/temp-1/cfg
+  dataPath: ./zombienet-test/temp-1/data
+  ports:
+    - containerPort: 9615
+      name: prometheus
+      flag: --prometheus-port
+      hostPort: 56269
+    - containerPort: 9933
+      name: rpc
+      flag: --rpc-port
+      hostPort: 56268
+    - containerPort: 9944
+      name: rpc-ws
+      flag: --ws-port
+      hostPort: 56267
+    - containerPort: 30333
+      name: p2p
+      flag: --port
+      hostPort: 56266
+  command:
+    - bash
+    - -c
+    - ./target/release/humanode-peer build-spec --chain
+      ./zombienet-test/local-plain.json --disable-default-bootnode  --raw >
+      ./zombienet-test/local-raw.json
+  env: {}
