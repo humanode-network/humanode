@@ -12,9 +12,6 @@ export HUMANODE_PEER_PATH
 RUNTIME_WASM="$(realpath -s "$RUNTIME_WASM")"
 export RUNTIME_WASM
 
-LIVE_NETWORK_URL="$LIVE_NETWORK_URL"
-export LIVE_NETWORK_URL
-
 # Run all e2e tests.
 for TESTFILE in "$SCRIPT_DIR"/tests/"$TEST_SUITE"/*.sh; do
   printf "=> Running test %s\n" "$TESTFILE" >&2
