@@ -109,7 +109,7 @@ jobs:
           TEST_SUITE: ${{ matrix.test.suite }}
           HUMANODE_PEER_PATH: "target/release/humanode-peer"
           RUNTIME_WASM: "target/release/wbuild/humanode-runtime/humanode_runtime.wasm"
-          LIVE_NETWORK_URL: "wss://explorer-rpc-ws.it6.stages.humanode.io:443"
+          LIVE_NETWORK_URL: "wss://explorer-rpc-ws.mainnet.stages.humanode.io:443"
 
       - name: Run ts e2e tests
         run: utils/e2e-tests/ts/run-tests "$TEST_SUITE"
