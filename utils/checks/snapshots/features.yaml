@@ -392,7 +392,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.3
+- name: clap 4.5.4
   features:
     - color
     - default
@@ -414,7 +414,7 @@
     - string
     - suggestions
     - usage
-- name: clap_derive 4.5.3
+- name: clap_derive 4.5.4
   features:
     - default
     - deprecated
@@ -3004,7 +3004,7 @@
 - name: serde_derive 1.0.197
   features:
     - default
-- name: serde_json 1.0.114
+- name: serde_json 1.0.115
   features:
     - alloc
     - default
