@@ -956,10 +956,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:16.18.91":
-  version: 16.18.91
-  resolution: "@types/node@npm:16.18.91"
-  checksum: f5a85c90cf1fcedbeba9e1364cbc738cb8d6a67eee7912470d0d61174f6a70fa819ac53a1ca282689e623c47ea1a164171c22129f1e1e8741911f0009f2197d1
+"@types/node@npm:16.18.93":
+  version: 16.18.93
+  resolution: "@types/node@npm:16.18.93"
+  checksum: ef432f8568ef08f9a7e46ea0c9809217140b3962cb2572d3ef812690bfee4ef618c2b1a8d4302e6370b9e76f59f057c950279bd742cfc79e1df0940e1a25b0a3
   languageName: node
   linkType: hard
 
@@ -1835,12 +1835,12 @@ __metadata:
   resolution: "humanode-e2e-tests-ts@workspace:utils/e2e-tests/ts"
   dependencies:
     "@polkadot/api": ^10.12.4
-    "@types/node": 16.18.91
+    "@types/node": 16.18.93
     "@vitest/expect": ^1.4.0
     axios: ^1.6.8
     ethers: ^6.11.1
     typescript: ^5.4.3
-    viem: ^2.9.0
+    viem: ^2.9.6
     vitest: ^1.4.0
   languageName: unknown
   linkType: soft
@@ -2935,9 +2935,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^2.9.0":
-  version: 2.9.0
-  resolution: "viem@npm:2.9.0"
+"viem@npm:^2.9.6":
+  version: 2.9.6
+  resolution: "viem@npm:2.9.6"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.2.0
@@ -2952,7 +2952,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 766b24dc611054f0bc891441df5f2bdb4d81e84eb24e5c116f34a2038a3612b0e1c4332eb5cd058fdddaee51cad9c18c39f323822ca76a10e0e20b59d3c6ac26
+  checksum: 7022c7de6de98e9648c4d65fda08c1b7d5007f62a665bbabffca22fb867b9595df0fbd9092ee02a380bbe7dcd2286070454ab2e7f005d6958fcd6c8f756b03a4
   languageName: node
   linkType: hard
 
