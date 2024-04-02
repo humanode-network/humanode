@@ -1,9 +1,10 @@
 import { expect, describe, it } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
-import selfudestruct from "../../lib/abis/selfdestruct";
+import selfdestruct from "../../lib/abis/selfdestruct";
 import "../../lib/expect";
 import { beforeEachWithCleanup } from "../../lib/lifecycle";
+import * as ethers from "ethers";
 
 describe("selfdestruct", () => {
   let node: RunNodeState;
@@ -19,14 +20,25 @@ describe("selfdestruct", () => {
   }, 60 * 1000);
 
   it("deploy and call selfdestruct", async () => {
-    const [alice, _] = devClients;
+    const [alice, bob] = devClients;
 
-    const hash = await alice.deployContract({
-      abi: selfudestruct.abi,
+    const contract = await alice.deployContract({
+      abi: selfdestruct.abi,
       account: alice.account.address,
-      bytecode: selfudestruct.bytecode as `0x${string}`,
+      bytecode: selfdestruct.bytecode as `0x${string}`,
     });
 
-    console.log(hash)
+    const transferValue = ethers.parseEther("1");
+
+    await alice.sendTransaction({
+      to: contract,
+      value: transferValue,
+    });
+
+    const contract_balance = await publicClient.getBalance({
+      address: contract,
+    });
+
+    expect(contract_balance).toBe(transferValue);
   });
 });
