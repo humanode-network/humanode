@@ -20,7 +20,7 @@ describe("selfdestruct", () => {
     devClients = eth.devClientsFromNodeWebSocket(node, cleanup.push);
   }, 60 * 1000);
 
-  describe("deploy and call selfdestruct", async () => {
+  describe("deploy contract", async () => {
     let contract: `0x${string}`;
     const transferValue = ethers.parseEther("1");
     beforeEach(async () => {
@@ -50,12 +50,33 @@ describe("selfdestruct", () => {
         hash: hash,
         timeout: 18_000,
       });
+    });
 
-      const contract_balance = await publicClient.getBalance({
+    it("call selfdestruct", async () => {
+      const [alice, bob] = devClients;
+
+      const contract_balance_before = await publicClient.getBalance({
         address: contract,
       });
 
-      expect(contract_balance).toBe(transferValue);
+      expect(contract_balance_before).toBe(transferValue);
+
+      const selfdestructHash = await alice.writeContract({
+        abi: selfdestruct.abi,
+        address: contract,
+        functionName: "close",
+      });
+
+      await publicClient.waitForTransactionReceipt({
+        hash: selfdestructHash,
+        timeout: 18_000,
+      });
+
+      const contract_balance_after = await publicClient.getBalance({
+        address: contract,
+      });
+
+      expect(contract_balance_after).toBe(transferValue);
     });
   });
 });
