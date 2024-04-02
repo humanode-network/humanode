@@ -5,6 +5,7 @@ import selfdestruct from "../../lib/abis/selfdestruct";
 import "../../lib/expect";
 import { beforeEachWithCleanup } from "../../lib/lifecycle";
 import * as ethers from "ethers";
+import { getContractAddress } from 'viem';
 
 describe("selfdestruct", () => {
   let node: RunNodeState;
@@ -22,17 +23,31 @@ describe("selfdestruct", () => {
   it("deploy and call selfdestruct", async () => {
     const [alice, bob] = devClients;
 
-    const contract = await alice.deployContract({
+    const deploy_contract_tx_hash = await alice.deployContract({
       abi: selfdestruct.abi,
-      account: alice.account.address,
       bytecode: selfdestruct.bytecode as `0x${string}`,
+    });
+
+    await publicClient.waitForTransactionReceipt({
+      hash: deploy_contract_tx_hash,
+      timeout: 18_000,
+    });
+
+    const contract = getContractAddress({
+      from: alice.account.address,
+      nonce: 1n,
     });
 
     const transferValue = ethers.parseEther("1");
 
-    await alice.sendTransaction({
+    const hash = await alice.sendTransaction({
       to: contract,
       value: transferValue,
+    });
+
+    await publicClient.waitForTransactionReceipt({
+      hash: hash,
+      timeout: 18_000,
     });
 
     const contract_balance = await publicClient.getBalance({
