@@ -1,4 +1,4 @@
-import { expect, describe, it } from "vitest";
+import { expect, describe, it, beforeEach } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
 import selfdestruct from "../../lib/abis/selfdestruct";
@@ -20,40 +20,42 @@ describe("selfdestruct", () => {
     devClients = eth.devClientsFromNodeWebSocket(node, cleanup.push);
   }, 60 * 1000);
 
-  it("deploy and call selfdestruct", async () => {
-    const [alice, bob] = devClients;
-
-    const deploy_contract_tx_hash = await alice.deployContract({
-      abi: selfdestruct.abi,
-      bytecode: selfdestruct.bytecode as `0x${string}`,
-    });
-
-    await publicClient.waitForTransactionReceipt({
-      hash: deploy_contract_tx_hash,
-      timeout: 18_000,
-    });
-
-    const contract = getContractAddress({
-      from: alice.account.address,
-      nonce: 1n,
-    });
-
+  describe("deploy and call selfdestruct", async () => {
+    let contract: `0x${string}`;
     const transferValue = ethers.parseEther("1");
+    beforeEach(async () => {
+      const [alice, _] = devClients;
 
-    const hash = await alice.sendTransaction({
-      to: contract,
-      value: transferValue,
+      const deploy_contract_tx_hash = await alice.deployContract({
+        abi: selfdestruct.abi,
+        bytecode: selfdestruct.bytecode as `0x${string}`,
+      });
+
+      await publicClient.waitForTransactionReceipt({
+        hash: deploy_contract_tx_hash,
+        timeout: 18_000,
+      });
+
+      contract = getContractAddress({
+        from: alice.account.address,
+        nonce: 1n,
+      });
+
+      const hash = await alice.sendTransaction({
+        to: contract,
+        value: transferValue,
+      });
+
+      await publicClient.waitForTransactionReceipt({
+        hash: hash,
+        timeout: 18_000,
+      });
+
+      const contract_balance = await publicClient.getBalance({
+        address: contract,
+      });
+
+      expect(contract_balance).toBe(transferValue);
     });
-
-    await publicClient.waitForTransactionReceipt({
-      hash: hash,
-      timeout: 18_000,
-    });
-
-    const contract_balance = await publicClient.getBalance({
-      address: contract,
-    });
-
-    expect(contract_balance).toBe(transferValue);
   });
 });
