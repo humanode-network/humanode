@@ -3,8 +3,6 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
-HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the first argument}"
-
 # This test ensures we have an adequate and working help command.
 # It also serves as a snapshot test for the help text, so we can track when
 # the help text changes.
