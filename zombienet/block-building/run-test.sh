@@ -11,4 +11,4 @@ export HUMANODE_PEER_PATH
 ZOMBIENET_PLAYGROUND_PATH="./zombienet-plaground"
 export ZOMBIENET_PLAYGROUND_PATH
 
-"$ZOMBIENET_EXEC_PATH" spawn -p native ./zombienet/block-building/block-building.toml -d "$ZOMBIENET_PLAYGROUND_PATH"
+"$ZOMBIENET_EXEC_PATH" -p native test ./zombienet/block-building/block-building.zndsl

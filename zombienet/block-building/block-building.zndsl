@@ -1,5 +1,5 @@
 Description: Block building
-Network: ./block-building.toml
+Network: ./zombienet/block-building/block-building.toml
 Creds: config
 
 alice: reports peers count is at least 1
