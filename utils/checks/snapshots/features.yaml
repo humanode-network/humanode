@@ -3618,7 +3618,7 @@
     - tinyvec_macros
 - name: tinyvec_macros 0.1.1
   features: []
-- name: tokio 1.36.0
+- name: tokio 1.37.0
   features:
     - bytes
     - default
