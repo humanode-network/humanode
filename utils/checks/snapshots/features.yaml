@@ -1264,7 +1264,7 @@
 - name: group 0.13.0
   features:
     - alloc
-- name: h2 0.3.24
+- name: h2 0.3.26
   features: []
 - name: handlebars 4.5.0
   features:
