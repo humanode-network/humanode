@@ -1,11 +1,11 @@
 metadata:
   name: bob
-  namespace: zombie-cf2e41e70656dcfe96db29d78a0f008a
+  namespace: zombie-9a1f3dad32d00a91c55ec8624613fa5f
   labels:
     zombie-role: node
     app: zombienet
-    zombie-ns: zombie-cf2e41e70656dcfe96db29d78a0f008a
-    name: zombie-cf2e41e70656dcfe96db29d78a0f008a
+    zombie-ns: zombie-9a1f3dad32d00a91c55ec8624613fa5f
+    name: zombie-9a1f3dad32d00a91c55ec8624613fa5f
     instance: bob
 spec:
   cfgPath: ./zombienet-test/bob/cfg
@@ -14,28 +14,28 @@ spec:
     - containerPort: 9615
       name: prometheus
       flag: --prometheus-port
-      hostPort: 52513
+      hostPort: 52644
     - containerPort: 9933
       name: rpc
       flag: --rpc-port
-      hostPort: 52512
+      hostPort: 52643
     - containerPort: 9944
       name: rpc-ws
       flag: --ws-port
-      hostPort: 52511
+      hostPort: 52642
     - containerPort: 30333
       name: p2p
       flag: --port
-      hostPort: 52510
+      hostPort: 52641
   command:
     - ./target/release/humanode-peer --chain ./zombienet-test/bob/cfg/local.json
       --name bob --rpc-cors all --unsafe-rpc-external --rpc-methods unsafe
       --no-mdns --node-key
       81b637d8fcd2c6da6359e6963113a1170de795e4b725b84d1e0b4cfd9ec58ce9
       --no-telemetry --prometheus-external --validator --bootnodes
-      /ip4/127.0.0.1/tcp/52506/ws/p2p/12D3KooWQCkBm1BYtkHpocxCwMgR8yjitEeHGx8spzcDLGt2gkBm
-      --prometheus-port 52513 --rpc-port 52512 --ws-port 52511 --listen-addr
-      /ip4/0.0.0.0/tcp/52510/ws --base-path ./zombienet-test/bob/data
+      /ip4/127.0.0.1/tcp/52637/ws/p2p/12D3KooWQCkBm1BYtkHpocxCwMgR8yjitEeHGx8spzcDLGt2gkBm
+      --prometheus-port 52644 --rpc-port 52643 --ws-port 52642 --listen-addr
+      /ip4/0.0.0.0/tcp/52641/ws --base-path ./zombienet-test/bob/data
       --unsafe-ws-external
   env:
     COLORBT_SHOW_HIDDEN: "1"

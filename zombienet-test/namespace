@@ -2,6 +2,6 @@
     "apiVersion": "v1",
     "kind": "Namespace",
     "metadata": {
-        "name": "zombie-cf2e41e70656dcfe96db29d78a0f008a"
+        "name": "zombie-9a1f3dad32d00a91c55ec8624613fa5f"
     }
 }

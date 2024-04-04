@@ -1,30 +1,35 @@
-2024-04-04 16:58:57 It isn't safe to expose RPC publicly without a proxy server that filters available set of RPC methods.    
-2024-04-04 16:58:57 It isn't safe to expose RPC publicly without a proxy server that filters available set of RPC methods.    
-2024-04-04 16:58:57 Humanode Node    
-2024-04-04 16:58:57 ✌️  version 6c1409508a264d86fdd54691073c69108ec6c034    
-2024-04-04 16:58:57 ❤️  by Humanode Core, 2021-2024    
-2024-04-04 16:58:57 📋 Chain specification: Local Testnet    
-2024-04-04 16:58:57 🏷  Node name: batumi    
-2024-04-04 16:58:57 👤 Role: AUTHORITY    
-2024-04-04 16:58:57 💾 Database: RocksDb at ./zombienet-test/batumi/data/chains/local_testnet/db/full    
-2024-04-04 16:58:57 ⛓  Native runtime: humanode-115 (humanode-1.tx1.au1)    
-2024-04-04 16:58:57    Build info - commit sha: 6c1409508a264d86fdd54691073c69108ec6c034
-2024-04-04 16:58:57    Build info - cargo debug profile: false
-2024-04-04 16:58:57    Build info - cargo features: default,rocksdb,try_runtime,try_runtime_cli
-2024-04-04 16:58:58 🔨 Initializing Genesis block/state (state: 0x4f49…699b, header-hash: 0x7bfb…7105)    
-2024-04-04 16:58:58 👴 Loading GRANDPA authority set from genesis on what appears to be first startup.    
-2024-04-04 16:58:58 👶 Creating empty BABE epoch changes on what appears to be first startup.    
-2024-04-04 16:58:58 Using default protocol ID "sup" because none is configured in the chain specs    
-2024-04-04 16:58:58 🏷  Local node identity is: 12D3KooWGzqp9NSV7y7mnc7QVrPtuHwocuCjfpkT6Mo7btpzou23    
-2024-04-04 16:58:58 💻 Operating system: macos    
-2024-04-04 16:58:58 💻 CPU architecture: aarch64    
-2024-04-04 16:58:58 📦 Highest known block at #0    
-2024-04-04 16:58:58 〽️ Prometheus exporter started at 0.0.0.0:52517    
-2024-04-04 16:58:58 Running JSON-RPC HTTP server: addr=0.0.0.0:52516, allowed origins=["*"]    
-2024-04-04 16:58:58 Running JSON-RPC WS server: addr=0.0.0.0:52515, allowed origins=["*"]    
-2024-04-04 16:58:58 👶 Starting BABE Authorship worker    
-2024-04-04 16:58:58 Bioauth flow - unable to display QR Code: webapp URL is not set
-2024-04-04 16:58:58 👶 New epoch 0 launching at block 0x282f…7fb0 (block slot 285373189 >= start slot 285373189).    
-2024-04-04 16:58:58 👶 Next epoch starts at slot 285375589    
-2024-04-04 16:58:58 ✨ Imported #1 (0x282f…7fb0)    
-2024-04-04 16:59:00 ✨ Imported #2 (0x6d43…219f)    
+2024-04-04 17:03:11 It isn't safe to expose RPC publicly without a proxy server that filters available set of RPC methods.    
+2024-04-04 17:03:11 It isn't safe to expose RPC publicly without a proxy server that filters available set of RPC methods.    
+2024-04-04 17:03:11 Humanode Node    
+2024-04-04 17:03:11 ✌️  version 6c1409508a264d86fdd54691073c69108ec6c034    
+2024-04-04 17:03:11 ❤️  by Humanode Core, 2021-2024    
+2024-04-04 17:03:11 📋 Chain specification: Local Testnet    
+2024-04-04 17:03:11 🏷  Node name: batumi    
+2024-04-04 17:03:11 👤 Role: AUTHORITY    
+2024-04-04 17:03:11 💾 Database: RocksDb at ./zombienet-test/batumi/data/chains/local_testnet/db/full    
+2024-04-04 17:03:11 ⛓  Native runtime: humanode-115 (humanode-1.tx1.au1)    
+2024-04-04 17:03:11    Build info - commit sha: 6c1409508a264d86fdd54691073c69108ec6c034
+2024-04-04 17:03:11    Build info - cargo debug profile: false
+2024-04-04 17:03:11    Build info - cargo features: default,rocksdb,try_runtime,try_runtime_cli
+2024-04-04 17:03:12 🔨 Initializing Genesis block/state (state: 0x4f49…699b, header-hash: 0x7bfb…7105)    
+2024-04-04 17:03:12 👴 Loading GRANDPA authority set from genesis on what appears to be first startup.    
+2024-04-04 17:03:12 👶 Creating empty BABE epoch changes on what appears to be first startup.    
+2024-04-04 17:03:12 Using default protocol ID "sup" because none is configured in the chain specs    
+2024-04-04 17:03:12 🏷  Local node identity is: 12D3KooWGzqp9NSV7y7mnc7QVrPtuHwocuCjfpkT6Mo7btpzou23    
+2024-04-04 17:03:12 💻 Operating system: macos    
+2024-04-04 17:03:12 💻 CPU architecture: aarch64    
+2024-04-04 17:03:12 📦 Highest known block at #0    
+2024-04-04 17:03:12 Running JSON-RPC HTTP server: addr=0.0.0.0:52647, allowed origins=["*"]    
+2024-04-04 17:03:12 〽️ Prometheus exporter started at 0.0.0.0:52648    
+2024-04-04 17:03:12 Running JSON-RPC WS server: addr=0.0.0.0:52646, allowed origins=["*"]    
+2024-04-04 17:03:12 👶 Starting BABE Authorship worker    
+2024-04-04 17:03:12 Bioauth flow - unable to display QR Code: webapp URL is not set
+2024-04-04 17:03:12 👶 New epoch 0 launching at block 0x74d7…221d (block slot 285373232 >= start slot 285373232).    
+2024-04-04 17:03:12 👶 Next epoch starts at slot 285375632    
+2024-04-04 17:03:12 ✨ Imported #1 (0x74d7…221d)    
+2024-04-04 17:03:17 💤 Idle (2 peers), best: #1 (0x74d7…221d), finalized #0 (0x7bfb…7105), ⬇ 3.4kiB/s ⬆ 3.3kiB/s    
+2024-04-04 17:03:18 ✨ Imported #2 (0x0af3…bb24)    
+2024-04-04 17:03:22 💤 Idle (2 peers), best: #2 (0x0af3…bb24), finalized #0 (0x7bfb…7105), ⬇ 1.0kiB/s ⬆ 0.9kiB/s    
+2024-04-04 17:03:24 ✨ Imported #3 (0xf8fa…1b01)    
+2024-04-04 17:03:27 💤 Idle (2 peers), best: #3 (0xf8fa…1b01), finalized #1 (0x74d7…221d), ⬇ 1.0kiB/s ⬆ 0.8kiB/s    
+2024-04-04 17:03:30 ✨ Imported #4 (0x3022…5ea6)    
