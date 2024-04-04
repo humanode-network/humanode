@@ -28,10 +28,11 @@ describe("selfdestruct", () => {
       abi: selfdestruct.abi,
       bytecode: selfdestruct.bytecode as `0x${string}`,
     });
-    const deploy_contract_tx_receipt = await publicClient.waitForTransactionReceipt({
-      hash: deploy_contract_tx_hash,
-      timeout: 18_000,
-    });
+    const deploy_contract_tx_receipt =
+      await publicClient.waitForTransactionReceipt({
+        hash: deploy_contract_tx_hash,
+        timeout: 18_000,
+      });
 
     const contract = deploy_contract_tx_receipt.contractAddress!;
 
