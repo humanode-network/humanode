@@ -5,8 +5,6 @@ get_address() {
   "$HUMANODE_PEER_PATH" key inspect "$@" | grep "SS58 Address:" | awk '{print $3}'
 }
 
-HUMANODE_PEER_PATH="${1?Provide the path to the humanode peer as the first argument}"
-
 # Make temporary test directory.
 TEMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TEMPDIR"; pkill -P "$$"' EXIT
