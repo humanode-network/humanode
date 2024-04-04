@@ -3527,7 +3527,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.55
+- name: syn 2.0.58
   features:
     - clone-impls
     - default
@@ -3538,7 +3538,6 @@
     - parsing
     - printing
     - proc-macro
-    - quote
     - visit
     - visit-mut
 - name: sync_wrapper 0.1.2
