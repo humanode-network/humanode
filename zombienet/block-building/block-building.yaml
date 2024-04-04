@@ -1,4 +1,5 @@
-# Network config.
+# Network definition spec.
+# https://paritytech.github.io/zombienet/network-definition-spec.html
 
 settings:
   enable_tracing: false
