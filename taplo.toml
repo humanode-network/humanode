@@ -1,4 +1,4 @@
-exclude = ["target/**", "zombienet/**"]
+exclude = ["target/**"]
 include = ["**/*.toml"]
 
 [schema]
