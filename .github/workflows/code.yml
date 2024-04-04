@@ -116,6 +116,37 @@ jobs:
           TEST_SUITE: ${{ matrix.test.suite }}
           HUMANODE_PEER_PATH: "target/release/humanode-peer"
 
+  zombienet:
+    name: Zombienet
+    runs-on: ubuntu-22.04
+    timeout-minutes: 50
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        timeout-minutes: 5
+
+      - uses: ./.github/actions/common-setup
+        with:
+          platformCacheKey: ubuntu2204-amd64
+          buildEnvScript: .github/scripts/build_env/ubuntu.sh
+        timeout-minutes: 10
+
+      - name: Build binaries
+        run: cargo build --release --locked
+
+      - name: Download zombienet
+        run: >
+          curl -sSL "https://github.com/paritytech/zombienet/releases/download/v1.3.99/zombienet-linux-x64" \
+            -o /usr/local/bin/zombienet
+          && chmod +x /usr/local/bin/zombienet
+
+      - name: Run zombienet tests
+        run: zombienet/run-tests
+        env:
+          HUMANODE_PEER_PATH: "target/release/humanode-peer"
+
   embedded-utils:
     strategy:
       matrix:
