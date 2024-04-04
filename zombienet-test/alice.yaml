@@ -1,0 +1,40 @@
+metadata:
+  name: alice
+  namespace: zombie-cf2e41e70656dcfe96db29d78a0f008a
+  labels:
+    zombie-role: node
+    app: zombienet
+    zombie-ns: zombie-cf2e41e70656dcfe96db29d78a0f008a
+    name: zombie-cf2e41e70656dcfe96db29d78a0f008a
+    instance: alice
+spec:
+  cfgPath: ./zombienet-test/alice/cfg
+  dataPath: ./zombienet-test/alice/data
+  ports:
+    - containerPort: 9615
+      name: prometheus
+      flag: --prometheus-port
+      hostPort: 52509
+    - containerPort: 9933
+      name: rpc
+      flag: --rpc-port
+      hostPort: 52508
+    - containerPort: 9944
+      name: rpc-ws
+      flag: --ws-port
+      hostPort: 52507
+    - containerPort: 30333
+      name: p2p
+      flag: --port
+      hostPort: 52506
+  command:
+    - ./target/release/humanode-peer --chain
+      ./zombienet-test/alice/cfg/local.json --name alice --rpc-cors all
+      --unsafe-rpc-external --rpc-methods unsafe --no-mdns --node-key
+      2bd806c97f0e00af1a1fc3328fa763a9269723c8db8fac4f93af71db186d6e90
+      --no-telemetry --prometheus-external --validator --prometheus-port 52509
+      --rpc-port 52508 --ws-port 52507 --listen-addr /ip4/0.0.0.0/tcp/52506/ws
+      --base-path ./zombienet-test/alice/data --unsafe-ws-external
+  env:
+    COLORBT_SHOW_HIDDEN: "1"
+    RUST_BACKTRACE: FULL

@@ -1,0 +1,37 @@
+2024-04-04 16:58:52 It isn't safe to expose RPC publicly without a proxy server that filters available set of RPC methods.    
+2024-04-04 16:58:52 It isn't safe to expose RPC publicly without a proxy server that filters available set of RPC methods.    
+2024-04-04 16:58:52 Humanode Node    
+2024-04-04 16:58:52 ✌️  version 6c1409508a264d86fdd54691073c69108ec6c034    
+2024-04-04 16:58:52 ❤️  by Humanode Core, 2021-2024    
+2024-04-04 16:58:52 📋 Chain specification: Local Testnet    
+2024-04-04 16:58:52 🏷  Node name: alice    
+2024-04-04 16:58:52 👤 Role: AUTHORITY    
+2024-04-04 16:58:52 💾 Database: RocksDb at ./zombienet-test/alice/data/chains/local_testnet/db/full    
+2024-04-04 16:58:52 ⛓  Native runtime: humanode-115 (humanode-1.tx1.au1)    
+2024-04-04 16:58:52    Build info - commit sha: 6c1409508a264d86fdd54691073c69108ec6c034
+2024-04-04 16:58:52    Build info - cargo debug profile: false
+2024-04-04 16:58:52    Build info - cargo features: default,rocksdb,try_runtime,try_runtime_cli
+2024-04-04 16:58:53 🔨 Initializing Genesis block/state (state: 0x4f49…699b, header-hash: 0x7bfb…7105)    
+2024-04-04 16:58:53 👴 Loading GRANDPA authority set from genesis on what appears to be first startup.    
+2024-04-04 16:58:53 👶 Creating empty BABE epoch changes on what appears to be first startup.    
+2024-04-04 16:58:53 Using default protocol ID "sup" because none is configured in the chain specs    
+2024-04-04 16:58:53 🏷  Local node identity is: 12D3KooWQCkBm1BYtkHpocxCwMgR8yjitEeHGx8spzcDLGt2gkBm    
+2024-04-04 16:58:53 💻 Operating system: macos    
+2024-04-04 16:58:53 💻 CPU architecture: aarch64    
+2024-04-04 16:58:53 📦 Highest known block at #0    
+2024-04-04 16:58:53 Running JSON-RPC HTTP server: addr=0.0.0.0:52508, allowed origins=["*"]    
+2024-04-04 16:58:53 Running JSON-RPC WS server: addr=0.0.0.0:52507, allowed origins=["*"]    
+2024-04-04 16:58:53 👶 Starting BABE Authorship worker    
+2024-04-04 16:58:53 〽️ Prometheus exporter started at 0.0.0.0:52509    
+2024-04-04 16:58:53 Bioauth flow - unable to display QR Code: webapp URL is not set
+2024-04-04 16:58:54 🙌 Starting consensus session on top of parent 0x7bfb5b8fc28e4366aefc5971553366b43b49bd1a5eba522ea8278ff8ade17105    
+2024-04-04 16:58:54 🎁 Prepared block for proposing at 1 (0 ms) [hash: 0xc79a6810113dcd99e37baa1c952deb97975cffc307ce86d4c65c54635d5eaedd; parent_hash: 0x7bfb…7105; extrinsics (1): [0x0718…fbda]]    
+2024-04-04 16:58:54 🔖 Pre-sealed block for proposal at 1. Hash now 0x282f82d0d4e2bed797f6cd2a6ab1884a395911ec5da783b5cc1a134dfc3d7fb0, previously 0xc79a6810113dcd99e37baa1c952deb97975cffc307ce86d4c65c54635d5eaedd.    
+2024-04-04 16:58:54 👶 New epoch 0 launching at block 0x282f…7fb0 (block slot 285373189 >= start slot 285373189).    
+2024-04-04 16:58:54 👶 Next epoch starts at slot 285375589    
+2024-04-04 16:58:54 ✨ Imported #1 (0x282f…7fb0)    
+2024-04-04 16:58:58 💤 Idle (0 peers), best: #1 (0x282f…7fb0), finalized #0 (0x7bfb…7105), ⬇ 0 ⬆ 0    
+2024-04-04 16:59:00 🙌 Starting consensus session on top of parent 0x282f82d0d4e2bed797f6cd2a6ab1884a395911ec5da783b5cc1a134dfc3d7fb0    
+2024-04-04 16:59:00 🎁 Prepared block for proposing at 2 (0 ms) [hash: 0x10d1fd6edf9a6ef62117d2aef999c8d97254cd14b11df4fca7837b6b58d02162; parent_hash: 0x282f…7fb0; extrinsics (1): [0x4cdf…b1fa]]    
+2024-04-04 16:59:00 🔖 Pre-sealed block for proposal at 2. Hash now 0x6d4396d65225f3cdebec00133c101401ffdae46027eecdfc4e25dd366c82219f, previously 0x10d1fd6edf9a6ef62117d2aef999c8d97254cd14b11df4fca7837b6b58d02162.    
+2024-04-04 16:59:00 ✨ Imported #2 (0x6d43…219f)    
