@@ -139,7 +139,7 @@ jobs:
       - name: Download zombienet
         run: >
           curl -sSL "https://github.com/paritytech/zombienet/releases/download/v1.3.99/zombienet-linux-x64" \
-            -o /usr/local/bin/zombienet
+            -o /usr/local/bin/zombienet \
           && chmod +x /usr/local/bin/zombienet
 
       - name: Run zombienet tests
