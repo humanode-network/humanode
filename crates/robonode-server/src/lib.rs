@@ -8,9 +8,9 @@ use warp::Filter;
 
 mod http;
 mod logging_inspector;
-mod logic;
-mod sequence;
-mod validator_key;
+pub mod logic;
+pub mod sequence;
+pub mod validator_key;
 
 pub use logging_inspector::LoggingInspector;
 pub use logic::FacetecDeviceSdkParams;
