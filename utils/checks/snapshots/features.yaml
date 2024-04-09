@@ -1233,7 +1233,7 @@
 - name: getrandom 0.1.16
   features:
     - std
-- name: getrandom 0.2.12
+- name: getrandom 0.2.14
   features:
     - std
 - name: ghash 0.4.4
