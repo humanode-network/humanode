@@ -10,6 +10,10 @@ alice: reports block height is at least 5 within 20 seconds
 bob: reports block height is at least 5 within 20 seconds
 batumi: reports block height is at least 5 within 20 seconds
 
-alice: count of log lines containing "error" is 0 within 2 seconds
-bob: count of log lines containing "error" is 0 within 2 seconds
-batumi: count of log lines containing "error" is 0 within 2 seconds
+alice: count of log lines containing "error" is 0
+bob: count of log lines containing "error" is 0
+batumi: count of log lines containing "error" is 0
+
+alice: count of log lines containing "Starting consensus session" is at least 1 within 60 seconds
+bob: count of log lines containing "Starting consensus session" is at least 1 within 60 seconds
+batumi: count of log lines containing "Starting consensus session" is at least 1 within 60 seconds
