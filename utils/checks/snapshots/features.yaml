@@ -3931,6 +3931,8 @@
   features:
     - default
     - std
+- name: wasite 0.1.0
+  features: []
 - name: wasm-bindgen 0.2.91
   features:
     - default
@@ -4073,7 +4075,7 @@
     - vnet
 - name: which 4.4.2
   features: []
-- name: whoami 1.4.1
+- name: whoami 1.5.1
   features: []
 - name: wide 0.7.15
   features:
