@@ -7,7 +7,6 @@ settings:
 relaychain:
   default_command: "{{HUMANODE_PEER_PATH}}"
   chain: local
-  chain_spec_command: "{{HUMANODE_PEER_PATH}} build-spec --chain local --disable-default-bootnode"
   nodes:
     - name: alice
       validator: true
