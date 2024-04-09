@@ -26,7 +26,7 @@ describe("selfdestruct", () => {
     // Deploy contract and get address.
     const deployContractTxHash = await alice.deployContract({
       abi: selfdestruct.abi,
-      bytecode: selfdestruct.bytecode as `0x${string}`,
+      bytecode: selfdestruct.bytecode,
     });
     const deployContractTxReceipt =
       await publicClient.waitForTransactionReceipt({
