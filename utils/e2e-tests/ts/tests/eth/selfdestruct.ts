@@ -1,4 +1,4 @@
-import { expect, describe, it, beforeEach } from "vitest";
+import { expect, describe, it } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
 import selfdestruct from "../../lib/abis/selfdestruct";
@@ -24,17 +24,17 @@ describe("selfdestruct", () => {
     const [alice, _] = devClients;
 
     // Deploy contract and get address.
-    const deploy_contract_tx_hash = await alice.deployContract({
+    const deployContractTxHash = await alice.deployContract({
       abi: selfdestruct.abi,
       bytecode: selfdestruct.bytecode as `0x${string}`,
     });
-    const deploy_contract_tx_receipt =
+    const deployContractTxReceipt =
       await publicClient.waitForTransactionReceipt({
-        hash: deploy_contract_tx_hash,
+        hash: deployContractTxHash,
         timeout: 18_000,
       });
 
-    const contract = deploy_contract_tx_receipt.contractAddress!;
+    const contract = deployContractTxReceipt.contractAddress!;
 
     // Send 1 token unit to the contract.
     const hash = await alice.sendTransaction({
@@ -47,10 +47,10 @@ describe("selfdestruct", () => {
     });
 
     // Check balance before executing selfdestruct.
-    const contract_balance_before = await publicClient.getBalance({
+    const contractBalanceBefore = await publicClient.getBalance({
       address: contract,
     });
-    expect(contract_balance_before).toBe(transferValue);
+    expect(contractBalanceBefore).toBe(transferValue);
 
     // Execute selfdestruct.
     const selfdestructHash = await alice.writeContract({
@@ -64,9 +64,9 @@ describe("selfdestruct", () => {
     });
 
     // Verify balance after executing selfdestruct.
-    const contract_balance_after = await publicClient.getBalance({
+    const contractBalanceAfter = await publicClient.getBalance({
       address: contract,
     });
-    expect(contract_balance_after).toBe(transferValue);
+    expect(contractBalanceAfter).toBe(transferValue);
   });
 });
