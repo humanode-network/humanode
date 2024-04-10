@@ -2,7 +2,7 @@
 
 use sp_std::str::FromStr;
 
-use frame_support::{assert_noop, assert_ok};
+use frame_support::{assert_noop, assert_storage_noop};
 use mockall::predicate;
 use sp_core::H160;
 
@@ -30,7 +30,10 @@ fn create_account_works() {
 			.return_const(());
 
 		// Invoke the function under test.
-		assert_ok!(EvmSystem::create_account(&account_id));
+		assert_eq!(
+			EvmSystem::create_account(&account_id),
+			AccountCreationOutcome::Created
+		);
 
 		// Assert state changes.
 		assert!(EvmSystem::account_exists(&account_id));
@@ -52,10 +55,10 @@ fn create_account_fails() {
 		<Account<Test>>::insert(account_id.clone(), AccountInfo::<_, _>::default());
 
 		// Invoke the function under test.
-		assert_noop!(
+		assert_storage_noop!(assert_eq!(
 			EvmSystem::create_account(&account_id),
-			Error::<Test>::AccountAlreadyExist
-		);
+			AccountCreationOutcome::AlreadyExists
+		));
 	});
 }
 
@@ -79,7 +82,10 @@ fn remove_account_works() {
 			.return_const(());
 
 		// Invoke the function under test.
-		assert_ok!(EvmSystem::remove_account(&account_id));
+		assert_eq!(
+			EvmSystem::remove_account(&account_id),
+			AccountRemovalOutcome::Reaped
+		);
 
 		// Assert state changes.
 		assert!(!EvmSystem::account_exists(&account_id));
@@ -100,10 +106,10 @@ fn remove_account_fails() {
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 
 		// Invoke the function under test.
-		assert_noop!(
+		assert_storage_noop!(assert_eq!(
 			EvmSystem::remove_account(&account_id),
-			Error::<Test>::AccountNotExist
-		);
+			AccountRemovalOutcome::DidNotExist
+		));
 	});
 }
 
