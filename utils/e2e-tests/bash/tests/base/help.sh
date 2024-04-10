@@ -7,8 +7,8 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 # It also serves as a snapshot test for the help text, so we can track when
 # the help text changes.
 
-OUTPUT="$("$@" --help)"
-TEMPLATE="$(cat "$SCRIPT_DIR/../fixtures/help.stdout.txt")"
+OUTPUT="$("$HUMANODE_PEER_PATH" --help)"
+TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/help.stdout.txt")"
 
 DIFF_CMD_ARGS=(
   -u

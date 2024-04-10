@@ -2,18 +2,15 @@
 set -euo pipefail
 
 get_address() {
-  "$COMMAND" key inspect "$@" | grep "SS58 Address:" | awk '{print $3}'
+  "$HUMANODE_PEER_PATH" key inspect "$@" | grep "SS58 Address:" | awk '{print $3}'
 }
-
-# Set up command.
-COMMAND="$1"
 
 # Make temporary test directory.
 TEMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TEMPDIR"; pkill -P "$$"' EXIT
 
 # Run the node.
-"$COMMAND" --dev --base-path "$TEMPDIR" &
+"$HUMANODE_PEER_PATH" --dev --base-path "$TEMPDIR" &
 
 # Get the address.
 ADDR="$(get_address "//Alice")"

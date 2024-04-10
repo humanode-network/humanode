@@ -5,12 +5,12 @@ set -euo pipefail
 TEMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TEMPDIR"' EXIT
 
-GENERATE_OUTPUT="$("$@" bioauth key generate)"
+GENERATE_OUTPUT="$("$HUMANODE_PEER_PATH" bioauth key generate)"
 
 # Look for "Secret phrase" in the output. Fail the test if absent.
 grep -q "Secret phrase:" <<<"$GENERATE_OUTPUT"
 
-INSPECT_OUTPUT="$("$@" bioauth key inspect --suri "custom resemble extend detect expand ready battle never deputy argue right tent")"
+INSPECT_OUTPUT="$("$HUMANODE_PEER_PATH" bioauth key inspect --suri "custom resemble extend detect expand ready battle never deputy argue right tent")"
 EXPECTED_INSPECT_OUTPUT="$(
   cat <<EOF
 Secret phrase:       custom resemble extend detect expand ready battle never deputy argue right tent

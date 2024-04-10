@@ -3,8 +3,17 @@ set -euo pipefail
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 cd "$SCRIPT_DIR/../../.."
 
+TEST_SUITE="${1?Provide the test suite as the first argument}"
+shift
+
+HUMANODE_PEER_PATH="$(realpath -s "$HUMANODE_PEER_PATH")"
+export HUMANODE_PEER_PATH
+
+RUNTIME_WASM_PATH="$(realpath -s "$RUNTIME_WASM_PATH")"
+export RUNTIME_WASM_PATH
+
 # Run all e2e tests.
-for TESTFILE in "$SCRIPT_DIR"/tests/*.sh; do
+for TESTFILE in "$SCRIPT_DIR"/tests/"$TEST_SUITE"/*.sh; do
   printf "=> Running test %s\n" "$TESTFILE" >&2
   "$TESTFILE" "$@"
   printf "=> Test %s passed\n" "$TESTFILE" >&2

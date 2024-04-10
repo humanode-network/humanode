@@ -5,7 +5,7 @@ set -euo pipefail
 TEMPDIR="$(mktemp -d)"
 trap 'rm -rf "$TEMPDIR"' EXIT
 
-OUTPUT="$("$@" bioauth auth-url --webapp-url https://example.com --rpc-url https://localhost:9933)"
+OUTPUT="$("$HUMANODE_PEER_PATH" bioauth auth-url --webapp-url https://example.com --rpc-url https://localhost:9933)"
 EXPECTED="https://example.com/open?url=https%3A%2F%2Flocalhost%3A9933"
 
 if [[ "$OUTPUT" != "$EXPECTED" ]]; then

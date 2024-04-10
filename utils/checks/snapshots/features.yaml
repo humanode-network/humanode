@@ -137,7 +137,7 @@
   features:
     - default
     - std
-- name: async-trait 0.1.78
+- name: async-trait 0.1.79
   features: []
 - name: asynchronous-codec 0.6.2
   features:
@@ -300,7 +300,7 @@
     - default
     - i128
     - std
-- name: bytes 1.5.0
+- name: bytes 1.6.0
   features:
     - default
     - serde
@@ -348,7 +348,7 @@
     - rand_core
 - name: checked_int_cast 1.0.0
   features: []
-- name: chrono 0.4.35
+- name: chrono 0.4.37
   features:
     - alloc
     - android-tzdata
@@ -389,7 +389,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.3
+- name: clap 4.5.4
   features:
     - color
     - default
@@ -411,7 +411,7 @@
     - string
     - suggestions
     - usage
-- name: clap_derive 4.5.3
+- name: clap_derive 4.5.4
   features:
     - default
     - deprecated
@@ -1221,7 +1221,7 @@
 - name: getrandom 0.1.16
   features:
     - std
-- name: getrandom 0.2.12
+- name: getrandom 0.2.14
   features:
     - std
 - name: ghash 0.4.4
@@ -1252,7 +1252,7 @@
 - name: group 0.13.0
   features:
     - alloc
-- name: h2 0.3.24
+- name: h2 0.3.26
   features: []
 - name: handlebars 4.5.0
   features:
@@ -1425,7 +1425,7 @@
   features:
     - default
     - std
-- name: indoc 2.0.4
+- name: indoc 2.0.5
   features: []
 - name: infer 0.2.3
   features: []
@@ -2849,7 +2849,7 @@
   features:
     - default
     - metered
-- name: scale-info 2.11.0
+- name: scale-info 2.11.1
   features:
     - decode
     - default
@@ -2857,7 +2857,7 @@
     - scale-info-derive
     - serde
     - std
-- name: scale-info-derive 2.10.0
+- name: scale-info-derive 2.11.1
   features: []
 - name: schannel 0.1.23
   features: []
@@ -2959,7 +2959,7 @@
 - name: serde_derive 1.0.197
   features:
     - default
-- name: serde_json 1.0.114
+- name: serde_json 1.0.115
   features:
     - alloc
     - default
@@ -3457,7 +3457,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.53
+- name: syn 2.0.58
   features:
     - clone-impls
     - default
@@ -3468,7 +3468,6 @@
     - parsing
     - printing
     - proc-macro
-    - quote
     - visit
     - visit-mut
 - name: sync_wrapper 0.1.2
@@ -3548,7 +3547,7 @@
     - tinyvec_macros
 - name: tinyvec_macros 0.1.1
   features: []
-- name: tokio 1.36.0
+- name: tokio 1.37.0
   features:
     - bytes
     - default
@@ -3872,6 +3871,8 @@
   features:
     - default
     - std
+- name: wasite 0.1.0
+  features: []
 - name: wasm-bindgen 0.2.91
   features:
     - default
@@ -4014,6 +4015,11 @@
     - vnet
 - name: which 4.4.2
   features: []
+<<<<<<< HEAD
+=======
+- name: whoami 1.5.1
+  features: []
+>>>>>>> master
 - name: wide 0.7.15
   features:
     - std
