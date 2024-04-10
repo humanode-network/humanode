@@ -2529,7 +2529,7 @@ checksum = "25cbce373ec4653f1a01a31e8a5e5ec0c622dc27ff9c4e6606eefef5cbbed4a5"
 [[package]]
 name = "fc-cli"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "clap",
  "ethereum-types",
@@ -2547,7 +2547,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "async-trait",
  "fp-consensus",
@@ -2563,7 +2563,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "async-trait",
  "ethereum",
@@ -2593,7 +2593,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -2616,7 +2616,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2666,7 +2666,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2679,7 +2679,7 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2857,7 +2857,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "hex",
  "impl-serde",
@@ -2876,7 +2876,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -2888,7 +2888,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2902,7 +2902,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "evm",
  "frame-support",
@@ -2917,7 +2917,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2934,7 +2934,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -2946,7 +2946,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -4046,7 +4046,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite 0.2.13",
- "socket2 0.4.10",
+ "socket2 0.5.5",
  "tokio",
  "tower-service",
  "tracing",
@@ -6312,7 +6312,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -6348,7 +6348,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "environmental",
  "evm",
@@ -6388,7 +6388,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-balances"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6402,7 +6402,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "fp-evm",
  "num",
@@ -6411,7 +6411,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "fp-evm",
  "tiny-keccak",
@@ -6420,7 +6420,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -6430,7 +6430,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-system"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#16957bb8e7d4e547cf1317e3c4daee54494f1074"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.42#34516f50ec44018b8f2cd18ce9d42fbf8ffd855b"
 dependencies = [
  "fp-evm",
  "frame-support",
