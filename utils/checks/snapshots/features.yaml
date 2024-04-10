@@ -1344,6 +1344,10 @@
     - default
 - name: http 0.2.12
   features: []
+- name: http 1.1.0
+  features:
+    - default
+    - std
 - name: http-body 0.4.6
   features: []
 - name: http-range-header 0.3.1
@@ -3656,7 +3660,7 @@
     - sync
     - time
     - tokio-util
-- name: tokio-tungstenite 0.20.1
+- name: tokio-tungstenite 0.21.0
   features:
     - connect
     - default
@@ -3795,7 +3799,7 @@
   features: []
 - name: tt-call 1.0.9
   features: []
-- name: tungstenite 0.20.1
+- name: tungstenite 0.21.0
   features:
     - data-encoding
     - handshake
@@ -3916,7 +3920,7 @@
   features: []
 - name: want 0.3.1
   features: []
-- name: warp 0.3.6
+- name: warp 0.3.7
   features:
     - default
     - multer
