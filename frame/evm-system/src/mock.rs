@@ -22,7 +22,8 @@ use mockall::mock;
 use sp_core::{H160, H256};
 use sp_runtime::{
 	generic,
-	traits::{BlakeTwo256, IdentityLookup}, BuildStorage,
+	traits::{BlakeTwo256, IdentityLookup},
+	BuildStorage,
 };
 use sp_std::{boxed::Box, prelude::*};
 
@@ -99,42 +100,41 @@ impl pallet_evm_system::Config for Test {
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-    // Build genesis.
-    let config = GenesisConfig {
-        ..Default::default()
-    };
-    let storage = config.build_storage().unwrap();
+	// Build genesis.
+	let config = GenesisConfig {
+		..Default::default()
+	};
+	let storage = config.build_storage().unwrap();
 
-    // Make test externalities from the storage.
-    storage.into()
+	// Make test externalities from the storage.
+	storage.into()
 }
 
 pub fn runtime_lock() -> std::sync::MutexGuard<'static, ()> {
-    static MOCK_RUNTIME_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
+	static MOCK_RUNTIME_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
-    // Ignore the poisoning for the tests that panic.
-    // We only care about concurrency here, not about the poisoning.
-    match MOCK_RUNTIME_MUTEX.lock() {
-        Ok(guard) => guard,
-        Err(poisoned) => poisoned.into_inner(),
-    }
+	// Ignore the poisoning for the tests that panic.
+	// We only care about concurrency here, not about the poisoning.
+	match MOCK_RUNTIME_MUTEX.lock() {
+		Ok(guard) => guard,
+		Err(poisoned) => poisoned.into_inner(),
+	}
 }
 
 pub trait TestExternalitiesExt {
-    fn execute_with_ext<R, E>(&mut self, execute: E) -> R
-    where
-        E: for<'e> FnOnce(&'e ()) -> R;
+	fn execute_with_ext<R, E>(&mut self, execute: E) -> R
+	where
+		E: for<'e> FnOnce(&'e ()) -> R;
 }
 
 impl TestExternalitiesExt for frame_support::sp_io::TestExternalities {
-    fn execute_with_ext<R, E>(&mut self, execute: E) -> R
-    where
-        E: for<'e> FnOnce(&'e ()) -> R,
-    {
-        let guard = runtime_lock();
-        let result = self.execute_with(|| execute(&guard));
-        drop(guard);
-        result
-    }
+	fn execute_with_ext<R, E>(&mut self, execute: E) -> R
+	where
+		E: for<'e> FnOnce(&'e ()) -> R,
+	{
+		let guard = runtime_lock();
+		let result = self.execute_with(|| execute(&guard));
+		drop(guard);
+		result
+	}
 }
-
