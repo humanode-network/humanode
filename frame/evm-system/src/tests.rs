@@ -46,7 +46,7 @@ fn create_account_works() {
 /// This test verifies that creating account fails when the account already exists.
 #[test]
 fn create_account_fails() {
-	new_test_ext().execute_with(|| {
+	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 		<Account<Test>>::insert(account_id.clone(), AccountInfo::<_, _>::default());
@@ -62,7 +62,7 @@ fn create_account_fails() {
 /// This test verifies that removing account works in the happy path.
 #[test]
 fn remove_account_works() {
-	new_test_ext().execute_with(|| {
+	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 		<Account<Test>>::insert(account_id.clone(), AccountInfo::<_, _>::default());
@@ -95,7 +95,7 @@ fn remove_account_works() {
 /// This test verifies that removing account fails when the account doesn't exist.
 #[test]
 fn remove_account_fails() {
-	new_test_ext().execute_with(|| {
+	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 
@@ -110,7 +110,7 @@ fn remove_account_fails() {
 /// This test verifies that incrementing account nonce works in the happy path.
 #[test]
 fn inc_account_nonce_works() {
-	new_test_ext().execute_with(|| {
+	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 
@@ -129,7 +129,7 @@ fn inc_account_nonce_works() {
 /// and returned data is `Some`. As a result, a new account has been created.
 #[test]
 fn try_mutate_exists_account_created() {
-	new_test_ext().execute_with(|| {
+	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 
@@ -170,7 +170,7 @@ fn try_mutate_exists_account_created() {
 /// and returned data is `Some`. As a result, the account has been updated.
 #[test]
 fn try_mutate_exists_account_updated() {
-	new_test_ext().execute_with(|| {
+	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 		let nonce = 1;
@@ -202,7 +202,7 @@ fn try_mutate_exists_account_updated() {
 /// and returned data is `None`. As a result, the account has been removed.
 #[test]
 fn try_mutate_exists_account_removed() {
-	new_test_ext().execute_with(|| {
+	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 		let nonce = 1;
@@ -245,7 +245,7 @@ fn try_mutate_exists_account_removed() {
 /// and returned data is `None`. As a result, the account hasn't been created.
 #[test]
 fn try_mutate_exists_account_not_created() {
-	new_test_ext().execute_with(|| {
+	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 
@@ -271,7 +271,7 @@ fn try_mutate_exists_account_not_created() {
 /// during data mutation.
 #[test]
 fn try_mutate_exists_fails_without_changes() {
-	new_test_ext().execute_with(|| {
+	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 		let nonce = 1;
