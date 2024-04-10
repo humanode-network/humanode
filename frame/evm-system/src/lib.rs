@@ -6,9 +6,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::traits::StoredMap;
-use sp_runtime::{traits::One, RuntimeDebug, DispatchResult, DispatchError};
-use scale_codec::{Encode, Decode, MaxEncodedLen, FullCodec};
+use scale_codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use scale_info::TypeInfo;
+use sp_runtime::{traits::One, DispatchError, DispatchResult, RuntimeDebug};
 
 #[cfg(test)]
 mod mock;
@@ -18,7 +18,17 @@ mod tests;
 pub use pallet::*;
 
 /// Account information.
-#[derive(Clone, Eq, PartialEq, Default, RuntimeDebug, Encode, Decode, TypeInfo, MaxEncodedLen)]
+#[derive(
+	Clone,
+	Eq,
+	PartialEq,
+	Default,
+	RuntimeDebug,
+	Encode,
+	Decode,
+	TypeInfo,
+	MaxEncodedLen
+)]
 pub struct AccountInfo<Index, AccountData> {
 	/// The number of transactions this account has sent.
 	pub nonce: Index,
@@ -31,7 +41,7 @@ pub struct AccountInfo<Index, AccountData> {
 pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
-	use sp_runtime::traits::{MaybeDisplay, AtLeast32Bit};
+	use sp_runtime::traits::{AtLeast32Bit, MaybeDisplay};
 	use sp_std::fmt::Debug;
 
 	#[pallet::pallet]
@@ -96,13 +106,13 @@ pub mod pallet {
 		KilledAccount { account: <T as Config>::AccountId },
 	}
 
-    #[pallet::error]
-    pub enum Error<T> {
+	#[pallet::error]
+	pub enum Error<T> {
 		/// The account already exists in case creating it.
-        AccountAlreadyExist,
+		AccountAlreadyExist,
 		/// The account doesn't exist in case removing it.
 		AccountNotExist,
-    }
+	}
 }
 
 impl<T: Config> Pallet<T> {

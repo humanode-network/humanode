@@ -5,7 +5,17 @@ use frame_support::traits::WithdrawReasons;
 use super::*;
 
 /// All balance information for an account.
-#[derive(Encode, Decode, Clone, PartialEq, Eq, Default, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+#[derive(
+	Encode,
+	Decode,
+	Clone,
+	PartialEq,
+	Eq,
+	Default,
+	RuntimeDebug,
+	MaxEncodedLen,
+	TypeInfo
+)]
 pub struct AccountData<Balance> {
 	/// Non-reserved part of the balance. There may still be restrictions on this, but it is the
 	/// total pool what may in principle be transferred, reserved and used for tipping.
@@ -23,7 +33,17 @@ impl<Balance: Copy> AccountData<Balance> {
 }
 
 /// Simplified reasons for withdrawing balance.
-#[derive(Encode, Decode, Clone, Copy, PartialEq, Eq, RuntimeDebug, MaxEncodedLen, TypeInfo)]
+#[derive(
+	Encode,
+	Decode,
+	Clone,
+	Copy,
+	PartialEq,
+	Eq,
+	RuntimeDebug,
+	MaxEncodedLen,
+	TypeInfo
+)]
 pub enum Reasons {
 	/// Paying system transaction fees.
 	Fee = 0,
