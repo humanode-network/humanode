@@ -11,6 +11,16 @@ use crate::{mock::*, *};
 mod currency;
 mod fungible;
 
+fn assert_total_issuance_invariant() {
+	let iterated_total_issuance: u64 = <pallet_evm_system::Account<Test>>::iter_values()
+		.map(|account_data| account_data.data.total())
+		.sum();
+
+	let total_issuance = EvmBalances::total_issuance();
+
+	assert_eq!(iterated_total_issuance, total_issuance);
+}
+
 #[test]
 fn basic_setup_works() {
 	new_test_ext().execute_with_ext(|_| {
@@ -23,6 +33,36 @@ fn basic_setup_works() {
 			<EvmBalances>::account(&bob()),
 			account_data::AccountData { free: INIT_BALANCE }
 		);
+
+		assert_total_issuance_invariant();
+	});
+}
+
+#[test]
+fn evm_system_removing_account_non_zero_balance() {
+	new_test_ext().execute_with_ext(|_| {
+		// Prepare test preconditions.
+		let contract = H160::from_str("1000000000000000000000000000000000000003").unwrap();
+		EVM::create_account(contract, vec![1, 2, 3]);
+
+		// Transfer some balance to contract address.
+		assert_ok!(EvmBalances::transfer(
+			&alice(),
+			&contract,
+			1000,
+			ExistenceRequirement::KeepAlive
+		));
+
+		assert_eq!(EvmBalances::free_balance(&contract), 1000);
+
+		// Invoke the function under test.
+		EVM::remove_account(&contract);
+
+		// Assert state changes.
+		assert_eq!(EvmBalances::free_balance(&contract), 1000);
+		assert!(EvmSystem::account_exists(&contract));
+
+		assert_total_issuance_invariant();
 	});
 }
 
@@ -47,6 +87,8 @@ fn evm_fee_deduction() {
 		// Refund fees as 5 units
 		<<Test as pallet_evm::Config>::OnChargeTransaction as pallet_evm::OnChargeEVMTransaction<Test>>::correct_and_deposit_fee(&charlie, U256::from(5), U256::from(5), imbalance);
 		assert_eq!(EvmBalances::free_balance(&charlie), 95);
+
+		assert_total_issuance_invariant();
 	});
 }
 
@@ -83,6 +125,8 @@ fn evm_issuance_after_tip() {
 		let after_tip = <Test as pallet_evm::Config>::Currency::total_issuance();
 
 		assert_eq!(after_tip, (before_tip - (base_fee * 21_000)));
+
+		assert_total_issuance_invariant();
 	});
 }
 
@@ -119,6 +163,8 @@ fn evm_refunds_should_work() {
 		let total_cost = (U256::from(21_000) * base_fee) + U256::from(1);
 		let after_call = EVM::account_basic(&alice()).0.balance;
 		assert_eq!(after_call, before_call - total_cost);
+
+		assert_total_issuance_invariant();
 	});
 }
 
@@ -160,6 +206,8 @@ fn evm_refunds_and_priority_should_work() {
 		let after_call = EVM::account_basic(&alice()).0.balance;
 		// The tip is deducted but never refunded to the caller.
 		assert_eq!(after_call, before_call - total_cost);
+
+		assert_total_issuance_invariant();
 	});
 }
 
@@ -191,6 +239,8 @@ fn evm_call_should_fail_with_priority_greater_than_max_fee() {
 		assert!(result.is_err());
 		// Some used weight is returned as part of the error.
 		assert_eq!(result.unwrap_err().weight, Weight::from_parts(7, 0));
+
+		assert_total_issuance_invariant();
 	});
 }
 
@@ -221,5 +271,7 @@ fn evm_call_should_succeed_with_priority_equal_to_max_fee() {
 			<Test as pallet_evm::Config>::config(),
 		);
 		assert!(result.is_ok());
+
+		assert_total_issuance_invariant();
 	});
 }

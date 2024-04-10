@@ -8,7 +8,7 @@
 use frame_support::traits::StoredMap;
 use scale_codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use scale_info::TypeInfo;
-use sp_runtime::{traits::One, DispatchError, DispatchResult, RuntimeDebug};
+use sp_runtime::{traits::One, DispatchError, RuntimeDebug};
 
 #[cfg(test)]
 mod mock;
@@ -115,6 +115,26 @@ pub mod pallet {
 	}
 }
 
+/// The outcome of the account creation operation.
+#[derive(Eq, PartialEq, RuntimeDebug)]
+pub enum AccountCreationOutcome {
+	/// Account was created.
+	Created,
+	/// Account already exists in the system, so action was taken.
+	AlreadyExists,
+}
+
+/// The outcome of the account removal operation.
+#[derive(Eq, PartialEq, RuntimeDebug)]
+pub enum AccountRemovalOutcome {
+	/// Account was destroyed and no longer exists.
+	Reaped,
+	/// Account was non-empty, and it was retained and still exists in the system.
+	Retained,
+	/// Account did not exist in the first place, so no action was taken.
+	DidNotExist,
+}
+
 impl<T: Config> Pallet<T> {
 	/// Check the account existence.
 	pub fn account_exists(who: &<T as Config>::AccountId) -> bool {
@@ -144,25 +164,29 @@ impl<T: Config> Pallet<T> {
 	}
 
 	/// Create an account.
-	pub fn create_account(who: &<T as Config>::AccountId) -> DispatchResult {
+	pub fn create_account(who: &<T as Config>::AccountId) -> AccountCreationOutcome {
 		if Self::account_exists(who) {
-			return Err(Error::<T>::AccountAlreadyExist.into());
+			return AccountCreationOutcome::AlreadyExists;
 		}
 
 		Account::<T>::insert(who.clone(), AccountInfo::<_, _>::default());
 		Self::on_created_account(who.clone());
-		Ok(())
+		AccountCreationOutcome::Created
 	}
 
 	/// Remove an account.
-	pub fn remove_account(who: &<T as Config>::AccountId) -> DispatchResult {
+	pub fn remove_account(who: &<T as Config>::AccountId) -> AccountRemovalOutcome {
 		if !Self::account_exists(who) {
-			return Err(Error::<T>::AccountNotExist.into());
+			return AccountRemovalOutcome::DidNotExist;
+		}
+
+		if Account::<T>::get(who).data != <T as Config>::AccountData::default() {
+			return AccountRemovalOutcome::Retained;
 		}
 
 		Account::<T>::remove(who);
 		Self::on_killed_account(who.clone());
-		Ok(())
+		AccountRemovalOutcome::Reaped
 	}
 }
 
