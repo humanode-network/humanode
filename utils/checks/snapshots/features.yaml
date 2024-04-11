@@ -84,7 +84,7 @@
   features: []
 - name: anstyle-wincon 3.0.2
   features: []
-- name: anyhow 1.0.81
+- name: anyhow 1.0.82
   features:
     - default
     - std
@@ -1331,6 +1331,10 @@
     - default
 - name: http 0.2.12
   features: []
+- name: http 1.1.0
+  features:
+    - default
+    - std
 - name: http-body 0.4.6
   features: []
 - name: http-range-header 0.3.1
@@ -2454,7 +2458,7 @@
     - rustls
     - tls-rustls
     - webpki
-- name: quote 1.0.35
+- name: quote 1.0.36
   features:
     - default
     - proc-macro
@@ -2849,7 +2853,7 @@
   features:
     - default
     - metered
-- name: scale-info 2.11.1
+- name: scale-info 2.11.2
   features:
     - decode
     - default
@@ -2857,7 +2861,7 @@
     - scale-info-derive
     - serde
     - std
-- name: scale-info-derive 2.11.1
+- name: scale-info-derive 2.11.2
   features: []
 - name: schannel 0.1.23
   features: []
@@ -3586,7 +3590,7 @@
     - sync
     - time
     - tokio-util
-- name: tokio-tungstenite 0.20.1
+- name: tokio-tungstenite 0.21.0
   features:
     - connect
     - default
@@ -3735,7 +3739,7 @@
   features: []
 - name: tt-call 1.0.9
   features: []
-- name: tungstenite 0.20.1
+- name: tungstenite 0.21.0
   features:
     - data-encoding
     - handshake
@@ -3856,7 +3860,7 @@
   features: []
 - name: want 0.3.1
   features: []
-- name: warp 0.3.6
+- name: warp 0.3.7
   features:
     - default
     - multer
