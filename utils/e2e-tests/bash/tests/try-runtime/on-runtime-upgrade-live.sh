@@ -8,7 +8,7 @@ LIVE_NETWORK_URL="wss://explorer-rpc-ws.mainnet.stages.humanode.io:443"
   --detailed-log-output \
   --runtime "$RUNTIME_WASM_PATH"  \
   on-runtime-upgrade \
-  --checks try-state
+  --checks=try-state \
   live \
   --uri "$LIVE_NETWORK_URL"
 
