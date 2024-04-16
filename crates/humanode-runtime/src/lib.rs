@@ -445,7 +445,7 @@ impl pallet_balances::Config for Runtime {
     type Balance = Balance;
     /// The ubiquitous event type.
     type RuntimeEvent = RuntimeEvent;
-    type DustRemoval = TreasuryPot;
+    type DustRemoval = pallet_pot::DepositUnbalancedFungible<Self, PotInstanceTreasury>;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
     type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
@@ -457,7 +457,10 @@ parameter_types! {
 
 impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, FeesPot>;
+    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<
+        Balances,
+        pallet_pot::DepositUnbalancedCurrency<Self, PotInstanceFees>,
+    >;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = frame_support::weights::ConstantMultiplier<
         Balance,
