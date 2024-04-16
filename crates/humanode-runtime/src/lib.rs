@@ -443,7 +443,7 @@ impl pallet_balances::Config for Runtime {
     type ReserveIdentifier = [u8; 8];
     /// The type for recording an account's balance.
     type Balance = Balance;
-    type DustRemoval = pallet_pot::OnUnbalancedOverCredit<Self, PotInstanceTreasury>;
+    type DustRemoval = pallet_pot::DepositUnbalancedFungible<Self, PotInstanceTreasury>;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
     type MaxLocks = ConstU32<50>;
@@ -466,7 +466,10 @@ parameter_types! {
 
 impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, FeesPot>;
+    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<
+        Balances,
+        pallet_pot::DepositUnbalancedCurrency<Self, PotInstanceFees>,
+    >;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = frame_support::weights::ConstantMultiplier<
         Balance,

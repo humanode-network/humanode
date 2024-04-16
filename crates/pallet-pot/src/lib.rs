@@ -5,11 +5,14 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::{
-    fungible::{Balanced, Credit, Inspect},
-    Imbalance, OnUnbalanced, StorageVersion,
+use frame_support::{
+    pallet_prelude::*,
+    traits::{
+        fungible::{Balanced, Credit, Inspect},
+        Currency, Imbalance, OnUnbalanced, StorageVersion,
+    },
+    PalletId,
 };
-use frame_support::{pallet_prelude::*, traits::Currency, PalletId};
 use frame_system::pallet_prelude::*;
 use sp_runtime::traits::{AccountIdConversion, CheckedSub, MaybeDisplay, Saturating};
 
@@ -197,30 +200,37 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     }
 }
 
-impl<T: Config<I>, I: 'static> OnUnbalanced<NegativeImbalanceOf<T, I>> for Pallet<T, I> {
+/// Handle unbalanced funds by depositing them into this pot.
+///
+/// Implementation for [`Currency`].
+pub struct DepositUnbalancedCurrency<T, I>(PhantomData<(T, I)>);
+
+impl<T: Config<I>, I: 'static> OnUnbalanced<NegativeImbalanceOf<T, I>>
+    for DepositUnbalancedCurrency<T, I>
+{
     fn on_nonzero_unbalanced(amount: NegativeImbalanceOf<T, I>) {
         let numeric_amount = amount.peek();
 
         // Must resolve into existing but better to be safe.
-        T::Currency::resolve_creating(&Self::account_id(), amount);
+        T::Currency::resolve_creating(&Pallet::<T, I>::account_id(), amount);
 
-        Self::deposit_event(Event::Deposit {
+        Pallet::<T, I>::deposit_event(Event::Deposit {
             value: numeric_amount,
         });
     }
 }
 
-/// A helper to handle `OnUnbalanced` implementation over `CreditOf`
-/// to avoid conflicting implmentation.
-pub struct OnUnbalancedOverCredit<T, I>(Pallet<T, I>);
+/// Handle unbalanced funds by depositing them into this pot.
+///
+/// Implementation for [`Fungible`].
+pub struct DepositUnbalancedFungible<T, I>(PhantomData<(T, I)>);
 
-impl<T: Config<I>, I: 'static> OnUnbalanced<CreditOf<T, I>> for OnUnbalancedOverCredit<T, I> {
+impl<T: Config<I>, I: 'static> OnUnbalanced<CreditOf<T, I>> for DepositUnbalancedFungible<T, I> {
     fn on_nonzero_unbalanced(amount: CreditOf<T, I>) {
         let numeric_amount = amount.peek();
 
         // Pot account already exists.
         let _ = T::Currency::resolve(&Pallet::<T, I>::account_id(), amount);
-        T::Currency::done_deposit(&Pallet::<T, I>::account_id(), numeric_amount);
 
         Pallet::<T, I>::deposit_event(Event::Deposit {
             value: numeric_amount,

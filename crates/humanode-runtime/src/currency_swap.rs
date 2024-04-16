@@ -3,7 +3,8 @@ use sp_runtime::traits::Identity;
 
 use crate::{
     parameter_types, AccountId, Balances, EvmAccountId, EvmBalances, EvmToNativeSwapBridgePot,
-    FeesPot, NativeToEvmSwapBridgePot, TreasuryPot,
+    NativeToEvmSwapBridgePot, PotInstanceEvmToNativeSwapBridge, PotInstanceFees,
+    PotInstanceTreasury, Runtime,
 };
 
 parameter_types! {
@@ -51,12 +52,12 @@ impl primitives_currency_swap_proxy::Config for EvmToNativeProxyConfig {
 
 pub type FeesPotProxy = primitives_currency_swap_proxy::SwapUnbalanced<
     EvmToNativeProxyConfig,
-    FeesPot,
-    EvmToNativeSwapBridgePot,
+    pallet_pot::DepositUnbalancedCurrency<Runtime, PotInstanceFees>,
+    pallet_pot::DepositUnbalancedCurrency<Runtime, PotInstanceEvmToNativeSwapBridge>,
 >;
 
 pub type TreasuryPotProxy = primitives_currency_swap_proxy::SwapUnbalanced<
     EvmToNativeProxyConfig,
-    TreasuryPot,
-    EvmToNativeSwapBridgePot,
+    pallet_pot::DepositUnbalancedCurrency<Runtime, PotInstanceTreasury>,
+    pallet_pot::DepositUnbalancedCurrency<Runtime, PotInstanceEvmToNativeSwapBridge>,
 >;
