@@ -64,14 +64,21 @@ pub fn migrate<T: Config>() -> Weight {
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
 pub fn pre_migrate<T: Config>() -> Vec<u8> {
-    // Ensure the new identities don't exist yet (i.e. we have clear space to migrate).
-    assert_eq!(<SessionIdentities<T>>::iter().next(), None);
+    let onchain = <Pallet<T>>::on_chain_storage_version();
 
-    // Record the count of identities.
-    let identities_count: u64 = <CurrentSessionIdentities<T>>::iter()
-        .count()
-        .try_into()
-        .unwrap();
+    if onchain < 1 {
+        // Ensure the new identities don't exist yet (i.e. we have clear space to migrate).
+        assert_eq!(<SessionIdentities<T>>::iter().next(), None);
+
+        // Record the count of identities.
+        let identities_count: u64 = <CurrentSessionIdentities<T>>::iter()
+            .count()
+            .try_into()
+            .unwrap();
+        return identities_count.encode();
+    }
+
+    let identities_count: u64 = <SessionIdentities<T>>::iter().count().try_into().unwrap();
     identities_count.encode()
 }
 
