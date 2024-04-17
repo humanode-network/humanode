@@ -18,11 +18,11 @@ impl<T: frame_system::Config> pallet_im_online::WeightInfo for WeightInfo<T> {
     //  Measured:  `260 + k * (32 ±0)`
     //  Estimated: `0`
     // Minimum execution time: 85_000_000 picoseconds.
-    Weight::from_parts(49_602_420, 0)
-      // Standard Error: 8_668
-      .saturating_add(Weight::from_parts(44_044, 0).saturating_mul(k.into()))
-      // Standard Error: 87_477
-      .saturating_add(Weight::from_parts(353_535, 0).saturating_mul(e.into()))
+    Weight::from_parts(57_686_231, 0)
+      // Standard Error: 1_733
+      .saturating_add(Weight::from_parts(41_041, 0).saturating_mul(k.into()))
+      // Standard Error: 17_495
+      .saturating_add(Weight::from_parts(272_727, 0).saturating_mul(e.into()))
       .saturating_add(T::DbWeight::get().reads(5))
       .saturating_add(T::DbWeight::get().writes(1))
   }
