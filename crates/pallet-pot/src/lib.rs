@@ -222,7 +222,7 @@ impl<T: Config<I>, I: 'static> OnUnbalanced<NegativeImbalanceOf<T, I>>
 
 /// Handle unbalanced funds by depositing them into this pot.
 ///
-/// Implementation for [`Fungible`].
+/// Implementation for `Fungible` behavior.
 pub struct DepositUnbalancedFungible<T, I>(PhantomData<(T, I)>);
 
 impl<T: Config<I>, I: 'static> OnUnbalanced<CreditOf<T, I>> for DepositUnbalancedFungible<T, I> {
