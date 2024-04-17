@@ -51,10 +51,11 @@ where
         D: AsRef<[u8]> + Send + 'a,
     {
         let data = data.as_ref();
-        let outcome = self
-            .keystore
-            .sign_with(PK::ID, PK::CRYPTO_ID, self.public_key.0.as_slice(), data)
-            .map_err(SignerError::Keystore)?;
+        let outcome = tokio::task::block_in_place(move || {
+            self.keystore
+                .sign_with(PK::ID, PK::CRYPTO_ID, self.public_key.0.as_slice(), data)
+        })
+        .map_err(SignerError::Keystore)?;
 
         outcome.ok_or(SignerError::NoSignature)
     }
