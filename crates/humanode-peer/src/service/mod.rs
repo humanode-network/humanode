@@ -605,11 +605,9 @@ fn init_dev_bioauth_keystore_keys<Keystore: sp_keystore::Keystore + ?Sized>(
 ) -> Result<(), sp_keystore::Error> {
     if let Some(seed) = seed {
         use sp_application_crypto::AppCrypto;
-        let _public = sp_keystore::Keystore::sr25519_generate_new(
-            keystore,
-            KeystoreBioauthId::ID,
-            Some(seed),
-        )?;
+        let _public = tokio::task::block_in_place(move || {
+            sp_keystore::Keystore::sr25519_generate_new(keystore, KeystoreBioauthId::ID, Some(seed))
+        })?;
     }
     Ok(())
 }

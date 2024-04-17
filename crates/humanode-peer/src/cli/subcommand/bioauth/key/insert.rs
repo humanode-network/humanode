@@ -58,7 +58,9 @@ pub async fn insert_bioauth_key<PK: AppPublic>(
     keystore: Arc<dyn Keystore>,
 ) -> sc_cli::Result<()> {
     // We don't use a password for keystore at the current moment. That's why None is passed.
-    let pair = utils::pair_from_suri::<<PK as AppCrypto>::Pair>(suri, None)?;
+    let pair = tokio::task::block_in_place(move || {
+        utils::pair_from_suri::<<PK as AppCrypto>::Pair>(suri, None)
+    })?;
     let public = pair.public().as_ref().to_vec();
     keystore
         .insert(PK::ID, suri, &public[..])
