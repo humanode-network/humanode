@@ -1929,7 +1929,7 @@
   features: []
 - name: nu-ansi-term 0.46.0
   features: []
-- name: num 0.4.1
+- name: num 0.4.2
   features:
     - alloc
     - default
