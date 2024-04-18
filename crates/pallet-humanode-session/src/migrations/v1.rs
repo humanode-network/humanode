@@ -67,7 +67,7 @@ pub fn pre_migrate<T: Config>() -> Vec<u8> {
     let onchain = <Pallet<T>>::on_chain_storage_version();
 
     // Disable the check for newer versions by returning an empty state.
-    if onchain > 0 {
+    if onchain >= 1 {
         return vec![];
     }
 
