@@ -137,7 +137,7 @@
   features:
     - default
     - std
-- name: async-trait 0.1.79
+- name: async-trait 0.1.80
   features: []
 - name: asynchronous-codec 0.6.2
   features:
@@ -348,7 +348,7 @@
     - rand_core
 - name: checked_int_cast 1.0.0
   features: []
-- name: chrono 0.4.37
+- name: chrono 0.4.38
   features:
     - alloc
     - android-tzdata
@@ -1904,7 +1904,7 @@
   features: []
 - name: nu-ansi-term 0.46.0
   features: []
-- name: num 0.4.1
+- name: num 0.4.2
   features:
     - alloc
     - default
@@ -2404,7 +2404,7 @@
   features: []
 - name: proc-macro-warning 0.3.1
   features: []
-- name: proc-macro2 1.0.79
+- name: proc-macro2 1.0.80
   features:
     - default
     - proc-macro
