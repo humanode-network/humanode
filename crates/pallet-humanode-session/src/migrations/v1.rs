@@ -4,7 +4,7 @@ use frame_support::pallet_prelude::*;
 use frame_support::storage_alias;
 use frame_support::{dispatch::GetStorageVersion, sp_tracing::info, traits::Get, weights::Weight};
 #[cfg(feature = "try-runtime")]
-use sp_std::vec::Vec;
+use sp_std::{vec, vec::Vec};
 
 use crate::IdentificationFor;
 use crate::{Config, CurrentSessionIndex, Pallet, SessionIdentities};
@@ -66,19 +66,19 @@ pub fn migrate<T: Config>() -> Weight {
 pub fn pre_migrate<T: Config>() -> Vec<u8> {
     let onchain = <Pallet<T>>::on_chain_storage_version();
 
-    if onchain < 1 {
-        // Ensure the new identities don't exist yet (i.e. we have clear space to migrate).
-        assert_eq!(<SessionIdentities<T>>::iter().next(), None);
-
-        // Record the count of identities.
-        let identities_count: u64 = <CurrentSessionIdentities<T>>::iter()
-            .count()
-            .try_into()
-            .unwrap();
-        return identities_count.encode();
+    // Disable the check for newer versions by returning an empty state.
+    if onchain > 0 {
+        return vec![];
     }
 
-    let identities_count: u64 = <SessionIdentities<T>>::iter().count().try_into().unwrap();
+    // Ensure the new identities don't exist yet (i.e. we have clear space to migrate).
+    assert_eq!(<SessionIdentities<T>>::iter().next(), None);
+
+    // Record the count of identities.
+    let identities_count: u64 = <CurrentSessionIdentities<T>>::iter()
+        .count()
+        .try_into()
+        .unwrap();
     identities_count.encode()
 }
 
@@ -87,6 +87,11 @@ pub fn pre_migrate<T: Config>() -> Vec<u8> {
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
 pub fn post_migrate<T: Config>(state: Vec<u8>) {
+    // Empty state means that the check is disabled.
+    if state.is_empty() {
+        return;
+    }
+
     // Ensure version is updated correctly.
     let onchain = <Pallet<T>>::on_chain_storage_version();
     assert_eq!(onchain, 1);
