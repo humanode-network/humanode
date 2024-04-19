@@ -92,6 +92,34 @@
   features: []
 - name: arc-swap 1.6.0
   features: []
+- name: ark-bls12-381 0.4.0
+  features:
+    - curve
+    - scalar_field
+    - std
+- name: ark-ec 0.4.2
+  features:
+    - default
+    - std
+- name: ark-ff 0.4.2
+  features:
+    - std
+- name: ark-ff-asm 0.4.2
+  features: []
+- name: ark-ff-macros 0.4.2
+  features: []
+- name: ark-poly 0.4.2
+  features: []
+- name: ark-serialize 0.4.2
+  features:
+    - ark-serialize-derive
+    - derive
+    - std
+- name: ark-serialize-derive 0.4.2
+  features: []
+- name: ark-std 0.4.0
+  features:
+    - std
 - name: array-bytes 4.2.0
   features: []
 - name: arrayref 0.3.7
@@ -647,6 +675,9 @@
     - alloc
     - powerfmt
     - std
+- name: derivative 2.2.0
+  features:
+    - use_core
 - name: derive-syn-parse 0.1.5
   features: []
 - name: derive_builder 0.11.2
@@ -1288,6 +1319,7 @@
 - name: hashbrown 0.13.2
   features:
     - ahash
+    - default
     - inline-more
     - raw
 - name: hashbrown 0.14.3
@@ -2177,6 +2209,8 @@
   features:
     - default
     - std
+- name: pallet-evm-test-vector-support 1.0.0-dev
+  features: []
 - name: pallet-grandpa 4.0.0-dev
   features:
     - std
@@ -2362,6 +2396,10 @@
   features:
     - default
     - serde
+    - std
+- name: precompile-bls12381 0.1.0
+  features:
+    - default
     - std
 - name: precompile-currency-swap 0.1.0
   features:
