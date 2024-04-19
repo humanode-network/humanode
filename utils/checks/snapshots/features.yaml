@@ -2209,6 +2209,8 @@
   features:
     - default
     - std
+- name: pallet-evm-test-vector-support 1.0.0-dev
+  features: []
 - name: pallet-grandpa 4.0.0-dev
   features:
     - std
