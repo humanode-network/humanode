@@ -1,6 +1,7 @@
 //! A precompile to support BLS-12381.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![allow(clippy::arithmetic_side_effects)]
 
 // Arkworks
 use ark_bls12_381::{
@@ -304,7 +305,7 @@ impl Bls12381G1MultiExp {
             BLS12381_MULTIEXP_DISCOUNT_TABLE[d_len - 1]
         };
         // Calculate gas and return the result
-        k as u64 * Bls12381G1Mul::GAS_COST * discount as u64 / Bls12381G1MultiExp::MULTIPLIER
+        k as u64 * Bls12381G1Mul::GAS_COST * u64::from(discount) / Bls12381G1MultiExp::MULTIPLIER
     }
 }
 
@@ -452,7 +453,7 @@ impl Bls12381G2MultiExp {
             BLS12381_MULTIEXP_DISCOUNT_TABLE[d_len - 1]
         };
         // Calculate gas and return the result
-        k as u64 * Bls12381G2Mul::GAS_COST * discount as u64 / Bls12381G2MultiExp::MULTIPLIER
+        k as u64 * Bls12381G2Mul::GAS_COST * u64::from(discount) / Bls12381G2MultiExp::MULTIPLIER
     }
 }
 
