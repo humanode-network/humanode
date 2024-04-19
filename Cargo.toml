@@ -158,6 +158,12 @@ pallet-evm-precompile-sha3fips = { git = "https://github.com/humanode-network/fr
 pallet-evm-precompile-simple = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 pallet-evm-system = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 
+# Arkworks
+ark-bls12-381 = { version = "0.4", default-features = false, features = ["curve"] }
+ark-ec = { version = "0.4", default-features = false }
+ark-ff = { version = "0.4", default-features = false }
+ark-std = { version = "0.4", default-features = false }
+
 [profile.release-lto]
 inherits = "release"
 lto = "thin"

@@ -1,0 +1,28 @@
+[package]
+name = "precompile-bls12381"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+# Arkworks
+ark-bls12-381 = { workspace = true }
+ark-ec = { workspace = true }
+ark-ff = { workspace = true }
+ark-std = { workspace = true }
+
+# Frontier
+fp-evm = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	# Arkworks
+	"ark-bls12-381/std",
+	"ark-ec/std",
+	"ark-ff/std",
+	"ark-std/std",
+
+	# Frontier
+	"fp-evm/std",
+]
