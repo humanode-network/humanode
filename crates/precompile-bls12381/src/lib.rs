@@ -21,6 +21,9 @@ use fp_evm::{
     PrecompileResult,
 };
 
+#[cfg(test)]
+mod tests;
+
 /// Gas discount table for BLS12-381 G1 and G2 multi exponentiation operations.
 const BLS12381_MULTIEXP_DISCOUNT_TABLE: [u16; 128] = [
     1200, 888, 764, 641, 594, 547, 500, 453, 438, 423, 408, 394, 379, 364, 349, 334, 330, 326, 322,

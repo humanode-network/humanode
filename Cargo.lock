@@ -6549,6 +6549,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-test-vector-support"
+version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#ac5c3415f47adf126419579924052daff07301e1"
+dependencies = [
+ "evm",
+ "fp-evm",
+ "hex",
+ "serde",
+ "serde_json",
+ "sp-core",
+]
+
+[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
@@ -7215,6 +7228,7 @@ dependencies = [
  "ark-ff",
  "ark-std",
  "fp-evm",
+ "pallet-evm-test-vector-support",
 ]
 
 [[package]]
