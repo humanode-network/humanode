@@ -1,0 +1,25 @@
+[package]
+name = "precompile-bls12381"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+ark-bls12-381 = { workspace = true }
+ark-ec = { workspace = true }
+ark-ff = { workspace = true }
+ark-std = { workspace = true }
+fp-evm = { workspace = true }
+
+[dev-dependencies]
+pallet-evm-test-vector-support = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+  "ark-bls12-381/std",
+  "ark-ec/std",
+  "ark-ff/std",
+  "ark-std/std",
+  "fp-evm/std",
+]
