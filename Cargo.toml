@@ -9,6 +9,10 @@ ignored = ["codec", "scale-info", "num_enum"]
 # Crates.io deps.
 
 anyhow = { version = "1", default-features = false }
+ark-bls12-381 = { version = "0.4", default-features = false, features = ["curve"] }
+ark-ec = { version = "0.4", default-features = false }
+ark-ff = { version = "0.4", default-features = false }
+ark-std = { version = "0.4", default-features = false }
 assert_matches = { version = "1.5", default-features = false }
 async-trait = { version = "0.1", default-features = false }
 bip32 = { version = "0.5.1", default-features = false }
@@ -43,7 +47,7 @@ quote = { version = "1.0", default-features = false }
 rand = { version = "0.8", default-features = false }
 reqwest = { version = "0.11", default-features = false }
 rustc-hex = { version = "2", default-features = false }
-scale-info = { version = "2.11.1", default-features = false }
+scale-info = { version = "2.11.2", default-features = false }
 secp256k1 = { version = "0.27", default-features = false }
 serde = { version = "1", default-features = false }
 serde_json = { version = "1", default-features = false }
@@ -157,6 +161,7 @@ pallet-evm-precompile-modexp = { git = "https://github.com/humanode-network/fron
 pallet-evm-precompile-sha3fips = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 pallet-evm-precompile-simple = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 pallet-evm-system = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
+pallet-evm-test-vector-support = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 
 [profile.release-lto]
 inherits = "release"

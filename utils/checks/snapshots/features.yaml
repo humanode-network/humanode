@@ -84,7 +84,7 @@
   features: []
 - name: anstyle-wincon 3.0.2
   features: []
-- name: anyhow 1.0.81
+- name: anyhow 1.0.82
   features:
     - default
     - std
@@ -92,6 +92,34 @@
   features: []
 - name: arc-swap 1.6.0
   features: []
+- name: ark-bls12-381 0.4.0
+  features:
+    - curve
+    - scalar_field
+    - std
+- name: ark-ec 0.4.2
+  features:
+    - default
+    - std
+- name: ark-ff 0.4.2
+  features:
+    - std
+- name: ark-ff-asm 0.4.2
+  features: []
+- name: ark-ff-macros 0.4.2
+  features: []
+- name: ark-poly 0.4.2
+  features: []
+- name: ark-serialize 0.4.2
+  features:
+    - ark-serialize-derive
+    - derive
+    - std
+- name: ark-serialize-derive 0.4.2
+  features: []
+- name: ark-std 0.4.0
+  features:
+    - std
 - name: array-bytes 4.2.0
   features: []
 - name: arrayref 0.3.7
@@ -137,7 +165,7 @@
   features:
     - default
     - std
-- name: async-trait 0.1.79
+- name: async-trait 0.1.80
   features: []
 - name: asynchronous-codec 0.6.2
   features:
@@ -351,7 +379,7 @@
     - rand_core
 - name: checked_int_cast 1.0.0
   features: []
-- name: chrono 0.4.37
+- name: chrono 0.4.38
   features:
     - alloc
     - android-tzdata
@@ -647,6 +675,9 @@
     - alloc
     - powerfmt
     - std
+- name: derivative 2.2.0
+  features:
+    - use_core
 - name: derive-syn-parse 0.1.5
   features: []
 - name: derive_builder 0.11.2
@@ -1233,7 +1264,7 @@
 - name: getrandom 0.1.16
   features:
     - std
-- name: getrandom 0.2.12
+- name: getrandom 0.2.14
   features:
     - std
 - name: ghash 0.4.4
@@ -1288,6 +1319,7 @@
 - name: hashbrown 0.13.2
   features:
     - ahash
+    - default
     - inline-more
     - raw
 - name: hashbrown 0.14.3
@@ -1344,6 +1376,10 @@
     - default
 - name: http 0.2.12
   features: []
+- name: http 1.1.0
+  features:
+    - default
+    - std
 - name: http-body 0.4.6
   features: []
 - name: http-range-header 0.3.1
@@ -1925,7 +1961,7 @@
   features: []
 - name: nu-ansi-term 0.46.0
   features: []
-- name: num 0.4.1
+- name: num 0.4.2
   features:
     - alloc
     - default
@@ -2173,6 +2209,8 @@
   features:
     - default
     - std
+- name: pallet-evm-test-vector-support 1.0.0-dev
+  features: []
 - name: pallet-grandpa 4.0.0-dev
   features:
     - std
@@ -2359,6 +2397,10 @@
     - default
     - serde
     - std
+- name: precompile-bls12381 0.1.0
+  features:
+    - default
+    - std
 - name: precompile-currency-swap 0.1.0
   features:
     - default
@@ -2437,7 +2479,7 @@
     - syn-error
 - name: proc-macro-error-attr 1.0.4
   features: []
-- name: proc-macro2 1.0.79
+- name: proc-macro2 1.0.81
   features:
     - default
     - proc-macro
@@ -2491,7 +2533,7 @@
     - rustls
     - tls-rustls
     - webpki
-- name: quote 1.0.35
+- name: quote 1.0.36
   features:
     - default
     - proc-macro
@@ -2893,7 +2935,7 @@
   features:
     - default
     - metered
-- name: scale-info 2.11.1
+- name: scale-info 2.11.2
   features:
     - decode
     - default
@@ -2901,7 +2943,7 @@
     - scale-info-derive
     - serde
     - std
-- name: scale-info-derive 2.11.1
+- name: scale-info-derive 2.11.2
   features: []
 - name: schannel 0.1.23
   features: []
@@ -2993,7 +3035,7 @@
     - std
 - name: semver-parser 0.7.0
   features: []
-- name: serde 1.0.197
+- name: serde 1.0.198
   features:
     - alloc
     - default
@@ -3001,10 +3043,10 @@
     - rc
     - serde_derive
     - std
-- name: serde_derive 1.0.197
+- name: serde_derive 1.0.198
   features:
     - default
-- name: serde_json 1.0.115
+- name: serde_json 1.0.116
   features:
     - alloc
     - default
@@ -3527,7 +3569,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.58
+- name: syn 2.0.60
   features:
     - clone-impls
     - default
@@ -3656,7 +3698,7 @@
     - sync
     - time
     - tokio-util
-- name: tokio-tungstenite 0.20.1
+- name: tokio-tungstenite 0.21.0
   features:
     - connect
     - default
@@ -3795,7 +3837,7 @@
   features: []
 - name: tt-call 1.0.9
   features: []
-- name: tungstenite 0.20.1
+- name: tungstenite 0.21.0
   features:
     - data-encoding
     - handshake
@@ -3916,7 +3958,7 @@
   features: []
 - name: want 0.3.1
   features: []
-- name: warp 0.3.6
+- name: warp 0.3.7
   features:
     - default
     - multer
