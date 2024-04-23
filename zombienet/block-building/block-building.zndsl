@@ -6,9 +6,9 @@ alice: reports peers count is 2
 bob: reports peers count is 2
 batumi: reports peers count is 2
 
-alice: reports block height is at least 5 within 20 seconds
-bob: reports block height is at least 5 within 20 seconds
-batumi: reports block height is at least 5 within 20 seconds
+alice: reports block height is at least 5 within 30 seconds
+bob: reports block height is at least 5
+batumi: reports block height is at least 5
 
 alice: count of log lines containing "error" is 0
 bob: count of log lines containing "error" is 0

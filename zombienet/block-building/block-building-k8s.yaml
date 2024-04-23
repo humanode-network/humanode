@@ -1,0 +1,19 @@
+# Network definition spec.
+# https://paritytech.github.io/zombienet/network-definition-spec.html
+
+settings:
+  enable_tracing: false
+
+relaychain:
+  default_image: ghcr.io/humanode-network/humanode:0.0.0-it6-2024-01-18
+  default_command: "humanode-peer"
+  chain: local
+  nodes:
+    - name: alice
+      validator: true
+    - name: bob
+      validator: true
+  node_groups:
+    - name: batumi-team
+      count: 15
+      validator: true
