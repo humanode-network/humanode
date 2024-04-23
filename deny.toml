@@ -22,6 +22,8 @@ ignore = [
   "RUSTSEC-2022-0093",
   # TODO(#742): vulnerable webpki.
   "RUSTSEC-2023-0052",
+  # TODO(#1013): vulnerable rustls.
+  "RUSTSEC-2024-0336",
 ]
 
 [licenses]
