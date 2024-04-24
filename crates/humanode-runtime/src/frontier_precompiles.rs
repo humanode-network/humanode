@@ -6,6 +6,10 @@ use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use precompile_bioauth::Bioauth;
+use precompile_bls12381::{
+    Bls12381G1Add, Bls12381G1Mul, Bls12381G1MultiExp, Bls12381G2Add, Bls12381G2Mul,
+    Bls12381G2MultiExp, Bls12381MapG1, Bls12381MapG2, Bls12381Pairing,
+};
 use precompile_currency_swap::CurrencySwap;
 use precompile_evm_accounts_mapping::EvmAccountsMapping;
 use precompile_native_currency::NativeCurrency;
@@ -27,6 +31,25 @@ pub mod precompiles_constants {
     pub const IDENTITY: u64 = 4;
     /// `Modexp` precompile constant.
     pub const MODEXP: u64 = 5;
+
+    /// `Bls12381G1Add` precompile constant.
+    pub const BLS12381_G1_ADD: u64 = 11;
+    /// `Bls12381G1Mul` precompile constant.
+    pub const BLS12381_G1_MUL: u64 = 12;
+    /// `Bls12381G1MultiExp` precompile constant.
+    pub const BLS12381_G1_MULTI_EXP: u64 = 13;
+    /// `Bls12381G2Add` precompile constant.
+    pub const BLS12381_G2_ADD: u64 = 14;
+    /// `Bls12381G2Mul` precompile constant.
+    pub const BLS12381_G2_MUL: u64 = 15;
+    /// `Bls12381G2MultiExp` precompile constant.
+    pub const BLS12381_G2_MULTI_EXP: u64 = 16;
+    /// `Bls12381Pairing` precompile constant.
+    pub const BLS12381_PAIRING: u64 = 17;
+    /// `Bls12381MapG1` precompile constant.
+    pub const BLS12381_MAP_G1: u64 = 18;
+    /// `Bls12381MapG2` precompile constant.
+    pub const BLS12381_MAP_G2: u64 = 19;
 
     /// `Sha3FIPS256` precompile constant.
     pub const SHA_3_FIPS256: u64 = 1024;
@@ -64,6 +87,15 @@ where
             RIPEMD_160,
             IDENTITY,
             MODEXP,
+            BLS12381_G1_ADD,
+            BLS12381_G1_MUL,
+            BLS12381_G1_MULTI_EXP,
+            BLS12381_G2_ADD,
+            BLS12381_G2_MUL,
+            BLS12381_G2_MULTI_EXP,
+            BLS12381_PAIRING,
+            BLS12381_MAP_G1,
+            BLS12381_MAP_G2,
             SHA_3_FIPS256,
             EC_RECOVER_PUBLIC_KEY,
             BIOAUTH,
@@ -99,6 +131,16 @@ where
             a if a == hash(RIPEMD_160) => Some(Ripemd160::execute(handle)),
             a if a == hash(IDENTITY) => Some(Identity::execute(handle)),
             a if a == hash(MODEXP) => Some(Modexp::execute(handle)),
+            // BLS12-381 precompiles:
+            a if a == hash(BLS12381_G1_ADD) => Some(Bls12381G1Add::execute(handle)),
+            a if a == hash(BLS12381_G1_MUL) => Some(Bls12381G1Mul::execute(handle)),
+            a if a == hash(BLS12381_G1_MULTI_EXP) => Some(Bls12381G1MultiExp::execute(handle)),
+            a if a == hash(BLS12381_G2_ADD) => Some(Bls12381G2Add::execute(handle)),
+            a if a == hash(BLS12381_G2_MUL) => Some(Bls12381G2Mul::execute(handle)),
+            a if a == hash(BLS12381_G2_MULTI_EXP) => Some(Bls12381G2MultiExp::execute(handle)),
+            a if a == hash(BLS12381_PAIRING) => Some(Bls12381Pairing::execute(handle)),
+            a if a == hash(BLS12381_MAP_G1) => Some(Bls12381MapG1::execute(handle)),
+            a if a == hash(BLS12381_MAP_G2) => Some(Bls12381MapG2::execute(handle)),
             // Non-Frontier specific nor Ethereum precompiles :
             a if a == hash(SHA_3_FIPS256) => Some(Sha3FIPS256::execute(handle)),
             a if a == hash(EC_RECOVER_PUBLIC_KEY) => Some(ECRecoverPublicKey::execute(handle)),
