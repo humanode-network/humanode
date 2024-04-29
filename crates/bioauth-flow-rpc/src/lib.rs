@@ -13,13 +13,14 @@ use errors::{
     authenticate::Error as AuthenticateError, enroll::Error as EnrollError,
     get_facetec_device_sdk_params::Error as GetFacetecDeviceSdkParamsError,
     get_facetec_session_token::Error as GetFacetecSessionToken, sign::Error as SignError,
-    status::Error as StatusError,
+    status::Error as StatusError, tx_not_finalized::Error as TxNotFinalizedError,
 };
+use futures::StreamExt;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
 use rpc_deny_unsafe::DenyUnsafe;
-use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
+use sc_transaction_pool_api::{TransactionPool as TransactionPoolT, TransactionStatus};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
@@ -366,14 +367,42 @@ where
             )
             .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
 
-        self.pool
+        let mut watch = self.pool
             .submit_and_watch(
                 &sp_api::BlockId::Hash(at),
                 sp_runtime::transaction_validity::TransactionSource::Local,
                 ext,
             )
             .await
-            .map_err(AuthenticateError::BioauthTx).map_err(errtype)?;
+            .map_err(AuthenticateError::BioauthTx).map_err(errtype)?.fuse();
+
+        loop {
+            let tx_status = watch.select_next_some().await;
+
+            match tx_status {
+                TransactionStatus::Finalized(_)=> break,
+                TransactionStatus::Retracted(_) => Err(
+                    errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Retracted))
+                )?,
+                TransactionStatus::Usurped(_) => Err(
+                    errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Usurped))
+                )?,
+                TransactionStatus::Dropped => Err(
+                        errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Invalid))
+                    )?,
+                TransactionStatus::FinalityTimeout(_) => Err(
+                        errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::FinalityTimeout))
+                    )?,
+                TransactionStatus::Invalid => Err(
+                        errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Invalid))
+                    )?,
+                // Valid and expected statuses of transaction to be finalized.
+                TransactionStatus::Ready
+                    | TransactionStatus::Broadcast(_)
+                    | TransactionStatus::InBlock(_)
+                    | TransactionStatus::Future => {},
+            }
+        }
 
         info!("Bioauth flow - authenticate transaction complete");
 

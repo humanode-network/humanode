@@ -779,6 +779,7 @@ dependencies = [
  "async-trait",
  "bioauth-flow-api",
  "bioauth-keys",
+ "futures",
  "jsonrpsee",
  "pallet-bioauth",
  "primitives-liveness-data",

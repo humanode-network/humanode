@@ -6,6 +6,7 @@ pub mod get_facetec_device_sdk_params;
 pub mod get_facetec_session_token;
 pub mod sign;
 pub mod status;
+pub mod tx_not_finalized;
 
 /// Custom rpc error codes.
 pub mod api_error_code {

@@ -4,7 +4,9 @@ use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{api_error_code, sign::Error as SignError};
+use super::{
+    api_error_code, sign::Error as SignError, tx_not_finalized::Error as TxNotFinalizedError,
+};
 use crate::error_data::{self, BioauthTxErrorDetails};
 
 /// The `authenticate` method error kinds.
@@ -20,6 +22,8 @@ pub enum Error<TxPoolError: sc_transaction_pool_api::error::IntoPoolError> {
     RuntimeApi(ApiError),
     /// An error that can occur with transaction pool logic.
     BioauthTx(TxPoolError),
+    /// An error that can occur with transaction finalization logic.
+    BioauthTxNotFinalized(TxNotFinalizedError),
 }
 
 impl<TxPoolError> From<Error<TxPoolError>> for jsonrpsee::core::Error
@@ -61,6 +65,11 @@ where
                 let (message, data) = map_txpool_error(err);
                 rpc_error_response::raw(api_error_code::TRANSACTION, message, data)
             }
+            Error::BioauthTxNotFinalized(err) => rpc_error_response::data(
+                api_error_code::TRANSACTION,
+                err.to_string(),
+                error_data::ShouldRetry,
+            ),
         }
     }
 }
