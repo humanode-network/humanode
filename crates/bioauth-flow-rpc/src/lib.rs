@@ -388,7 +388,7 @@ where
                     errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Usurped))
                 )?,
                 TransactionStatus::Dropped => Err(
-                        errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Invalid))
+                        errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Dropped))
                     )?,
                 TransactionStatus::FinalityTimeout(_) => Err(
                         errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::FinalityTimeout))

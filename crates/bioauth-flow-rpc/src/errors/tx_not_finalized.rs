@@ -1,6 +1,6 @@
-//! The bioauth transaction not finalized related error kinds.
+//! The transaction not finalized related error kinds.
 
-/// The bioauth transaction not finalized related error kinds.
+/// The transaction not finalized related error kinds.
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
     /// Transaction is no longer valid in the current state.
