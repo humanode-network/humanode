@@ -65,11 +65,9 @@ where
                 let (message, data) = map_txpool_error(err);
                 rpc_error_response::raw(api_error_code::TRANSACTION, message, data)
             }
-            Error::BioauthTxNotFinalized(err) => rpc_error_response::data(
-                api_error_code::TRANSACTION,
-                err.to_string(),
-                error_data::ShouldRetry,
-            ),
+            Error::BioauthTxNotFinalized(err) => {
+                rpc_error_response::simple(api_error_code::TRANSACTION, err.to_string())
+            }
         }
     }
 }
