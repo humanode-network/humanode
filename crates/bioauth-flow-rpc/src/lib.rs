@@ -382,19 +382,19 @@ where
             match tx_status {
                 TransactionStatus::Finalized(_)=> break,
                 TransactionStatus::Retracted(_) => Err(
-                    errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Retracted))
+                    errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Retracted))
                 )?,
                 TransactionStatus::Usurped(_) => Err(
-                    errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Usurped))
+                    errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Usurped))
                 )?,
                 TransactionStatus::Dropped => Err(
-                        errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Dropped))
+                        errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Dropped))
                     )?,
                 TransactionStatus::FinalityTimeout(_) => Err(
-                        errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::FinalityTimeout))
+                        errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::FinalityTimeout))
                     )?,
                 TransactionStatus::Invalid => Err(
-                        errtype(AuthenticateError::BioauthTxNotFinalized(TxNotFinalizedError::Invalid))
+                        errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Invalid))
                     )?,
                 // Valid and expected statuses of transaction to be finalized.
                 TransactionStatus::Ready
