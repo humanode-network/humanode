@@ -369,6 +369,8 @@ where
             )
             .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
 
+        info!("Bioauth flow - auth transaction is sending");
+
         let mut watch = self.pool
             .submit_and_watch(
                 &sp_api::BlockId::Hash(at),
