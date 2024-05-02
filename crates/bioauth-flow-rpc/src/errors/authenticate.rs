@@ -88,7 +88,9 @@ pub enum TxNotFinalizedError {
     Retracted,
     /// Maximum number of finality watchers has been reached,
     /// old watchers are being removed.
-    #[error("finality timeout")]
+    #[error(
+        "maximum number of finality watchers has been reached, old watchers are being removed"
+    )]
     FinalityTimeout,
 }
 
