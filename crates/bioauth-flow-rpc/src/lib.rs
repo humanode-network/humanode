@@ -369,7 +369,7 @@ where
             )
             .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
 
-        info!("Bioauth flow - auth transaction is sending");
+        info!("Bioauth flow - authenticate transaction is sending");
 
         let mut watch = self.pool
             .submit_and_watch(
@@ -384,7 +384,13 @@ where
             let tx_status = watch.select_next_some().await;
 
             match tx_status {
-                TransactionStatus::Finalized(_)=> break,
+                TransactionStatus::Finalized((block_hash, _))=> {
+                    info!(
+                        message = "Bioauth flow - authenticate transaction is in finalized block",
+                        block_hash = format!("{block_hash}")
+                    );
+                    break
+                },
                 TransactionStatus::Retracted(_) => Err(
                     errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Retracted))
                 )?,
@@ -400,11 +406,17 @@ where
                 TransactionStatus::Invalid => Err(
                         errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Invalid))
                     )?,
-                // Valid and expected statuses of transaction to be finalized.
-                TransactionStatus::Ready
-                    | TransactionStatus::Broadcast(_)
-                    | TransactionStatus::InBlock(_)
-                    | TransactionStatus::Future => {},
+                TransactionStatus::Ready => info!("Bioauth flow - authenticate transaction is in ready queue"),
+                TransactionStatus::Broadcast(_) => {
+                    info!("Bioauth flow - authenticate transaction is broadcasted");
+                },
+                TransactionStatus::InBlock((block_hash, _)) => {
+                    info!(
+                        message = "Bioauth flow - authenticate transaction is in block",
+                        block_hash = format!("{block_hash}")
+                    );
+                },
+                TransactionStatus::Future => info!("Bioauth flow - authenticate transaction is in future queue"),
             }
         }
 
