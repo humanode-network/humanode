@@ -4,9 +4,7 @@ use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{
-    api_error_code, sign::Error as SignError, tx_not_finalized::Error as TxNotFinalizedError,
-};
+use super::{api_error_code, sign::Error as SignError};
 use crate::error_data::{self, BioauthTxErrorDetails};
 
 /// The `authenticate` method error kinds.
@@ -70,6 +68,28 @@ where
             }
         }
     }
+}
+
+/// The transaction not finalized related error kinds.
+#[derive(Debug, thiserror::Error)]
+pub enum TxNotFinalizedError {
+    /// Transaction is no longer valid in the current state.
+    #[error("transaction is no longer valid in the current state")]
+    Invalid,
+    /// Transaction has been dropped from the pool because of the limit.
+    #[error("transaction has been dropped from the pool because of the limit")]
+    Dropped,
+    /// Transaction has been replaced in the pool, by another transaction
+    /// that provides the same tags. (e.g. same (sender, nonce)).
+    #[error("transaction has been replaced in the pool, by another transaction")]
+    Usurped,
+    /// The block this transaction was included in has been retracted.
+    #[error("the block this transaction was included in has been retracted")]
+    Retracted,
+    /// Maximum number of finality watchers has been reached,
+    /// old watchers are being removed.
+    #[error("finality timeout")]
+    FinalityTimeout,
 }
 
 /// Convert a transaction pool error into a human-readable.

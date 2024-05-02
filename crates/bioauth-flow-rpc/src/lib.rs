@@ -10,10 +10,12 @@ use std::sync::Arc;
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use errors::{
-    authenticate::Error as AuthenticateError, enroll::Error as EnrollError,
+    authenticate::{Error as AuthenticateError, TxNotFinalizedError},
+    enroll::Error as EnrollError,
     get_facetec_device_sdk_params::Error as GetFacetecDeviceSdkParamsError,
-    get_facetec_session_token::Error as GetFacetecSessionToken, sign::Error as SignError,
-    status::Error as StatusError, tx_not_finalized::Error as TxNotFinalizedError,
+    get_facetec_session_token::Error as GetFacetecSessionToken,
+    sign::Error as SignError,
+    status::Error as StatusError,
 };
 use futures::StreamExt;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
