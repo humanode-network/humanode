@@ -22,7 +22,7 @@ use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
 use rpc_deny_unsafe::DenyUnsafe;
-use sc_transaction_pool_api::{TransactionPool as TransactionPoolT, TransactionStatus};
+use sc_transaction_pool_api::{TransactionPool as TransactionPoolT, TransactionStatus, TxHash};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
@@ -96,7 +96,7 @@ impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
-pub trait Bioauth<Timestamp> {
+pub trait Bioauth<Timestamp, TxHash> {
     /// Get the configuration required for the Device SDK.
     #[method(name = "bioauth_getFacetecDeviceSdkParams")]
     async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams>;
@@ -115,7 +115,7 @@ pub trait Bioauth<Timestamp> {
 
     /// Authenticate with provided liveness data.
     #[method(name = "bioauth_authenticate")]
-    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<()>;
+    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash>;
 }
 
 /// The RPC implementation.
@@ -232,7 +232,7 @@ impl<
         Block,
         Timestamp,
         TransactionPool,
-    > BioauthServer<Timestamp>
+    > BioauthServer<Timestamp, TxHash<TransactionPool>>
     for Bioauth<
         RobonodeClient,
         ValidatorKeyExtractor,
@@ -332,7 +332,7 @@ where
         Ok(())
     }
 
-    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<()> {
+    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash<TransactionPool>> {
         self.deny_unsafe.check_if_safe()?;
 
         info!("Bioauth flow - authentication in progress");
@@ -370,6 +370,8 @@ where
             .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
 
         info!("Bioauth flow - submitting authenticate transaction");
+
+        let tx_hash = self.pool.hash_of(&ext);
 
         let mut watch = self.pool
             .submit_and_watch(
@@ -422,6 +424,6 @@ where
 
         info!("Bioauth flow - authenticate transaction complete");
 
-        Ok(())
+        Ok(tx_hash)
     }
 }
