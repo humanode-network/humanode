@@ -369,7 +369,7 @@ where
             )
             .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
 
-        info!("Bioauth flow - authenticate transaction is sending");
+        info!("Bioauth flow - submitting authenticate transaction");
 
         let mut watch = self.pool
             .submit_and_watch(
