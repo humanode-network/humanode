@@ -3,6 +3,10 @@ use pallet_evm::{
     IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet,
 };
 use pallet_evm_precompile_blake2::Blake2F;
+use pallet_evm_precompile_bls12377::{
+    Bls12377G1Add, Bls12377G1Mul, Bls12377G1MultiExp, Bls12377G2Add, Bls12377G2Mul,
+    Bls12377G2MultiExp, Bls12377Pairing,
+};
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
@@ -54,6 +58,21 @@ pub mod precompiles_constants {
     /// `Bls12381MapG2` precompile constant.
     pub const BLS12381_MAP_G2: u64 = 19;
 
+    /// `Bls12377G1Add` precompile constant.
+    pub const BLS12377_G1_ADD: u64 = 21;
+    /// `Bls12377G1Mul` precompile constant.
+    pub const BLS12377_G1_MUL: u64 = 22;
+    /// `Bls12377G1MultiExp` precompile constant.
+    pub const BLS12377_G1_MULTI_EXP: u64 = 23;
+    /// `Bls12377G2Add` precompile constant.
+    pub const BLS12377_G2_ADD: u64 = 24;
+    /// `Bls12377G2Mul` precompile constant.
+    pub const BLS12377_G2_MUL: u64 = 25;
+    /// `Bls12377G2MultiExp` precompile constant.
+    pub const BLS12377_G2_MULTI_EXP: u64 = 26;
+    /// `Bls12377Pairing` precompile constant.
+    pub const BLS12377_PAIRING: u64 = 27;
+
     /// `Sha3FIPS256` precompile constant.
     pub const SHA_3_FIPS256: u64 = 1024;
     /// `ECRecoverPublicKey` precompile constant.
@@ -100,6 +119,13 @@ where
             BLS12381_PAIRING,
             BLS12381_MAP_G1,
             BLS12381_MAP_G2,
+            BLS12377_G1_ADD,
+            BLS12377_G1_MUL,
+            BLS12377_G1_MULTI_EXP,
+            BLS12377_G2_ADD,
+            BLS12377_G2_MUL,
+            BLS12377_G2_MULTI_EXP,
+            BLS12377_PAIRING,
             SHA_3_FIPS256,
             EC_RECOVER_PUBLIC_KEY,
             BIOAUTH,
@@ -146,6 +172,14 @@ where
             a if a == hash(BLS12381_PAIRING) => Some(Bls12381Pairing::execute(handle)),
             a if a == hash(BLS12381_MAP_G1) => Some(Bls12381MapG1::execute(handle)),
             a if a == hash(BLS12381_MAP_G2) => Some(Bls12381MapG2::execute(handle)),
+            // BLS12-377 precompiles:
+            a if a == hash(BLS12377_G1_ADD) => Some(Bls12377G1Add::execute(handle)),
+            a if a == hash(BLS12377_G1_MUL) => Some(Bls12377G1Mul::execute(handle)),
+            a if a == hash(BLS12377_G1_MULTI_EXP) => Some(Bls12377G1MultiExp::execute(handle)),
+            a if a == hash(BLS12377_G2_ADD) => Some(Bls12377G2Add::execute(handle)),
+            a if a == hash(BLS12377_G2_MUL) => Some(Bls12377G2Mul::execute(handle)),
+            a if a == hash(BLS12377_G2_MULTI_EXP) => Some(Bls12377G2MultiExp::execute(handle)),
+            a if a == hash(BLS12377_PAIRING) => Some(Bls12377Pairing::execute(handle)),
             // Non-Frontier specific nor Ethereum precompiles :
             a if a == hash(SHA_3_FIPS256) => Some(Sha3FIPS256::execute(handle)),
             a if a == hash(EC_RECOVER_PUBLIC_KEY) => Some(ECRecoverPublicKey::execute(handle)),
