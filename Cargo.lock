@@ -794,6 +794,7 @@ dependencies = [
  "sp-blockchain",
  "sp-runtime",
  "thiserror",
+ "tokio",
  "tracing",
 ]
 
