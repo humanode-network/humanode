@@ -20,8 +20,6 @@ pub enum Error<TxPoolError: sc_transaction_pool_api::error::IntoPoolError> {
     RuntimeApi(ApiError),
     /// An error that can occur with transaction pool logic.
     BioauthTx(TxPoolError),
-    /// An error that can occur with transaction finalization logic.
-    TxNotFinalized(TxNotFinalizedError),
 }
 
 impl<TxPoolError> From<Error<TxPoolError>> for jsonrpsee::core::Error
@@ -63,35 +61,8 @@ where
                 let (message, data) = map_txpool_error(err);
                 rpc_error_response::raw(api_error_code::TRANSACTION, message, data)
             }
-            Error::TxNotFinalized(err) => {
-                rpc_error_response::simple(api_error_code::TRANSACTION, err.to_string())
-            }
         }
     }
-}
-
-/// The transaction not finalized related error kinds.
-#[derive(Debug, thiserror::Error)]
-pub enum TxNotFinalizedError {
-    /// Transaction is no longer valid in the current state.
-    #[error("transaction is no longer valid in the current state")]
-    Invalid,
-    /// Transaction has been dropped from the pool because of the limit.
-    #[error("transaction has been dropped from the pool because of the limit")]
-    Dropped,
-    /// Transaction has been replaced in the pool, by another transaction
-    /// that provides the same tags. (e.g. same (sender, nonce)).
-    #[error("transaction has been replaced in the pool, by another transaction")]
-    Usurped,
-    /// The block this transaction was included in has been retracted.
-    #[error("the block this transaction was included in has been retracted")]
-    Retracted,
-    /// Maximum number of finality watchers has been reached,
-    /// old watchers are being removed.
-    #[error(
-        "maximum number of finality watchers has been reached, old watchers are being removed"
-    )]
-    FinalityTimeout,
 }
 
 /// Convert a transaction pool error into a human-readable.
