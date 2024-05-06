@@ -65,7 +65,6 @@ pallet-ethereum = { workspace = true }
 pallet-evm = { workspace = true }
 pallet-evm-balances = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
-pallet-evm-precompile-bls12377 = { workspace = true }
 pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-modexp = { workspace = true }
 pallet-evm-precompile-sha3fips = { workspace = true }
@@ -177,7 +176,6 @@ std = [
   "pallet-ethereum/std",
   "pallet-evm-accounts-mapping/std",
   "pallet-evm-precompile-blake2/std",
-  "pallet-evm-precompile-bls12377/std",
   "pallet-evm-precompile-bn128/std",
   "pallet-evm-precompile-modexp/std",
   "pallet-evm-precompile-sha3fips/std",

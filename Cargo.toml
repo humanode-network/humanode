@@ -158,7 +158,6 @@ pallet-ethereum = { git = "https://github.com/humanode-network/frontier", branch
 pallet-evm = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 pallet-evm-balances = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 pallet-evm-precompile-blake2 = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
-pallet-evm-precompile-bls12377 = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 pallet-evm-precompile-bn128 = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 pallet-evm-precompile-modexp = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
 pallet-evm-precompile-sha3fips = { git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.40", default-features = false }
