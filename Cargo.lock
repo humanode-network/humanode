@@ -4126,6 +4126,7 @@ dependencies = [
  "pallet-evm",
  "pallet-evm-accounts-mapping",
  "pallet-evm-balances",
+ "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
@@ -6504,6 +6505,14 @@ dependencies = [
  "scale-info",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-evm-precompile-blake2"
+version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#ac5c3415f47adf126419579924052daff07301e1"
+dependencies = [
+ "fp-evm",
 ]
 
 [[package]]
