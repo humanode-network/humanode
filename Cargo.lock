@@ -4128,6 +4128,8 @@ dependencies = [
  "pallet-evm",
  "pallet-evm-accounts-mapping",
  "pallet-evm-balances",
+ "pallet-evm-precompile-blake2",
+ "pallet-evm-precompile-bn128",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
@@ -6506,6 +6508,24 @@ dependencies = [
  "scale-info",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-evm-precompile-blake2"
+version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#ac5c3415f47adf126419579924052daff07301e1"
+dependencies = [
+ "fp-evm",
+]
+
+[[package]]
+name = "pallet-evm-precompile-bn128"
+version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=locked/polkadot-v0.9.40#ac5c3415f47adf126419579924052daff07301e1"
+dependencies = [
+ "fp-evm",
+ "sp-core",
+ "substrate-bn",
 ]
 
 [[package]]
@@ -11029,6 +11049,19 @@ dependencies = [
  "schnorrkel",
  "sha2 0.9.9",
  "zeroize",
+]
+
+[[package]]
+name = "substrate-bn"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b5bbfa79abbae15dd642ea8176a21a635ff3c00059961d1ea27ad04e5b441c"
+dependencies = [
+ "byteorder",
+ "crunchy",
+ "lazy_static",
+ "rand 0.8.5",
+ "rustc-hex",
 ]
 
 [[package]]

@@ -2,6 +2,8 @@ use frame_support::traits::Currency;
 use pallet_evm::{
     IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet,
 };
+use pallet_evm_precompile_blake2::Blake2F;
+use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_modexp::Modexp;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
@@ -31,6 +33,16 @@ pub mod precompiles_constants {
     pub const IDENTITY: u64 = 4;
     /// `Modexp` precompile constant.
     pub const MODEXP: u64 = 5;
+
+    /// `Bn128Add` precompile constant.
+    pub const BN128_ADD: u64 = 6;
+    /// `Bn128Mul` precompile constant.
+    pub const BN128_MUL: u64 = 7;
+    /// `Bn128Pairing` precompile constant.
+    pub const BN128_PAIRING: u64 = 8;
+
+    /// `Blake2F` precompile constant.
+    pub const BLAKE2F: u64 = 9;
 
     /// `Bls12381G1Add` precompile constant.
     pub const BLS12381_G1_ADD: u64 = 11;
@@ -87,6 +99,10 @@ where
             RIPEMD_160,
             IDENTITY,
             MODEXP,
+            BN128_ADD,
+            BN128_MUL,
+            BN128_PAIRING,
+            BLAKE2F,
             BLS12381_G1_ADD,
             BLS12381_G1_MUL,
             BLS12381_G1_MULTI_EXP,
@@ -131,6 +147,12 @@ where
             a if a == hash(RIPEMD_160) => Some(Ripemd160::execute(handle)),
             a if a == hash(IDENTITY) => Some(Identity::execute(handle)),
             a if a == hash(MODEXP) => Some(Modexp::execute(handle)),
+            // Bn128 precompiles:
+            a if a == hash(BN128_ADD) => Some(Bn128Add::execute(handle)),
+            a if a == hash(BN128_MUL) => Some(Bn128Mul::execute(handle)),
+            a if a == hash(BN128_PAIRING) => Some(Bn128Pairing::execute(handle)),
+            // Blake-2 precompiles:
+            a if a == hash(BLAKE2F) => Some(Blake2F::execute(handle)),
             // BLS12-381 precompiles:
             a if a == hash(BLS12381_G1_ADD) => Some(Bls12381G1Add::execute(handle)),
             a if a == hash(BLS12381_G1_MUL) => Some(Bls12381G1Mul::execute(handle)),
