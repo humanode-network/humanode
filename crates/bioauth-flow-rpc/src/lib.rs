@@ -383,42 +383,42 @@ where
             .map_err(AuthenticateError::BioauthTx).map_err(errtype)?.fuse();
 
         loop {
-            let tx_status = watch.select_next_some().await;
-
-            match tx_status {
-                TransactionStatus::Finalized((block_hash, _))=> {
-                    info!(
-                        message = "Bioauth flow - authenticate transaction is in finalized block",
-                        %block_hash,
-                    );
-                    break
-                },
-                TransactionStatus::Retracted(_) => Err(
-                    errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Retracted))
-                )?,
-                TransactionStatus::Usurped(_) => Err(
-                    errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Usurped))
-                )?,
-                TransactionStatus::Dropped => Err(
-                        errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Dropped))
+            if let Some(tx_status) = watch.next().await {
+                match tx_status {
+                    TransactionStatus::Finalized((block_hash, _))=> {
+                        info!(
+                            message = "Bioauth flow - authenticate transaction is in finalized block",
+                            %block_hash,
+                        );
+                        break
+                    },
+                    TransactionStatus::Retracted(_) => Err(
+                        errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Retracted))
                     )?,
-                TransactionStatus::FinalityTimeout(_) => Err(
-                        errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::FinalityTimeout))
+                    TransactionStatus::Usurped(_) => Err(
+                        errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Usurped))
                     )?,
-                TransactionStatus::Invalid => Err(
-                        errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Invalid))
-                    )?,
-                TransactionStatus::Ready => info!("Bioauth flow - authenticate transaction is in ready queue"),
-                TransactionStatus::Broadcast(_) => {
-                    info!("Bioauth flow - authenticate transaction is broadcasted");
-                },
-                TransactionStatus::InBlock((block_hash, _)) => {
-                    info!(
-                        message = "Bioauth flow - authenticate transaction is in block",
-                        %block_hash,
-                    );
-                },
-                TransactionStatus::Future => info!("Bioauth flow - authenticate transaction is in future queue"),
+                    TransactionStatus::Dropped => Err(
+                            errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Dropped))
+                        )?,
+                    TransactionStatus::FinalityTimeout(_) => Err(
+                            errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::FinalityTimeout))
+                        )?,
+                    TransactionStatus::Invalid => Err(
+                            errtype(AuthenticateError::TxNotFinalized(TxNotFinalizedError::Invalid))
+                        )?,
+                    TransactionStatus::Ready => info!("Bioauth flow - authenticate transaction is in ready queue"),
+                    TransactionStatus::Broadcast(_) => {
+                        info!("Bioauth flow - authenticate transaction is broadcasted");
+                    },
+                    TransactionStatus::InBlock((block_hash, _)) => {
+                        info!(
+                            message = "Bioauth flow - authenticate transaction is in block",
+                            %block_hash,
+                        );
+                    },
+                    TransactionStatus::Future => info!("Bioauth flow - authenticate transaction is in future queue"),
+                }
             }
         }
 
