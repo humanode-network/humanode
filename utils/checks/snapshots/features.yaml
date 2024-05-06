@@ -2196,6 +2196,12 @@
   features:
     - default
     - std
+- name: pallet-evm-precompile-blake2 2.0.0-dev
+  features:
+    - std
+- name: pallet-evm-precompile-bn128 2.0.0-dev
+  features:
+    - std
 - name: pallet-evm-precompile-modexp 2.0.0-dev
   features:
     - std
@@ -3541,6 +3547,8 @@
   features:
     - default
 - name: substrate-bip39 0.4.5
+  features: []
+- name: substrate-bn 0.6.0
   features: []
 - name: substrate-frame-rpc-system 4.0.0-dev
   features: []
