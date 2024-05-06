@@ -436,9 +436,9 @@ where
                     }
                 }
             }
-        });
 
-        info!("Bioauth flow - authenticate transaction complete");
+            info!("Bioauth flow - authenticate transaction complete");
+        });
 
         Ok(tx_hash)
     }
