@@ -381,59 +381,57 @@ where
             .map_err(AuthenticateError::BioauthTx).map_err(errtype)?.fuse();
 
         tokio::spawn(async move {
-            loop {
-                if let Some(tx_status) = watch.next().await {
-                    match tx_status {
-                        TransactionStatus::Finalized((block_hash, _))=> {
-                            info!(
-                                message = "Bioauth flow - authenticate transaction is in finalized block",
-                                %block_hash,
-                            );
-                            break
-                        },
-                        TransactionStatus::Retracted(block_hash) => {
-                            error!(
-                                message = "Bioauth flow - the block this transaction was included in has been retracted",
-                                %block_hash,
-                            );
-                            break
-                        },
-                        TransactionStatus::Usurped(_) => {
-                            error!(
-                                "Bioauth flow - transaction has been replaced in the pool, by another transaction",
-                            );
-                            break
-                        },
-                        TransactionStatus::Dropped => {
-                            error!(
-                                "Bioauth flow - transaction has been dropped from the pool because of the limit",
-                            );
-                            break
-                        },
-                        TransactionStatus::FinalityTimeout(_) => {
-                            error!(
-                                "Bioauth flow - maximum number of finality watchers has been reached, old watchers are being removed",
-                            );
-                            break
-                        },
-                        TransactionStatus::Invalid => {
-                            error!(
-                                "Bioauth flow - transaction is no longer valid in the current state",
-                            );
-                            break
-                        },
-                        TransactionStatus::Ready => info!("Bioauth flow - authenticate transaction is in ready queue"),
-                        TransactionStatus::Broadcast(_) => {
-                            info!("Bioauth flow - authenticate transaction is broadcasted");
-                        },
-                        TransactionStatus::InBlock((block_hash, _)) => {
-                            info!(
-                                message = "Bioauth flow - authenticate transaction is in block",
-                                %block_hash,
-                            );
-                        },
-                        TransactionStatus::Future => info!("Bioauth flow - authenticate transaction is in future queue"),
-                    }
+            while let Some(tx_status) = watch.next().await {
+                match tx_status {
+                    TransactionStatus::Finalized((block_hash, _))=> {
+                        info!(
+                            message = "Bioauth flow - authenticate transaction is in finalized block",
+                            %block_hash,
+                        );
+                        break
+                    },
+                    TransactionStatus::Retracted(block_hash) => {
+                        error!(
+                            message = "Bioauth flow - the block this transaction was included in has been retracted",
+                            %block_hash,
+                        );
+                        break
+                    },
+                    TransactionStatus::Usurped(_) => {
+                        error!(
+                            "Bioauth flow - transaction has been replaced in the pool, by another transaction",
+                        );
+                        break
+                    },
+                    TransactionStatus::Dropped => {
+                        error!(
+                            "Bioauth flow - transaction has been dropped from the pool because of the limit",
+                        );
+                        break
+                    },
+                    TransactionStatus::FinalityTimeout(_) => {
+                        error!(
+                            "Bioauth flow - maximum number of finality watchers has been reached, old watchers are being removed",
+                        );
+                        break
+                    },
+                    TransactionStatus::Invalid => {
+                        error!(
+                            "Bioauth flow - transaction is no longer valid in the current state",
+                        );
+                        break
+                    },
+                    TransactionStatus::Ready => info!("Bioauth flow - authenticate transaction is in ready queue"),
+                    TransactionStatus::Broadcast(_) => {
+                        info!("Bioauth flow - authenticate transaction is broadcasted");
+                    },
+                    TransactionStatus::InBlock((block_hash, _)) => {
+                        info!(
+                            message = "Bioauth flow - authenticate transaction is in block",
+                            %block_hash,
+                        );
+                    },
+                    TransactionStatus::Future => info!("Bioauth flow - authenticate transaction is in future queue"),
                 }
             }
 
