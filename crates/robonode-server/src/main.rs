@@ -15,10 +15,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let facetec_device_key_identifier: String = env("FACETEC_DEVICE_KEY_IDENTIFIER")?;
     let facetec_public_face_map_encryption_key = env("FACETEC_PUBLIC_FACE_MAP_ENCRYPTION_KEY")?;
     let facetec_production_key: Option<String> = maybe_env("FACETEC_PRODUCTION_KEY")?;
-    let robonode_keypair_string: String = env("ROBONODE_KEYPAIR")?;
-    let mut robonode_keypair_bytes: [u8; 64] = [0; 64];
-    hex::decode_to_slice(robonode_keypair_string, &mut robonode_keypair_bytes)?;
-    let robonode_keypair = robonode_crypto::Keypair::from_keypair_bytes(&robonode_keypair_bytes)?;
+    let robonode_secret_key_string: String = env("ROBONODE_SECRET_KEY")?;
+
+    let mut robonode_secret_key_bytes = robonode_crypto::SecretKey::default();
+    hex::decode_to_slice(robonode_secret_key_string, &mut robonode_secret_key_bytes)?;
+    let robonode_signing_key = robonode_crypto::SigningKey::from_bytes(&robonode_secret_key_bytes);
 
     let facetec_api_client = facetec_api_client::Client {
         base_url: facetec_server_url,
@@ -39,7 +40,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         execution_id,
         facetec_api_client,
         face_tec_device_sdk_params,
-        robonode_keypair,
+        robonode_signing_key,
     );
     let (addr, server) =
         warp::serve(root_filter).bind_with_graceful_shutdown(addr, shutdown_signal());

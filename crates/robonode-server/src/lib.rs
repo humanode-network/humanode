@@ -21,14 +21,14 @@ pub fn init(
     execution_id: uuid::Uuid,
     facetec_api_client: facetec_api_client::Client<LoggingInspector>,
     facetec_device_sdk_params: FacetecDeviceSdkParams,
-    robonode_keypair: robonode_crypto::Keypair,
+    robonode_signing_key: robonode_crypto::SigningKey,
 ) -> impl Filter<Extract = (impl warp::Reply,), Error = std::convert::Infallible> + Clone {
     let logic = logic::Logic {
         locked: Mutex::new(logic::Locked {
             sequence: sequence::Sequence::new(0),
             execution_id,
             facetec: facetec_api_client,
-            signer: robonode_keypair,
+            signer: robonode_signing_key,
             public_key_type: PhantomData::<validator_key::SubstratePublic<sp_core::sr25519::Public>>,
         }),
         facetec_device_sdk_params,
@@ -40,7 +40,7 @@ pub fn init(
 }
 
 #[async_trait::async_trait]
-impl logic::Signer<Vec<u8>> for robonode_crypto::Keypair {
+impl logic::Signer<Vec<u8>> for robonode_crypto::SigningKey {
     type Error = Infallible;
 
     async fn sign<'a, D>(&self, data: D) -> Result<Vec<u8>, Self::Error>
@@ -54,7 +54,7 @@ impl logic::Signer<Vec<u8>> for robonode_crypto::Keypair {
 }
 
 #[async_trait::async_trait]
-impl logic::PublicKeyProvider for robonode_crypto::Keypair {
+impl logic::PublicKeyProvider for robonode_crypto::SigningKey {
     fn public_key(&self) -> &[u8] {
         self.as_ref().as_ref()
     }

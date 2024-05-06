@@ -7,5 +7,5 @@ publish = false
 [dependencies]
 robonode-crypto = { path = "../robonode-crypto" }
 
-hex = { workspace = true }
-rand = { workspace = true }
+hex = { workspace = true, features = ["alloc"] }
+rand = { workspace = true, features = ["std", "getrandom"] }
