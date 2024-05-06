@@ -389,7 +389,7 @@ where
                 TransactionStatus::Finalized((block_hash, _))=> {
                     info!(
                         message = "Bioauth flow - authenticate transaction is in finalized block",
-                        block_hash = format!("{block_hash}")
+                        %block_hash,
                     );
                     break
                 },
@@ -415,7 +415,7 @@ where
                 TransactionStatus::InBlock((block_hash, _)) => {
                     info!(
                         message = "Bioauth flow - authenticate transaction is in block",
-                        block_hash = format!("{block_hash}")
+                        %block_hash,
                     );
                 },
                 TransactionStatus::Future => info!("Bioauth flow - authenticate transaction is in future queue"),
