@@ -1,17 +1,20 @@
 //! Client API for the Humanode's Bioauth Robonode.
 
 use reqwest::StatusCode;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{error_response::ErrorResponse, Client, Error};
 
 impl Client {
     /// Perform the enroll call to the server.
-    pub async fn enroll(&self, req: EnrollRequest<'_>) -> Result<(), Error<EnrollError>> {
+    pub async fn enroll(
+        &self,
+        req: EnrollRequest<'_>,
+    ) -> Result<EnrollResponse, Error<EnrollError>> {
         let url = format!("{}/enroll", self.base_url);
         let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
-            StatusCode::CREATED => Ok(()),
+            StatusCode::CREATED => Ok(res.json().await?),
             status => Err(Error::Call(EnrollError::from_response(
                 status,
                 res.text().await?,
@@ -32,6 +35,15 @@ pub struct EnrollRequest<'a> {
     /// The signature of the liveness data with the private key of the node.
     /// Proves the posession of the private key by the liveness data bearer.
     pub liveness_data_signature: &'a [u8],
+}
+
+/// Input data for the enroll response.
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct EnrollResponse {
+    /// Scan result blob.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scan_result_blob: Option<String>,
 }
 
 /// The enroll-specific error condition.
