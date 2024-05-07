@@ -24,7 +24,11 @@ pub struct Request {
 /// The response for the enroll operation.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Response;
+pub struct Response {
+    /// Scan result blob.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scan_result_blob: Option<String>,
+}
 
 /// The errors on the enroll operation.
 #[derive(Debug)]
@@ -69,7 +73,7 @@ where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]> + Verifier<Vec<u8>>,
 {
-    type Response = ();
+    type Response = Response;
     type Error = Error;
 
     /// An enroll invocation handler.
@@ -109,6 +113,8 @@ where
                 }
                 _ => Error::InternalErrorEnrollment(err),
             })?;
+
+        let scan_result_blob = enroll_res.scan_result_blob.clone();
 
         trace!(message = "Got FaceTec enroll results", ?enroll_res);
 
@@ -174,6 +180,6 @@ where
             return Err(Error::InternalErrorDbEnrollUnsuccessful);
         }
 
-        Ok(())
+        Ok(Response { scan_result_blob })
     }
 }

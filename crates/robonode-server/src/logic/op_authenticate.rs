@@ -33,6 +33,9 @@ pub struct Response {
     /// auth ticket was vetted by the robonode and verified to be associated
     /// with a FaceScan.
     pub auth_ticket_signature: Vec<u8>,
+    /// Scan result blob.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scan_result_blob: Option<String>,
 }
 
 /// Errors for the authenticate operation.
@@ -108,6 +111,8 @@ where
             })
             .await
             .map_err(Error::InternalErrorEnrollment)?;
+
+        let scan_result_blob = enroll_res.scan_result_blob.clone();
 
         trace!(message = "Got FaceTec enroll results", ?enroll_res);
 
@@ -199,6 +204,7 @@ where
         Ok(Response {
             auth_ticket: opaque_auth_ticket,
             auth_ticket_signature,
+            scan_result_blob,
         })
     }
 }

@@ -210,7 +210,7 @@ trivial_success_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
-        injected_response = op_enroll::Response,
+        injected_response = op_enroll::Response {scan_result_blob: None},
         expected_status = StatusCode::CREATED,
         expected_response = SuccessResponse::Empty,
     },
@@ -228,6 +228,7 @@ trivial_success_tests! [
         injected_response = op_authenticate::Response {
             auth_ticket: OpaqueAuthTicket(b"ticket".to_vec()),
             auth_ticket_signature: b"signature".to_vec(),
+            scan_result_blob: None,
         },
         expected_status = StatusCode::OK,
         expected_response = SuccessResponse::Json(serde_json::json!({
