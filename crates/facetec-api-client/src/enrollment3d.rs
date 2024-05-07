@@ -209,7 +209,7 @@ mod tests {
             response,
             Response {
                 external_database_ref_id,
-                scan_result_blob: None,
+                scan_result_blob,
                 success: false,
                 face_scan: FaceScanResponse {
                     face_scan_security_checks: FaceScanSecurityChecks {
@@ -221,7 +221,7 @@ mod tests {
                     retry_screen_enum_int: 0,
                     age_estimate_group_enum_int: 2,
                 },
-            } if external_database_ref_id == "qwe"
+            } if external_database_ref_id == "qwe" && scan_result_blob == Some("AQEAAABCAAAAAAAAABod8Ab2TBI4O9XmVyim3AxlDaV4QoP2eFBAmQTkB2dOiL4becto+NXWqUxdo6JBjSUoreo9Lm7MToQFpqj/HB+Hzw\\u003d\\u003d".to_owned())
         )
     }
 

@@ -130,11 +130,17 @@ mod tests {
             public_key: b"123",
             liveness_data_signature: b"signature",
         };
+        let sample_response = serde_json::json!({
+            "scanResultBlob": "scanResultBlob"
+        });
+
+        let expected_response: EnrollResponse =
+            serde_json::from_value(sample_response.clone()).unwrap();
 
         Mock::given(matchers::method("POST"))
             .and(matchers::path("/enroll"))
             .and(matchers::body_json(&sample_request))
-            .respond_with(ResponseTemplate::new(201))
+            .respond_with(ResponseTemplate::new(201).set_body_json(&sample_response))
             .mount(&mock_server)
             .await;
 
@@ -143,7 +149,8 @@ mod tests {
             reqwest: reqwest::Client::new(),
         };
 
-        client.enroll(sample_request).await.unwrap();
+        let actual_response = client.enroll(sample_request).await.unwrap();
+        assert_eq!(actual_response, expected_response);
     }
 
     #[tokio::test]
