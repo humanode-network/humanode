@@ -2001,7 +2001,7 @@
     - num-bigint
     - num-bigint-std
     - std
-- name: num-traits 0.2.18
+- name: num-traits 0.2.19
   features:
     - default
     - i128
