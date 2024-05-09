@@ -39,6 +39,23 @@ SUBCOMMANDS=(
   "key inspect"
   "key inspect-node-key"
   "key insert"
+  "build-spec"
+  "check-block"
+  "export-blocks"
+  "export-state"
+  "import-blocks"
+  "purge-chain"
+  "revert"
+  "benchmark"
+  "benchmark pallet"
+  "benchmark storage"
+  "benchmark overhead"
+  "benchmark block"
+  "benchmark machine"
+  "benchmark extrinsic"
+  "frontier-db"
+  "export-embedded-runtime"
+  "try-runtime"
 )
 
 for SUBCOMMAND in "${SUBCOMMANDS[@]}"; do
