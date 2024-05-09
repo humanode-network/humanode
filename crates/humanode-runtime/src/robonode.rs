@@ -57,10 +57,6 @@ impl pallet_bioauth::Verifier<Vec<u8>> for PublicKey {
 mod benchmarks {
     use super::*;
 
-    fn derive_keypair_from_secret_key(secret_key_bytes: [u8; 32]) -> robonode_crypto::Keypair {
-        robonode_crypto::Keypair::from_bytes(&secret_key_bytes)
-    }
-
     impl pallet_bioauth::benchmarking::AuthTicketSigner for Runtime {
         fn sign(
             auth_ticket: &primitives_auth_ticket::OpaqueAuthTicket,
@@ -69,11 +65,12 @@ mod benchmarks {
             // This secret key is taken from the first entry in https://ed25519.cr.yp.to/python/sign.input.
             // Must be compatible with public key provided in benchmark_config() function in
             // crates/humanode-peer/src/chain_spec.rs
-            const ROBONODE_SECRET_KEY: [u8; 32] = hex_literal::hex!(
+            const ROBONODE_SECRET_KEY: robonode_crypto::SecretKey = hex_literal::hex!(
                 "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60"
             );
-            let robonode_keypair = derive_keypair_from_secret_key(ROBONODE_SECRET_KEY);
-            robonode_keypair
+            let robonode_signing_key =
+                robonode_crypto::SigningKey::from_bytes(&ROBONODE_SECRET_KEY);
+            robonode_signing_key
                 .try_sign(auth_ticket.as_ref())
                 .unwrap_or(Signature::from_bytes(&[0; 64]))
                 .to_bytes()

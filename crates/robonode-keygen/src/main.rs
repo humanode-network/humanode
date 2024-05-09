@@ -1,10 +1,10 @@
-//! A tiny utility for generating a robonode keypair.
-//! Prints the keypair in HEX.
+//! A tiny utility for generating a robonode key.
+//! Prints the secret key in HEX.
 
 use rand::rngs::OsRng;
 
 fn main() {
     let mut csprng = OsRng {};
-    let keypair = robonode_crypto::Keypair::generate(&mut csprng);
-    println!("{}", hex::encode(keypair.to_bytes()));
+    let signing_key = robonode_crypto::SigningKey::generate(&mut csprng);
+    println!("{}", hex::encode(signing_key.to_bytes()));
 }

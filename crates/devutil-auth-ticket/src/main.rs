@@ -9,7 +9,7 @@ fn read_hex_env(key: &'static str) -> Vec<u8> {
 }
 
 fn main() {
-    let robonode_keypair = read_hex_env("ROBONODE_KEYPAIR");
+    let robonode_secret_key = read_hex_env("ROBONODE_SECRET_KEY");
     let public_key = read_hex_env("AUTH_TICKET_PUBLIC_KEY");
     let authentication_nonce = read_hex_env("AUTH_TICKET_AUTHENTICATION_NONCE");
 
@@ -19,7 +19,7 @@ fn main() {
     };
 
     let output = make(Input {
-        robonode_keypair,
+        robonode_secret_key,
         auth_ticket,
     })
     .unwrap();

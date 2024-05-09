@@ -84,7 +84,7 @@
   features: []
 - name: anstyle-wincon 3.0.2
   features: []
-- name: anyhow 1.0.82
+- name: anyhow 1.0.83
   features:
     - default
     - std
@@ -1563,7 +1563,9 @@
 - name: kvdb-rocksdb 0.18.0
   features: []
 - name: lazy_static 1.4.0
-  features: []
+  features:
+    - spin
+    - spin_no_std
 - name: lazycell 1.3.0
   features: []
 - name: libc 0.2.153
@@ -1968,7 +1970,7 @@
     - num-bigint
     - num-bigint-std
     - std
-- name: num-traits 0.2.18
+- name: num-traits 0.2.19
   features:
     - default
     - i128
@@ -2166,6 +2168,12 @@
 - name: pallet-evm-balances 1.0.0-dev
   features:
     - default
+    - std
+- name: pallet-evm-precompile-blake2 2.0.0-dev
+  features:
+    - std
+- name: pallet-evm-precompile-bn128 2.0.0-dev
+  features:
     - std
 - name: pallet-evm-precompile-modexp 2.0.0-dev
   features:
@@ -2430,7 +2438,9 @@
   features: []
 - name: proc-macro-crate 1.1.3
   features: []
-- name: proc-macro-crate 2.0.2
+- name: proc-macro-crate 2.0.0
+  features: []
+- name: proc-macro-crate 3.1.0
   features: []
 - name: proc-macro-error 1.0.4
   features:
@@ -2441,7 +2451,7 @@
   features: []
 - name: proc-macro-warning 0.3.1
   features: []
-- name: proc-macro2 1.0.81
+- name: proc-macro2 1.0.82
   features:
     - default
     - proc-macro
@@ -2890,7 +2900,7 @@
   features:
     - default
     - metered
-- name: scale-info 2.11.2
+- name: scale-info 2.11.3
   features:
     - decode
     - default
@@ -2898,7 +2908,7 @@
     - scale-info-derive
     - serde
     - std
-- name: scale-info-derive 2.11.2
+- name: scale-info-derive 2.11.3
   features: []
 - name: schannel 0.1.23
   features: []
@@ -2989,7 +2999,7 @@
     - std
 - name: semver-parser 0.7.0
   features: []
-- name: serde 1.0.199
+- name: serde 1.0.201
   features:
     - alloc
     - default
@@ -2997,10 +3007,10 @@
     - rc
     - serde_derive
     - std
-- name: serde_derive 1.0.199
+- name: serde_derive 1.0.201
   features:
     - default
-- name: serde_json 1.0.116
+- name: serde_json 1.0.117
   features:
     - alloc
     - default
@@ -3471,6 +3481,8 @@
     - default
 - name: substrate-bip39 0.4.5
   features: []
+- name: substrate-bn 0.6.0
+  features: []
 - name: substrate-frame-rpc-system 4.0.0-dev
   features: []
 - name: substrate-prometheus-endpoint 0.10.0-dev
@@ -3498,7 +3510,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.60
+- name: syn 2.0.61
   features:
     - clone-impls
     - default
@@ -3532,9 +3544,9 @@
   features: []
 - name: termtree 0.4.1
   features: []
-- name: thiserror 1.0.59
+- name: thiserror 1.0.60
   features: []
-- name: thiserror-impl 1.0.59
+- name: thiserror-impl 1.0.60
   features: []
 - name: thousands 0.2.0
   features: []
@@ -3649,7 +3661,7 @@
     - default
     - display
     - parse
-- name: toml_datetime 0.6.3
+- name: toml_datetime 0.6.5
   features:
     - serde
 - name: toml_edit 0.19.15
@@ -3659,6 +3671,11 @@
 - name: toml_edit 0.20.2
   features:
     - default
+- name: toml_edit 0.21.1
+  features:
+    - default
+    - display
+    - parse
 - name: tower 0.4.13
   features:
     - default

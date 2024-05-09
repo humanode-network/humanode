@@ -15,11 +15,12 @@ use errors::{
     get_facetec_session_token::Error as GetFacetecSessionToken, sign::Error as SignError,
     status::Error as StatusError,
 };
+use futures::StreamExt;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, EnrollRequest};
 use rpc_deny_unsafe::DenyUnsafe;
-use sc_transaction_pool_api::TransactionPool as TransactionPoolT;
+use sc_transaction_pool_api::{TransactionPool as TransactionPoolT, TransactionStatus, TxHash};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
@@ -93,7 +94,7 @@ impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
-pub trait Bioauth<Timestamp> {
+pub trait Bioauth<Timestamp, TxHash> {
     /// Get the configuration required for the Device SDK.
     #[method(name = "bioauth_getFacetecDeviceSdkParams")]
     async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams>;
@@ -112,7 +113,7 @@ pub trait Bioauth<Timestamp> {
 
     /// Authenticate with provided liveness data.
     #[method(name = "bioauth_authenticate")]
-    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<()>;
+    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash>;
 }
 
 /// The RPC implementation.
@@ -229,7 +230,7 @@ impl<
         Block,
         Timestamp,
         TransactionPool,
-    > BioauthServer<Timestamp>
+    > BioauthServer<Timestamp, TxHash<TransactionPool>>
     for Bioauth<
         RobonodeClient,
         ValidatorKeyExtractor,
@@ -329,7 +330,7 @@ where
         Ok(())
     }
 
-    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<()> {
+    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash<TransactionPool>> {
         self.deny_unsafe.check_if_safe()?;
 
         info!("Bioauth flow - authentication in progress");
@@ -366,17 +367,85 @@ where
             )
             .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
 
-        self.pool
+        info!("Bioauth flow - submitting authenticate transaction");
+
+        let tx_hash = self.pool.hash_of(&ext);
+
+        let mut watch = self.pool
             .submit_and_watch(
                 &sp_api::BlockId::Hash(at),
                 sp_runtime::transaction_validity::TransactionSource::Local,
                 ext,
             )
             .await
-            .map_err(AuthenticateError::BioauthTx).map_err(errtype)?;
+            .map_err(AuthenticateError::BioauthTx).map_err(errtype)?.fuse();
 
-        info!("Bioauth flow - authenticate transaction complete");
+        tokio::spawn(async move {
+            loop {
+                let maybe_tx_status = watch.next().await;
 
-        Ok(())
+                match maybe_tx_status {
+                    Some(TransactionStatus::Finalized((block_hash, _)))=> {
+                        info!(
+                            message = "Bioauth flow - authenticate transaction is in finalized block",
+                            %block_hash,
+                        );
+                        break
+                    },
+                    Some(TransactionStatus::Retracted(block_hash)) => {
+                        error!(
+                            message = "Bioauth flow - the block this transaction was included in has been retracted",
+                            %block_hash,
+                        );
+                        break
+                    },
+                    Some(TransactionStatus::Usurped(_)) => {
+                        error!(
+                            "Bioauth flow - transaction has been replaced in the pool, by another transaction",
+                        );
+                        break
+                    },
+                    Some(TransactionStatus::Dropped) => {
+                        error!(
+                            "Bioauth flow - transaction has been dropped from the pool because of the limit",
+                        );
+                        break
+                    },
+                    Some(TransactionStatus::FinalityTimeout(_)) => {
+                        error!(
+                            "Bioauth flow - maximum number of finality watchers has been reached, old watchers are being removed",
+                        );
+                        break
+                    },
+                    Some(TransactionStatus::Invalid) => {
+                        error!(
+                            "Bioauth flow - transaction is no longer valid in the current state",
+                        );
+                        break
+                    },
+                    Some(TransactionStatus::Ready) => info!("Bioauth flow - authenticate transaction is in ready queue"),
+                    Some(TransactionStatus::Broadcast(_)) => {
+                        info!("Bioauth flow - authenticate transaction is broadcasted");
+                    },
+                    Some(TransactionStatus::InBlock((block_hash, _))) => {
+                        info!(
+                            message = "Bioauth flow - authenticate transaction is in block",
+                            %block_hash,
+                        );
+                    },
+                    Some(TransactionStatus::Future) => info!("Bioauth flow - authenticate transaction is in future queue"),
+                    None => {
+                        error!(
+                            "Bioauth flow - unexpected transaction flow interruption",
+                        );
+                        break
+                    }
+                }
+            }
+
+            info!("Bioauth flow - authenticate transaction complete");
+        });
+
+        Ok(tx_hash)
     }
 }
