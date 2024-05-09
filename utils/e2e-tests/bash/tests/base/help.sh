@@ -8,13 +8,15 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 # the help texts change.
 
 compare() {
-  COMMAND="${@:-""}"
-  FIXTURE="help."${COMMAND// /.}".stdout.txt"
+  SUBCOMMAND="${@:-""}"
 
-  echo $FIXTURE
+  # Replace subcommands spaces by dots to prepare fixture filename.
+  FIXTURE_FILENAME="help."${SUBCOMMAND// /.}".stdout.txt"
+  # Avoid having double dots.
+  FIXTURE_FILENAME=${FIXTURE_FILENAME//../.}
 
-  OUTPUT="$("$HUMANODE_PEER_PATH" $COMMAND --help)"
-  TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/$FIXTURE")"
+  OUTPUT="$("$HUMANODE_PEER_PATH" $SUBCOMMAND --help)"
+  TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/$FIXTURE_FILENAME")"
 
   DIFF_CMD_ARGS=(
     -u
@@ -29,7 +31,8 @@ compare() {
   fi
 }
 
-COMMANDS=(
+SUBCOMMANDS=(
+  ""
   "key"
   "key generate-node-key"
   "key generate"
@@ -38,8 +41,8 @@ COMMANDS=(
   "key insert"
 )
 
-for COMMAND in "${COMMANDS[@]}"; do
-  compare $COMMAND
+for SUBCOMMAND in "${SUBCOMMANDS[@]}"; do
+  compare $SUBCOMMAND
 done
 
 printf "Test succeded\n" >&2
