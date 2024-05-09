@@ -348,7 +348,7 @@ where
             .await
             .map_err(EnrollError::Robonode)?;
 
-        let scan_result_blob = response.scan_result_blob.clone();
+        let scan_result_blob = response.scan_result_blob;
 
         info!("Bioauth flow - enrolling complete");
 
@@ -398,7 +398,7 @@ where
         info!("Bioauth flow - submitting authenticate transaction");
 
         let authenticate_tx_hash = self.pool.hash_of(&ext);
-        let scan_result_blob = response.scan_result_blob.clone();
+        let scan_result_blob = response.scan_result_blob;
 
         let mut watch = self.pool
             .submit_and_watch(
