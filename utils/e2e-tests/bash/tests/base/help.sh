@@ -16,7 +16,7 @@ compare() {
   FIXTURE_FILENAME=${FIXTURE_FILENAME//../.}
 
   OUTPUT="$("$HUMANODE_PEER_PATH" $SUBCOMMAND --help)"
-  TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/$FIXTURE_FILENAME")"
+  TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/help-output/$FIXTURE_FILENAME")"
 
   DIFF_CMD_ARGS=(
     -u
