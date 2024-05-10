@@ -1,0 +1,10 @@
+Inspect a provided mnemonic
+
+Usage: humanode-peer evm inspect-account [OPTIONS] <--mnemonic <MNEMONIC>|--dev>
+
+Options:
+  -m, --mnemonic <MNEMONIC>            Specify the mnemonic
+  -d, --dev                            Use the built-in dev mnemonic
+  -a, --account-index <ACCOUNT_INDEX>  The account index to use in the derivation path
+  -h, --help                           Print help
+  -V, --version                        Print version
