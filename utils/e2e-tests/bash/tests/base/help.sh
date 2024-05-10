@@ -8,14 +8,15 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 # the help texts change.
 
 compare() {
-  SUBCOMMAND="${@:-""}"
+  local COMMAND="${@:-""}"
+  # echo $COMMAND
 
-  # Replace subcommands spaces by dots to prepare fixture filename.
-  FIXTURE_FILENAME="help."${SUBCOMMAND// /.}".stdout.txt"
+  # Replace commands spaces by dots to prepare fixture filename.
+  FIXTURE_FILENAME="help."${COMMAND// /.}".stdout.txt"
   # Avoid having double dots.
   FIXTURE_FILENAME=${FIXTURE_FILENAME//../.}
 
-  OUTPUT="$("$HUMANODE_PEER_PATH" $SUBCOMMAND --help)"
+  OUTPUT="$("$HUMANODE_PEER_PATH" $COMMAND --help)"
   TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/help-output/$FIXTURE_FILENAME")"
 
   DIFF_CMD_ARGS=(
@@ -29,37 +30,18 @@ compare() {
     printf "Output did not match:\n%s\n" "$DIFF"
     exit 1
   fi
+
+  local SUBCOMMANDS=($(awk '/Commands:/,/Options:/{if(/Commands:|Options:/) next; print}' <(printf '%s' "$OUTPUT") | awk '{if ($1) print $1}'))
+
+  if [[ "${SUBCOMMANDS-}" ]]; then
+    for SUBCOMMAND in "${SUBCOMMANDS[@]}"; do
+      if [[ $SUBCOMMAND != "help" ]]; then
+        compare "$COMMAND $SUBCOMMAND"
+      fi
+    done
+  fi
 }
 
-SUBCOMMANDS=(
-  ""
-  "key"
-  "key generate-node-key"
-  "key generate"
-  "key inspect"
-  "key inspect-node-key"
-  "key insert"
-  "build-spec"
-  "check-block"
-  "export-blocks"
-  "export-state"
-  "import-blocks"
-  "purge-chain"
-  "revert"
-  "benchmark"
-  "benchmark pallet"
-  "benchmark storage"
-  "benchmark overhead"
-  "benchmark block"
-  "benchmark machine"
-  "benchmark extrinsic"
-  "frontier-db"
-  "export-embedded-runtime"
-  "try-runtime"
-)
-
-for SUBCOMMAND in "${SUBCOMMANDS[@]}"; do
-  compare $SUBCOMMAND
-done
+compare ""
 
 printf "Test succeded\n" >&2
