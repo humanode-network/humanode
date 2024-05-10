@@ -9,7 +9,6 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 
 compare() {
   local COMMAND="${@:-""}"
-  # echo $COMMAND
 
   # Replace commands spaces by dots to prepare fixture filename.
   FIXTURE_FILENAME="help."${COMMAND// /.}".stdout.txt"
