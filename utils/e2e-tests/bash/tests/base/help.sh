@@ -42,6 +42,6 @@ compare() {
   fi
 }
 
-compare ""
+compare
 
 printf "Test succeded\n" >&2
