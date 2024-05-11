@@ -24,28 +24,72 @@ assert_matches_snapshot() {
   fi
 }
 
+extract_subcommands() {
+  local OUTPUT_PATH="$1"
+
+  awk '/Commands:/,/Options:/{if(/Commands:|Options:/) next; print}' "$OUTPUT_PATH" | awk '{if ($1) print $1}'
+}
+
+read_into_array() {
+  ARRAY=()
+  while IFS= read -r ARRAY_ITEM; do
+    ARRAY+=("${ARRAY_ITEM}")
+  done
+}
+
 compare() {
-  local COMMAND="${@:-""}"
+  local COMMAND=("$@")
 
-  # Replace commands spaces by dots to prepare fixture filename.
-  FIXTURE_FILENAME="help."${COMMAND// /.}".stdout.txt"
-  # Avoid having double dots.
-  FIXTURE_FILENAME=${FIXTURE_FILENAME//../.}
+  local SNAPSHOT_FILENAME
+  local FULL_INVOCATION
 
-  OUTPUT="$("$HUMANODE_PEER_PATH" $COMMAND --help)"
-  TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/help-output/$FIXTURE_FILENAME")"
+  if [[ "${#COMMAND[@]}" -eq 0 ]]; then
+    SNAPSHOT_FILENAME="help.stdout.txt"
+    FULL_INVOCATION=("$HUMANODE_PEER_PATH" --help)
+  else
+    local FIXTURE_FILE_PART
+
+    FIXTURE_FILE_PART="$(
+      IFS="."
+      echo "${COMMAND[*]}"
+      IFS=" "
+    )"
+    SNAPSHOT_FILENAME="help.${FIXTURE_FILE_PART}.stdout.txt"
+    FULL_INVOCATION=("$HUMANODE_PEER_PATH" "${COMMAND[@]}" --help)
+  fi
+
+  printf "Checking \"%s\" against \"%s\"\n" "${FULL_INVOCATION[*]}" "$SNAPSHOT_FILENAME"
+
+  OUTPUT="$("${FULL_INVOCATION[@]}")"
+  TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/help-output/$SNAPSHOT_FILENAME")"
 
   assert_matches_snapshot <(printf '%s' "$TEMPLATE") <(printf '%s' "$OUTPUT")
 
-  local SUBCOMMANDS=($(awk '/Commands:/,/Options:/{if(/Commands:|Options:/) next; print}' <(printf '%s' "$OUTPUT") | awk '{if ($1) print $1}'))
-
-  if [[ "${SUBCOMMANDS-}" ]]; then
-    for SUBCOMMAND in "${SUBCOMMANDS[@]}"; do
-      if [[ $SUBCOMMAND != "help" ]]; then
-        compare "$COMMAND $SUBCOMMAND"
-      fi
-    done
+  read_into_array < <(extract_subcommands <(printf '%s' "$OUTPUT"))
+  if [[ "${#ARRAY[@]}" -eq 0 ]]; then
+    # No subcommands, do not recurse.
+    return
   fi
+  local SUBCOMMANDS=("${ARRAY[@]}")
+
+  printf "Detected subcommands:\n"
+  printf -- "- %s\n" "${SUBCOMMANDS[@]}"
+
+  for SUBCOMMAND in "${SUBCOMMANDS[@]}"; do
+    if [[ $SUBCOMMAND == "help" ]]; then
+      continue
+    fi
+
+    IFS=" " read -r -a SUBCOMMAND_ARRAY <<<"$SUBCOMMAND"
+
+    local FULL_SUBCOMMAND=()
+    if [[ "${#COMMAND[@]}" -ne 0 ]]; then
+      FULL_SUBCOMMAND+=("${COMMAND[@]}")
+    fi
+    FULL_SUBCOMMAND+=("${SUBCOMMAND_ARRAY[@]}")
+
+    compare "${FULL_SUBCOMMAND[@]}"
+  done
 }
 
 compare
