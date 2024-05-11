@@ -7,6 +7,23 @@ SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 # It also serves as a snapshot test for the help texts, so we can track when
 # the help texts change.
 
+assert_matches_snapshot() {
+  local EXPECTED_PATH="$1"
+  local ACTUAL_PATH="$2"
+
+  DIFF_CMD_ARGS=(
+    -u
+    -b
+    -I '^humanode-peer {{sha}}$'        # template
+    -I '^humanode-peer [0-9a-f]\{40\}$' # expected
+  )
+
+  if ! DIFF="$(diff "${DIFF_CMD_ARGS[@]}" "$EXPECTED_PATH" "$ACTUAL_PATH")"; then
+    printf "Output did not match:\n%s\n" "$DIFF"
+    exit 1
+  fi
+}
+
 compare() {
   local COMMAND="${@:-""}"
 
@@ -18,17 +35,7 @@ compare() {
   OUTPUT="$("$HUMANODE_PEER_PATH" $COMMAND --help)"
   TEMPLATE="$(cat "$SCRIPT_DIR/../../fixtures/help-output/$FIXTURE_FILENAME")"
 
-  DIFF_CMD_ARGS=(
-    -u
-    -b
-    -I '^humanode-peer {{sha}}$'        # template
-    -I '^humanode-peer [0-9a-f]\{40\}$' # expected
-  )
-
-  if ! DIFF="$(diff "${DIFF_CMD_ARGS[@]}" <(printf '%s' "$TEMPLATE") <(printf '%s' "$OUTPUT"))"; then
-    printf "Output did not match:\n%s\n" "$DIFF"
-    exit 1
-  fi
+  assert_matches_snapshot <(printf '%s' "$TEMPLATE") <(printf '%s' "$OUTPUT")
 
   local SUBCOMMANDS=($(awk '/Commands:/,/Options:/{if(/Commands:|Options:/) next; print}' <(printf '%s' "$OUTPUT") | awk '{if ($1) print $1}'))
 
