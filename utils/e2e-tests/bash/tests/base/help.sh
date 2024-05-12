@@ -27,7 +27,7 @@ assert_matches_snapshot() {
 extract_subcommands() {
   local OUTPUT_PATH="$1"
 
-  awk '/Commands:/,/Options:/{if(/Commands:|Options:/) next; print}' "$OUTPUT_PATH" | awk '{if ($1) print $1}'
+  awk '!NF{f=0} /Commands:/ {f=1; next} { if (f) print $1;}' "$OUTPUT_PATH"
 }
 
 read_into_array() {
