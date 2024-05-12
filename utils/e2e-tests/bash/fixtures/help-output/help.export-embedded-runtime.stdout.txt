@@ -1,0 +1,8 @@
+Export the runtime WASM code embedded in this binary
+
+Usage: humanode-peer export-embedded-runtime [OPTIONS]
+
+Options:
+  -o, --out <OUT>  Specify the output path
+  -h, --help       Print help
+  -V, --version    Print version
