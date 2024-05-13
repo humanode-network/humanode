@@ -8,7 +8,7 @@ publish = false
 pallet-erc20-support = { path = "../pallet-erc20-support", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
 
-codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+codec = { workspace = true, features = ["derive"] }
 fp-evm = { workspace = true }
 frame-support = { workspace = true }
 num_enum = { workspace = true }

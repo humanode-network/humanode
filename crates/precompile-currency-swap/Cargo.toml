@@ -8,7 +8,7 @@ publish = false
 precompile-utils = { path = "../precompile-utils", default-features = false }
 primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
 
-codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+codec = { workspace = true, features = ["derive"] }
 fp-evm = { workspace = true }
 frame-support = { workspace = true }
 num_enum = { workspace = true }
