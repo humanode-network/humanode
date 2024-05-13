@@ -8,7 +8,7 @@ publish = false
 pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
 
-codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+codec = { workspace = true, features = ["derive"] }
 fp-evm = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
