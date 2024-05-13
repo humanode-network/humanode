@@ -112,8 +112,6 @@ where
             .await
             .map_err(Error::InternalErrorEnrollment)?;
 
-        let scan_result_blob = enroll_res.scan_result_blob.clone();
-
         trace!(message = "Got FaceTec enroll results", ?enroll_res);
 
         if !enroll_res.success {
@@ -133,7 +131,9 @@ where
             return Err(Error::InternalErrorEnrollmentUnsuccessful);
         }
 
-        drop(enroll_res);
+        let ft::enrollment3d::Response {
+            scan_result_blob, ..
+        } = enroll_res;
 
         let search_result = unlocked
             .facetec
