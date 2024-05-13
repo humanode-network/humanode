@@ -24,7 +24,7 @@ robonode-client = { path = "../robonode-client" }
 
 async-trait = { workspace = true }
 clap = { workspace = true, features = ["derive"] }
-codec = { workspace = true, package = "parity-scale-codec" }
+codec = { workspace = true }
 fc-cli = { workspace = true }
 fc-consensus = { workspace = true }
 fc-db = { workspace = true, features = ["sql"] }

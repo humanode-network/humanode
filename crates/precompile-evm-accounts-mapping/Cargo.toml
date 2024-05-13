@@ -8,7 +8,7 @@ publish = false
 pallet-evm-accounts-mapping = { path = "../pallet-evm-accounts-mapping", default-features = false }
 primitives-ethereum = { path = "../primitives-ethereum", default-features = false }
 
-codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+codec = { workspace = true, features = ["derive"] }
 fp-evm = { workspace = true }
 sp-std = { workspace = true }
 
