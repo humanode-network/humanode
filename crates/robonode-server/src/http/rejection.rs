@@ -14,7 +14,7 @@ pub(super) struct ErrorResponse {
     pub error_code: &'static str,
     /// Scan result blob.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub scan_result_blob: ScanResultBlob,
+    pub scan_result_blob: Option<ScanResultBlob>,
 }
 
 /// This function receives a `Rejection` and generates an error response.

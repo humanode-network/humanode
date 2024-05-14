@@ -21,7 +21,7 @@ pub mod traits;
 pub use traits::*;
 
 /// A type alias representing a scan result blob.
-pub(crate) type ScanResultBlob = Option<String>;
+pub(crate) type ScanResultBlob = String;
 
 /// The overall generic logic.
 pub struct Logic<S, PK> {

@@ -184,7 +184,7 @@ impl_Logic!(
 async fn expect_error_body_response(
     status_code: StatusCode,
     error_code: &'static str,
-    scan_result_blob: ScanResultBlob,
+    scan_result_blob: Option<ScanResultBlob>,
 ) -> warp::hyper::body::Bytes {
     let json = warp::reply::json(&rejection::ErrorResponse {
         error_code,

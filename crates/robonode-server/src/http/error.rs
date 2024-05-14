@@ -15,7 +15,7 @@ pub struct Logic {
     /// A textual code representing the rejection message.
     pub error_code: &'static str,
     /// Scan result blob.
-    pub scan_result_blob: ScanResultBlob,
+    pub scan_result_blob: Option<ScanResultBlob>,
 }
 
 impl warp::reject::Reject for Logic {}
@@ -25,7 +25,7 @@ impl Logic {
     pub const fn new(
         status_code: StatusCode,
         error_code: &'static str,
-        scan_result_blob: ScanResultBlob,
+        scan_result_blob: Option<ScanResultBlob>,
     ) -> Self {
         Self {
             status_code,
@@ -36,7 +36,7 @@ impl Logic {
 }
 
 /// A helper function to return kind of internal logic error occured that we don't want to expose.
-fn internal_logic(scan_result_blob: ScanResultBlob) -> Logic {
+fn internal_logic(scan_result_blob: Option<ScanResultBlob>) -> Logic {
     Logic::new(
         StatusCode::INTERNAL_SERVER_ERROR,
         "LOGIC_INTERNAL_ERROR",
