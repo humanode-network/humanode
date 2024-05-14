@@ -463,10 +463,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
-        injected_error = op_enroll::Error::InternalErrorEnrollmentUnsuccessful,
+        injected_error = op_enroll::Error::InternalErrorEnrollmentUnsuccessful(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -483,10 +483,10 @@ trivial_error_tests! [
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InternalErrorDbSearch(facetec_api_client::Error::Server(ServerError {
             error_message: "error".to_owned()
-        })),
+        }), Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -501,10 +501,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
-        injected_error = op_enroll::Error::InternalErrorDbSearchUnsuccessful,
+        injected_error = op_enroll::Error::InternalErrorDbSearchUnsuccessful(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -521,10 +521,10 @@ trivial_error_tests! [
         mocked_call = expect_enroll,
         injected_error = op_enroll::Error::InternalErrorDbEnroll(facetec_api_client::Error::Server(ServerError {
             error_message: "error".to_owned()
-        })),
+        }), Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -539,10 +539,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
-        injected_error = op_enroll::Error::InternalErrorDbEnrollUnsuccessful,
+        injected_error = op_enroll::Error::InternalErrorDbEnrollUnsuccessful(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -645,10 +645,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::InternalErrorEnrollmentUnsuccessful,
+        injected_error = op_authenticate::Error::InternalErrorEnrollmentUnsuccessful(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -666,10 +666,10 @@ trivial_error_tests! [
             ServerError {
                 error_message: "error".to_owned()
             }
-        )),
+        ), Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -683,10 +683,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::InternalErrorDbSearchUnsuccessful,
+        injected_error = op_authenticate::Error::InternalErrorDbSearchUnsuccessful(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -700,10 +700,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch,
+        injected_error = op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -717,10 +717,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::InternalErrorInvalidPublicKeyHex,
+        injected_error = op_authenticate::Error::InternalErrorInvalidPublicKeyHex(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -734,10 +734,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::InternalErrorInvalidPublicKey,
+        injected_error = op_authenticate::Error::InternalErrorInvalidPublicKey(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -751,10 +751,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::InternalErrorSignatureVerificationFailed,
+        injected_error = op_authenticate::Error::InternalErrorSignatureVerificationFailed(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -768,10 +768,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::InternalErrorAuthTicketSigningFailed,
+        injected_error = op_authenticate::Error::InternalErrorAuthTicketSigningFailed(Some("scan result blob".to_owned())),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
-        expected_scan_result_blob = None,
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response during

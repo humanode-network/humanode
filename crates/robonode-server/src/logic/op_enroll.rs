@@ -52,17 +52,17 @@ pub enum Error {
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
-    InternalErrorEnrollmentUnsuccessful,
+    InternalErrorEnrollmentUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(ft::Error),
+    InternalErrorDbSearch(ft::Error, ScanResultBlob),
     /// Internal error at 3D-DB search due to unsuccessful response.
-    InternalErrorDbSearchUnsuccessful,
+    InternalErrorDbSearchUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorDbEnroll(ft::Error),
+    InternalErrorDbEnroll(ft::Error, ScanResultBlob),
     /// Internal error at 3D-DB enrollment due to unsuccessful response.
-    InternalErrorDbEnrollUnsuccessful,
+    InternalErrorDbEnrollUnsuccessful(ScanResultBlob),
     /// Internal error at signature verification.
     InternalErrorSignatureVerificationFailed,
 }
@@ -128,7 +128,9 @@ where
             {
                 return Err(Error::FaceScanRejected(enroll_res.scan_result_blob));
             }
-            return Err(Error::InternalErrorEnrollmentUnsuccessful);
+            return Err(Error::InternalErrorEnrollmentUnsuccessful(
+                enroll_res.scan_result_blob,
+            ));
         }
 
         let ft::enrollment3d::Response {
@@ -145,7 +147,9 @@ where
             .await;
 
         let results = match db_search_result_adapter(search_result) {
-            DbSearchResult::OtherError(err) => return Err(Error::InternalErrorDbSearch(err)),
+            DbSearchResult::OtherError(err) => {
+                return Err(Error::InternalErrorDbSearch(err, scan_result_blob))
+            }
             DbSearchResult::NoGroupError => {
                 trace!(message = "Got no-group error instead of FaceTec 3D-DB search results, assuming no results");
                 vec![]
@@ -153,7 +157,7 @@ where
             DbSearchResult::Response(search_res) => {
                 trace!(message = "Got FaceTec 3D-DB search results", ?search_res);
                 if !search_res.success {
-                    return Err(Error::InternalErrorDbSearchUnsuccessful);
+                    return Err(Error::InternalErrorDbSearchUnsuccessful(scan_result_blob));
                 }
                 search_res.results
             }
@@ -172,12 +176,12 @@ where
                 group_name: DB_GROUP_NAME,
             })
             .await
-            .map_err(Error::InternalErrorDbEnroll)?;
+            .map_err(|err| Error::InternalErrorDbEnroll(err, scan_result_blob.clone()))?;
 
         trace!(message = "Got FaceTec 3D-DB enroll results", ?db_enroll_res);
 
         if !db_enroll_res.success {
-            return Err(Error::InternalErrorDbEnrollUnsuccessful);
+            return Err(Error::InternalErrorDbEnrollUnsuccessful(scan_result_blob));
         }
 
         Ok(Response { scan_result_blob })

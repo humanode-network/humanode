@@ -59,23 +59,23 @@ pub enum Error {
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
-    InternalErrorEnrollmentUnsuccessful,
+    InternalErrorEnrollmentUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(ft::Error),
+    InternalErrorDbSearch(ft::Error, ScanResultBlob),
     /// Internal error at 3D-DB search due to unsuccessful response.
-    InternalErrorDbSearchUnsuccessful,
+    InternalErrorDbSearchUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB search due to match-level mismatch in
     /// the search results.
-    InternalErrorDbSearchMatchLevelMismatch,
+    InternalErrorDbSearchMatchLevelMismatch(ScanResultBlob),
     /// Internal error at converting public key hex representation to bytes.
-    InternalErrorInvalidPublicKeyHex,
+    InternalErrorInvalidPublicKeyHex(ScanResultBlob),
     /// Internal error at public key loading due to invalid public key.
-    InternalErrorInvalidPublicKey,
+    InternalErrorInvalidPublicKey(ScanResultBlob),
     /// Internal error at signature verification.
-    InternalErrorSignatureVerificationFailed,
+    InternalErrorSignatureVerificationFailed(ScanResultBlob),
     /// Internal error when signing auth ticket.
-    InternalErrorAuthTicketSigningFailed,
+    InternalErrorAuthTicketSigningFailed(ScanResultBlob),
 }
 
 #[async_trait::async_trait]
@@ -128,7 +128,9 @@ where
                 return Err(Error::FaceScanRejected(enroll_res.scan_result_blob));
             }
 
-            return Err(Error::InternalErrorEnrollmentUnsuccessful);
+            return Err(Error::InternalErrorEnrollmentUnsuccessful(
+                enroll_res.scan_result_blob,
+            ));
         }
 
         let ft::enrollment3d::Response {
@@ -145,7 +147,9 @@ where
             .await;
 
         let results = match db_search_result_adapter(search_result) {
-            DbSearchResult::OtherError(err) => return Err(Error::InternalErrorDbSearch(err)),
+            DbSearchResult::OtherError(err) => {
+                return Err(Error::InternalErrorDbSearch(err, scan_result_blob))
+            }
             DbSearchResult::NoGroupError => {
                 trace!(message = "Got no-group error instead of FaceTec 3D-DB search results, assuming no results");
                 vec![]
@@ -153,7 +157,7 @@ where
             DbSearchResult::Response(search_res) => {
                 trace!(message = "Got FaceTec 3D-DB search results", ?search_res);
                 if !search_res.success {
-                    return Err(Error::InternalErrorDbSearchUnsuccessful);
+                    return Err(Error::InternalErrorDbSearchUnsuccessful(scan_result_blob));
                 }
                 search_res.results
             }
@@ -161,26 +165,29 @@ where
 
         // If the results set is empty - this means that this person was not
         // found in the system.
-        let found = match results.first() {
-            Some(found) => found,
-            None => return Err(Error::PersonNotFound(scan_result_blob)),
-        };
+        let found = results
+            .first()
+            .ok_or(Error::PersonNotFound(scan_result_blob.clone()))?;
         if found.match_level < MATCH_LEVEL {
-            return Err(Error::InternalErrorDbSearchMatchLevelMismatch);
+            return Err(Error::InternalErrorDbSearchMatchLevelMismatch(
+                scan_result_blob,
+            ));
         }
 
-        let public_key_bytes =
-            hex::decode(&found.identifier).map_err(|_| Error::InternalErrorInvalidPublicKeyHex)?;
-        let public_key =
-            PK::try_from(&public_key_bytes).map_err(|_| Error::InternalErrorInvalidPublicKey)?;
+        let public_key_bytes = hex::decode(&found.identifier)
+            .map_err(|_| Error::InternalErrorInvalidPublicKeyHex(scan_result_blob.clone()))?;
+        let public_key = PK::try_from(&public_key_bytes)
+            .map_err(|_| Error::InternalErrorInvalidPublicKey(scan_result_blob.clone()))?;
 
         let signature_valid = public_key
             .verify(&req.liveness_data, req.liveness_data_signature)
             .await
-            .map_err(|_| Error::InternalErrorSignatureVerificationFailed)?;
+            .map_err(|_| {
+                Error::InternalErrorSignatureVerificationFailed(scan_result_blob.clone())
+            })?;
 
         if !signature_valid {
-            return Err(Error::SignatureInvalid(scan_result_blob));
+            return Err(Error::SignatureInvalid(scan_result_blob.clone()));
         }
 
         // Prepare an authentication nonce from the sequence number.
@@ -202,7 +209,7 @@ where
             .signer
             .sign(&opaque_auth_ticket)
             .await
-            .map_err(|_| Error::InternalErrorAuthTicketSigningFailed)?;
+            .map_err(|_| Error::InternalErrorAuthTicketSigningFailed(scan_result_blob.clone()))?;
 
         Ok(Response {
             auth_ticket: opaque_auth_ticket,

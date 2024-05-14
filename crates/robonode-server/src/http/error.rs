@@ -35,12 +35,14 @@ impl Logic {
     }
 }
 
-/// A kind of internal logic error occured that we don't want to expose.
-const INTERNAL: Logic = Logic::new(
-    StatusCode::INTERNAL_SERVER_ERROR,
-    "LOGIC_INTERNAL_ERROR",
-    None,
-);
+/// A helper function to return kind of internal logic error occured that we don't want to expose.
+fn internal_logic(scan_result_blob: ScanResultBlob) -> Logic {
+    Logic::new(
+        StatusCode::INTERNAL_SERVER_ERROR,
+        "LOGIC_INTERNAL_ERROR",
+        scan_result_blob,
+    )
+}
 
 impl From<op_enroll::Error> for Logic {
     fn from(err: op_enroll::Error) -> Self {
@@ -69,13 +71,15 @@ impl From<op_enroll::Error> for Logic {
                 "ENROLL_PERSON_ALREADY_ENROLLED",
                 scan_result_blob,
             ),
+            op_enroll::Error::InternalErrorEnrollmentUnsuccessful(scan_result_blob)
+            | op_enroll::Error::InternalErrorDbSearch(_, scan_result_blob)
+            | op_enroll::Error::InternalErrorDbSearchUnsuccessful(scan_result_blob)
+            | op_enroll::Error::InternalErrorDbEnroll(_, scan_result_blob)
+            | op_enroll::Error::InternalErrorDbEnrollUnsuccessful(scan_result_blob) => {
+                internal_logic(scan_result_blob)
+            }
             op_enroll::Error::InternalErrorEnrollment(_)
-            | op_enroll::Error::InternalErrorEnrollmentUnsuccessful
-            | op_enroll::Error::InternalErrorDbSearch(_)
-            | op_enroll::Error::InternalErrorDbSearchUnsuccessful
-            | op_enroll::Error::InternalErrorDbEnroll(_)
-            | op_enroll::Error::InternalErrorSignatureVerificationFailed
-            | op_enroll::Error::InternalErrorDbEnrollUnsuccessful => INTERNAL.clone(),
+            | op_enroll::Error::InternalErrorSignatureVerificationFailed => internal_logic(None),
         }
     }
 }
@@ -103,15 +107,17 @@ impl From<op_authenticate::Error> for Logic {
                 "AUTHENTICATE_SIGNATURE_INVALID",
                 scan_result_blob,
             ),
-            op_authenticate::Error::InternalErrorEnrollment(_)
-            | op_authenticate::Error::InternalErrorEnrollmentUnsuccessful
-            | op_authenticate::Error::InternalErrorDbSearch(_)
-            | op_authenticate::Error::InternalErrorDbSearchUnsuccessful
-            | op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch
-            | op_authenticate::Error::InternalErrorInvalidPublicKeyHex
-            | op_authenticate::Error::InternalErrorInvalidPublicKey
-            | op_authenticate::Error::InternalErrorSignatureVerificationFailed
-            | op_authenticate::Error::InternalErrorAuthTicketSigningFailed => INTERNAL.clone(),
+            op_authenticate::Error::InternalErrorEnrollmentUnsuccessful(scan_result_blob)
+            | op_authenticate::Error::InternalErrorDbSearch(_, scan_result_blob)
+            | op_authenticate::Error::InternalErrorDbSearchUnsuccessful(scan_result_blob)
+            | op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch(scan_result_blob)
+            | op_authenticate::Error::InternalErrorInvalidPublicKeyHex(scan_result_blob)
+            | op_authenticate::Error::InternalErrorInvalidPublicKey(scan_result_blob)
+            | op_authenticate::Error::InternalErrorSignatureVerificationFailed(scan_result_blob)
+            | op_authenticate::Error::InternalErrorAuthTicketSigningFailed(scan_result_blob) => {
+                internal_logic(scan_result_blob)
+            }
+            op_authenticate::Error::InternalErrorEnrollment(_) => internal_logic(None),
         }
     }
 }
@@ -127,7 +133,7 @@ impl From<op_get_facetec_session_token::Error> for Logic {
         match err {
             op_get_facetec_session_token::Error::InternalErrorSessionToken(_)
             | op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful => {
-                INTERNAL.clone()
+                internal_logic(None)
             }
         }
     }
