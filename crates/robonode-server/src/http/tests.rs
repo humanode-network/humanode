@@ -14,7 +14,7 @@ use crate::{
     http::{rejection, root},
     logic::{
         op_authenticate, op_enroll, op_get_facetec_device_sdk_params, op_get_facetec_session_token,
-        op_get_public_key, LogicOp,
+        op_get_public_key, LogicOp, ScanResultBlob,
     },
 };
 
@@ -108,6 +108,7 @@ macro_rules! trivial_error_tests {
                 injected_error = $mock_error:expr,
                 expected_status = $status_code:expr,
                 expected_code = $error_code:expr,
+                expected_scan_result_blob = $scan_result_blob:expr,
             },
         )*
     ) => {
@@ -127,7 +128,11 @@ macro_rules! trivial_error_tests {
                     .reply(&filter)
                     .await;
 
-                let expected_error_body_response = expect_error_body_response($status_code, $error_code).await;
+                let expected_error_body_response = expect_error_body_response(
+                    $status_code,
+                    $error_code,
+                    $scan_result_blob,
+                ).await;
 
                 assert_eq!(res.status(), $status_code);
                 assert_eq!(res.body(), &expected_error_body_response);
@@ -179,8 +184,12 @@ impl_Logic!(
 async fn expect_error_body_response(
     status_code: StatusCode,
     error_code: &'static str,
+    scan_result_blob: ScanResultBlob,
 ) -> warp::hyper::body::Bytes {
-    let json = warp::reply::json(&rejection::ErrorResponse { error_code });
+    let json = warp::reply::json(&rejection::ErrorResponse {
+        error_code,
+        scan_result_blob,
+    });
     let response = warp::reply::with_status(json, status_code).into_response();
     warp::hyper::body::to_bytes(response).await.unwrap()
 }
@@ -329,6 +338,7 @@ trivial_error_tests! [
         injected_error = op_enroll::Error::InvalidPublicKey,
         expected_status = StatusCode::BAD_REQUEST,
         expected_code = "ENROLL_INVALID_PUBLIC_KEY",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -346,6 +356,7 @@ trivial_error_tests! [
         injected_error = op_enroll::Error::SignatureInvalid,
         expected_status = StatusCode::BAD_REQUEST,
         expected_code = "ENROLL_SIGNATURE_INVALID",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -363,6 +374,7 @@ trivial_error_tests! [
         injected_error = op_enroll::Error::InvalidLivenessData(codec::Error::from("invalid_data")),
         expected_status = StatusCode::BAD_REQUEST,
         expected_code = "ENROLL_INVALID_LIVENESS_DATA",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -377,9 +389,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
-        injected_error = op_enroll::Error::FaceScanRejected,
+        injected_error = op_enroll::Error::FaceScanRejected(Some("scan result blob".to_owned())),
         expected_status = StatusCode::FORBIDDEN,
         expected_code = "ENROLL_FACE_SCAN_REJECTED",
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -397,6 +410,7 @@ trivial_error_tests! [
         injected_error = op_enroll::Error::PublicKeyAlreadyUsed,
         expected_status = StatusCode::CONFLICT,
         expected_code = "ENROLL_PUBLIC_KEY_ALREADY_USED",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -411,9 +425,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
-        injected_error = op_enroll::Error::PersonAlreadyEnrolled,
+        injected_error = op_enroll::Error::PersonAlreadyEnrolled(Some("scan result blob".to_owned())),
         expected_status = StatusCode::CONFLICT,
         expected_code = "ENROLL_PERSON_ALREADY_ENROLLED",
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -433,6 +448,7 @@ trivial_error_tests! [
         })),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -450,6 +466,7 @@ trivial_error_tests! [
         injected_error = op_enroll::Error::InternalErrorEnrollmentUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -469,6 +486,7 @@ trivial_error_tests! [
         })),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -486,6 +504,7 @@ trivial_error_tests! [
         injected_error = op_enroll::Error::InternalErrorDbSearchUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -505,6 +524,7 @@ trivial_error_tests! [
         })),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -522,6 +542,7 @@ trivial_error_tests! [
         injected_error = op_enroll::Error::InternalErrorDbEnrollUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -538,6 +559,7 @@ trivial_error_tests! [
         injected_error = op_authenticate::Error::InvalidLivenessData(codec::Error::from("invalid_data")),
         expected_status = StatusCode::BAD_REQUEST,
         expected_code = "AUTHENTICATE_INVALID_LIVENESS_DATA",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -551,9 +573,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::FaceScanRejected,
+        injected_error = op_authenticate::Error::FaceScanRejected(Some("scan result blob".to_owned())),
         expected_status = StatusCode::FORBIDDEN,
         expected_code = "AUTHENTICATE_FACE_SCAN_REJECTED",
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -567,9 +590,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::PersonNotFound,
+        injected_error = op_authenticate::Error::PersonNotFound(Some("scan result blob".to_owned())),
         expected_status = StatusCode::NOT_FOUND,
         expected_code = "AUTHENTICATE_PERSON_NOT_FOUND",
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -583,9 +607,10 @@ trivial_error_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_authenticate,
-        injected_error = op_authenticate::Error::SignatureInvalid,
+        injected_error = op_authenticate::Error::SignatureInvalid(Some("scan result blob".to_owned())),
         expected_status = StatusCode::FORBIDDEN,
         expected_code = "AUTHENTICATE_SIGNATURE_INVALID",
+        expected_scan_result_blob = Some("scan result blob".to_owned()),
     },
 
     /// This test verifies getting expected HTTP response
@@ -606,6 +631,7 @@ trivial_error_tests! [
         )),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -622,6 +648,7 @@ trivial_error_tests! [
         injected_error = op_authenticate::Error::InternalErrorEnrollmentUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -642,6 +669,7 @@ trivial_error_tests! [
         )),
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -658,6 +686,7 @@ trivial_error_tests! [
         injected_error = op_authenticate::Error::InternalErrorDbSearchUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -674,6 +703,7 @@ trivial_error_tests! [
         injected_error = op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -690,6 +720,7 @@ trivial_error_tests! [
         injected_error = op_authenticate::Error::InternalErrorInvalidPublicKeyHex,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -706,6 +737,7 @@ trivial_error_tests! [
         injected_error = op_authenticate::Error::InternalErrorInvalidPublicKey,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -722,6 +754,7 @@ trivial_error_tests! [
         injected_error = op_authenticate::Error::InternalErrorSignatureVerificationFailed,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response
@@ -738,6 +771,7 @@ trivial_error_tests! [
         injected_error = op_authenticate::Error::InternalErrorAuthTicketSigningFailed,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 
     /// This test verifies getting expected HTTP response during
@@ -751,5 +785,6 @@ trivial_error_tests! [
         injected_error = op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful,
         expected_status = StatusCode::INTERNAL_SERVER_ERROR,
         expected_code = "LOGIC_INTERNAL_ERROR",
+        expected_scan_result_blob = None,
     },
 ];

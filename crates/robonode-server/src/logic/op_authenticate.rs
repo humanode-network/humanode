@@ -6,7 +6,7 @@ use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use serde::{Deserialize, Serialize};
 use tracing::{error, trace};
 
-use super::{common::*, Logic, LogicOp, Signer, Verifier};
+use super::{common::*, Logic, LogicOp, ScanResultBlob, Signer, Verifier};
 use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
 /// The request of the authenticate operation.
@@ -35,7 +35,7 @@ pub struct Response {
     pub auth_ticket_signature: Vec<u8>,
     /// Scan result blob.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub scan_result_blob: Option<String>,
+    pub scan_result_blob: ScanResultBlob,
 }
 
 /// Errors for the authenticate operation.
@@ -44,15 +44,15 @@ pub enum Error {
     /// The provided opaque liveness data could not be decoded.
     InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
     /// This FaceScan was rejected.
-    FaceScanRejected,
+    FaceScanRejected(ScanResultBlob),
     /// This person was not found.
     /// Unually this means they need to enroll, but it can also happen if
     /// matching returns false-negative.
-    PersonNotFound,
+    PersonNotFound(ScanResultBlob),
     /// The liveness data signature validation failed.
     /// This means that the user might've provided a signature using different
     /// keypair from what was used for the original enrollment.
-    SignatureInvalid,
+    SignatureInvalid(ScanResultBlob),
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
     InternalErrorEnrollment(ft::Error),
@@ -125,7 +125,7 @@ where
                 .face_scan_security_checks
                 .all_checks_succeeded()
             {
-                return Err(Error::FaceScanRejected);
+                return Err(Error::FaceScanRejected(enroll_res.scan_result_blob));
             }
 
             return Err(Error::InternalErrorEnrollmentUnsuccessful);
@@ -161,7 +161,10 @@ where
 
         // If the results set is empty - this means that this person was not
         // found in the system.
-        let found = results.first().ok_or(Error::PersonNotFound)?;
+        let found = match results.first() {
+            Some(found) => found,
+            None => return Err(Error::PersonNotFound(scan_result_blob)),
+        };
         if found.match_level < MATCH_LEVEL {
             return Err(Error::InternalErrorDbSearchMatchLevelMismatch);
         }
@@ -177,7 +180,7 @@ where
             .map_err(|_| Error::InternalErrorSignatureVerificationFailed)?;
 
         if !signature_valid {
-            return Err(Error::SignatureInvalid);
+            return Err(Error::SignatureInvalid(scan_result_blob));
         }
 
         // Prepare an authentication nonce from the sequence number.

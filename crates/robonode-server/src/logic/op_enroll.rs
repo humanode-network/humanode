@@ -5,7 +5,7 @@ use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use serde::{Deserialize, Serialize};
 use tracing::{error, trace};
 
-use super::{common::*, Logic, LogicOp, Signer, Verifier};
+use super::{common::*, Logic, LogicOp, ScanResultBlob, Signer, Verifier};
 use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
 /// The request for the enroll operation.
@@ -27,7 +27,7 @@ pub struct Request {
 pub struct Response {
     /// Scan result blob.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub scan_result_blob: Option<String>,
+    pub scan_result_blob: ScanResultBlob,
 }
 
 /// The errors on the enroll operation.
@@ -40,12 +40,12 @@ pub enum Error {
     /// The liveness data signature validation failed.
     SignatureInvalid,
     /// This FaceScan was rejected.
-    FaceScanRejected,
+    FaceScanRejected(ScanResultBlob),
     /// This Public Key was already used.
     PublicKeyAlreadyUsed,
     /// This person has already enrolled into the system.
     /// It can also happen if matching returns false-positive.
-    PersonAlreadyEnrolled,
+    PersonAlreadyEnrolled(ScanResultBlob),
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
     InternalErrorEnrollment(ft::Error),
@@ -126,7 +126,7 @@ where
                 .face_scan_security_checks
                 .all_checks_succeeded()
             {
-                return Err(Error::FaceScanRejected);
+                return Err(Error::FaceScanRejected(enroll_res.scan_result_blob));
             }
             return Err(Error::InternalErrorEnrollmentUnsuccessful);
         }
@@ -162,7 +162,7 @@ where
         // If the results set is non-empty - this means that this person has
         // already enrolled with the system. It might also be a false-positive.
         if !results.is_empty() {
-            return Err(Error::PersonAlreadyEnrolled);
+            return Err(Error::PersonAlreadyEnrolled(scan_result_blob));
         }
 
         let db_enroll_res = unlocked
