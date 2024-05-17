@@ -1,0 +1,10 @@
+[default]
+extend-ignore-identifiers-re = [".+HDNode.*"]
+
+[default.extend-identifiers]
+# Substrate choices we can't / won't change.
+"Applyable" = "Applyable"
+"assert_applyable_validate_all_transaction_sources" = "assert_applyable_validate_all_transaction_sources"
+"prepare_applyable_data" = "prepare_applyable_data"
+# DEFLATE
+"flate2" = "flate2"
