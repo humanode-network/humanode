@@ -2,7 +2,7 @@ import { HDNodeWallet, ethers, Mnemonic, Wallet } from "ethers";
 import { RunNodeState } from "./node";
 import { arrayMap } from "./jsbase";
 import {
-  DEV_ACCOUNT_INDICIES,
+  DEV_ACCOUNT_INDICES,
   ROOT_DEV_ACCOUNT_DERIVATION_PATH,
   SUBSTRATE_DEV_SEED_PHRASE,
 } from "./eth";
@@ -46,7 +46,7 @@ export const devHDNodeWalletRoot = HDNodeWallet.fromMnemonic(
   ROOT_DEV_ACCOUNT_DERIVATION_PATH,
 );
 
-export const devHDNodeWallets = arrayMap(DEV_ACCOUNT_INDICIES, (accountIndex) =>
+export const devHDNodeWallets = arrayMap(DEV_ACCOUNT_INDICES, (accountIndex) =>
   devHDNodeWalletRoot.deriveChild(accountIndex),
 );
 

@@ -17,7 +17,7 @@ pub struct GenerateKeyCmd {
     pub output_scheme: OutputTypeFlag,
 }
 
-/// An error that occured during key generation.
+/// An error that occurred during key generation.
 #[derive(thiserror::Error, Debug)]
 pub enum GenerateKeyError {
     /// The number of words used in mnemonic is invalid.

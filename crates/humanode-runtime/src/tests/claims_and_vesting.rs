@@ -389,7 +389,7 @@ fn genesis_claims_invalid_pot_balance() {
 /// This test verifies that `GenesisConfig` with claims fails due to invalid vesting initialization with null.
 #[test]
 #[should_panic = "invalid type: null, expected a sequence"]
-fn genesis_claims_invalid_vesting_inititalization_with_null() {
+fn genesis_claims_invalid_vesting_initialization_with_null() {
     let token_claims = r#"
     {
         "claims": [

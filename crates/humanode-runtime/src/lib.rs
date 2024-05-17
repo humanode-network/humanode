@@ -3,7 +3,7 @@
 #![recursion_limit = "256"]
 // TODO(#66): switch back to warn
 #![allow(missing_docs, clippy::missing_docs_in_private_items)]
-// Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
+// Either generate code at standard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
 // Runtime impl macros generate non-snake case names.
 #![allow(non_snake_case)]
@@ -521,7 +521,7 @@ impl pallet_bioauth::Config for Runtime {
     type RobonodeSignature = Vec<u8>;
     type ValidatorPublicKey = BioauthId;
     type OpaqueAuthTicket = primitives_auth_ticket::OpaqueAuthTicket;
-    type AuthTicketCoverter = PrimitiveAuthTicketConverter;
+    type AuthTicketConverter = PrimitiveAuthTicketConverter;
     type ValidatorSetUpdater = ();
     type Moment = UnixMilliseconds;
     type DisplayMoment = display_moment::DisplayMoment;

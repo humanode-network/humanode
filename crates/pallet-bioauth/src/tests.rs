@@ -1032,7 +1032,7 @@ fn signed_ext_check_bioauth_tx_denies_conflicting_public_keys() {
     })
 }
 
-/// This test verifies that genesis initialization properly assignes the state and invokes
+/// This test verifies that genesis initialization properly assigns the state and invokes
 /// the validators set init.
 #[test]
 fn genesis_build() {

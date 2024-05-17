@@ -34,4 +34,4 @@ wait_block_with_timeout 5 50
 # Run try-runtime execute-block command.
 "$HUMANODE_PEER_PATH" try-runtime --runtime existing --detailed-log-output execute-block live --uri "ws://127.0.0.1:9944"
 
-printf "Test succeded\n" >&2
+printf "Test succeeded\n" >&2

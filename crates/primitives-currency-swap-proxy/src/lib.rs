@@ -1,6 +1,6 @@
 //! Currency swap proxy related primitives.
 
-// Either generate code at stadard mode, or `no_std`, based on the `std` feature presence.
+// Either generate code at standard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
@@ -38,7 +38,7 @@ pub trait Config {
     /// The type used as an Account ID for the currency we proxy to.
     type AccountIdTo;
 
-    /// The curreny swap implementation to use for proxying.
+    /// The currency swap implementation to use for proxying.
     type CurrencySwap: CurrencySwap<Self::AccountIdFrom, Self::AccountIdTo>;
 }
 

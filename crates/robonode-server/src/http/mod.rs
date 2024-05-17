@@ -1,4 +1,4 @@
-//! The HTTP transport realted stuff.
+//! The HTTP transport related stuff.
 
 mod error;
 mod filters;
