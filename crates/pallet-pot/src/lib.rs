@@ -1,4 +1,4 @@
-//! A pot - an instanced pallet indended to provide an govern a "system" account where some balance
+//! A pot - an instanced pallet intended to provide an govern a "system" account where some balance
 //! can be sent.
 //!
 //! Intended for use as an implementation for the treasury, fee pot, etc.
@@ -27,7 +27,7 @@ pub type NegativeImbalanceOf<T, I = ()> =
 #[cfg(feature = "std")]
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub enum InitialState<Balance> {
-    /// The state of the pot accout is not checked at genesis.
+    /// The state of the pot account is not checked at genesis.
     Unchecked,
     /// The account will be guaranteed to exist at genesis.
     Initialized,
@@ -96,7 +96,7 @@ pub mod pallet {
     pub enum Event<T: Config<I>, I: 'static = ()> {
         /// Some funds have been deposited.
         Deposit {
-            /// The amonut of funds that has been deposited.
+            /// The amount of funds that has been deposited.
             value: BalanceOf<T, I>,
         },
     }

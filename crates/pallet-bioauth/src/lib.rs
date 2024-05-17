@@ -48,7 +48,7 @@ pub trait Verifier<S: ?Sized> {
 
 /// A trait that enables a third-party type to define a potentially fallible conversion from A to B.
 /// Is in analogous to [`sp_runtime::traits::Convert`] is a sense that the third-party is acting as
-/// the converter, and to [`std::convert::TryFrom`] in a sense that the converion is fallible.
+/// the converter, and to [`std::convert::TryFrom`] in a sense that the conversion is fallible.
 pub trait TryConvert<A, B> {
     /// The error that can occur during conversion.
     type Error;
@@ -227,7 +227,7 @@ pub mod pallet {
         type OpaqueAuthTicket: Parameter + AsRef<[u8]> + Send + Sync;
 
         /// A converter from an opaque to a transparent auth ticket.
-        type AuthTicketCoverter: TryConvert<
+        type AuthTicketConverter: TryConvert<
             Self::OpaqueAuthTicket,
             AuthTicket<Self::ValidatorPublicKey>,
         >;
@@ -436,9 +436,9 @@ pub mod pallet {
         #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::authenticate(
             <ActiveAuthentications<T>>::get().len().try_into()
-            .expect("u32 is big enough for this oveflow to be practicly impossible"),
+            .expect("u32 is big enough for this overflow to be practically impossible"),
             <ConsumedAuthTicketNonces<T>>::get().len().try_into()
-            .expect("u32 is big enough for this oveflow to be practicly impossible")))]
+            .expect("u32 is big enough for this overflow to be practically impossible")))]
         pub fn authenticate(
             origin: OriginFor<T>,
             req: Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
@@ -490,7 +490,7 @@ pub mod pallet {
                                 public_key: public_key.clone(),
                                 expires_at: current_moment
                                     .checked_add(&T::AuthenticationsExpireAfter::get())
-                                    .expect("32 bits should be enough for this overflow to be practicly impossible"),
+                                    .expect("32 bits should be enough for this overflow to be practically impossible"),
                             };
 
                             // Run the before hook, abort if needed.
@@ -523,7 +523,7 @@ pub mod pallet {
         #[pallet::call_index(1)]
         #[pallet::weight(T::WeightInfo::set_robonode_public_key(
             <ActiveAuthentications<T>>::get().len().try_into()
-            .expect("u32 is big enough for this oveflow to be practicly impossible")
+            .expect("u32 is big enough for this overflow to be practically impossible")
         ))]
         pub fn set_robonode_public_key(
             origin: OriginFor<T>,
@@ -580,7 +580,7 @@ pub mod pallet {
                 <ActiveAuthentications<T>>::get()
                     .len()
                     .try_into()
-                    .expect("u32 is big enough for this oveflow to be practicly impossible"),
+                    .expect("u32 is big enough for this overflow to be practically impossible"),
             )
         }
     }
@@ -606,7 +606,7 @@ pub mod pallet {
                 return Err(AuthTicketExtractionError::SignatureInvalid);
             }
 
-            let auth_ticket = <T::AuthTicketCoverter as TryConvert<_, _>>::try_convert(req.ticket)
+            let auth_ticket = <T::AuthTicketConverter as TryConvert<_, _>>::try_convert(req.ticket)
                 .map_err(|_| AuthTicketExtractionError::UnableToParse)?;
 
             Ok(auth_ticket)

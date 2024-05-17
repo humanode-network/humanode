@@ -75,7 +75,7 @@ export const runNode = (
 
       resolve();
     }
-    reject(new Error("attempts exausted"));
+    reject(new Error("attempts exhausted"));
   });
 
   const cleanup = async () => {

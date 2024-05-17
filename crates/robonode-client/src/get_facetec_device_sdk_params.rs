@@ -27,7 +27,7 @@ type GetFacetecDeviceSdkParamsResponse = Map<String, Value>;
 /// The get-facetec-session-token-specific error condition.
 #[derive(Error, Debug, PartialEq)]
 pub enum GetFacetecDeviceSdkParamsError {
-    /// Some error occured.
+    /// Some error occurred.
     #[error("unknown error: {0}")]
     Unknown(String),
 }

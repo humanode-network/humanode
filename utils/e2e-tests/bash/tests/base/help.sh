@@ -94,4 +94,4 @@ compare() {
 
 compare
 
-printf "Test succeded\n" >&2
+printf "Test succeeded\n" >&2

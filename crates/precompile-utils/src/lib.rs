@@ -50,7 +50,7 @@ pub type EvmResult<T = ()> = Result<T, PrecompileFailure>;
 /// Trait similar to `fp_evm::Precompile` but with a `&self` parameter to manage some
 /// state (this state is only kept in a single transaction and is lost afterward).
 pub trait StatefulPrecompile {
-    /// Instanciate the precompile.
+    /// Instantiate the precompile.
     /// Will be called once when building the `PrecompileSet` at the start of each
     /// Ethereum transaction.
     fn new() -> Self;
@@ -369,7 +369,7 @@ pub fn call_cost(value: U256, config: &evm::Config) -> u64 {
     let new_account = true;
 
     // u64 is big enough for transaction cost related operations.
-    // So, this oveflow is practicly impossible.
+    // So, this overflow is practically impossible.
     address_access_cost(is_cold, config.gas_call, config)
         .checked_add(xfer_cost(is_call_or_callcode, transfers_value))
         .unwrap()
@@ -383,7 +383,7 @@ pub fn call_cost(value: U256, config: &evm::Config) -> u64 {
 }
 
 impl<T: PrecompileHandle> PrecompileHandleExt for T {
-    /// Record cost of a log manualy.
+    /// Record cost of a log manually.
     /// This can be useful to record log costs early when their content have static size.
     #[must_use]
     fn record_log_costs_manual(&mut self, topics: usize, data_len: usize) -> EvmResult {

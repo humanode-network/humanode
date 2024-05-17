@@ -61,7 +61,7 @@ impl SubstrateCli for Root {
 impl Root {
     /// Create a [`Runner`] for the command provided in argument.
     /// This will create a [`crate::configuration::Configuration`] from the command line arguments
-    /// and the rest of the environemnt.
+    /// and the rest of the environment.
     pub fn create_humanode_runner<T: CliConfigurationExt>(
         &self,
         command: &T,

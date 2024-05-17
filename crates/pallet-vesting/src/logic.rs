@@ -37,7 +37,7 @@ pub enum Operation<'a, T: Config> {
 /// The effect of the schedule computation.
 pub enum Effect<Balance> {
     /// The effect to apply after the computation is to execute a partial unlock of the balance.
-    /// This implies that the vesting shedule will exist after the operation.
+    /// This implies that the vesting schedule will exist after the operation.
     PartialUnlock(Balance),
     /// The effect to apply after the computation is to execute a full unlock of the balance.
     /// This implies that the vesting schedule will not exist after the operation.
@@ -81,7 +81,7 @@ impl<T: Config> Pallet<T> {
         match op {
             Operation::Init(Effect::PartialUnlock(balance_left_under_lock), schedule, who)
             | Operation::Update(Effect::PartialUnlock(balance_left_under_lock), schedule, who) => {
-                // Store the intitial or updated schedule.
+                // Store the initial or updated schedule.
                 <Schedules<T>>::insert(who, schedule);
 
                 // Set the lock and emit an update event.

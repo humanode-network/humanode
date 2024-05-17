@@ -119,10 +119,10 @@ pub type BioauthAuthenticationFor<T> = pallet_bioauth::Authentication<
 /// The bootnode id type for a given config.
 pub type BootnodeIdFor<T> = <T as pallet_bootnodes::Config>::BootnodeId;
 
-/// The identifcation type for a given config.
+/// The identification type for a given config.
 pub type IdentificationFor<T> = Identification<BootnodeIdFor<T>, BioauthAuthenticationFor<T>>;
 
-/// The identifcation tuple type for a given config.
+/// The identification tuple type for a given config.
 pub type IdentificationTupleFor<T> = (<T as frame_system::Config>::AccountId, IdentificationFor<T>);
 
 impl<T: Config> Pallet<T> {

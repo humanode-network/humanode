@@ -5,11 +5,11 @@ use core::marker::PhantomData;
 /// An error that can happen at [`FracScale`].
 #[derive(Debug, Clone, PartialEq)]
 pub enum FracScaleError {
-    /// An overflow occured.
+    /// An overflow occurred.
     Overflow,
-    /// A division by zero occured.
+    /// A division by zero occurred.
     DivisionByZero,
-    /// Convertion from the internal computations type to the value type failed.
+    /// Conversion from the internal computations type to the value type failed.
     Conversion,
 }
 

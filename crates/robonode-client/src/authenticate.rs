@@ -61,13 +61,13 @@ pub enum AuthenticateError {
     /// the public key that the person enrolled with don't match.
     #[error("signature invalid")]
     SignatureInvalid,
-    /// A logic internal error occured on the server end.
+    /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
     LogicInternal,
-    /// An error with an unknown code occured.
+    /// An error with an unknown code occurred.
     #[error("unknown error code: {0}")]
     UnknownCode(String),
-    /// Some other error occured.
+    /// Some other error occurred.
     #[error("unknown error: {0}")]
     Unknown(String),
 }
