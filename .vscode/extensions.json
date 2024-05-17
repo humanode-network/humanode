@@ -2,6 +2,7 @@
   "recommendations": [
     "rust-lang.rust-analyzer",
     "tamasfe.even-better-toml",
-    "esbenp.prettier-vscode"
+    "esbenp.prettier-vscode",
+    "tekumara.typos-vscode"
   ]
 }
