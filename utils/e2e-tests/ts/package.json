@@ -11,10 +11,10 @@
     "@polkadot/api": "^11.0.3",
     "@types/node": "16.18.97",
     "@vitest/expect": "^1.6.0",
-    "axios": "^1.6.8",
+    "axios": "^1.7.1",
     "ethers": "^6.12.1",
     "typescript": "^5.4.5",
-    "viem": "^2.10.9",
+    "viem": "^2.11.0",
     "vitest": "^1.6.0"
   }
 }
