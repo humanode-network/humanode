@@ -43,6 +43,9 @@ pub struct AuthenticateResponse {
     pub auth_ticket: Box<[u8]>,
     /// The robonode signature for this opaque auth ticket.
     pub auth_ticket_signature: Box<[u8]>,
+    /// Scan result blob.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scan_result_blob: Option<String>,
 }
 
 /// The authenticate-specific error condition.
@@ -127,6 +130,7 @@ mod tests {
             AuthenticateResponse {
                 auth_ticket: vec![1, 2, 3].into(),
                 auth_ticket_signature: vec![4, 5, 6].into(),
+                scan_result_blob: None,
             }
         )
     }

@@ -1,17 +1,20 @@
 //! Client API for the Humanode's Bioauth Robonode.
 
 use reqwest::StatusCode;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::{error_response::ErrorResponse, Client, Error};
 
 impl Client {
     /// Perform the enroll call to the server.
-    pub async fn enroll(&self, req: EnrollRequest<'_>) -> Result<(), Error<EnrollError>> {
+    pub async fn enroll(
+        &self,
+        req: EnrollRequest<'_>,
+    ) -> Result<EnrollResponse, Error<EnrollError>> {
         let url = format!("{}/enroll", self.base_url);
         let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
-            StatusCode::CREATED => Ok(()),
+            StatusCode::CREATED => Ok(res.json().await?),
             status => Err(Error::Call(EnrollError::from_response(
                 status,
                 res.text().await?,
@@ -32,6 +35,15 @@ pub struct EnrollRequest<'a> {
     /// The signature of the liveness data with the private key of the node.
     /// Proves the possession of the private key by the liveness data bearer.
     pub liveness_data_signature: &'a [u8],
+}
+
+/// Input data for the enroll response.
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct EnrollResponse {
+    /// Scan result blob.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scan_result_blob: Option<String>,
 }
 
 /// The enroll-specific error condition.
@@ -118,11 +130,17 @@ mod tests {
             public_key: b"123",
             liveness_data_signature: b"signature",
         };
+        let sample_response = serde_json::json!({
+            "scanResultBlob": "scanResultBlob"
+        });
+
+        let expected_response: EnrollResponse =
+            serde_json::from_value(sample_response.clone()).unwrap();
 
         Mock::given(matchers::method("POST"))
             .and(matchers::path("/enroll"))
             .and(matchers::body_json(&sample_request))
-            .respond_with(ResponseTemplate::new(201))
+            .respond_with(ResponseTemplate::new(201).set_body_json(&sample_response))
             .mount(&mock_server)
             .await;
 
@@ -131,7 +149,8 @@ mod tests {
             reqwest: reqwest::Client::new(),
         };
 
-        client.enroll(sample_request).await.unwrap();
+        let actual_response = client.enroll(sample_request).await.unwrap();
+        assert_eq!(actual_response, expected_response);
     }
 
     #[tokio::test]
