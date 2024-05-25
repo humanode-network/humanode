@@ -1,4 +1,4 @@
-//! Signed extension implentation for token claims.
+//! Signed extension implementation for token claims.
 
 use core::marker::PhantomData;
 

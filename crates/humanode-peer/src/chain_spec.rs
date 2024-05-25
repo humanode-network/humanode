@@ -391,10 +391,10 @@ fn testnet_genesis(
 
 /// The standard properties we use.
 fn properties() -> sc_chain_spec::Properties {
-    let properites = serde_json::json!({
+    let properties = serde_json::json!({
         "tokenDecimals": 18,
     });
-    serde_json::from_value(properites).unwrap() // embedded value, should never fail
+    serde_json::from_value(properties).unwrap() // embedded value, should never fail
 }
 
 #[cfg(test)]

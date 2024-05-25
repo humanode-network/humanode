@@ -208,7 +208,7 @@ enum SuccessResponse {
 }
 
 trivial_success_tests! [
-    /// This test verifies getting expected HTTP response during succesfull enrollment.
+    /// This test verifies getting expected HTTP response during successful enrollment.
     {
         test_name = enroll_success,
         method = "POST",
@@ -224,7 +224,7 @@ trivial_success_tests! [
         expected_response = SuccessResponse::Empty,
     },
 
-    /// This test verifies getting expected HTTP response during succesfull authentication request.
+    /// This test verifies getting expected HTTP response during successful authentication request.
     {
         test_name = authenticate_success,
         method = "POST",
@@ -247,7 +247,7 @@ trivial_success_tests! [
     },
 
     /// This test verifies getting expected HTTP response during
-    /// succesfull get_facetec_session_token request.
+    /// successful get_facetec_session_token request.
     {
         test_name = get_facetec_session_token_success,
         method = "GET",
@@ -324,7 +324,7 @@ trivial_success_tests! [
 
 trivial_error_tests! [
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with InvalidPublicKey error.
+    /// during failed enrollment request with InvalidPublicKey error.
     {
         test_name = enroll_error_invalid_public_key,
         method = "POST",
@@ -342,7 +342,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with SignatureInvalid error.
+    /// during failed enrollment request with SignatureInvalid error.
     {
         test_name = enroll_error_invalid_signature,
         method = "POST",
@@ -360,7 +360,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with InvalidLivenessData error.
+    /// during failed enrollment request with InvalidLivenessData error.
     {
         test_name = enroll_error_invalid_liveness_data,
         method = "POST",
@@ -378,7 +378,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with FaceScanRejected error.
+    /// during failed enrollment request with FaceScanRejected error.
     {
         test_name = enroll_error_face_scan_rejected,
         method = "POST",
@@ -396,7 +396,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with PublicKeyAlreadyUsed error.
+    /// during failed enrollment request with PublicKeyAlreadyUsed error.
     {
         test_name = enroll_error_public_key_already_used,
         method = "POST",
@@ -414,7 +414,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with PersonAlreadyEnrolled error.
+    /// during failed enrollment request with PersonAlreadyEnrolled error.
     {
         test_name = enroll_error_person_already_enrolled,
         method = "POST",
@@ -432,7 +432,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with InternalErrorEnrollment error.
+    /// during failed enrollment request with InternalErrorEnrollment error.
     {
         test_name = enroll_error_internal_enrollment,
         method = "POST",
@@ -452,7 +452,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with InternalErrorEnrollmentUnsuccessful error.
+    /// during failed enrollment request with InternalErrorEnrollmentUnsuccessful error.
     {
         test_name = enroll_error_internal_enrollment_unsuccessful,
         method = "POST",
@@ -470,7 +470,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with InternalErrorDbSearch error.
+    /// during failed enrollment request with InternalErrorDbSearch error.
     {
         test_name = enroll_error_internal_db_search,
         method = "POST",
@@ -490,7 +490,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with InternalErrorDbSearchUnsuccessful error.
+    /// during failed enrollment request with InternalErrorDbSearchUnsuccessful error.
     {
         test_name = enroll_error_internal_db_search_unsuccessful,
         method = "POST",
@@ -508,7 +508,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with InternalErrorDbEnroll error.
+    /// during failed enrollment request with InternalErrorDbEnroll error.
     {
         test_name = enroll_error_internal_db_enroll,
         method = "POST",
@@ -528,7 +528,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer enrollment request with InternalErrorDbEnrollUnsuccessful error.
+    /// during failed enrollment request with InternalErrorDbEnrollUnsuccessful error.
     {
         test_name = enroll_error_internal_db_enroll_unsuccessful,
         method = "POST",
@@ -546,7 +546,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InvalidLivenessData error.
+    /// during failed authentication request with InvalidLivenessData error.
     {
         test_name = authenticate_error_invalid_liveness_data,
         method = "POST",
@@ -563,7 +563,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with FaceScanRejected error.
+    /// during failed authentication request with FaceScanRejected error.
     {
         test_name = authenticate_error_face_scan_rejected,
         method = "POST",
@@ -580,7 +580,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with PersonNotFound error.
+    /// during failed authentication request with PersonNotFound error.
     {
         test_name = authenticate_error_person_not_found,
         method = "POST",
@@ -597,7 +597,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with SignatureInvalid error.
+    /// during failed authentication request with SignatureInvalid error.
     {
         test_name = authenticate_error_signature_invalid,
         method = "POST",
@@ -614,9 +614,9 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InternalErrorEnrollment error.
+    /// during failed authentication request with InternalErrorEnrollment error.
     {
-        test_name = authenticate_error_internall_enrollment,
+        test_name = authenticate_error_internal_enrollment,
         method = "POST",
         path = "/authenticate",
         input = op_authenticate::Request {
@@ -635,9 +635,9 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InternalErrorEnrollmentUnsuccessful error.
+    /// during failed authentication request with InternalErrorEnrollmentUnsuccessful error.
     {
-        test_name = authenticate_error_internall_enrollment_unsuccessful,
+        test_name = authenticate_error_internal_enrollment_unsuccessful,
         method = "POST",
         path = "/authenticate",
         input = op_authenticate::Request {
@@ -652,9 +652,9 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InternalErrorDbSearch error.
+    /// during failed authentication request with InternalErrorDbSearch error.
     {
-        test_name = authenticate_error_internall_db_search,
+        test_name = authenticate_error_internal_db_search,
         method = "POST",
         path = "/authenticate",
         input = op_authenticate::Request {
@@ -673,9 +673,9 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InternalErrorDbSearchUnsuccessful error.
+    /// during failed authentication request with InternalErrorDbSearchUnsuccessful error.
     {
-        test_name = authenticate_error_internall_db_search_unsuccessful,
+        test_name = authenticate_error_internal_db_search_unsuccessful,
         method = "POST",
         path = "/authenticate",
         input = op_authenticate::Request {
@@ -690,9 +690,9 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InternalErrorDbSearchMatchLevelMismatch error.
+    /// during failed authentication request with InternalErrorDbSearchMatchLevelMismatch error.
     {
-        test_name = authenticate_error_internall_db_search_match_level_mismatch,
+        test_name = authenticate_error_internal_db_search_match_level_mismatch,
         method = "POST",
         path = "/authenticate",
         input = op_authenticate::Request {
@@ -707,9 +707,9 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InternalErrorInvalidPublicKeyHex error.
+    /// during failed authentication request with InternalErrorInvalidPublicKeyHex error.
     {
-        test_name = authenticate_error_internall_invalid_public_key_hex,
+        test_name = authenticate_error_internal_invalid_public_key_hex,
         method = "POST",
         path = "/authenticate",
         input = op_authenticate::Request {
@@ -724,9 +724,9 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InternalErrorInvalidPublicKey error.
+    /// during failed authentication request with InternalErrorInvalidPublicKey error.
     {
-        test_name = authenticate_error_internall_invalid_public_key,
+        test_name = authenticate_error_internal_invalid_public_key,
         method = "POST",
         path = "/authenticate",
         input = op_authenticate::Request {
@@ -741,9 +741,9 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InternalErrorSignatureVerificationFailed error.
+    /// during failed authentication request with InternalErrorSignatureVerificationFailed error.
     {
-        test_name = authenticate_error_internall_signature_verification_failed,
+        test_name = authenticate_error_internal_signature_verification_failed,
         method = "POST",
         path = "/authenticate",
         input = op_authenticate::Request {
@@ -758,7 +758,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response
-    /// during failer authentication request with InternalErrorAuthTicketSigningFailed error.
+    /// during failed authentication request with InternalErrorAuthTicketSigningFailed error.
     {
         test_name = authenticate_error_internal_auth_ticket_signing_failed,
         method = "POST",
@@ -775,7 +775,7 @@ trivial_error_tests! [
     },
 
     /// This test verifies getting expected HTTP response during
-    /// failer get_facetec_session_token request with internal error.
+    /// failed get_facetec_session_token request with internal error.
     {
         test_name = get_facetec_session_token_error_internal,
         method = "GET",

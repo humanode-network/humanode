@@ -62,7 +62,7 @@ interface IERC20 {
      *
      * @param to The address to transfer tokens to.
      * @param value The amount to be transferred.
-     * @return true if the transfer was succesful, revert otherwise.
+     * @return true if the transfer was successful, revert otherwise.
      */
     function transfer(address to, uint256 value) external returns (bool);
 
@@ -83,7 +83,7 @@ interface IERC20 {
      * @param from The address which you want to send tokens from.
      * @param to The address which you want to transfer to.
      * @param value The amount of tokens to be transferred.
-     * @return true if the transfer was succesful, revert otherwise.
+     * @return true if the transfer was successful, revert otherwise.
      */
     function transferFrom(
         address from,
@@ -92,17 +92,17 @@ interface IERC20 {
     ) external returns (bool);
 
     /**
-     * Event emited when a transfer has been performed.
+     * Event emitted when a transfer has been performed.
      * Selector: ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef
      *
      * @param from The address sending the tokens
      * @param to The address receiving the tokens.
-     * @param value The amount of tokens transfered.
+     * @param value The amount of tokens transferred.
      */
     event Transfer(address indexed from, address indexed to, uint256 value);
 
     /**
-     * Event emited when an approval has been registered.
+     * Event emitted when an approval has been registered.
      * Selector: 8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925
      *
      * @param owner The owner address of the tokens.

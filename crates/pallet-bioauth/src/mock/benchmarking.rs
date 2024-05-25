@@ -177,7 +177,7 @@ impl pallet_bioauth::Config for Benchmark {
     type RobonodeSignature = Vec<u8>;
     type ValidatorPublicKey = ValidatorPublicKey;
     type OpaqueAuthTicket = MockOpaqueAuthTicket;
-    type AuthTicketCoverter = MockAuthTicketConverter;
+    type AuthTicketConverter = MockAuthTicketConverter;
     type ValidatorSetUpdater = MockValidatorSetUpdater;
     type Moment = UnixMilliseconds;
     type DisplayMoment = DisplayMoment;

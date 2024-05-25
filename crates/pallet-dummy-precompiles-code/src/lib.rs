@@ -44,7 +44,7 @@ pub mod pallet {
     /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_evm::Config {
-        /// The list of precompiles adresses to be created at evm with dummy code.
+        /// The list of precompiles addresses to be created at evm with dummy code.
         type PrecompilesAddresses: Get<Vec<H160>>;
 
         /// The current force execute ask counter.
@@ -129,7 +129,7 @@ pub mod pallet {
 }
 
 impl<T: Config> Pallet<T> {
-    /// A helper function to add dummy code for provided precompiles adrresses.
+    /// A helper function to add dummy code for provided precompiles addresses.
     fn precompiles_addresses_add_dummy_code() -> Weight {
         let mut weight = T::DbWeight::get().reads(0);
 

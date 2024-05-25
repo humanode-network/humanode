@@ -33,7 +33,7 @@ pub struct EnrollRequest<'a> {
     /// the rest of the parameters necessary to conduct a liveness check.
     pub liveness_data: &'a [u8],
     /// The signature of the liveness data with the private key of the node.
-    /// Proves the posession of the private key by the liveness data bearer.
+    /// Proves the possession of the private key by the liveness data bearer.
     pub liveness_data_signature: &'a [u8],
 }
 
@@ -65,13 +65,13 @@ pub enum EnrollError {
     /// The person is already enrolled.
     #[error("person already enrolled")]
     PersonAlreadyEnrolled,
-    /// A logic internal error occured on the server end.
+    /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
     LogicInternal,
-    /// An error with an unknown code occured.
+    /// An error with an unknown code occurred.
     #[error("unknown error code: {0}")]
     UnknownCode(String),
-    /// Some other error occured.
+    /// Some other error occurred.
     #[error("unknown error: {0}")]
     Unknown(String),
 }

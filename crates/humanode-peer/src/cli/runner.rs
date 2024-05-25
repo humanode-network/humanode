@@ -11,7 +11,7 @@ use sp_core::crypto::Ss58AddressFormat;
 use super::{utils::application_error, CliConfigurationExt, Root};
 use crate::configuration::Configuration;
 
-/// Run a future until it completes or a signal is recevied.
+/// Run a future until it completes or a signal is received.
 async fn with_signal<F, E>(future: F) -> std::result::Result<(), E>
 where
     F: Future<Output = std::result::Result<(), E>>,
@@ -101,7 +101,7 @@ impl<C: SubstrateCli> Runner<C> {
         future.await
     }
 
-    /// Execute syncronously.
+    /// Execute synchronously.
     pub fn sync_run<E>(
         self,
         runner: impl FnOnce(Configuration) -> std::result::Result<(), E>,

@@ -28,13 +28,13 @@ impl<PK> AppCryptoSigner<PK> {
     }
 }
 
-/// An error that occured at the signer.
+/// An error that occurred at the signer.
 #[derive(thiserror::Error, Debug)]
 pub enum SignerError {
     /// The keystore error.
     #[error("keystore error: {0}")]
     Keystore(sp_keystore::Error),
-    /// An error that occured because the produced signature was `None`.
+    /// An error that occurred because the produced signature was `None`.
     #[error("unable to produce a signature")]
     NoSignature,
 }

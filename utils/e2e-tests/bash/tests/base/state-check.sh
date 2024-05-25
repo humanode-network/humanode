@@ -14,7 +14,7 @@ TIME_IN_SEC=20
 run_with_timeout() {
   ANCHOR="$SECONDS"
   if timeout "$@"; then
-    printf "App run lasted for %d seconds and was terminated successfully (wich is bad because we expect it to keep running)\n" "$(("$SECONDS" - "$ANCHOR"))" >&2
+    printf "App run lasted for %d seconds and was terminated successfully (which is bad because we expect it to keep running)\n" "$(("$SECONDS" - "$ANCHOR"))" >&2
     exit
   else
     EXITCODE="$?"
@@ -33,4 +33,4 @@ for RUN in {1..2}; do
   run_with_timeout "$TIME_IN_SEC" "${COMMAND_TO_RUN[@]}"
 done
 
-printf "Test succeded\n" >&2
+printf "Test succeeded\n" >&2

@@ -1,6 +1,6 @@
 use crate::{self as pallet_ethereum_chain_id, mock::*};
 
-/// This test verifies that genesis initialization properly assignes the state.
+/// This test verifies that genesis initialization properly assigns the state.
 #[test]
 fn genesis_build() {
     // Prepare some sample data and a config.

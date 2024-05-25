@@ -13,4 +13,4 @@ if [[ "$OUTPUT" != "$EXPECTED" ]]; then
   exit 1
 fi
 
-printf "Test succeded\n" >&2
+printf "Test succeeded\n" >&2

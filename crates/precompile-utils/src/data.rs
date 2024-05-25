@@ -144,7 +144,7 @@ impl<'a> EvmDataReader<'a> {
         Ok(data)
     }
 
-    /// Reads a pointer, returning a reader targetting the pointed location.
+    /// Reads a pointer, returning a reader targeting the pointed location.
     pub fn read_pointer(&mut self) -> EvmResult<Self> {
         let offset: usize = self
             .read::<U256>()
@@ -253,11 +253,11 @@ impl EvmDataWriter {
         }
     }
 
-    /// Add offseted data at the end of this writer's data, updating the offsets.
+    /// Add offsetted data at the end of this writer's data, updating the offsets.
     fn bake_offsets(output: &mut Vec<u8>, offsets: Vec<OffsetDatum>) {
         for mut offset_datum in offsets {
             let offset_position = offset_datum.offset_position;
-            // usize is big enough for this oveflow to be practicly impossible.
+            // usize is big enough for this overflow to be practically impossible.
             let offset_position_end = offset_position.checked_add(32).unwrap();
 
             // The offset is the distance between the start of the data and the
@@ -277,7 +277,7 @@ impl EvmDataWriter {
     }
 
     /// Write arbitrary bytes.
-    /// Doesn't handle any alignement checks, prefer using `write` instead if possible.
+    /// Doesn't handle any alignment checks, prefer using `write` instead if possible.
     fn write_raw_bytes(mut self, value: &[u8]) -> Self {
         self.data.extend_from_slice(value);
         self
@@ -526,7 +526,7 @@ impl<T: EvmData> EvmData for Vec<T> {
 
         for inner in value {
             // Any offset in items are relative to the start of the item instead of the
-            // start of the array. However if there is offseted data it must but appended after
+            // start of the array. However if there is offsetted data it must but appended after
             // all items (offsets) are written. We thus need to rely on `compute_offsets` to do
             // that, and must store a "shift" to correct the offsets.
             let shift = inner_writer.data.len();
@@ -534,9 +534,9 @@ impl<T: EvmData> EvmData for Vec<T> {
 
             inner_writer = inner_writer.write_raw_bytes(&item_writer.data);
             for mut offset_datum in item_writer.offset_data {
-                // usize is big enough for this oveflow to be practicly impossible.
+                // usize is big enough for this overflow to be practically impossible.
                 offset_datum.offset_shift = offset_datum.offset_shift.checked_add(32).unwrap();
-                // usize is big enough for this oveflow to be practicly impossible.
+                // usize is big enough for this overflow to be practically impossible.
                 offset_datum.offset_position =
                     offset_datum.offset_position.checked_add(shift).unwrap();
                 inner_writer.offset_data.push(offset_datum);
@@ -582,7 +582,7 @@ impl EvmData for Bytes {
         // Leave it as is if a multiple of 32, otherwise pad to next
         // multiple or 32.
         let chunks = length / 32;
-        // usize is big enough for this oveflow to be practicly impossible.
+        // usize is big enough for this overflow to be practically impossible.
         let padded_size = match length % 32 {
             0 => chunks.checked_mul(32).unwrap(),
             _ => chunks.checked_add(1).unwrap().checked_mul(32).unwrap(),
