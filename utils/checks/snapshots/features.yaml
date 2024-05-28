@@ -84,7 +84,7 @@
   features: []
 - name: anstyle-wincon 3.0.2
   features: []
-- name: anyhow 1.0.83
+- name: anyhow 1.0.86
   features:
     - default
     - std
@@ -3043,7 +3043,7 @@
     - std
 - name: semver-parser 0.7.0
   features: []
-- name: serde 1.0.202
+- name: serde 1.0.203
   features:
     - alloc
     - default
@@ -3051,7 +3051,7 @@
     - rc
     - serde_derive
     - std
-- name: serde_derive 1.0.202
+- name: serde_derive 1.0.203
   features:
     - default
 - name: serde_json 1.0.117
@@ -3579,7 +3579,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.64
+- name: syn 2.0.65
   features:
     - clone-impls
     - default
@@ -3613,9 +3613,9 @@
   features: []
 - name: termtree 0.4.1
   features: []
-- name: thiserror 1.0.60
+- name: thiserror 1.0.61
   features: []
-- name: thiserror-impl 1.0.60
+- name: thiserror-impl 1.0.61
   features: []
 - name: thousands 0.2.0
   features: []
