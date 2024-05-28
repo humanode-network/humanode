@@ -18,7 +18,7 @@ use errors::{
 use futures::StreamExt;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
-use robonode_client::{AuthenticateRequest, EnrollRequest};
+use robonode_client::{AuthenticateRequest, AuthenticateResponse, EnrollRequest, EnrollResponse};
 use rpc_deny_unsafe::DenyUnsafe;
 use sc_transaction_pool_api::{TransactionPool as TransactionPoolT, TransactionStatus, TxHash};
 use serde::{Deserialize, Serialize};
@@ -338,7 +338,7 @@ where
         let (opaque_liveness_data, signature) = self.sign(public_key.clone(), &liveness_data).await
             .map_err(EnrollError::Sign)?;
 
-        let response = self.robonode_client
+        let EnrollResponse { scan_result_blob } = self.robonode_client
             .as_ref()
             .enroll(EnrollRequest {
                 liveness_data: opaque_liveness_data.as_ref(),
@@ -347,8 +347,6 @@ where
             })
             .await
             .map_err(EnrollError::Robonode)?;
-
-        let scan_result_blob = response.scan_result_blob;
 
         info!("Bioauth flow - enrolling complete");
 
@@ -369,7 +367,11 @@ where
         let (opaque_liveness_data, signature) = self.sign(public_key, &liveness_data).await
             .map_err(AuthenticateError::Sign).map_err(errtype)?;
 
-        let response = self
+        let AuthenticateResponse {
+            auth_ticket,
+            auth_ticket_signature,
+            scan_result_blob,
+        } = self
             .robonode_client
             .as_ref()
             .authenticate(AuthenticateRequest {
@@ -381,7 +383,7 @@ where
 
         info!("Bioauth flow - authentication complete");
 
-        info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
+        info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
 
         let at = self.client.info().best_hash;
 
@@ -390,15 +392,14 @@ where
             .runtime_api()
             .create_authenticate_extrinsic(
                 at,
-                response.auth_ticket.into(),
-                response.auth_ticket_signature.into(),
+                auth_ticket.into(),
+                auth_ticket_signature.into(),
             )
             .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
 
         info!("Bioauth flow - submitting authenticate transaction");
 
         let authenticate_tx_hash = self.pool.hash_of(&ext);
-        let scan_result_blob = response.scan_result_blob;
 
         let mut watch = self.pool
             .submit_and_watch(
