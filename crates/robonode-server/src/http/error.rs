@@ -35,7 +35,7 @@ impl Logic {
     }
 }
 
-/// A helper function to return kind of internal logic error occured that we don't want to expose.
+/// A helper function to return kind of internal logic error occurred that we don't want to expose.
 fn internal_logic(scan_result_blob: Option<ScanResultBlob>) -> Logic {
     Logic::new(
         StatusCode::INTERNAL_SERVER_ERROR,

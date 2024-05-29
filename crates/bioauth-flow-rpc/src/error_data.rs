@@ -4,6 +4,7 @@ use serde::Serialize;
 
 /// The RPC error context we provide to trigger the face capture logic again,
 /// effectively requesting a retry of the same request with a new liveness data.
+/// The RPC error context we provide to handle possible scan result blob data.
 #[derive(Debug)]
 pub struct ShouldRetry;
 
@@ -13,6 +14,18 @@ impl Serialize for ShouldRetry {
         S: serde::Serializer,
     {
         serde_json::json!({ "shouldRetry": true }).serialize(serializer)
+    }
+}
+
+/// The RPC error context we provide to handle scan result blob data.
+pub struct ScanResultBlob(pub String);
+
+impl Serialize for ScanResultBlob {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serde_json::json!({ "scanResultBlob": self.0 }).serialize(serializer)
     }
 }
 
