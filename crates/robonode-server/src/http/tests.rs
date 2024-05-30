@@ -45,7 +45,6 @@ macro_rules! impl_Logic {
 macro_rules! assert_success_response {
     ($response:expr, $expected_response:expr) => {
         match $expected_response {
-            SuccessResponse::Empty => assert!($response.is_empty()),
             SuccessResponse::Json(body) => {
                 assert_eq!(
                     body,
@@ -203,7 +202,6 @@ fn root_with_error_handler(
 /// Possible response variants we can expect in trivial success tests.
 #[derive(Debug)]
 enum SuccessResponse {
-    Empty,
     Json(serde_json::Value),
 }
 
@@ -219,9 +217,11 @@ trivial_success_tests! [
             liveness_data_signature: b"signature".to_vec(),
         },
         mocked_call = expect_enroll,
-        injected_response = op_enroll::Response {scan_result_blob: None},
+        injected_response = op_enroll::Response {scan_result_blob: Some("scan result blob".to_owned())},
         expected_status = StatusCode::CREATED,
-        expected_response = SuccessResponse::Empty,
+        expected_response = SuccessResponse::Json(serde_json::json!({
+            "scanResultBlob": "scan result blob",
+        })),
     },
 
     /// This test verifies getting expected HTTP response during successful authentication request.
