@@ -3821,9 +3821,9 @@
     - thread_local
     - tracing
     - tracing-log
-- name: tracing-test 0.2.4
+- name: tracing-test 0.2.5
   features: []
-- name: tracing-test-macro 0.2.4
+- name: tracing-test-macro 0.2.5
   features: []
 - name: trie-db 0.27.1
   features:
