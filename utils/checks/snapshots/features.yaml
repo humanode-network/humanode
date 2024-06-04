@@ -3669,7 +3669,7 @@
     - tinyvec_macros
 - name: tinyvec_macros 0.1.1
   features: []
-- name: tokio 1.37.0
+- name: tokio 1.38.0
   features:
     - bytes
     - default
@@ -3693,7 +3693,7 @@
     - time
     - tokio-macros
     - windows-sys
-- name: tokio-macros 2.2.0
+- name: tokio-macros 2.3.0
   features: []
 - name: tokio-native-tls 0.3.1
   features: []
