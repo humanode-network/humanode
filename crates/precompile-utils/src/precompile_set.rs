@@ -1,6 +1,6 @@
 //! Provide utils assemble precompiles and precompilesets into a
 //! final precompile set with security checks. All security checks are enabled by
-//! default and must be disabled explicely throught type annotations.
+//! default and must be disabled explicitly thought type annotations.
 
 use fp_evm::{IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet};
 use frame_support::pallet_prelude::Get;
@@ -56,7 +56,7 @@ pub trait DelegateCallSupport: sealed::Sealed {
     fn allow_delegate_call() -> bool;
 }
 
-/// DELEGATECALL is forbiden.
+/// DELEGATECALL is forbidden.
 pub struct ForbidDelegateCall;
 impl sealed::Sealed for ForbidDelegateCall {}
 impl DelegateCallSupport for ForbidDelegateCall {
@@ -92,7 +92,7 @@ impl<const N: u64> Get<H160> for AddressU64<N> {
 /// was a `PrecompileSet` containing only the precompile(set) it wraps.
 /// They can be combined into a real `PrecompileSet` using `PrecompileSetBuilder`.
 pub trait PrecompileSetFragment {
-    /// Instanciate the fragment.
+    /// Instantiate the fragment.
     fn new() -> Self;
 
     /// Execute the fragment.
@@ -371,7 +371,7 @@ where
                 Ok(mut recursion_level_map) => {
                     let recursion_level = match recursion_level_map.get_mut(&code_address) {
                         Some(recursion_level) => recursion_level,
-                        None => return Some(Err(revert("couldn't retreive precompile nesting"))),
+                        None => return Some(Err(revert("couldn't retrieve precompile nesting"))),
                     };
 
                     *recursion_level = match recursion_level.checked_sub(1) {

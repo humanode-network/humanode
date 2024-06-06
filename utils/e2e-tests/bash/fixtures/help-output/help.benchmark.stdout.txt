@@ -1,0 +1,16 @@
+Benchmark runtime pallets.
+
+Usage: humanode-peer benchmark <COMMAND>
+
+Commands:
+  pallet     Benchmark the extrinsic weight of FRAME Pallets
+  storage    Benchmark the storage speed of a chain snapshot
+  overhead   Benchmark the execution overhead per-block and per-extrinsic
+  block      Benchmark the execution time of historic blocks
+  machine    Command to benchmark the hardware
+  extrinsic  Benchmark the execution time of different extrinsics
+  help       Print this message or the help of the given subcommand(s)
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version

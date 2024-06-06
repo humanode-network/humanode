@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+codec = { workspace = true, features = ["derive"] }
 scale-info = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"], optional = true }
 sp-std = { workspace = true }

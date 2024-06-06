@@ -6,7 +6,7 @@ use robonode_crypto::ed25519_dalek::Signer;
 
 /// The input required to generate an auth ticket.
 pub struct Input {
-    /// The robonode secret key to use for authticket reponse signing.
+    /// The robonode secret key to use for authticket response signing.
     pub robonode_secret_key: Vec<u8>,
     /// The auth ticket to sign.
     pub auth_ticket: AuthTicket,

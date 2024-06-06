@@ -68,8 +68,8 @@ pub fn make_payload_hash<'a>(
 ) -> [u8; 32] {
     let datahashes = datahashes.into_iter();
     let (datahashes_size, _) = datahashes.size_hint();
-    // Datahashes number is enough limited at EIP-712 message for this oveflow
-    // to be practicly impossible.
+    // Datahashes number is enough limited at EIP-712 message for this overflow
+    // to be practically impossible.
     let mut buf = sp_std::prelude::Vec::with_capacity(
         32_usize
             .checked_add(datahashes_size.checked_mul(32).unwrap())

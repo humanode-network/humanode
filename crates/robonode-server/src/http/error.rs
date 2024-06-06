@@ -28,7 +28,7 @@ impl Logic {
     }
 }
 
-/// A kind of internal logic error occured that we don't want to expose.
+/// A kind of internal logic error occurred that we don't want to expose.
 const INTERNAL: Logic = Logic::new(StatusCode::INTERNAL_SERVER_ERROR, "LOGIC_INTERNAL_ERROR");
 
 impl From<op_enroll::Error> for Logic {

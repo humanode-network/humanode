@@ -11,7 +11,7 @@ pub(crate) fn genesis_verifying_contract() -> [u8; 20] {
     verifying_contract
 }
 
-/// The verifier for the EIP-712 signature of the EVM accout claim message.
+/// The verifier for the EIP-712 signature of the EVM account claim message.
 pub enum AccountClaimVerifier {}
 
 impl pallet_evm_accounts_mapping::SignedClaimVerifier for AccountClaimVerifier {

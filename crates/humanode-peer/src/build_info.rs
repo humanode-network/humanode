@@ -1,4 +1,4 @@
-//! Build envrionment information.
+//! Build environment information.
 
 /// The git sha of the code during the build.
 pub const GIT_SHA: &str = env!("VERGEN_GIT_SHA");

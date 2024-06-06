@@ -27,7 +27,7 @@ pub struct InsertKeyCmd {
     pub keystore_params: KeystoreParams,
 }
 
-/// An error that occured during key insert.
+/// An error that occurred during key insert.
 #[derive(thiserror::Error, Debug)]
 pub enum InsertKeyError {
     /// Something went wrong while extracting the list of bioauth keys.

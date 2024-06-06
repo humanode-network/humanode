@@ -28,4 +28,4 @@ jq \
   --exit-status \
   '.[] | select(.transfer.status.inBlock != null) | length == 1' <<<"$POLKA_JSON"
 
-printf "Test succeded\n" >&2
+printf "Test succeeded\n" >&2

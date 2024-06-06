@@ -7,7 +7,7 @@ publish = false
 [dependencies]
 primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
 
-codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+codec = { workspace = true, features = ["derive"] }
 frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }

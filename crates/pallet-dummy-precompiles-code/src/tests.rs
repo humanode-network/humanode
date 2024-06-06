@@ -2,7 +2,7 @@ use frame_support::traits::OnRuntimeUpgrade;
 
 use crate::{mock::*, DUMMY_CODE};
 
-/// This test verifies that genesis initialization properly assignes the state.
+/// This test verifies that genesis initialization properly assigns the state.
 #[test]
 fn genesis_build() {
     // Build the state from the config.

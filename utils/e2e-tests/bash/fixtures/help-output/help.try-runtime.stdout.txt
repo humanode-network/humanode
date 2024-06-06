@@ -1,0 +1,7 @@
+Try some command against runtime state. Note: `try-runtime` feature must be enabled
+
+Usage: humanode-peer try-runtime
+
+Options:
+  -h, --help     Print help
+  -V, --version  Print version

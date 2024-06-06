@@ -1,0 +1,9 @@
+Generate a random account
+
+Usage: humanode-peer evm generate-account [OPTIONS]
+
+Options:
+  -w, --w24                            Generate 24 words mnemonic instead of 12
+  -a, --account-index <ACCOUNT_INDEX>  The account index to use in the derivation path
+  -h, --help                           Print help
+  -V, --version                        Print version

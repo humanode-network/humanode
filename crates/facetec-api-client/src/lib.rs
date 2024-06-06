@@ -52,7 +52,7 @@ pub struct ServerError {
 /// The robonode client.
 #[derive(Debug)]
 pub struct Client<RBEI> {
-    /// Underyling HTTP client used to execute network calls.
+    /// Underlying HTTP client used to execute network calls.
     pub reqwest: reqwest::Client,
     /// The base URL to use for the routes.
     pub base_url: String,

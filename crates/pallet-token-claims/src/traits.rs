@@ -19,7 +19,7 @@ pub trait EthereumSignatureVerifier {
     /// Generate a message and verify the provided `signature` against the said message.
     /// Extract the [`EthereumAddress`] from the signature and return it.
     ///
-    /// The caller should check that the extracted address matches what is expected, as successfull
+    /// The caller should check that the extracted address matches what is expected, as successful
     /// recovery does not necessarily guarantee the correctness of the signature - that can only
     /// be achieved with checking the recovered address against the expected one.
     fn recover_signer(

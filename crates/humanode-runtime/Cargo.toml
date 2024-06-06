@@ -45,7 +45,7 @@ vesting-schedule-linear = { path = "../vesting-schedule-linear", default-feature
 vesting-scheduling-timestamp = { path = "../vesting-scheduling-timestamp", default-features = false }
 
 chrono = { workspace = true }
-codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+codec = { workspace = true, features = ["derive"] }
 fp-evm = { workspace = true }
 fp-rpc = { workspace = true }
 fp-self-contained = { workspace = true }

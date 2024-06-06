@@ -32,9 +32,9 @@ pub struct Request<'a> {
 }
 
 /// The response from `/enrollment-3d`.
-/// The schema for this particular call if fucked beyound belief; without a proper API docs from
-/// the FaceTec side, implemeting this properly will be a waste of time, and error prone.
-/// Plus, even the spec won't help - they need to fix thier approach to the API design.
+/// The schema for this particular call if fucked beyond belief; without a proper API docs from
+/// the FaceTec side, implementing this properly will be a waste of time, and error prone.
+/// Plus, even the spec won't help - they need to fix their approach to the API design.
 #[derive(Debug, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {

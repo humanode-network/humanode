@@ -5,7 +5,7 @@ use frame_support::traits::Get;
 
 use crate::{self as pallet_chain_properties, mock::*};
 
-/// This test verifies that genesis initialization properly assignes the state.
+/// This test verifies that genesis initialization properly assigns the state.
 #[test]
 fn genesis_build() {
     // Prepare some sample data and a config.

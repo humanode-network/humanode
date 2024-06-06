@@ -2,14 +2,14 @@
 
 use facetec_api_client as ft;
 
-/// An enum with all of the meaningful outcomes from the db seatch result.
+/// An enum with all of the meaningful outcomes from the db search result.
 pub enum DbSearchResult {
     /// A usual response.
     Response(ft::db_search::Response),
-    /// A special case - an error indicating that tthe group we searched at doesn't exist.
+    /// A special case - an error indicating that the group we searched at doesn't exist.
     /// We can treat it as a valid response with no results for our use case.
     NoGroupError,
-    /// Some other error occured.
+    /// Some other error occurred.
     OtherError(ft::Error),
 }
 

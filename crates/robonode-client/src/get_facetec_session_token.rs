@@ -32,7 +32,7 @@ pub struct GetFacetecSessionTokenResponse {
 /// The get-facetec-session-token-specific error condition.
 #[derive(Error, Debug, PartialEq)]
 pub enum GetFacetecSessionTokenError {
-    /// Some error occured.
+    /// Some error occurred.
     #[error("unknown error: {0}")]
     Unknown(String),
 }
@@ -65,7 +65,7 @@ mod tests {
         let mock_server = MockServer::start().await;
 
         let sample_response = serde_json::json!({
-            "sessionToken": "my sesion token",
+            "sessionToken": "my session token",
         });
 
         let expected_response: GetFacetecSessionTokenResponse =

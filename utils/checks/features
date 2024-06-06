@@ -29,7 +29,7 @@ def find_deps(package)
   # 1. Find the resolver node.
   node = METADATA['resolve']['nodes'].find { |e_node| e_node['id'] == package['id'] }
 
-  # 2. Go from the resovler node to the dependencies.
+  # 2. Go from the resolver node to the dependencies.
   node['deps'].each_with_object({}) do |dep, hash|
     # Simply find the package information by correlating the package id.
     dep_package = METADATA['packages'].find { |e_package| e_package['id'] == dep['pkg'] }
@@ -57,10 +57,10 @@ end
 
 def package_feature_enabled_by(package, enabled_by, what)
   features = package['features'] || {}
-  enabled_featues = features[enabled_by] || []
+  enabled_features = features[enabled_by] || []
 
-  return true if enabled_featues.include?(what)
-  return true if enabled_featues.any? { |e| package_feature_enabled_by(package, e, what) }
+  return true if enabled_features.include?(what)
+  return true if enabled_features.any? { |e| package_feature_enabled_by(package, e, what) }
 
   false
 end

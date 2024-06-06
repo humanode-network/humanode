@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-codec = { workspace = true, package = "parity-scale-codec", features = ["derive"] }
+codec = { workspace = true, features = ["derive"] }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 pallet-evm = { workspace = true }

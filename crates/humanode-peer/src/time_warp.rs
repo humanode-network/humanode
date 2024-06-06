@@ -42,7 +42,7 @@ impl TimeWarp {
     /// Apply time warp.
     pub fn apply_time_warp(&self, timestamp: Timestamp) -> sp_timestamp::InherentDataProvider {
         let time_since_revival = timestamp.saturating_sub(self.revive_timestamp.into());
-        // u64 is big enough for this oveflow to be practicly impossible.
+        // u64 is big enough for this overflow to be practically impossible.
         let warped_timestamp =
             Timestamp::new(self.warp_factor.saturating_add(*self.fork_timestamp));
 

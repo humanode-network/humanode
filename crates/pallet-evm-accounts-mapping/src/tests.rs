@@ -148,7 +148,7 @@ fn claim_account_bad_ethereum_signature() {
 }
 
 /// This test verifies that claiming account does not go through when the ethereum address recovery from
-/// the ethereum signature recoves an address that does not match the expected one.
+/// the ethereum signature recovers an address that does not match the expected one.
 #[test]
 fn claim_account_invalid_ethereum_signature() {
     new_test_ext().execute_with_ext(|_| {

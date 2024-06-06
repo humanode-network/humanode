@@ -22,7 +22,7 @@ uuid = { workspace = true, features = ["v4"] }
 warp = { workspace = true, features = ["default"] }
 
 [dev-dependencies]
-codec = { workspace = true, package = "parity-scale-codec" }
+codec = { workspace = true }
 mockall = { workspace = true }
 serde_json = { workspace = true }
 tracing-test = { workspace = true }

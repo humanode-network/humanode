@@ -53,7 +53,7 @@ pub trait AuthTicketBuilder: pallet::Config {
 
 /// Enables generation of signature with robonode private key provided at runtime.
 pub trait AuthTicketSigner: pallet::Config {
-    /// Signs `AuthTicket` bytearray provided and returns digitial signature in bytearray.
+    /// Signs `AuthTicket` bytearray provided and returns digital signature in bytearray.
     fn sign(
         auth_ticket: &<Self as pallet::Config>::OpaqueAuthTicket,
     ) -> <Self as pallet::Config>::RobonodeSignature;

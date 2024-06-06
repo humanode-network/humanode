@@ -83,7 +83,7 @@ mod transaction {
         <ExtrinsicOf<T> as sp_runtime::traits::Extrinsic>::SignaturePayload;
 
     /// Take a runtime call, and the use the [`frame_system::offchain`] facilities to create
-    /// a transcation from it.
+    /// a transaction from it.
     pub fn create_transaction<T, C>(
         call: RuntimeCallOf<T>,
         public: PublicOf<T>,

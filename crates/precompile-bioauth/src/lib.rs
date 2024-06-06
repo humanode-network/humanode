@@ -73,7 +73,7 @@ where
 
         let is_authenticated = pallet_bioauth::ActiveAuthentications::<T>::get()
             .iter()
-            .any(|active_authetication| active_authetication.public_key == account_id);
+            .any(|active_authentication| active_authentication.public_key == account_id);
 
         Ok(succeed(
             EvmDataWriter::new().write(is_authenticated).build(),

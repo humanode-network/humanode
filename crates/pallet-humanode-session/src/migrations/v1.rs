@@ -40,9 +40,9 @@ pub fn migrate<T: Config>() -> Weight {
     // Read the session index from the session pallet, then write it to our own state.
     weight = weight.saturating_add(T::DbWeight::get().reads_writes(1, 1));
 
-    // Move the old identites to the new ones, but one session forward.
+    // Move the old identities to the new ones, but one session forward.
     <CurrentSessionIdentities<T>>::translate(|key, old: IdentificationFor<T>| {
-        // u32 is big enough for this oveflow to be practicly impossible.
+        // u32 is big enough for this overflow to be practically impossible.
         <SessionIdentities<T>>::insert(session_index.checked_add(1).unwrap(), key, old);
         // Read the old value, insert one new value, and drop the old one.
         weight = weight.saturating_add(T::DbWeight::get().reads_writes(1, 2));

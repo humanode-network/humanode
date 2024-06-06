@@ -35,7 +35,7 @@ pub struct Logic<S, PK> {
 pub struct Locked<S, PK> {
     /// The sequence number.
     pub sequence: Sequence,
-    /// An execution ID, to be used together with sequence to guarantee unqiueness of the temporary
+    /// An execution ID, to be used together with sequence to guarantee uniqueness of the temporary
     /// enrollment external database IDs.
     pub execution_id: uuid::Uuid,
     /// The client for the FaceTec Server API.
@@ -49,7 +49,7 @@ pub struct Locked<S, PK> {
 /// The FaceTec Device SDK params.
 #[derive(Debug)]
 pub struct FacetecDeviceSdkParams {
-    /// The public FaceMap encription key.
+    /// The public FaceMap encryption key.
     pub public_face_map_encryption_key: String,
     /// The device key identifier.
     pub device_key_identifier: String,

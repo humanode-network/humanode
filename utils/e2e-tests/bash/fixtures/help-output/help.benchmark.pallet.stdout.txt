@@ -1,0 +1,214 @@
+Benchmark the extrinsic weight of FRAME Pallets
+
+Usage: humanode-peer benchmark pallet [OPTIONS]
+
+Options:
+  -p, --pallet <PALLET>
+          Select a FRAME Pallet to benchmark, or `*` for all (in which case `extrinsic` must be `*`)
+
+  -e, --extrinsic <EXTRINSIC>
+          Select an extrinsic inside the pallet to benchmark, or `*` for all
+
+  -s, --steps <STEPS>
+          Select how many samples we should take across the variable components
+          
+          [default: 2]
+
+      --low <LOWEST_RANGE_VALUES>
+          Indicates lowest values for each of the component ranges
+
+      --high <HIGHEST_RANGE_VALUES>
+          Indicates highest values for each of the component ranges
+
+  -r, --repeat <REPEAT>
+          Select how many repetitions of this benchmark should run from within the wasm
+          
+          [default: 1]
+
+      --external-repeat <EXTERNAL_REPEAT>
+          Select how many repetitions of this benchmark should run from the client.
+          
+          NOTE: Using this alone may give slower results, but will afford you maximum Wasm memory.
+          
+          [default: 1]
+
+      --json
+          Print the raw results in JSON format
+
+      --json-file <JSON_FILE>
+          Write the raw results in JSON format into the given file
+
+      --no-median-slopes
+          Don't print the median-slopes linear regression analysis
+
+      --no-min-squares
+          Don't print the min-squares linear regression analysis
+
+      --output <OUTPUT>
+          Output the benchmarks to a Rust file at the given path
+
+      --header <HEADER>
+          Add a header file to your outputted benchmarks
+
+      --template <TEMPLATE>
+          Path to Handlebars template file used for outputting benchmark results. (Optional)
+
+      --hostname-override <HOSTNAME_OVERRIDE>
+          Manually override the hostname to use
+
+      --hostname-fallback <HOSTNAME_FALLBACK>
+          Specify a fallback hostname if no-one could be detected automatically.
+          
+          Note: This only exists to make the `hostname` function infallible.
+          
+          [default: <UNKNOWN>]
+
+      --cpuname-fallback <CPUNAME_FALLBACK>
+          Specify a fallback CPU name if no-one could be detected automatically.
+          
+          Note: This only exists to make the `cpuname` function infallible.
+          
+          [default: <UNKNOWN>]
+
+      --output-analysis <OUTPUT_ANALYSIS>
+          Which analysis function to use when outputting benchmarks: * min-squares (default) * median-slopes * max (max of min squares and median slopes for each value)
+
+      --output-pov-analysis <OUTPUT_POV_ANALYSIS>
+          Which analysis function to use when analyzing measured proof sizes
+          
+          [default: median-slopes]
+
+      --default-pov-mode <DEFAULT_POV_MODE>
+          The PoV estimation mode of a benchmark if no `pov_mode` attribute is present
+          
+          [default: max-encoded-len]
+
+          Possible values:
+          - max-encoded-len: Use the maximal encoded length as provided by [`codec::MaxEncodedLen`]
+          - measured:        Measure the accessed value size in the pallet benchmarking and add some trie overhead
+          - ignored:         Do not estimate the PoV size for this storage item or benchmark
+
+      --heap-pages <HEAP_PAGES>
+          Set the heap pages while running benchmarks. If not set, the default value from the client is used
+
+      --no-verify
+          Disable verification logic when running benchmarks
+
+      --extra
+          Display and run extra benchmarks that would otherwise not be needed for weight construction
+
+      --chain <CHAIN_SPEC>
+          Specify the chain specification.
+          
+          It can be one of the predefined ones (dev, local, or staging) or it can be a path to a file with the chainspec (such as one exported by the `build-spec` subcommand).
+
+      --dev
+          Specify the development chain.
+          
+          This flag sets `--chain=dev`, `--force-authoring`, `--rpc-cors=all`, `--alice`, and `--tmp` flags, unless explicitly overridden.
+
+  -d, --base-path <PATH>
+          Specify custom base path
+
+  -l, --log <LOG_PATTERN>...
+          Sets a custom logging filter. Syntax is `<target>=<level>`, e.g. -lsync=debug.
+          
+          Log levels (least to most verbose) are error, warn, info, debug, and trace. By default, all targets log `info`. The global log level can be set with `-l<level>`.
+
+      --detailed-log-output
+          Enable detailed log output.
+          
+          This includes displaying the log target, log level and thread name.
+          
+          This is automatically enabled when something is logged with any higher level than `info`.
+
+      --disable-log-color
+          Disable log color output
+
+      --enable-log-reloading
+          Enable feature to dynamically update and reload the log filter.
+          
+          Be aware that enabling this feature can lead to a performance decrease up to factor six or more. Depending on the global logging level the performance decrease changes.
+          
+          The `system_addLogFilter` and `system_resetLogFilter` RPCs will have no effect with this option not being set.
+
+      --tracing-targets <TARGETS>
+          Sets a custom profiling filter. Syntax is the same as for logging: `<target>=<level>`
+
+      --tracing-receiver <RECEIVER>
+          Receiver to process tracing messages
+          
+          [default: log]
+
+          Possible values:
+          - log: Output the tracing records using the log
+
+      --execution <STRATEGY>
+          The execution strategy that should be used for benchmarks
+
+          Possible values:
+          - native:           Execute with native build (if available, WebAssembly otherwise)
+          - wasm:             Only execute with the WebAssembly build
+          - both:             Execute with both native (where available) and WebAssembly builds
+          - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
+
+      --wasm-execution <METHOD>
+          Method for executing Wasm runtime code
+          
+          [default: compiled]
+
+          Possible values:
+          - interpreted-i-know-what-i-do: Uses an interpreter
+          - compiled:                     Uses a compiled runtime
+
+      --wasm-instantiation-strategy <STRATEGY>
+          The WASM instantiation method to use.
+          
+          Only has an effect when `wasm-execution` is set to `compiled`.
+          
+          [default: pooling-copy-on-write]
+
+          Possible values:
+          - pooling-copy-on-write:           Pool the instances to avoid initializing everything from scratch on each instantiation. Use copy-on-write memory when possible
+          - recreate-instance-copy-on-write: Recreate the instance from scratch on every instantiation. Use copy-on-write memory when possible
+          - pooling:                         Pool the instances to avoid initializing everything from scratch on each instantiation
+          - recreate-instance:               Recreate the instance from scratch on every instantiation. Very slow
+          - legacy-instance-reuse:           Legacy instance reuse mechanism. DEPRECATED. Will be removed in the future
+
+      --db-cache <MiB>
+          Limit the memory the database cache can use
+          
+          [default: 1024]
+
+      --list
+          List the benchmarks that match your query rather than running them.
+          
+          When nothing is provided, we list all benchmarks.
+
+      --no-storage-info
+          If enabled, the storage info is not displayed in the output next to the analysis.
+          
+          This is independent of the storage info appearing in the *output file*. Use a Handlebar template for that purpose.
+
+      --map-size <WORST_CASE_MAP_VALUES>
+          The assumed default maximum size of any `StorageMap`.
+          
+          When the maximum size of a map is not defined by the runtime developer, this value is used as a worst case scenario. It will affect the calculated worst case PoV size for accessing a value in a map, since the PoV will need to include the trie nodes down to the underlying value.
+          
+          [default: 1000000]
+
+      --additional-trie-layers <ADDITIONAL_TRIE_LAYERS>
+          Adjust the PoV estimation by adding additional trie layers to it.
+          
+          This should be set to `log16(n)` where `n` is the number of top-level storage items in the runtime, eg. `StorageMap`s and `StorageValue`s. A value of 2 to 3 is usually sufficient. Each layer will result in an additional 495 bytes PoV per distinct top-level access. Therefore multiple `StorageMap` accesses only suffer from this increase once. The exact number of storage items depends on the runtime and the deployed pallets.
+          
+          [default: 2]
+
+      --json-input <JSON_INPUT>
+          A path to a `.json` file with existing benchmark results generated with `--json` or `--json-file`. When specified the benchmarks are not actually executed, and the data for the analysis is read from this file
+
+  -h, --help
+          Print help (see a summary with '-h')
+
+  -V, --version
+          Print version

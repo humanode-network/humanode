@@ -17,7 +17,7 @@ pub struct Request {
     /// The liveness data that the validator owner provided.
     pub liveness_data: OpaqueLivenessData,
     /// The signature of the liveness data with the private key of the node.
-    /// Proves the posession of the private key by the liveness data bearer.
+    /// Proves the possession of the private key by the liveness data bearer.
     pub liveness_data_signature: Vec<u8>,
 }
 

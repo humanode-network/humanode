@@ -144,8 +144,8 @@ fn assert_within(effective_fee: Balance, expected_fee: Balance, epsilon: Balance
 }
 
 fn assert_fee(call: RuntimeCall, len: u32, expected_fee: Balance, epsilon: Balance) {
-    let dispath_info = TransactionPayment::query_call_info(call, len);
-    assert_within(dispath_info.partial_fee, expected_fee, epsilon)
+    let dispatch_info = TransactionPayment::query_call_info(call, len);
+    assert_within(dispatch_info.partial_fee, expected_fee, epsilon)
 }
 
 /// The testing cryptography to match the real one we use for the accounts.
@@ -189,7 +189,7 @@ fn simple_balances_transfer_keep_alive() {
             value: ONE_BALANCE_UNIT,
         });
 
-        // Compute the length of the extrinsic constaining this call.
+        // Compute the length of the extrinsic constraining this call.
         let (call, len) = {
             let sign_by = account_public("Alice");
             let signed_by_id = account_id("Alice");

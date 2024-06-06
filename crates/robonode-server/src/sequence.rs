@@ -12,7 +12,7 @@ impl Sequence {
 
     /// Increment the sequence value.
     pub fn inc(&mut self) {
-        // u64 is big enough for this oveflow to be practicly impossible.
+        // u64 is big enough for this overflow to be practically impossible.
         self.0 = self.0.checked_add(1).unwrap();
     }
 
