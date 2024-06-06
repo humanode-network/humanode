@@ -8,39 +8,25 @@ Usage: humanode-peer benchmark extrinsic [OPTIONS]
 
 Options:
       --chain <CHAIN_SPEC>
-          Specify the chain specification.
-          
-          It can be one of the predefined ones (dev, local, or staging) or it can be a path to a file with the chainspec (such as one exported by the `build-spec` subcommand).
+          Specify the chain specification. It can be one of the predefined ones (dev, local, or staging) or it can be a path to a file with the chainspec (such as one exported by the `build-spec` subcommand)
 
       --dev
-          Specify the development chain.
-          
-          This flag sets `--chain=dev`, `--force-authoring`, `--rpc-cors=all`, `--alice`, and `--tmp` flags, unless explicitly overridden.
+          Specify the development chain. This flag sets `--chain=dev`, `--force-authoring`, `--rpc-cors=all`, `--alice`, and `--tmp` flags, unless explicitly overridden
 
   -d, --base-path <PATH>
           Specify custom base path
 
   -l, --log <LOG_PATTERN>...
-          Sets a custom logging filter. Syntax is `<target>=<level>`, e.g. -lsync=debug.
-          
-          Log levels (least to most verbose) are error, warn, info, debug, and trace. By default, all targets log `info`. The global log level can be set with `-l<level>`.
+          Sets a custom logging filter. Syntax is `<target>=<level>`, e.g. -lsync=debug. Log levels (least to most verbose) are error, warn, info, debug, and trace. By default, all targets log `info`. The global log level can be set with `-l<level>`
 
       --detailed-log-output
-          Enable detailed log output.
-          
-          This includes displaying the log target, log level and thread name.
-          
-          This is automatically enabled when something is logged with any higher level than `info`.
+          Enable detailed log output. This includes displaying the log target, log level and thread name. This is automatically enabled when something is logged with any higher level than `info`
 
       --disable-log-color
           Disable log color output
 
       --enable-log-reloading
-          Enable feature to dynamically update and reload the log filter.
-          
-          Be aware that enabling this feature can lead to a performance decrease up to factor six or more. Depending on the global logging level the performance decrease changes.
-          
-          The `system_addLogFilter` and `system_resetLogFilter` RPCs will have no effect with this option not being set.
+          Enable feature to dynamically update and reload the log filter. Be aware that enabling this feature can lead to a performance decrease up to factor six or more. Depending on the global logging level the performance decrease changes. The `system_addLogFilter` and `system_resetLogFilter` RPCs will have no effect with this option not being set
 
       --tracing-targets <TARGETS>
           Sets a custom profiling filter. Syntax is the same as for logging: `<target>=<level>`
@@ -54,44 +40,10 @@ Options:
           - log: Output the tracing records using the log
 
       --state-pruning <PRUNING_MODE>
-          Specify the state pruning mode.
-          
-          This mode specifies when the block's state (ie, storage) should be pruned (ie, removed) from the database.
-          
-          This setting can only be set on the first creation of the database. Every subsequent run will load the pruning mode from the database and will error if the stored mode doesn't match this CLI value. It is fine to drop this CLI flag for subsequent runs.
-          
-          Possible values:
-          
-          - archive:
-          
-          Keep the state of all blocks.
-          
-          - 'archive-canonical'
-          
-          Keep only the state of finalized blocks.
-          
-          - number
-          
-          Keep the state of the last number of finalized blocks.
-          
-          [default: 256]
+          Specify the state pruning mode. This mode specifies when the block's state (ie, storage) should be pruned (ie, removed) from the database. This setting can only be set on the first creation of the database. Every subsequent run will load the pruning mode from the database and will error if the stored mode doesn't match this CLI value. It is fine to drop this CLI flag for subsequent runs. Possible values: - archive: Keep the state of all blocks. - 'archive-canonical' Keep only the state of finalized blocks. - number Keep the state of the last number of finalized blocks. [default: 256]
 
       --blocks-pruning <PRUNING_MODE>
-          Specify the blocks pruning mode.
-          
-          This mode specifies when the block's body (including justifications) should be pruned (ie, removed) from the database.
-          
-          Possible values: - 'archive'
-          
-          Keep all blocks.
-          
-          - 'archive-canonical'
-          
-          Keep only finalized blocks.
-          
-          - number
-          
-          Keep the last `number` of finalized blocks.
+          Specify the blocks pruning mode. This mode specifies when the block's body (including justifications) should be pruned (ie, removed) from the database. Possible values: - 'archive' Keep all blocks. - 'archive-canonical' Keep only finalized blocks. - number Keep the last `number` of finalized blocks
           
           [default: archive-canonical]
 
@@ -117,15 +69,7 @@ Options:
           - compiled:                     Uses a compiled runtime
 
       --wasmtime-instantiation-strategy <STRATEGY>
-          The WASM instantiation method to use.
-          
-          Only has an effect when `wasm-execution` is set to `compiled`.
-          
-          The copy-on-write strategies are only supported on Linux. If the copy-on-write variant of a strategy is unsupported the executor will fall back to the non-CoW equivalent.
-          
-          The fastest (and the default) strategy available is `pooling-copy-on-write`.
-          
-          The `legacy-instance-reuse` strategy is deprecated and will be removed in the future. It should only be used in case of issues with the default instantiation strategy.
+          The WASM instantiation method to use. Only has an effect when `wasm-execution` is set to `compiled`. The copy-on-write strategies are only supported on Linux. If the copy-on-write variant of a strategy is unsupported the executor will fall back to the non-CoW equivalent. The fastest (and the default) strategy available is `pooling-copy-on-write`. The `legacy-instance-reuse` strategy is deprecated and will be removed in the future. It should only be used in case of issues with the default instantiation strategy
           
           [default: pooling-copy-on-write]
 
@@ -137,9 +81,7 @@ Options:
           - legacy-instance-reuse:           Legacy instance reuse mechanism. DEPRECATED. Will be removed in the future
 
       --wasm-runtime-overrides <PATH>
-          Specify the path where local WASM runtimes are stored.
-          
-          These runtimes will override on-chain runtimes when the version matches.
+          Specify the path where local WASM runtimes are stored. These runtimes will override on-chain runtimes when the version matches
 
       --execution-syncing <STRATEGY>
           The means of execution used when calling into the runtime for importing blocks as part of an initial sync
@@ -196,16 +138,12 @@ Options:
           - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --trie-cache-size <Bytes>
-          Specify the state cache size.
-          
-          Providing `0` will disable the cache.
+          Specify the state cache size. Providing `0` will disable the cache
           
           [default: 67108864]
 
       --state-cache-size <STATE_CACHE_SIZE>
-          DEPRECATED
-          
-          Switch to `--trie-cache-size`.
+          DEPRECATED Switch to `--trie-cache-size`
 
       --warmup <WARMUP>
           Rounds of warmups before measuring
