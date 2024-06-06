@@ -453,7 +453,7 @@ fn direct_claiming_without_vesting_works() {
         // Ensure that the balance is not locked.
         //
         // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existantial deposit.
+        // Frozen balance is 0 < existential deposit.
         //
         // As a result, usable balance doesn't contain existential deposit.
         assert_eq!(
