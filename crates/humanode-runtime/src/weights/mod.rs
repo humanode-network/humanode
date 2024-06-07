@@ -8,6 +8,7 @@ pub mod pallet_bioauth;
 pub mod pallet_evm_accounts_mapping;
 pub mod pallet_im_online;
 pub mod pallet_multisig;
+pub mod pallet_sudo;
 pub mod pallet_timestamp;
 pub mod pallet_token_claims;
 pub mod pallet_utility;
