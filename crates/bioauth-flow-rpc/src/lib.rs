@@ -30,6 +30,9 @@ use tracing::*;
 pub mod error_data;
 mod errors;
 
+/// The current bioauth flow RPC version.
+const VERSION: u8 = 1;
+
 /// Signer provides signatures for the data.
 #[async_trait::async_trait]
 pub trait Signer<S> {
@@ -115,6 +118,10 @@ impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
 pub trait Bioauth<Timestamp, TxHash> {
+    /// Get the current bioauth version.
+    #[method(name = "bioauth_getVersion")]
+    async fn get_version(&self) -> RpcResult<u8>;
+
     /// Get the configuration required for the Device SDK.
     #[method(name = "bioauth_getFacetecDeviceSdkParams")]
     async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams>;
@@ -290,6 +297,10 @@ where
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
+    async fn get_version(&self) -> RpcResult<u8> {
+        Ok(VERSION)
+    }
+
     async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams> {
         let res = self
             .robonode_client
