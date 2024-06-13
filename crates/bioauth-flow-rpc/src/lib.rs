@@ -30,9 +30,6 @@ use tracing::*;
 pub mod error_data;
 mod errors;
 
-/// The current bioauth flow RPC version.
-const VERSION: u8 = 1;
-
 /// Signer provides signatures for the data.
 #[async_trait::async_trait]
 pub trait Signer<S> {
@@ -118,10 +115,6 @@ impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
 pub trait Bioauth<Timestamp, TxHash> {
-    /// Get the current bioauth version.
-    #[method(name = "bioauth_getVersion")]
-    async fn get_version(&self) -> RpcResult<u8>;
-
     /// Get the configuration required for the Device SDK.
     #[method(name = "bioauth_getFacetecDeviceSdkParams")]
     async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams>;
@@ -136,7 +129,11 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Enroll with provided liveness data.
     #[method(name = "bioauth_enroll")]
-    async fn enroll(&self, liveness_data: LivenessData) -> RpcResult<EnrollResult>;
+    async fn enroll(&self, liveness_data: LivenessData) -> RpcResult<()>;
+
+    /// Enroll with provided liveness data V2.
+    #[method(name = "bioauth_enrollV2")]
+    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollResult>;
 
     /// Authenticate with provided liveness data.
     #[method(name = "bioauth_authenticate")]
@@ -231,7 +228,9 @@ impl<
         TransactionPool,
     >
 where
+    RobonodeClient: AsRef<robonode_client::Client>,
     ValidatorKeyExtractor: KeyExtractorT,
+    ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
     ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
     <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
@@ -248,6 +247,35 @@ where
         })?;
 
         Ok((opaque_liveness_data, signature))
+    }
+
+    /// Do enroll with provided liveness data returning scan result blob.
+    async fn do_enroll(&self, liveness_data: LivenessData) -> Result<Option<String>, EnrollError> {
+        info!("Bioauth flow - enrolling in progress");
+
+        let public_key =
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
+                .map_err(EnrollError::KeyExtraction)?;
+
+        let (opaque_liveness_data, signature) = self
+            .sign(public_key.clone(), &liveness_data)
+            .await
+            .map_err(EnrollError::Sign)?;
+
+        let EnrollResponse { scan_result_blob } = self
+            .robonode_client
+            .as_ref()
+            .enroll(EnrollRequest {
+                liveness_data: opaque_liveness_data.as_ref(),
+                liveness_data_signature: signature.as_ref(),
+                public_key: public_key.as_ref(),
+            })
+            .await
+            .map_err(EnrollError::Robonode)?;
+
+        info!("Bioauth flow - enrolling complete");
+
+        Ok(scan_result_blob)
     }
 }
 
@@ -297,10 +325,6 @@ where
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
-    async fn get_version(&self) -> RpcResult<u8> {
-        Ok(VERSION)
-    }
-
     async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams> {
         let res = self
             .robonode_client
@@ -340,26 +364,18 @@ where
         Ok(status.into())
     }
 
-    async fn enroll(&self, liveness_data: LivenessData) -> RpcResult<EnrollResult> {
+    async fn enroll(&self, liveness_data: LivenessData) -> RpcResult<()> {
         self.deny_unsafe.check_if_safe()?;
 
-        info!("Bioauth flow - enrolling in progress");
+        self.do_enroll(liveness_data).await?;
 
-        let public_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor).map_err(EnrollError::KeyExtraction)?;
-        let (opaque_liveness_data, signature) = self.sign(public_key.clone(), &liveness_data).await
-            .map_err(EnrollError::Sign)?;
+        Ok(())
+    }
 
-        let EnrollResponse { scan_result_blob } = self.robonode_client
-            .as_ref()
-            .enroll(EnrollRequest {
-                liveness_data: opaque_liveness_data.as_ref(),
-                liveness_data_signature: signature.as_ref(),
-                public_key: public_key.as_ref(),
-            })
-            .await
-            .map_err(EnrollError::Robonode)?;
+    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollResult> {
+        self.deny_unsafe.check_if_safe()?;
 
-        info!("Bioauth flow - enrolling complete");
+        let scan_result_blob = self.do_enroll(liveness_data).await?;
 
         Ok(EnrollResult { scan_result_blob })
     }
