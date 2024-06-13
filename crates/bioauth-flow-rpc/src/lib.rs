@@ -18,7 +18,7 @@ use errors::{
 use futures::StreamExt;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
-use robonode_client::{AuthenticateRequest, AuthenticateResponse, EnrollRequest, EnrollResponse};
+use robonode_client::{AuthenticateRequest, EnrollRequest, EnrollResponse};
 use rpc_deny_unsafe::DenyUnsafe;
 use sc_transaction_pool_api::{TransactionPool as TransactionPoolT, TransactionStatus, TxHash};
 use serde::{Deserialize, Serialize};
@@ -92,17 +92,6 @@ pub struct EnrollResult {
     pub scan_result_blob: Option<String>,
 }
 
-/// Authentication flow result.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AuthenticateResult<TxHash> {
-    /// Authenticate transaction hash submitted to the network.
-    pub authenticate_tx_hash: TxHash,
-    /// Scan result blob.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub scan_result_blob: Option<String>,
-}
-
 impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
     fn from(status: bioauth_flow_api::BioauthStatus<T>) -> Self {
         match status {
@@ -137,10 +126,7 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Authenticate with provided liveness data.
     #[method(name = "bioauth_authenticate")]
-    async fn authenticate(
-        &self,
-        liveness_data: LivenessData,
-    ) -> RpcResult<AuthenticateResult<TxHash>>;
+    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash>;
 }
 
 /// The RPC implementation.
@@ -380,10 +366,7 @@ where
         Ok(EnrollResult { scan_result_blob })
     }
 
-    async fn authenticate(
-        &self,
-        liveness_data: LivenessData
-    ) -> RpcResult<AuthenticateResult<TxHash<TransactionPool>>> {
+    async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash<TransactionPool>> {
         self.deny_unsafe.check_if_safe()?;
 
         info!("Bioauth flow - authentication in progress");
@@ -394,11 +377,7 @@ where
         let (opaque_liveness_data, signature) = self.sign(public_key, &liveness_data).await
             .map_err(AuthenticateError::Sign).map_err(errtype)?;
 
-        let AuthenticateResponse {
-            auth_ticket,
-            auth_ticket_signature,
-            scan_result_blob,
-        } = self
+        let response = self
             .robonode_client
             .as_ref()
             .authenticate(AuthenticateRequest {
@@ -410,7 +389,7 @@ where
 
         info!("Bioauth flow - authentication complete");
 
-        info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
+        info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
 
         let at = self.client.info().best_hash;
 
@@ -419,14 +398,14 @@ where
             .runtime_api()
             .create_authenticate_extrinsic(
                 at,
-                auth_ticket.into(),
-                auth_ticket_signature.into(),
+                response.auth_ticket.into(),
+                response.auth_ticket_signature.into(),
             )
             .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
 
         info!("Bioauth flow - submitting authenticate transaction");
 
-        let authenticate_tx_hash = self.pool.hash_of(&ext);
+        let tx_hash = self.pool.hash_of(&ext);
 
         let mut watch = self.pool
             .submit_and_watch(
@@ -503,6 +482,6 @@ where
             info!("Bioauth flow - authenticate transaction complete");
         });
 
-        Ok(AuthenticateResult { authenticate_tx_hash, scan_result_blob })
+        Ok(tx_hash)
     }
 }
