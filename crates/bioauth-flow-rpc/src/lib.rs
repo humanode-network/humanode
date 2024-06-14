@@ -92,6 +92,19 @@ pub struct EnrollResult {
     pub scan_result_blob: Option<String>,
 }
 
+/// Authenticate flow result.
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AuthenticateResult {
+    /// An opaque auth ticket generated for this authentication attempt.
+    pub auth_ticket: Box<[u8]>,
+    /// The robonode signature for this opaque auth ticket.
+    pub auth_ticket_signature: Box<[u8]>,
+    /// Scan result blob.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scan_result_blob: Option<String>,
+}
+
 impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
     fn from(status: bioauth_flow_api::BioauthStatus<T>) -> Self {
         match status {
@@ -130,7 +143,10 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Request auth ticket based on provided liveness data.
     #[method(name = "bioauth_requestAuthTicket")]
-    async fn request_auth_ticket(&self, liveness_data: LivenessData) -> RpcResult<Box<[u8]>>;
+    async fn request_auth_ticket(
+        &self,
+        liveness_data: LivenessData,
+    ) -> RpcResult<AuthenticateResult>;
 }
 
 /// The RPC implementation.
@@ -508,13 +524,20 @@ where
         Ok(tx_hash)
     }
 
-    async fn request_auth_ticket(&self, liveness_data: LivenessData) -> RpcResult<Box<[u8]>> {
+    async fn request_auth_ticket(
+        &self,
+        liveness_data: LivenessData,
+    ) -> RpcResult<AuthenticateResult> {
         self.deny_unsafe.check_if_safe()?;
 
-        let response = self.do_authenticate(liveness_data).await?;
+        let AuthenticateResponse {
+            auth_ticket,
+            auth_ticket_signature,
+            scan_result_blob,
+        } = self.do_authenticate(liveness_data).await?;
 
-        info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
+        info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
 
-        Ok(response.auth_ticket)
+        Ok(AuthenticateResult { auth_ticket, auth_ticket_signature, scan_result_blob })
     }
 }
