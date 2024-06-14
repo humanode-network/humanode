@@ -242,19 +242,19 @@ where
     }
 
     /// Do enroll with provided liveness data.
-    async fn do_enroll(&self, liveness_data: LivenessData) -> Result<Option<String>, EnrollError> {
+    async fn do_enroll(&self, liveness_data: LivenessData) -> Result<EnrollResponse, EnrollError> {
         info!("Bioauth flow - enrolling in progress");
 
         let public_key =
             rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-                .map_err(EnrollError::KeyExtraction)?;
+            .map_err(EnrollError::KeyExtraction)?;
 
         let (opaque_liveness_data, signature) = self
             .sign(public_key.clone(), &liveness_data)
             .await
             .map_err(EnrollError::Sign)?;
 
-        let EnrollResponse { scan_result_blob } = self
+        let response = self
             .robonode_client
             .as_ref()
             .enroll(EnrollRequest {
@@ -267,7 +267,7 @@ where
 
         info!("Bioauth flow - enrolling complete");
 
-        Ok(scan_result_blob)
+        Ok(response)
     }
 
     /// Do authenticate with provided liveness data.
@@ -281,7 +281,7 @@ where
 
         let public_key =
             rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-                .map_err(AuthenticateError::KeyExtraction).map_err(errtype)?;
+            .map_err(AuthenticateError::KeyExtraction).map_err(errtype)?;
 
         let (opaque_liveness_data, signature) = self
             .sign(public_key, &liveness_data)
@@ -400,7 +400,7 @@ where
     async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollResult> {
         self.deny_unsafe.check_if_safe()?;
 
-        let scan_result_blob = self.do_enroll(liveness_data).await?;
+        let EnrollResponse { scan_result_blob } = self.do_enroll(liveness_data).await?;
 
         Ok(EnrollResult { scan_result_blob })
     }
