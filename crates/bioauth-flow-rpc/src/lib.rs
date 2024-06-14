@@ -18,7 +18,7 @@ use errors::{
 use futures::StreamExt;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
-use robonode_client::{AuthenticateRequest, EnrollRequest, EnrollResponse};
+use robonode_client::{AuthenticateRequest, AuthenticateResponse, EnrollRequest, EnrollResponse};
 use rpc_deny_unsafe::DenyUnsafe;
 use sc_transaction_pool_api::{TransactionPool as TransactionPoolT, TransactionStatus, TxHash};
 use serde::{Deserialize, Serialize};
@@ -127,6 +127,10 @@ pub trait Bioauth<Timestamp, TxHash> {
     /// Authenticate with provided liveness data.
     #[method(name = "bioauth_authenticate")]
     async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash>;
+
+    /// Request auth ticket based on provided liveness data.
+    #[method(name = "bioauth_requestAuthTicket")]
+    async fn request_auth_ticket(&self, liveness_data: LivenessData) -> RpcResult<Box<[u8]>>;
 }
 
 /// The RPC implementation.
@@ -221,6 +225,8 @@ where
     ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
     <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
+    Block: BlockT,
+    TransactionPool: TransactionPoolT<Block = Block>,
 {
     /// Return the opaque liveness data and corresponding signature.
     async fn sign(&self, validator_key: <ValidatorKeyExtractor as KeyExtractorT>::PublicKeyType, liveness_data: &LivenessData) -> Result<(OpaqueLivenessData, Vec<u8>), SignError> {
@@ -235,7 +241,7 @@ where
         Ok((opaque_liveness_data, signature))
     }
 
-    /// Do enroll with provided liveness data returning scan result blob.
+    /// Do enroll with provided liveness data.
     async fn do_enroll(&self, liveness_data: LivenessData) -> Result<Option<String>, EnrollError> {
         info!("Bioauth flow - enrolling in progress");
 
@@ -262,6 +268,39 @@ where
         info!("Bioauth flow - enrolling complete");
 
         Ok(scan_result_blob)
+    }
+
+    /// Do authenticate with provided liveness data.
+    async fn do_authenticate(&self, liveness_data: LivenessData) -> Result<
+        AuthenticateResponse,
+        AuthenticateError<TransactionPool::Error>
+    > {
+        info!("Bioauth flow - authentication in progress");
+
+        let errtype = |val: AuthenticateError<TransactionPool::Error>| {  val };
+
+        let public_key =
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
+                .map_err(AuthenticateError::KeyExtraction).map_err(errtype)?;
+
+        let (opaque_liveness_data, signature) = self
+            .sign(public_key, &liveness_data)
+            .await
+            .map_err(AuthenticateError::Sign).map_err(errtype)?;
+
+        let response = self
+            .robonode_client
+            .as_ref()
+            .authenticate(AuthenticateRequest {
+                liveness_data: opaque_liveness_data.as_ref(),
+                liveness_data_signature: signature.as_ref(),
+            })
+            .await
+            .map_err(AuthenticateError::Robonode).map_err(errtype)?;
+
+        info!("Bioauth flow - authentication complete");
+
+        Ok(response)
     }
 }
 
@@ -369,25 +408,9 @@ where
     async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash<TransactionPool>> {
         self.deny_unsafe.check_if_safe()?;
 
-        info!("Bioauth flow - authentication in progress");
-
         let errtype = |val: errors::authenticate::Error<TransactionPool::Error>| {  val };
 
-        let public_key = rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor).map_err(AuthenticateError::KeyExtraction).map_err(errtype)?;
-        let (opaque_liveness_data, signature) = self.sign(public_key, &liveness_data).await
-            .map_err(AuthenticateError::Sign).map_err(errtype)?;
-
-        let response = self
-            .robonode_client
-            .as_ref()
-            .authenticate(AuthenticateRequest {
-                liveness_data: opaque_liveness_data.as_ref(),
-                liveness_data_signature: signature.as_ref(),
-            })
-            .await
-            .map_err(AuthenticateError::Robonode).map_err(errtype)?;
-
-        info!("Bioauth flow - authentication complete");
+        let response = self.do_authenticate(liveness_data).await?;
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
 
@@ -483,5 +506,15 @@ where
         });
 
         Ok(tx_hash)
+    }
+
+    async fn request_auth_ticket(&self, liveness_data: LivenessData) -> RpcResult<Box<[u8]>> {
+        self.deny_unsafe.check_if_safe()?;
+
+        let response = self.do_authenticate(liveness_data).await?;
+
+        info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
+
+        Ok(response.auth_ticket)
     }
 }
