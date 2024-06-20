@@ -1,17 +1,20 @@
 //! Client API for the Humanode's Bioauth Robonode.
 
 use reqwest::StatusCode;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-use crate::{error_response::ErrorResponse, Client, Error};
+use crate::{error_response::ErrorResponse, Client, Error, ScanResultBlob};
 
 impl Client {
     /// Perform the enroll call to the server.
-    pub async fn enroll(&self, req: EnrollRequest<'_>) -> Result<(), Error<EnrollError>> {
+    pub async fn enroll(
+        &self,
+        req: EnrollRequest<'_>,
+    ) -> Result<EnrollResponse, Error<EnrollError>> {
         let url = format!("{}/enroll", self.base_url);
         let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
-            StatusCode::CREATED => Ok(()),
+            StatusCode::CREATED => Ok(res.json().await?),
             status => Err(Error::Call(EnrollError::from_response(
                 status,
                 res.text().await?,
@@ -34,28 +37,37 @@ pub struct EnrollRequest<'a> {
     pub liveness_data_signature: &'a [u8],
 }
 
+/// Input data for the enroll response.
+#[derive(Debug, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct EnrollResponse {
+    /// Scan result blob.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scan_result_blob: Option<ScanResultBlob>,
+}
+
 /// The enroll-specific error condition.
 #[derive(Error, Debug, PartialEq)]
 
 pub enum EnrollError {
     /// The public key is invalid.
     #[error("invalid public key")]
-    InvalidPublicKey,
+    InvalidPublicKey(Option<ScanResultBlob>),
     /// The liveness data is invalid.
     #[error("invalid liveness data")]
-    InvalidLivenessData,
+    InvalidLivenessData(Option<ScanResultBlob>),
     /// The face scan was rejeted.
     #[error("face scan rejected")]
-    FaceScanRejected,
+    FaceScanRejected(Option<ScanResultBlob>),
     /// The public key is already used.
     #[error("public key already used")]
-    PublicKeyAlreadyUsed,
+    PublicKeyAlreadyUsed(Option<ScanResultBlob>),
     /// The person is already enrolled.
     #[error("person already enrolled")]
-    PersonAlreadyEnrolled,
+    PersonAlreadyEnrolled(Option<ScanResultBlob>),
     /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
-    LogicInternal,
+    LogicInternal(Option<ScanResultBlob>),
     /// An error with an unknown code occurred.
     #[error("unknown error code: {0}")]
     UnknownCode(String),
@@ -67,17 +79,20 @@ pub enum EnrollError {
 impl EnrollError {
     /// Parse the error response.
     fn from_response(_status: StatusCode, body: String) -> Self {
-        let error_code = match body.try_into() {
-            Ok(ErrorResponse { error_code }) => error_code,
+        let (error_code, scan_result_blob) = match body.try_into() {
+            Ok(ErrorResponse {
+                error_code,
+                scan_result_blob,
+            }) => (error_code, scan_result_blob),
             Err(body) => return Self::Unknown(body),
         };
         match error_code.as_str() {
-            "ENROLL_INVALID_PUBLIC_KEY" => Self::InvalidPublicKey,
-            "ENROLL_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData,
-            "ENROLL_FACE_SCAN_REJECTED" => Self::FaceScanRejected,
-            "ENROLL_PUBLIC_KEY_ALREADY_USED" => Self::PublicKeyAlreadyUsed,
-            "ENROLL_PERSON_ALREADY_ENROLLED" => Self::PersonAlreadyEnrolled,
-            "LOGIC_INTERNAL_ERROR" => Self::LogicInternal,
+            "ENROLL_INVALID_PUBLIC_KEY" => Self::InvalidPublicKey(scan_result_blob),
+            "ENROLL_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData(scan_result_blob),
+            "ENROLL_FACE_SCAN_REJECTED" => Self::FaceScanRejected(scan_result_blob),
+            "ENROLL_PUBLIC_KEY_ALREADY_USED" => Self::PublicKeyAlreadyUsed(scan_result_blob),
+            "ENROLL_PERSON_ALREADY_ENROLLED" => Self::PersonAlreadyEnrolled(scan_result_blob),
+            "LOGIC_INTERNAL_ERROR" => Self::LogicInternal(scan_result_blob),
             _ => Self::UnknownCode(error_code),
         }
     }
@@ -118,11 +133,17 @@ mod tests {
             public_key: b"123",
             liveness_data_signature: b"signature",
         };
+        let sample_response = serde_json::json!({
+            "scanResultBlob": "scanResultBlob"
+        });
+
+        let expected_response: EnrollResponse =
+            serde_json::from_value(sample_response.clone()).unwrap();
 
         Mock::given(matchers::method("POST"))
             .and(matchers::path("/enroll"))
             .and(matchers::body_json(&sample_request))
-            .respond_with(ResponseTemplate::new(201))
+            .respond_with(ResponseTemplate::new(201).set_body_json(&sample_response))
             .mount(&mock_server)
             .await;
 
@@ -131,7 +152,8 @@ mod tests {
             reqwest: reqwest::Client::new(),
         };
 
-        client.enroll(sample_request).await.unwrap();
+        let actual_response = client.enroll(sample_request).await.unwrap();
+        assert_eq!(actual_response, expected_response);
     }
 
     #[tokio::test]
@@ -140,32 +162,32 @@ mod tests {
             (
                 StatusCode::BAD_REQUEST,
                 "ENROLL_INVALID_PUBLIC_KEY",
-                EnrollError::InvalidPublicKey,
+                EnrollError::InvalidPublicKey(Some("scan result blob".to_owned())),
             ),
             (
                 StatusCode::BAD_REQUEST,
                 "ENROLL_INVALID_LIVENESS_DATA",
-                EnrollError::InvalidLivenessData,
+                EnrollError::InvalidLivenessData(Some("scan result blob".to_owned())),
             ),
             (
                 StatusCode::FORBIDDEN,
                 "ENROLL_FACE_SCAN_REJECTED",
-                EnrollError::FaceScanRejected,
+                EnrollError::FaceScanRejected(Some("scan result blob".to_owned())),
             ),
             (
                 StatusCode::CONFLICT,
                 "ENROLL_PUBLIC_KEY_ALREADY_USED",
-                EnrollError::PublicKeyAlreadyUsed,
+                EnrollError::PublicKeyAlreadyUsed(Some("scan result blob".to_owned())),
             ),
             (
                 StatusCode::CONFLICT,
                 "ENROLL_PERSON_ALREADY_ENROLLED",
-                EnrollError::PersonAlreadyEnrolled,
+                EnrollError::PersonAlreadyEnrolled(Some("scan result blob".to_owned())),
             ),
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "LOGIC_INTERNAL_ERROR",
-                EnrollError::LogicInternal,
+                EnrollError::LogicInternal(Some("scan result blob".to_owned())),
             ),
             (
                 StatusCode::BAD_REQUEST,
@@ -183,7 +205,8 @@ mod tests {
                 public_key: b"123",
             };
 
-            let response = ResponseTemplate::new(case.0).set_body_json(mkerr(case.1));
+            let response =
+                ResponseTemplate::new(case.0).set_body_json(mkerr(case.1, "scan result blob"));
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/enroll"))
