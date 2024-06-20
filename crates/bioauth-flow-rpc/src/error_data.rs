@@ -16,6 +16,18 @@ impl Serialize for ShouldRetry {
     }
 }
 
+/// The RPC error context we provide to handle scan result blob data.
+pub struct ScanResultBlob(pub String);
+
+impl Serialize for ScanResultBlob {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serde_json::json!({ "scanResultBlob": self.0 }).serialize(serializer)
+    }
+}
+
 /// The RPC error context we provide to describe transaction pool errors.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]

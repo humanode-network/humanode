@@ -15,6 +15,9 @@ pub use enroll::*;
 pub use get_facetec_device_sdk_params::*;
 pub use get_facetec_session_token::*;
 
+/// A type alias representing a scan result blob.
+type ScanResultBlob = String;
+
 /// The generic error type for the client calls.
 #[derive(Error, Debug)]
 pub enum Error<T: std::error::Error + 'static> {
