@@ -2,12 +2,16 @@
 
 use serde::Deserialize;
 
+use crate::ScanResultBlob;
+
 /// A utility type assisting with decoding error response bodies.
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub(super) struct ErrorResponse {
     /// A machine-readable code identifying the error.
     pub error_code: String,
+    /// Scan result blob.
+    pub scan_result_blob: Option<ScanResultBlob>,
 }
 
 impl TryFrom<String> for ErrorResponse {
@@ -26,14 +30,22 @@ pub mod tests {
     #[test]
     fn decodes_before_2023_05() {
         let err = mkerr("MY_ERR_CODE", None).to_string();
-        let ErrorResponse { error_code } = err.try_into().unwrap();
+        let ErrorResponse {
+            error_code,
+            scan_result_blob,
+        } = err.try_into().unwrap();
         assert_eq!(error_code, "MY_ERR_CODE");
+        assert_eq!(scan_result_blob, None);
     }
 
     #[test]
     fn decodes() {
         let err = mkerr("MY_ERR_CODE", Some("scan result blob")).to_string();
-        let ErrorResponse { error_code } = err.try_into().unwrap();
+        let ErrorResponse {
+            error_code,
+            scan_result_blob,
+        } = err.try_into().unwrap();
         assert_eq!(error_code, "MY_ERR_CODE");
+        assert_eq!(scan_result_blob, Some("scan result blob".to_owned()));
     }
 }

@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{error_response::ErrorResponse, Client, Error};
+use crate::{error_response::ErrorResponse, Client, Error, ScanResultBlob};
 
 impl Client {
     /// Perform the authenticate call to the server.
@@ -43,6 +43,9 @@ pub struct AuthenticateResponse {
     pub auth_ticket: Box<[u8]>,
     /// The robonode signature for this opaque auth ticket.
     pub auth_ticket_signature: Box<[u8]>,
+    /// Scan result blob.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scan_result_blob: Option<ScanResultBlob>,
 }
 
 /// The authenticate-specific error condition.
@@ -50,20 +53,20 @@ pub struct AuthenticateResponse {
 pub enum AuthenticateError {
     /// The provided liveness data was invalid.
     #[error("invalid liveness data")]
-    InvalidLivenessData,
+    InvalidLivenessData(Option<ScanResultBlob>),
     /// The person was not found, it is likely because they haven't enrolled first.
     #[error("person not found")]
-    PersonNotFound,
+    PersonNotFound(Option<ScanResultBlob>),
     /// The face scan was rejected, this is likely due to a failed liveness check.
     #[error("face scan rejected")]
-    FaceScanRejected,
+    FaceScanRejected(Option<ScanResultBlob>),
     /// The signature was invalid, which means that the validator private key used for signing and
     /// the public key that the person enrolled with don't match.
     #[error("signature invalid")]
-    SignatureInvalid,
+    SignatureInvalid(Option<ScanResultBlob>),
     /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
-    LogicInternal,
+    LogicInternal(Option<ScanResultBlob>),
     /// An error with an unknown code occurred.
     #[error("unknown error code: {0}")]
     UnknownCode(String),
@@ -75,16 +78,19 @@ pub enum AuthenticateError {
 impl AuthenticateError {
     /// Parse the error response.
     fn from_response(_status: StatusCode, body: String) -> Self {
-        let error_code = match body.try_into() {
-            Ok(ErrorResponse { error_code }) => error_code,
+        let (error_code, scan_result_blob) = match body.try_into() {
+            Ok(ErrorResponse {
+                error_code,
+                scan_result_blob,
+            }) => (error_code, scan_result_blob),
             Err(body) => return Self::Unknown(body),
         };
         match error_code.as_str() {
-            "AUTHENTICATE_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData,
-            "AUTHENTICATE_PERSON_NOT_FOUND" => Self::PersonNotFound,
-            "AUTHENTICATE_FACE_SCAN_REJECTED" => Self::FaceScanRejected,
-            "AUTHENTICATE_SIGNATURE_INVALID" => Self::SignatureInvalid,
-            "LOGIC_INTERNAL_ERROR" => Self::LogicInternal,
+            "AUTHENTICATE_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData(scan_result_blob),
+            "AUTHENTICATE_PERSON_NOT_FOUND" => Self::PersonNotFound(scan_result_blob),
+            "AUTHENTICATE_FACE_SCAN_REJECTED" => Self::FaceScanRejected(scan_result_blob),
+            "AUTHENTICATE_SIGNATURE_INVALID" => Self::SignatureInvalid(scan_result_blob),
+            "LOGIC_INTERNAL_ERROR" => Self::LogicInternal(scan_result_blob),
             _ => Self::UnknownCode(error_code),
         }
     }
@@ -127,6 +133,7 @@ mod tests {
             AuthenticateResponse {
                 auth_ticket: vec![1, 2, 3].into(),
                 auth_ticket_signature: vec![4, 5, 6].into(),
+                scan_result_blob: None,
             }
         )
     }
