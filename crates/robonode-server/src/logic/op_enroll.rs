@@ -26,8 +26,7 @@ pub struct Request {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     /// Scan result blob.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub scan_result_blob: Option<ScanResultBlob>,
+    pub scan_result_blob: ScanResultBlob,
 }
 
 /// The errors on the enroll operation.
@@ -40,29 +39,29 @@ pub enum Error {
     /// The liveness data signature validation failed.
     SignatureInvalid,
     /// This FaceScan was rejected.
-    FaceScanRejected(Option<ScanResultBlob>),
+    FaceScanRejected(ScanResultBlob),
     /// This Public Key was already used.
     PublicKeyAlreadyUsed,
     /// This person has already enrolled into the system.
     /// It can also happen if matching returns false-positive.
-    PersonAlreadyEnrolled(Option<ScanResultBlob>),
+    PersonAlreadyEnrolled(ScanResultBlob),
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
     InternalErrorEnrollment(ft::Error),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
-    InternalErrorEnrollmentUnsuccessful(Option<ScanResultBlob>),
+    InternalErrorEnrollmentUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(ft::Error, Option<ScanResultBlob>),
+    InternalErrorDbSearch(ft::Error, ScanResultBlob),
     /// Internal error at 3D-DB search due to unsuccessful response.
-    InternalErrorDbSearchUnsuccessful(Option<ScanResultBlob>),
+    InternalErrorDbSearchUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorDbEnroll(ft::Error, Option<ScanResultBlob>),
+    InternalErrorDbEnroll(ft::Error, ScanResultBlob),
     /// Internal error at 3D-DB enrollment due to unsuccessful response.
-    InternalErrorDbEnrollUnsuccessful(Option<ScanResultBlob>),
+    InternalErrorDbEnrollUnsuccessful(ScanResultBlob),
     /// Internal error at signature verification.
     InternalErrorSignatureVerificationFailed,
 }
