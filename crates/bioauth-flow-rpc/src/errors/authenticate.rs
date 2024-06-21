@@ -44,10 +44,7 @@ where
             Error::Sign(err) => rpc_error_response::simple(api_error_code::SIGN, err.to_string()),
             Error::Robonode(
                 ref err @ robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::InvalidLivenessData(Some(
-                        ref scan_result_blob,
-                    ))
-                    | robonode_client::AuthenticateError::PersonNotFound(Some(ref scan_result_blob))
+                    robonode_client::AuthenticateError::PersonNotFound(Some(ref scan_result_blob))
                     | robonode_client::AuthenticateError::FaceScanRejected(Some(
                         ref scan_result_blob,
                     ))

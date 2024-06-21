@@ -52,16 +52,16 @@ pub struct EnrollResponse {
 pub enum EnrollError {
     /// The public key is invalid.
     #[error("invalid public key")]
-    InvalidPublicKey(Option<ScanResultBlob>),
+    InvalidPublicKey,
     /// The liveness data is invalid.
     #[error("invalid liveness data")]
-    InvalidLivenessData(Option<ScanResultBlob>),
+    InvalidLivenessData,
     /// The face scan was rejeted.
     #[error("face scan rejected")]
     FaceScanRejected(Option<ScanResultBlob>),
     /// The public key is already used.
     #[error("public key already used")]
-    PublicKeyAlreadyUsed(Option<ScanResultBlob>),
+    PublicKeyAlreadyUsed,
     /// The person is already enrolled.
     #[error("person already enrolled")]
     PersonAlreadyEnrolled(Option<ScanResultBlob>),
@@ -87,10 +87,10 @@ impl EnrollError {
             Err(body) => return Self::Unknown(body),
         };
         match error_code.as_str() {
-            "ENROLL_INVALID_PUBLIC_KEY" => Self::InvalidPublicKey(scan_result_blob),
-            "ENROLL_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData(scan_result_blob),
+            "ENROLL_INVALID_PUBLIC_KEY" => Self::InvalidPublicKey,
+            "ENROLL_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData,
             "ENROLL_FACE_SCAN_REJECTED" => Self::FaceScanRejected(scan_result_blob),
-            "ENROLL_PUBLIC_KEY_ALREADY_USED" => Self::PublicKeyAlreadyUsed(scan_result_blob),
+            "ENROLL_PUBLIC_KEY_ALREADY_USED" => Self::PublicKeyAlreadyUsed,
             "ENROLL_PERSON_ALREADY_ENROLLED" => Self::PersonAlreadyEnrolled(scan_result_blob),
             "LOGIC_INTERNAL_ERROR" => Self::LogicInternal(scan_result_blob),
             _ => Self::UnknownCode(error_code),
@@ -162,12 +162,12 @@ mod tests {
             (
                 StatusCode::BAD_REQUEST,
                 "ENROLL_INVALID_PUBLIC_KEY",
-                EnrollError::InvalidPublicKey(Some("scan result blob".to_owned())),
+                EnrollError::InvalidPublicKey,
             ),
             (
                 StatusCode::BAD_REQUEST,
                 "ENROLL_INVALID_LIVENESS_DATA",
-                EnrollError::InvalidLivenessData(Some("scan result blob".to_owned())),
+                EnrollError::InvalidLivenessData,
             ),
             (
                 StatusCode::FORBIDDEN,
@@ -177,7 +177,7 @@ mod tests {
             (
                 StatusCode::CONFLICT,
                 "ENROLL_PUBLIC_KEY_ALREADY_USED",
-                EnrollError::PublicKeyAlreadyUsed(Some("scan result blob".to_owned())),
+                EnrollError::PublicKeyAlreadyUsed,
             ),
             (
                 StatusCode::CONFLICT,
