@@ -34,10 +34,7 @@ impl From<Error> for jsonrpsee::core::Error {
             }
             Error::Robonode(
                 ref err @ robonode_client::Error::Call(
-                    robonode_client::EnrollError::InvalidPublicKey(Some(ref scan_result_blob))
-                    | robonode_client::EnrollError::InvalidLivenessData(Some(ref scan_result_blob))
-                    | robonode_client::EnrollError::FaceScanRejected(Some(ref scan_result_blob))
-                    | robonode_client::EnrollError::PublicKeyAlreadyUsed(Some(ref scan_result_blob))
+                    robonode_client::EnrollError::FaceScanRejected(Some(ref scan_result_blob))
                     | robonode_client::EnrollError::PersonAlreadyEnrolled(Some(ref scan_result_blob))
                     | robonode_client::EnrollError::LogicInternal(Some(ref scan_result_blob)),
                 ),
