@@ -53,7 +53,7 @@ pub struct AuthenticateResponse {
 pub enum AuthenticateError {
     /// The provided liveness data was invalid.
     #[error("invalid liveness data")]
-    InvalidLivenessData(Option<ScanResultBlob>),
+    InvalidLivenessData,
     /// The person was not found, it is likely because they haven't enrolled first.
     #[error("person not found")]
     PersonNotFound(Option<ScanResultBlob>),
@@ -86,7 +86,7 @@ impl AuthenticateError {
             Err(body) => return Self::Unknown(body),
         };
         match error_code.as_str() {
-            "AUTHENTICATE_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData(scan_result_blob),
+            "AUTHENTICATE_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData,
             "AUTHENTICATE_PERSON_NOT_FOUND" => Self::PersonNotFound(scan_result_blob),
             "AUTHENTICATE_FACE_SCAN_REJECTED" => Self::FaceScanRejected(scan_result_blob),
             "AUTHENTICATE_SIGNATURE_INVALID" => Self::SignatureInvalid(scan_result_blob),
@@ -176,7 +176,7 @@ mod tests {
             (
                 StatusCode::BAD_REQUEST,
                 "AUTHENTICATE_INVALID_LIVENESS_DATA",
-                AuthenticateError::InvalidLivenessData(Some("scan result blob".to_owned())),
+                AuthenticateError::InvalidLivenessData,
             ),
             (
                 StatusCode::NOT_FOUND,
