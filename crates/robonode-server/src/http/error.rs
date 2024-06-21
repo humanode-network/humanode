@@ -61,7 +61,7 @@ impl From<op_enroll::Error> for Logic {
             op_enroll::Error::FaceScanRejected(scan_result_blob) => Self::new(
                 StatusCode::FORBIDDEN,
                 "ENROLL_FACE_SCAN_REJECTED",
-                scan_result_blob,
+                Some(scan_result_blob),
             ),
             op_enroll::Error::PublicKeyAlreadyUsed => {
                 Self::new(StatusCode::CONFLICT, "ENROLL_PUBLIC_KEY_ALREADY_USED", None)
@@ -69,14 +69,14 @@ impl From<op_enroll::Error> for Logic {
             op_enroll::Error::PersonAlreadyEnrolled(scan_result_blob) => Self::new(
                 StatusCode::CONFLICT,
                 "ENROLL_PERSON_ALREADY_ENROLLED",
-                scan_result_blob,
+                Some(scan_result_blob),
             ),
             op_enroll::Error::InternalErrorEnrollmentUnsuccessful(scan_result_blob)
             | op_enroll::Error::InternalErrorDbSearch(_, scan_result_blob)
             | op_enroll::Error::InternalErrorDbSearchUnsuccessful(scan_result_blob)
             | op_enroll::Error::InternalErrorDbEnroll(_, scan_result_blob)
             | op_enroll::Error::InternalErrorDbEnrollUnsuccessful(scan_result_blob) => {
-                internal_logic(scan_result_blob)
+                internal_logic(Some(scan_result_blob))
             }
             op_enroll::Error::InternalErrorEnrollment(_)
             | op_enroll::Error::InternalErrorSignatureVerificationFailed => internal_logic(None),
@@ -95,17 +95,17 @@ impl From<op_authenticate::Error> for Logic {
             op_authenticate::Error::PersonNotFound(scan_result_blob) => Self::new(
                 StatusCode::NOT_FOUND,
                 "AUTHENTICATE_PERSON_NOT_FOUND",
-                scan_result_blob,
+                Some(scan_result_blob),
             ),
             op_authenticate::Error::FaceScanRejected(scan_result_blob) => Self::new(
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_FACE_SCAN_REJECTED",
-                scan_result_blob,
+                Some(scan_result_blob),
             ),
             op_authenticate::Error::SignatureInvalid(scan_result_blob) => Self::new(
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_SIGNATURE_INVALID",
-                scan_result_blob,
+                Some(scan_result_blob),
             ),
             op_authenticate::Error::InternalErrorEnrollmentUnsuccessful(scan_result_blob)
             | op_authenticate::Error::InternalErrorDbSearch(_, scan_result_blob)
@@ -115,7 +115,7 @@ impl From<op_authenticate::Error> for Logic {
             | op_authenticate::Error::InternalErrorInvalidPublicKey(scan_result_blob)
             | op_authenticate::Error::InternalErrorSignatureVerificationFailed(scan_result_blob)
             | op_authenticate::Error::InternalErrorAuthTicketSigningFailed(scan_result_blob) => {
-                internal_logic(scan_result_blob)
+                internal_logic(Some(scan_result_blob))
             }
             op_authenticate::Error::InternalErrorEnrollment(_) => internal_logic(None),
         }

@@ -34,8 +34,7 @@ pub struct Response {
     /// with a FaceScan.
     pub auth_ticket_signature: Vec<u8>,
     /// Scan result blob.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub scan_result_blob: Option<ScanResultBlob>,
+    pub scan_result_blob: ScanResultBlob,
 }
 
 /// Errors for the authenticate operation.
@@ -44,38 +43,38 @@ pub enum Error {
     /// The provided opaque liveness data could not be decoded.
     InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
     /// This FaceScan was rejected.
-    FaceScanRejected(Option<ScanResultBlob>),
+    FaceScanRejected(ScanResultBlob),
     /// This person was not found.
     /// Unually this means they need to enroll, but it can also happen if
     /// matching returns false-negative.
-    PersonNotFound(Option<ScanResultBlob>),
+    PersonNotFound(ScanResultBlob),
     /// The liveness data signature validation failed.
     /// This means that the user might've provided a signature using different
     /// keypair from what was used for the original enrollment.
-    SignatureInvalid(Option<ScanResultBlob>),
+    SignatureInvalid(ScanResultBlob),
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
     InternalErrorEnrollment(ft::Error),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
-    InternalErrorEnrollmentUnsuccessful(Option<ScanResultBlob>),
+    InternalErrorEnrollmentUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(ft::Error, Option<ScanResultBlob>),
+    InternalErrorDbSearch(ft::Error, ScanResultBlob),
     /// Internal error at 3D-DB search due to unsuccessful response.
-    InternalErrorDbSearchUnsuccessful(Option<ScanResultBlob>),
+    InternalErrorDbSearchUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB search due to match-level mismatch in
     /// the search results.
-    InternalErrorDbSearchMatchLevelMismatch(Option<ScanResultBlob>),
+    InternalErrorDbSearchMatchLevelMismatch(ScanResultBlob),
     /// Internal error at converting public key hex representation to bytes.
-    InternalErrorInvalidPublicKeyHex(Option<ScanResultBlob>),
+    InternalErrorInvalidPublicKeyHex(ScanResultBlob),
     /// Internal error at public key loading due to invalid public key.
-    InternalErrorInvalidPublicKey(Option<ScanResultBlob>),
+    InternalErrorInvalidPublicKey(ScanResultBlob),
     /// Internal error at signature verification.
-    InternalErrorSignatureVerificationFailed(Option<ScanResultBlob>),
+    InternalErrorSignatureVerificationFailed(ScanResultBlob),
     /// Internal error when signing auth ticket.
-    InternalErrorAuthTicketSigningFailed(Option<ScanResultBlob>),
+    InternalErrorAuthTicketSigningFailed(ScanResultBlob),
 }
 
 #[async_trait::async_trait]
