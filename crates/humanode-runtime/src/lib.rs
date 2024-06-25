@@ -1445,7 +1445,10 @@ impl_runtime_apis! {
                 let _ = Executive::apply_extrinsic(ext);
             }
 
-            Ethereum::on_finalize(System::block_number() + 1);
+            Ethereum::on_finalize(
+                // u32 (block number) is big enough for this overflow to be practically impossible.
+                System::block_number().checked_add(1).unwrap()
+            );
 
             (
                 pallet_ethereum::CurrentBlock::<Runtime>::get(),

@@ -38,7 +38,7 @@ mod tests {
         let public = PublicKey::from_bytes(&PK).unwrap();
         assert_eq!(secret.verifying_key(), public);
 
-        let signature: Signature = SM.try_into().unwrap();
+        let signature: Signature = SM.into();
 
         println!("{:#02X?}", secret.sign(&M[..]).to_bytes());
         assert!(secret.sign(&M[..]) == signature);
