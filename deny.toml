@@ -18,8 +18,6 @@ unmaintained = "allow"
 yanked = "allow"
 notice = "deny"
 ignore = [
-  # TODO(#742): vulnerable webpki.
-  "RUSTSEC-2023-0052",
   # TODO(#1013): vulnerable rustls.
   "RUSTSEC-2024-0336",
 ]
