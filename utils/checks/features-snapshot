@@ -4,7 +4,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")/../.."
 
 list() {
   cargo metadata --format-version 1 |
-    jq '.resolve.nodes | map(. | { name: (.id | sub("\\s+(?<version>[^\\s]+?)\\s.*$"; " \(.version)")), features: (.features | sort) }) | sort_by(.name)' |
+    jq '(INDEX(.packages[]; .id)) as $pkgs | .resolve.nodes | map(. | { name: $pkgs[.id].name, version: $pkgs[.id].version, features: (.features | sort) }) | sort_by(.name)' |
     yq -P .
 }
 
