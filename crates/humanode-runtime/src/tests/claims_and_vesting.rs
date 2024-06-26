@@ -105,10 +105,10 @@ fn prepare_applyable_data(
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
 fn new_test_ext() -> sp_io::TestExternalities {
-    let authorities = vec![authority_keys("Alice")];
+    let authorities = [authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
 
-    let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
+    let endowed_accounts = [account_id("Alice"), account_id("Bob")];
     let pot_accounts = vec![TreasuryPot::account_id(), FeesPot::account_id()];
     // Build test genesis.
     let config = GenesisConfig {
