@@ -12,26 +12,38 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_token_claims::WeightInfo for WeightInfo<T> {
   fn claim() -> Weight {
-    // Minimum execution time: 93_000 nanoseconds.
-    Weight::from_parts(93_000_000, 0)
-      .saturating_add(T::DbWeight::get().reads(8))
+    // Proof Size summary in bytes:
+    //  Measured:  `593`
+    //  Estimated: `0`
+    // Minimum execution time: 88_000_000 picoseconds.
+    Weight::from_parts(88_000_000, 0)
+      .saturating_add(T::DbWeight::get().reads(9))
       .saturating_add(T::DbWeight::get().writes(5))
   }
   fn add_claim() -> Weight {
-    // Minimum execution time: 31_000 nanoseconds.
-    Weight::from_parts(31_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `264`
+    //  Estimated: `0`
+    // Minimum execution time: 26_000_000 picoseconds.
+    Weight::from_parts(26_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(3))
       .saturating_add(T::DbWeight::get().writes(4))
   }
   fn remove_claim() -> Weight {
-    // Minimum execution time: 30_000 nanoseconds.
-    Weight::from_parts(30_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `264`
+    //  Estimated: `0`
+    // Minimum execution time: 27_000_000 picoseconds.
+    Weight::from_parts(27_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(3))
       .saturating_add(T::DbWeight::get().writes(4))
   }
   fn change_claim() -> Weight {
-    // Minimum execution time: 32_000 nanoseconds.
-    Weight::from_parts(32_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `264`
+    //  Estimated: `0`
+    // Minimum execution time: 26_000_000 picoseconds.
+    Weight::from_parts(26_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(3))
       .saturating_add(T::DbWeight::get().writes(4))
   }

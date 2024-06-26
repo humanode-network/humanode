@@ -12,8 +12,11 @@ use sp_std::marker::PhantomData;
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_evm_accounts_mapping::WeightInfo for WeightInfo<T> {
   fn claim_account() -> Weight {
-    // Minimum execution time: 58_000 nanoseconds.
-    Weight::from_parts(58_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `132`
+    //  Estimated: `0`
+    // Minimum execution time: 54_000_000 picoseconds.
+    Weight::from_parts(54_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(4))
       .saturating_add(T::DbWeight::get().writes(2))
   }

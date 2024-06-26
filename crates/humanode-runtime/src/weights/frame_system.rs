@@ -13,36 +13,55 @@ pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> frame_system::WeightInfo for WeightInfo<T> {
   /// The range of component `b` is `[0, 3932160]`.
   fn remark(_b: u32, ) -> Weight {
-    // Minimum execution time: 3_000 nanoseconds.
-    Weight::from_parts(336_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `0`
+    //  Estimated: `0`
+    // Minimum execution time: 2_000_000 picoseconds.
+    Weight::from_parts(297_000_000, 0)
   }
   /// The range of component `b` is `[0, 3932160]`.
   fn remark_with_event(_b: u32, ) -> Weight {
-    // Minimum execution time: 12_000 nanoseconds.
-    Weight::from_parts(4_281_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `0`
+    //  Estimated: `0`
+    // Minimum execution time: 4_000_000 picoseconds.
+    Weight::from_parts(4_095_000_000, 0)
   }
   fn set_heap_pages() -> Weight {
-    // Minimum execution time: 8_000 nanoseconds.
-    Weight::from_parts(8_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `0`
+    //  Estimated: `0`
+    // Minimum execution time: 3_000_000 picoseconds.
+    Weight::from_parts(3_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(1))
       .saturating_add(T::DbWeight::get().writes(2))
   }
   /// The range of component `i` is `[0, 1000]`.
   fn set_storage(_i: u32, ) -> Weight {
-    // Minimum execution time: 4_000 nanoseconds.
-    Weight::from_parts(632_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `0`
+    //  Estimated: `0`
+    // Minimum execution time: 2_000_000 picoseconds.
+    Weight::from_parts(610_000_000, 0)
       .saturating_add(T::DbWeight::get().writes(1000))
   }
   /// The range of component `i` is `[0, 1000]`.
   fn kill_storage(_i: u32, ) -> Weight {
-    // Minimum execution time: 3_000 nanoseconds.
-    Weight::from_parts(580_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `0`
+    //  Estimated: `0`
+    // Minimum execution time: 2_000_000 picoseconds.
+    Weight::from_parts(490_000_000, 0)
       .saturating_add(T::DbWeight::get().writes(1000))
   }
   /// The range of component `p` is `[0, 1000]`.
   fn kill_prefix(_p: u32, ) -> Weight {
-    // Minimum execution time: 7_000 nanoseconds.
-    Weight::from_parts(1_467_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `149 + p * (69 ±0)`
+    //  Estimated: `0`
+    // Minimum execution time: 5_000_000 picoseconds.
+    Weight::from_parts(1_185_000_000, 0)
+      .saturating_add(T::DbWeight::get().reads(1000))
       .saturating_add(T::DbWeight::get().writes(1000))
   }
 }

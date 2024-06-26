@@ -4,9 +4,9 @@ use std::sync::Arc;
 
 use sc_cli::{utils, CliConfiguration, KeystoreParams, SharedParams};
 use sc_service::KeystoreContainer;
-use sp_application_crypto::{AppKey, AppPublic};
+use sp_application_crypto::{AppCrypto, AppPublic};
 use sp_core::Pair;
-use sp_keystore::CryptoStore;
+use sp_keystore::Keystore;
 
 use super::KeystoreBioauthId;
 use crate::cli::CliConfigurationExt;
@@ -40,7 +40,7 @@ pub enum InsertKeyError {
 
 /// A helper function to verify that there is no bioauth key at the keystore yet.
 pub async fn ensure_bioauth_key_absent<PK: AppPublic>(
-    keystore: Arc<dyn CryptoStore>,
+    keystore: Arc<dyn Keystore>,
 ) -> Result<(), InsertKeyError> {
     let mut current_keys = crate::validator_key::AppCryptoPublic::<PK>::list(keystore.as_ref())
         .await
@@ -55,15 +55,16 @@ pub async fn ensure_bioauth_key_absent<PK: AppPublic>(
 /// A helper function to insert bioauth key into the keystore.
 pub async fn insert_bioauth_key<PK: AppPublic>(
     suri: &str,
-    keystore: Arc<dyn CryptoStore>,
+    keystore: Arc<dyn Keystore>,
 ) -> sc_cli::Result<()> {
     // We don't use a password for keystore at the current moment. That's why None is passed.
-    let pair = utils::pair_from_suri::<<PK as AppKey>::Pair>(suri, None)?;
+    let pair = tokio::task::block_in_place(move || {
+        utils::pair_from_suri::<<PK as AppCrypto>::Pair>(suri, None)
+    })?;
     let public = pair.public().as_ref().to_vec();
     keystore
-        .insert_unknown(PK::ID, suri, &public[..])
-        .await
-        .map_err(|_| sc_cli::Error::KeyStoreOperation)?;
+        .insert(PK::ID, suri, &public[..])
+        .map_err(|_| sc_cli::Error::KeystoreOperation)?;
     Ok(())
 }
 
