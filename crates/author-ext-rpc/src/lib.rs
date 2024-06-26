@@ -112,7 +112,8 @@ where
             .map_err(SetKeysError::ExtrinsicCreation)
             .map_err(errtype)?;
 
-        self.pool
+        let _ = self
+            .pool
             .submit_and_watch(
                 &sp_api::BlockId::Hash(at),
                 sp_runtime::transaction_validity::TransactionSource::Local,
