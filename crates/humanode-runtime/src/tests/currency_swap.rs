@@ -20,10 +20,10 @@ const INIT_BALANCE: Balance = 10u128.pow(18 + 6);
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
 fn new_test_ext_with() -> sp_io::TestExternalities {
-    let authorities = vec![authority_keys("Alice")];
+    let authorities = [authority_keys("Alice")];
     let bootnodes = vec![account_id("Alice")];
 
-    let endowed_accounts = vec![account_id("Alice"), account_id("Bob")];
+    let endowed_accounts = [account_id("Alice"), account_id("Bob")];
     let pot_accounts = vec![FeesPot::account_id()];
 
     let evm_endowed_accounts = vec![evm_account_id("EvmAlice"), evm_account_id("EvmBob")];
