@@ -3634,7 +3634,7 @@
   features: []
 - name: untrusted 0.9.0
   features: []
-- name: url 2.5.0
+- name: url 2.5.2
   features:
     - default
     - serde
