@@ -358,7 +358,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.6
+- name: clap 4.5.7
   features:
     - color
     - default
@@ -370,7 +370,7 @@
     - string
     - suggestions
     - usage
-- name: clap_builder 4.5.6
+- name: clap_builder 4.5.7
   features:
     - color
     - deprecated
@@ -3295,7 +3295,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.67
+- name: syn 2.0.68
   features:
     - clone-impls
     - default
@@ -3634,7 +3634,7 @@
   features: []
 - name: untrusted 0.9.0
   features: []
-- name: url 2.5.0
+- name: url 2.5.2
   features:
     - default
     - serde
@@ -3645,7 +3645,7 @@
 - name: utf8parse 0.2.1
   features:
     - default
-- name: uuid 1.9.0
+- name: uuid 1.9.1
   features:
     - rng
     - v4
