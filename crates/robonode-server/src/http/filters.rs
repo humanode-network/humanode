@@ -49,6 +49,7 @@ where
         + Send
         + Sync,
     <L as LogicOp<op_enroll::Request>>::Error: Into<error::Logic>,
+    <L as LogicOp<op_enroll::Request>>::Response: Serialize,
     <L as LogicOp<op_authenticate::Request>>::Error: Into<error::Logic>,
     <L as LogicOp<op_authenticate::Request>>::Response: Serialize,
     <L as LogicOp<op_get_facetec_device_sdk_params::Request>>::Error: Into<error::Logic>,
@@ -72,6 +73,7 @@ fn enroll<L>(
 where
     L: LogicOp<op_enroll::Request> + Send + Sync,
     L::Error: Into<error::Logic>,
+    L::Response: Serialize,
 {
     warp::path!("enroll")
         .and(warp::post())
