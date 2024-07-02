@@ -164,29 +164,41 @@ where
 
         // If the results set is empty - this means that this person was not
         // found in the system.
-        let found = results
-            .first()
-            .ok_or(Error::PersonNotFound(scan_result_blob.clone()))?;
+        let found = match results.first() {
+            Some(found) => found,
+            None => return Err(Error::PersonNotFound(scan_result_blob)),
+        };
+
         if found.match_level < MATCH_LEVEL {
             return Err(Error::InternalErrorDbSearchMatchLevelMismatch(
                 scan_result_blob,
             ));
         }
 
-        let public_key_bytes = hex::decode(&found.identifier)
-            .map_err(|_| Error::InternalErrorInvalidPublicKeyHex(scan_result_blob.clone()))?;
-        let public_key = PK::try_from(&public_key_bytes)
-            .map_err(|_| Error::InternalErrorInvalidPublicKey(scan_result_blob.clone()))?;
+        let public_key_bytes = match hex::decode(&found.identifier) {
+            Ok(public_key_bytes) => public_key_bytes,
+            Err(_) => return Err(Error::InternalErrorInvalidPublicKeyHex(scan_result_blob)),
+        };
 
-        let signature_valid = public_key
+        let public_key = match PK::try_from(&public_key_bytes) {
+            Ok(public_key) => public_key,
+            Err(_) => return Err(Error::InternalErrorInvalidPublicKey(scan_result_blob)),
+        };
+
+        let signature_valid = match public_key
             .verify(&req.liveness_data, req.liveness_data_signature)
             .await
-            .map_err(|_| {
-                Error::InternalErrorSignatureVerificationFailed(scan_result_blob.clone())
-            })?;
+        {
+            Ok(signature_valid) => signature_valid,
+            Err(_) => {
+                return Err(Error::InternalErrorSignatureVerificationFailed(
+                    scan_result_blob,
+                ))
+            }
+        };
 
         if !signature_valid {
-            return Err(Error::SignatureInvalid(scan_result_blob.clone()));
+            return Err(Error::SignatureInvalid(scan_result_blob));
         }
 
         // Prepare an authentication nonce from the sequence number.
@@ -204,11 +216,14 @@ where
 
         // Sign the auth ticket with our private key, so that later on it's possible to validate
         // this ticket was issues by us.
-        let auth_ticket_signature = unlocked
-            .signer
-            .sign(&opaque_auth_ticket)
-            .await
-            .map_err(|_| Error::InternalErrorAuthTicketSigningFailed(scan_result_blob.clone()))?;
+        let auth_ticket_signature = match unlocked.signer.sign(&opaque_auth_ticket).await {
+            Ok(auth_ticket_signature) => auth_ticket_signature,
+            Err(_) => {
+                return Err(Error::InternalErrorAuthTicketSigningFailed(
+                    scan_result_blob,
+                ))
+            }
+        };
 
         Ok(Response {
             auth_ticket: opaque_auth_ticket,

@@ -168,14 +168,17 @@ where
             return Err(Error::PersonAlreadyEnrolled(scan_result_blob));
         }
 
-        let db_enroll_res = unlocked
+        let db_enroll_res = match unlocked
             .facetec
             .db_enroll(ft::db_enroll::Request {
                 external_database_ref_id: &public_key_hex,
                 group_name: DB_GROUP_NAME,
             })
             .await
-            .map_err(|err| Error::InternalErrorDbEnroll(err, scan_result_blob.clone()))?;
+        {
+            Ok(db_enroll_res) => db_enroll_res,
+            Err(err) => return Err(Error::InternalErrorDbEnroll(err, scan_result_blob)),
+        };
 
         trace!(message = "Got FaceTec 3D-DB enroll results", ?db_enroll_res);
 
