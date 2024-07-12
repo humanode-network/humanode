@@ -3655,7 +3655,7 @@
     - std
 - name: vcpkg 0.2.15
   features: []
-- name: vergen 8.3.1
+- name: vergen 8.3.2
   features:
     - cargo
     - cargo_metadata
