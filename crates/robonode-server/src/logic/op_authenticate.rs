@@ -39,7 +39,7 @@ pub struct Response {
 #[derive(Debug)]
 pub enum Error {
     /// The provided opaque liveness data could not be decoded.
-    InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
+    InvalidLivenessData,
     /// This FaceScan was rejected.
     FaceScanRejected,
     /// This person was not found.
@@ -52,14 +52,14 @@ pub enum Error {
     SignatureInvalid,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(ft::Error),
+    InternalErrorEnrollment,
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(ft::Error),
+    InternalErrorDbSearch,
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB search due to match-level mismatch in
@@ -86,7 +86,7 @@ where
 
     async fn call(&self, req: Request) -> Result<Self::Response, Self::Error> {
         let liveness_data =
-            LivenessData::try_from(&req.liveness_data).map_err(Error::InvalidLivenessData)?;
+            LivenessData::try_from(&req.liveness_data).map_err(|_| Error::InvalidLivenessData)?;
 
         let mut unlocked = self.locked.lock().await;
 
@@ -107,7 +107,7 @@ where
                 low_quality_audit_trail_image: &liveness_data.low_quality_audit_trail_image,
             })
             .await
-            .map_err(Error::InternalErrorEnrollment)?;
+            .map_err(|_| Error::InternalErrorEnrollment)?;
 
         trace!(message = "Got FaceTec enroll results", ?enroll_res);
 
@@ -140,7 +140,7 @@ where
             .await;
 
         let results = match db_search_result_adapter(search_result) {
-            DbSearchResult::OtherError(err) => return Err(Error::InternalErrorDbSearch(err)),
+            DbSearchResult::OtherError => return Err(Error::InternalErrorDbSearch),
             DbSearchResult::NoGroupError => {
                 trace!(message = "Got no-group error instead of FaceTec 3D-DB search results, assuming no results");
                 vec![]

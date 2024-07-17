@@ -32,7 +32,7 @@ pub enum Error {
     /// The provided public key failed to load because it was invalid.
     InvalidPublicKey,
     /// The provided opaque liveness data could not be decoded.
-    InvalidLivenessData(<LivenessData as TryFrom<&'static OpaqueLivenessData>>::Error),
+    InvalidLivenessData,
     /// The liveness data signature validation failed.
     SignatureInvalid,
     /// This FaceScan was rejected.
@@ -44,19 +44,19 @@ pub enum Error {
     PersonAlreadyEnrolled,
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorEnrollment(ft::Error),
+    InternalErrorEnrollment,
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(ft::Error),
+    InternalErrorDbSearch,
     /// Internal error at 3D-DB search due to unsuccessful response.
     InternalErrorDbSearchUnsuccessful,
     /// Internal error at 3D-DB enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorDbEnroll(ft::Error),
+    InternalErrorDbEnroll,
     /// Internal error at 3D-DB enrollment due to unsuccessful response.
     InternalErrorDbEnrollUnsuccessful,
     /// Internal error at signature verification.
@@ -77,7 +77,7 @@ where
         let public_key = PK::try_from(&req.public_key).map_err(|_| Error::InvalidPublicKey)?;
 
         let liveness_data =
-            LivenessData::try_from(&req.liveness_data).map_err(Error::InvalidLivenessData)?;
+            LivenessData::try_from(&req.liveness_data).map_err(|_| Error::InvalidLivenessData)?;
 
         let signature_valid = public_key
             .verify(&req.liveness_data, req.liveness_data_signature)
@@ -107,7 +107,7 @@ where
                 {
                     Error::PublicKeyAlreadyUsed
                 }
-                _ => Error::InternalErrorEnrollment(err),
+                _ => Error::InternalErrorEnrollment,
             })?;
 
         trace!(message = "Got FaceTec enroll results", ?enroll_res);
@@ -139,7 +139,7 @@ where
             .await;
 
         let results = match db_search_result_adapter(search_result) {
-            DbSearchResult::OtherError(err) => return Err(Error::InternalErrorDbSearch(err)),
+            DbSearchResult::OtherError => return Err(Error::InternalErrorDbSearch),
             DbSearchResult::NoGroupError => {
                 trace!(message = "Got no-group error instead of FaceTec 3D-DB search results, assuming no results");
                 vec![]
@@ -166,7 +166,7 @@ where
                 group_name: DB_GROUP_NAME,
             })
             .await
-            .map_err(Error::InternalErrorDbEnroll)?;
+            .map_err(|_| Error::InternalErrorDbEnroll)?;
 
         trace!(message = "Got FaceTec 3D-DB enroll results", ?db_enroll_res);
 

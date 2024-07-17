@@ -10,7 +10,7 @@ pub enum DbSearchResult {
     /// We can treat it as a valid response with no results for our use case.
     NoGroupError,
     /// Some other error occurred.
-    OtherError(ft::Error),
+    OtherError,
 }
 
 /// An adapter of the db search results to better fit our logic.
@@ -25,6 +25,6 @@ pub fn db_search_result_adapter(
         {
             DbSearchResult::NoGroupError
         }
-        Err(err) => DbSearchResult::OtherError(err),
+        Err(_) => DbSearchResult::OtherError,
     }
 }
