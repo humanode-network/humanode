@@ -37,7 +37,7 @@ impl From<op_enroll::Error> for Logic {
             op_enroll::Error::InvalidPublicKey => {
                 Self::new(StatusCode::BAD_REQUEST, "ENROLL_INVALID_PUBLIC_KEY")
             }
-            op_enroll::Error::InvalidLivenessData => {
+            op_enroll::Error::InvalidLivenessData(_) => {
                 Self::new(StatusCode::BAD_REQUEST, "ENROLL_INVALID_LIVENESS_DATA")
             }
             op_enroll::Error::SignatureInvalid => {
@@ -52,11 +52,11 @@ impl From<op_enroll::Error> for Logic {
             op_enroll::Error::PersonAlreadyEnrolled => {
                 Self::new(StatusCode::CONFLICT, "ENROLL_PERSON_ALREADY_ENROLLED")
             }
-            op_enroll::Error::InternalErrorEnrollment
+            op_enroll::Error::InternalErrorEnrollment(_)
             | op_enroll::Error::InternalErrorEnrollmentUnsuccessful
-            | op_enroll::Error::InternalErrorDbSearch
+            | op_enroll::Error::InternalErrorDbSearch(_)
             | op_enroll::Error::InternalErrorDbSearchUnsuccessful
-            | op_enroll::Error::InternalErrorDbEnroll
+            | op_enroll::Error::InternalErrorDbEnroll(_)
             | op_enroll::Error::InternalErrorSignatureVerificationFailed
             | op_enroll::Error::InternalErrorDbEnrollUnsuccessful => INTERNAL.clone(),
         }
@@ -66,7 +66,7 @@ impl From<op_enroll::Error> for Logic {
 impl From<op_authenticate::Error> for Logic {
     fn from(err: op_authenticate::Error) -> Self {
         match err {
-            op_authenticate::Error::InvalidLivenessData => Self::new(
+            op_authenticate::Error::InvalidLivenessData(_) => Self::new(
                 StatusCode::BAD_REQUEST,
                 "AUTHENTICATE_INVALID_LIVENESS_DATA",
             ),
@@ -79,9 +79,9 @@ impl From<op_authenticate::Error> for Logic {
             op_authenticate::Error::SignatureInvalid => {
                 Self::new(StatusCode::FORBIDDEN, "AUTHENTICATE_SIGNATURE_INVALID")
             }
-            op_authenticate::Error::InternalErrorEnrollment
+            op_authenticate::Error::InternalErrorEnrollment(_)
             | op_authenticate::Error::InternalErrorEnrollmentUnsuccessful
-            | op_authenticate::Error::InternalErrorDbSearch
+            | op_authenticate::Error::InternalErrorDbSearch(_)
             | op_authenticate::Error::InternalErrorDbSearchUnsuccessful
             | op_authenticate::Error::InternalErrorDbSearchMatchLevelMismatch
             | op_authenticate::Error::InternalErrorInvalidPublicKeyHex
@@ -101,7 +101,7 @@ impl From<op_get_facetec_device_sdk_params::Error> for Logic {
 impl From<op_get_facetec_session_token::Error> for Logic {
     fn from(err: op_get_facetec_session_token::Error) -> Self {
         match err {
-            op_get_facetec_session_token::Error::InternalErrorSessionToken
+            op_get_facetec_session_token::Error::InternalErrorSessionToken(_)
             | op_get_facetec_session_token::Error::InternalErrorSessionTokenUnsuccessful => {
                 INTERNAL.clone()
             }

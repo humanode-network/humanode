@@ -1,5 +1,6 @@
 //! Get Facetec Session Token operation.
 
+use facetec_api_client as ft;
 use serde::{Deserialize, Serialize};
 
 use super::{Logic, LogicOp, Signer};
@@ -22,7 +23,7 @@ pub struct Response {
 pub enum Error {
     /// Internal error at session token retrieval due to the underlying request
     /// error at the API level.
-    InternalErrorSessionToken,
+    InternalErrorSessionToken(ft::Error),
     /// Internal error at session token retrieval due to unsuccessful response.
     InternalErrorSessionTokenUnsuccessful,
 }
@@ -43,7 +44,7 @@ where
             .facetec
             .session_token()
             .await
-            .map_err(|_| Error::InternalErrorSessionToken)?;
+            .map_err(Error::InternalErrorSessionToken)?;
 
         if !res.success {
             return Err(Error::InternalErrorSessionTokenUnsuccessful);
