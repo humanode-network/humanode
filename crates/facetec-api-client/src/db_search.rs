@@ -20,7 +20,7 @@ where
 #[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Request<'a> {
-    /// The ID of the pre-enrolled `FaceMap` to search with.
+    /// The ID of the pre-enrolled FaceMap to search with.
     #[serde(rename = "externalDatabaseRefID")]
     pub external_database_ref_id: &'a str,
     /// The name of the group to search at.
@@ -45,7 +45,7 @@ pub struct Response {
 pub struct ResponseResult {
     /// The external database ID associated with this entry.
     pub identifier: String,
-    /// The level of matching this entry funfills to the input `FaceMap`.
+    /// The level of matching this entry funfills to the input FaceMap.
     pub match_level: MatchLevel,
 }
 

@@ -3,6 +3,7 @@
 
 use std::sync::Arc;
 
+use facetec_api_client::ServerError;
 use mockall::predicate::*;
 use mockall::*;
 use primitives_auth_ticket::OpaqueAuthTicket;

@@ -49,7 +49,7 @@ pub struct Locked<S, PK> {
 /// The FaceTec Device SDK params.
 #[derive(Debug)]
 pub struct FacetecDeviceSdkParams {
-    /// The public `FaceMap` encryption key.
+    /// The public FaceMap encryption key.
     pub public_face_map_encryption_key: String,
     /// The device key identifier.
     pub device_key_identifier: String,

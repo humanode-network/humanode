@@ -13,7 +13,7 @@ pub struct Request;
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Response {
-    /// The public `FaceMap` encryption key.
+    /// The public FaceMap encryption key.
     pub public_face_map_encryption_key: String,
     /// The device key identifier.
     pub device_key_identifier: String,

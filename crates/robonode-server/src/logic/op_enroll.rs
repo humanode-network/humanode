@@ -35,7 +35,7 @@ pub enum Error {
     InvalidLivenessData,
     /// The liveness data signature validation failed.
     SignatureInvalid,
-    /// This `FaceScan` was rejected.
+    /// This FaceScan was rejected.
     FaceScanRejected,
     /// This Public Key was already used.
     PublicKeyAlreadyUsed,
@@ -46,8 +46,8 @@ pub enum Error {
     /// error at the API level.
     InternalErrorEnrollment,
     /// Internal error at server-level enrollment due to unsuccessful response,
-    /// but for some other reason but the `FaceScan` being rejected.
-    /// Rejected `FaceScan` is explicitly encoded via a different error condition.
+    /// but for some other reason but the FaceScan being rejected.
+    /// Rejected FaceScan is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.

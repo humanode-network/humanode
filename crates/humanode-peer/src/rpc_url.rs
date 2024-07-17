@@ -22,7 +22,7 @@ pub enum RpcUrl {
     DetectFromNgrok {
         /// The tunnel name to get the public URL from.
         tunnel_name: String,
-        /// The `WebSocket` port to match against, and switch protocol to `WebSocket` if the tunnel
+        /// The WebSocket port to match against, and switch protocol to WebSocket if the tunnel
         /// address has this port.
         ws_rpc_endpoint_port: Option<u16>,
     },

@@ -26,7 +26,7 @@ impl Client {
 pub struct EnrollRequest<'a> {
     /// The public key to be used as an identity.
     pub public_key: &'a [u8],
-    /// An opaque liveness data, containing the `FaceScan` to associate with the identity and
+    /// An opaque liveness data, containing the FaceScan to associate with the identity and
     /// the rest of the parameters necessary to conduct a liveness check.
     pub liveness_data: &'a [u8],
     /// The signature of the liveness data with the private key of the node.

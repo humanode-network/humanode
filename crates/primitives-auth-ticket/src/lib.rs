@@ -19,7 +19,7 @@ pub struct OpaqueAuthTicket(pub Vec<u8>);
 #[derive(Debug, PartialEq, Encode, Decode, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct AuthTicket {
-    /// The public key that matched with the provided FaceTec 3D `FaceScan`.
+    /// The public key that matched with the provided FaceTec 3D FaceScan.
     pub public_key: Vec<u8>,
     /// Opaque one-time use value.
     /// Nonce is supposed to be unique among all of the authentication attempts,
