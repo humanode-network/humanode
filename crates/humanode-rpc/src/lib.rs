@@ -82,7 +82,7 @@ pub struct GrandpaDeps<BE> {
 
 /// Extra EVM related dependencies.
 pub struct EvmDeps {
-    /// `EthFilterApi` pool.
+    /// On-memory stored filters created through the `eth_newFilter` RPC.
     pub eth_filter_pool: Option<FilterPool>,
     /// Maximum number of stored filters.
     pub eth_max_stored_filters: usize,
