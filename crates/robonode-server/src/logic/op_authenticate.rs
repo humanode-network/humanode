@@ -25,13 +25,13 @@ pub struct Request {
 #[serde(rename_all = "camelCase")]
 pub struct Response {
     /// An opaque auth ticket generated for this authentication attempt.
-    /// Contains a public key that matched with the provided FaceScan and a nonce to prevent replay
+    /// Contains a public key that matched with the provided `FaceScan` and a nonce to prevent replay
     /// attacks.
     pub auth_ticket: OpaqueAuthTicket,
     /// The signature of the auth ticket, signed with the robonode's private key.
     /// Can be used together with the auth ticket above to prove that this
     /// auth ticket was vetted by the robonode and verified to be associated
-    /// with a FaceScan.
+    /// with a `FaceScan`.
     pub auth_ticket_signature: Vec<u8>,
 }
 
@@ -40,7 +40,7 @@ pub struct Response {
 pub enum Error {
     /// The provided opaque liveness data could not be decoded.
     InvalidLivenessData,
-    /// This FaceScan was rejected.
+    /// This `FaceScan` was rejected.
     FaceScanRejected,
     /// This person was not found.
     /// Unually this means they need to enroll, but it can also happen if
@@ -54,8 +54,8 @@ pub enum Error {
     /// error at the API level.
     InternalErrorEnrollment,
     /// Internal error at server-level enrollment due to unsuccessful response,
-    /// but for some other reason but the FaceScan being rejected.
-    /// Rejected FaceScan is explicitly encoded via a different error condition.
+    /// but for some other reason but the `FaceScan` being rejected.
+    /// Rejected `FaceScan` is explicitly encoded via a different error condition.
     InternalErrorEnrollmentUnsuccessful,
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.

@@ -27,7 +27,7 @@ impl Client {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AuthenticateRequest<'a> {
-    /// An opaque liveness data, containing the FaceScan to match the identity with and
+    /// An opaque liveness data, containing the `FaceScan` to match the identity with and
     /// the rest of the parameters necessary to conduct a liveness check.
     pub liveness_data: &'a [u8],
     /// The signature of the liveness data, proving the possession of the

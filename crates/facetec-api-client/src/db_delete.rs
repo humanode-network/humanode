@@ -19,9 +19,9 @@ where
 #[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Request<'a> {
-    /// The ID of the enrolled FaceMap to delete.
+    /// The ID of the enrolled `FaceMap` to delete.
     pub identifier: &'a str,
-    /// The name of the group to delete the specified FaceMap from.
+    /// The name of the group to delete the specified `FaceMap` from.
     pub group_name: &'a str,
 }
 

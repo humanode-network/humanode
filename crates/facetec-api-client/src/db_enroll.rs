@@ -19,10 +19,10 @@ where
 #[derive(Debug, Serialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Request<'a> {
-    /// The ID of the pre-enrolled FaceMap to use.
+    /// The ID of the pre-enrolled `FaceMap` to use.
     #[serde(rename = "externalDatabaseRefID")]
     pub external_database_ref_id: &'a str,
-    /// The name of the group to enroll the specified FaceMap at.
+    /// The name of the group to enroll the specified `FaceMap` at.
     pub group_name: &'a str,
 }
 
