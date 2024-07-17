@@ -555,7 +555,7 @@ Options:
 
           Possible values:
           - http:          Prefer HTTP (http or https)
-          - ws:            Prefer `WebSocket` (ws or wss)
+          - ws:            Prefer WebSocket (ws or wss)
           - no-preference: No preference, use opinionated defaults
 
       --rpc-url-ngrok-detect
