@@ -27,6 +27,7 @@ pub struct Request {
 pub struct Response;
 
 /// The errors on the enroll operation.
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum Error {
     /// The provided public key failed to load because it was invalid.

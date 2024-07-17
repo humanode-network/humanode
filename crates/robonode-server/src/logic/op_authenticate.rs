@@ -36,6 +36,7 @@ pub struct Response {
 }
 
 /// Errors for the authenticate operation.
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum Error {
     /// The provided opaque liveness data could not be decoded.
