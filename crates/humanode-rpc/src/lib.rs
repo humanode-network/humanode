@@ -143,7 +143,7 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub babe: BabeDeps,
     /// GRANDPA specific dependencies.
     pub grandpa: GrandpaDeps<BE>,
-    /// The `SelectChain` Strategy
+    /// The `SelectChain` strategy.
     pub select_chain: SC,
     /// EVM specific dependencies.
     pub evm: EvmDeps,
