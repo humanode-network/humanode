@@ -15,7 +15,7 @@ ark-ff = { version = "0.4", default-features = false }
 ark-std = { version = "0.4", default-features = false }
 assert_matches = { version = "1.5", default-features = false }
 async-trait = { version = "0.1", default-features = false }
-bip32 = { version = "0.5.1", default-features = false }
+bip32 = { version = "0.5.2", default-features = false }
 bytes = { version = "1", default-features = false }
 chrono = { version = "0.4", default-features = false }
 clap = { version = "4", default-features = false }
@@ -55,7 +55,7 @@ sha3 = { version = "0.10", default-features = false }
 similar-asserts = { version = "1", default-features = false }
 static_assertions = { version = "1", default-features = false }
 syn = { version = "2", default-features = false }
-thiserror = { version = "1.0.62", default-features = false }
+thiserror = { version = "1.0.63", default-features = false }
 tiny-bip39 = { version = "1", default-features = false }
 tokio = { version = "1", default-features = false }
 tracing = { version = "0.1", default-features = false }

@@ -197,7 +197,7 @@
 - name: bioauth-keys 0.1.0
   features:
     - default
-- name: bip32 0.5.1
+- name: bip32 0.5.2
   features:
     - alloc
     - bip39
@@ -3329,9 +3329,9 @@
   features: []
 - name: termtree 0.4.1
   features: []
-- name: thiserror 1.0.62
+- name: thiserror 1.0.63
   features: []
-- name: thiserror-impl 1.0.62
+- name: thiserror-impl 1.0.63
   features: []
 - name: thousands 0.2.0
   features: []
