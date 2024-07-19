@@ -197,7 +197,7 @@
 - name: bioauth-keys 0.1.0
   features:
     - default
-- name: bip32 0.5.1
+- name: bip32 0.5.2
   features:
     - alloc
     - bip39
@@ -277,7 +277,7 @@
     - default
     - i128
     - std
-- name: bytes 1.6.0
+- name: bytes 1.6.1
   features:
     - default
     - serde
@@ -3295,7 +3295,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.69
+- name: syn 2.0.71
   features:
     - clone-impls
     - default
@@ -3329,9 +3329,9 @@
   features: []
 - name: termtree 0.4.1
   features: []
-- name: thiserror 1.0.61
+- name: thiserror 1.0.63
   features: []
-- name: thiserror-impl 1.0.61
+- name: thiserror-impl 1.0.63
   features: []
 - name: thousands 0.2.0
   features: []
@@ -3385,7 +3385,7 @@
     - tinyvec_macros
 - name: tinyvec_macros 0.1.1
   features: []
-- name: tokio 1.38.0
+- name: tokio 1.38.1
   features:
     - bytes
     - default
@@ -3645,7 +3645,7 @@
 - name: utf8parse 0.2.1
   features:
     - default
-- name: uuid 1.9.1
+- name: uuid 1.10.0
   features:
     - rng
     - v4
@@ -3655,7 +3655,7 @@
     - std
 - name: vcpkg 0.2.15
   features: []
-- name: vergen 8.3.1
+- name: vergen 8.3.2
   features:
     - cargo
     - cargo_metadata
