@@ -27,6 +27,8 @@ pub struct Request {
 pub struct Response;
 
 /// The errors on the enroll operation.
+///
+/// Allow dead code to explicitly control errors data.
 #[allow(dead_code)]
 #[derive(Debug)]
 pub enum Error {
