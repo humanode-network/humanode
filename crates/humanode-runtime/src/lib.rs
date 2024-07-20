@@ -1521,6 +1521,8 @@ impl_runtime_apis! {
             (list, storage_info)
         }
 
+        // Allow non local definitions lint for benchmark related code.
+        #[allow(non_local_definitions)]
         fn dispatch_benchmark(
             config: frame_benchmarking::BenchmarkConfig
         ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
