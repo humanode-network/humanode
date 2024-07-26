@@ -46,7 +46,7 @@ pub mod babe {
     use crate::BlockNumber;
 
     // 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
-    pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 1);
+    pub const PRIMARY_PROBABILITY: (u64, u64) = (3, 4);
     /// The BABE epoch configuration at genesis.
     pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
         sp_consensus_babe::BabeEpochConfiguration {
