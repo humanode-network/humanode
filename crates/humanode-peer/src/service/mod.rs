@@ -503,7 +503,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             network: Arc::clone(&network),
             sync: Arc::clone(&sync_service),
             voting_rule: sc_consensus_grandpa::VotingRulesBuilder::new()
-                .add(sc_consensus_grandpa::BeforeBestBlockBy(7u32.into()))
+                .add(sc_consensus_grandpa::BeforeBestBlockBy(7u32))
                 .add(sc_consensus_grandpa::ThreeQuartersOfTheUnfinalizedChain)
                 .build(),
             prometheus_registry,
