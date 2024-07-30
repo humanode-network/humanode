@@ -82,7 +82,7 @@ pub struct GrandpaDeps<BE> {
 
 /// Extra EVM related dependencies.
 pub struct EvmDeps {
-    /// EthFilterApi pool.
+    /// On-memory stored filters created through the `eth_newFilter` RPC.
     pub eth_filter_pool: Option<FilterPool>,
     /// Maximum number of stored filters.
     pub eth_max_stored_filters: usize,
@@ -100,15 +100,15 @@ pub struct EvmDeps {
     pub eth_block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
     /// A multiplier to allow larger gas limit in non-transactional execution.
     ///
-    /// When using eth_call/eth_estimateGas, the maximum allowed gas limit will be
-    /// block.gas_limit * execute_gas_limit_multiplier.
+    /// When using `eth_call/eth_estimateGas`, the maximum allowed gas limit will be
+    /// `block.gas_limit` * `execute_gas_limit_multiplier`.
     pub eth_execute_gas_limit_multiplier: u64,
     /// Mandated parent hashes for a given block hash.
     pub eth_forced_parent_hashes: Option<BTreeMap<H256, H256>>,
     /// Sinks for pubsub notifications.
     ///
     /// Everytime a new subscription is created, a new mpsc channel is added to the sink pool.
-    /// The MappingSyncWorker sends through the channel on block import and the subscription
+    /// The `MappingSyncWorker` sends through the channel on block import and the subscription
     /// emits a notification to the subscriber on receiving a message through this channel.
     pub eth_pubsub_notification_sinks: Arc<
         fc_mapping_sync::EthereumBlockNotificationSinks<
@@ -133,7 +133,7 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub sync: Arc<SyncingService<Block>>,
     /// A copy of the chain spec.
     pub chain_spec: Box<dyn sc_chain_spec::ChainSpec>,
-    /// AuthorExt specific dependencies.
+    /// `AuthorExt` specific dependencies.
     pub author_ext: AuthorExtDeps<VKE>,
     /// Is the node in authority role.
     pub is_authority: bool,
@@ -143,7 +143,7 @@ pub struct Deps<C, P, BE, VKE, VSF, A: ChainApi, SC> {
     pub babe: BabeDeps,
     /// GRANDPA specific dependencies.
     pub grandpa: GrandpaDeps<BE>,
-    /// The SelectChain Strategy
+    /// The `SelectChain` strategy.
     pub select_chain: SC,
     /// EVM specific dependencies.
     pub evm: EvmDeps,
