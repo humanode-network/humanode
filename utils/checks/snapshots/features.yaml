@@ -358,7 +358,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.9
+- name: clap 4.5.10
   features:
     - color
     - default
@@ -370,7 +370,7 @@
     - string
     - suggestions
     - usage
-- name: clap_builder 4.5.9
+- name: clap_builder 4.5.10
   features:
     - color
     - deprecated
@@ -1886,14 +1886,14 @@
     - std
 - name: open-fastrlp-derive 0.1.1
   features: []
-- name: openssl 0.10.63
+- name: openssl 0.10.66
   features:
     - default
 - name: openssl-macros 0.1.1
   features: []
 - name: openssl-probe 0.1.5
   features: []
-- name: openssl-sys 0.9.99
+- name: openssl-sys 0.9.103
   features: []
 - name: overload 0.1.1
   features: []
@@ -2798,7 +2798,7 @@
 - name: serde_derive 1.0.203
   features:
     - default
-- name: serde_json 1.0.120
+- name: serde_json 1.0.121
   features:
     - alloc
     - default
@@ -3295,7 +3295,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.71
+- name: syn 2.0.72
   features:
     - clone-impls
     - default
