@@ -905,6 +905,8 @@
   features: []
 - name: fork-tree 3.0.0
   features: []
+- name: fork-tree 3.0.0
+  features: []
 - name: form_urlencoded 1.2.1
   features:
     - alloc
@@ -2599,6 +2601,8 @@
   features: []
 - name: sc-allocator 4.1.0-dev
   features: []
+- name: sc-allocator 4.1.0-dev
+  features: []
 - name: sc-basic-authorship 0.10.0-dev
   features: []
 - name: sc-block-builder 0.10.0-dev
@@ -2612,6 +2616,8 @@
     - rocksdb
 - name: sc-client-api 4.0.0-dev
   features: []
+- name: sc-client-api 4.0.0-dev
+  features: []
 - name: sc-client-db 0.10.0-dev
   features:
     - default
@@ -2619,9 +2625,15 @@
     - rocksdb
 - name: sc-consensus 0.10.0-dev
   features: []
+- name: sc-consensus 0.10.0-dev
+  features: []
+- name: sc-consensus-babe 0.10.0-dev
+  features: []
 - name: sc-consensus-babe 0.10.0-dev
   features: []
 - name: sc-consensus-babe-rpc 0.10.0-dev
+  features: []
+- name: sc-consensus-epochs 0.10.0-dev
   features: []
 - name: sc-consensus-epochs 0.10.0-dev
   features: []
@@ -2631,6 +2643,12 @@
   features: []
 - name: sc-consensus-slots 0.10.0-dev
   features: []
+- name: sc-consensus-slots 0.10.0-dev
+  features: []
+- name: sc-executor 0.10.0-dev
+  features:
+    - default
+    - std
 - name: sc-executor 0.10.0-dev
   features:
     - default
@@ -2638,11 +2656,20 @@
 - name: sc-executor-common 0.10.0-dev
   features:
     - default
+- name: sc-executor-common 0.10.0-dev
+  features:
+    - default
+- name: sc-executor-wasmi 0.10.0-dev
+  features: []
 - name: sc-executor-wasmi 0.10.0-dev
   features: []
 - name: sc-executor-wasmtime 0.10.0-dev
   features: []
+- name: sc-executor-wasmtime 0.10.0-dev
+  features: []
 - name: sc-informant 0.10.0-dev
+  features: []
+- name: sc-keystore 4.0.0-dev
   features: []
 - name: sc-keystore 4.0.0-dev
   features: []
@@ -2686,6 +2713,8 @@
   features: []
 - name: sc-telemetry 4.0.0-dev
   features: []
+- name: sc-telemetry 4.0.0-dev
+  features: []
 - name: sc-tracing 4.0.0-dev
   features: []
 - name: sc-tracing-proc-macro 4.0.0-dev
@@ -2694,6 +2723,12 @@
   features: []
 - name: sc-transaction-pool-api 4.0.0-dev
   features: []
+- name: sc-transaction-pool-api 4.0.0-dev
+  features: []
+- name: sc-utils 4.0.0-dev
+  features:
+    - default
+    - metered
 - name: sc-utils 4.0.0-dev
   features:
     - default
@@ -2917,9 +2952,27 @@
     - sp-trie
     - std
     - thiserror
+- name: sp-api 4.0.0-dev
+  features:
+    - default
+    - hash-db
+    - sp-state-machine
+    - sp-trie
+    - std
+    - thiserror
 - name: sp-api-proc-macro 4.0.0-dev
   features:
     - default
+    - std
+- name: sp-api-proc-macro 4.0.0-dev
+  features:
+    - default
+    - std
+- name: sp-application-crypto 7.0.0
+  features:
+    - default
+    - full_crypto
+    - serde
     - std
 - name: sp-application-crypto 7.0.0
   features:
@@ -2932,15 +2985,38 @@
     - default
     - serde
     - std
+- name: sp-arithmetic 6.0.0
+  features:
+    - default
+    - serde
+    - std
+- name: sp-block-builder 4.0.0-dev
+  features:
+    - default
+    - std
 - name: sp-block-builder 4.0.0-dev
   features:
     - default
     - std
 - name: sp-blockchain 4.0.0-dev
   features: []
+- name: sp-blockchain 4.0.0-dev
+  features: []
 - name: sp-consensus 0.10.0-dev
   features:
     - default
+- name: sp-consensus 0.10.0-dev
+  features:
+    - default
+- name: sp-consensus-babe 0.10.0-dev
+  features:
+    - async-trait
+    - default
+    - serde
+    - sp-consensus
+    - sp-keystore
+    - sp-timestamp
+    - std
 - name: sp-consensus-babe 0.10.0-dev
   features:
     - async-trait
@@ -2960,6 +3036,15 @@
   features:
     - default
     - serde
+    - std
+- name: sp-consensus-slots 0.10.0-dev
+  features:
+    - default
+    - serde
+    - std
+- name: sp-consensus-vrf 0.10.0-dev
+  features:
+    - default
     - std
 - name: sp-consensus-vrf 0.10.0-dev
   features:
@@ -2991,13 +3076,49 @@
     - substrate-bip39
     - thiserror
     - tiny-bip39
+- name: sp-core 7.0.0
+  features:
+    - array-bytes
+    - base58
+    - blake2
+    - default
+    - dyn-clonable
+    - ed25519-zebra
+    - full_crypto
+    - futures
+    - impl-serde
+    - lazy_static
+    - libsecp256k1
+    - merlin
+    - parking_lot
+    - rand
+    - regex
+    - schnorrkel
+    - secp256k1
+    - serde
+    - sp-core-hashing
+    - sp-externalities
+    - std
+    - substrate-bip39
+    - thiserror
+    - tiny-bip39
+- name: sp-core-hashing 5.0.0
+  features:
+    - std
 - name: sp-core-hashing 5.0.0
   features:
     - std
 - name: sp-core-hashing-proc-macro 5.0.0
   features: []
+- name: sp-core-hashing-proc-macro 5.0.0
+  features: []
 - name: sp-database 4.0.0-dev
   features: []
+- name: sp-database 4.0.0-dev
+  features: []
+- name: sp-debug-derive 5.0.0
+  features:
+    - std
 - name: sp-debug-derive 5.0.0
   features:
     - std
@@ -3005,6 +3126,17 @@
   features:
     - default
     - std
+- name: sp-externalities 0.13.0
+  features:
+    - default
+    - std
+- name: sp-inherents 4.0.0-dev
+  features:
+    - async-trait
+    - default
+    - sp-runtime
+    - std
+    - thiserror
 - name: sp-inherents 4.0.0-dev
   features:
     - async-trait
@@ -3026,6 +3158,20 @@
     - sp-state-machine
     - sp-trie
     - std
+- name: sp-io 7.0.0
+  features:
+    - default
+    - disable_oom
+    - disable_panic_handler
+    - ed25519-dalek
+    - futures
+    - libsecp256k1
+    - log
+    - secp256k1
+    - sp-keystore
+    - sp-state-machine
+    - sp-trie
+    - std
 - name: sp-keyring 7.0.0
   features: []
 - name: sp-keystore 0.13.0
@@ -3033,6 +3179,13 @@
     - default
     - serde
     - std
+- name: sp-keystore 0.13.0
+  features:
+    - default
+    - serde
+    - std
+- name: sp-maybe-compressed-blob 4.1.0-dev
+  features: []
 - name: sp-maybe-compressed-blob 4.1.0-dev
   features: []
 - name: sp-offchain 4.0.0-dev
@@ -3041,8 +3194,16 @@
     - std
 - name: sp-panic-handler 5.0.0
   features: []
+- name: sp-panic-handler 5.0.0
+  features: []
 - name: sp-rpc 6.0.0
   features: []
+- name: sp-runtime 7.0.0
+  features:
+    - default
+    - rand
+    - serde
+    - std
 - name: sp-runtime 7.0.0
   features:
     - default
@@ -3054,6 +3215,13 @@
     - default
     - disable_target_static_assertions
     - std
+- name: sp-runtime-interface 7.0.0
+  features:
+    - default
+    - disable_target_static_assertions
+    - std
+- name: sp-runtime-interface-proc-macro 6.0.0
+  features: []
 - name: sp-runtime-interface-proc-macro 6.0.0
   features: []
 - name: sp-session 4.0.0-dev
@@ -3073,9 +3241,27 @@
     - std
     - thiserror
     - tracing
+- name: sp-state-machine 0.13.0
+  features:
+    - default
+    - parking_lot
+    - rand
+    - sp-panic-handler
+    - std
+    - thiserror
+    - tracing
 - name: sp-std 5.0.0
   features:
     - default
+    - std
+- name: sp-std 5.0.0
+  features:
+    - std
+- name: sp-storage 7.0.0
+  features:
+    - default
+    - impl-serde
+    - serde
     - std
 - name: sp-storage 7.0.0
   features:
@@ -3091,9 +3277,22 @@
     - log
     - std
     - thiserror
+- name: sp-timestamp 4.0.0-dev
+  features:
+    - async-trait
+    - default
+    - futures-timer
+    - log
+    - std
+    - thiserror
 - name: sp-tracing 6.0.0
   features:
     - default
+    - std
+    - tracing-subscriber
+    - with-tracing
+- name: sp-tracing 6.0.0
+  features:
     - std
     - tracing-subscriber
     - with-tracing
@@ -3121,6 +3320,26 @@
     - std
     - thiserror
     - tracing
+- name: sp-trie 7.0.0
+  features:
+    - ahash
+    - default
+    - hashbrown
+    - lazy_static
+    - nohash-hasher
+    - parking_lot
+    - schnellru
+    - std
+    - thiserror
+    - tracing
+- name: sp-version 5.0.0
+  features:
+    - default
+    - impl-serde
+    - parity-wasm
+    - serde
+    - std
+    - thiserror
 - name: sp-version 5.0.0
   features:
     - default
@@ -3131,6 +3350,16 @@
     - thiserror
 - name: sp-version-proc-macro 4.0.0-dev
   features: []
+- name: sp-version-proc-macro 4.0.0-dev
+  features: []
+- name: sp-wasm-interface 7.0.0
+  features:
+    - anyhow
+    - default
+    - log
+    - std
+    - wasmi
+    - wasmtime
 - name: sp-wasm-interface 7.0.0
   features:
     - anyhow
@@ -3142,6 +3371,10 @@
 - name: sp-weights 4.0.0
   features:
     - default
+    - serde
+    - std
+- name: sp-weights 4.0.0
+  features:
     - serde
     - std
 - name: spin 0.5.2
@@ -3271,6 +3504,8 @@
 - name: substrate-bn 0.6.0
   features: []
 - name: substrate-frame-rpc-system 4.0.0-dev
+  features: []
+- name: substrate-prometheus-endpoint 0.10.0-dev
   features: []
 - name: substrate-prometheus-endpoint 0.10.0-dev
   features: []
