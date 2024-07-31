@@ -14,7 +14,7 @@ pub mod block_time {
 
     // NOTE: Currently it is not possible to change the slot duration after the chain has started.
     //       Attempting to do so will brick block production.
-    pub const MILLISECS_PER_BLOCK: u64 = 1000;
+    pub const MILLISECS_PER_BLOCK: u64 = 6000;
     pub const SECS_PER_BLOCK: u64 = MILLISECS_PER_BLOCK / 1000;
 
     // These time units are defined in number of blocks.
@@ -46,7 +46,7 @@ pub mod babe {
     use crate::BlockNumber;
 
     // 1 in 4 blocks (on average, not counting collisions) will be primary BABE blocks.
-    pub const PRIMARY_PROBABILITY: (u64, u64) = (3, 4);
+    pub const PRIMARY_PROBABILITY: (u64, u64) = (1, 4);
     /// The BABE epoch configuration at genesis.
     pub const BABE_GENESIS_EPOCH_CONFIG: sp_consensus_babe::BabeEpochConfiguration =
         sp_consensus_babe::BabeEpochConfiguration {
