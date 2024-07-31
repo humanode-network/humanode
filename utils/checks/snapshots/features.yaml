@@ -2994,6 +2994,10 @@
 - name: sp-core-hashing 5.0.0
   features:
     - std
+- name: sp-core-hashing 5.0.0
+  features: []
+- name: sp-core-hashing-proc-macro 5.0.0
+  features: []
 - name: sp-core-hashing-proc-macro 5.0.0
   features: []
 - name: sp-database 4.0.0-dev
@@ -3077,6 +3081,8 @@
   features:
     - default
     - std
+- name: sp-std 5.0.0
+  features: []
 - name: sp-storage 7.0.0
   features:
     - default
