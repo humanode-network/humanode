@@ -3583,15 +3583,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "getrandom_or_panic"
-version = "0.0.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ea1015b5a70616b688dc230cfe50c8af89d972cb132d5a622814d29773b10b9"
-dependencies = [
- "rand_core 0.6.4",
-]
-
-[[package]]
 name = "ghash"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5538,18 +5529,6 @@ dependencies = [
  "byteorder",
  "keccak",
  "rand_core 0.5.1",
- "zeroize",
-]
-
-[[package]]
-name = "merlin"
-version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "58c38e2799fc0978b65dfff8023ec7843e2330bb462f19198840b34b6582397d"
-dependencies = [
- "byteorder",
- "keccak",
- "rand_core 0.6.4",
  "zeroize",
 ]
 
@@ -8674,7 +8653,7 @@ dependencies = [
  "fork-tree",
  "futures",
  "log",
- "merlin 2.0.1",
+ "merlin",
  "num-bigint",
  "num-rational",
  "num-traits",
@@ -8687,7 +8666,7 @@ dependencies = [
  "sc-keystore",
  "sc-telemetry",
  "scale-info",
- "schnorrkel 0.9.1",
+ "schnorrkel",
  "sp-api",
  "sp-application-crypto",
  "sp-block-builder",
@@ -9536,27 +9515,10 @@ dependencies = [
  "arrayvec 0.5.2",
  "curve25519-dalek 2.1.3",
  "getrandom 0.1.16",
- "merlin 2.0.1",
+ "merlin",
  "rand 0.7.3",
  "rand_core 0.5.1",
  "sha2 0.8.2",
- "subtle",
- "zeroize",
-]
-
-[[package]]
-name = "schnorrkel"
-version = "0.11.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8de18f6d8ba0aad7045f5feae07ec29899c1112584a38509a84ad7b04451eaa0"
-dependencies = [
- "arrayref",
- "arrayvec 0.7.4",
- "curve25519-dalek 4.1.3",
- "getrandom_or_panic",
- "merlin 3.0.0",
- "rand_core 0.6.4",
- "sha2 0.10.8",
  "subtle",
  "zeroize",
 ]
@@ -10181,7 +10143,7 @@ version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?branch=locked/polkadot-v0.9.40-1#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
- "merlin 2.0.1",
+ "merlin",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -10235,7 +10197,7 @@ source = "git+https://github.com/humanode-network/substrate?branch=locked/polkad
 dependencies = [
  "parity-scale-codec",
  "scale-info",
- "schnorrkel 0.9.1",
+ "schnorrkel",
  "sp-core",
  "sp-runtime",
  "sp-std",
@@ -10260,14 +10222,14 @@ dependencies = [
  "lazy_static",
  "libsecp256k1",
  "log",
- "merlin 2.0.1",
+ "merlin",
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "primitive-types",
  "rand 0.8.5",
  "regex",
  "scale-info",
- "schnorrkel 0.9.1",
+ "schnorrkel",
  "secp256k1 0.24.3",
  "secrecy",
  "serde",
@@ -10397,10 +10359,10 @@ source = "git+https://github.com/humanode-network/substrate?branch=locked/polkad
 dependencies = [
  "async-trait",
  "futures",
- "merlin 2.0.1",
+ "merlin",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "schnorrkel 0.9.1",
+ "schnorrkel",
  "serde",
  "sp-core",
  "sp-externalities",
@@ -11080,13 +11042,13 @@ dependencies = [
 
 [[package]]
 name = "substrate-bip39"
-version = "0.4.6"
+version = "0.4.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a7590dc041b9bc2825e52ce5af8416c73dbe9d0654402bfd4b4941938b94d8f"
+checksum = "e620c7098893ba667438b47169c00aacdd9e7c10e042250ce2b60b087ec97328"
 dependencies = [
  "hmac 0.11.0",
  "pbkdf2 0.8.0",
- "schnorrkel 0.11.4",
+ "schnorrkel",
  "sha2 0.9.9",
  "zeroize",
 ]
