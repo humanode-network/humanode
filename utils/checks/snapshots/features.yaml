@@ -598,7 +598,6 @@
     - alloc
     - default
     - digest
-    - legacy_compatibility
     - precomputed-tables
     - zeroize
 - name: curve25519-dalek-derive 0.1.1
@@ -1268,8 +1267,6 @@
 - name: getrandom 0.2.14
   features:
     - std
-- name: getrandom_or_panic 0.0.3
-  features: []
 - name: ghash 0.4.4
   features: []
 - name: ghash 0.5.0
@@ -1801,8 +1798,6 @@
   features:
     - default
     - std
-- name: merlin 3.0.0
-  features: []
 - name: mime 0.3.17
   features: []
 - name: mime_guess 2.0.4
@@ -2960,8 +2955,6 @@
   features:
     - default
     - runtime-rng
-- name: schnorrkel 0.11.4
-  features: []
 - name: schnorrkel 0.9.1
   features:
     - default
@@ -3551,7 +3544,7 @@
 - name: stun 0.4.4
   features:
     - default
-- name: substrate-bip39 0.4.6
+- name: substrate-bip39 0.4.5
   features: []
 - name: substrate-bn 0.6.0
   features: []
