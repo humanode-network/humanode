@@ -18,7 +18,7 @@ unmaintained = "allow"
 yanked = "allow"
 notice = "deny"
 ignore = [
-  # TODO: update the curve25519-dalek internal dependency to 4.1.3+
+  # TODO(#1118): update the curve25519-dalek internal dependency to 4.1.3+
   "RUSTSEC-2024-0344",
   # TODO(#723): update the ed25519-dalek 1 internal dependency to 2.0.0+
   "RUSTSEC-2022-0093",
