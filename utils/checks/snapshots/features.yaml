@@ -3345,6 +3345,9 @@
   features:
     - default
     - std
+- name: sp-std 5.0.0
+  features:
+    - std
 - name: sp-storage 7.0.0
   features:
     - default
