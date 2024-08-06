@@ -180,6 +180,8 @@
   features:
     - default
     - unnamed-tmpfile
+- name: attohttpc 0.24.1
+  features: []
 - name: atty 0.2.14
   features: []
 - name: author-ext-api 0.1.0
@@ -216,6 +218,9 @@
     - alloc
     - default
     - std
+- name: base64 0.22.1
+  features:
+    - alloc
 - name: base64ct 1.6.0
   features:
     - alloc
@@ -302,8 +307,11 @@
     - std
 - name: bs58 0.5.0
   features:
+    - alloc
     - check
+    - default
     - sha2
+    - std
 - name: bstr 0.2.17
   features:
     - lazy_static
@@ -855,6 +863,8 @@
     - default
 - name: enum-as-inner 0.5.1
   features: []
+- name: enum-as-inner 0.6.0
+  features: []
 - name: env_logger 0.10.2
   features:
     - auto-color
@@ -1221,6 +1231,8 @@
   features: []
 - name: futures-rustls 0.22.2
   features: []
+- name: futures-rustls 0.24.0
+  features: []
 - name: futures-sink 0.3.30
   features:
     - alloc
@@ -1444,6 +1456,11 @@
   features: []
 - name: idna 0.2.3
   features: []
+- name: idna 0.4.0
+  features:
+    - alloc
+    - default
+    - std
 - name: idna 0.5.0
   features:
     - alloc
@@ -1453,6 +1470,16 @@
   features: []
 - name: if-watch 3.2.0
   features:
+    - tokio
+- name: igd-next 0.14.3
+  features:
+    - aio_tokio
+    - async-trait
+    - bytes
+    - default
+    - futures
+    - http
+    - hyper
     - tokio
 - name: impl-codec 0.6.0
   features:
@@ -1617,11 +1644,27 @@
     - wasm-ext
     - websocket
     - yamux
+- name: libp2p 0.52.4
+  features:
+    - dns
+    - tcp
+    - tokio
+    - wasm-ext
+    - websocket
+- name: libp2p-allow-block-list 0.2.0
+  features: []
+- name: libp2p-connection-limits 0.2.1
+  features: []
 - name: libp2p-core 0.38.0
   features: []
 - name: libp2p-core 0.39.2
   features: []
+- name: libp2p-core 0.40.1
+  features: []
 - name: libp2p-dns 0.38.0
+  features:
+    - tokio
+- name: libp2p-dns 0.40.1
   features:
     - tokio
 - name: libp2p-identify 0.41.1
@@ -1630,9 +1673,17 @@
   features:
     - ed25519
     - peerid
+- name: libp2p-identity 0.2.8
+  features:
+    - ed25519
+    - peerid
+    - rand
 - name: libp2p-kad 0.42.1
   features: []
 - name: libp2p-mdns 0.42.0
+  features:
+    - tokio
+- name: libp2p-mdns 0.44.0
   features:
     - tokio
 - name: libp2p-metrics 0.11.0
@@ -1652,25 +1703,43 @@
 - name: libp2p-quic 0.7.0-alpha
   features:
     - tokio
+- name: libp2p-quic 0.9.3
+  features:
+    - tokio
 - name: libp2p-request-response 0.23.0
   features: []
 - name: libp2p-swarm 0.41.1
   features:
     - macros
     - tokio
+- name: libp2p-swarm 0.43.7
+  features:
+    - tokio
 - name: libp2p-swarm-derive 0.31.0
   features: []
 - name: libp2p-tcp 0.38.0
   features:
     - tokio
+- name: libp2p-tcp 0.40.1
+  features:
+    - tokio
 - name: libp2p-tls 0.1.0
   features: []
+- name: libp2p-tls 0.2.1
+  features: []
+- name: libp2p-upnp 0.1.1
+  features:
+    - tokio
 - name: libp2p-wasm-ext 0.38.0
+  features: []
+- name: libp2p-wasm-ext 0.40.0
   features: []
 - name: libp2p-webrtc 0.4.0-alpha
   features:
     - tokio
 - name: libp2p-websocket 0.40.0
+  features: []
+- name: libp2p-websocket 0.42.2
   features: []
 - name: libp2p-yamux 0.42.0
   features: []
@@ -1832,6 +1901,10 @@
   features:
     - default
     - url
+- name: multiaddr 0.18.1
+  features:
+    - default
+    - url
 - name: multibase 0.9.1
   features:
     - default
@@ -1864,12 +1937,19 @@
     - multihash-derive
     - multihash-impl
     - std
+- name: multihash 0.19.1
+  features:
+    - alloc
+    - default
+    - std
 - name: multihash-derive 0.8.1
   features:
     - std
 - name: multimap 0.8.3
   features: []
 - name: multistream-select 0.12.1
+  features: []
+- name: multistream-select 0.13.0
   features: []
 - name: nalgebra 0.32.3
   features:
@@ -2531,12 +2611,26 @@
     - std
 - name: quicksink 0.1.2
   features: []
+- name: quinn 0.10.2
+  features:
+    - futures-io
+    - ring
+    - runtime-tokio
+    - rustls
+    - tls-rustls
+- name: quinn-proto 0.10.6
+  features:
+    - ring
+    - rustls
+    - tls-rustls
 - name: quinn-proto 0.9.6
   features:
     - ring
     - rustls
     - tls-rustls
     - webpki
+- name: quinn-udp 0.4.1
+  features: []
 - name: quote 1.0.36
   features:
     - default
@@ -2822,13 +2916,28 @@
     - logging
     - quic
     - tls12
+- name: rustls 0.21.10
+  features:
+    - dangerous_configuration
+    - default
+    - log
+    - logging
+    - quic
+    - tls12
 - name: rustls-native-certs 0.6.3
   features: []
 - name: rustls-pemfile 1.0.4
   features: []
+- name: rustls-webpki 0.101.7
+  features:
+    - alloc
+    - default
+    - std
 - name: rustversion 1.0.14
   features: []
 - name: rw-stream-sink 0.3.0
+  features: []
+- name: rw-stream-sink 0.4.0
   features: []
 - name: ryu 1.0.16
   features: []
@@ -2927,6 +3036,8 @@
   features: []
 - name: sc-telemetry 4.0.0-dev
   features: []
+- name: sc-telemetry 4.0.0-dev
+  features: []
 - name: sc-tracing 4.0.0-dev
   features: []
 - name: sc-tracing-proc-macro 4.0.0-dev
@@ -2935,6 +3046,10 @@
   features: []
 - name: sc-transaction-pool-api 4.0.0-dev
   features: []
+- name: sc-utils 4.0.0-dev
+  features:
+    - default
+    - metered
 - name: sc-utils 4.0.0-dev
   features:
     - default
@@ -3038,6 +3153,8 @@
     - serde
     - std
 - name: semver-parser 0.7.0
+  features: []
+- name: send_wrapper 0.6.0
   features: []
 - name: serde 1.0.203
   features:
@@ -3176,6 +3293,9 @@
     - deflate
     - flate2
     - http
+- name: soketto 0.8.0
+  features:
+    - default
 - name: sp-api 4.0.0-dev
   features:
     - default
@@ -3199,6 +3319,8 @@
     - default
     - serde
     - std
+- name: sp-arithmetic 6.0.0
+  features: []
 - name: sp-block-builder 4.0.0-dev
   features:
     - default
@@ -3345,6 +3467,8 @@
   features:
     - default
     - std
+- name: sp-std 5.0.0
+  features: []
 - name: sp-storage 7.0.0
   features:
     - default
@@ -3662,6 +3786,8 @@
   features:
     - alloc
     - default
+    - grab_spare_slice
+    - std
     - tinyvec_macros
 - name: tinyvec_macros 0.1.1
   features: []
@@ -3837,7 +3963,18 @@
     - socket2
     - tokio
     - tokio-runtime
+- name: trust-dns-proto 0.23.2
+  features:
+    - tokio
+    - tokio-runtime
 - name: trust-dns-resolver 0.22.0
+  features:
+    - ipconfig
+    - resolv-conf
+    - system-config
+    - tokio
+    - tokio-runtime
+- name: trust-dns-resolver 0.23.2
   features:
     - ipconfig
     - resolv-conf
@@ -4099,6 +4236,8 @@
     - std
 - name: webpki-roots 0.22.6
   features: []
+- name: webpki-roots 0.25.4
+  features: []
 - name: webrtc 0.6.0
   features: []
 - name: webrtc-data 0.6.0
@@ -4353,6 +4492,14 @@
     - ring
     - verify
 - name: x509-parser 0.14.0
+  features:
+    - default
+- name: x509-parser 0.15.1
+  features:
+    - default
+- name: xml-rs 0.8.21
+  features: []
+- name: xmltree 0.10.3
   features:
     - default
 - name: yamux 0.10.2
