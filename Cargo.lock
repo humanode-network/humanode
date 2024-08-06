@@ -610,6 +610,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "attohttpc"
+version = "0.24.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8d9a9bf8b79a749ee0b911b91b671cc2b6c670bdbc7e3dfd537576ddc94bb2a2"
+dependencies = [
+ "http 0.2.12",
+ "log",
+ "url",
+]
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -627,7 +638,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-api",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -719,6 +730,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
+name = "base64"
+version = "0.22.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
+
+[[package]]
 name = "base64ct"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -769,7 +786,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-api",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -985,6 +1002,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5353f36341f7451062466f0b755b96ac3a9547e4d7f6b70d603fc721a7d7896"
 dependencies = [
  "sha2 0.10.8",
+ "tinyvec",
 ]
 
 [[package]]
@@ -2248,7 +2266,7 @@ dependencies = [
  "numtoa",
  "primitives-ethereum",
  "sp-io",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -2259,7 +2277,7 @@ dependencies = [
  "hex",
  "hex-literal 0.4.1",
  "primitives-ethereum",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -2280,7 +2298,7 @@ dependencies = [
  "sp-core",
  "sp-core-hashing-proc-macro",
  "sp-io",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -2379,6 +2397,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "enum-as-inner"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5ffccbb6966c05b32ef8fbac435df276c4ae4d3dc55a8cd0eb9745e6c12f546a"
+dependencies = [
+ "heck 0.4.1",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.72",
 ]
 
 [[package]]
@@ -2743,7 +2773,7 @@ dependencies = [
  "log",
  "parking_lot 0.12.1",
  "sc-client-api",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-api",
  "sp-blockchain",
  "sp-consensus",
@@ -2787,7 +2817,7 @@ dependencies = [
  "sc-service",
  "sc-transaction-pool",
  "sc-transaction-pool-api",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "sp-api",
  "sp-block-builder",
@@ -3015,7 +3045,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-runtime-interface",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3027,7 +3057,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3041,7 +3071,7 @@ dependencies = [
  "frame-support",
  "num_enum 0.5.11",
  "parity-scale-codec",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3055,7 +3085,7 @@ dependencies = [
  "serde",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3072,7 +3102,7 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-state-machine",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3122,7 +3152,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-runtime-interface",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-storage",
  "static_assertions",
 ]
@@ -3167,7 +3197,7 @@ dependencies = [
  "sp-keystore",
  "sp-runtime",
  "sp-state-machine",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-storage",
  "sp-trie",
  "thiserror",
@@ -3187,7 +3217,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-tracing",
 ]
 
@@ -3238,7 +3268,7 @@ dependencies = [
  "serde",
  "smallvec",
  "sp-api",
- "sp-arithmetic",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-core",
  "sp-core-hashing-proc-macro",
  "sp-inherents",
@@ -3246,7 +3276,7 @@ dependencies = [
  "sp-runtime",
  "sp-staking",
  "sp-state-machine",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-tracing",
  "sp-weights",
  "tt-call",
@@ -3302,7 +3332,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-version",
  "sp-weights",
 ]
@@ -3319,7 +3349,7 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3340,7 +3370,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-api",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3483,6 +3513,16 @@ dependencies = [
  "futures-io",
  "rustls 0.20.9",
  "webpki 0.22.4",
+]
+
+[[package]]
+name = "futures-rustls"
+version = "0.24.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35bd3cf68c183738046838e300353e4716c674dc5e56890de4826801a6622a28"
+dependencies = [
+ "futures-io",
+ "rustls 0.21.10",
 ]
 
 [[package]]
@@ -4012,7 +4052,7 @@ dependencies = [
  "sc-consensus-grandpa",
  "sc-executor",
  "sc-service",
- "sc-telemetry",
+ "sc-telemetry 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "sc-transaction-pool",
  "serde",
  "serde_json",
@@ -4173,7 +4213,7 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-tracing",
  "sp-transaction-pool",
  "sp-version",
@@ -4283,6 +4323,16 @@ dependencies = [
 
 [[package]]
 name = "idna"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d20d6b07bfbc108882d88ed8e37d39636dcc260e15e30c45e6ba089610b917c"
+dependencies = [
+ "unicode-bidi",
+ "unicode-normalization",
+]
+
+[[package]]
+name = "idna"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "634d9b1461af396cad843f47fdba5597a4f9e6ddd4bfb6ff5d85028c25cb12f6"
@@ -4318,6 +4368,25 @@ dependencies = [
  "system-configuration",
  "tokio",
  "windows",
+]
+
+[[package]]
+name = "igd-next"
+version = "0.14.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "064d90fec10d541084e7b39ead8875a5a80d9114a2b18791565253bae25f49e4"
+dependencies = [
+ "async-trait",
+ "attohttpc",
+ "bytes",
+ "futures",
+ "http 0.2.12",
+ "hyper",
+ "log",
+ "rand 0.8.5",
+ "tokio",
+ "url",
+ "xmltree",
 ]
 
 [[package]]
@@ -4551,7 +4620,7 @@ dependencies = [
  "jsonrpsee-types",
  "pin-project",
  "rustls-native-certs",
- "soketto",
+ "soketto 0.7.1",
  "thiserror",
  "tokio",
  "tokio-rustls 0.24.1",
@@ -4582,7 +4651,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
- "soketto",
+ "soketto 0.7.1",
  "thiserror",
  "tokio",
  "tracing",
@@ -4615,7 +4684,7 @@ dependencies = [
  "jsonrpsee-types",
  "serde",
  "serde_json",
- "soketto",
+ "soketto 0.7.1",
  "tokio",
  "tokio-stream",
  "tokio-util",
@@ -4777,26 +4846,80 @@ dependencies = [
  "getrandom 0.2.14",
  "instant",
  "libp2p-core 0.38.0",
- "libp2p-dns",
+ "libp2p-dns 0.38.0",
  "libp2p-identify",
  "libp2p-kad",
- "libp2p-mdns",
+ "libp2p-mdns 0.42.0",
  "libp2p-metrics",
  "libp2p-mplex",
  "libp2p-noise",
  "libp2p-ping",
- "libp2p-quic",
+ "libp2p-quic 0.7.0-alpha",
  "libp2p-request-response",
- "libp2p-swarm",
- "libp2p-tcp",
- "libp2p-wasm-ext",
+ "libp2p-swarm 0.41.1",
+ "libp2p-tcp 0.38.0",
+ "libp2p-wasm-ext 0.38.0",
  "libp2p-webrtc",
- "libp2p-websocket",
+ "libp2p-websocket 0.40.0",
  "libp2p-yamux",
  "multiaddr 0.16.0",
  "parking_lot 0.12.1",
  "pin-project",
  "smallvec",
+]
+
+[[package]]
+name = "libp2p"
+version = "0.52.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e94495eb319a85b70a68b85e2389a95bb3555c71c49025b78c691a854a7e6464"
+dependencies = [
+ "bytes",
+ "either",
+ "futures",
+ "futures-timer",
+ "getrandom 0.2.14",
+ "instant",
+ "libp2p-allow-block-list",
+ "libp2p-connection-limits",
+ "libp2p-core 0.40.1",
+ "libp2p-dns 0.40.1",
+ "libp2p-identity 0.2.8",
+ "libp2p-mdns 0.44.0",
+ "libp2p-quic 0.9.3",
+ "libp2p-swarm 0.43.7",
+ "libp2p-tcp 0.40.1",
+ "libp2p-upnp",
+ "libp2p-wasm-ext 0.40.0",
+ "libp2p-websocket 0.42.2",
+ "multiaddr 0.18.1",
+ "pin-project",
+ "rw-stream-sink 0.4.0",
+ "thiserror",
+]
+
+[[package]]
+name = "libp2p-allow-block-list"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55b46558c5c0bf99d3e2a1a38fd54ff5476ca66dd1737b12466a1824dd219311"
+dependencies = [
+ "libp2p-core 0.40.1",
+ "libp2p-identity 0.2.8",
+ "libp2p-swarm 0.43.7",
+ "void",
+]
+
+[[package]]
+name = "libp2p-connection-limits"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f5107ad45cb20b2f6c3628c7b6014b996fcb13a88053f4569c872c6e30abf58"
+dependencies = [
+ "libp2p-core 0.40.1",
+ "libp2p-identity 0.2.8",
+ "libp2p-swarm 0.43.7",
+ "void",
 ]
 
 [[package]]
@@ -4816,14 +4939,14 @@ dependencies = [
  "log",
  "multiaddr 0.16.0",
  "multihash 0.16.3",
- "multistream-select",
+ "multistream-select 0.12.1",
  "once_cell",
  "parking_lot 0.12.1",
  "pin-project",
  "prost",
  "prost-build",
  "rand 0.8.5",
- "rw-stream-sink",
+ "rw-stream-sink 0.3.0",
  "sec1 0.3.0",
  "sha2 0.10.8",
  "smallvec",
@@ -4844,17 +4967,45 @@ dependencies = [
  "futures",
  "futures-timer",
  "instant",
- "libp2p-identity",
+ "libp2p-identity 0.1.3",
  "log",
  "multiaddr 0.17.1",
  "multihash 0.17.0",
- "multistream-select",
+ "multistream-select 0.12.1",
  "once_cell",
  "parking_lot 0.12.1",
  "pin-project",
  "quick-protobuf",
  "rand 0.8.5",
- "rw-stream-sink",
+ "rw-stream-sink 0.3.0",
+ "smallvec",
+ "thiserror",
+ "unsigned-varint",
+ "void",
+]
+
+[[package]]
+name = "libp2p-core"
+version = "0.40.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd44289ab25e4c9230d9246c475a22241e301b23e8f4061d3bdef304a1a99713"
+dependencies = [
+ "either",
+ "fnv",
+ "futures",
+ "futures-timer",
+ "instant",
+ "libp2p-identity 0.2.8",
+ "log",
+ "multiaddr 0.18.1",
+ "multihash 0.19.1",
+ "multistream-select 0.13.0",
+ "once_cell",
+ "parking_lot 0.12.1",
+ "pin-project",
+ "quick-protobuf",
+ "rand 0.8.5",
+ "rw-stream-sink 0.4.0",
  "smallvec",
  "thiserror",
  "unsigned-varint",
@@ -4872,7 +5023,23 @@ dependencies = [
  "log",
  "parking_lot 0.12.1",
  "smallvec",
- "trust-dns-resolver",
+ "trust-dns-resolver 0.22.0",
+]
+
+[[package]]
+name = "libp2p-dns"
+version = "0.40.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6a18db73084b4da2871438f6239fef35190b05023de7656e877c18a00541a3b"
+dependencies = [
+ "async-trait",
+ "futures",
+ "libp2p-core 0.40.1",
+ "libp2p-identity 0.2.8",
+ "log",
+ "parking_lot 0.12.1",
+ "smallvec",
+ "trust-dns-resolver 0.23.2",
 ]
 
 [[package]]
@@ -4885,7 +5052,7 @@ dependencies = [
  "futures",
  "futures-timer",
  "libp2p-core 0.38.0",
- "libp2p-swarm",
+ "libp2p-swarm 0.41.1",
  "log",
  "lru",
  "prost",
@@ -4915,6 +5082,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "libp2p-identity"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "999ec70441b2fb35355076726a6bc466c932e9bdc66f6a11c6c0aa17c7ab9be0"
+dependencies = [
+ "bs58 0.5.0",
+ "ed25519-dalek 2.1.1",
+ "hkdf",
+ "multihash 0.19.1",
+ "quick-protobuf",
+ "rand 0.8.5",
+ "sha2 0.10.8",
+ "thiserror",
+ "tracing",
+ "zeroize",
+]
+
+[[package]]
 name = "libp2p-kad"
 version = "0.42.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4929,7 +5114,7 @@ dependencies = [
  "futures-timer",
  "instant",
  "libp2p-core 0.38.0",
- "libp2p-swarm",
+ "libp2p-swarm 0.41.1",
  "log",
  "prost",
  "prost-build",
@@ -4952,13 +5137,34 @@ dependencies = [
  "futures",
  "if-watch",
  "libp2p-core 0.38.0",
- "libp2p-swarm",
+ "libp2p-swarm 0.41.1",
  "log",
  "rand 0.8.5",
  "smallvec",
  "socket2 0.4.10",
  "tokio",
- "trust-dns-proto",
+ "trust-dns-proto 0.22.0",
+ "void",
+]
+
+[[package]]
+name = "libp2p-mdns"
+version = "0.44.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "42a2567c305232f5ef54185e9604579a894fd0674819402bb0ac0246da82f52a"
+dependencies = [
+ "data-encoding",
+ "futures",
+ "if-watch",
+ "libp2p-core 0.40.1",
+ "libp2p-identity 0.2.8",
+ "libp2p-swarm 0.43.7",
+ "log",
+ "rand 0.8.5",
+ "smallvec",
+ "socket2 0.5.5",
+ "tokio",
+ "trust-dns-proto 0.22.0",
  "void",
 ]
 
@@ -4972,7 +5178,7 @@ dependencies = [
  "libp2p-identify",
  "libp2p-kad",
  "libp2p-ping",
- "libp2p-swarm",
+ "libp2p-swarm 0.41.1",
  "prometheus-client",
 ]
 
@@ -5027,7 +5233,7 @@ dependencies = [
  "futures-timer",
  "instant",
  "libp2p-core 0.38.0",
- "libp2p-swarm",
+ "libp2p-swarm 0.41.1",
  "log",
  "rand 0.8.5",
  "void",
@@ -5044,12 +5250,36 @@ dependencies = [
  "futures-timer",
  "if-watch",
  "libp2p-core 0.38.0",
- "libp2p-tls",
+ "libp2p-tls 0.1.0",
  "log",
  "parking_lot 0.12.1",
- "quinn-proto",
+ "quinn-proto 0.9.6",
  "rand 0.8.5",
  "rustls 0.20.9",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "libp2p-quic"
+version = "0.9.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "130d451d83f21b81eb7b35b360bc7972aeafb15177784adc56528db082e6b927"
+dependencies = [
+ "bytes",
+ "futures",
+ "futures-timer",
+ "if-watch",
+ "libp2p-core 0.40.1",
+ "libp2p-identity 0.2.8",
+ "libp2p-tls 0.2.1",
+ "log",
+ "parking_lot 0.12.1",
+ "quinn",
+ "rand 0.8.5",
+ "ring 0.16.20",
+ "rustls 0.21.10",
+ "socket2 0.5.5",
  "thiserror",
  "tokio",
 ]
@@ -5065,7 +5295,7 @@ dependencies = [
  "futures",
  "instant",
  "libp2p-core 0.38.0",
- "libp2p-swarm",
+ "libp2p-swarm 0.41.1",
  "log",
  "rand 0.8.5",
  "smallvec",
@@ -5090,6 +5320,28 @@ dependencies = [
  "rand 0.8.5",
  "smallvec",
  "thiserror",
+ "tokio",
+ "void",
+]
+
+[[package]]
+name = "libp2p-swarm"
+version = "0.43.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "580189e0074af847df90e75ef54f3f30059aedda37ea5a1659e8b9fca05c0141"
+dependencies = [
+ "either",
+ "fnv",
+ "futures",
+ "futures-timer",
+ "instant",
+ "libp2p-core 0.40.1",
+ "libp2p-identity 0.2.8",
+ "log",
+ "multistream-select 0.13.0",
+ "once_cell",
+ "rand 0.8.5",
+ "smallvec",
  "tokio",
  "void",
 ]
@@ -5122,15 +5374,32 @@ dependencies = [
 ]
 
 [[package]]
+name = "libp2p-tcp"
+version = "0.40.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b558dd40d1bcd1aaaed9de898e9ec6a436019ecc2420dd0016e712fbb61c5508"
+dependencies = [
+ "futures",
+ "futures-timer",
+ "if-watch",
+ "libc",
+ "libp2p-core 0.40.1",
+ "libp2p-identity 0.2.8",
+ "log",
+ "socket2 0.5.5",
+ "tokio",
+]
+
+[[package]]
 name = "libp2p-tls"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ff08d13d0dc66e5e9ba6279c1de417b84fa0d0adc3b03e5732928c180ec02781"
 dependencies = [
  "futures",
- "futures-rustls",
+ "futures-rustls 0.22.2",
  "libp2p-core 0.39.2",
- "libp2p-identity",
+ "libp2p-identity 0.1.3",
  "rcgen 0.10.0",
  "ring 0.16.20",
  "rustls 0.20.9",
@@ -5138,6 +5407,41 @@ dependencies = [
  "webpki 0.22.4",
  "x509-parser 0.14.0",
  "yasna",
+]
+
+[[package]]
+name = "libp2p-tls"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8218d1d5482b122ccae396bbf38abdcb283ecc96fa54760e1dfd251f0546ac61"
+dependencies = [
+ "futures",
+ "futures-rustls 0.24.0",
+ "libp2p-core 0.40.1",
+ "libp2p-identity 0.2.8",
+ "rcgen 0.10.0",
+ "ring 0.16.20",
+ "rustls 0.21.10",
+ "rustls-webpki",
+ "thiserror",
+ "x509-parser 0.15.1",
+ "yasna",
+]
+
+[[package]]
+name = "libp2p-upnp"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82775a47b34f10f787ad3e2a22e2c1541e6ebef4fe9f28f3ac553921554c94c1"
+dependencies = [
+ "futures",
+ "futures-timer",
+ "igd-next",
+ "libp2p-core 0.40.1",
+ "libp2p-swarm 0.43.7",
+ "log",
+ "tokio",
+ "void",
 ]
 
 [[package]]
@@ -5150,6 +5454,20 @@ dependencies = [
  "js-sys",
  "libp2p-core 0.38.0",
  "parity-send-wrapper",
+ "wasm-bindgen",
+ "wasm-bindgen-futures",
+]
+
+[[package]]
+name = "libp2p-wasm-ext"
+version = "0.40.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1e5d8e3a9e07da0ef5b55a9f26c009c8fb3c725d492d8bb4b431715786eea79c"
+dependencies = [
+ "futures",
+ "js-sys",
+ "libp2p-core 0.40.1",
+ "send_wrapper",
  "wasm-bindgen",
  "wasm-bindgen-futures",
 ]
@@ -5193,15 +5511,36 @@ checksum = "1d705506030d5c0aaf2882437c70dab437605f21c5f9811978f694e6917a3b54"
 dependencies = [
  "either",
  "futures",
- "futures-rustls",
+ "futures-rustls 0.22.2",
  "libp2p-core 0.38.0",
  "log",
  "parking_lot 0.12.1",
  "quicksink",
- "rw-stream-sink",
- "soketto",
+ "rw-stream-sink 0.3.0",
+ "soketto 0.7.1",
  "url",
  "webpki-roots 0.22.6",
+]
+
+[[package]]
+name = "libp2p-websocket"
+version = "0.42.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "004ee9c4a4631435169aee6aad2f62e3984dc031c43b6d29731e8e82a016c538"
+dependencies = [
+ "either",
+ "futures",
+ "futures-rustls 0.24.0",
+ "libp2p-core 0.40.1",
+ "libp2p-identity 0.2.8",
+ "log",
+ "parking_lot 0.12.1",
+ "pin-project-lite 0.2.13",
+ "rw-stream-sink 0.4.0",
+ "soketto 0.8.0",
+ "thiserror",
+ "url",
+ "webpki-roots 0.25.4",
 ]
 
 [[package]]
@@ -5658,6 +5997,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "multiaddr"
+version = "0.18.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8b852bc02a2da5feed68cd14fa50d0774b92790a5bdbfa932a813926c8472070"
+dependencies = [
+ "arrayref",
+ "byteorder",
+ "data-encoding",
+ "libp2p-identity 0.2.8",
+ "multibase",
+ "multihash 0.19.1",
+ "percent-encoding",
+ "serde",
+ "static_assertions",
+ "unsigned-varint",
+ "url",
+]
+
+[[package]]
 name = "multibase"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5697,6 +6055,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "multihash"
+version = "0.19.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "076d548d76a0e2a0d4ab471d0b1c36c577786dfc4471242035d97a12a735c492"
+dependencies = [
+ "core2",
+ "unsigned-varint",
+]
+
+[[package]]
 name = "multihash-derive"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5721,6 +6089,20 @@ name = "multistream-select"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8552ab875c1313b97b8d20cb857b9fd63e2d1d6a0a1b53ce9821e575405f27a"
+dependencies = [
+ "bytes",
+ "futures",
+ "log",
+ "pin-project",
+ "smallvec",
+ "unsigned-varint",
+]
+
+[[package]]
+name = "multistream-select"
+version = "0.13.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea0df8e5eec2298a62b326ee4f0d7fe1a6b90a09dfcf9df37b38f947a8c42f19"
 dependencies = [
  "bytes",
  "futures",
@@ -6257,7 +6639,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6281,7 +6663,7 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6295,7 +6677,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-core",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-tracing",
 ]
 
@@ -6311,7 +6693,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6328,7 +6710,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6385,7 +6767,7 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6404,7 +6786,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-core",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6439,7 +6821,7 @@ dependencies = [
  "scale-info",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6477,7 +6859,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6506,7 +6888,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6567,7 +6949,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6603,7 +6985,7 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6618,7 +7000,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6638,7 +7020,7 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6654,7 +7036,7 @@ dependencies = [
  "scale-info",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6671,7 +7053,7 @@ dependencies = [
  "serde",
  "sp-runtime",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6684,7 +7066,7 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6704,7 +7086,7 @@ dependencies = [
  "sp-runtime",
  "sp-session",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-trie",
 ]
 
@@ -6719,7 +7101,7 @@ dependencies = [
  "scale-info",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6736,7 +7118,7 @@ dependencies = [
  "sp-inherents",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
 ]
 
@@ -6772,7 +7154,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6816,7 +7198,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7232,7 +7614,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7285,7 +7667,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7327,7 +7709,7 @@ dependencies = [
  "sha3 0.10.8",
  "similar-asserts",
  "sp-core",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7402,7 +7784,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7418,7 +7800,7 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "primitives-currency-swap",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7678,6 +8060,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "quinn"
+version = "0.10.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8cc2c5017e4b43d5995dcea317bc46c1e09404c0a9664d2908f7f02dfe943d75"
+dependencies = [
+ "bytes",
+ "futures-io",
+ "pin-project-lite 0.2.13",
+ "quinn-proto 0.10.6",
+ "quinn-udp",
+ "rustc-hash",
+ "rustls 0.21.10",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "quinn-proto"
 version = "0.9.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7693,6 +8093,36 @@ dependencies = [
  "tinyvec",
  "tracing",
  "webpki 0.22.4",
+]
+
+[[package]]
+name = "quinn-proto"
+version = "0.10.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "141bf7dfde2fbc246bfd3fe12f2455aa24b0fbd9af535d8c86c7bd1381ff2b1a"
+dependencies = [
+ "bytes",
+ "rand 0.8.5",
+ "ring 0.16.20",
+ "rustc-hash",
+ "rustls 0.21.10",
+ "slab",
+ "thiserror",
+ "tinyvec",
+ "tracing",
+]
+
+[[package]]
+name = "quinn-udp"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "055b4e778e8feb9f93c4e439f71dc2156ef13360b432b799e179a8c4cdf0b1d7"
+dependencies = [
+ "bytes",
+ "libc",
+ "socket2 0.5.5",
+ "tracing",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -8425,6 +8855,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rw-stream-sink"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d8c9026ff5d2f23da5e45bbc283f156383001bfb09c4e44256d02c1a685fe9a1"
+dependencies = [
+ "futures",
+ "pin-project",
+ "static_assertions",
+]
+
+[[package]]
 name = "ryu"
 version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8471,7 +8912,7 @@ dependencies = [
  "sc-block-builder",
  "sc-client-api",
  "sc-proposer-metrics",
- "sc-telemetry",
+ "sc-telemetry 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-transaction-pool-api",
  "sp-api",
  "sp-blockchain",
@@ -8507,7 +8948,7 @@ dependencies = [
  "sc-client-api",
  "sc-executor",
  "sc-network",
- "sc-telemetry",
+ "sc-telemetry 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
  "sp-blockchain",
@@ -8537,7 +8978,7 @@ dependencies = [
  "clap",
  "fdlimit",
  "futures",
- "libp2p",
+ "libp2p 0.50.1",
  "log",
  "names",
  "parity-scale-codec",
@@ -8550,9 +8991,9 @@ dependencies = [
  "sc-network",
  "sc-network-common",
  "sc-service",
- "sc-telemetry",
+ "sc-telemetry 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-tracing",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
  "sp-blockchain",
@@ -8579,7 +9020,7 @@ dependencies = [
  "parking_lot 0.12.1",
  "sc-executor",
  "sc-transaction-pool-api",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-api",
  "sp-blockchain",
  "sp-consensus",
@@ -8610,7 +9051,7 @@ dependencies = [
  "sc-client-api",
  "sc-state-db",
  "schnellru",
- "sp-arithmetic",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-blockchain",
  "sp-core",
  "sp-database",
@@ -8627,12 +9068,12 @@ dependencies = [
  "async-trait",
  "futures",
  "futures-timer",
- "libp2p",
+ "libp2p 0.50.1",
  "log",
  "mockall",
  "parking_lot 0.12.1",
  "sc-client-api",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "sp-api",
  "sp-blockchain",
@@ -8664,7 +9105,7 @@ dependencies = [
  "sc-consensus-epochs",
  "sc-consensus-slots",
  "sc-keystore",
- "sc-telemetry",
+ "sc-telemetry 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "scale-info",
  "schnorrkel",
  "sp-api",
@@ -8742,12 +9183,12 @@ dependencies = [
  "sc-network",
  "sc-network-common",
  "sc-network-gossip",
- "sc-telemetry",
- "sc-utils",
+ "sc-telemetry 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde_json",
  "sp-api",
  "sp-application-crypto",
- "sp-arithmetic",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-grandpa",
@@ -8790,8 +9231,8 @@ dependencies = [
  "parity-scale-codec",
  "sc-client-api",
  "sc-consensus",
- "sc-telemetry",
- "sp-arithmetic",
+ "sc-telemetry 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-slots",
@@ -8915,7 +9356,7 @@ dependencies = [
  "futures",
  "futures-timer",
  "ip_network",
- "libp2p",
+ "libp2p 0.50.1",
  "linked_hash_set",
  "log",
  "lru",
@@ -8929,11 +9370,11 @@ dependencies = [
  "sc-consensus",
  "sc-network-common",
  "sc-peerset",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
  "smallvec",
- "sp-arithmetic",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-blockchain",
  "sp-consensus",
  "sp-core",
@@ -8951,7 +9392,7 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "cid",
  "futures",
- "libp2p",
+ "libp2p 0.50.1",
  "log",
  "prost",
  "prost-build",
@@ -8975,12 +9416,12 @@ dependencies = [
  "bytes",
  "futures",
  "futures-timer",
- "libp2p",
+ "libp2p 0.50.1",
  "parity-scale-codec",
  "prost-build",
  "sc-consensus",
  "sc-peerset",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "smallvec",
  "sp-blockchain",
@@ -9000,7 +9441,7 @@ dependencies = [
  "ahash 0.8.8",
  "futures",
  "futures-timer",
- "libp2p",
+ "libp2p 0.50.1",
  "log",
  "lru",
  "sc-network",
@@ -9018,7 +9459,7 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "array-bytes",
  "futures",
- "libp2p",
+ "libp2p 0.50.1",
  "log",
  "parity-scale-codec",
  "prost",
@@ -9043,7 +9484,7 @@ dependencies = [
  "fork-tree",
  "futures",
  "futures-timer",
- "libp2p",
+ "libp2p 0.50.1",
  "log",
  "lru",
  "mockall",
@@ -9055,9 +9496,9 @@ dependencies = [
  "sc-network",
  "sc-network-common",
  "sc-peerset",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "smallvec",
- "sp-arithmetic",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-grandpa",
@@ -9074,14 +9515,14 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "array-bytes",
  "futures",
- "libp2p",
+ "libp2p 0.50.1",
  "log",
  "parity-scale-codec",
  "pin-project",
  "sc-network",
  "sc-network-common",
  "sc-peerset",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus",
  "sp-runtime",
  "substrate-prometheus-endpoint",
@@ -9099,7 +9540,7 @@ dependencies = [
  "futures-timer",
  "hyper",
  "hyper-rustls",
- "libp2p",
+ "libp2p 0.50.1",
  "num_cpus",
  "once_cell",
  "parity-scale-codec",
@@ -9109,7 +9550,7 @@ dependencies = [
  "sc-network",
  "sc-network-common",
  "sc-peerset",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-api",
  "sp-core",
  "sp-offchain",
@@ -9124,9 +9565,9 @@ version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "futures",
- "libp2p",
+ "libp2p 0.50.1",
  "log",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde_json",
  "wasm-timer",
 ]
@@ -9156,7 +9597,7 @@ dependencies = [
  "sc-rpc-api",
  "sc-tracing",
  "sc-transaction-pool-api",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde_json",
  "sp-api",
  "sp-blockchain",
@@ -9266,11 +9707,11 @@ dependencies = [
  "sc-rpc-spec-v2",
  "sc-storage-monitor",
  "sc-sysinfo",
- "sc-telemetry",
+ "sc-telemetry 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-tracing",
  "sc-transaction-pool",
  "sc-transaction-pool-api",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
  "sp-api",
@@ -9317,7 +9758,7 @@ dependencies = [
  "futures",
  "log",
  "sc-client-db",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-core",
  "thiserror",
  "tokio",
@@ -9334,12 +9775,12 @@ dependencies = [
  "rand 0.8.5",
  "rand_pcg",
  "regex",
- "sc-telemetry",
+ "sc-telemetry 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
  "sp-core",
  "sp-io",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -9349,12 +9790,31 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "chrono",
  "futures",
- "libp2p",
+ "libp2p 0.50.1",
  "log",
  "parking_lot 0.12.1",
  "pin-project",
  "rand 0.8.5",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "wasm-timer",
+]
+
+[[package]]
+name = "sc-telemetry"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "chrono",
+ "futures",
+ "libp2p 0.52.4",
+ "log",
+ "parking_lot 0.12.1",
+ "pin-project",
+ "rand 0.8.5",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "serde",
  "serde_json",
  "thiserror",
@@ -9418,7 +9878,7 @@ dependencies = [
  "parking_lot 0.12.1",
  "sc-client-api",
  "sc-transaction-pool-api",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "sp-api",
  "sp-blockchain",
@@ -9456,7 +9916,22 @@ dependencies = [
  "log",
  "parking_lot 0.12.1",
  "prometheus",
- "sp-arithmetic",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+]
+
+[[package]]
+name = "sc-utils"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "async-channel",
+ "futures",
+ "futures-timer",
+ "lazy_static",
+ "log",
+ "parking_lot 0.12.1",
+ "prometheus",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
 ]
 
 [[package]]
@@ -9692,6 +10167,12 @@ name = "semver-parser"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
+
+[[package]]
+name = "send_wrapper"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cd0b0ec5f1c1ca621c432a25813d8d60c88abe6d3e08a3eb9cf37d97a0fe3d73"
 
 [[package]]
 name = "serde"
@@ -10016,6 +10497,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "soketto"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37468c595637c10857701c990f93a40ce0e357cedb0953d1c26c8d8027f9bb53"
+dependencies = [
+ "base64 0.22.1",
+ "bytes",
+ "futures",
+ "httparse",
+ "log",
+ "rand 0.8.5",
+ "sha1",
+]
+
+[[package]]
 name = "sp-api"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
@@ -10027,7 +10523,7 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-state-machine",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-trie",
  "sp-version",
  "thiserror",
@@ -10057,7 +10553,7 @@ dependencies = [
  "serde",
  "sp-core",
  "sp-io",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10070,7 +10566,20 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "static_assertions",
+]
+
+[[package]]
+name = "sp-arithmetic"
+version = "6.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "integer-sqrt",
+ "num-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "static_assertions",
 ]
 
@@ -10083,7 +10592,7 @@ dependencies = [
  "sp-api",
  "sp-inherents",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10133,7 +10642,7 @@ dependencies = [
  "sp-consensus-slots",
  "sp-inherents",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
 ]
 
@@ -10156,7 +10665,7 @@ dependencies = [
  "sp-inherents",
  "sp-keystore",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
 ]
 
@@ -10175,7 +10684,7 @@ dependencies = [
  "sp-core",
  "sp-keystore",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10186,7 +10695,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
 ]
 
@@ -10200,7 +10709,7 @@ dependencies = [
  "schnorrkel",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10237,7 +10746,7 @@ dependencies = [
  "sp-debug-derive",
  "sp-externalities",
  "sp-runtime-interface",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-storage",
  "ss58-registry",
  "substrate-bip39",
@@ -10256,7 +10765,7 @@ dependencies = [
  "digest 0.10.7",
  "sha2 0.10.8",
  "sha3 0.10.8",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "twox-hash",
 ]
 
@@ -10297,7 +10806,7 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "environmental",
  "parity-scale-codec",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-storage",
 ]
 
@@ -10312,7 +10821,7 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -10334,7 +10843,7 @@ dependencies = [
  "sp-keystore",
  "sp-runtime-interface",
  "sp-state-machine",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-tracing",
  "sp-trie",
  "tracing",
@@ -10423,10 +10932,10 @@ dependencies = [
  "scale-info",
  "serde",
  "sp-application-crypto",
- "sp-arithmetic",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-core",
  "sp-io",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-weights",
 ]
 
@@ -10441,7 +10950,7 @@ dependencies = [
  "primitive-types",
  "sp-externalities",
  "sp-runtime-interface-proc-macro",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-storage",
  "sp-tracing",
  "sp-wasm-interface",
@@ -10471,7 +10980,7 @@ dependencies = [
  "sp-core",
  "sp-runtime",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10483,7 +10992,7 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10500,7 +11009,7 @@ dependencies = [
  "sp-core",
  "sp-externalities",
  "sp-panic-handler",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-trie",
  "thiserror",
  "tracing",
@@ -10512,6 +11021,11 @@ version = "5.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 
 [[package]]
+name = "sp-std"
+version = "5.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+
+[[package]]
 name = "sp-storage"
 version = "7.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
@@ -10521,7 +11035,7 @@ dependencies = [
  "ref-cast",
  "serde",
  "sp-debug-derive",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10535,7 +11049,7 @@ dependencies = [
  "parity-scale-codec",
  "sp-inherents",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -10545,7 +11059,7 @@ version = "6.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tracing",
  "tracing-core",
  "tracing-subscriber 0.2.25",
@@ -10572,7 +11086,7 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-trie",
 ]
 
@@ -10592,7 +11106,7 @@ dependencies = [
  "scale-info",
  "schnellru",
  "sp-core",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "tracing",
  "trie-db",
@@ -10611,7 +11125,7 @@ dependencies = [
  "serde",
  "sp-core-hashing-proc-macro",
  "sp-runtime",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-version-proc-macro",
  "thiserror",
 ]
@@ -10636,7 +11150,7 @@ dependencies = [
  "impl-trait-for-tuples",
  "log",
  "parity-scale-codec",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "wasmi",
  "wasmtime",
 ]
@@ -10650,10 +11164,10 @@ dependencies = [
  "scale-info",
  "serde",
  "smallvec",
- "sp-arithmetic",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-core",
  "sp-debug-derive",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -11739,7 +12253,7 @@ dependencies = [
  "async-trait",
  "cfg-if",
  "data-encoding",
- "enum-as-inner",
+ "enum-as-inner 0.5.1",
  "futures-channel",
  "futures-io",
  "futures-util",
@@ -11749,6 +12263,31 @@ dependencies = [
  "rand 0.8.5",
  "smallvec",
  "socket2 0.4.10",
+ "thiserror",
+ "tinyvec",
+ "tokio",
+ "tracing",
+ "url",
+]
+
+[[package]]
+name = "trust-dns-proto"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3119112651c157f4488931a01e586aa459736e9d6046d3bd9105ffb69352d374"
+dependencies = [
+ "async-trait",
+ "cfg-if",
+ "data-encoding",
+ "enum-as-inner 0.6.0",
+ "futures-channel",
+ "futures-io",
+ "futures-util",
+ "idna 0.4.0",
+ "ipnet",
+ "once_cell",
+ "rand 0.8.5",
+ "smallvec",
  "thiserror",
  "tinyvec",
  "tokio",
@@ -11773,7 +12312,28 @@ dependencies = [
  "thiserror",
  "tokio",
  "tracing",
- "trust-dns-proto",
+ "trust-dns-proto 0.22.0",
+]
+
+[[package]]
+name = "trust-dns-resolver"
+version = "0.23.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "10a3e6c3aff1718b3c73e395d1f35202ba2ffa847c6a62eea0db8fb4cfe30be6"
+dependencies = [
+ "cfg-if",
+ "futures-util",
+ "ipconfig",
+ "lru-cache",
+ "once_cell",
+ "parking_lot 0.12.1",
+ "rand 0.8.5",
+ "resolv-conf",
+ "smallvec",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "trust-dns-proto 0.23.2",
 ]
 
 [[package]]
@@ -13201,6 +13761,38 @@ dependencies = [
  "rusticata-macros",
  "thiserror",
  "time",
+]
+
+[[package]]
+name = "x509-parser"
+version = "0.15.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7069fba5b66b9193bd2c5d3d4ff12b839118f6bcbef5328efafafb5395cf63da"
+dependencies = [
+ "asn1-rs 0.5.2",
+ "data-encoding",
+ "der-parser 8.2.0",
+ "lazy_static",
+ "nom",
+ "oid-registry 0.6.1",
+ "rusticata-macros",
+ "thiserror",
+ "time",
+]
+
+[[package]]
+name = "xml-rs"
+version = "0.8.21"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "539a77ee7c0de333dcc6da69b177380a0b81e0dacfa4f7344c465a36871ee601"
+
+[[package]]
+name = "xmltree"
+version = "0.10.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7d8a75eaf6557bb84a65ace8609883db44a29951042ada9b393151532e41fcb"
+dependencies = [
+ "xml-rs",
 ]
 
 [[package]]
