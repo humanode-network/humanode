@@ -4025,7 +4025,7 @@ dependencies = [
  "sp-io",
  "sp-keyring",
  "sp-keystore",
- "sp-panic-handler",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "sp-runtime",
  "sp-timestamp",
  "thiserror",
@@ -8559,7 +8559,7 @@ dependencies = [
  "sp-core",
  "sp-keyring",
  "sp-keystore",
- "sp-panic-handler",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-runtime",
  "sp-version",
  "thiserror",
@@ -8816,7 +8816,7 @@ dependencies = [
  "sp-core",
  "sp-externalities",
  "sp-io",
- "sp-panic-handler",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-runtime-interface",
  "sp-trie",
  "sp-version",
@@ -10399,6 +10399,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-panic-handler"
+version = "5.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "backtrace",
+ "lazy_static",
+ "regex",
+]
+
+[[package]]
 name = "sp-rpc"
 version = "6.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
@@ -10499,7 +10509,7 @@ dependencies = [
  "smallvec",
  "sp-core",
  "sp-externalities",
- "sp-panic-handler",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-std",
  "sp-trie",
  "thiserror",
