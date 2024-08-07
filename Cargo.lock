@@ -626,8 +626,8 @@ version = "0.1.0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
- "sp-api",
- "sp-std",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -640,13 +640,13 @@ dependencies = [
  "rpc-deny-unsafe",
  "rpc-error-response",
  "rpc-validator-key-logic",
- "sc-transaction-pool-api",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
- "sp-api",
- "sp-blockchain",
- "sp-core",
- "sp-runtime",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tracing",
 ]
 
@@ -768,8 +768,8 @@ version = "0.1.0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
- "sp-api",
- "sp-std",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -787,12 +787,12 @@ dependencies = [
  "rpc-deny-unsafe",
  "rpc-error-response",
  "rpc-validator-key-logic",
- "sc-transaction-pool-api",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
- "sp-api",
- "sp-blockchain",
- "sp-runtime",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "tokio",
  "tracing",
@@ -802,8 +802,8 @@ dependencies = [
 name = "bioauth-keys"
 version = "0.1.0"
 dependencies = [
- "sp-application-crypto",
- "sp-keystore",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -985,6 +985,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f5353f36341f7451062466f0b755b96ac3a9547e4d7f6b70d603fc721a7d7896"
 dependencies = [
  "sha2 0.10.8",
+ "tinyvec",
 ]
 
 [[package]]
@@ -1668,7 +1669,7 @@ dependencies = [
  "pallet-im-online",
  "sp-consensus-babe",
  "sp-consensus-grandpa",
- "sp-runtime",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -1680,7 +1681,7 @@ dependencies = [
  "hex-literal 0.4.1",
  "libsecp256k1",
  "sha3 0.10.8",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "tiny-bip39",
 ]
@@ -2241,14 +2242,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "ed25519-zebra"
+version = "4.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7d9ce6874da5d4415896cd45ffbc4d1cfc0c4f9c079427bd870742c30f2f65a9"
+dependencies = [
+ "curve25519-dalek 4.1.3",
+ "ed25519 2.2.3",
+ "hashbrown 0.14.3",
+ "hex",
+ "rand_core 0.6.4",
+ "sha2 0.10.8",
+ "zeroize",
+]
+
+[[package]]
 name = "eip191-crypto"
 version = "0.1.0"
 dependencies = [
  "hex",
  "numtoa",
  "primitives-ethereum",
- "sp-io",
- "sp-std",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -2259,7 +2275,7 @@ dependencies = [
  "hex",
  "hex-literal 0.4.1",
  "primitives-ethereum",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -2277,10 +2293,10 @@ version = "0.1.0"
 dependencies = [
  "hex-literal 0.4.1",
  "primitives-ethereum",
- "sp-core",
- "sp-core-hashing-proc-macro",
- "sp-io",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core-hashing-proc-macro 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -2292,7 +2308,7 @@ dependencies = [
  "primitives-ethereum",
  "secp256k1 0.27.0",
  "serde_json",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -2678,9 +2694,9 @@ dependencies = [
  "sc-cli",
  "serde",
  "serde_json",
- "sp-api",
- "sp-blockchain",
- "sp-runtime",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -2691,11 +2707,11 @@ dependencies = [
  "async-trait",
  "fp-consensus",
  "fp-rpc",
- "sc-consensus",
- "sp-api",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-block-builder",
- "sp-consensus",
- "sp-runtime",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -2716,15 +2732,15 @@ dependencies = [
  "parity-db",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-client-db",
  "smallvec",
- "sp-api",
- "sp-blockchain",
- "sp-core",
- "sp-database",
- "sp-runtime",
- "sp-storage",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sqlx",
  "tokio",
 ]
@@ -2742,13 +2758,13 @@ dependencies = [
  "futures-timer",
  "log",
  "parking_lot 0.12.1",
- "sc-client-api",
- "sc-utils",
- "sp-api",
- "sp-blockchain",
- "sp-consensus",
- "sp-core",
- "sp-runtime",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tokio",
 ]
 
@@ -2779,26 +2795,26 @@ dependencies = [
  "prometheus",
  "rand 0.8.5",
  "rlp",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-network",
  "sc-network-common",
  "sc-network-sync",
  "sc-rpc",
  "sc-service",
  "sc-transaction-pool",
- "sc-transaction-pool-api",
- "sc-utils",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
- "sp-api",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-block-builder",
- "sp-blockchain",
- "sp-consensus",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-state-machine",
- "sp-storage",
- "substrate-prometheus-endpoint",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tokio",
 ]
 
@@ -2825,12 +2841,12 @@ dependencies = [
  "fp-rpc",
  "fp-storage",
  "parity-scale-codec",
- "sc-client-api",
- "sp-api",
- "sp-blockchain",
- "sp-io",
- "sp-runtime",
- "sp-storage",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3011,11 +3027,11 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-runtime-interface",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3025,9 +3041,9 @@ source = "git+https://github.com/humanode-network/frontier?tag=locked/polkadot-v
 dependencies = [
  "ethereum",
  "parity-scale-codec",
- "sp-core",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3041,7 +3057,7 @@ dependencies = [
  "frame-support",
  "num_enum 0.5.11",
  "parity-scale-codec",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3053,9 +3069,9 @@ dependencies = [
  "frame-support",
  "parity-scale-codec",
  "serde",
- "sp-core",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3068,11 +3084,11 @@ dependencies = [
  "fp-evm",
  "parity-scale-codec",
  "scale-info",
- "sp-api",
- "sp-core",
- "sp-runtime",
- "sp-state-machine",
- "sp-std",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3084,7 +3100,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-runtime",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3116,14 +3132,14 @@ dependencies = [
  "paste",
  "scale-info",
  "serde",
- "sp-api",
- "sp-application-crypto",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-runtime-interface",
- "sp-std",
- "sp-storage",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "static_assertions",
 ]
 
@@ -3151,25 +3167,25 @@ dependencies = [
  "rand_pcg",
  "sc-block-builder",
  "sc-cli",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-client-db",
- "sc-executor",
+ "sc-executor 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-service",
  "sc-sysinfo",
  "serde",
  "serde_json",
- "sp-api",
- "sp-blockchain",
- "sp-core",
- "sp-database",
- "sp-externalities",
- "sp-inherents",
- "sp-keystore",
- "sp-runtime",
- "sp-state-machine",
- "sp-std",
- "sp-storage",
- "sp-trie",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "thousands",
 ]
@@ -3184,11 +3200,11 @@ dependencies = [
  "frame-try-runtime",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "sp-tracing",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3212,9 +3228,9 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "substrate-rpc-client",
  "tokio",
 ]
@@ -3237,18 +3253,18 @@ dependencies = [
  "scale-info",
  "serde",
  "smallvec",
- "sp-api",
- "sp-arithmetic",
- "sp-core",
- "sp-core-hashing-proc-macro",
- "sp-inherents",
- "sp-io",
- "sp-runtime",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core-hashing-proc-macro 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-staking",
- "sp-state-machine",
- "sp-std",
- "sp-tracing",
- "sp-weights",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-weights 4.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tt-call",
 ]
 
@@ -3299,12 +3315,12 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
- "sp-version",
- "sp-weights",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-weights 4.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3317,9 +3333,9 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3328,7 +3344,7 @@ version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
- "sp-api",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3338,9 +3354,9 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "frame-support",
  "parity-scale-codec",
- "sp-api",
- "sp-runtime",
- "sp-std",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -3580,6 +3596,16 @@ dependencies = [
  "cfg-if",
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
+]
+
+[[package]]
+name = "getrandom_or_panic"
+version = "0.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ea1015b5a70616b688dc230cfe50c8af89d972cb132d5a622814d29773b10b9"
+dependencies = [
+ "rand 0.8.5",
+ "rand_core 0.6.4",
 ]
 
 [[package]]
@@ -4006,27 +4032,27 @@ dependencies = [
  "sc-chain-spec",
  "sc-chain-spec-derive",
  "sc-cli",
- "sc-client-api",
- "sc-consensus",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "sc-consensus-babe",
  "sc-consensus-grandpa",
- "sc-executor",
+ "sc-executor 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-service",
  "sc-telemetry",
  "sc-transaction-pool",
  "serde",
  "serde_json",
- "sp-api",
- "sp-application-crypto",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-babe",
  "sp-consensus-grandpa",
- "sp-core",
- "sp-inherents",
- "sp-io",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-keyring",
- "sp-keystore",
- "sp-panic-handler",
- "sp-runtime",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
  "thiserror",
  "tiny-bip39",
@@ -4057,7 +4083,7 @@ dependencies = [
  "pallet-transaction-payment-rpc",
  "robonode-client",
  "sc-chain-spec",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-consensus-babe",
  "sc-consensus-babe-rpc",
  "sc-consensus-epochs",
@@ -4069,15 +4095,15 @@ dependencies = [
  "sc-rpc-api",
  "sc-rpc-spec-v2",
  "sc-transaction-pool",
- "sc-transaction-pool-api",
- "sp-api",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-block-builder",
- "sp-blockchain",
- "sp-consensus",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-babe",
- "sp-core",
- "sp-keystore",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "substrate-frame-rpc-system",
 ]
 
@@ -4161,22 +4187,22 @@ dependencies = [
  "scale-info",
  "serde",
  "serde_json",
- "sp-api",
- "sp-application-crypto",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-block-builder",
  "sp-consensus-babe",
- "sp-core",
- "sp-inherents",
- "sp-io",
- "sp-keystore",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-offchain",
- "sp-runtime",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-session",
  "sp-staking",
- "sp-std",
- "sp-tracing",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-transaction-pool",
- "sp-version",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "static_assertions",
  "substrate-wasm-builder",
  "vesting-schedule-linear",
@@ -4690,9 +4716,9 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
- "sp-application-crypto",
- "sp-core",
- "sp-runtime",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -4844,7 +4870,7 @@ dependencies = [
  "futures",
  "futures-timer",
  "instant",
- "libp2p-identity",
+ "libp2p-identity 0.1.3",
  "log",
  "multiaddr 0.17.1",
  "multihash 0.17.0",
@@ -4911,6 +4937,23 @@ dependencies = [
  "rand 0.8.5",
  "sha2 0.10.8",
  "thiserror",
+ "zeroize",
+]
+
+[[package]]
+name = "libp2p-identity"
+version = "0.2.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "999ec70441b2fb35355076726a6bc466c932e9bdc66f6a11c6c0aa17c7ab9be0"
+dependencies = [
+ "bs58 0.5.0",
+ "ed25519-dalek 2.1.1",
+ "hkdf",
+ "multihash 0.19.1",
+ "quick-protobuf",
+ "sha2 0.10.8",
+ "thiserror",
+ "tracing",
  "zeroize",
 ]
 
@@ -5130,7 +5173,7 @@ dependencies = [
  "futures",
  "futures-rustls",
  "libp2p-core 0.39.2",
- "libp2p-identity",
+ "libp2p-identity 0.1.3",
  "rcgen 0.10.0",
  "ring 0.16.20",
  "rustls 0.20.9",
@@ -5533,6 +5576,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "merlin"
+version = "3.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "58c38e2799fc0978b65dfff8023ec7843e2330bb462f19198840b34b6582397d"
+dependencies = [
+ "byteorder",
+ "keccak",
+ "rand_core 0.6.4",
+ "zeroize",
+]
+
+[[package]]
 name = "mime"
 version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5693,6 +5748,16 @@ checksum = "835d6ff01d610179fbce3de1694d007e500bf33a7f29689838941d6bf783ae40"
 dependencies = [
  "core2",
  "multihash-derive",
+ "unsigned-varint",
+]
+
+[[package]]
+name = "multihash"
+version = "0.19.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "076d548d76a0e2a0d4ab471d0b1c36c577786dfc4471242035d97a12a735c492"
+dependencies = [
+ "core2",
  "unsigned-varint",
 ]
 
@@ -6256,8 +6321,8 @@ dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
  "scale-info",
- "sp-runtime",
- "sp-std",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6274,14 +6339,14 @@ dependencies = [
  "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
- "sp-application-crypto",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-babe",
  "sp-consensus-vrf",
- "sp-io",
- "sp-runtime",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-session",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6294,9 +6359,9 @@ dependencies = [
  "pallet-pot",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-std",
- "sp-tracing",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6310,8 +6375,8 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-runtime",
- "sp-std",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6325,10 +6390,10 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6340,8 +6405,8 @@ dependencies = [
  "mockall",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-io",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6352,9 +6417,9 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6366,7 +6431,7 @@ dependencies = [
  "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6383,9 +6448,9 @@ dependencies = [
  "parity-scale-codec",
  "primitives-currency-swap",
  "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6403,8 +6468,8 @@ dependencies = [
  "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6416,7 +6481,7 @@ dependencies = [
  "pallet-balances",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6437,9 +6502,9 @@ dependencies = [
  "pallet-evm",
  "parity-scale-codec",
  "scale-info",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6450,9 +6515,9 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6474,10 +6539,10 @@ dependencies = [
  "parity-scale-codec",
  "rlp",
  "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6491,8 +6556,8 @@ dependencies = [
  "parity-scale-codec",
  "primitives-ethereum",
  "scale-info",
- "sp-core",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6505,8 +6570,8 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-runtime",
- "sp-std",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6523,7 +6588,7 @@ version = "2.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?tag=locked/polkadot-v0.9.40-2024-08-02#692e28e1e00ec3768b3d76324015d33a0d06ba20"
 dependencies = [
  "fp-evm",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "substrate-bn",
 ]
 
@@ -6552,7 +6617,7 @@ source = "git+https://github.com/humanode-network/frontier?tag=locked/polkadot-v
 dependencies = [
  "fp-evm",
  "ripemd",
- "sp-io",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6566,8 +6631,8 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-runtime",
- "sp-std",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6580,7 +6645,7 @@ dependencies = [
  "hex",
  "serde",
  "serde_json",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6596,14 +6661,14 @@ dependencies = [
  "pallet-session",
  "parity-scale-codec",
  "scale-info",
- "sp-application-crypto",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-grandpa",
- "sp-core",
- "sp-io",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-session",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6617,8 +6682,8 @@ dependencies = [
  "pallet-session",
  "parity-scale-codec",
  "scale-info",
- "sp-runtime",
- "sp-std",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6633,12 +6698,12 @@ dependencies = [
  "pallet-authorship",
  "parity-scale-codec",
  "scale-info",
- "sp-application-crypto",
- "sp-core",
- "sp-io",
- "sp-runtime",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6652,9 +6717,9 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6669,9 +6734,9 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-runtime",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6683,8 +6748,8 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-runtime",
- "sp-std",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6699,13 +6764,13 @@ dependencies = [
  "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-session",
  "sp-staking",
- "sp-std",
- "sp-trie",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6717,9 +6782,9 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6733,10 +6798,10 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-inherents",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
 ]
 
@@ -6755,8 +6820,8 @@ dependencies = [
  "scale-info",
  "serde",
  "serde_json",
- "sp-core",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6769,10 +6834,10 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6783,12 +6848,12 @@ dependencies = [
  "jsonrpsee",
  "pallet-transaction-payment-rpc-runtime-api",
  "parity-scale-codec",
- "sp-api",
- "sp-blockchain",
- "sp-core",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-rpc",
- "sp-runtime",
- "sp-weights",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-weights 4.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6798,9 +6863,9 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "pallet-transaction-payment",
  "parity-scale-codec",
- "sp-api",
- "sp-runtime",
- "sp-weights",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-weights 4.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6813,10 +6878,10 @@ dependencies = [
  "frame-system",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -6832,8 +6897,8 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-api",
- "sp-core",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7229,10 +7294,10 @@ dependencies = [
  "precompile-utils",
  "scale-info",
  "serde",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7266,7 +7331,7 @@ dependencies = [
  "precompile-utils",
  "primitives-currency-swap",
  "scale-info",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7282,10 +7347,10 @@ dependencies = [
  "parity-scale-codec",
  "primitives-ethereum",
  "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7306,7 +7371,7 @@ dependencies = [
  "parity-scale-codec",
  "precompile-utils",
  "scale-info",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7326,8 +7391,8 @@ dependencies = [
  "precompile-utils-macro",
  "sha3 0.10.8",
  "similar-asserts",
- "sp-core",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7402,7 +7467,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -7418,7 +7483,7 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "primitives-currency-swap",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -8151,7 +8216,7 @@ dependencies = [
  "sc-tracing",
  "serde",
  "serde_json",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tokio",
  "tracing",
  "tracing-test",
@@ -8454,8 +8519,19 @@ version = "4.1.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "log",
- "sp-core",
- "sp-wasm-interface",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+]
+
+[[package]]
+name = "sc-allocator"
+version = "4.1.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "log",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
 ]
 
@@ -8469,17 +8545,17 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "sc-block-builder",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-proposer-metrics",
  "sc-telemetry",
- "sc-transaction-pool-api",
- "sp-api",
- "sp-blockchain",
- "sp-consensus",
- "sp-core",
- "sp-inherents",
- "sp-runtime",
- "substrate-prometheus-endpoint",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -8488,13 +8564,13 @@ version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
- "sc-client-api",
- "sp-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-block-builder",
- "sp-blockchain",
- "sp-core",
- "sp-inherents",
- "sp-runtime",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -8504,16 +8580,16 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "memmap2",
  "sc-chain-spec-derive",
- "sc-client-api",
- "sc-executor",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-executor 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-network",
  "sc-telemetry",
  "serde",
  "serde_json",
- "sp-blockchain",
- "sp-core",
- "sp-runtime",
- "sp-state-machine",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -8544,7 +8620,7 @@ dependencies = [
  "rand 0.8.5",
  "regex",
  "rpassword",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-client-db",
  "sc-keystore",
  "sc-network",
@@ -8552,16 +8628,16 @@ dependencies = [
  "sc-service",
  "sc-telemetry",
  "sc-tracing",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
- "sp-blockchain",
- "sp-core",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-keyring",
- "sp-keystore",
- "sp-panic-handler",
- "sp-runtime",
- "sp-version",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "tiny-bip39",
  "tokio",
@@ -8577,20 +8653,46 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "sc-executor",
- "sc-transaction-pool-api",
- "sc-utils",
- "sp-api",
- "sp-blockchain",
- "sp-consensus",
- "sp-core",
- "sp-database",
- "sp-externalities",
- "sp-keystore",
- "sp-runtime",
- "sp-state-machine",
- "sp-storage",
- "substrate-prometheus-endpoint",
+ "sc-executor 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+]
+
+[[package]]
+name = "sc-client-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "fnv",
+ "futures",
+ "log",
+ "parity-scale-codec",
+ "parking_lot 0.12.1",
+ "sc-executor 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
 ]
 
 [[package]]
@@ -8607,16 +8709,16 @@ dependencies = [
  "parity-db",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-state-db",
  "schnellru",
- "sp-arithmetic",
- "sp-blockchain",
- "sp-core",
- "sp-database",
- "sp-runtime",
- "sp-state-machine",
- "sp-trie",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -8631,16 +8733,41 @@ dependencies = [
  "log",
  "mockall",
  "parking_lot 0.12.1",
- "sc-client-api",
- "sc-utils",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
- "sp-api",
- "sp-blockchain",
- "sp-consensus",
- "sp-core",
- "sp-runtime",
- "sp-state-machine",
- "substrate-prometheus-endpoint",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+]
+
+[[package]]
+name = "sc-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "async-trait",
+ "futures",
+ "futures-timer",
+ "libp2p-identity 0.2.8",
+ "log",
+ "mockall",
+ "parking_lot 0.12.1",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "serde",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
 ]
 
@@ -8653,33 +8780,33 @@ dependencies = [
  "fork-tree",
  "futures",
  "log",
- "merlin",
+ "merlin 2.0.1",
  "num-bigint",
  "num-rational",
  "num-traits",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "sc-client-api",
- "sc-consensus",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-consensus-epochs",
  "sc-consensus-slots",
  "sc-keystore",
  "sc-telemetry",
  "scale-info",
- "schnorrkel",
- "sp-api",
- "sp-application-crypto",
+ "schnorrkel 0.9.1",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-block-builder",
- "sp-blockchain",
- "sp-consensus",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-babe",
  "sp-consensus-slots",
  "sp-consensus-vrf",
- "sp-core",
- "sp-inherents",
- "sp-keystore",
- "sp-runtime",
- "substrate-prometheus-endpoint",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -8694,14 +8821,14 @@ dependencies = [
  "sc-consensus-epochs",
  "sc-rpc-api",
  "serde",
- "sp-api",
- "sp-application-crypto",
- "sp-blockchain",
- "sp-consensus",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-babe",
- "sp-core",
- "sp-keystore",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -8712,10 +8839,10 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "fork-tree",
  "parity-scale-codec",
- "sc-client-api",
- "sc-consensus",
- "sp-blockchain",
- "sp-runtime",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -8737,24 +8864,24 @@ dependencies = [
  "rand 0.8.5",
  "sc-block-builder",
  "sc-chain-spec",
- "sc-client-api",
- "sc-consensus",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-network",
  "sc-network-common",
  "sc-network-gossip",
  "sc-telemetry",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde_json",
- "sp-api",
- "sp-application-crypto",
- "sp-arithmetic",
- "sp-blockchain",
- "sp-consensus",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-grandpa",
- "sp-core",
- "sp-keystore",
- "sp-runtime",
- "substrate-prometheus-endpoint",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -8768,13 +8895,13 @@ dependencies = [
  "jsonrpsee",
  "log",
  "parity-scale-codec",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-consensus-grandpa",
  "sc-rpc",
  "serde",
- "sp-blockchain",
- "sp-core",
- "sp-runtime",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -8788,17 +8915,17 @@ dependencies = [
  "futures-timer",
  "log",
  "parity-scale-codec",
- "sc-client-api",
- "sc-consensus",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-telemetry",
- "sp-arithmetic",
- "sp-blockchain",
- "sp-consensus",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-slots",
- "sp-core",
- "sp-inherents",
- "sp-runtime",
- "sp-state-machine",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -8809,18 +8936,42 @@ dependencies = [
  "lru",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "sc-executor-common",
- "sc-executor-wasmi",
- "sc-executor-wasmtime",
- "sp-api",
- "sp-core",
- "sp-externalities",
- "sp-io",
- "sp-panic-handler",
- "sp-runtime-interface",
- "sp-trie",
- "sp-version",
- "sp-wasm-interface",
+ "sc-executor-common 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-executor-wasmi 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-executor-wasmtime 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "tracing",
+ "wasmi",
+]
+
+[[package]]
+name = "sc-executor"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "lru",
+ "parity-scale-codec",
+ "parking_lot 0.12.1",
+ "sc-executor-common 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sc-executor-wasmi 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sc-executor-wasmtime 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "tracing",
  "wasmi",
 ]
@@ -8830,9 +8981,22 @@ name = "sc-executor-common"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
- "sc-allocator",
- "sp-maybe-compressed-blob",
- "sp-wasm-interface",
+ "sc-allocator 4.1.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-maybe-compressed-blob 4.1.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+ "wasm-instrument",
+ "wasmi",
+]
+
+[[package]]
+name = "sc-executor-common"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "sc-allocator 4.1.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-maybe-compressed-blob 4.1.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
  "wasm-instrument",
  "wasmi",
@@ -8844,10 +9008,23 @@ version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "log",
- "sc-allocator",
- "sc-executor-common",
- "sp-runtime-interface",
- "sp-wasm-interface",
+ "sc-allocator 4.1.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-executor-common 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "wasmi",
+]
+
+[[package]]
+name = "sc-executor-wasmi"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "log",
+ "sc-allocator 4.1.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sc-executor-common 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "wasmi",
 ]
 
@@ -8862,10 +9039,28 @@ dependencies = [
  "log",
  "once_cell",
  "rustix 0.36.17",
- "sc-allocator",
- "sc-executor-common",
- "sp-runtime-interface",
- "sp-wasm-interface",
+ "sc-allocator 4.1.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-executor-common 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "wasmtime",
+]
+
+[[package]]
+name = "sc-executor-wasmtime"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "anyhow",
+ "cfg-if",
+ "libc",
+ "log",
+ "once_cell",
+ "rustix 0.36.17",
+ "sc-allocator 4.1.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sc-executor-common 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "wasmtime",
 ]
 
@@ -8878,11 +9073,11 @@ dependencies = [
  "futures",
  "futures-timer",
  "log",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-network",
  "sc-network-common",
- "sp-blockchain",
- "sp-runtime",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -8894,9 +9089,9 @@ dependencies = [
  "async-trait",
  "parking_lot 0.12.1",
  "serde_json",
- "sp-application-crypto",
- "sp-core",
- "sp-keystore",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -8925,20 +9120,20 @@ dependencies = [
  "pin-project",
  "rand 0.8.5",
  "sc-block-builder",
- "sc-client-api",
- "sc-consensus",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-network-common",
  "sc-peerset",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
  "smallvec",
- "sp-arithmetic",
- "sp-blockchain",
- "sp-consensus",
- "sp-core",
- "sp-runtime",
- "substrate-prometheus-endpoint",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "unsigned-varint",
  "zeroize",
@@ -8955,11 +9150,11 @@ dependencies = [
  "log",
  "prost",
  "prost-build",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-network",
  "sc-network-common",
- "sp-blockchain",
- "sp-runtime",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "unsigned-varint",
 ]
@@ -8978,16 +9173,16 @@ dependencies = [
  "libp2p",
  "parity-scale-codec",
  "prost-build",
- "sc-consensus",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-peerset",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "smallvec",
- "sp-blockchain",
- "sp-consensus",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-grandpa",
- "sp-runtime",
- "substrate-prometheus-endpoint",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "zeroize",
 ]
@@ -9006,8 +9201,8 @@ dependencies = [
  "sc-network",
  "sc-network-common",
  "sc-peerset",
- "sp-runtime",
- "substrate-prometheus-endpoint",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tracing",
 ]
 
@@ -9023,13 +9218,13 @@ dependencies = [
  "parity-scale-codec",
  "prost",
  "prost-build",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-network",
  "sc-network-common",
  "sc-peerset",
- "sp-blockchain",
- "sp-core",
- "sp-runtime",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -9050,20 +9245,20 @@ dependencies = [
  "parity-scale-codec",
  "prost",
  "prost-build",
- "sc-client-api",
- "sc-consensus",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-network",
  "sc-network-common",
  "sc-peerset",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "smallvec",
- "sp-arithmetic",
- "sp-blockchain",
- "sp-consensus",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-grandpa",
- "sp-core",
- "sp-runtime",
- "substrate-prometheus-endpoint",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -9081,10 +9276,10 @@ dependencies = [
  "sc-network",
  "sc-network-common",
  "sc-peerset",
- "sc-utils",
- "sp-consensus",
- "sp-runtime",
- "substrate-prometheus-endpoint",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -9105,15 +9300,15 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "rand 0.8.5",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-network",
  "sc-network-common",
  "sc-peerset",
- "sc-utils",
- "sp-api",
- "sp-core",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-offchain",
- "sp-runtime",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "threadpool",
  "tracing",
 ]
@@ -9126,7 +9321,7 @@ dependencies = [
  "futures",
  "libp2p",
  "log",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde_json",
  "wasm-timer",
 ]
@@ -9137,7 +9332,7 @@ version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "log",
- "substrate-prometheus-endpoint",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -9152,21 +9347,21 @@ dependencies = [
  "parking_lot 0.12.1",
  "sc-block-builder",
  "sc-chain-spec",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-rpc-api",
  "sc-tracing",
- "sc-transaction-pool-api",
- "sc-utils",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde_json",
- "sp-api",
- "sp-blockchain",
- "sp-core",
- "sp-keystore",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-offchain",
  "sp-rpc",
- "sp-runtime",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-session",
- "sp-version",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tokio",
 ]
 
@@ -9178,14 +9373,14 @@ dependencies = [
  "jsonrpsee",
  "parity-scale-codec",
  "sc-chain-spec",
- "sc-transaction-pool-api",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "scale-info",
  "serde",
  "serde_json",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-rpc",
- "sp-runtime",
- "sp-version",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -9198,7 +9393,7 @@ dependencies = [
  "jsonrpsee",
  "log",
  "serde_json",
- "substrate-prometheus-endpoint",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tokio",
  "tower",
  "tower-http",
@@ -9218,14 +9413,14 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "sc-chain-spec",
- "sc-client-api",
- "sc-transaction-pool-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
- "sp-api",
- "sp-blockchain",
- "sp-core",
- "sp-runtime",
- "sp-version",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "tokio-stream",
 ]
@@ -9248,10 +9443,10 @@ dependencies = [
  "rand 0.8.5",
  "sc-block-builder",
  "sc-chain-spec",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-client-db",
- "sc-consensus",
- "sc-executor",
+ "sc-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-executor 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-informant",
  "sc-keystore",
  "sc-network",
@@ -9269,26 +9464,26 @@ dependencies = [
  "sc-telemetry",
  "sc-tracing",
  "sc-transaction-pool",
- "sc-transaction-pool-api",
- "sc-utils",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
- "sp-api",
- "sp-blockchain",
- "sp-consensus",
- "sp-core",
- "sp-externalities",
- "sp-keystore",
- "sp-runtime",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-session",
- "sp-state-machine",
- "sp-storage",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-transaction-pool",
  "sp-transaction-storage-proof",
- "sp-trie",
- "sp-version",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "static_init",
- "substrate-prometheus-endpoint",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "tempfile",
  "thiserror",
  "tokio",
@@ -9304,7 +9499,7 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -9317,8 +9512,8 @@ dependencies = [
  "futures",
  "log",
  "sc-client-db",
- "sc-utils",
- "sp-core",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "tokio",
 ]
@@ -9337,9 +9532,9 @@ dependencies = [
  "sc-telemetry",
  "serde",
  "serde_json",
- "sp-core",
- "sp-io",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -9354,7 +9549,7 @@ dependencies = [
  "parking_lot 0.12.1",
  "pin-project",
  "rand 0.8.5",
- "sc-utils",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
  "serde_json",
  "thiserror",
@@ -9376,16 +9571,16 @@ dependencies = [
  "parking_lot 0.12.1",
  "regex",
  "rustc-hash",
- "sc-client-api",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-rpc-server",
  "sc-tracing-proc-macro",
  "serde",
- "sp-api",
- "sp-blockchain",
- "sp-core",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-rpc",
- "sp-runtime",
- "sp-tracing",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
  "tracing",
  "tracing-log 0.1.4",
@@ -9416,17 +9611,17 @@ dependencies = [
  "num-traits",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "sc-client-api",
- "sc-transaction-pool-api",
- "sc-utils",
+ "sc-client-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sc-utils 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "serde",
- "sp-api",
- "sp-blockchain",
- "sp-core",
- "sp-runtime",
- "sp-tracing",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-transaction-pool",
- "substrate-prometheus-endpoint",
+ "substrate-prometheus-endpoint 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -9439,8 +9634,22 @@ dependencies = [
  "futures",
  "log",
  "serde",
- "sp-blockchain",
- "sp-runtime",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+]
+
+[[package]]
+name = "sc-transaction-pool-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "async-trait",
+ "futures",
+ "log",
+ "serde",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
 ]
 
@@ -9456,7 +9665,22 @@ dependencies = [
  "log",
  "parking_lot 0.12.1",
  "prometheus",
- "sp-arithmetic",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+]
+
+[[package]]
+name = "sc-utils"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "async-channel",
+ "futures",
+ "futures-timer",
+ "lazy_static",
+ "log",
+ "parking_lot 0.12.1",
+ "prometheus",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
 ]
 
 [[package]]
@@ -9515,10 +9739,29 @@ dependencies = [
  "arrayvec 0.5.2",
  "curve25519-dalek 2.1.3",
  "getrandom 0.1.16",
- "merlin",
+ "merlin 2.0.1",
  "rand 0.7.3",
  "rand_core 0.5.1",
  "sha2 0.8.2",
+ "subtle",
+ "zeroize",
+]
+
+[[package]]
+name = "schnorrkel"
+version = "0.11.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8de18f6d8ba0aad7045f5feae07ec29899c1112584a38509a84ad7b04451eaa0"
+dependencies = [
+ "aead 0.5.2",
+ "arrayref",
+ "arrayvec 0.7.4",
+ "curve25519-dalek 4.1.3",
+ "getrandom_or_panic",
+ "merlin 3.0.0",
+ "rand_core 0.6.4",
+ "serde_bytes",
+ "sha2 0.10.8",
  "subtle",
  "zeroize",
 ]
@@ -9700,6 +9943,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7253ab4de971e72fb7be983802300c30b5a7f0c2e56fab8abfc6a214307c0094"
 dependencies = [
  "serde_derive",
+]
+
+[[package]]
+name = "serde_bytes"
+version = "0.11.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "387cc504cb06bb40a96c8e04e951fe01854cf6bc921053c954e4a606d9675c6a"
+dependencies = [
+ "serde",
 ]
 
 [[package]]
@@ -10023,13 +10275,31 @@ dependencies = [
  "hash-db 0.16.0",
  "log",
  "parity-scale-codec",
- "sp-api-proc-macro",
- "sp-core",
- "sp-runtime",
- "sp-state-machine",
- "sp-std",
- "sp-trie",
- "sp-version",
+ "sp-api-proc-macro 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+]
+
+[[package]]
+name = "sp-api"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "hash-db 0.16.0",
+ "log",
+ "parity-scale-codec",
+ "sp-api-proc-macro 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
 ]
 
@@ -10048,6 +10318,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-api-proc-macro"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "Inflector",
+ "blake2",
+ "expander",
+ "proc-macro-crate 1.1.3",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "sp-application-crypto"
 version = "7.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
@@ -10055,9 +10339,22 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-core",
- "sp-io",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+]
+
+[[package]]
+name = "sp-application-crypto"
+version = "7.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
 ]
 
 [[package]]
@@ -10070,7 +10367,21 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "static_assertions",
+]
+
+[[package]]
+name = "sp-arithmetic"
+version = "6.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "integer-sqrt",
+ "num-traits",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "static_assertions",
 ]
 
@@ -10080,10 +10391,10 @@ version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
- "sp-api",
- "sp-inherents",
- "sp-runtime",
- "sp-std",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10096,11 +10407,29 @@ dependencies = [
  "lru",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "sp-api",
- "sp-consensus",
- "sp-database",
- "sp-runtime",
- "sp-state-machine",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+]
+
+[[package]]
+name = "sp-blockchain"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "futures",
+ "log",
+ "lru",
+ "parity-scale-codec",
+ "parking_lot 0.12.1",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-database 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
 ]
 
@@ -10112,10 +10441,25 @@ dependencies = [
  "async-trait",
  "futures",
  "log",
- "sp-core",
- "sp-inherents",
- "sp-runtime",
- "sp-state-machine",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+]
+
+[[package]]
+name = "sp-consensus"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "async-trait",
+ "futures",
+ "log",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
 ]
 
@@ -10127,13 +10471,13 @@ dependencies = [
  "async-trait",
  "parity-scale-codec",
  "scale-info",
- "sp-api",
- "sp-application-crypto",
- "sp-consensus",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-slots",
- "sp-inherents",
- "sp-runtime",
- "sp-std",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
 ]
 
@@ -10143,20 +10487,20 @@ version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "async-trait",
- "merlin",
+ "merlin 2.0.1",
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-api",
- "sp-application-crypto",
- "sp-consensus",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-consensus 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-slots",
  "sp-consensus-vrf",
- "sp-core",
- "sp-inherents",
- "sp-keystore",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
 ]
 
@@ -10170,12 +10514,12 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-api",
- "sp-application-crypto",
- "sp-core",
- "sp-keystore",
- "sp-runtime",
- "sp-std",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10186,7 +10530,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
 ]
 
@@ -10197,10 +10541,10 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "parity-scale-codec",
  "scale-info",
- "schnorrkel",
- "sp-core",
- "sp-runtime",
- "sp-std",
+ "schnorrkel 0.9.1",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10214,7 +10558,7 @@ dependencies = [
  "blake2",
  "bounded-collections",
  "dyn-clonable",
- "ed25519-zebra",
+ "ed25519-zebra 3.1.0",
  "futures",
  "hash-db 0.16.0",
  "hash256-std-hasher",
@@ -10222,23 +10566,66 @@ dependencies = [
  "lazy_static",
  "libsecp256k1",
  "log",
- "merlin",
+ "merlin 2.0.1",
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "primitive-types",
  "rand 0.8.5",
  "regex",
  "scale-info",
- "schnorrkel",
+ "schnorrkel 0.9.1",
  "secp256k1 0.24.3",
  "secrecy",
  "serde",
- "sp-core-hashing",
- "sp-debug-derive",
- "sp-externalities",
- "sp-runtime-interface",
- "sp-std",
- "sp-storage",
+ "sp-core-hashing 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-debug-derive 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "ss58-registry",
+ "substrate-bip39",
+ "thiserror",
+ "tiny-bip39",
+ "zeroize",
+]
+
+[[package]]
+name = "sp-core"
+version = "7.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "array-bytes",
+ "base58",
+ "bitflags 1.3.2",
+ "blake2",
+ "bounded-collections",
+ "dyn-clonable",
+ "ed25519-zebra 4.0.3",
+ "futures",
+ "hash-db 0.16.0",
+ "hash256-std-hasher",
+ "impl-serde",
+ "lazy_static",
+ "libsecp256k1",
+ "log",
+ "merlin 3.0.0",
+ "parity-scale-codec",
+ "parking_lot 0.12.1",
+ "primitive-types",
+ "rand 0.8.5",
+ "regex",
+ "scale-info",
+ "schnorrkel 0.11.4",
+ "secp256k1 0.24.3",
+ "secrecy",
+ "serde",
+ "sp-core-hashing 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-debug-derive 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "ss58-registry",
  "substrate-bip39",
  "thiserror",
@@ -10256,7 +10643,21 @@ dependencies = [
  "digest 0.10.7",
  "sha2 0.10.8",
  "sha3 0.10.8",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "twox-hash",
+]
+
+[[package]]
+name = "sp-core-hashing"
+version = "5.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "blake2b_simd",
+ "byteorder",
+ "digest 0.10.7",
+ "sha2 0.10.8",
+ "sha3 0.10.8",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "twox-hash",
 ]
 
@@ -10267,7 +10668,18 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "proc-macro2",
  "quote",
- "sp-core-hashing",
+ "sp-core-hashing 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "sp-core-hashing-proc-macro"
+version = "5.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "sp-core-hashing 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "syn 1.0.109",
 ]
 
@@ -10275,6 +10687,15 @@ dependencies = [
 name = "sp-database"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
+dependencies = [
+ "kvdb",
+ "parking_lot 0.12.1",
+]
+
+[[package]]
+name = "sp-database"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
 dependencies = [
  "kvdb",
  "parking_lot 0.12.1",
@@ -10291,14 +10712,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-debug-derive"
+version = "5.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "sp-externalities"
 version = "0.13.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "environmental",
  "parity-scale-codec",
- "sp-std",
- "sp-storage",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+]
+
+[[package]]
+name = "sp-externalities"
+version = "0.13.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "environmental",
+ "parity-scale-codec",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
 ]
 
 [[package]]
@@ -10310,9 +10752,24 @@ dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+]
+
+[[package]]
+name = "sp-inherents"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "async-trait",
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
 ]
 
@@ -10329,14 +10786,38 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "secp256k1 0.24.3",
- "sp-core",
- "sp-externalities",
- "sp-keystore",
- "sp-runtime-interface",
- "sp-state-machine",
- "sp-std",
- "sp-tracing",
- "sp-trie",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "tracing",
+ "tracing-core",
+]
+
+[[package]]
+name = "sp-io"
+version = "7.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "bytes",
+ "ed25519-dalek 2.1.1",
+ "futures",
+ "libsecp256k1",
+ "log",
+ "parity-scale-codec",
+ "secp256k1 0.24.3",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "tracing",
  "tracing-core",
 ]
@@ -10347,8 +10828,8 @@ version = "7.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "lazy_static",
- "sp-core",
- "sp-runtime",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "strum 0.24.1",
 ]
 
@@ -10359,13 +10840,29 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "async-trait",
  "futures",
- "merlin",
+ "merlin 2.0.1",
  "parity-scale-codec",
  "parking_lot 0.12.1",
- "schnorrkel",
+ "schnorrkel 0.9.1",
  "serde",
- "sp-core",
- "sp-externalities",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+]
+
+[[package]]
+name = "sp-keystore"
+version = "0.13.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "async-trait",
+ "futures",
+ "merlin 3.0.0",
+ "parity-scale-codec",
+ "parking_lot 0.12.1",
+ "schnorrkel 0.11.4",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
 ]
 
@@ -10379,13 +10876,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-maybe-compressed-blob"
+version = "4.1.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "thiserror",
+ "zstd",
+]
+
+[[package]]
 name = "sp-offchain"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
- "sp-api",
- "sp-core",
- "sp-runtime",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10399,13 +10905,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-panic-handler"
+version = "5.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "backtrace",
+ "lazy_static",
+ "regex",
+]
+
+[[package]]
 name = "sp-rpc"
 version = "6.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "rustc-hash",
  "serde",
- "sp-core",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10422,12 +10938,34 @@ dependencies = [
  "rand 0.8.5",
  "scale-info",
  "serde",
- "sp-application-crypto",
- "sp-arithmetic",
- "sp-core",
- "sp-io",
- "sp-std",
- "sp-weights",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-weights 4.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+]
+
+[[package]]
+name = "sp-runtime"
+version = "7.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "either",
+ "hash256-std-hasher",
+ "impl-trait-for-tuples",
+ "log",
+ "parity-scale-codec",
+ "paste",
+ "rand 0.8.5",
+ "scale-info",
+ "serde",
+ "sp-application-crypto 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-weights 4.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
 ]
 
 [[package]]
@@ -10439,12 +10977,30 @@ dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
  "primitive-types",
- "sp-externalities",
- "sp-runtime-interface-proc-macro",
- "sp-std",
- "sp-storage",
- "sp-tracing",
- "sp-wasm-interface",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime-interface-proc-macro 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "static_assertions",
+]
+
+[[package]]
+name = "sp-runtime-interface"
+version = "7.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "bytes",
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "primitive-types",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime-interface-proc-macro 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-storage 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-tracing 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-wasm-interface 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "static_assertions",
 ]
 
@@ -10461,17 +11017,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "sp-runtime-interface-proc-macro"
+version = "6.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "Inflector",
+ "proc-macro-crate 1.1.3",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "sp-session"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
- "sp-api",
- "sp-core",
- "sp-runtime",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-staking",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10481,9 +11049,9 @@ source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-
 dependencies = [
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10497,11 +11065,31 @@ dependencies = [
  "parking_lot 0.12.1",
  "rand 0.8.5",
  "smallvec",
- "sp-core",
- "sp-externalities",
- "sp-panic-handler",
- "sp-std",
- "sp-trie",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+ "tracing",
+]
+
+[[package]]
+name = "sp-state-machine"
+version = "0.13.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "hash-db 0.16.0",
+ "log",
+ "parity-scale-codec",
+ "parking_lot 0.12.1",
+ "rand 0.8.5",
+ "smallvec",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-panic-handler 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
  "tracing",
 ]
@@ -10512,6 +11100,11 @@ version = "5.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 
 [[package]]
+name = "sp-std"
+version = "5.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+
+[[package]]
 name = "sp-storage"
 version = "7.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
@@ -10520,8 +11113,21 @@ dependencies = [
  "parity-scale-codec",
  "ref-cast",
  "serde",
- "sp-debug-derive",
- "sp-std",
+ "sp-debug-derive 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+]
+
+[[package]]
+name = "sp-storage"
+version = "7.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "impl-serde",
+ "parity-scale-codec",
+ "ref-cast",
+ "serde",
+ "sp-debug-derive 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
 ]
 
 [[package]]
@@ -10533,9 +11139,9 @@ dependencies = [
  "futures-timer",
  "log",
  "parity-scale-codec",
- "sp-inherents",
- "sp-runtime",
- "sp-std",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "thiserror",
 ]
 
@@ -10545,7 +11151,19 @@ version = "6.0.0"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
  "parity-scale-codec",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "tracing",
+ "tracing-core",
+ "tracing-subscriber 0.2.25",
+]
+
+[[package]]
+name = "sp-tracing"
+version = "6.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "parity-scale-codec",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "tracing",
  "tracing-core",
  "tracing-subscriber 0.2.25",
@@ -10556,8 +11174,8 @@ name = "sp-transaction-pool"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
 dependencies = [
- "sp-api",
- "sp-runtime",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10569,11 +11187,11 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-inherents",
- "sp-runtime",
- "sp-std",
- "sp-trie",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-trie 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -10591,8 +11209,31 @@ dependencies = [
  "parking_lot 0.12.1",
  "scale-info",
  "schnellru",
- "sp-core",
- "sp-std",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+ "tracing",
+ "trie-db",
+ "trie-root",
+]
+
+[[package]]
+name = "sp-trie"
+version = "7.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "ahash 0.8.8",
+ "hash-db 0.16.0",
+ "hashbrown 0.12.3",
+ "lazy_static",
+ "memory-db",
+ "nohash-hasher",
+ "parity-scale-codec",
+ "parking_lot 0.12.1",
+ "scale-info",
+ "schnellru",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
  "tracing",
  "trie-db",
@@ -10609,10 +11250,27 @@ dependencies = [
  "parity-wasm",
  "scale-info",
  "serde",
- "sp-core-hashing-proc-macro",
- "sp-runtime",
- "sp-std",
- "sp-version-proc-macro",
+ "sp-core-hashing-proc-macro 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-version-proc-macro 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "thiserror",
+]
+
+[[package]]
+name = "sp-version"
+version = "5.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "impl-serde",
+ "parity-scale-codec",
+ "parity-wasm",
+ "scale-info",
+ "serde",
+ "sp-core-hashing-proc-macro 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-version-proc-macro 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "thiserror",
 ]
 
@@ -10620,6 +11278,17 @@ dependencies = [
 name = "sp-version-proc-macro"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
+dependencies = [
+ "parity-scale-codec",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "sp-version-proc-macro"
+version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
 dependencies = [
  "parity-scale-codec",
  "proc-macro2",
@@ -10636,7 +11305,21 @@ dependencies = [
  "impl-trait-for-tuples",
  "log",
  "parity-scale-codec",
- "sp-std",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "wasmi",
+ "wasmtime",
+]
+
+[[package]]
+name = "sp-wasm-interface"
+version = "7.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "anyhow",
+ "impl-trait-for-tuples",
+ "log",
+ "parity-scale-codec",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
  "wasmi",
  "wasmtime",
 ]
@@ -10650,10 +11333,25 @@ dependencies = [
  "scale-info",
  "serde",
  "smallvec",
- "sp-arithmetic",
- "sp-core",
- "sp-debug-derive",
- "sp-std",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-debug-derive 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+]
+
+[[package]]
+name = "sp-weights"
+version = "4.0.0"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
+dependencies = [
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "smallvec",
+ "sp-arithmetic 6.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-debug-derive 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
+ "sp-std 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26)",
 ]
 
 [[package]]
@@ -11042,13 +11740,13 @@ dependencies = [
 
 [[package]]
 name = "substrate-bip39"
-version = "0.4.5"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e620c7098893ba667438b47169c00aacdd9e7c10e042250ce2b60b087ec97328"
+checksum = "6a7590dc041b9bc2825e52ce5af8416c73dbe9d0654402bfd4b4941938b94d8f"
 dependencies = [
  "hmac 0.11.0",
  "pbkdf2 0.8.0",
- "schnorrkel",
+ "schnorrkel 0.11.4",
  "sha2 0.9.9",
  "zeroize",
 ]
@@ -11077,18 +11775,30 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "sc-rpc-api",
- "sc-transaction-pool-api",
- "sp-api",
+ "sc-transaction-pool-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-block-builder",
- "sp-blockchain",
- "sp-core",
- "sp-runtime",
+ "sp-blockchain 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
 name = "substrate-prometheus-endpoint"
 version = "0.10.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02#fc5aabd84ebf6be57f97bf6dbf557eed5753719b"
+dependencies = [
+ "hyper",
+ "log",
+ "prometheus",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
+name = "substrate-prometheus-endpoint"
+version = "0.10.0-dev"
+source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024.06.26#c8c97226ddcf2b2f87bdab1015bc306f734304aa"
 dependencies = [
  "hyper",
  "log",
@@ -11107,7 +11817,7 @@ dependencies = [
  "log",
  "sc-rpc-api",
  "serde",
- "sp-runtime",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
 ]
 
 [[package]]
@@ -11119,7 +11829,7 @@ dependencies = [
  "build-helper",
  "cargo_metadata 0.15.4",
  "filetime",
- "sp-maybe-compressed-blob",
+ "sp-maybe-compressed-blob 4.1.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "strum 0.24.1",
  "tempfile",
  "toml",
@@ -11795,26 +12505,26 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "sc-cli",
- "sc-executor",
+ "sc-executor 0.10.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sc-service",
  "serde",
  "serde_json",
- "sp-api",
+ "sp-api 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-consensus-aura",
  "sp-consensus-babe",
- "sp-core",
- "sp-debug-derive",
- "sp-externalities",
- "sp-inherents",
- "sp-io",
- "sp-keystore",
+ "sp-core 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-debug-derive 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-externalities 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-inherents 4.0.0-dev (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-io 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-keystore 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-rpc",
- "sp-runtime",
- "sp-state-machine",
+ "sp-runtime 7.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-state-machine 0.13.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "sp-timestamp",
  "sp-transaction-storage-proof",
- "sp-version",
- "sp-weights",
+ "sp-version 5.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
+ "sp-weights 4.0.0 (git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.40-2024-08-02)",
  "substrate-rpc-client",
  "zstd",
 ]
