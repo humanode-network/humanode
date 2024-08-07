@@ -3309,6 +3309,8 @@
     - std
 - name: sp-panic-handler 5.0.0
   features: []
+- name: sp-panic-handler 5.0.0
+  features: []
 - name: sp-rpc 6.0.0
   features: []
 - name: sp-runtime 7.0.0
