@@ -3194,11 +3194,15 @@
     - full_crypto
     - serde
     - std
+- name: sp-application-crypto 7.0.0
+  features: []
 - name: sp-arithmetic 6.0.0
   features:
     - default
     - serde
     - std
+- name: sp-arithmetic 6.0.0
+  features: []
 - name: sp-block-builder 4.0.0-dev
   features:
     - default
@@ -3258,6 +3262,8 @@
     - substrate-bip39
     - thiserror
     - tiny-bip39
+- name: sp-core 7.0.0
+  features: []
 - name: sp-core-hashing 5.0.0
   features:
     - std
@@ -3268,10 +3274,14 @@
 - name: sp-debug-derive 5.0.0
   features:
     - std
+- name: sp-debug-derive 5.0.0
+  features: []
 - name: sp-externalities 0.13.0
   features:
     - default
     - std
+- name: sp-externalities 0.13.0
+  features: []
 - name: sp-inherents 4.0.0-dev
   features:
     - async-trait
@@ -3279,6 +3289,8 @@
     - sp-runtime
     - std
     - thiserror
+- name: sp-inherents 4.0.0-dev
+  features: []
 - name: sp-io 7.0.0
   features:
     - default
@@ -3294,6 +3306,8 @@
     - sp-state-machine
     - sp-trie
     - std
+- name: sp-io 7.0.0
+  features: []
 - name: sp-keyring 7.0.0
   features: []
 - name: sp-keystore 0.13.0
@@ -3317,11 +3331,17 @@
     - rand
     - serde
     - std
+- name: sp-runtime 7.0.0
+  features: []
 - name: sp-runtime-interface 7.0.0
   features:
     - default
     - disable_target_static_assertions
     - std
+- name: sp-runtime-interface 7.0.0
+  features: []
+- name: sp-runtime-interface-proc-macro 6.0.0
+  features: []
 - name: sp-runtime-interface-proc-macro 6.0.0
   features: []
 - name: sp-session 4.0.0-dev
@@ -3345,12 +3365,16 @@
   features:
     - default
     - std
+- name: sp-std 5.0.0
+  features: []
 - name: sp-storage 7.0.0
   features:
     - default
     - impl-serde
     - serde
     - std
+- name: sp-storage 7.0.0
+  features: []
 - name: sp-timestamp 4.0.0-dev
   features:
     - async-trait
@@ -3359,12 +3383,16 @@
     - log
     - std
     - thiserror
+- name: sp-timestamp 4.0.0-dev
+  features: []
 - name: sp-tracing 6.0.0
   features:
     - default
     - std
     - tracing-subscriber
     - with-tracing
+- name: sp-tracing 6.0.0
+  features: []
 - name: sp-transaction-pool 4.0.0-dev
   features:
     - default
@@ -3407,11 +3435,15 @@
     - std
     - wasmi
     - wasmtime
+- name: sp-wasm-interface 7.0.0
+  features: []
 - name: sp-weights 4.0.0
   features:
     - default
     - serde
     - std
+- name: sp-weights 4.0.0
+  features: []
 - name: spin 0.5.2
   features: []
 - name: spin 0.9.8
