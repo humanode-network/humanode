@@ -165,6 +165,9 @@ pallet-evm-precompile-simple = { git = "https://github.com/humanode-network/fron
 pallet-evm-system = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-02", default-features = false }
 pallet-evm-test-vector-support = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-02", default-features = false }
 
+[profile.release]
+debug = "line-tables-only"
+
 [profile.release-lto]
 inherits = "release"
 lto = "thin"
