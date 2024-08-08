@@ -20,9 +20,13 @@ pub async fn enroll<L>(
 where
     L: LogicOp<op_enroll::Request>,
     L::Error: Into<error::Logic>,
+    L::Response: Serialize,
 {
-    logic.call(input).await.map_err(Into::into)?;
-    Ok(StatusCode::CREATED)
+    let res = logic.call(input).await.map_err(Into::into)?;
+
+    let reply = warp::reply::json(&res);
+    let reply = warp::reply::with_status(reply, StatusCode::CREATED);
+    Ok(reply.into_response())
 }
 
 /// Authenticate operation HTTP transport coupling.

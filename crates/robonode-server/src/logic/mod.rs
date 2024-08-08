@@ -20,6 +20,9 @@ pub mod traits;
 
 pub use traits::*;
 
+/// A type alias representing a scan result blob.
+pub(crate) type ScanResultBlob = String;
+
 /// The overall generic logic.
 pub struct Logic<S, PK> {
     /// The mutex over the locked portions of the logic.
