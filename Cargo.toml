@@ -140,7 +140,7 @@ sp-transaction-pool = { git = "https://github.com/humanode-network/substrate", t
 sp-version = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-02", default-features = false }
 substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-02", default-features = false }
 substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-02", default-features = false }
-try-runtime-cli = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-02", default-features = false }
+try-runtime-cli = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024.06.26", default-features = false }
 
 # Frontier fork.
 fc-cli = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-02", default-features = false }
