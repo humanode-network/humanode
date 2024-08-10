@@ -19,6 +19,9 @@ pub struct Response {
 }
 
 /// Errors for the get facetec session token operation.
+///
+/// Allow dead code to explicitly control errors data.
+#[allow(dead_code)]
 #[derive(Debug)]
 pub enum Error {
     /// Internal error at session token retrieval due to the underlying request

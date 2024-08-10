@@ -72,14 +72,14 @@ pub struct EthereumRpc {
 
     /// A multiplier to allow larger gas limit in non-transactional execution.
     ///
-    /// When using eth_call/eth_estimateGas, the maximum allowed gas limit will be
-    /// block.gas_limit * execute_gas_limit_multiplier.
+    /// When using `eth_call/eth_estimateGas`, the maximum allowed gas limit will be
+    /// `block.gas_limit` * `execute_gas_limit_multiplier`.
     pub execute_gas_limit_multiplier: u64,
 }
 
 /// Frontier backend configuration parameters.
 pub struct FrontierBackend {
-    /// Sets the frontier backend type (KeyValue or Sql).
+    /// Sets the frontier backend type (`KeyValue` or Sql).
     pub frontier_backend_type: FrontierBackendType,
 
     /// Sets the SQL backend's pool size.
@@ -99,7 +99,7 @@ pub struct FrontierBackend {
 /// Avalailable frontier backend types.
 #[derive(Default, Debug, Copy, Clone, clap::ValueEnum)]
 pub enum FrontierBackendType {
-    /// Either RocksDb or ParityDb as per inherited from the global backend settings.
+    /// Either `RocksDb` or `ParityDb` as per inherited from the global backend settings.
     #[default]
     KeyValue,
     /// Sql database with custom log indexing.
