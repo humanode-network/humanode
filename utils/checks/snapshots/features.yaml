@@ -3303,6 +3303,8 @@
     - std
 - name: sp-maybe-compressed-blob 4.1.0-dev
   features: []
+- name: sp-maybe-compressed-blob 4.1.0-dev
+  features: []
 - name: sp-offchain 4.0.0-dev
   features:
     - default
