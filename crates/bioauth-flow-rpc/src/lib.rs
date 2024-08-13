@@ -142,11 +142,8 @@ pub trait Bioauth<Timestamp, TxHash> {
     async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash>;
 
     /// Request auth ticket based on provided liveness data.
-    #[method(name = "bioauth_requestAuthTicket")]
-    async fn request_auth_ticket(
-        &self,
-        liveness_data: LivenessData,
-    ) -> RpcResult<AuthenticateResult>;
+    #[method(name = "bioauth_authenticateV2")]
+    async fn authenticate_v2(&self, liveness_data: LivenessData) -> RpcResult<AuthenticateResult>;
 }
 
 /// The RPC implementation.
@@ -524,7 +521,7 @@ where
         Ok(tx_hash)
     }
 
-    async fn request_auth_ticket(
+    async fn authenticate_v2(
         &self,
         liveness_data: LivenessData,
     ) -> RpcResult<AuthenticateResult> {
