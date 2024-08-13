@@ -34,9 +34,13 @@ impl From<Error> for jsonrpsee::core::Error {
             }
             Error::Robonode(
                 ref err @ robonode_client::Error::Call(
-                    robonode_client::EnrollError::FaceScanRejected(Some(ref scan_result_blob))
-                    | robonode_client::EnrollError::PersonAlreadyEnrolled(Some(ref scan_result_blob))
-                    | robonode_client::EnrollError::LogicInternal(Some(ref scan_result_blob)),
+                    robonode_client::EnrollError::FaceScanRejectedReturnedBlob(
+                        ref scan_result_blob,
+                    )
+                    | robonode_client::EnrollError::PersonAlreadyEnrolledReturnedBlob(
+                        ref scan_result_blob,
+                    )
+                    | robonode_client::EnrollError::LogicInternalReturnedBlob(ref scan_result_blob),
                 ),
             ) => rpc_error_response::data(
                 api_error_code::ROBONODE,
@@ -44,9 +48,7 @@ impl From<Error> for jsonrpsee::core::Error {
                 error_data::ScanResultBlob(scan_result_blob.clone()),
             ),
             Error::Robonode(
-                err @ robonode_client::Error::Call(robonode_client::EnrollError::FaceScanRejected(
-                    None,
-                )),
+                err @ robonode_client::Error::Call(robonode_client::EnrollError::FaceScanRejected),
             ) => rpc_error_response::data(
                 api_error_code::ROBONODE,
                 err.to_string(),
@@ -96,7 +98,9 @@ mod tests {
     #[test]
     fn error_robonode_face_scan_rejected_containing_scan_result_blob() {
         let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::Call(
-            robonode_client::EnrollError::FaceScanRejected(Some("scan result blob".to_owned())),
+            robonode_client::EnrollError::FaceScanRejectedReturnedBlob(
+                "scan result blob".to_owned(),
+            ),
         ))
         .into();
         let error: ErrorObject = error.into();
@@ -112,7 +116,7 @@ mod tests {
     #[test]
     fn error_robonode_face_scan_rejected_without_scan_result_blob() {
         let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::Call(
-            robonode_client::EnrollError::FaceScanRejected(None),
+            robonode_client::EnrollError::FaceScanRejected,
         ))
         .into();
         let error: ErrorObject = error.into();
@@ -128,7 +132,7 @@ mod tests {
     #[test]
     fn error_robonode_logic_internal_containing_scan_result_blob() {
         let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::Call(
-            robonode_client::EnrollError::LogicInternal(Some("scan result blob".to_owned())),
+            robonode_client::EnrollError::LogicInternalReturnedBlob("scan result blob".to_owned()),
         ))
         .into();
         let error: ErrorObject = error.into();
@@ -144,7 +148,7 @@ mod tests {
     #[test]
     fn error_robonode_logic_internal_without_scan_result_blob() {
         let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::Call(
-            robonode_client::EnrollError::LogicInternal(None),
+            robonode_client::EnrollError::LogicInternal,
         ))
         .into();
         let error: ErrorObject = error.into();
