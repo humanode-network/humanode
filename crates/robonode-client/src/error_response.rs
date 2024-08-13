@@ -25,11 +25,22 @@ impl TryFrom<String> for ErrorResponse {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::test_utils::mkerr;
+    use crate::test_utils::{mkerr, mkerr_returning_blob};
 
     #[test]
     fn decodes() {
-        let err = mkerr("MY_ERR_CODE", "scan result blob").to_string();
+        let err = mkerr("MY_ERR_CODE").to_string();
+        let ErrorResponse {
+            error_code,
+            scan_result_blob,
+        } = err.try_into().unwrap();
+        assert_eq!(error_code, "MY_ERR_CODE");
+        assert_eq!(scan_result_blob, None);
+    }
+
+    #[test]
+    fn decodes_returning_blob() {
+        let err = mkerr_returning_blob("MY_ERR_CODE", "scan result blob").to_string();
         let ErrorResponse {
             error_code,
             scan_result_blob,
