@@ -56,18 +56,27 @@ pub enum EnrollError {
     /// The liveness data is invalid.
     #[error("invalid liveness data")]
     InvalidLivenessData,
-    /// The face scan was rejeted.
+    /// The face scan was rejected.
     #[error("face scan rejected")]
-    FaceScanRejected(Option<ScanResultBlob>),
+    FaceScanRejected,
+    /// The face scan was rejected, returned blob.
+    #[error("face scan rejected, returned blob")]
+    FaceScanRejectedReturnedBlob(ScanResultBlob),
     /// The public key is already used.
     #[error("public key already used")]
     PublicKeyAlreadyUsed,
     /// The person is already enrolled.
     #[error("person already enrolled")]
-    PersonAlreadyEnrolled(Option<ScanResultBlob>),
+    PersonAlreadyEnrolled,
+    /// The person is already enrolled, returned blob.
+    #[error("person already enrolled, returned blob")]
+    PersonAlreadyEnrolledReturnedBlob(ScanResultBlob),
     /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
-    LogicInternal(Option<ScanResultBlob>),
+    LogicInternal,
+    /// A logic internal error occurred on the server end, returned blob.
+    #[error("logic internal error, returned blob")]
+    LogicInternalReturnedBlob(ScanResultBlob),
     /// An error with an unknown code occurred.
     #[error("unknown error code: {0}")]
     UnknownCode(String),
@@ -89,10 +98,19 @@ impl EnrollError {
         match error_code.as_str() {
             "ENROLL_INVALID_PUBLIC_KEY" => Self::InvalidPublicKey,
             "ENROLL_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData,
-            "ENROLL_FACE_SCAN_REJECTED" => Self::FaceScanRejected(scan_result_blob),
+            "ENROLL_FACE_SCAN_REJECTED" => match scan_result_blob {
+                None => Self::FaceScanRejected,
+                Some(scan_result_blob) => Self::FaceScanRejectedReturnedBlob(scan_result_blob),
+            },
             "ENROLL_PUBLIC_KEY_ALREADY_USED" => Self::PublicKeyAlreadyUsed,
-            "ENROLL_PERSON_ALREADY_ENROLLED" => Self::PersonAlreadyEnrolled(scan_result_blob),
-            "LOGIC_INTERNAL_ERROR" => Self::LogicInternal(scan_result_blob),
+            "ENROLL_PERSON_ALREADY_ENROLLED" => match scan_result_blob {
+                None => Self::PersonAlreadyEnrolled,
+                Some(scan_result_blob) => Self::PersonAlreadyEnrolledReturnedBlob(scan_result_blob),
+            },
+            "LOGIC_INTERNAL_ERROR" => match scan_result_blob {
+                None => Self::LogicInternal,
+                Some(scan_result_blob) => Self::LogicInternalReturnedBlob(scan_result_blob),
+            },
             _ => Self::UnknownCode(error_code),
         }
     }

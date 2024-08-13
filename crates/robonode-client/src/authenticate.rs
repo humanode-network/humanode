@@ -56,17 +56,30 @@ pub enum AuthenticateError {
     InvalidLivenessData,
     /// The person was not found, it is likely because they haven't enrolled first.
     #[error("person not found")]
-    PersonNotFound(Option<ScanResultBlob>),
+    PersonNotFound,
+    /// The person was not found, it is likely because they haven't enrolled first, returned blob.
+    #[error("person not found, returned blob")]
+    PersonNotFoundReturnedBlob(ScanResultBlob),
     /// The face scan was rejected, this is likely due to a failed liveness check.
     #[error("face scan rejected")]
-    FaceScanRejected(Option<ScanResultBlob>),
+    FaceScanRejected,
+    /// The face scan was rejected, this is likely due to a failed liveness check, returned blob.
+    #[error("face scan rejected, returned blob")]
+    FaceScanRejectedReturnedBlob(ScanResultBlob),
     /// The signature was invalid, which means that the validator private key used for signing and
     /// the public key that the person enrolled with don't match.
     #[error("signature invalid")]
-    SignatureInvalid(Option<ScanResultBlob>),
+    SignatureInvalid,
+    /// The signature was invalid, which means that the validator private key used for signing and
+    /// the public key that the person enrolled with don't match, returned blob.
+    #[error("signature invalid, returned blob")]
+    SignatureInvalidReturnedBlob(ScanResultBlob),
     /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
-    LogicInternal(Option<ScanResultBlob>),
+    LogicInternal,
+    /// A logic internal error occurred on the server end, returned blob.
+    #[error("logic internal error, returned blob")]
+    LogicInternalReturnedBlob(ScanResultBlob),
     /// An error with an unknown code occurred.
     #[error("unknown error code: {0}")]
     UnknownCode(String),
@@ -87,10 +100,22 @@ impl AuthenticateError {
         };
         match error_code.as_str() {
             "AUTHENTICATE_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData,
-            "AUTHENTICATE_PERSON_NOT_FOUND" => Self::PersonNotFound(scan_result_blob),
-            "AUTHENTICATE_FACE_SCAN_REJECTED" => Self::FaceScanRejected(scan_result_blob),
-            "AUTHENTICATE_SIGNATURE_INVALID" => Self::SignatureInvalid(scan_result_blob),
-            "LOGIC_INTERNAL_ERROR" => Self::LogicInternal(scan_result_blob),
+            "AUTHENTICATE_PERSON_NOT_FOUND" => match scan_result_blob {
+                None => Self::PersonNotFound,
+                Some(scan_result_blob) => Self::PersonNotFoundReturnedBlob(scan_result_blob),
+            },
+            "AUTHENTICATE_FACE_SCAN_REJECTED" => match scan_result_blob {
+                None => Self::FaceScanRejected,
+                Some(scan_result_blob) => Self::FaceScanRejectedReturnedBlob(scan_result_blob),
+            },
+            "AUTHENTICATE_SIGNATURE_INVALID" => match scan_result_blob {
+                None => Self::SignatureInvalid,
+                Some(scan_result_blob) => Self::SignatureInvalidReturnedBlob(scan_result_blob),
+            },
+            "LOGIC_INTERNAL_ERROR" => match scan_result_blob {
+                None => Self::LogicInternal,
+                Some(scan_result_blob) => Self::LogicInternalReturnedBlob(scan_result_blob),
+            },
             _ => Self::UnknownCode(error_code),
         }
     }
