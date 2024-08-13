@@ -108,7 +108,7 @@ mod tests {
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: face scan rejected\",\"data\":{\"scanResultBlob\":\"scan result blob\"}}";
+            "{\"code\":200,\"message\":\"server error: face scan rejected, returned blob\",\"data\":{\"scanResultBlob\":\"scan result blob\"}}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
@@ -126,7 +126,7 @@ mod tests {
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: logic internal error\",\"data\":{\"scanResultBlob\":\"scan result blob\"}}";
+            "{\"code\":200,\"message\":\"server error: logic internal error, returned blob\",\"data\":{\"scanResultBlob\":\"scan result blob\"}}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
