@@ -219,7 +219,7 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
     //   `spec_version`, and `authoring_version` are the same between Wasm and native.
     // This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
     //   the compatible custom types.
-    spec_version: 118,
+    spec_version: 119,
     impl_version: 1,
     apis: RUNTIME_API_VERSIONS,
     transaction_version: 1,
@@ -1445,7 +1445,10 @@ impl_runtime_apis! {
                 let _ = Executive::apply_extrinsic(ext);
             }
 
-            Ethereum::on_finalize(System::block_number() + 1);
+            Ethereum::on_finalize(
+                // u32 (block number) is big enough for this overflow to be practically impossible.
+                System::block_number().checked_add(1).unwrap()
+            );
 
             (
                 pallet_ethereum::CurrentBlock::<Runtime>::get(),
@@ -1518,6 +1521,8 @@ impl_runtime_apis! {
             (list, storage_info)
         }
 
+        // Allow non local definitions lint for benchmark related code.
+        #[allow(non_local_definitions)]
         fn dispatch_benchmark(
             config: frame_benchmarking::BenchmarkConfig
         ) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {

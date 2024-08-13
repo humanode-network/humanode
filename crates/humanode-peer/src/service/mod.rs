@@ -14,7 +14,6 @@ use futures::StreamExt;
 use humanode_runtime::{self, opaque::Block, RuntimeApi};
 use sc_client_api::{BlockBackend, BlockchainEvents};
 use sc_consensus_babe::SlotProportion;
-use sc_consensus_grandpa::SharedVoterState;
 pub use sc_executor::NativeElseWasmExecutor;
 use sc_service::{
     Error as ServiceError, KeystoreContainer, PartialComponents, TaskManager, WarpSyncParams,
@@ -327,7 +326,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         reqwest: reqwest::Client::new(),
     });
 
-    let rpc_extensions_builder = {
+    let (rpc_extensions_builder, grandpa_shared_voter_state_cloned) = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
@@ -348,6 +347,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let grandpa_justification_stream = grandpa_link.justification_stream();
         let grandpa_shared_authority_set = grandpa_link.shared_authority_set().clone();
         let grandpa_shared_voter_state = sc_consensus_grandpa::SharedVoterState::empty();
+        let grandpa_shared_voter_state_cloned = grandpa_shared_voter_state.clone();
+
         let grandpa_finality_proof_provider =
             sc_consensus_grandpa::FinalityProofProvider::new_for_service(
                 Arc::clone(&backend),
@@ -374,7 +375,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
         let eth_pubsub_notification_sinks = Arc::clone(&eth_pubsub_notification_sinks);
 
-        Box::new(move |deny_unsafe, subscription_task_executor| {
+        let rpc_extensions_builder = Box::new(move |deny_unsafe, subscription_task_executor| {
             Ok(humanode_rpc::create::<
                 _,
                 _,
@@ -432,7 +433,9 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 },
                 subscription_task_executor,
             })?)
-        })
+        });
+
+        (rpc_extensions_builder, grandpa_shared_voter_state_cloned)
     };
 
     {
@@ -499,9 +502,12 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
             link: grandpa_link,
             network: Arc::clone(&network),
             sync: Arc::clone(&sync_service),
-            voting_rule: sc_consensus_grandpa::VotingRulesBuilder::default().build(),
+            voting_rule: sc_consensus_grandpa::VotingRulesBuilder::new()
+                .add(sc_consensus_grandpa::BeforeBestBlockBy(7u32))
+                .add(sc_consensus_grandpa::ThreeQuartersOfTheUnfinalizedChain)
+                .build(),
             prometheus_registry,
-            shared_voter_state: SharedVoterState::empty(),
+            shared_voter_state: grandpa_shared_voter_state_cloned,
             telemetry: telemetry.as_ref().map(|x| x.handle()),
         };
 

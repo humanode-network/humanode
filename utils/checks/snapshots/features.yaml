@@ -90,7 +90,7 @@
     - std
 - name: approx 0.5.1
   features: []
-- name: arc-swap 1.6.0
+- name: arc-swap 1.7.1
   features: []
 - name: ark-bls12-381 0.4.0
   features:
@@ -165,7 +165,7 @@
   features:
     - default
     - std
-- name: async-trait 0.1.80
+- name: async-trait 0.1.81
   features: []
 - name: asynchronous-codec 0.6.2
   features:
@@ -238,7 +238,7 @@
 - name: bioauth-keys 0.1.0
   features:
     - default
-- name: bip32 0.5.1
+- name: bip32 0.5.2
   features:
     - alloc
     - bip39
@@ -331,7 +331,7 @@
     - default
     - i128
     - std
-- name: bytes 1.6.0
+- name: bytes 1.7.1
   features:
     - default
     - serde
@@ -420,7 +420,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.4
+- name: clap 4.5.13
   features:
     - color
     - default
@@ -432,7 +432,7 @@
     - string
     - suggestions
     - usage
-- name: clap_builder 4.5.2
+- name: clap_builder 4.5.13
   features:
     - color
     - deprecated
@@ -442,7 +442,7 @@
     - string
     - suggestions
     - usage
-- name: clap_derive 4.5.4
+- name: clap_derive 4.5.13
   features:
     - default
     - deprecated
@@ -593,7 +593,7 @@
     - default
     - std
     - u64_backend
-- name: curve25519-dalek 4.1.1
+- name: curve25519-dalek 4.1.3
   features:
     - alloc
     - default
@@ -1042,7 +1042,7 @@
     - std
 - name: fixedbitset 0.4.2
   features: []
-- name: flate2 1.0.28
+- name: flate2 1.0.30
   features:
     - any_impl
     - any_zlib
@@ -1743,7 +1743,7 @@
   features:
     - atomic_usize
     - default
-- name: log 0.4.21
+- name: log 0.4.22
   features:
     - std
 - name: lru 0.8.1
@@ -2012,7 +2012,7 @@
 - name: num_enum 0.5.11
   features:
     - std
-- name: num_enum 0.7.2
+- name: num_enum 0.7.3
   features:
     - default
     - std
@@ -2020,7 +2020,7 @@
   features:
     - proc-macro-crate
     - std
-- name: num_enum_derive 0.7.2
+- name: num_enum_derive 0.7.3
   features:
     - proc-macro-crate
     - std
@@ -2096,14 +2096,14 @@
     - std
 - name: open-fastrlp-derive 0.1.1
   features: []
-- name: openssl 0.10.63
+- name: openssl 0.10.66
   features:
     - default
 - name: openssl-macros 0.1.1
   features: []
 - name: openssl-probe 0.1.5
   features: []
-- name: openssl-sys 0.9.99
+- name: openssl-sys 0.9.103
   features: []
 - name: overload 0.1.1
   features: []
@@ -2380,10 +2380,6 @@
     - pem
 - name: pkg-config 0.3.30
   features: []
-- name: platforms 3.3.0
-  features:
-    - default
-    - std
 - name: polling 3.4.0
   features: []
 - name: poly1305 0.8.0
@@ -2487,7 +2483,7 @@
     - syn-error
 - name: proc-macro-error-attr 1.0.4
   features: []
-- name: proc-macro2 1.0.85
+- name: proc-macro2 1.0.86
   features:
     - default
     - proc-macro
@@ -3043,7 +3039,7 @@
     - std
 - name: semver-parser 0.7.0
   features: []
-- name: serde 1.0.203
+- name: serde 1.0.205
   features:
     - alloc
     - default
@@ -3051,10 +3047,10 @@
     - rc
     - serde_derive
     - std
-- name: serde_derive 1.0.203
+- name: serde_derive 1.0.205
   features:
     - default
-- name: serde_json 1.0.117
+- name: serde_json 1.0.121
   features:
     - alloc
     - default
@@ -3579,7 +3575,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.66
+- name: syn 2.0.72
   features:
     - clone-impls
     - default
@@ -3613,9 +3609,9 @@
   features: []
 - name: termtree 0.4.1
   features: []
-- name: thiserror 1.0.61
+- name: thiserror 1.0.63
   features: []
-- name: thiserror-impl 1.0.61
+- name: thiserror-impl 1.0.63
   features: []
 - name: thousands 0.2.0
   features: []
@@ -3669,7 +3665,7 @@
     - tinyvec_macros
 - name: tinyvec_macros 0.1.1
   features: []
-- name: tokio 1.38.0
+- name: tokio 1.38.1
   features:
     - bytes
     - default
@@ -3918,7 +3914,7 @@
   features: []
 - name: untrusted 0.9.0
   features: []
-- name: url 2.5.0
+- name: url 2.5.2
   features:
     - default
     - serde
@@ -3929,7 +3925,7 @@
 - name: utf8parse 0.2.1
   features:
     - default
-- name: uuid 1.8.0
+- name: uuid 1.10.0
   features:
     - default
     - rng
@@ -3941,7 +3937,7 @@
     - std
 - name: vcpkg 0.2.15
   features: []
-- name: vergen 8.3.1
+- name: vergen 8.3.2
   features:
     - cargo
     - cargo_metadata

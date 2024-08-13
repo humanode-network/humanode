@@ -11,7 +11,7 @@ use sp_std::prelude::*;
 pub enum CreateSignedSetKeysExtrinsicError {
     /// Unable to decode session keys.
     SessionKeysDecoding(String),
-    /// Unable to create signed set_keys extrinsic.
+    /// Unable to create signed `set_keys` extrinsic.
     SignedExtrinsicCreation,
 }
 

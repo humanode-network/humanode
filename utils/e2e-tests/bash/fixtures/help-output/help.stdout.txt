@@ -590,7 +590,7 @@ Options:
       --execute-gas-limit-multiplier <EXECUTE_GAS_LIMIT_MULTIPLIER>
           A multiplier to allow larger gas limit in non-transactional execution.
           
-          When using eth_call/eth_estimateGas, the maximum allowed gas limit will be block.gas_limit * execute_gas_limit_multiplier.
+          When using `eth_call/eth_estimateGas`, the maximum allowed gas limit will be `block.gas_limit` * `execute_gas_limit_multiplier`.
           
           [default: 10]
 
