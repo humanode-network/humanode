@@ -44,14 +44,18 @@ where
             Error::Sign(err) => rpc_error_response::simple(api_error_code::SIGN, err.to_string()),
             Error::Robonode(
                 ref err @ robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::PersonNotFound(Some(ref scan_result_blob))
-                    | robonode_client::AuthenticateError::FaceScanRejected(Some(
+                    robonode_client::AuthenticateError::PersonNotFoundReturnedBlob(
                         ref scan_result_blob,
-                    ))
-                    | robonode_client::AuthenticateError::SignatureInvalid(Some(
+                    )
+                    | robonode_client::AuthenticateError::FaceScanRejectedReturnedBlob(
                         ref scan_result_blob,
-                    ))
-                    | robonode_client::AuthenticateError::LogicInternal(Some(ref scan_result_blob)),
+                    )
+                    | robonode_client::AuthenticateError::SignatureInvalidReturnedBlob(
+                        ref scan_result_blob,
+                    )
+                    | robonode_client::AuthenticateError::LogicInternalReturnedBlob(
+                        ref scan_result_blob,
+                    ),
                 ),
             ) => rpc_error_response::data(
                 api_error_code::ROBONODE,
@@ -60,7 +64,7 @@ where
             ),
             Error::Robonode(
                 err @ robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::FaceScanRejected(None),
+                    robonode_client::AuthenticateError::FaceScanRejected,
                 ),
             ) => rpc_error_response::data(
                 api_error_code::ROBONODE,
@@ -192,9 +196,9 @@ mod tests {
     fn error_robonode_face_scan_rejected_containing_scan_result_blob() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::Robonode(robonode_client::Error::Call(
-                robonode_client::AuthenticateError::FaceScanRejected(Some(
+                robonode_client::AuthenticateError::FaceScanRejectedReturnedBlob(
                     "scan result blob".to_owned(),
-                )),
+                ),
             ))
             .into();
         let error: ErrorObject = error.into();
@@ -211,7 +215,7 @@ mod tests {
     fn error_robonode_face_scan_rejected_without_scan_result_blob() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::Robonode(robonode_client::Error::Call(
-                robonode_client::AuthenticateError::FaceScanRejected(None),
+                robonode_client::AuthenticateError::FaceScanRejected,
             ))
             .into();
         let error: ErrorObject = error.into();
@@ -228,9 +232,9 @@ mod tests {
     fn error_robonode_logic_internal_containing_scan_result_blob() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::Robonode(robonode_client::Error::Call(
-                robonode_client::AuthenticateError::LogicInternal(Some(
+                robonode_client::AuthenticateError::LogicInternalReturnedBlob(
                     "scan result blob".to_owned(),
-                )),
+                ),
             ))
             .into();
         let error: ErrorObject = error.into();
@@ -247,7 +251,7 @@ mod tests {
     fn error_robonode_logic_internal_without_scan_result_blob() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::Robonode(robonode_client::Error::Call(
-                robonode_client::AuthenticateError::LogicInternal(None),
+                robonode_client::AuthenticateError::LogicInternal,
             ))
             .into();
         let error: ErrorObject = error.into();
