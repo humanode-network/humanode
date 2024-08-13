@@ -10,9 +10,11 @@ use std::sync::Arc;
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use errors::{
-    authenticate::Error as AuthenticateError, enroll::Error as EnrollError,
+    authenticate::Error as AuthenticateError, authenticate_v2::Error as AuthenticateV2Error,
+    enroll::Error as EnrollError, enroll_v2::Error as EnrollV2Error,
     get_facetec_device_sdk_params::Error as GetFacetecDeviceSdkParamsError,
-    get_facetec_session_token::Error as GetFacetecSessionToken, sign::Error as SignError,
+    get_facetec_session_token::Error as GetFacetecSessionToken,
+    robonode_request::Error as RobonodeRequestError, sign::Error as SignError,
     status::Error as StatusError,
 };
 use futures::StreamExt;
@@ -83,28 +85,6 @@ pub enum BioauthStatus<Timestamp> {
     },
 }
 
-/// Enrollment flow result.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EnrollResult {
-    /// Scan result blob.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub scan_result_blob: Option<String>,
-}
-
-/// Authenticate flow result.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AuthenticateResult {
-    /// An opaque auth ticket generated for this authentication attempt.
-    pub auth_ticket: Box<[u8]>,
-    /// The robonode signature for this opaque auth ticket.
-    pub auth_ticket_signature: Box<[u8]>,
-    /// Scan result blob.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub scan_result_blob: Option<String>,
-}
-
 impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
     fn from(status: bioauth_flow_api::BioauthStatus<T>) -> Self {
         match status {
@@ -135,7 +115,7 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Enroll with provided liveness data V2.
     #[method(name = "bioauth_enrollV2")]
-    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollResult>;
+    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollV2Result>;
 
     /// Authenticate with provided liveness data.
     #[method(name = "bioauth_authenticate")]
@@ -143,7 +123,28 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Request auth ticket based on provided liveness data.
     #[method(name = "bioauth_authenticateV2")]
-    async fn authenticate_v2(&self, liveness_data: LivenessData) -> RpcResult<AuthenticateResult>;
+    async fn authenticate_v2(&self, liveness_data: LivenessData)
+        -> RpcResult<AuthenticateV2Result>;
+}
+
+/// `enroll_v2` flow result.
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EnrollV2Result {
+    /// Scan result blob.
+    pub scan_result_blob: String,
+}
+
+/// `authenticate_v2` related flow result.
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AuthenticateV2Result {
+    /// An opaque auth ticket generated for this authentication attempt.
+    pub auth_ticket: Box<[u8]>,
+    /// The robonode signature for this opaque auth ticket.
+    pub auth_ticket_signature: Box<[u8]>,
+    /// Scan result blob.
+    pub scan_result_blob: String,
 }
 
 /// The RPC implementation.
@@ -255,17 +256,20 @@ where
     }
 
     /// Do enroll with provided liveness data.
-    async fn do_enroll(&self, liveness_data: LivenessData) -> Result<EnrollResponse, EnrollError> {
+    async fn do_enroll(&self, liveness_data: LivenessData) -> Result<
+        EnrollResponse,
+        RobonodeRequestError<robonode_client::EnrollError>
+    > {
         info!("Bioauth flow - enrolling in progress");
 
         let public_key =
             rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-            .map_err(EnrollError::KeyExtraction)?;
+            .map_err(RobonodeRequestError::KeyExtraction)?;
 
         let (opaque_liveness_data, signature) = self
             .sign(public_key.clone(), &liveness_data)
             .await
-            .map_err(EnrollError::Sign)?;
+            .map_err(RobonodeRequestError::Sign)?;
 
         let response = self
             .robonode_client
@@ -276,7 +280,7 @@ where
                 public_key: public_key.as_ref(),
             })
             .await
-            .map_err(EnrollError::Robonode)?;
+            .map_err(RobonodeRequestError::Robonode)?;
 
         info!("Bioauth flow - enrolling complete");
 
@@ -286,20 +290,18 @@ where
     /// Do authenticate with provided liveness data.
     async fn do_authenticate(&self, liveness_data: LivenessData) -> Result<
         AuthenticateResponse,
-        AuthenticateError<TransactionPool::Error>
+        RobonodeRequestError<robonode_client::AuthenticateError>
     > {
         info!("Bioauth flow - authentication in progress");
 
-        let errtype = |val: AuthenticateError<TransactionPool::Error>| {  val };
-
         let public_key =
             rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-            .map_err(AuthenticateError::KeyExtraction).map_err(errtype)?;
+            .map_err(RobonodeRequestError::KeyExtraction)?;
 
         let (opaque_liveness_data, signature) = self
             .sign(public_key, &liveness_data)
             .await
-            .map_err(AuthenticateError::Sign).map_err(errtype)?;
+            .map_err(RobonodeRequestError::Sign)?;
 
         let response = self
             .robonode_client
@@ -309,7 +311,7 @@ where
                 liveness_data_signature: signature.as_ref(),
             })
             .await
-            .map_err(AuthenticateError::Robonode).map_err(errtype)?;
+            .map_err(RobonodeRequestError::Robonode)?;
 
         info!("Bioauth flow - authentication complete");
 
@@ -405,17 +407,22 @@ where
     async fn enroll(&self, liveness_data: LivenessData) -> RpcResult<()> {
         self.deny_unsafe.check_if_safe()?;
 
-        self.do_enroll(liveness_data).await?;
+        self.do_enroll(liveness_data).await.map_err(EnrollError::RobonodeRequest)?;
 
         Ok(())
     }
 
-    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollResult> {
+    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollV2Result> {
         self.deny_unsafe.check_if_safe()?;
 
-        let EnrollResponse { scan_result_blob } = self.do_enroll(liveness_data).await?;
+        let EnrollResponse { scan_result_blob } = self
+            .do_enroll(liveness_data)
+            .await
+            .map_err(EnrollV2Error::RobonodeRequest)?;
 
-        Ok(EnrollResult { scan_result_blob })
+        let scan_result_blob = scan_result_blob.expect("expect scan result blob in response");
+
+        Ok(EnrollV2Result { scan_result_blob })
     }
 
     async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash<TransactionPool>> {
@@ -423,7 +430,11 @@ where
 
         let errtype = |val: errors::authenticate::Error<TransactionPool::Error>| {  val };
 
-        let response = self.do_authenticate(liveness_data).await?;
+        let response = self
+            .do_authenticate(liveness_data)
+            .await
+            .map_err(AuthenticateError::RobonodeRequest)
+            .map_err(errtype)?;
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
 
@@ -524,17 +535,19 @@ where
     async fn authenticate_v2(
         &self,
         liveness_data: LivenessData,
-    ) -> RpcResult<AuthenticateResult> {
+    ) -> RpcResult<AuthenticateV2Result> {
         self.deny_unsafe.check_if_safe()?;
 
         let AuthenticateResponse {
             auth_ticket,
             auth_ticket_signature,
             scan_result_blob,
-        } = self.do_authenticate(liveness_data).await?;
+        } = self.do_authenticate(liveness_data).await.map_err(AuthenticateV2Error::RobonodeRequest)?;
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
 
-        Ok(AuthenticateResult { auth_ticket, auth_ticket_signature, scan_result_blob })
+        let scan_result_blob = scan_result_blob.expect("expect scan result blob in response");
+
+        Ok(AuthenticateV2Result { auth_ticket, auth_ticket_signature, scan_result_blob })
     }
 }
