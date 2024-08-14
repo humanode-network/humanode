@@ -37,10 +37,11 @@ rustflags = [
   "-Aclippy::multiple-crate-versions",
 ]
 
-[registries]
-substrate = { index = "https://localhost:1" }
-
 [source]
-[source.substrate]
+[source.substrate-git]
 git = "https://github.com/humanode-network/substrate"
 tag = "locked/polkadot-v0.9.40-2024-08-02"
+
+[source.substrate]
+replace-with = "substrate-git"
+git = "https://substrate.localhost:1"
