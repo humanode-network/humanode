@@ -34,18 +34,10 @@ impl From<Error> for jsonrpsee::core::Error {
                 }
                 RobonodeRequestError::Robonode(
                     ref err @ robonode_client::Error::Call(
-                        robonode_client::AuthenticateError::PersonNotFoundReturnedBlob(
-                            ref scan_result_blob,
-                        )
-                        | robonode_client::AuthenticateError::FaceScanRejectedReturnedBlob(
-                            ref scan_result_blob,
-                        )
-                        | robonode_client::AuthenticateError::SignatureInvalidReturnedBlob(
-                            ref scan_result_blob,
-                        )
-                        | robonode_client::AuthenticateError::LogicInternalReturnedBlob(
-                            ref scan_result_blob,
-                        ),
+                        robonode_client::AuthenticateError::PersonNotFound(ref scan_result_blob)
+                        | robonode_client::AuthenticateError::FaceScanRejected(ref scan_result_blob)
+                        | robonode_client::AuthenticateError::SignatureInvalid(ref scan_result_blob)
+                        | robonode_client::AuthenticateError::LogicInternal(ref scan_result_blob),
                     ),
                 ) => rpc_error_response::data(
                     api_error_code::ROBONODE,
@@ -114,17 +106,15 @@ mod tests {
     #[test]
     fn error_robonode_face_scan_rejected() {
         let error: jsonrpsee::core::Error = Error::RobonodeRequest(RobonodeRequestError::Robonode(
-            robonode_client::Error::Call(
-                robonode_client::AuthenticateError::FaceScanRejectedReturnedBlob(
-                    "scan result blob".to_owned(),
-                ),
-            ),
+            robonode_client::Error::Call(robonode_client::AuthenticateError::FaceScanRejected(
+                "scan result blob".to_owned(),
+            )),
         ))
         .into();
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: face scan rejected, returned blob\",\"data\":{\"scanResultBlob\":\"scan result blob\"}}";
+            "{\"code\":200,\"message\":\"server error: face scan rejected\",\"data\":{\"scanResultBlob\":\"scan result blob\"}}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
@@ -134,17 +124,15 @@ mod tests {
     #[test]
     fn error_robonode_logic_internal() {
         let error: jsonrpsee::core::Error = Error::RobonodeRequest(RobonodeRequestError::Robonode(
-            robonode_client::Error::Call(
-                robonode_client::AuthenticateError::LogicInternalReturnedBlob(
-                    "scan result blob".to_owned(),
-                ),
-            ),
+            robonode_client::Error::Call(robonode_client::AuthenticateError::LogicInternal(
+                "scan result blob".to_owned(),
+            )),
         ))
         .into();
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: logic internal error, returned blob\",\"data\":{\"scanResultBlob\":\"scan result blob\"}}";
+            "{\"code\":200,\"message\":\"server error: logic internal error\",\"data\":{\"scanResultBlob\":\"scan result blob\"}}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
