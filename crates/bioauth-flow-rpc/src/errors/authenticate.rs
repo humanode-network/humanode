@@ -43,7 +43,7 @@ where
                 }
                 RobonodeRequestError::Robonode(
                     err @ robonode_client::Error::Call(
-                        robonode_client::AuthenticateError::FaceScanRejected,
+                        robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
                     ),
                 ) => rpc_error_response::data(
                     api_error_code::ROBONODE,
@@ -181,14 +181,14 @@ mod tests {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
                 RobonodeRequestError::Robonode(robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::FaceScanRejected,
+                    robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
                 )),
             )
             .into();
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: face scan rejected\",\"data\":{\"shouldRetry\":true}}";
+            "{\"code\":200,\"message\":\"server error: face scan rejected, no blob\",\"data\":{\"shouldRetry\":true}}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
@@ -200,14 +200,14 @@ mod tests {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
                 RobonodeRequestError::Robonode(robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::LogicInternal,
+                    robonode_client::AuthenticateError::LogicInternalNoBlob,
                 )),
             )
             .into();
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: logic internal error\"}";
+            "{\"code\":200,\"message\":\"server error: logic internal error, no blob\"}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()

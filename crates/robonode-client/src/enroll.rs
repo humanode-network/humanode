@@ -56,27 +56,27 @@ pub enum EnrollError {
     /// The liveness data is invalid.
     #[error("invalid liveness data")]
     InvalidLivenessData,
+    /// The face scan was rejected, no blob.
+    #[error("face scan rejected, no blob")]
+    FaceScanRejectedNoBlob,
     /// The face scan was rejected.
     #[error("face scan rejected")]
-    FaceScanRejected,
-    /// The face scan was rejected, returned blob.
-    #[error("face scan rejected, returned blob")]
-    FaceScanRejectedReturnedBlob(ScanResultBlob),
+    FaceScanRejected(ScanResultBlob),
     /// The public key is already used.
     #[error("public key already used")]
     PublicKeyAlreadyUsed,
+    /// The person is already enrolled, no blob.
+    #[error("person already enrolled, no blob")]
+    PersonAlreadyEnrolledNoBlob,
     /// The person is already enrolled.
     #[error("person already enrolled")]
-    PersonAlreadyEnrolled,
-    /// The person is already enrolled, returned blob.
-    #[error("person already enrolled, returned blob")]
-    PersonAlreadyEnrolledReturnedBlob(ScanResultBlob),
+    PersonAlreadyEnrolled(ScanResultBlob),
+    /// A logic internal error occurred on the server end, no blob.
+    #[error("logic internal error, no blob")]
+    LogicInternalNoBlob,
     /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
-    LogicInternal,
-    /// A logic internal error occurred on the server end, returned blob.
-    #[error("logic internal error, returned blob")]
-    LogicInternalReturnedBlob(ScanResultBlob),
+    LogicInternal(ScanResultBlob),
     /// An error with an unknown code occurred.
     #[error("unknown error code: {0}")]
     UnknownCode(String),
@@ -99,17 +99,17 @@ impl EnrollError {
             "ENROLL_INVALID_PUBLIC_KEY" => Self::InvalidPublicKey,
             "ENROLL_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData,
             "ENROLL_FACE_SCAN_REJECTED" => match scan_result_blob {
-                None => Self::FaceScanRejected,
-                Some(scan_result_blob) => Self::FaceScanRejectedReturnedBlob(scan_result_blob),
+                None => Self::FaceScanRejectedNoBlob,
+                Some(scan_result_blob) => Self::FaceScanRejected(scan_result_blob),
             },
             "ENROLL_PUBLIC_KEY_ALREADY_USED" => Self::PublicKeyAlreadyUsed,
             "ENROLL_PERSON_ALREADY_ENROLLED" => match scan_result_blob {
-                None => Self::PersonAlreadyEnrolled,
-                Some(scan_result_blob) => Self::PersonAlreadyEnrolledReturnedBlob(scan_result_blob),
+                None => Self::PersonAlreadyEnrolledNoBlob,
+                Some(scan_result_blob) => Self::PersonAlreadyEnrolled(scan_result_blob),
             },
             "LOGIC_INTERNAL_ERROR" => match scan_result_blob {
-                None => Self::LogicInternal,
-                Some(scan_result_blob) => Self::LogicInternalReturnedBlob(scan_result_blob),
+                None => Self::LogicInternalNoBlob,
+                Some(scan_result_blob) => Self::LogicInternal(scan_result_blob),
             },
             _ => Self::UnknownCode(error_code),
         }
@@ -190,12 +190,12 @@ mod tests {
             (
                 StatusCode::FORBIDDEN,
                 "ENROLL_FACE_SCAN_REJECTED",
-                EnrollError::FaceScanRejected,
+                EnrollError::FaceScanRejectedNoBlob,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "ENROLL_FACE_SCAN_REJECTED",
-                EnrollError::FaceScanRejectedReturnedBlob("scan result blob".to_owned()),
+                EnrollError::FaceScanRejected("scan result blob".to_owned()),
             ),
             (
                 StatusCode::CONFLICT,
@@ -205,22 +205,22 @@ mod tests {
             (
                 StatusCode::CONFLICT,
                 "ENROLL_PERSON_ALREADY_ENROLLED",
-                EnrollError::PersonAlreadyEnrolled,
+                EnrollError::PersonAlreadyEnrolledNoBlob,
             ),
             (
                 StatusCode::CONFLICT,
                 "ENROLL_PERSON_ALREADY_ENROLLED",
-                EnrollError::PersonAlreadyEnrolledReturnedBlob("scan result blob".to_owned()),
+                EnrollError::PersonAlreadyEnrolled("scan result blob".to_owned()),
             ),
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "LOGIC_INTERNAL_ERROR",
-                EnrollError::LogicInternal,
+                EnrollError::LogicInternalNoBlob,
             ),
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "LOGIC_INTERNAL_ERROR",
-                EnrollError::LogicInternalReturnedBlob("scan result blob".to_owned()),
+                EnrollError::LogicInternal("scan result blob".to_owned()),
             ),
             (
                 StatusCode::BAD_REQUEST,
@@ -239,9 +239,9 @@ mod tests {
             };
 
             let response = match case.2 {
-                EnrollError::FaceScanRejectedReturnedBlob(_)
-                | EnrollError::PersonAlreadyEnrolledReturnedBlob(_)
-                | EnrollError::LogicInternalReturnedBlob(_) => ResponseTemplate::new(case.0)
+                EnrollError::FaceScanRejected(_)
+                | EnrollError::PersonAlreadyEnrolled(_)
+                | EnrollError::LogicInternal(_) => ResponseTemplate::new(case.0)
                     .set_body_json(mkerr_returning_blob(case.1, "scan result blob")),
                 _ => ResponseTemplate::new(case.0).set_body_json(mkerr(case.1)),
             };

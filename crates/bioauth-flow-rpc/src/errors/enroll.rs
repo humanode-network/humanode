@@ -31,7 +31,7 @@ impl From<Error> for jsonrpsee::core::Error {
                 ),
                 RobonodeRequestError::Robonode(
                     err @ robonode_client::Error::Call(
-                        robonode_client::EnrollError::FaceScanRejected,
+                        robonode_client::EnrollError::FaceScanRejectedNoBlob,
                     ),
                 ) => rpc_error_response::data(
                     api_error_code::ROBONODE,
@@ -90,13 +90,13 @@ mod tests {
     #[test]
     fn error_robonode_face_scan_rejected() {
         let error: jsonrpsee::core::Error = Error::RobonodeRequest(RobonodeRequestError::Robonode(
-            robonode_client::Error::Call(robonode_client::EnrollError::FaceScanRejected),
+            robonode_client::Error::Call(robonode_client::EnrollError::FaceScanRejectedNoBlob),
         ))
         .into();
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: face scan rejected\",\"data\":{\"shouldRetry\":true}}";
+            "{\"code\":200,\"message\":\"server error: face scan rejected, no blob\",\"data\":{\"shouldRetry\":true}}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
@@ -106,13 +106,13 @@ mod tests {
     #[test]
     fn error_robonode_logic_internal() {
         let error: jsonrpsee::core::Error = Error::RobonodeRequest(RobonodeRequestError::Robonode(
-            robonode_client::Error::Call(robonode_client::EnrollError::LogicInternal),
+            robonode_client::Error::Call(robonode_client::EnrollError::LogicInternalNoBlob),
         ))
         .into();
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: logic internal error\"}";
+            "{\"code\":200,\"message\":\"server error: logic internal error, no blob\"}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
