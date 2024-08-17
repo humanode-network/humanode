@@ -26,6 +26,8 @@ ignore = [
   "RUSTSEC-2023-0052",
   # TODO(#1013): vulnerable rustls.
   "RUSTSEC-2024-0336",
+  # TODO(#1197): update the sqlx internal dependency to 0.8.1+
+  "RUSTSEC-2024-0363",
 ]
 
 [licenses]
