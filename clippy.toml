@@ -1,1 +1,1 @@
-doc-valid-idents = ["FaceTec", "MetaMask", ".."]
+doc-valid-idents = ["FaceScan", "FaceMap", "FaceTec", "MetaMask", "WebSocket", ".."]

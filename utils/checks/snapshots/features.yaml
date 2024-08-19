@@ -10,11 +10,23 @@
   features: []
 - name: adler 1.0.2
   features: []
+- name: aead 0.3.2
+  features:
+    - alloc
+- name: aead 0.4.3
+  features:
+    - alloc
+    - rand_core
+    - std
 - name: aead 0.5.2
   features:
     - alloc
     - getrandom
     - rand_core
+- name: aes 0.6.0
+  features: []
+- name: aes 0.7.5
+  features: []
 - name: aes 0.8.4
   features: []
 - name: aes-gcm 0.10.3
@@ -24,6 +36,15 @@
     - default
     - getrandom
     - rand_core
+- name: aes-gcm 0.9.4
+  features:
+    - aes
+    - alloc
+    - default
+- name: aes-soft 0.6.4
+  features: []
+- name: aesni 0.10.0
+  features: []
 - name: ahash 0.7.8
   features: []
 - name: ahash 0.8.8
@@ -51,7 +72,7 @@
     - auto
     - default
     - wincon
-- name: anstyle 1.0.6
+- name: anstyle 1.0.8
   features:
     - default
     - std
@@ -68,6 +89,8 @@
     - default
     - std
 - name: approx 0.5.1
+  features: []
+- name: arc-swap 1.7.1
   features: []
 - name: ark-bls12-381 0.4.0
   features:
@@ -101,20 +124,35 @@
   features: []
 - name: arrayref 0.3.7
   features: []
+- name: arrayvec 0.5.2
+  features: []
 - name: arrayvec 0.7.4
   features:
     - default
     - std
+- name: asn1-rs 0.3.1
+  features:
+    - datetime
+    - default
+    - std
+    - time
 - name: asn1-rs 0.5.2
   features:
     - datetime
     - default
     - std
     - time
+- name: asn1-rs-derive 0.1.0
+  features: []
 - name: asn1-rs-derive 0.4.0
   features: []
 - name: asn1-rs-impl 0.1.0
   features: []
+- name: asn1_der 0.7.6
+  features:
+    - default
+    - native_types
+    - std
 - name: assert-json-diff 2.0.2
   features: []
 - name: assert_matches 1.5.0
@@ -136,12 +174,12 @@
   features:
     - default
     - std
+- name: atomic-waker 1.1.2
+  features: []
 - name: atomic-write-file 0.1.2
   features:
     - default
     - unnamed-tmpfile
-- name: attohttpc 0.24.1
-  features: []
 - name: atty 0.2.14
   features: []
 - name: author-ext-api 0.1.0
@@ -160,6 +198,9 @@
     - std
 - name: base-x 0.2.11
   features: []
+- name: base16ct 0.1.1
+  features:
+    - alloc
 - name: base16ct 0.2.0
   features:
     - alloc
@@ -232,9 +273,18 @@
   features: []
 - name: block-buffer 0.10.4
   features: []
+- name: block-buffer 0.7.3
+  features: []
 - name: block-buffer 0.9.0
   features:
     - block-padding
+- name: block-modes 0.7.0
+  features:
+    - alloc
+    - default
+    - std
+- name: block-padding 0.1.5
+  features: []
 - name: block-padding 0.2.1
   features: []
 - name: bounded-collections 0.1.9
@@ -245,13 +295,15 @@
   features:
     - default
     - std
-- name: bs58 0.5.0
+- name: bs58 0.4.0
   features:
     - alloc
-    - check
     - default
-    - sha2
     - std
+- name: bs58 0.5.0
+  features:
+    - check
+    - sha2
 - name: bstr 0.2.17
   features:
     - lazy_static
@@ -270,6 +322,8 @@
 - name: byte-slice-cast 1.2.2
   features:
     - std
+- name: byte-tools 0.3.1
+  features: []
 - name: bytemuck 1.14.3
   features: []
 - name: byteorder 1.5.0
@@ -277,7 +331,7 @@
     - default
     - i128
     - std
-- name: bytes 1.6.1
+- name: bytes 1.7.1
   features:
     - default
     - serde
@@ -301,6 +355,10 @@
   features:
     - jobserver
     - parallel
+- name: ccm 0.3.0
+  features:
+    - alloc
+    - default
 - name: cexpr 0.6.0
   features: []
 - name: cfg-expr 0.10.3
@@ -343,6 +401,10 @@
     - multibase
     - serde
     - std
+- name: cipher 0.2.5
+  features: []
+- name: cipher 0.3.0
+  features: []
 - name: cipher 0.4.4
   features:
     - zeroize
@@ -358,7 +420,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.9
+- name: clap 4.5.16
   features:
     - color
     - default
@@ -370,7 +432,7 @@
     - string
     - suggestions
     - usage
-- name: clap_builder 4.5.9
+- name: clap_builder 4.5.15
   features:
     - color
     - deprecated
@@ -380,7 +442,7 @@
     - string
     - suggestions
     - usage
-- name: clap_derive 4.5.8
+- name: clap_derive 4.5.13
   features:
     - default
     - deprecated
@@ -492,6 +554,11 @@
     - limit_128
     - limit_256
     - std
+- name: crypto-bigint 0.4.9
+  features:
+    - generic-array
+    - rand_core
+    - zeroize
 - name: crypto-bigint 0.5.5
   features:
     - generic-array
@@ -503,21 +570,34 @@
     - rand_core
     - std
 - name: crypto-mac 0.11.1
-  features: []
+  features:
+    - std
 - name: crypto-mac 0.8.0
   features: []
 - name: crypto-utils 0.1.0
   features: []
 - name: crypto-utils-evm 0.1.0
   features: []
+- name: ctr 0.8.0
+  features: []
 - name: ctr 0.9.2
   features: []
+- name: curve25519-dalek 2.1.3
+  features:
+    - alloc
+    - std
+    - u64_backend
+- name: curve25519-dalek 3.2.0
+  features:
+    - alloc
+    - default
+    - std
+    - u64_backend
 - name: curve25519-dalek 4.1.3
   features:
     - alloc
     - default
     - digest
-    - legacy_compatibility
     - precomputed-tables
     - zeroize
 - name: curve25519-dalek-derive 0.1.1
@@ -534,6 +614,16 @@
   features:
     - default
 - name: cxxbridge-macro 1.0.116
+  features: []
+- name: darling 0.14.4
+  features:
+    - default
+    - suggestions
+- name: darling_core 0.14.4
+  features:
+    - strsim
+    - suggestions
+- name: darling_macro 0.14.4
   features: []
 - name: data-encoding 2.5.0
   features:
@@ -552,6 +642,15 @@
     - unmanaged
 - name: deadpool-runtime 0.1.3
   features: []
+- name: der 0.6.1
+  features:
+    - alloc
+    - const-oid
+    - oid
+    - pem
+    - pem-rfc7468
+    - std
+    - zeroize
 - name: der 0.7.8
   features:
     - alloc
@@ -559,6 +658,12 @@
     - pem
     - std
     - zeroize
+- name: der-parser 7.0.0
+  features:
+    - bigint
+    - default
+    - num-bigint
+    - std
 - name: der-parser 8.2.0
   features:
     - bigint
@@ -574,6 +679,14 @@
   features:
     - use_core
 - name: derive-syn-parse 0.1.5
+  features: []
+- name: derive_builder 0.11.2
+  features:
+    - default
+    - std
+- name: derive_builder_core 0.11.2
+  features: []
+- name: derive_builder_macro 0.11.2
   features: []
 - name: derive_more 0.99.17
   features:
@@ -593,6 +706,8 @@
     - oid
     - std
     - subtle
+- name: digest 0.8.1
+  features: []
 - name: digest 0.9.0
   features:
     - alloc
@@ -626,6 +741,19 @@
   features: []
 - name: dyn-clone 1.0.16
   features: []
+- name: ecdsa 0.14.8
+  features:
+    - alloc
+    - arithmetic
+    - der
+    - digest
+    - hazmat
+    - pem
+    - pkcs8
+    - rfc6979
+    - sign
+    - std
+    - verify
 - name: ecdsa 0.16.9
   features:
     - alloc
@@ -638,10 +766,21 @@
     - spki
     - std
     - verifying
+- name: ed25519 1.5.3
+  features:
+    - default
+    - std
 - name: ed25519 2.2.3
   features:
     - alloc
     - std
+- name: ed25519-dalek 1.0.1
+  features:
+    - default
+    - rand
+    - serde_crate
+    - std
+    - u64_backend
 - name: ed25519-dalek 2.1.1
   features:
     - alloc
@@ -650,7 +789,7 @@
     - rand_core
     - std
     - zeroize
-- name: ed25519-zebra 4.0.3
+- name: ed25519-zebra 3.1.0
   features:
     - std
 - name: eip191-crypto 0.1.0
@@ -680,6 +819,22 @@
     - default
     - serde
     - use_std
+- name: elliptic-curve 0.12.3
+  features:
+    - alloc
+    - arithmetic
+    - default
+    - digest
+    - ecdh
+    - ff
+    - group
+    - hazmat
+    - hkdf
+    - pem
+    - pem-rfc7468
+    - pkcs8
+    - sec1
+    - std
 - name: elliptic-curve 0.13.8
   features:
     - alloc
@@ -699,8 +854,6 @@
     - alloc
     - default
 - name: enum-as-inner 0.5.1
-  features: []
-- name: enum-as-inner 0.6.0
   features: []
 - name: env_logger 0.10.2
   features:
@@ -807,6 +960,8 @@
     - syndicate
 - name: facetec-api-client 0.1.0
   features: []
+- name: fake-simd 0.1.2
+  features: []
 - name: fallible-iterator 0.2.0
   features:
     - std
@@ -853,6 +1008,8 @@
   features: []
 - name: fdlimit 0.2.1
   features: []
+- name: ff 0.12.1
+  features: []
 - name: ff 0.13.0
   features:
     - alloc
@@ -885,6 +1042,12 @@
     - std
 - name: fixedbitset 0.4.2
   features: []
+- name: flate2 1.0.30
+  features:
+    - any_impl
+    - any_zlib
+    - libz-sys
+    - zlib
 - name: float-cmp 0.9.0
   features:
     - default
@@ -1011,8 +1174,6 @@
     - std
     - thread-pool
     - unstable
-- name: futures-bounded 0.1.0
-  features: []
 - name: futures-channel 0.3.30
   features:
     - alloc
@@ -1058,7 +1219,7 @@
   features: []
 - name: futures-macro 0.3.30
   features: []
-- name: futures-rustls 0.24.0
+- name: futures-rustls 0.22.2
   features: []
 - name: futures-sink 0.3.30
   features:
@@ -1092,6 +1253,8 @@
     - unstable
 - name: fxhash 0.2.1
   features: []
+- name: generic-array 0.12.4
+  features: []
 - name: generic-array 0.14.7
   features:
     - more_lengths
@@ -1104,12 +1267,8 @@
 - name: getrandom 0.2.14
   features:
     - std
-- name: getrandom_or_panic 0.0.3
-  features:
-    - alloc
-    - getrandom
-    - rand
-    - std
+- name: ghash 0.4.4
+  features: []
 - name: ghash 0.5.0
   features: []
 - name: gimli 0.26.2
@@ -1131,6 +1290,8 @@
   features:
     - default
     - log
+- name: group 0.12.1
+  features: []
 - name: group 0.13.0
   features:
     - alloc
@@ -1199,7 +1360,8 @@
 - name: hkdf 0.12.4
   features: []
 - name: hmac 0.11.0
-  features: []
+  features:
+    - std
 - name: hmac 0.12.1
   features:
     - reset
@@ -1278,13 +1440,10 @@
     - fallback
 - name: iana-time-zone-haiku 0.1.2
   features: []
+- name: ident_case 1.0.1
+  features: []
 - name: idna 0.2.3
   features: []
-- name: idna 0.4.0
-  features:
-    - alloc
-    - default
-    - std
 - name: idna 0.5.0
   features:
     - alloc
@@ -1294,16 +1453,6 @@
   features: []
 - name: if-watch 3.2.0
   features:
-    - tokio
-- name: igd-next 0.14.3
-  features:
-    - aio_tokio
-    - async-trait
-    - bytes
-    - default
-    - futures
-    - http
-    - hyper
     - tokio
 - name: impl-codec 0.6.0
   features:
@@ -1334,6 +1483,8 @@
 - name: instant 0.1.12
   features: []
 - name: integer-sqrt 0.1.5
+  features: []
+- name: interceptor 0.8.2
   features: []
 - name: io-lifetimes 1.0.11
   features:
@@ -1402,6 +1553,15 @@
   features: []
 - name: jsonrpsee-types 0.16.3
   features: []
+- name: k256 0.11.6
+  features:
+    - arithmetic
+    - digest
+    - ecdsa
+    - ecdsa-core
+    - sha2
+    - sha256
+    - std
 - name: k256 0.13.3
   features:
     - alloc
@@ -1441,13 +1601,14 @@
 - name: libm 0.2.8
   features:
     - default
-- name: libp2p 0.52.4
+- name: libp2p 0.50.1
   features:
     - dns
     - identify
     - kad
     - macros
     - mdns
+    - mplex
     - noise
     - ping
     - request-response
@@ -1456,28 +1617,25 @@
     - wasm-ext
     - websocket
     - yamux
-- name: libp2p-allow-block-list 0.2.0
+- name: libp2p-core 0.38.0
   features: []
-- name: libp2p-connection-limits 0.2.1
+- name: libp2p-core 0.39.2
   features: []
-- name: libp2p-core 0.40.1
-  features: []
-- name: libp2p-dns 0.40.1
+- name: libp2p-dns 0.38.0
   features:
     - tokio
-- name: libp2p-identify 0.43.1
+- name: libp2p-identify 0.41.1
   features: []
-- name: libp2p-identity 0.2.8
+- name: libp2p-identity 0.1.3
   features:
     - ed25519
     - peerid
-    - rand
-- name: libp2p-kad 0.44.6
+- name: libp2p-kad 0.42.1
   features: []
-- name: libp2p-mdns 0.44.0
+- name: libp2p-mdns 0.42.0
   features:
     - tokio
-- name: libp2p-metrics 0.13.1
+- name: libp2p-metrics 0.11.0
   features:
     - identify
     - kad
@@ -1485,34 +1643,36 @@
     - libp2p-kad
     - libp2p-ping
     - ping
-- name: libp2p-noise 0.43.2
+- name: libp2p-mplex 0.38.0
   features: []
-- name: libp2p-ping 0.43.1
+- name: libp2p-noise 0.41.0
   features: []
-- name: libp2p-quic 0.9.3
+- name: libp2p-ping 0.41.0
+  features: []
+- name: libp2p-quic 0.7.0-alpha
   features:
     - tokio
-- name: libp2p-request-response 0.25.3
+- name: libp2p-request-response 0.23.0
   features: []
-- name: libp2p-swarm 0.43.7
+- name: libp2p-swarm 0.41.1
   features:
     - macros
     - tokio
-- name: libp2p-swarm-derive 0.33.0
+- name: libp2p-swarm-derive 0.31.0
   features: []
-- name: libp2p-tcp 0.40.1
+- name: libp2p-tcp 0.38.0
   features:
     - tokio
-- name: libp2p-tls 0.2.1
+- name: libp2p-tls 0.1.0
   features: []
-- name: libp2p-upnp 0.1.1
+- name: libp2p-wasm-ext 0.38.0
+  features: []
+- name: libp2p-webrtc 0.4.0-alpha
   features:
     - tokio
-- name: libp2p-wasm-ext 0.40.0
+- name: libp2p-websocket 0.40.0
   features: []
-- name: libp2p-websocket 0.42.1
-  features: []
-- name: libp2p-yamux 0.44.1
+- name: libp2p-yamux 0.42.0
   features: []
 - name: libredox 0.0.1
   features:
@@ -1586,10 +1746,6 @@
 - name: log 0.4.22
   features:
     - std
-- name: lru 0.12.3
-  features:
-    - default
-    - hashbrown
 - name: lru 0.8.1
   features:
     - default
@@ -1618,7 +1774,9 @@
     - default
     - std
 - name: md-5 0.10.6
-  features: []
+  features:
+    - default
+    - std
 - name: memchr 2.7.1
   features:
     - alloc
@@ -1636,7 +1794,7 @@
     - std
 - name: memory_units 0.4.0
   features: []
-- name: merlin 3.0.0
+- name: merlin 2.0.1
   features:
     - default
     - std
@@ -1650,7 +1808,8 @@
   features:
     - std
 - name: miniz_oxide 0.7.2
-  features: []
+  features:
+    - with-alloc
 - name: mio 0.8.11
   features:
     - default
@@ -1665,7 +1824,11 @@
 - name: multer 2.1.0
   features:
     - default
-- name: multiaddr 0.18.1
+- name: multiaddr 0.16.0
+  features:
+    - default
+    - url
+- name: multiaddr 0.17.1
   features:
     - default
     - url
@@ -1684,6 +1847,7 @@
     - default
     - derive
     - digest
+    - identity
     - multihash-derive
     - multihash-impl
     - secure-hashes
@@ -1692,17 +1856,20 @@
     - sha2
     - sha3
     - std
-- name: multihash 0.19.1
+- name: multihash 0.17.0
   features:
     - alloc
-    - default
+    - derive
+    - identity
+    - multihash-derive
+    - multihash-impl
     - std
 - name: multihash-derive 0.8.1
   features:
     - std
 - name: multimap 0.8.3
   features: []
-- name: multistream-select 0.13.0
+- name: multistream-select 0.12.1
   features: []
 - name: nalgebra 0.32.3
   features:
@@ -1741,12 +1908,40 @@
     - url
 - name: nix 0.24.3
   features:
+    - acct
+    - aio
+    - default
+    - dir
+    - env
+    - event
+    - feature
     - fs
+    - hostname
+    - inotify
+    - ioctl
+    - kmod
+    - memoffset
+    - mman
     - mount
+    - mqueue
+    - net
+    - personality
+    - poll
     - process
+    - pthread
+    - ptrace
+    - quota
+    - reboot
+    - resource
     - sched
     - signal
+    - socket
+    - term
+    - time
+    - ucontext
     - uio
+    - user
+    - zerocopy
 - name: nix 0.27.1
   features:
     - default
@@ -1817,7 +2012,7 @@
 - name: num_enum 0.5.11
   features:
     - std
-- name: num_enum 0.7.2
+- name: num_enum 0.7.3
   features:
     - default
     - std
@@ -1825,7 +2020,7 @@
   features:
     - proc-macro-crate
     - std
-- name: num_enum_derive 0.7.2
+- name: num_enum_derive 0.7.3
   features:
     - proc-macro-crate
     - std
@@ -1856,6 +2051,19 @@
     - pe
     - read_core
     - unaligned
+- name: oid-registry 0.4.0
+  features:
+    - crypto
+    - default
+    - kdf
+    - nist_algs
+    - pkcs1
+    - pkcs12
+    - pkcs7
+    - pkcs9
+    - registry
+    - x509
+    - x962
 - name: oid-registry 0.6.1
   features:
     - crypto
@@ -1875,6 +2083,8 @@
     - default
     - race
     - std
+- name: opaque-debug 0.2.3
+  features: []
 - name: opaque-debug 0.3.0
   features: []
 - name: open-fastrlp 0.1.4
@@ -1886,17 +2096,42 @@
     - std
 - name: open-fastrlp-derive 0.1.1
   features: []
-- name: openssl 0.10.63
+- name: openssl 0.10.66
   features:
     - default
 - name: openssl-macros 0.1.1
   features: []
 - name: openssl-probe 0.1.5
   features: []
-- name: openssl-sys 0.9.99
+- name: openssl-sys 0.9.103
   features: []
 - name: overload 0.1.1
   features: []
+- name: p256 0.11.1
+  features:
+    - arithmetic
+    - default
+    - digest
+    - ecdh
+    - ecdsa
+    - ecdsa-core
+    - pkcs8
+    - sha2
+    - sha256
+    - std
+- name: p384 0.11.2
+  features:
+    - arithmetic
+    - default
+    - digest
+    - ecdh
+    - ecdsa
+    - ecdsa-core
+    - pem
+    - pkcs8
+    - sha2
+    - sha384
+    - std
 - name: pallet-authorship 4.0.0-dev
   features:
     - std
@@ -2058,6 +2293,8 @@
 - name: parity-scale-codec-derive 3.6.9
   features:
     - max-encoded-len
+- name: parity-send-wrapper 0.1.0
+  features: []
 - name: parity-wasm 0.45.0
   features:
     - default
@@ -2087,6 +2324,9 @@
   features: []
 - name: pem 1.1.1
   features: []
+- name: pem-rfc7468 0.6.0
+  features:
+    - alloc
 - name: pem-rfc7468 0.7.0
   features:
     - alloc
@@ -2134,11 +2374,17 @@
     - alloc
     - pem
     - std
+- name: pkcs8 0.9.0
+  features:
+    - alloc
+    - pem
 - name: pkg-config 0.3.30
   features: []
 - name: polling 3.4.0
   features: []
 - name: poly1305 0.8.0
+  features: []
+- name: polyval 0.5.3
   features: []
 - name: polyval 0.6.1
   features: []
@@ -2237,9 +2483,6 @@
     - syn-error
 - name: proc-macro-error-attr 1.0.4
   features: []
-- name: proc-macro-warning 0.4.2
-  features:
-    - default
 - name: proc-macro2 1.0.86
   features:
     - default
@@ -2247,10 +2490,9 @@
     - span-locations
 - name: prometheus 0.13.3
   features: []
-- name: prometheus-client 0.21.2
-  features:
-    - default
-- name: prometheus-client-derive-encode 0.4.2
+- name: prometheus-client 0.18.1
+  features: []
+- name: prometheus-client-derive-text-encode 0.3.0
   features: []
 - name: proptest 1.4.0
   features:
@@ -2269,6 +2511,8 @@
     - format
     - prettyplease
     - syn
+- name: prost-codec 0.3.0
+  features: []
 - name: prost-derive 0.11.9
   features: []
 - name: prost-types 0.11.9
@@ -2285,24 +2529,14 @@
   features:
     - default
     - std
-- name: quick-protobuf-codec 0.2.0
-  features: []
 - name: quicksink 0.1.2
   features: []
-- name: quinn 0.10.2
-  features:
-    - futures-io
-    - ring
-    - runtime-tokio
-    - rustls
-    - tls-rustls
-- name: quinn-proto 0.10.6
+- name: quinn-proto 0.9.6
   features:
     - ring
     - rustls
     - tls-rustls
-- name: quinn-udp 0.4.1
-  features: []
+    - webpki
 - name: quote 1.0.36
   features:
     - default
@@ -2359,6 +2593,11 @@
   features:
     - default
     - pem
+- name: rcgen 0.9.3
+  features:
+    - default
+    - pem
+    - x509-parser
 - name: redox_syscall 0.2.16
   features: []
 - name: redox_syscall 0.4.1
@@ -2464,6 +2703,8 @@
     - system
 - name: retain_mut 0.1.9
   features: []
+- name: rfc6979 0.3.1
+  features: []
 - name: rfc6979 0.4.0
   features: []
 - name: ring 0.16.20
@@ -2517,11 +2758,15 @@
     - pem
     - std
     - u64_digit
+- name: rtcp 0.7.2
+  features: []
 - name: rtnetlink 0.10.1
   features:
     - tokio
     - tokio_socket
 - name: rtoolbox 0.0.2
+  features: []
+- name: rtp 0.6.8
   features: []
 - name: rustc-demangle 0.1.23
   features: []
@@ -2563,12 +2808,13 @@
     - std
     - time
     - use-libc-auxv
-- name: rustls 0.20.9
+- name: rustls 0.19.1
   features:
+    - dangerous_configuration
+    - default
     - log
     - logging
-    - tls12
-- name: rustls 0.21.10
+- name: rustls 0.20.9
   features:
     - dangerous_configuration
     - default
@@ -2580,14 +2826,9 @@
   features: []
 - name: rustls-pemfile 1.0.4
   features: []
-- name: rustls-webpki 0.101.7
-  features:
-    - alloc
-    - default
-    - std
 - name: rustversion 1.0.14
   features: []
-- name: rw-stream-sink 0.4.0
+- name: rw-stream-sink 0.3.0
   features: []
 - name: ryu 1.0.16
   features: []
@@ -2714,22 +2955,39 @@
   features:
     - default
     - runtime-rng
-- name: schnorrkel 0.11.4
+- name: schnorrkel 0.9.1
   features:
-    - alloc
     - default
     - getrandom
     - preaudit_deprecated
-    - serde_bytes
+    - rand
     - std
+    - u64_backend
 - name: scoped-tls 1.0.1
   features: []
 - name: scopeguard 1.2.0
   features: []
 - name: scratch 1.0.7
   features: []
+- name: sct 0.6.1
+  features: []
 - name: sct 0.7.1
   features: []
+- name: sdp 0.5.3
+  features: []
+- name: sec1 0.3.0
+  features:
+    - alloc
+    - base16ct
+    - default
+    - der
+    - generic-array
+    - pem
+    - pkcs8
+    - point
+    - std
+    - subtle
+    - zeroize
 - name: sec1 0.7.3
   features:
     - alloc
@@ -2781,9 +3039,7 @@
     - std
 - name: semver-parser 0.7.0
   features: []
-- name: send_wrapper 0.6.0
-  features: []
-- name: serde 1.0.203
+- name: serde 1.0.208
   features:
     - alloc
     - default
@@ -2791,14 +3047,10 @@
     - rc
     - serde_derive
     - std
-- name: serde_bytes 0.11.15
-  features:
-    - alloc
-    - std
-- name: serde_derive 1.0.203
+- name: serde_derive 1.0.208
   features:
     - default
-- name: serde_json 1.0.120
+- name: serde_json 1.0.125
   features:
     - alloc
     - default
@@ -2811,7 +3063,9 @@
 - name: serde_urlencoded 0.7.1
   features: []
 - name: sha-1 0.9.8
-  features: []
+  features:
+    - default
+    - std
 - name: sha1 0.10.6
   features:
     - default
@@ -2820,6 +3074,8 @@
   features:
     - default
     - std
+- name: sha2 0.8.2
+  features: []
 - name: sha2 0.9.9
   features:
     - std
@@ -2848,6 +3104,15 @@
     - support-v0_8
 - name: signal-hook-registry 1.4.1
   features: []
+- name: signature 1.6.4
+  features:
+    - default
+    - digest
+    - digest-preview
+    - hazmat-preview
+    - rand-preview
+    - rand_core
+    - std
 - name: signature 2.2.0
   features:
     - alloc
@@ -2908,6 +3173,8 @@
 - name: soketto 0.7.1
   features:
     - default
+    - deflate
+    - flate2
     - http
 - name: sp-api 4.0.0-dev
   features:
@@ -3017,6 +3284,7 @@
     - default
     - disable_oom
     - disable_panic_handler
+    - ed25519
     - ed25519-dalek
     - futures
     - libsecp256k1
@@ -3157,6 +3425,11 @@
     - once
     - rwlock
     - spin_mutex
+- name: spki 0.6.0
+  features:
+    - alloc
+    - base64ct
+    - pem
 - name: spki 0.7.3
   features:
     - alloc
@@ -3248,6 +3521,8 @@
   features: []
 - name: stringprep 0.1.4
   features: []
+- name: strsim 0.10.0
+  features: []
 - name: strsim 0.11.0
   features: []
 - name: strum 0.24.1
@@ -3266,7 +3541,10 @@
   features: []
 - name: strum_macros 0.26.1
   features: []
-- name: substrate-bip39 0.4.6
+- name: stun 0.4.4
+  features:
+    - default
+- name: substrate-bip39 0.4.5
   features: []
 - name: substrate-bn 0.6.0
   features: []
@@ -3275,6 +3553,8 @@
 - name: substrate-prometheus-endpoint 0.10.0-dev
   features: []
 - name: substrate-wasm-builder 5.0.0-dev
+  features: []
+- name: substring 1.4.5
   features: []
 - name: subtle 2.4.1
   features:
@@ -3295,7 +3575,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.71
+- name: syn 2.0.74
   features:
     - clone-impls
     - default
@@ -3376,12 +3656,12 @@
     - keccak
     - sha3
     - shake
+- name: tinytemplate 1.2.1
+  features: []
 - name: tinyvec 1.6.0
   features:
     - alloc
     - default
-    - grab_spare_slice
-    - std
     - tinyvec_macros
 - name: tinyvec_macros 0.1.1
   features: []
@@ -3557,11 +3837,7 @@
     - socket2
     - tokio
     - tokio-runtime
-- name: trust-dns-proto 0.23.2
-  features:
-    - tokio
-    - tokio-runtime
-- name: trust-dns-resolver 0.23.2
+- name: trust-dns-resolver 0.22.0
   features:
     - ipconfig
     - resolv-conf
@@ -3580,6 +3856,8 @@
     - httparse
     - sha1
     - url
+- name: turn 0.6.1
+  features: []
 - name: twox-hash 1.6.3
   features:
     - digest_0_10
@@ -3619,6 +3897,8 @@
     - default
 - name: unicode_categories 0.1.1
   features: []
+- name: universal-hash 0.4.1
+  features: []
 - name: universal-hash 0.5.1
   features: []
 - name: unsigned-varint 0.7.2
@@ -3647,7 +3927,9 @@
     - default
 - name: uuid 1.10.0
   features:
+    - default
     - rng
+    - std
     - v4
 - name: valuable 0.1.0
   features:
@@ -3679,6 +3961,8 @@
   features:
     - default
     - std
+- name: waitgroup 0.1.2
+  features: []
 - name: waker-fn 1.1.1
   features: []
 - name: walkdir 2.4.0
@@ -3804,12 +4088,44 @@
     - Window
     - Worker
     - WorkerGlobalScope
+- name: webpki 0.21.4
+  features:
+    - default
+    - std
+    - trust_anchor_util
 - name: webpki 0.22.4
   features:
     - alloc
     - std
-- name: webpki-roots 0.25.4
+- name: webpki-roots 0.22.6
   features: []
+- name: webrtc 0.6.0
+  features: []
+- name: webrtc-data 0.6.0
+  features: []
+- name: webrtc-dtls 0.7.2
+  features: []
+- name: webrtc-ice 0.9.1
+  features: []
+- name: webrtc-mdns 0.5.2
+  features:
+    - default
+    - reuse_port
+- name: webrtc-media 0.5.1
+  features: []
+- name: webrtc-sctp 0.7.0
+  features: []
+- name: webrtc-srtp 0.9.1
+  features: []
+- name: webrtc-util 0.7.0
+  features:
+    - buffer
+    - conn
+    - default
+    - ifaces
+    - marshal
+    - sync
+    - vnet
 - name: which 4.4.2
   features: []
 - name: whoami 1.5.1
@@ -3828,6 +4144,7 @@
     - consoleapi
     - errhandlingapi
     - fileapi
+    - guiddef
     - handleapi
     - impl-default
     - knownfolders
@@ -3848,6 +4165,7 @@
     - winerror
     - winnt
     - winuser
+    - ws2def
     - ws2ipdef
     - ws2tcpip
     - wtypesbase
@@ -4017,21 +4335,27 @@
   features: []
 - name: wyz 0.5.1
   features: []
+- name: x25519-dalek 1.1.1
+  features:
+    - default
+    - std
+    - u64_backend
 - name: x25519-dalek 2.0.1
   features:
     - alloc
     - default
     - precomputed-tables
+    - static_secrets
     - zeroize
-- name: x509-parser 0.15.1
+- name: x509-parser 0.13.2
   features:
     - default
-- name: xml-rs 0.8.20
-  features: []
-- name: xmltree 0.10.3
+    - ring
+    - verify
+- name: x509-parser 0.14.0
   features:
     - default
-- name: yamux 0.12.1
+- name: yamux 0.10.2
   features: []
 - name: yasna 0.5.2
   features:
