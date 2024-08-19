@@ -3575,7 +3575,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.74
+- name: syn 2.0.75
   features:
     - clone-impls
     - default
