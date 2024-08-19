@@ -1038,12 +1038,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.2.0":
-  version: 22.2.0
-  resolution: "@types/node@npm:22.2.0"
+"@types/node@npm:22.4.1":
+  version: 22.4.1
+  resolution: "@types/node@npm:22.4.1"
   dependencies:
-    undici-types: ~6.13.0
-  checksum: 63724799337bfb57719a1992690e738341d824e1744a2ac52c5278a008fbfadf99765519c19858feb80418cc7da0d5c8bdf7ea4d82973869b3882bd602c48ade
+    undici-types: ~6.19.2
+  checksum: 341eb54867a3ec8eee7853ff9a9fc92d9f66305b70c9bc5db78492d51f4da3cd81e50c077f5d98eef1835fcbca00c58bb2a229ef56b0e377e48a3284401bf3f6
   languageName: node
   linkType: hard
 
@@ -1891,12 +1891,12 @@ __metadata:
   resolution: "humanode-e2e-tests-ts@workspace:utils/e2e-tests/ts"
   dependencies:
     "@polkadot/api": ^12.3.1
-    "@types/node": 22.2.0
+    "@types/node": 22.4.1
     "@vitest/expect": ^2.0.5
     axios: ^1.7.4
     ethers: ^6.13.2
     typescript: ^5.5.4
-    viem: ^2.19.4
+    viem: ^2.19.7
     vitest: ^2.0.5
   languageName: unknown
   linkType: soft
@@ -2847,10 +2847,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"undici-types@npm:~6.13.0":
-  version: 6.13.0
-  resolution: "undici-types@npm:6.13.0"
-  checksum: 9d0ef6bf58994bebbea6a4ab75f381c69a89a7ed151bfbae0d4ef95450d56502c9eccb323abf17b7d099c1d9c1cbae62e909e4dfeb8d204612d2f1fdada24707
+"undici-types@npm:~6.19.2":
+  version: 6.19.6
+  resolution: "undici-types@npm:6.19.6"
+  checksum: e66df2447b6d93a48b0605a54269d8c3f228edcd1e9563229f6de37e48ed53b3e49b4bc965733643ed9717e0e0fa1ee664c929db91d787c9f488fb3f9e17c533
   languageName: node
   linkType: hard
 
@@ -2879,9 +2879,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^2.19.4":
-  version: 2.19.4
-  resolution: "viem@npm:2.19.4"
+"viem@npm:^2.19.7":
+  version: 2.19.7
+  resolution: "viem@npm:2.19.7"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.4.0
@@ -2897,7 +2897,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: f34537a33d58ee50486d98367067a9c3dab45ec3fcc8883ba85265c413969e2962738db32b9688679221cc88ffbe8daca37b89702d5e0cff9a5da44d7b6e28bd
+  checksum: 61e9bca6f38d510a8ce0308d6b093970e0d58ae45481fcea78bbfdefb0b2d8b651071dd940da07049b949a2cb4b5c005eca2fdee748139ea816edb4b7bc53a8e
   languageName: node
   linkType: hard
 
