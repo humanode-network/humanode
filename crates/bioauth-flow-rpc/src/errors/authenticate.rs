@@ -41,7 +41,7 @@ where
                 shared::Error::Sign(err) => {
                     rpc_error_response::simple(api_error_code::SIGN, err.to_string())
                 }
-                shared::Error::Robonode(
+                shared::Error::RobonodeClient(
                     err @ robonode_client::Error::Call(
                         robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
                     ),
@@ -50,7 +50,7 @@ where
                     err.to_string(),
                     error_data::ShouldRetry,
                 ),
-                shared::Error::Robonode(err) => {
+                shared::Error::RobonodeClient(err) => {
                     rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
                 }
             },
@@ -180,7 +180,7 @@ mod tests {
     fn error_robonode_face_scan_rejected() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::Error::Robonode(robonode_client::Error::Call(
+                shared::Error::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
                 )),
             )
@@ -199,7 +199,7 @@ mod tests {
     fn error_robonode_logic_internal() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::Error::Robonode(robonode_client::Error::Call(
+                shared::Error::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::LogicInternalNoBlob,
                 )),
             )
@@ -218,7 +218,7 @@ mod tests {
     fn error_robonode_other() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::Error::Robonode(robonode_client::Error::Call(
+                shared::Error::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::Unknown("test".to_owned()),
                 )),
             )

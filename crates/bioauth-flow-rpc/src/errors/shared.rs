@@ -12,5 +12,5 @@ pub enum Error<T: std::error::Error + 'static> {
     /// An error that can occur during signing process.
     Sign(SignError),
     /// An error that can occur during doing a call into robonode.
-    Robonode(robonode_client::Error<T>),
+    RobonodeClient(robonode_client::Error<T>),
 }
