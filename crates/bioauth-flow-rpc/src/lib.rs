@@ -279,7 +279,7 @@ where
                 public_key: public_key.as_ref(),
             })
             .await
-            .map_err(shared::Error::Robonode)?;
+            .map_err(shared::Error::RobonodeClient)?;
 
         info!("Bioauth flow - enrolling complete");
 
@@ -310,7 +310,7 @@ where
                 liveness_data_signature: signature.as_ref(),
             })
             .await
-            .map_err(shared::Error::Robonode)?;
+            .map_err(shared::Error::RobonodeClient)?;
 
         info!("Bioauth flow - authentication complete");
 

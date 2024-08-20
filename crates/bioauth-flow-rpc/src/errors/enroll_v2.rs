@@ -29,7 +29,7 @@ impl From<Error> for jsonrpsee::core::Error {
                         err.to_string(),
                     )
                 }
-                shared::Error::Robonode(
+                shared::Error::RobonodeClient(
                     ref err @ robonode_client::Error::Call(
                         robonode_client::EnrollError::FaceScanRejected(ref scan_result_blob)
                         | robonode_client::EnrollError::PersonAlreadyEnrolled(ref scan_result_blob)
@@ -40,7 +40,7 @@ impl From<Error> for jsonrpsee::core::Error {
                     err.to_string(),
                     error_data::ScanResultBlob(scan_result_blob.clone()),
                 ),
-                shared::Error::Robonode(err) => {
+                shared::Error::RobonodeClient(err) => {
                     rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
                 }
                 shared::Error::Sign(err) => {
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn error_robonode_face_scan_rejected() {
         let error: jsonrpsee::core::Error =
-            Error::RobonodeRequest(shared::Error::Robonode(robonode_client::Error::Call(
+            Error::RobonodeRequest(shared::Error::RobonodeClient(robonode_client::Error::Call(
                 robonode_client::EnrollError::FaceScanRejected("scan result blob".to_owned()),
             )))
             .into();
@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn error_robonode_logic_internal() {
         let error: jsonrpsee::core::Error =
-            Error::RobonodeRequest(shared::Error::Robonode(robonode_client::Error::Call(
+            Error::RobonodeRequest(shared::Error::RobonodeClient(robonode_client::Error::Call(
                 robonode_client::EnrollError::LogicInternal("scan result blob".to_owned()),
             )))
             .into();
@@ -125,7 +125,7 @@ mod tests {
 
     #[test]
     fn error_robonode_other() {
-        let error: jsonrpsee::core::Error = Error::RobonodeRequest(shared::Error::Robonode(
+        let error: jsonrpsee::core::Error = Error::RobonodeRequest(shared::Error::RobonodeClient(
             robonode_client::Error::Call(robonode_client::EnrollError::Unknown("test".to_owned())),
         ))
         .into();
