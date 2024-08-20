@@ -4,14 +4,14 @@ use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{api_error_code, shared};
+use super::{api_error_code, shared::FlowBaseError};
 use crate::error_data::{self, BioauthTxErrorDetails};
 
 /// The `authenticate` method error kinds.
 #[derive(Debug)]
 pub enum Error<TxPoolError> {
     /// An error that can occur during doing a request to robonode.
-    RobonodeRequest(shared::Error<robonode_client::AuthenticateError>),
+    RobonodeRequest(FlowBaseError<robonode_client::AuthenticateError>),
     /// An error that can occur during doing a call into runtime api.
     RuntimeApi(ApiError),
     /// An error that can occur with transaction pool logic.
@@ -25,23 +25,23 @@ where
     fn from(err: Error<TxPoolError>) -> Self {
         match err {
             Error::RobonodeRequest(err) => match err {
-                shared::Error::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => {
+                FlowBaseError::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => {
                     rpc_error_response::data(
                         api_error_code::MISSING_VALIDATOR_KEY,
                         err.to_string(),
                         rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
                     )
                 }
-                shared::Error::KeyExtraction(err @ ValidatorKeyError::ValidatorKeyExtraction) => {
+                FlowBaseError::KeyExtraction(err @ ValidatorKeyError::ValidatorKeyExtraction) => {
                     rpc_error_response::simple(
                         api_error_code::VALIDATOR_KEY_EXTRACTION,
                         err.to_string(),
                     )
                 }
-                shared::Error::Sign(err) => {
+                FlowBaseError::Sign(err) => {
                     rpc_error_response::simple(api_error_code::SIGN, err.to_string())
                 }
-                shared::Error::RobonodeClient(
+                FlowBaseError::RobonodeClient(
                     err @ robonode_client::Error::Call(
                         robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
                     ),
@@ -50,7 +50,7 @@ where
                     err.to_string(),
                     error_data::ShouldRetry,
                 ),
-                shared::Error::RobonodeClient(err) => {
+                FlowBaseError::RobonodeClient(err) => {
                     rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
                 }
             },
@@ -132,7 +132,7 @@ mod tests {
     fn error_key_extraction_validator_key_extraction() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::Error::KeyExtraction(ValidatorKeyError::ValidatorKeyExtraction),
+                FlowBaseError::KeyExtraction(ValidatorKeyError::ValidatorKeyExtraction),
             )
             .into();
         let error: ErrorObject = error.into();
@@ -148,7 +148,7 @@ mod tests {
     fn error_key_extraction_missing_validator_key() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::Error::KeyExtraction(ValidatorKeyError::MissingValidatorKey),
+                FlowBaseError::KeyExtraction(ValidatorKeyError::MissingValidatorKey),
             )
             .into();
         let error: ErrorObject = error.into();
@@ -163,7 +163,7 @@ mod tests {
     #[test]
     fn error_sign() {
         let error: jsonrpsee::core::Error =
-            Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(shared::Error::Sign(
+            Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(FlowBaseError::Sign(
                 SignError::SigningFailed,
             ))
             .into();
@@ -180,7 +180,7 @@ mod tests {
     fn error_robonode_face_scan_rejected() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::Error::RobonodeClient(robonode_client::Error::Call(
+                FlowBaseError::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
                 )),
             )
@@ -199,7 +199,7 @@ mod tests {
     fn error_robonode_logic_internal() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::Error::RobonodeClient(robonode_client::Error::Call(
+                FlowBaseError::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::LogicInternalNoBlob,
                 )),
             )
@@ -218,7 +218,7 @@ mod tests {
     fn error_robonode_other() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::Error::RobonodeClient(robonode_client::Error::Call(
+                FlowBaseError::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::Unknown("test".to_owned()),
                 )),
             )

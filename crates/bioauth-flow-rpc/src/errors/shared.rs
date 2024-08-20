@@ -6,7 +6,7 @@ use super::sign::Error as SignError;
 
 /// The robonode requests related error.
 #[derive(Debug)]
-pub enum Error<T: std::error::Error + 'static> {
+pub enum FlowBaseError<T: std::error::Error + 'static> {
     /// An error that can occur during validator key extraction.
     KeyExtraction(ValidatorKeyError),
     /// An error that can occur during signing process.
