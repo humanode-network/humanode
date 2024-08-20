@@ -6,7 +6,7 @@ pub mod enroll;
 pub mod enroll_v2;
 pub mod get_facetec_device_sdk_params;
 pub mod get_facetec_session_token;
-pub mod robonode_request;
+pub mod shared;
 pub mod sign;
 pub mod status;
 

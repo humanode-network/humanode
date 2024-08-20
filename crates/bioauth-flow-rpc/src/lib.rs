@@ -14,8 +14,7 @@ use errors::{
     enroll::Error as EnrollError, enroll_v2::Error as EnrollV2Error,
     get_facetec_device_sdk_params::Error as GetFacetecDeviceSdkParamsError,
     get_facetec_session_token::Error as GetFacetecSessionToken,
-    robonode_request::Error as RobonodeRequestError, sign::Error as SignError,
-    status::Error as StatusError,
+    shared::Error as RobonodeRequestError, sign::Error as SignError, status::Error as StatusError,
 };
 use futures::StreamExt;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
