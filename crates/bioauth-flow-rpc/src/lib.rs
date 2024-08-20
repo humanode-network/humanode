@@ -13,8 +13,8 @@ use errors::{
     authenticate::Error as AuthenticateError, authenticate_v2::Error as AuthenticateV2Error,
     enroll::Error as EnrollError, enroll_v2::Error as EnrollV2Error,
     get_facetec_device_sdk_params::Error as GetFacetecDeviceSdkParamsError,
-    get_facetec_session_token::Error as GetFacetecSessionToken,
-    shared::Error as RobonodeRequestError, sign::Error as SignError, status::Error as StatusError,
+    get_facetec_session_token::Error as GetFacetecSessionToken, shared, sign::Error as SignError,
+    status::Error as StatusError,
 };
 use futures::StreamExt;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
@@ -257,18 +257,18 @@ where
     /// Do enroll with provided liveness data.
     async fn do_enroll(&self, liveness_data: LivenessData) -> Result<
         EnrollResponse,
-        RobonodeRequestError<robonode_client::EnrollError>
+        shared::Error<robonode_client::EnrollError>
     > {
         info!("Bioauth flow - enrolling in progress");
 
         let public_key =
             rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-            .map_err(RobonodeRequestError::KeyExtraction)?;
+            .map_err(shared::Error::KeyExtraction)?;
 
         let (opaque_liveness_data, signature) = self
             .sign(public_key.clone(), &liveness_data)
             .await
-            .map_err(RobonodeRequestError::Sign)?;
+            .map_err(shared::Error::Sign)?;
 
         let response = self
             .robonode_client
@@ -279,7 +279,7 @@ where
                 public_key: public_key.as_ref(),
             })
             .await
-            .map_err(RobonodeRequestError::Robonode)?;
+            .map_err(shared::Error::Robonode)?;
 
         info!("Bioauth flow - enrolling complete");
 
@@ -289,18 +289,18 @@ where
     /// Do authenticate with provided liveness data.
     async fn do_authenticate(&self, liveness_data: LivenessData) -> Result<
         AuthenticateResponse,
-        RobonodeRequestError<robonode_client::AuthenticateError>
+        shared::Error<robonode_client::AuthenticateError>
     > {
         info!("Bioauth flow - authentication in progress");
 
         let public_key =
             rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-            .map_err(RobonodeRequestError::KeyExtraction)?;
+            .map_err(shared::Error::KeyExtraction)?;
 
         let (opaque_liveness_data, signature) = self
             .sign(public_key, &liveness_data)
             .await
-            .map_err(RobonodeRequestError::Sign)?;
+            .map_err(shared::Error::Sign)?;
 
         let response = self
             .robonode_client
@@ -310,7 +310,7 @@ where
                 liveness_data_signature: signature.as_ref(),
             })
             .await
-            .map_err(RobonodeRequestError::Robonode)?;
+            .map_err(shared::Error::Robonode)?;
 
         info!("Bioauth flow - authentication complete");
 
