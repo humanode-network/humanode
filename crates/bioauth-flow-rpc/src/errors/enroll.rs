@@ -2,7 +2,7 @@
 
 use rpc_validator_key_logic::Error as ValidatorKeyError;
 
-use super::{api_error_code, robonode_request::Error as RobonodeRequestError};
+use super::{api_error_code, shared::Error as RobonodeRequestError};
 use crate::error_data;
 
 /// The `enroll` method error kinds.

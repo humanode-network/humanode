@@ -4,7 +4,7 @@ use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{api_error_code, robonode_request::Error as RobonodeRequestError};
+use super::{api_error_code, shared::Error as RobonodeRequestError};
 use crate::error_data::{self, BioauthTxErrorDetails};
 
 /// The `authenticate` method error kinds.
