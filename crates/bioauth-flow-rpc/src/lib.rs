@@ -406,7 +406,7 @@ where
     async fn enroll(&self, liveness_data: LivenessData) -> RpcResult<()> {
         self.deny_unsafe.check_if_safe()?;
 
-        self.do_enroll(liveness_data).await.map_err(EnrollError::RobonodeRequest)?;
+        self.do_enroll(liveness_data).await.map_err(EnrollError)?;
 
         Ok(())
     }
@@ -417,7 +417,7 @@ where
         let EnrollResponse { scan_result_blob } = self
             .do_enroll(liveness_data)
             .await
-            .map_err(EnrollV2Error::RobonodeRequest)?;
+            .map_err(EnrollV2Error)?;
 
         let scan_result_blob = scan_result_blob.expect("expect scan result blob in response");
 
@@ -541,7 +541,7 @@ where
             auth_ticket,
             auth_ticket_signature,
             scan_result_blob,
-        } = self.do_authenticate(liveness_data).await.map_err(AuthenticateV2Error::RobonodeRequest)?;
+        } = self.do_authenticate(liveness_data).await.map_err(AuthenticateV2Error)?;
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
 
