@@ -23,7 +23,7 @@ pub enum BioauthStatus<Timestamp> {
 
 sp_api::decl_runtime_apis! {
     /// Runtime API for the bioauth flow.
-    pub trait BioauthFlowApi<Id: Encode, Timestamp: Decode> {
+    pub trait BioauthFlowApi<Id, Timestamp: Decode> where Id: Encode {
         /// Determine the bioauth status for the given `id` at the current block.
         ///
         /// This call is intended for use in the bioauth flow, and the `id` passed is likely.
