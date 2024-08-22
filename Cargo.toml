@@ -73,7 +73,7 @@ codec = { package = "parity-scale-codec", version = "3.2.2", default-features = 
 frame-benchmarking = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 frame-benchmarking-cli = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 frame-executive = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
-frame-support = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
+frame-support = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-08-21", default-features = false }
 frame-system = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 frame-system-benchmarking = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 frame-system-rpc-runtime-api = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
