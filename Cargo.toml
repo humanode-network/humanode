@@ -106,7 +106,7 @@ sc-consensus-grandpa-rpc = { git = "https://github.com/humanode-network/substrat
 sc-executor = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sc-network = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sc-network-sync = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
-sc-rpc = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
+sc-rpc = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-08-21", default-features = false }
 sc-rpc-api = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sc-rpc-spec-v2 = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sc-service = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
