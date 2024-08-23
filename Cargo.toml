@@ -138,7 +138,7 @@ sp-timestamp = { git = "https://github.com/humanode-network/substrate", tag = "l
 sp-tracing = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sp-transaction-pool = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sp-version = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
-substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
+substrate-frame-rpc-system = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-08-21", default-features = false }
 substrate-wasm-builder = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 try-runtime-cli = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 
