@@ -3345,6 +3345,9 @@
   features:
     - default
     - std
+- name: sp-std 5.0.0
+  features:
+    - std
 - name: sp-storage 7.0.0
   features:
     - default
@@ -3362,6 +3365,11 @@
 - name: sp-tracing 6.0.0
   features:
     - default
+    - std
+    - tracing-subscriber
+    - with-tracing
+- name: sp-tracing 6.0.0
+  features:
     - std
     - tracing-subscriber
     - with-tracing
