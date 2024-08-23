@@ -1127,6 +1127,7 @@
     - serde_full
     - std
     - v14
+    - v15-unstable
 - name: frame-support 4.0.0-dev
   features:
     - default
@@ -3184,6 +3185,17 @@
     - sp-trie
     - std
     - thiserror
+- name: sp-api 4.0.0-dev
+  features:
+    - hash-db
+    - sp-state-machine
+    - sp-trie
+    - std
+    - thiserror
+- name: sp-api-proc-macro 4.0.0-dev
+  features:
+    - default
+    - std
 - name: sp-api-proc-macro 4.0.0-dev
   features:
     - default
@@ -3194,14 +3206,26 @@
     - full_crypto
     - serde
     - std
+- name: sp-application-crypto 7.0.0
+  features:
+    - full_crypto
+    - serde
+    - std
 - name: sp-arithmetic 6.0.0
   features:
     - default
     - serde
     - std
+- name: sp-arithmetic 6.0.0
+  features:
+    - serde
+    - std
 - name: sp-block-builder 4.0.0-dev
   features:
     - default
+    - std
+- name: sp-block-builder 4.0.0-dev
+  features:
     - std
 - name: sp-blockchain 4.0.0-dev
   features: []
@@ -3258,15 +3282,50 @@
     - substrate-bip39
     - thiserror
     - tiny-bip39
+- name: sp-core 7.0.0
+  features:
+    - array-bytes
+    - blake2
+    - bs58
+    - dyn-clonable
+    - ed25519-zebra
+    - full_crypto
+    - futures
+    - impl-serde
+    - lazy_static
+    - libsecp256k1
+    - parking_lot
+    - rand
+    - regex
+    - secp256k1
+    - serde
+    - sp-core-hashing
+    - sp-externalities
+    - std
+    - substrate-bip39
+    - thiserror
+    - tiny-bip39
 - name: sp-core-hashing 5.0.0
   features:
     - std
+- name: sp-core-hashing 5.0.0
+  features:
+    - std
+- name: sp-core-hashing-proc-macro 5.0.0
+  features: []
 - name: sp-core-hashing-proc-macro 5.0.0
   features: []
 - name: sp-database 4.0.0-dev
   features: []
 - name: sp-debug-derive 5.0.0
   features:
+    - std
+- name: sp-debug-derive 5.0.0
+  features:
+    - std
+- name: sp-externalities 0.13.0
+  features:
+    - default
     - std
 - name: sp-externalities 0.13.0
   features:
@@ -3279,9 +3338,29 @@
     - sp-runtime
     - std
     - thiserror
+- name: sp-inherents 4.0.0-dev
+  features:
+    - async-trait
+    - sp-runtime
+    - std
+    - thiserror
 - name: sp-io 7.0.0
   features:
     - default
+    - disable_oom
+    - disable_panic_handler
+    - ed25519
+    - ed25519-dalek
+    - futures
+    - libsecp256k1
+    - log
+    - secp256k1
+    - sp-keystore
+    - sp-state-machine
+    - sp-trie
+    - std
+- name: sp-io 7.0.0
+  features:
     - disable_oom
     - disable_panic_handler
     - ed25519
@@ -3301,12 +3380,19 @@
     - default
     - serde
     - std
+- name: sp-keystore 0.13.0
+  features: []
 - name: sp-maybe-compressed-blob 4.1.0-dev
   features: []
+- name: sp-metadata-ir 0.1.0
+  features:
+    - std
 - name: sp-offchain 4.0.0-dev
   features:
     - default
     - std
+- name: sp-panic-handler 5.0.0
+  features: []
 - name: sp-panic-handler 5.0.0
   features: []
 - name: sp-rpc 6.0.0
@@ -3317,11 +3403,22 @@
     - rand
     - serde
     - std
+- name: sp-runtime 7.0.0
+  features:
+    - rand
+    - serde
+    - std
 - name: sp-runtime-interface 7.0.0
   features:
     - default
     - disable_target_static_assertions
     - std
+- name: sp-runtime-interface 7.0.0
+  features:
+    - disable_target_static_assertions
+    - std
+- name: sp-runtime-interface-proc-macro 6.0.0
+  features: []
 - name: sp-runtime-interface-proc-macro 6.0.0
   features: []
 - name: sp-session 4.0.0-dev
@@ -3341,13 +3438,29 @@
     - std
     - thiserror
     - tracing
+- name: sp-state-machine 0.13.0
+  features:
+    - parking_lot
+    - rand
+    - sp-panic-handler
+    - std
+    - thiserror
+    - tracing
 - name: sp-std 5.0.0
   features:
     - default
     - std
+- name: sp-std 5.0.0
+  features:
+    - std
 - name: sp-storage 7.0.0
   features:
     - default
+    - impl-serde
+    - serde
+    - std
+- name: sp-storage 7.0.0
+  features:
     - impl-serde
     - serde
     - std
@@ -3362,6 +3475,11 @@
 - name: sp-tracing 6.0.0
   features:
     - default
+    - std
+    - tracing-subscriber
+    - with-tracing
+- name: sp-tracing 6.0.0
+  features:
     - std
     - tracing-subscriber
     - with-tracing
@@ -3389,6 +3507,17 @@
     - std
     - thiserror
     - tracing
+- name: sp-trie 7.0.0
+  features:
+    - ahash
+    - hashbrown
+    - lazy_static
+    - nohash-hasher
+    - parking_lot
+    - schnellru
+    - std
+    - thiserror
+    - tracing
 - name: sp-version 5.0.0
   features:
     - default
@@ -3397,6 +3526,15 @@
     - serde
     - std
     - thiserror
+- name: sp-version 5.0.0
+  features:
+    - impl-serde
+    - parity-wasm
+    - serde
+    - std
+    - thiserror
+- name: sp-version-proc-macro 4.0.0-dev
+  features: []
 - name: sp-version-proc-macro 4.0.0-dev
   features: []
 - name: sp-wasm-interface 7.0.0
@@ -3407,9 +3545,20 @@
     - std
     - wasmi
     - wasmtime
+- name: sp-wasm-interface 7.0.0
+  features:
+    - anyhow
+    - log
+    - std
+    - wasmi
+    - wasmtime
 - name: sp-weights 4.0.0
   features:
     - default
+    - serde
+    - std
+- name: sp-weights 4.0.0
+  features:
     - serde
     - std
 - name: spin 0.5.2
