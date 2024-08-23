@@ -3258,6 +3258,32 @@
     - substrate-bip39
     - thiserror
     - tiny-bip39
+- name: sp-core 7.0.0
+  features:
+    - array-bytes
+    - blake2
+    - bs58
+    - dyn-clonable
+    - ed25519-zebra
+    - full_crypto
+    - futures
+    - impl-serde
+    - lazy_static
+    - libsecp256k1
+    - parking_lot
+    - rand
+    - regex
+    - secp256k1
+    - serde
+    - sp-core-hashing
+    - sp-externalities
+    - std
+    - substrate-bip39
+    - thiserror
+    - tiny-bip39
+- name: sp-core-hashing 5.0.0
+  features:
+    - std
 - name: sp-core-hashing 5.0.0
   features:
     - std
@@ -3267,6 +3293,13 @@
   features: []
 - name: sp-debug-derive 5.0.0
   features:
+    - std
+- name: sp-debug-derive 5.0.0
+  features:
+    - std
+- name: sp-externalities 0.13.0
+  features:
+    - default
     - std
 - name: sp-externalities 0.13.0
   features:
@@ -3294,6 +3327,18 @@
     - sp-state-machine
     - sp-trie
     - std
+- name: sp-io 7.0.0
+  features:
+    - ed25519
+    - ed25519-dalek
+    - futures
+    - libsecp256k1
+    - log
+    - secp256k1
+    - sp-keystore
+    - sp-state-machine
+    - sp-trie
+    - std
 - name: sp-keyring 7.0.0
   features: []
 - name: sp-keystore 0.13.0
@@ -3301,12 +3346,16 @@
     - default
     - serde
     - std
+- name: sp-keystore 0.13.0
+  features: []
 - name: sp-maybe-compressed-blob 4.1.0-dev
   features: []
 - name: sp-offchain 4.0.0-dev
   features:
     - default
     - std
+- name: sp-panic-handler 5.0.0
+  features: []
 - name: sp-panic-handler 5.0.0
   features: []
 - name: sp-rpc 6.0.0
@@ -3322,6 +3371,12 @@
     - default
     - disable_target_static_assertions
     - std
+- name: sp-runtime-interface 7.0.0
+  features:
+    - disable_target_static_assertions
+    - std
+- name: sp-runtime-interface-proc-macro 6.0.0
+  features: []
 - name: sp-runtime-interface-proc-macro 6.0.0
   features: []
 - name: sp-session 4.0.0-dev
@@ -3341,13 +3396,29 @@
     - std
     - thiserror
     - tracing
+- name: sp-state-machine 0.13.0
+  features:
+    - parking_lot
+    - rand
+    - sp-panic-handler
+    - std
+    - thiserror
+    - tracing
 - name: sp-std 5.0.0
   features:
     - default
     - std
+- name: sp-std 5.0.0
+  features:
+    - std
 - name: sp-storage 7.0.0
   features:
     - default
+    - impl-serde
+    - serde
+    - std
+- name: sp-storage 7.0.0
+  features:
     - impl-serde
     - serde
     - std
@@ -3362,6 +3433,11 @@
 - name: sp-tracing 6.0.0
   features:
     - default
+    - std
+    - tracing-subscriber
+    - with-tracing
+- name: sp-tracing 6.0.0
+  features:
     - std
     - tracing-subscriber
     - with-tracing
@@ -3389,6 +3465,17 @@
     - std
     - thiserror
     - tracing
+- name: sp-trie 7.0.0
+  features:
+    - ahash
+    - hashbrown
+    - lazy_static
+    - nohash-hasher
+    - parking_lot
+    - schnellru
+    - std
+    - thiserror
+    - tracing
 - name: sp-version 5.0.0
   features:
     - default
@@ -3403,6 +3490,13 @@
   features:
     - anyhow
     - default
+    - log
+    - std
+    - wasmi
+    - wasmtime
+- name: sp-wasm-interface 7.0.0
+  features:
+    - anyhow
     - log
     - std
     - wasmi
