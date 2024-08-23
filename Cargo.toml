@@ -146,7 +146,7 @@ try-runtime-cli = { git = "https://github.com/humanode-network/substrate", tag =
 fc-cli = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 fc-consensus = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 fc-db = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
-fc-mapping-sync = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
+fc-mapping-sync = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.42-2024-08-21", default-features = false }
 fc-rpc = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 fc-rpc-core = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 fc-storage = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
