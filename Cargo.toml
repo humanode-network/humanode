@@ -120,7 +120,7 @@ sp-application-crypto = { git = "https://github.com/humanode-network/substrate",
 sp-block-builder = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sp-blockchain = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sp-consensus = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
-sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
+sp-consensus-babe = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-08-21", default-features = false }
 sp-consensus-grandpa = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sp-core = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 sp-core-hashing-proc-macro = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
