@@ -156,7 +156,7 @@ fp-self-contained = { git = "https://github.com/humanode-network/frontier", tag 
 fp-storage = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 pallet-ethereum = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 pallet-evm = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
-pallet-evm-balances = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
+pallet-evm-balances = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.42-2024-08-21", default-features = false }
 pallet-evm-precompile-blake2 = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 pallet-evm-precompile-bn128 = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
 pallet-evm-precompile-modexp = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.40-2024-08-19", default-features = false }
