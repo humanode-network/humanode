@@ -2927,6 +2927,8 @@
   features: []
 - name: sc-telemetry 4.0.0-dev
   features: []
+- name: sc-telemetry 4.0.0-dev
+  features: []
 - name: sc-tracing 4.0.0-dev
   features: []
 - name: sc-tracing-proc-macro 4.0.0-dev
@@ -2935,6 +2937,10 @@
   features: []
 - name: sc-transaction-pool-api 4.0.0-dev
   features: []
+- name: sc-utils 4.0.0-dev
+  features:
+    - default
+    - metered
 - name: sc-utils 4.0.0-dev
   features:
     - default
@@ -3199,6 +3205,8 @@
     - default
     - serde
     - std
+- name: sp-arithmetic 6.0.0
+  features: []
 - name: sp-block-builder 4.0.0-dev
   features:
     - default
@@ -3345,6 +3353,8 @@
   features:
     - default
     - std
+- name: sp-std 5.0.0
+  features: []
 - name: sp-storage 7.0.0
   features:
     - default
