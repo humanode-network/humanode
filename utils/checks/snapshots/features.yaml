@@ -2537,7 +2537,7 @@
     - rustls
     - tls-rustls
     - webpki
-- name: quote 1.0.36
+- name: quote 1.0.37
   features:
     - default
     - proc-macro
