@@ -4,6 +4,6 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@polkadot/api-cli": "^0.57.3"
+    "@polkadot/api-cli": "^0.57.4"
   }
 }
