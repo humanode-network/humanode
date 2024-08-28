@@ -4,6 +4,16 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    ignore:
+      # Substrate and frontier related deps as all of them are controlled in our forks.
+      - dependency-name: "frame-*"
+      - dependency-name: "pallet-*"
+      - dependency-name: "sc-*"
+      - dependency-name: "sp-*"
+      - dependency-name: "fc-*"
+      - dependency-name: "fp-*"
+      - dependency-name: "substrate-*"
+      - dependency-name: "try-runtime-cli"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
