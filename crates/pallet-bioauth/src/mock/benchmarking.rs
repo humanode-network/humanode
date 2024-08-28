@@ -156,6 +156,7 @@ const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
 pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = TIMESTAMP_MINUTE;
 pub const MAX_AUTHENTICATIONS: u32 = 512;
 pub const MAX_NONCES: u32 = 512;
+pub const MAX_BLACK_LISTED_VALIDATORS_PUBLIC_KEYS: u32 = 512;
 
 pub struct DisplayMoment;
 
@@ -186,6 +187,7 @@ impl pallet_bioauth::Config for Benchmark {
     type WeightInfo = ();
     type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
     type MaxNonces = ConstU32<MAX_NONCES>;
+    type MaxBlackListedValidatorPublicKeys = ConstU32<MAX_BLACK_LISTED_VALIDATORS_PUBLIC_KEYS>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
     type DeauthenticationReason = ();

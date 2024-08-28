@@ -102,7 +102,10 @@ pub mod utils;
 
 pub use constants::{
     babe::{BABE_GENESIS_EPOCH_CONFIG, EPOCH_DURATION_IN_SLOTS, MAX_AUTHORITIES, SLOT_DURATION},
-    bioauth::{AUTHENTICATIONS_EXPIRE_AFTER, MAX_AUTHENTICATIONS, MAX_NONCES},
+    bioauth::{
+        AUTHENTICATIONS_EXPIRE_AFTER, MAX_AUTHENTICATIONS, MAX_BLACK_LISTED_VALIDATORS_PUBLIC_KEYS,
+        MAX_NONCES,
+    },
     block_time::MILLISECS_PER_BLOCK,
     equivocation::REPORT_LONGEVITY,
     ethereum::EXTRA_DATA_LENGTH,
@@ -530,6 +533,7 @@ impl pallet_bioauth::Config for Runtime {
     type WeightInfo = weights::pallet_bioauth::WeightInfo<Runtime>;
     type MaxAuthentications = ConstU32<MAX_AUTHENTICATIONS>;
     type MaxNonces = ConstU32<MAX_NONCES>;
+    type MaxBlackListedValidatorPublicKeys = ConstU32<MAX_BLACK_LISTED_VALIDATORS_PUBLIC_KEYS>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
     type DeauthenticationReason = DeauthenticationReason;

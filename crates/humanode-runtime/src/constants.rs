@@ -38,6 +38,7 @@ pub mod bioauth {
 
     pub const MAX_AUTHENTICATIONS: u32 = 3 * 1024;
     pub const MAX_NONCES: u32 = 10000 * MAX_AUTHENTICATIONS;
+    pub const MAX_BLACK_LISTED_VALIDATORS_PUBLIC_KEYS: u32 = MAX_AUTHENTICATIONS;
     pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * super::timestamp::TIMESTAMP_DAY;
 }
 

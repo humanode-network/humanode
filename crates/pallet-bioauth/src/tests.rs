@@ -1057,6 +1057,7 @@ fn genesis_build() {
         robonode_public_key: MockVerifier::A,
         consumed_auth_ticket_nonces: consumed_auth_ticket_nonces.clone(),
         active_authentications: active_authentications.clone(),
+        black_listed_validator_public_keys: Default::default(),
     };
 
     // Set up mock expectations for validators set initialization.

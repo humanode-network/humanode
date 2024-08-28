@@ -261,6 +261,9 @@ pub mod pallet {
         /// The maximum number of nonces.
         type MaxNonces: Get<u32>;
 
+        /// The maximum number of black listed validator public keys.
+        type MaxBlackListedValidatorPublicKeys: Get<u32>;
+
         /// Before authentication hook.
         type BeforeAuthHook: BeforeAuthHook<Self::ValidatorPublicKey, Self::Moment>;
 
@@ -297,12 +300,23 @@ pub mod pallet {
         ValueQuery,
     >;
 
+    /// A list of all black listed validator public keys that are not able submit authentications.
+    #[pallet::storage]
+    #[pallet::getter(fn black_list)]
+    pub type BlackListedValidatorPublicKeys<T: Config> = StorageValue<
+        _,
+        BoundedVec<T::ValidatorPublicKey, T::MaxBlackListedValidatorPublicKeys>,
+        ValueQuery,
+    >;
+
     #[pallet::genesis_config]
     pub struct GenesisConfig<T: Config> {
         pub robonode_public_key: T::RobonodePublicKey,
         pub consumed_auth_ticket_nonces: BoundedVec<BoundedAuthTicketNonce, T::MaxNonces>,
         pub active_authentications:
             BoundedVec<Authentication<T::ValidatorPublicKey, T::Moment>, T::MaxAuthentications>,
+        pub black_listed_validator_public_keys:
+            BoundedVec<T::ValidatorPublicKey, T::MaxBlackListedValidatorPublicKeys>,
     }
 
     // The default value for the genesis config type.
@@ -313,6 +327,7 @@ pub mod pallet {
                 robonode_public_key: Default::default(),
                 consumed_auth_ticket_nonces: Default::default(),
                 active_authentications: Default::default(),
+                black_listed_validator_public_keys: Default::default(),
             }
         }
     }
@@ -324,6 +339,9 @@ pub mod pallet {
             <RobonodePublicKey<T>>::put(&self.robonode_public_key);
             <ConsumedAuthTicketNonces<T>>::put(self.consumed_auth_ticket_nonces.clone());
             <ActiveAuthentications<T>>::put(self.active_authentications.clone());
+            <BlackListedValidatorPublicKeys<T>>::put(
+                self.black_listed_validator_public_keys.clone(),
+            );
 
             <Pallet<T>>::issue_validators_set_init(&self.active_authentications);
         }
@@ -360,6 +378,8 @@ pub mod pallet {
         NonceAlreadyUsed,
         /// This public key has already been used.
         PublicKeyAlreadyUsed,
+        /// This public key is black listed.
+        PublicKeyIsBlackListed,
         /// The ConsumedAuthTicketNonces storage has reached the limit as BoundedVec.
         TooManyNonces,
         /// The number of bytes at the nonce has reached the bounded limit.
@@ -401,6 +421,12 @@ pub mod pallet {
             ActiveAuthentications::<T>::get()
                 .iter()
                 .any(|authentication| &authentication.public_key == public_key)
+        }
+
+        pub fn is_black_listed(public_key: &<T as Config>::ValidatorPublicKey) -> bool {
+            BlackListedValidatorPublicKeys::<T>::get()
+                .iter()
+                .any(|black_listed_public_key| black_listed_public_key == public_key)
         }
 
         pub fn deauthenticate(

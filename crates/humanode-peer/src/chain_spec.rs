@@ -342,6 +342,7 @@ fn testnet_genesis(
             robonode_public_key,
             consumed_auth_ticket_nonces: BoundedVec::default(),
             active_authentications: BoundedVec::default(),
+            black_listed_validator_public_keys: BoundedVec::default(),
         },
         chain_properties: ChainPropertiesConfig {
             ss58_prefix: SS58_PREFIX,
