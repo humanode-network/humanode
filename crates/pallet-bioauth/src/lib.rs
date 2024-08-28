@@ -463,6 +463,8 @@ pub mod pallet {
         #[pallet::weight(T::WeightInfo::authenticate(
             <ActiveAuthentications<T>>::get().len().try_into()
             .expect("u32 is big enough for this overflow to be practically impossible"),
+            <BlackListedValidatorPublicKeys<T>>::get().len().try_into()
+            .expect("u32 is big enough for this overflow to be practically impossible"),
             <ConsumedAuthTicketNonces<T>>::get().len().try_into()
             .expect("u32 is big enough for this overflow to be practically impossible")))]
         pub fn authenticate(

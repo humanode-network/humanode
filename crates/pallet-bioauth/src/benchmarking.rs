@@ -108,6 +108,21 @@ fn populate_consumed_auth_ticket_nonces<Runtime: pallet::Config>(count: u32) {
     ConsumedAuthTicketNonces::<Runtime>::put(bounded_consumed_nonces);
 }
 
+/// Populate the [`BlackListedValidatorPublicKeys`] storage with generated data.
+fn populate_black_listed_validator_public_keys<Runtime: pallet::Config>(count: u32) {
+    let mut black_listed_validator_public_keys: Vec<_> = vec![];
+    for i in 0..count {
+        let public_key: [u8; 32] = make_pubkey("black_listed", i as u32).try_into().unwrap();
+        black_listed_validator_public_keys.push(public_key.into());
+    }
+    let bounded_black_listed_validator_public_keys =
+        BoundedVec::<_, Runtime::MaxBlackListedValidatorPublicKeys>::try_from(
+            black_listed_validator_public_keys,
+        )
+        .unwrap();
+    BlackListedValidatorPublicKeys::<Runtime>::put(bounded_black_listed_validator_public_keys);
+}
+
 benchmarks! {
     where_clause {
         where
@@ -122,6 +137,7 @@ benchmarks! {
         // Leave one space spare for the payload to be inserted in this call.
         let a in 0 .. (T::MaxAuthentications::get() - 1) =>  populate_active_authentications::<T>(a);
         let n in 0 .. (T::MaxNonces::get() - 1) => populate_consumed_auth_ticket_nonces::<T>(n);
+        let b in 0 .. (T::MaxBlackListedValidatorPublicKeys::get() - 1) => populate_black_listed_validator_public_keys::<T>(n);
 
         // Create `authenticate` extrinsic payload.
         let public_key = make_pubkey("new", T::MaxAuthentications::get());
