@@ -483,6 +483,11 @@ pub mod pallet {
                 })?;
             let public_key = auth_ticket.public_key.clone();
 
+            ensure!(
+                Self::is_black_listed(&public_key),
+                Error::<T>::PublicKeyIsBlackListed
+            );
+
             // Update storage.
             <ConsumedAuthTicketNonces<T>>::try_mutate::<_, DispatchError, _>(
                 move |consumed_auth_ticket_nonces| {
