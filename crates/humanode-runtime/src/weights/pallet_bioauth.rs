@@ -11,26 +11,48 @@ use sp_std::marker::PhantomData;
 /// Weight functions for `pallet_bioauth`.
 pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_bioauth::WeightInfo for WeightInfo<T> {
+  /// The range of component `b` is `[0, 3071]`.
   /// The range of component `n` is `[0, 30719999]`.
   /// The range of component `a` is `[0, 3071]`.
-  fn authenticate(_a: u32, n: u32, ) -> Weight {
-    // Minimum execution time: 127_000 nanoseconds.
-    Weight::from_parts(227_889_999_931, 0)
-      // Standard Error: 9_401
-      .saturating_add(Weight::from_parts(132_701, 0).saturating_mul(n.into()))
-      .saturating_add(T::DbWeight::get().reads(4))
+  fn authenticate(a: u32, n: u32, _b: u32, ) -> Weight {
+    // Proof Size summary in bytes:
+    //  Measured:  `203 + a * (40 ±0) + n * (19 ±0) + b * (32 ±0)`
+    //  Estimated: `0`
+    // Minimum execution time: 169_000_000 picoseconds.
+    Weight::from_parts(169_000_000, 0)
+      // Standard Error: 3_914_293
+      .saturating_add(Weight::from_parts(6_977_381, 0).saturating_mul(a.into()))
+      // Standard Error: 391
+      .saturating_add(Weight::from_parts(105_884, 0).saturating_mul(n.into()))
+      .saturating_add(T::DbWeight::get().reads(5))
       .saturating_add(T::DbWeight::get().writes(2))
   }
   /// The range of component `a` is `[0, 3072]`.
   fn set_robonode_public_key(_a: u32, ) -> Weight {
-    // Minimum execution time: 6_000 nanoseconds.
-    Weight::from_parts(7_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `0`
+    //  Estimated: `0`
+    // Minimum execution time: 3_000_000 picoseconds.
+    Weight::from_parts(3_000_000, 0)
       .saturating_add(T::DbWeight::get().writes(2))
+  }
+  /// The range of component `b` is `[0, 3071]`.
+  fn blacklist(_b: u32, ) -> Weight {
+    // Proof Size summary in bytes:
+    //  Measured:  `119 + b * (32 ±0)`
+    //  Estimated: `0`
+    // Minimum execution time: 6_000_000 picoseconds.
+    Weight::from_parts(69_000_000, 0)
+      .saturating_add(T::DbWeight::get().reads(1))
+      .saturating_add(T::DbWeight::get().writes(1))
   }
   /// The range of component `a` is `[0, 3072]`.
   fn on_initialize(_a: u32, ) -> Weight {
-    // Minimum execution time: 6_000 nanoseconds.
-    Weight::from_parts(74_000_000, 0)
+    // Proof Size summary in bytes:
+    //  Measured:  `161 + a * (40 ±0)`
+    //  Estimated: `0`
+    // Minimum execution time: 9_000_000 picoseconds.
+    Weight::from_parts(104_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(2))
       .saturating_add(T::DbWeight::get().writes(1))
   }
