@@ -589,8 +589,14 @@ pub mod pallet {
             <BlackListedValidatorPublicKeys<T>>::try_mutate::<_, DispatchError, _>(
                 move |black_listed_validator_public_keys| {
                     black_listed_validator_public_keys
-                        .try_push(validator_public_key)
+                        .try_push(validator_public_key.clone())
                         .map_err(|_| Error::<T>::TooManyBlackListedValidatorPublicKeys)?;
+
+                    ActiveAuthentications::<T>::mutate(|active_authentications| {
+                        active_authentications.retain(|authentication| {
+                            authentication.public_key != validator_public_key
+                        });
+                    });
 
                     Ok(())
                 },
