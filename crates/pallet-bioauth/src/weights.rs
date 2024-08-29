@@ -12,6 +12,8 @@ pub trait WeightInfo {
     ) -> Weight;
     /// A function to calculate required weights for `set_robonode_public_key` call.
     fn set_robonode_public_key(authentications: u32) -> Weight;
+    /// A function to calculate required weights for `blacklist` call.
+    fn blacklist(black_listed_validators_public_keys: u32) -> Weight;
     /// A function to calculate required weights for `on_initialize` hook.
     fn on_initialize(authentications: u32) -> Weight;
 }
@@ -26,6 +28,10 @@ impl WeightInfo for () {
     }
 
     fn set_robonode_public_key(_authentications: u32) -> Weight {
+        Weight::zero()
+    }
+
+    fn blacklist(_black_listed_validators_public_keys: u32) -> Weight {
         Weight::zero()
     }
 

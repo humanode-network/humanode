@@ -302,7 +302,7 @@ pub mod pallet {
 
     /// A list of all black listed validator public keys that are not able submit authentications.
     #[pallet::storage]
-    #[pallet::getter(fn black_list)]
+    #[pallet::getter(fn black_listed_validator_public_keys)]
     pub type BlackListedValidatorPublicKeys<T: Config> = StorageValue<
         _,
         BoundedVec<T::ValidatorPublicKey, T::MaxBlackListedValidatorPublicKeys>,
@@ -386,6 +386,8 @@ pub mod pallet {
         TooManyBytesInNonce,
         /// The ActiveAuthentications storage has reached the limit as BoundedVec.
         TooManyAuthentications,
+        /// The BlackListedValidatorPublicKeys storage has reached the limit as BoundedVec.
+        TooManyBlackListedValidatorPublicKeys,
     }
 
     #[derive(Debug)]
@@ -565,6 +567,35 @@ pub mod pallet {
             ensure_root(origin)?;
             <RobonodePublicKey<T>>::put(&robonode_public_key);
             <ActiveAuthentications<T>>::put(BoundedVec::default());
+            Ok(())
+        }
+
+        #[pallet::call_index(2)]
+        #[pallet::weight(T::WeightInfo::blacklist(
+            <BlackListedValidatorPublicKeys<T>>::get().len().try_into()
+            .expect("u32 is big enough for this overflow to be practically impossible")
+        ))]
+        pub fn blacklist(
+            origin: OriginFor<T>,
+            validator_public_key: T::ValidatorPublicKey,
+        ) -> DispatchResult {
+            ensure_root(origin)?;
+
+            ensure!(
+                Self::is_black_listed(&validator_public_key),
+                Error::<T>::PublicKeyIsBlackListed
+            );
+
+            <BlackListedValidatorPublicKeys<T>>::try_mutate::<_, DispatchError, _>(
+                move |black_listed_validator_public_keys| {
+                    black_listed_validator_public_keys
+                        .try_push(validator_public_key)
+                        .map_err(|_| Error::<T>::TooManyBlackListedValidatorPublicKeys)?;
+
+                    Ok(())
+                },
+            )?;
+
             Ok(())
         }
     }
