@@ -488,7 +488,7 @@ pub mod pallet {
             let public_key = auth_ticket.public_key.clone();
 
             ensure!(
-                Self::is_black_listed(&public_key),
+                !Self::is_black_listed(&public_key),
                 Error::<T>::PublicKeyIsBlackListed
             );
 
@@ -582,7 +582,7 @@ pub mod pallet {
             ensure_root(origin)?;
 
             ensure!(
-                Self::is_black_listed(&validator_public_key),
+                !Self::is_black_listed(&validator_public_key),
                 Error::<T>::PublicKeyIsBlackListed
             );
 
