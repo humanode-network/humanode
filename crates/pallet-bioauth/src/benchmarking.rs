@@ -109,7 +109,10 @@ fn populate_consumed_auth_ticket_nonces<Runtime: pallet::Config>(count: u32) {
 }
 
 /// Populate the [`BlackListedValidatorPublicKeys`] storage with generated data.
-fn populate_black_listed_validator_public_keys<Runtime: pallet::Config>(count: u32) {
+fn populate_black_listed_validator_public_keys<Runtime: pallet::Config>(count: u32)
+where
+    <Runtime as pallet::Config>::ValidatorPublicKey: From<[u8; 32]>,
+{
     let mut black_listed_validator_public_keys: Vec<_> = vec![];
     for i in 0..count {
         let public_key: [u8; 32] = make_pubkey("black_listed", i as u32).try_into().unwrap();
@@ -137,7 +140,7 @@ benchmarks! {
         // Leave one space spare for the payload to be inserted in this call.
         let a in 0 .. (T::MaxAuthentications::get() - 1) =>  populate_active_authentications::<T>(a);
         let n in 0 .. (T::MaxNonces::get() - 1) => populate_consumed_auth_ticket_nonces::<T>(n);
-        let b in 0 .. (T::MaxBlackListedValidatorPublicKeys::get() - 1) => populate_black_listed_validator_public_keys::<T>(n);
+        let b in 0 .. (T::MaxBlackListedValidatorPublicKeys::get() - 1) => populate_black_listed_validator_public_keys::<T>(b);
 
         // Create `authenticate` extrinsic payload.
         let public_key = make_pubkey("new", T::MaxAuthentications::get());
@@ -192,6 +195,23 @@ benchmarks! {
         assert_eq!(robonode_public_key_after, new_robonode_public_key);
         assert!(active_authentications_after == vec![]);
         assert!(consumed_auth_ticket_nonces_after == consumed_auth_ticket_nonces_before);
+    }
+
+    blacklist {
+        // Vary the amount of pre-populated black listed validator public keys.
+        let b in 0 .. (T::MaxBlackListedValidatorPublicKeys::get() - 1) => populate_black_listed_validator_public_keys::<T>(b);
+
+        // Create `blacklist` extrinsic payload.
+        let public_key: [u8; 32] = make_pubkey("black_listed", T::MaxBlackListedValidatorPublicKeys::get()).try_into().unwrap();
+
+        // Capture some data used during the verification.
+        let black_listed_validator_public_keys_before_len = BlackListedValidatorPublicKeys::<T>::get().len();
+
+    }: _(RawOrigin::Root, public_key.into())
+    verify {
+        // Verify that exactly one black listed validator public key was added.
+        let black_listed_validator_public_keys_after_len = BlackListedValidatorPublicKeys::<T>::get().len();
+        assert_eq!(black_listed_validator_public_keys_after_len - black_listed_validator_public_keys_before_len, 1);
     }
 
     on_initialize {
