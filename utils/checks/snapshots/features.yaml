@@ -72,7 +72,7 @@
     - auto
     - default
     - wincon
-- name: anstyle 1.0.6
+- name: anstyle 1.0.8
   features:
     - default
     - std
@@ -420,7 +420,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.13
+- name: clap 4.5.16
   features:
     - color
     - default
@@ -432,7 +432,7 @@
     - string
     - suggestions
     - usage
-- name: clap_builder 4.5.13
+- name: clap_builder 4.5.15
   features:
     - color
     - deprecated
@@ -2537,7 +2537,7 @@
     - rustls
     - tls-rustls
     - webpki
-- name: quote 1.0.36
+- name: quote 1.0.37
   features:
     - default
     - proc-macro
@@ -3039,7 +3039,7 @@
     - std
 - name: semver-parser 0.7.0
   features: []
-- name: serde 1.0.205
+- name: serde 1.0.209
   features:
     - alloc
     - default
@@ -3047,10 +3047,10 @@
     - rc
     - serde_derive
     - std
-- name: serde_derive 1.0.205
+- name: serde_derive 1.0.209
   features:
     - default
-- name: serde_json 1.0.121
+- name: serde_json 1.0.127
   features:
     - alloc
     - default
@@ -3575,7 +3575,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.72
+- name: syn 2.0.76
   features:
     - clone-impls
     - default
