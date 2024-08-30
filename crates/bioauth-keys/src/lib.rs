@@ -10,7 +10,7 @@ pub mod traits;
 /// Selects a particular key from the list of the keys available.
 pub trait KeySelector<Key> {
     /// An error that renders key selection impossible.
-    type Error;
+    type Error: std::error::Error;
 
     /// Select one key from the list of the keys.
     fn select_key<T: Iterator<Item = Key>>(&self, keys: T) -> Result<Option<Key>, Self::Error>;

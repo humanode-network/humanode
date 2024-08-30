@@ -3,7 +3,7 @@
 /// [`KeyExtractor`] provides functionality to extract the key of the node from the keystore.
 pub trait KeyExtractor {
     /// An error that can occur during the key extraction.
-    type Error;
+    type Error: std::error::Error;
     /// The public key type that the uses.
     type PublicKeyType;
 

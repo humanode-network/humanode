@@ -31,6 +31,8 @@ use tracing::*;
 pub mod error_data;
 mod errors;
 
+pub mod status;
+
 /// Signer provides signatures for the data.
 #[async_trait::async_trait]
 pub trait Signer<S> {
@@ -69,30 +71,6 @@ where
 /// The parameters necessary to initialize the FaceTec Device SDK.
 type FacetecDeviceSdkParams = Map<String, Value>;
 
-/// The bioauth status as used in the RPC.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum BioauthStatus<Timestamp> {
-    /// When the status can't be determined, but there was no error.
-    /// Can happen if the validator key is absent.
-    Unknown,
-    /// There is no active authentication for the currently used validator key.
-    Inactive,
-    /// There is an active authentication for the currently used validator key.
-    Active {
-        /// The timestamp when the authentication will expire.
-        expires_at: Timestamp,
-    },
-}
-
-impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
-    fn from(status: bioauth_flow_api::BioauthStatus<T>) -> Self {
-        match status {
-            bioauth_flow_api::BioauthStatus::Inactive => Self::Inactive,
-            bioauth_flow_api::BioauthStatus::Active { expires_at } => Self::Active { expires_at },
-        }
-    }
-}
-
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
 pub trait Bioauth<Timestamp, TxHash> {
@@ -124,6 +102,18 @@ pub trait Bioauth<Timestamp, TxHash> {
     #[method(name = "bioauth_authenticateV2")]
     async fn authenticate_v2(&self, liveness_data: LivenessData)
         -> RpcResult<AuthenticateV2Result>;
+}
+
+/// The API exposed via JSON-RPC.
+#[rpc(server)]
+pub trait BioauthFaceTec {
+    /// Get the configuration required for the Device SDK.
+    #[method(name = "bioauth_facetec_getDeviceSdkParams")]
+    async fn get_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams>;
+
+    /// Get a FaceTec Session Token.
+    #[method(name = "bioauth_facetec_getSessionToken")]
+    async fn get_session_token(&self) -> RpcResult<String>;
 }
 
 /// `enroll_v2` flow result.
@@ -382,25 +372,6 @@ where
             .await
             .map_err(GetFacetecSessionToken::Robonode)?;
         Ok(res.session_token)
-    }
-
-    async fn status(&self) -> RpcResult<BioauthStatus<Timestamp>> {
-        let own_key = match rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor) {
-            Ok(v) => v,
-            Err(rpc_validator_key_logic::Error::MissingValidatorKey) => return Ok(BioauthStatus::Unknown),
-            Err(rpc_validator_key_logic::Error::ValidatorKeyExtraction) => return Err(StatusError::ValidatorKeyExtraction.into()),
-        };
-
-        // Extract an id of the last imported block.
-        let at = self.client.info().best_hash;
-
-        let status = self
-            .client
-            .runtime_api()
-            .bioauth_status(at, &own_key)
-            .map_err(StatusError::RuntimeApi)?;
-
-        Ok(status.into())
     }
 
     async fn enroll(&self, liveness_data: LivenessData) -> RpcResult<()> {
