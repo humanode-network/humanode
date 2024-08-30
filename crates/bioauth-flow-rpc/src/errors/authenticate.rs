@@ -188,7 +188,7 @@ mod tests {
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: face scan rejected, no blob\",\"data\":{\"shouldRetry\":true}}";
+            "{\"code\":200,\"message\":\"server error: face scan rejected\",\"data\":{\"shouldRetry\":true}}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
@@ -207,7 +207,7 @@ mod tests {
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-            "{\"code\":200,\"message\":\"server error: logic internal error, no blob\"}";
+            "{\"code\":200,\"message\":\"server error: logic internal error\"}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()

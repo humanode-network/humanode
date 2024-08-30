@@ -54,28 +54,36 @@ pub enum AuthenticateError {
     /// The provided liveness data was invalid.
     #[error("invalid liveness data")]
     InvalidLivenessData,
-    /// The person was not found, it is likely because they haven't enrolled first, no blob.
-    #[error("person not found, no blob")]
+    /// The person was not found, it is likely because they haven't enrolled first.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("person not found")]
     PersonNotFoundNoBlob,
     /// The person was not found, it is likely because they haven't enrolled first.
     #[error("person not found")]
     PersonNotFound(ScanResultBlob),
-    /// The face scan was rejected, this is likely due to a failed liveness check, no blob.
-    #[error("face scan rejected, no blob")]
+    /// The face scan was rejected, this is likely due to a failed liveness check.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("face scan rejected")]
     FaceScanRejectedNoBlob,
     /// The face scan was rejected, this is likely due to a failed liveness check.
     #[error("face scan rejected")]
     FaceScanRejected(ScanResultBlob),
     /// The signature was invalid, which means that the validator private key used for signing and
-    /// the public key that the person enrolled with don't match, no blob.
-    #[error("signature invalid, no blob")]
+    /// the public key that the person enrolled with don't match.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("signature invalid")]
     SignatureInvalidNoBlob,
     /// The signature was invalid, which means that the validator private key used for signing and
     /// the public key that the person enrolled with don't match.
     #[error("signature invalid")]
     SignatureInvalid(ScanResultBlob),
-    /// A logic internal error occurred on the server end, no blob.
-    #[error("logic internal error, no blob")]
+    /// A logic internal error occurred on the server end.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("logic internal error")]
     LogicInternalNoBlob,
     /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
