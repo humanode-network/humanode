@@ -131,7 +131,7 @@ pub trait Bioauth<Timestamp, TxHash> {
 #[serde(rename_all = "camelCase")]
 pub struct EnrollV2Result {
     /// Scan result blob.
-    pub scan_result_blob: String,
+    pub scan_result_blob: Option<String>,
 }
 
 /// `authenticate_v2` related flow result.
@@ -143,7 +143,7 @@ pub struct AuthenticateV2Result {
     /// The robonode signature for this opaque auth ticket.
     pub auth_ticket_signature: Box<[u8]>,
     /// Scan result blob.
-    pub scan_result_blob: String,
+    pub scan_result_blob: Option<String>,
 }
 
 /// The RPC implementation.
@@ -419,8 +419,6 @@ where
             .await
             .map_err(EnrollV2Error)?;
 
-        let scan_result_blob = scan_result_blob.expect("expect scan result blob in response");
-
         Ok(EnrollV2Result { scan_result_blob })
     }
 
@@ -544,8 +542,6 @@ where
         } = self.do_authenticate(liveness_data).await.map_err(AuthenticateV2Error)?;
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
-
-        let scan_result_blob = scan_result_blob.expect("expect scan result blob in response");
 
         Ok(AuthenticateV2Result { auth_ticket, auth_ticket_signature, scan_result_blob })
     }
