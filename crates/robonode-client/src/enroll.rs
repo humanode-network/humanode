@@ -56,8 +56,10 @@ pub enum EnrollError {
     /// The liveness data is invalid.
     #[error("invalid liveness data")]
     InvalidLivenessData,
-    /// The face scan was rejected, no blob.
-    #[error("face scan rejected, no blob")]
+    /// The face scan was rejected.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("face scan rejected")]
     FaceScanRejectedNoBlob,
     /// The face scan was rejected.
     #[error("face scan rejected")]
@@ -65,14 +67,18 @@ pub enum EnrollError {
     /// The public key is already used.
     #[error("public key already used")]
     PublicKeyAlreadyUsed,
-    /// The person is already enrolled, no blob.
-    #[error("person already enrolled, no blob")]
+    /// The person is already enrolled.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("person already enrolled")]
     PersonAlreadyEnrolledNoBlob,
     /// The person is already enrolled.
     #[error("person already enrolled")]
     PersonAlreadyEnrolled(ScanResultBlob),
-    /// A logic internal error occurred on the server end, no blob.
-    #[error("logic internal error, no blob")]
+    /// A logic internal error occurred on the server end.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("logic internal error")]
     LogicInternalNoBlob,
     /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
