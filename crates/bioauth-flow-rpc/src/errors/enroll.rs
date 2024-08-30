@@ -2,49 +2,44 @@
 
 use rpc_validator_key_logic::Error as ValidatorKeyError;
 
-use super::{api_error_code, robonode_request::Error as RobonodeRequestError};
+use super::{api_error_code, shared};
 use crate::error_data;
 
 /// The `enroll` method error kinds.
 #[derive(Debug)]
-pub enum Error {
-    /// An error that can occur during doing a request to robonode.
-    RobonodeRequest(RobonodeRequestError<robonode_client::EnrollError>),
-}
+pub struct Error(pub shared::FlowBaseError<robonode_client::EnrollError>);
 
 impl From<Error> for jsonrpsee::core::Error {
     fn from(err: Error) -> Self {
-        match err {
-            Error::RobonodeRequest(err) => match err {
-                RobonodeRequestError::KeyExtraction(
-                    err @ ValidatorKeyError::MissingValidatorKey,
-                ) => rpc_error_response::data(
+        match err.0 {
+            shared::FlowBaseError::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => {
+                rpc_error_response::data(
                     api_error_code::MISSING_VALIDATOR_KEY,
                     err.to_string(),
                     rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
+                )
+            }
+            shared::FlowBaseError::KeyExtraction(
+                err @ ValidatorKeyError::ValidatorKeyExtraction,
+            ) => rpc_error_response::simple(
+                api_error_code::VALIDATOR_KEY_EXTRACTION,
+                err.to_string(),
+            ),
+            shared::FlowBaseError::RobonodeClient(
+                err @ robonode_client::Error::Call(
+                    robonode_client::EnrollError::FaceScanRejectedNoBlob,
                 ),
-                RobonodeRequestError::KeyExtraction(
-                    err @ ValidatorKeyError::ValidatorKeyExtraction,
-                ) => rpc_error_response::simple(
-                    api_error_code::VALIDATOR_KEY_EXTRACTION,
-                    err.to_string(),
-                ),
-                RobonodeRequestError::Robonode(
-                    err @ robonode_client::Error::Call(
-                        robonode_client::EnrollError::FaceScanRejected,
-                    ),
-                ) => rpc_error_response::data(
-                    api_error_code::ROBONODE,
-                    err.to_string(),
-                    error_data::ShouldRetry,
-                ),
-                RobonodeRequestError::Robonode(err) => {
-                    rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
-                }
-                RobonodeRequestError::Sign(err) => {
-                    rpc_error_response::simple(api_error_code::SIGN, err.to_string())
-                }
-            },
+            ) => rpc_error_response::data(
+                api_error_code::ROBONODE,
+                err.to_string(),
+                error_data::ShouldRetry,
+            ),
+            shared::FlowBaseError::RobonodeClient(err) => {
+                rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
+            }
+            shared::FlowBaseError::Sign(err) => {
+                rpc_error_response::simple(api_error_code::SIGN, err.to_string())
+            }
         }
     }
 }
@@ -59,9 +54,9 @@ mod tests {
 
     #[test]
     fn error_key_extraction_validator_key_extraction() {
-        let error: jsonrpsee::core::Error = Error::RobonodeRequest(
-            RobonodeRequestError::KeyExtraction(ValidatorKeyError::ValidatorKeyExtraction),
-        )
+        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::KeyExtraction(
+            ValidatorKeyError::ValidatorKeyExtraction,
+        ))
         .into();
         let error: ErrorObject = error.into();
 
@@ -74,9 +69,9 @@ mod tests {
 
     #[test]
     fn error_key_extraction_missing_validator_key() {
-        let error: jsonrpsee::core::Error = Error::RobonodeRequest(
-            RobonodeRequestError::KeyExtraction(ValidatorKeyError::MissingValidatorKey),
-        )
+        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::KeyExtraction(
+            ValidatorKeyError::MissingValidatorKey,
+        ))
         .into();
         let error: ErrorObject = error.into();
 
@@ -89,11 +84,12 @@ mod tests {
 
     #[test]
     fn error_robonode_face_scan_rejected() {
-        let error: jsonrpsee::core::Error = Error::RobonodeRequest(RobonodeRequestError::Robonode(
-            robonode_client::Error::Call(robonode_client::EnrollError::FaceScanRejected),
+        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::RobonodeClient(
+            robonode_client::Error::Call(robonode_client::EnrollError::FaceScanRejectedNoBlob),
         ))
         .into();
         let error: ErrorObject = error.into();
+
         let expected_error_message =
             "{\"code\":200,\"message\":\"server error: face scan rejected\",\"data\":{\"shouldRetry\":true}}";
         assert_eq!(
@@ -104,8 +100,8 @@ mod tests {
 
     #[test]
     fn error_robonode_logic_internal() {
-        let error: jsonrpsee::core::Error = Error::RobonodeRequest(RobonodeRequestError::Robonode(
-            robonode_client::Error::Call(robonode_client::EnrollError::LogicInternal),
+        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::RobonodeClient(
+            robonode_client::Error::Call(robonode_client::EnrollError::LogicInternalNoBlob),
         ))
         .into();
         let error: ErrorObject = error.into();
@@ -120,7 +116,7 @@ mod tests {
 
     #[test]
     fn error_robonode_other() {
-        let error: jsonrpsee::core::Error = Error::RobonodeRequest(RobonodeRequestError::Robonode(
+        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::RobonodeClient(
             robonode_client::Error::Call(robonode_client::EnrollError::Unknown("test".to_owned())),
         ))
         .into();
@@ -137,7 +133,7 @@ mod tests {
     #[test]
     fn error_sign() {
         let error: jsonrpsee::core::Error =
-            Error::RobonodeRequest(RobonodeRequestError::Sign(SignError::SigningFailed)).into();
+            Error(shared::FlowBaseError::Sign(SignError::SigningFailed)).into();
         let error: ErrorObject = error.into();
 
         let expected_error_message = "{\"code\":100,\"message\":\"signing failed\"}";

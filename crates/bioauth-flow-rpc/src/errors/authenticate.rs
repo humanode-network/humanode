@@ -4,14 +4,14 @@ use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{api_error_code, robonode_request::Error as RobonodeRequestError};
+use super::{api_error_code, shared};
 use crate::error_data::{self, BioauthTxErrorDetails};
 
 /// The `authenticate` method error kinds.
 #[derive(Debug)]
 pub enum Error<TxPoolError> {
     /// An error that can occur during doing a request to robonode.
-    RobonodeRequest(RobonodeRequestError<robonode_client::AuthenticateError>),
+    RobonodeRequest(shared::FlowBaseError<robonode_client::AuthenticateError>),
     /// An error that can occur during doing a call into runtime api.
     RuntimeApi(ApiError),
     /// An error that can occur with transaction pool logic.
@@ -25,32 +25,32 @@ where
     fn from(err: Error<TxPoolError>) -> Self {
         match err {
             Error::RobonodeRequest(err) => match err {
-                RobonodeRequestError::KeyExtraction(
+                shared::FlowBaseError::KeyExtraction(
                     err @ ValidatorKeyError::MissingValidatorKey,
                 ) => rpc_error_response::data(
                     api_error_code::MISSING_VALIDATOR_KEY,
                     err.to_string(),
                     rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
                 ),
-                RobonodeRequestError::KeyExtraction(
+                shared::FlowBaseError::KeyExtraction(
                     err @ ValidatorKeyError::ValidatorKeyExtraction,
                 ) => rpc_error_response::simple(
                     api_error_code::VALIDATOR_KEY_EXTRACTION,
                     err.to_string(),
                 ),
-                RobonodeRequestError::Sign(err) => {
+                shared::FlowBaseError::Sign(err) => {
                     rpc_error_response::simple(api_error_code::SIGN, err.to_string())
                 }
-                RobonodeRequestError::Robonode(
+                shared::FlowBaseError::RobonodeClient(
                     err @ robonode_client::Error::Call(
-                        robonode_client::AuthenticateError::FaceScanRejected,
+                        robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
                     ),
                 ) => rpc_error_response::data(
                     api_error_code::ROBONODE,
                     err.to_string(),
                     error_data::ShouldRetry,
                 ),
-                RobonodeRequestError::Robonode(err) => {
+                shared::FlowBaseError::RobonodeClient(err) => {
                     rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
                 }
             },
@@ -132,7 +132,7 @@ mod tests {
     fn error_key_extraction_validator_key_extraction() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                RobonodeRequestError::KeyExtraction(ValidatorKeyError::ValidatorKeyExtraction),
+                shared::FlowBaseError::KeyExtraction(ValidatorKeyError::ValidatorKeyExtraction),
             )
             .into();
         let error: ErrorObject = error.into();
@@ -148,7 +148,7 @@ mod tests {
     fn error_key_extraction_missing_validator_key() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                RobonodeRequestError::KeyExtraction(ValidatorKeyError::MissingValidatorKey),
+                shared::FlowBaseError::KeyExtraction(ValidatorKeyError::MissingValidatorKey),
             )
             .into();
         let error: ErrorObject = error.into();
@@ -164,7 +164,7 @@ mod tests {
     fn error_sign() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                RobonodeRequestError::Sign(SignError::SigningFailed),
+                shared::FlowBaseError::Sign(SignError::SigningFailed),
             )
             .into();
         let error: ErrorObject = error.into();
@@ -180,15 +180,15 @@ mod tests {
     fn error_robonode_face_scan_rejected() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                RobonodeRequestError::Robonode(robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::FaceScanRejected,
+                shared::FlowBaseError::RobonodeClient(robonode_client::Error::Call(
+                    robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
                 )),
             )
             .into();
         let error: ErrorObject = error.into();
 
         let expected_error_message =
-        "{\"code\":200,\"message\":\"server error: face scan rejected\",\"data\":{\"shouldRetry\":true}}";
+            "{\"code\":200,\"message\":\"server error: face scan rejected\",\"data\":{\"shouldRetry\":true}}";
         assert_eq!(
             expected_error_message,
             serde_json::to_string(&error).unwrap()
@@ -199,8 +199,8 @@ mod tests {
     fn error_robonode_logic_internal() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                RobonodeRequestError::Robonode(robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::LogicInternal,
+                shared::FlowBaseError::RobonodeClient(robonode_client::Error::Call(
+                    robonode_client::AuthenticateError::LogicInternalNoBlob,
                 )),
             )
             .into();
@@ -218,7 +218,7 @@ mod tests {
     fn error_robonode_other() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                RobonodeRequestError::Robonode(robonode_client::Error::Call(
+                shared::FlowBaseError::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::Unknown("test".to_owned()),
                 )),
             )
