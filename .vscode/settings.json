@@ -14,6 +14,9 @@
   // "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
   // "rust-analyzer.cargo.noDefaultFeatures": true,
   "rust-analyzer.cargo.targetDir": true,
+
+  "rust-analyzer.lru.capacity": 512,
+
   "vitest.commandLine": "yarn utils/e2e-tests/ts test:watch --",
   "vitest.include": [
     "utils/e2e-tests/ts/**/tests/**/*.ts",

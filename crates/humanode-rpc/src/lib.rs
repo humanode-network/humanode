@@ -290,14 +290,14 @@ where
     )?;
 
     io.merge(
-        Bioauth::new(
+        Bioauth::<Generic> {
             robonode_client,
-            bioauth_validator_key_extractor,
-            bioauth_validator_signer_factory,
-            Arc::clone(&client),
-            Arc::clone(&pool),
+            validator_key_extractor: bioauth_validator_key_extractor,
+            validator_signer_factory: bioauth_validator_signer_factory,
+            client: Arc::clone(&client),
+            pool: Arc::clone(&pool),
             deny_unsafe,
-        )
+        }
         .into_rpc(),
     )?;
 
