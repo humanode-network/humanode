@@ -208,6 +208,7 @@ impl<T: Config> Pallet<T> {
             .filter_map(|authentication| {
                 T::ValidatorPublicKeyOf::convert(authentication.public_key.clone())
                     .map(|account_id| (account_id, Identification::Bioauth(authentication)))
+                    .filter(|(account_id, _)| !Self::is_banned(account_id))
             });
 
         bootnodes.chain(bioauth_active_authentications)
