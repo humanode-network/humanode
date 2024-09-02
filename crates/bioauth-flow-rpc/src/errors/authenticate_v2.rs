@@ -40,6 +40,15 @@ impl From<Error> for jsonrpsee::core::Error {
                 err.to_string(),
                 error_data::ScanResultBlob(scan_result_blob.clone()),
             ),
+            shared::FlowBaseError::RobonodeClient(
+                err @ robonode_client::Error::Call(
+                    robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
+                ),
+            ) => rpc_error_response::data(
+                api_error_code::ROBONODE,
+                err.to_string(),
+                error_data::ShouldRetry,
+            ),
             shared::FlowBaseError::RobonodeClient(err) => {
                 rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
             }
