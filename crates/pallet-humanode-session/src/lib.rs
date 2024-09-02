@@ -89,8 +89,10 @@ pub mod pallet {
         /// The provided account could not be found in current validators list or it was already
         /// disabled.
         AccountIsNotValidator,
-        /// The account is already banned.
+        /// The account is already banned for ban call.
         AccountIsAlreadyBanned,
+        /// The account is not banned for unban call.
+        AccountIsNotBanned,
         /// The BannedAccounts storage has reached the limit as BoundedVec.
         TooManyBannedAccounts,
     }
@@ -132,6 +134,21 @@ pub mod pallet {
 
                 Ok(())
             })
+        }
+
+        /// Unban account.
+        #[pallet::call_index(2)]
+        #[pallet::weight(0)]
+        pub fn unban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
+            ensure_root(origin)?;
+
+            ensure!(Self::is_banned(&account_id), Error::<T>::AccountIsNotBanned);
+
+            BannedAccounts::<T>::mutate(|banned_accounts| {
+                banned_accounts.retain(|banned_account| banned_account != &account_id);
+            });
+
+            Ok(())
         }
     }
 
