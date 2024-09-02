@@ -20,7 +20,7 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::pallet_prelude::*;
+    use frame_support::{pallet_prelude::*, storage::with_storage_layer};
     use frame_system::pallet_prelude::*;
 
     use super::*;
@@ -49,6 +49,9 @@ pub mod pallet {
 
         /// The max amount of bioauth-powered session validators.
         type MaxBioauthValidators: Get<u32>;
+
+        /// The maximum number of banned accounts.
+        type MaxBannedAccounts: Get<u32>;
     }
 
     #[pallet::pallet]
@@ -71,6 +74,11 @@ pub mod pallet {
     #[pallet::storage]
     pub type CurrentSessionIndex<T: Config> = StorageValue<_, SessionIndex, OptionQuery>;
 
+    /// A list of all banned accounts that can't be validators in the network.
+    #[pallet::storage]
+    pub type BannedAccounts<T: Config> =
+        StorageValue<_, BoundedVec<T::AccountId, T::MaxBannedAccounts>, ValueQuery>;
+
     /// Possible errors.
     #[pallet::error]
     pub enum Error<T> {
@@ -81,6 +89,10 @@ pub mod pallet {
         /// The provided account could not be found in current validators list or it was already
         /// disabled.
         AccountIsNotValidator,
+        /// The account is already banned.
+        AccountIsAlreadyBanned,
+        /// The BannedAccounts storage has reached the limit as BoundedVec.
+        TooManyBannedAccounts,
     }
 
     #[pallet::call]
@@ -94,6 +106,32 @@ pub mod pallet {
             Self::disable(account_id)?;
 
             Ok(())
+        }
+
+        /// Ban account.
+        #[pallet::call_index(1)]
+        #[pallet::weight(0)]
+        pub fn ban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
+            ensure_root(origin)?;
+
+            ensure!(
+                !Self::is_banned(&account_id),
+                Error::<T>::AccountIsAlreadyBanned
+            );
+
+            with_storage_layer(move || {
+                Self::disable(account_id.clone())?;
+
+                <BannedAccounts<T>>::try_mutate::<_, DispatchError, _>(move |banned_accounts| {
+                    banned_accounts
+                        .try_push(account_id)
+                        .map_err(|_| Error::<T>::TooManyBannedAccounts)?;
+
+                    Ok(())
+                })?;
+
+                Ok(())
+            })
         }
     }
 
@@ -211,6 +249,13 @@ impl<T: Config> Pallet<T> {
         }
 
         Ok(())
+    }
+
+    /// Check whether the provided account is banned or not.
+    fn is_banned(account_id: &T::AccountId) -> bool {
+        BannedAccounts::<T>::get()
+            .iter()
+            .any(|banned_account_id| banned_account_id == account_id)
     }
 }
 
