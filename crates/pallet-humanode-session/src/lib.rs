@@ -29,7 +29,6 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config:
         frame_system::Config
-        /* Session pallet is only required for migration to v1. */
         + pallet_session::Config
         + pallet_bioauth::Config
         + pallet_bootnodes::Config
