@@ -45,7 +45,18 @@ impl From<Error> for jsonrpsee::core::Error {
                 err.to_string(),
                 error_data::ShouldRetry,
             ),
-            shared::FlowBaseError::RobonodeClient(err) => {
+            shared::FlowBaseError::RobonodeClient(
+                err @ robonode_client::Error::Call(
+                    robonode_client::EnrollError::InvalidPublicKey
+                    | robonode_client::EnrollError::InvalidLivenessData
+                    | robonode_client::EnrollError::PublicKeyAlreadyUsed
+                    | robonode_client::EnrollError::PersonAlreadyEnrolledNoBlob
+                    | robonode_client::EnrollError::LogicInternalNoBlob
+                    | robonode_client::EnrollError::UnknownCode(_)
+                    | robonode_client::EnrollError::Unknown(_),
+                ),
+            ) => rpc_error_response::simple(api_error_code::ROBONODE, err.to_string()),
+            shared::FlowBaseError::RobonodeClient(err @ robonode_client::Error::Reqwest(_)) => {
                 rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
             }
             shared::FlowBaseError::Sign(err) => {
