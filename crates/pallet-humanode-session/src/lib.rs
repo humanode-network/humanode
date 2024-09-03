@@ -83,6 +83,20 @@ pub mod pallet {
         AccountIsNotValidator,
     }
 
+    #[pallet::call]
+    impl<T: Config> Pallet<T> {
+        /// Kick validator based on provided account id.
+        #[pallet::call_index(0)]
+        #[pallet::weight(0)]
+        pub fn kick(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
+            ensure_root(origin)?;
+
+            Self::disable(account_id)?;
+
+            Ok(())
+        }
+    }
+
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         fn on_runtime_upgrade() -> Weight {
