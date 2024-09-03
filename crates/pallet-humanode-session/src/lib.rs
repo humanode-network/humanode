@@ -22,6 +22,7 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 pub mod pallet {
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
+    use sp_runtime::BoundedBTreeSet;
 
     use super::*;
 
@@ -75,10 +76,10 @@ pub mod pallet {
     #[pallet::storage]
     pub type CurrentSessionIndex<T: Config> = StorageValue<_, SessionIndex, OptionQuery>;
 
-    /// A list of all banned accounts that can't be validators in the network.
+    /// A set of all banned accounts that can't be validators in the network.
     #[pallet::storage]
     pub type BannedAccounts<T: Config> =
-        StorageValue<_, BoundedVec<T::AccountId, T::MaxBannedAccounts>, ValueQuery>;
+        StorageValue<_, BoundedBTreeSet<T::AccountId, T::MaxBannedAccounts>, ValueQuery>;
 
     /// Possible errors.
     #[pallet::error]
@@ -113,8 +114,13 @@ pub mod pallet {
                 return Err(Error::<T>::AttemptToBanBootnode.into());
             }
 
-            <BannedAccounts<T>>::try_append(account_id)
-                .map_err(|_| Error::<T>::TooManyBannedAccounts)?;
+            <BannedAccounts<T>>::try_mutate::<_, DispatchError, _>(move |banned_accounts| {
+                banned_accounts
+                    .try_insert(account_id)
+                    .map_err(|_| Error::<T>::TooManyBannedAccounts)?;
+
+                Ok(())
+            })?;
 
             Ok(())
         }
@@ -125,11 +131,13 @@ pub mod pallet {
         pub fn unban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
             ensure_root(origin)?;
 
-            ensure!(Self::is_banned(&account_id), Error::<T>::AccountIsNotBanned);
+            BannedAccounts::<T>::try_mutate::<_, DispatchError, _>(move |banned_accounts| {
+                if !banned_accounts.remove(&account_id) {
+                    return Err(Error::<T>::AccountIsNotBanned.into());
+                }
 
-            BannedAccounts::<T>::mutate(|banned_accounts| {
-                banned_accounts.retain(|banned_account| banned_account != &account_id);
-            });
+                Ok(())
+            })?;
 
             Ok(())
         }
@@ -235,9 +243,7 @@ impl<T: Config> Pallet<T> {
 
     /// Check whether the provided account is banned or not.
     fn is_banned(account_id: &T::AccountId) -> bool {
-        BannedAccounts::<T>::get()
-            .iter()
-            .any(|banned_account_id| banned_account_id == account_id)
+        BannedAccounts::<T>::get().contains(account_id)
     }
 }
 
