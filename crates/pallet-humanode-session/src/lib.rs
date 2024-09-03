@@ -20,7 +20,7 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::{pallet_prelude::*, storage::with_storage_layer};
+    use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
 
     use super::*;
@@ -29,6 +29,7 @@ pub mod pallet {
     #[pallet::config]
     pub trait Config:
         frame_system::Config
+        /* Session pallet is only required for migration to v1. */
         + pallet_session::Config
         + pallet_bioauth::Config
         + pallet_bootnodes::Config
@@ -82,13 +83,8 @@ pub mod pallet {
     /// Possible errors.
     #[pallet::error]
     pub enum Error<T> {
-        /// Attempt to disable bootnode to be a validator.
-        AttemptToDisableBootnode,
-        /// Failed to convert `T::AccountId` to `T::ValidatorId`.
-        AccountIdToValidatorId,
-        /// The provided account could not be found in current validators list or it was already
-        /// disabled.
-        AccountIsNotValidator,
+        /// Attempt to ban bootnode to be a validator.
+        AttemptToBanBootnode,
         /// The account is already banned for ban call.
         AccountIsAlreadyBanned,
         /// The account is not banned for unban call.
@@ -99,19 +95,8 @@ pub mod pallet {
 
     #[pallet::call]
     impl<T: Config> Pallet<T> {
-        /// Kick validator based on provided account id.
-        #[pallet::call_index(0)]
-        #[pallet::weight(0)]
-        pub fn kick(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
-            ensure_root(origin)?;
-
-            Self::disable(account_id)?;
-
-            Ok(())
-        }
-
         /// Ban account.
-        #[pallet::call_index(1)]
+        #[pallet::call_index(0)]
         #[pallet::weight(0)]
         pub fn ban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
             ensure_root(origin)?;
@@ -121,18 +106,21 @@ pub mod pallet {
                 Error::<T>::AccountIsAlreadyBanned
             );
 
-            with_storage_layer(move || {
-                Self::disable(account_id.clone())?;
+            if <pallet_bootnodes::Pallet<T>>::bootnodes()
+                .iter()
+                .any(|bootnode| T::BootnodeIdOf::convert(bootnode.clone()) == account_id)
+            {
+                return Err(Error::<T>::AttemptToBanBootnode.into());
+            }
 
-                <BannedAccounts<T>>::try_append(account_id)
-                    .map_err(|_| Error::<T>::TooManyBannedAccounts)?;
+            <BannedAccounts<T>>::try_append(account_id)
+                .map_err(|_| Error::<T>::TooManyBannedAccounts)?;
 
-                Ok(())
-            })
+            Ok(())
         }
 
         /// Unban account.
-        #[pallet::call_index(2)]
+        #[pallet::call_index(1)]
         #[pallet::weight(0)]
         pub fn unban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
             ensure_root(origin)?;
@@ -243,25 +231,6 @@ impl<T: Config> Pallet<T> {
         // TODO(#388): switch to `clear_prefix` after the API is fixed.
         #[allow(deprecated)]
         <SessionIdentities<T>>::remove_prefix(session_index, None);
-    }
-
-    /// Disable provided account from current validators list.
-    fn disable(account_id: T::AccountId) -> Result<(), Error<T>> {
-        if <pallet_bootnodes::Pallet<T>>::bootnodes()
-            .iter()
-            .any(|bootnode| T::BootnodeIdOf::convert(bootnode.clone()) == account_id)
-        {
-            return Err(Error::<T>::AttemptToDisableBootnode);
-        }
-
-        let validator_id =
-            T::ValidatorIdOf::convert(account_id).ok_or(Error::<T>::AccountIdToValidatorId)?;
-
-        if !<pallet_session::Pallet<T>>::disable(&validator_id) {
-            return Err(Error::<T>::AccountIsNotValidator);
-        }
-
-        Ok(())
     }
 
     /// Check whether the provided account is banned or not.
