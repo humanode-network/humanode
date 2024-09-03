@@ -83,7 +83,7 @@ pub mod pallet {
     /// Possible errors.
     #[pallet::error]
     pub enum Error<T> {
-        /// Attempt to ban bootnode to be a validator.
+        /// Banning bootnodes is not allowed.
         AttemptToBanBootnode,
         /// The account is already banned for ban call.
         AccountIsAlreadyBanned,
