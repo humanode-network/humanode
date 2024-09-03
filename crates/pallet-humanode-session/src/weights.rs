@@ -5,18 +5,18 @@ use frame_support::weights::Weight;
 /// Weight functions needed for pallet-humanode-session.
 pub trait WeightInfo {
     /// A function to calculate required weights for ban call.
-    fn ban() -> Weight;
+    fn ban(banned_accounts: u32) -> Weight;
 
     /// A function to calculate required weights for unban call.
-    fn unban() -> Weight;
+    fn unban(banned_accounts: u32) -> Weight;
 }
 
 impl WeightInfo for () {
-    fn ban() -> Weight {
+    fn ban(_banned_accounts: u32) -> Weight {
         Weight::zero()
     }
 
-    fn unban() -> Weight {
+    fn unban(_banned_accounts: u32) -> Weight {
         Weight::zero()
     }
 }
