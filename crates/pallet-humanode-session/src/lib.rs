@@ -6,6 +6,9 @@ use frame_support::traits::{Get, StorageVersion};
 pub use pallet::*;
 use sp_runtime::traits::Convert;
 use sp_std::prelude::*;
+pub use weights::*;
+
+pub mod weights;
 
 mod migrations;
 
