@@ -72,6 +72,18 @@ pub mod pallet {
     #[pallet::storage]
     pub type CurrentSessionIndex<T: Config> = StorageValue<_, SessionIndex, OptionQuery>;
 
+    /// Possible errors.
+    #[pallet::error]
+    pub enum Error<T> {
+        /// Attempt to disable bootnode to be a validator.
+        AttemptToDisableBootnode,
+        /// Failed to convert `T::AccountId` to `T::ValidatorId`.
+        AccountIdToValidatorId,
+        /// The provided account could not be found in current validators list or it was already
+        /// disabled.
+        AccountIsNotValidator,
+    }
+
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
         fn on_runtime_upgrade() -> Weight {
@@ -167,6 +179,25 @@ impl<T: Config> Pallet<T> {
         // TODO(#388): switch to `clear_prefix` after the API is fixed.
         #[allow(deprecated)]
         <SessionIdentities<T>>::remove_prefix(session_index, None);
+    }
+
+    /// Disable provided account from current validators list.
+    fn disable(account_id: T::AccountId) -> Result<(), Error<T>> {
+        if <pallet_bootnodes::Pallet<T>>::bootnodes()
+            .iter()
+            .any(|bootnode| T::BootnodeIdOf::convert(bootnode.clone()) == account_id)
+        {
+            return Err(Error::<T>::AttemptToDisableBootnode);
+        }
+
+        let validator_id =
+            T::ValidatorIdOf::convert(account_id).ok_or(Error::<T>::AccountIdToValidatorId)?;
+
+        if !<pallet_session::Pallet<T>>::disable(&validator_id) {
+            return Err(Error::<T>::AccountIsNotValidator);
+        }
+
+        Ok(())
     }
 }
 
