@@ -124,13 +124,8 @@ pub mod pallet {
             with_storage_layer(move || {
                 Self::disable(account_id.clone())?;
 
-                <BannedAccounts<T>>::try_mutate::<_, DispatchError, _>(move |banned_accounts| {
-                    banned_accounts
-                        .try_push(account_id)
-                        .map_err(|_| Error::<T>::TooManyBannedAccounts)?;
-
-                    Ok(())
-                })?;
+                <BannedAccounts<T>>::try_append(account_id)
+                    .map_err(|_| Error::<T>::TooManyBannedAccounts)?;
 
                 Ok(())
             })
