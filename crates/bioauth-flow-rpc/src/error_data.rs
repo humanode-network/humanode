@@ -28,6 +28,32 @@ impl Serialize for ScanResultBlob {
     }
 }
 
+/// The RPC error that would either provide a scan result blob, or specify that a retry is in order.
+///
+/// The case where no scan result blob is present, but a retry is communicated is possible when
+/// the new flow is used with an old robonode that doesn't return scan result blobs yet.
+#[derive(serde::Serialize)]
+#[serde(untagged)]
+pub enum BlobOrRetry {
+    /// The scan result blob data.
+    ScanResultBlob(ScanResultBlob),
+
+    /// The should retry data.
+    ShouldRetry(ShouldRetry),
+}
+
+impl From<ShouldRetry> for BlobOrRetry {
+    fn from(value: ShouldRetry) -> Self {
+        Self::ShouldRetry(value)
+    }
+}
+
+impl From<ScanResultBlob> for BlobOrRetry {
+    fn from(value: ScanResultBlob) -> Self {
+        Self::ScanResultBlob(value)
+    }
+}
+
 /// The RPC error context we provide to describe transaction pool errors.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]

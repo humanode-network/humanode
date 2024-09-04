@@ -1,6 +1,5 @@
 //! The `authenticate` method error.
 
-use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
@@ -24,36 +23,24 @@ where
 {
     fn from(err: Error<TxPoolError>) -> Self {
         match err {
-            Error::RobonodeRequest(err) => match err {
-                shared::FlowBaseError::KeyExtraction(
-                    err @ ValidatorKeyError::MissingValidatorKey,
-                ) => rpc_error_response::data(
-                    api_error_code::MISSING_VALIDATOR_KEY,
-                    err.to_string(),
-                    rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
-                ),
-                shared::FlowBaseError::KeyExtraction(
-                    err @ ValidatorKeyError::ValidatorKeyExtraction,
-                ) => rpc_error_response::simple(
-                    api_error_code::VALIDATOR_KEY_EXTRACTION,
-                    err.to_string(),
-                ),
-                shared::FlowBaseError::Sign(err) => {
-                    rpc_error_response::simple(api_error_code::SIGN, err.to_string())
-                }
-                shared::FlowBaseError::RobonodeClient(
-                    err @ robonode_client::Error::Call(
-                        robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
-                    ),
-                ) => rpc_error_response::data(
-                    api_error_code::ROBONODE,
-                    err.to_string(),
-                    error_data::ShouldRetry,
-                ),
-                shared::FlowBaseError::RobonodeClient(err) => {
-                    rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
-                }
-            },
+            Error::RobonodeRequest(err) => err.to_jsonrpsee_error::<_, error_data::ShouldRetry>(
+                |call_error| match call_error {
+                    robonode_client::AuthenticateError::FaceScanRejectedNoBlob
+                    | robonode_client::AuthenticateError::FaceScanRejected(_) => {
+                        Some(error_data::ShouldRetry)
+                    }
+
+                    robonode_client::AuthenticateError::InvalidLivenessData
+                    | robonode_client::AuthenticateError::PersonNotFoundNoBlob
+                    | robonode_client::AuthenticateError::PersonNotFound(_)
+                    | robonode_client::AuthenticateError::SignatureInvalidNoBlob
+                    | robonode_client::AuthenticateError::SignatureInvalid(_)
+                    | robonode_client::AuthenticateError::LogicInternalNoBlob
+                    | robonode_client::AuthenticateError::LogicInternal(_)
+                    | robonode_client::AuthenticateError::UnknownCode(_)
+                    | robonode_client::AuthenticateError::Unknown(_) => None,
+                },
+            ),
             Error::RuntimeApi(err) => {
                 rpc_error_response::simple(api_error_code::RUNTIME_API, err.to_string())
             }
@@ -66,9 +53,10 @@ where
 }
 
 /// Convert a transaction pool error into a human-readable.
-fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
-    err: T,
-) -> (String, Option<error_data::BioauthTxErrorDetails>) {
+fn map_txpool_error<T>(err: T) -> (String, Option<error_data::BioauthTxErrorDetails>)
+where
+    T: sc_transaction_pool_api::error::IntoPoolError,
+{
     let err = match err.into_pool_error() {
         Ok(err) => err,
         Err(err) => {
@@ -124,6 +112,7 @@ fn map_txpool_error<T: sc_transaction_pool_api::error::IntoPoolError>(
 mod tests {
 
     use jsonrpsee::types::ErrorObject;
+    use rpc_validator_key_logic::Error as ValidatorKeyError;
 
     use super::*;
     use crate::errors::sign::Error as SignError;
