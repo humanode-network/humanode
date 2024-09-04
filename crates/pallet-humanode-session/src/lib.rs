@@ -105,11 +105,6 @@ pub mod pallet {
         pub fn ban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
             ensure_root(origin)?;
 
-            ensure!(
-                !Self::is_banned(&account_id),
-                Error::<T>::AccountIsAlreadyBanned
-            );
-
             if <pallet_bootnodes::Pallet<T>>::bootnodes()
                 .iter()
                 .any(|bootnode| T::BootnodeIdOf::convert(bootnode.clone()) == account_id)
@@ -118,9 +113,12 @@ pub mod pallet {
             }
 
             <BannedAccounts<T>>::try_mutate::<_, DispatchError, _>(move |banned_accounts| {
-                banned_accounts
+                if !banned_accounts
                     .try_insert(account_id)
-                    .map_err(|_| Error::<T>::TooManyBannedAccounts)?;
+                    .map_err(|_| Error::<T>::TooManyBannedAccounts)?
+                {
+                    return Err(Error::<T>::AccountIsAlreadyBanned.into());
+                }
 
                 Ok(())
             })?;
@@ -212,14 +210,16 @@ impl<T: Config> Pallet<T> {
                 )
             });
 
+        let banned_accounts = <BannedAccounts<T>>::get();
+
         let bioauth_active_authentications = <pallet_bioauth::Pallet<T>>::active_authentications()
             .into_inner()
             .into_iter()
             .take(T::MaxBioauthValidators::get().try_into().unwrap())
-            .filter_map(|authentication| {
+            .filter_map(move |authentication| {
                 T::ValidatorPublicKeyOf::convert(authentication.public_key.clone())
                     .map(|account_id| (account_id, Identification::Bioauth(authentication)))
-                    .filter(|(account_id, _)| !Self::is_banned(account_id))
+                    .filter(|(account_id, _)| !banned_accounts.contains(account_id))
             });
 
         bootnodes.chain(bioauth_active_authentications)
@@ -242,11 +242,6 @@ impl<T: Config> Pallet<T> {
         // TODO(#388): switch to `clear_prefix` after the API is fixed.
         #[allow(deprecated)]
         <SessionIdentities<T>>::remove_prefix(session_index, None);
-    }
-
-    /// Check whether the provided account is banned or not.
-    fn is_banned(account_id: &T::AccountId) -> bool {
-        BannedAccounts::<T>::get().contains(account_id)
     }
 }
 
