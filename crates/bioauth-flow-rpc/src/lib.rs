@@ -23,41 +23,9 @@ use tracing::*;
 
 pub mod error;
 pub mod method;
+pub mod signer;
 
-/// Signer provides signatures for the data.
-#[async_trait::async_trait]
-pub trait Signer<S> {
-    /// Signature error.
-    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
-    type Error;
-
-    /// Sign the provided data and return the signature, or an error if the signing fails.
-    async fn sign<'a, D>(&self, data: D) -> std::result::Result<S, Self::Error>
-    where
-        D: AsRef<[u8]> + Send + 'a;
-}
-
-/// A factory that spits out [`Signer`]s.
-pub trait SignerFactory<S, K> {
-    /// The type of [`Signer`] this factory will create.
-    type Signer: Signer<S>;
-
-    /// Create a [`Signer`] using the provided public key.
-    fn new_signer(&self, key: K) -> Self::Signer;
-}
-
-impl<S, T, F, K, P> SignerFactory<T, K> for P
-where
-    P: std::ops::Deref<Target = F>,
-    F: Fn(K) -> S,
-    S: Signer<T>,
-{
-    type Signer = S;
-
-    fn new_signer(&self, key: K) -> Self::Signer {
-        self(key)
-    }
-}
+pub use self::signer::Signer;
 
 /// The parameters necessary to initialize the FaceTec Device SDK.
 type FacetecDeviceSdkParams = Map<String, Value>;
@@ -228,8 +196,8 @@ where
     ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
-    ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
-    <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
+    ValidatorSignerFactory: signer::Factory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
+    <<ValidatorSignerFactory as signer::Factory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
     Block: BlockT,
     TransactionPool: TransactionPoolT<Block = Block>,
@@ -345,8 +313,8 @@ where
     ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
-    ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
-    <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
+    ValidatorSignerFactory: signer::Factory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
+    <<ValidatorSignerFactory as signer::Factory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
