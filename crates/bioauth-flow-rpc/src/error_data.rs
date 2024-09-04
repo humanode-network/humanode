@@ -16,7 +16,7 @@ impl Serialize for ShouldRetry {
     }
 }
 
-/// The RPC error context we provide to handle scan result blob data.
+/// The RPC error with scan result blob data.
 pub struct ScanResultBlob(pub String);
 
 impl Serialize for ScanResultBlob {
