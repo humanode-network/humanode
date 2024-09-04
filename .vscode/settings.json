@@ -7,13 +7,25 @@
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
-  // This takes too long when working with substrate, as it build the whole
-  // runtime each time the node host code is built.
-  "rust-analyzer.cargo.buildScripts.enable": false,
-  // Uncomment this while working on runtime.
-  // "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
-  // "rust-analyzer.cargo.noDefaultFeatures": true,
+  // Avoid conflicts with command line.
   "rust-analyzer.cargo.targetDir": true,
+  // Improve stability.
+  "rust-analyzer.server.extraEnv": {
+    "CHALK_OVERFLOW_DEPTH": "100000000",
+    "CHALK_SOLVER_MAX_SIZE": "10000000"
+  },
+  "rust-analyzer.cargo.features": "all",
+  "rust-analyzer.cargo.extraEnv": {
+    // Skip building WASM, there is never need for it here.
+    "SKIP_WASM_BUILD": "1"
+  },
+  // Don't expand some problematic proc_macros
+  "rust-analyzer.procMacro.ignored": {
+    "async-trait": ["async_trait"],
+    "napi-derive": ["napi"],
+    "async-recursion": ["async_recursion"],
+    "async-std": ["async_std"]
+  },
   "vitest.commandLine": "yarn utils/e2e-tests/ts test:watch --",
   "vitest.include": [
     "utils/e2e-tests/ts/**/tests/**/*.ts",
