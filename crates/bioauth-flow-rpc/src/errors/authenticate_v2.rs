@@ -1,8 +1,6 @@
 //! The `authenticate_v2` method error.
 
-use rpc_validator_key_logic::Error as ValidatorKeyError;
-
-use super::{api_error_code, shared};
+use super::shared;
 use crate::error_data::{self};
 
 /// The `authenticate_v2` method error kinds.
@@ -11,58 +9,26 @@ pub struct Error(pub shared::FlowBaseError<robonode_client::AuthenticateError>);
 
 impl From<Error> for jsonrpsee::core::Error {
     fn from(err: Error) -> Self {
-        match err.0 {
-            shared::FlowBaseError::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => {
-                rpc_error_response::data(
-                    api_error_code::MISSING_VALIDATOR_KEY,
-                    err.to_string(),
-                    rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
-                )
-            }
-            shared::FlowBaseError::KeyExtraction(
-                err @ ValidatorKeyError::ValidatorKeyExtraction,
-            ) => rpc_error_response::simple(
-                api_error_code::VALIDATOR_KEY_EXTRACTION,
-                err.to_string(),
-            ),
-            shared::FlowBaseError::Sign(err) => {
-                rpc_error_response::simple(api_error_code::SIGN, err.to_string())
-            }
-            shared::FlowBaseError::RobonodeClient(
-                ref err @ robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::PersonNotFound(ref scan_result_blob)
-                    | robonode_client::AuthenticateError::FaceScanRejected(ref scan_result_blob)
-                    | robonode_client::AuthenticateError::SignatureInvalid(ref scan_result_blob)
-                    | robonode_client::AuthenticateError::LogicInternal(ref scan_result_blob),
-                ),
-            ) => rpc_error_response::data(
-                api_error_code::ROBONODE,
-                err.to_string(),
-                error_data::ScanResultBlob(scan_result_blob.clone()),
-            ),
-            shared::FlowBaseError::RobonodeClient(
-                err @ robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
-                ),
-            ) => rpc_error_response::data(
-                api_error_code::ROBONODE,
-                err.to_string(),
-                error_data::ShouldRetry,
-            ),
-            shared::FlowBaseError::RobonodeClient(
-                err @ robonode_client::Error::Call(
-                    robonode_client::AuthenticateError::InvalidLivenessData
-                    | robonode_client::AuthenticateError::PersonNotFoundNoBlob
-                    | robonode_client::AuthenticateError::SignatureInvalidNoBlob
-                    | robonode_client::AuthenticateError::LogicInternalNoBlob
-                    | robonode_client::AuthenticateError::UnknownCode(_)
-                    | robonode_client::AuthenticateError::Unknown(_),
-                ),
-            ) => rpc_error_response::simple(api_error_code::ROBONODE, err.to_string()),
-            shared::FlowBaseError::RobonodeClient(err @ robonode_client::Error::Reqwest(_)) => {
-                rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
-            }
-        }
+        err.0
+            .to_jsonrpsee_error::<_, error_data::BlobOrRetry>(|call_error| match call_error {
+                robonode_client::AuthenticateError::PersonNotFound(ref scan_result_blob)
+                | robonode_client::AuthenticateError::FaceScanRejected(ref scan_result_blob)
+                | robonode_client::AuthenticateError::SignatureInvalid(ref scan_result_blob)
+                | robonode_client::AuthenticateError::LogicInternal(ref scan_result_blob) => {
+                    Some(error_data::ScanResultBlob(scan_result_blob.clone()).into())
+                }
+
+                robonode_client::AuthenticateError::FaceScanRejectedNoBlob => {
+                    Some(error_data::ShouldRetry.into())
+                }
+
+                robonode_client::AuthenticateError::InvalidLivenessData
+                | robonode_client::AuthenticateError::PersonNotFoundNoBlob
+                | robonode_client::AuthenticateError::SignatureInvalidNoBlob
+                | robonode_client::AuthenticateError::LogicInternalNoBlob
+                | robonode_client::AuthenticateError::UnknownCode(_)
+                | robonode_client::AuthenticateError::Unknown(_) => None,
+            })
     }
 }
 
@@ -70,6 +36,7 @@ impl From<Error> for jsonrpsee::core::Error {
 mod tests {
 
     use jsonrpsee::types::ErrorObject;
+    use rpc_validator_key_logic::Error as ValidatorKeyError;
 
     use super::*;
     use crate::errors::sign::Error as SignError;
