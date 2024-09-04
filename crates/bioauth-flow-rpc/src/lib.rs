@@ -15,51 +15,23 @@ use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, AuthenticateResponse, EnrollRequest, EnrollResponse};
 use rpc_deny_unsafe::DenyUnsafe;
 use sc_transaction_pool_api::{TransactionPool as TransactionPoolT, TransactionStatus, TxHash};
-use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use tracing::*;
 
+pub mod data;
 pub mod error;
 pub mod method;
 pub mod signer;
 
 pub use self::signer::Signer;
 
-/// The parameters necessary to initialize the FaceTec Device SDK.
-type FacetecDeviceSdkParams = Map<String, Value>;
-
-/// The bioauth status as used in the RPC.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum BioauthStatus<Timestamp> {
-    /// When the status can't be determined, but there was no error.
-    /// Can happen if the validator key is absent.
-    Unknown,
-    /// There is no active authentication for the currently used validator key.
-    Inactive,
-    /// There is an active authentication for the currently used validator key.
-    Active {
-        /// The timestamp when the authentication will expire.
-        expires_at: Timestamp,
-    },
-}
-
-impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
-    fn from(status: bioauth_flow_api::BioauthStatus<T>) -> Self {
-        match status {
-            bioauth_flow_api::BioauthStatus::Inactive => Self::Inactive,
-            bioauth_flow_api::BioauthStatus::Active { expires_at } => Self::Active { expires_at },
-        }
-    }
-}
-
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
 pub trait Bioauth<Timestamp, TxHash> {
     /// Get the configuration required for the Device SDK.
     #[method(name = "bioauth_getFacetecDeviceSdkParams")]
-    async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams>;
+    async fn get_facetec_device_sdk_params(&self) -> RpcResult<data::FacetecDeviceSdkParams>;
 
     /// Get a FaceTec Session Token.
     #[method(name = "bioauth_getFacetecSessionToken")]
@@ -67,7 +39,7 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Get the current bioauth status.
     #[method(name = "bioauth_status")]
-    async fn status(&self) -> RpcResult<BioauthStatus<Timestamp>>;
+    async fn status(&self) -> RpcResult<data::BioauthStatus<Timestamp>>;
 
     /// Enroll with provided liveness data.
     #[method(name = "bioauth_enroll")]
@@ -75,7 +47,7 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Enroll with provided liveness data V2.
     #[method(name = "bioauth_enrollV2")]
-    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollV2Result>;
+    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<data::EnrollV2Result>;
 
     /// Authenticate with provided liveness data.
     #[method(name = "bioauth_authenticate")]
@@ -83,28 +55,10 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Request auth ticket based on provided liveness data.
     #[method(name = "bioauth_authenticateV2")]
-    async fn authenticate_v2(&self, liveness_data: LivenessData)
-        -> RpcResult<AuthenticateV2Result>;
-}
-
-/// `enroll_v2` flow result.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EnrollV2Result {
-    /// Scan result blob.
-    pub scan_result_blob: Option<String>,
-}
-
-/// `authenticate_v2` related flow result.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AuthenticateV2Result {
-    /// An opaque auth ticket generated for this authentication attempt.
-    pub auth_ticket: Box<[u8]>,
-    /// The robonode signature for this opaque auth ticket.
-    pub auth_ticket_signature: Box<[u8]>,
-    /// Scan result blob.
-    pub scan_result_blob: Option<String>,
+    async fn authenticate_v2(
+        &self,
+        liveness_data: LivenessData,
+    ) -> RpcResult<data::AuthenticateV2Result>;
 }
 
 /// The RPC implementation.
@@ -325,7 +279,7 @@ where
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
-    async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams> {
+    async fn get_facetec_device_sdk_params(&self) -> RpcResult<data::FacetecDeviceSdkParams> {
         let res = self
             .robonode_client
             .as_ref()
@@ -345,10 +299,10 @@ where
         Ok(res.session_token)
     }
 
-    async fn status(&self) -> RpcResult<BioauthStatus<Timestamp>> {
+    async fn status(&self) -> RpcResult<data::BioauthStatus<Timestamp>> {
         let own_key = match rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor) {
             Ok(v) => v,
-            Err(rpc_validator_key_logic::Error::MissingValidatorKey) => return Ok(BioauthStatus::Unknown),
+            Err(rpc_validator_key_logic::Error::MissingValidatorKey) => return Ok(data::BioauthStatus::Unknown),
             Err(rpc_validator_key_logic::Error::ValidatorKeyExtraction) => return Err(method::status::Error::ValidatorKeyExtraction.into()),
         };
 
@@ -372,7 +326,7 @@ where
         Ok(())
     }
 
-    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollV2Result> {
+    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<data::EnrollV2Result> {
         self.deny_unsafe.check_if_safe()?;
 
         let EnrollResponse { scan_result_blob } = self
@@ -380,7 +334,7 @@ where
             .await
             .map_err(method::enroll_v2::Error)?;
 
-        Ok(EnrollV2Result { scan_result_blob })
+        Ok(data::EnrollV2Result { scan_result_blob })
     }
 
     async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash<TransactionPool>> {
@@ -493,7 +447,7 @@ where
     async fn authenticate_v2(
         &self,
         liveness_data: LivenessData,
-    ) -> RpcResult<AuthenticateV2Result> {
+    ) -> RpcResult<data::AuthenticateV2Result> {
         self.deny_unsafe.check_if_safe()?;
 
         let AuthenticateResponse {
@@ -504,6 +458,6 @@ where
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
 
-        Ok(AuthenticateV2Result { auth_ticket, auth_ticket_signature, scan_result_blob })
+        Ok(data::AuthenticateV2Result { auth_ticket, auth_ticket_signature, scan_result_blob })
     }
 }
