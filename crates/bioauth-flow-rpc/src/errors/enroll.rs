@@ -1,8 +1,6 @@
 //! The `enroll` method error.
 
-use rpc_validator_key_logic::Error as ValidatorKeyError;
-
-use super::{api_error_code, shared};
+use super::shared;
 use crate::error_data;
 
 /// The `enroll` method error kinds.
@@ -11,36 +9,23 @@ pub struct Error(pub shared::FlowBaseError<robonode_client::EnrollError>);
 
 impl From<Error> for jsonrpsee::core::Error {
     fn from(err: Error) -> Self {
-        match err.0 {
-            shared::FlowBaseError::KeyExtraction(err @ ValidatorKeyError::MissingValidatorKey) => {
-                rpc_error_response::data(
-                    api_error_code::MISSING_VALIDATOR_KEY,
-                    err.to_string(),
-                    rpc_validator_key_logic::error_data::ValidatorKeyNotAvailable,
-                )
-            }
-            shared::FlowBaseError::KeyExtraction(
-                err @ ValidatorKeyError::ValidatorKeyExtraction,
-            ) => rpc_error_response::simple(
-                api_error_code::VALIDATOR_KEY_EXTRACTION,
-                err.to_string(),
-            ),
-            shared::FlowBaseError::RobonodeClient(
-                err @ robonode_client::Error::Call(
-                    robonode_client::EnrollError::FaceScanRejectedNoBlob,
-                ),
-            ) => rpc_error_response::data(
-                api_error_code::ROBONODE,
-                err.to_string(),
-                error_data::ShouldRetry,
-            ),
-            shared::FlowBaseError::RobonodeClient(err) => {
-                rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
-            }
-            shared::FlowBaseError::Sign(err) => {
-                rpc_error_response::simple(api_error_code::SIGN, err.to_string())
-            }
-        }
+        err.0
+            .to_jsonrpsee_error::<_, error_data::ShouldRetry>(|call_error| match call_error {
+                robonode_client::EnrollError::FaceScanRejectedNoBlob
+                | robonode_client::EnrollError::FaceScanRejected(_) => {
+                    Some(error_data::ShouldRetry)
+                }
+
+                robonode_client::EnrollError::InvalidPublicKey
+                | robonode_client::EnrollError::InvalidLivenessData
+                | robonode_client::EnrollError::PublicKeyAlreadyUsed
+                | robonode_client::EnrollError::PersonAlreadyEnrolledNoBlob
+                | robonode_client::EnrollError::PersonAlreadyEnrolled(_)
+                | robonode_client::EnrollError::LogicInternalNoBlob
+                | robonode_client::EnrollError::LogicInternal(_)
+                | robonode_client::EnrollError::UnknownCode(_)
+                | robonode_client::EnrollError::Unknown(_) => None,
+            })
     }
 }
 
@@ -48,6 +33,7 @@ impl From<Error> for jsonrpsee::core::Error {
 mod tests {
 
     use jsonrpsee::types::ErrorObject;
+    use rpc_validator_key_logic::Error as ValidatorKeyError;
 
     use super::*;
     use crate::errors::sign::Error as SignError;
