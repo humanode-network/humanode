@@ -165,7 +165,7 @@
   features:
     - default
     - std
-- name: async-trait 0.1.81
+- name: async-trait 0.1.82
   features: []
 - name: asynchronous-codec 0.6.2
   features:
@@ -420,7 +420,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.16
+- name: clap 4.5.17
   features:
     - color
     - default
@@ -432,7 +432,7 @@
     - string
     - suggestions
     - usage
-- name: clap_builder 4.5.15
+- name: clap_builder 4.5.17
   features:
     - color
     - deprecated
@@ -3050,7 +3050,7 @@
 - name: serde_derive 1.0.209
   features:
     - default
-- name: serde_json 1.0.127
+- name: serde_json 1.0.128
   features:
     - alloc
     - default
@@ -3575,7 +3575,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.76
+- name: syn 2.0.77
   features:
     - clone-impls
     - default
