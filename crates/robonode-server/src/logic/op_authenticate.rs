@@ -167,9 +167,8 @@ where
 
         // If the results set is empty - this means that this person was not
         // found in the system.
-        let found = match results.first() {
-            Some(found) => found,
-            None => return Err(Error::PersonNotFound(scan_result_blob)),
+        let Some(found) = results.first() else {
+            return Err(Error::PersonNotFound(scan_result_blob));
         };
 
         if found.match_level < MATCH_LEVEL {
