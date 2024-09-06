@@ -12,6 +12,9 @@ pub mod weights;
 
 mod migrations;
 
+#[cfg(test)]
+mod mock;
+
 /// The type representing the session index in our chain.
 type SessionIndex = u32;
 
