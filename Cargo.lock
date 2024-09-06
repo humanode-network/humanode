@@ -6649,11 +6649,14 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
+ "mockall",
  "pallet-bioauth",
  "pallet-bootnodes",
  "pallet-session",
  "parity-scale-codec",
  "scale-info",
+ "serde",
+ "sp-core",
  "sp-runtime",
  "sp-std",
 ]
