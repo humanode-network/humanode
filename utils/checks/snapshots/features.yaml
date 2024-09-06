@@ -3131,7 +3131,7 @@
     - text
     - unicode
     - unicode-segmentation
-- name: similar-asserts 1.5.0
+- name: similar-asserts 1.6.0
   features:
     - default
     - unicode
