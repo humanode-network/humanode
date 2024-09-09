@@ -44,6 +44,8 @@ pub struct Response {
     /// The external database ID that was associated with this item.
     #[serde(rename = "externalDatabaseRefID")]
     pub external_database_ref_id: String,
+    /// Scan result blob.
+    pub scan_result_blob: String,
     /// Whether the request was successful.
     pub success: bool,
 }
@@ -147,6 +149,7 @@ mod tests {
             },
             "faceTecRetryScreen": 0,
             "retryScreenEnumInt": 0,
+            "scanResultBlob": "BLOOOB",
             "serverInfo": {
                 "version": "9.0.5",
                 "mode": "Development Only",
@@ -160,12 +163,13 @@ mod tests {
             response,
             Response {
                 external_database_ref_id,
+                scan_result_blob,
                 success: true,
                 face_scan: FaceScanResponse {
                     age_estimate_group_enum_int: -1,
                     ..
                 },
-            } if external_database_ref_id == "test_external_dbref_id"
+            } if external_database_ref_id == "test_external_dbref_id" && scan_result_blob == "BLOOOB"
         )
     }
 
@@ -181,7 +185,7 @@ mod tests {
             "ageEstimateGroupEnumInt": 2,
             "externalDatabaseRefID": "qwe",
             "retryScreenEnumInt": 0,
-            "scanResultBlob": "AQEAAABCAAAAAAAAABod8Ab2TBI4O9XmVyim3AxlDaV4QoP2eFBAmQTkB2dOiL4becto+NXWqUxdo6JBjSUoreo9Lm7MToQFpqj/HB+Hzw\\u003d\\u003d",
+            "scanResultBlob": "BLOOOB",
             "success": false,
             "wasProcessed": true,
             "callData": {
@@ -206,6 +210,7 @@ mod tests {
             response,
             Response {
                 external_database_ref_id,
+                scan_result_blob,
                 success: false,
                 face_scan: FaceScanResponse {
                     face_scan_security_checks: FaceScanSecurityChecks {
@@ -217,7 +222,7 @@ mod tests {
                     retry_screen_enum_int: 0,
                     age_estimate_group_enum_int: 2,
                 },
-            } if external_database_ref_id == "qwe"
+            } if external_database_ref_id == "qwe" && scan_result_blob == "BLOOOB"
         )
     }
 
@@ -261,6 +266,7 @@ mod tests {
             },
             "faceTecRetryScreen": 0,
             "retryScreenEnumInt": 0,
+            "scanResultBlob": "BLOOOB",
             "serverInfo": {
                 "version": "9.0.5",
                 "mode": "Development Only",
