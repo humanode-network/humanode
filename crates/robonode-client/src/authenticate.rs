@@ -96,7 +96,7 @@ mod tests {
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
 
     use super::*;
-    use crate::test_utils::mkerr;
+    use crate::test_utils::{mkerr, mkerr_containing_blob};
 
     #[test]
     fn request_serialization() {
@@ -131,6 +131,24 @@ mod tests {
         )
     }
 
+    #[test]
+    fn response_deserialization_containing_blob() {
+        let sample_response = serde_json::json!({
+            "authTicket": [1, 2, 3],
+            "authTicketSignature": [4, 5, 6],
+            "scanResultBlob": "blob".to_owned(),
+        });
+
+        let response: AuthenticateResponse = serde_json::from_value(sample_response).unwrap();
+        assert_eq!(
+            response,
+            AuthenticateResponse {
+                auth_ticket: vec![1, 2, 3].into(),
+                auth_ticket_signature: vec![4, 5, 6].into(),
+            }
+        )
+    }
+
     #[tokio::test]
     async fn mock_success() {
         let mock_server = MockServer::start().await;
@@ -142,6 +160,39 @@ mod tests {
         let sample_response = serde_json::json!({
             "authTicket": b"456",
             "authTicketSignature": b"789",
+        });
+
+        let expected_response: AuthenticateResponse =
+            serde_json::from_value(sample_response.clone()).unwrap();
+
+        Mock::given(matchers::method("POST"))
+            .and(matchers::path("/authenticate"))
+            .and(matchers::body_json(&sample_request))
+            .respond_with(ResponseTemplate::new(200).set_body_json(&sample_response))
+            .mount(&mock_server)
+            .await;
+
+        let client = Client {
+            base_url: mock_server.uri(),
+            reqwest: reqwest::Client::new(),
+        };
+
+        let actual_response = client.authenticate(sample_request).await.unwrap();
+        assert_eq!(actual_response, expected_response);
+    }
+
+    #[tokio::test]
+    async fn mock_success_containing_blob() {
+        let mock_server = MockServer::start().await;
+
+        let sample_request = AuthenticateRequest {
+            liveness_data: b"dummy liveness data",
+            liveness_data_signature: b"123",
+        };
+        let sample_response = serde_json::json!({
+            "authTicket": b"456",
+            "authTicketSignature": b"789",
+            "scanResultBlob": "blob".to_owned(),
         });
 
         let expected_response: AuthenticateResponse =
@@ -207,6 +258,69 @@ mod tests {
             };
 
             let response = ResponseTemplate::new(case.0).set_body_json(mkerr(case.1));
+
+            Mock::given(matchers::method("POST"))
+                .and(matchers::path("/authenticate"))
+                .and(matchers::body_json(&sample_request))
+                .respond_with(response)
+                .mount(&mock_server)
+                .await;
+
+            let client = Client {
+                base_url: mock_server.uri(),
+                reqwest: reqwest::Client::new(),
+            };
+
+            let actual_error = client.authenticate(sample_request).await.unwrap_err();
+            assert_matches!(actual_error, Error::Call(err) if err == case.2);
+        }
+    }
+
+    #[tokio::test]
+    async fn mock_error_response_containing_blob() {
+        let cases = [
+            (
+                StatusCode::BAD_REQUEST,
+                "AUTHENTICATE_INVALID_LIVENESS_DATA",
+                AuthenticateError::InvalidLivenessData,
+            ),
+            (
+                StatusCode::NOT_FOUND,
+                "AUTHENTICATE_PERSON_NOT_FOUND",
+                AuthenticateError::PersonNotFound,
+            ),
+            (
+                StatusCode::FORBIDDEN,
+                "AUTHENTICATE_FACE_SCAN_REJECTED",
+                AuthenticateError::FaceScanRejected,
+            ),
+            (
+                StatusCode::FORBIDDEN,
+                "AUTHENTICATE_SIGNATURE_INVALID",
+                AuthenticateError::SignatureInvalid,
+            ),
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "LOGIC_INTERNAL_ERROR",
+                AuthenticateError::LogicInternal,
+            ),
+            (
+                StatusCode::BAD_REQUEST,
+                "MY_ERR_CODE",
+                AuthenticateError::UnknownCode("MY_ERR_CODE".to_owned()),
+            ),
+        ];
+
+        for case in cases {
+            let mock_server = MockServer::start().await;
+
+            let sample_request = AuthenticateRequest {
+                liveness_data: b"dummy liveness data",
+                liveness_data_signature: b"123",
+            };
+
+            let response =
+                ResponseTemplate::new(case.0).set_body_json(mkerr_containing_blob(case.1, "blob"));
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/authenticate"))
