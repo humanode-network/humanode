@@ -89,7 +89,7 @@ mod tests {
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
 
     use super::*;
-    use crate::test_utils::mkerr;
+    use crate::test_utils::{mkerr, mkerr_containing_blob};
 
     #[test]
     fn request_serialization() {
@@ -123,6 +123,34 @@ mod tests {
             .and(matchers::path("/enroll"))
             .and(matchers::body_json(&sample_request))
             .respond_with(ResponseTemplate::new(201))
+            .mount(&mock_server)
+            .await;
+
+        let client = Client {
+            base_url: mock_server.uri(),
+            reqwest: reqwest::Client::new(),
+        };
+
+        client.enroll(sample_request).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn mock_success_containing_blob() {
+        let mock_server = MockServer::start().await;
+
+        let sample_request = EnrollRequest {
+            liveness_data: b"dummy liveness data",
+            public_key: b"123",
+            liveness_data_signature: b"signature",
+        };
+        let sample_response = serde_json::json!({
+            "scanResultBlob": "blob".to_owned(),
+        });
+
+        Mock::given(matchers::method("POST"))
+            .and(matchers::path("/enroll"))
+            .and(matchers::body_json(&sample_request))
+            .respond_with(ResponseTemplate::new(201).set_body_json(&sample_response))
             .mount(&mock_server)
             .await;
 
@@ -184,6 +212,75 @@ mod tests {
             };
 
             let response = ResponseTemplate::new(case.0).set_body_json(mkerr(case.1));
+
+            Mock::given(matchers::method("POST"))
+                .and(matchers::path("/enroll"))
+                .and(matchers::body_json(&sample_request))
+                .respond_with(response)
+                .mount(&mock_server)
+                .await;
+
+            let client = Client {
+                base_url: mock_server.uri(),
+                reqwest: reqwest::Client::new(),
+            };
+
+            let actual_error = client.enroll(sample_request).await.unwrap_err();
+            assert_matches!(actual_error, Error::Call(err) if err == case.2);
+        }
+    }
+
+    #[tokio::test]
+    async fn mock_error_response_containing_blob() {
+        let cases = [
+            (
+                StatusCode::BAD_REQUEST,
+                "ENROLL_INVALID_PUBLIC_KEY",
+                EnrollError::InvalidPublicKey,
+            ),
+            (
+                StatusCode::BAD_REQUEST,
+                "ENROLL_INVALID_LIVENESS_DATA",
+                EnrollError::InvalidLivenessData,
+            ),
+            (
+                StatusCode::FORBIDDEN,
+                "ENROLL_FACE_SCAN_REJECTED",
+                EnrollError::FaceScanRejected,
+            ),
+            (
+                StatusCode::CONFLICT,
+                "ENROLL_PUBLIC_KEY_ALREADY_USED",
+                EnrollError::PublicKeyAlreadyUsed,
+            ),
+            (
+                StatusCode::CONFLICT,
+                "ENROLL_PERSON_ALREADY_ENROLLED",
+                EnrollError::PersonAlreadyEnrolled,
+            ),
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "LOGIC_INTERNAL_ERROR",
+                EnrollError::LogicInternal,
+            ),
+            (
+                StatusCode::BAD_REQUEST,
+                "MY_ERR_CODE",
+                EnrollError::UnknownCode("MY_ERR_CODE".to_owned()),
+            ),
+        ];
+
+        for case in cases {
+            let mock_server = MockServer::start().await;
+
+            let sample_request = EnrollRequest {
+                liveness_data: b"dummy liveness data",
+                liveness_data_signature: b"signature",
+                public_key: b"123",
+            };
+
+            let response =
+                ResponseTemplate::new(case.0).set_body_json(mkerr_containing_blob(case.1, "blob"));
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/enroll"))
