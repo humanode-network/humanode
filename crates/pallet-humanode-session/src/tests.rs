@@ -102,3 +102,15 @@ fn unban_works() {
         );
     });
 }
+
+/// This test prevents unban when the provided account is not banned.
+#[test]
+fn unban_fails_account_is_not_banned() {
+    new_test_ext().execute_with_ext(|_| {
+        // Invoke the function under test.
+        assert_noop!(
+            HumanodeSession::unban(RuntimeOrigin::root(), 1),
+            Error::<Test>::AccountIsNotBanned
+        );
+    });
+}
