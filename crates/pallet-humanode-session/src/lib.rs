@@ -14,6 +14,8 @@ mod migrations;
 
 #[cfg(test)]
 mod mock;
+#[cfg(test)]
+mod tests;
 
 /// The type representing the session index in our chain.
 type SessionIndex = u32;
