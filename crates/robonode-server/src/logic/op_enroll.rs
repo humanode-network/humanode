@@ -5,7 +5,7 @@ use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use serde::{Deserialize, Serialize};
 use tracing::{error, trace};
 
-use super::{common::*, Logic, LogicOp, Signer, Verifier};
+use super::{common::*, Logic, LogicOp, ScanResultBlob, Signer, Verifier};
 use crate::logic::facetec_utils::{db_search_result_adapter, DbSearchResult};
 
 /// The request for the enroll operation.
@@ -24,7 +24,10 @@ pub struct Request {
 /// The response for the enroll operation.
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Response;
+pub struct Response {
+    /// Scan result blob.
+    pub scan_result_blob: ScanResultBlob,
+}
 
 /// The errors on the enroll operation.
 ///
@@ -39,29 +42,29 @@ pub enum Error {
     /// The liveness data signature validation failed.
     SignatureInvalid,
     /// This FaceScan was rejected.
-    FaceScanRejected,
+    FaceScanRejected(ScanResultBlob),
     /// This Public Key was already used.
     PublicKeyAlreadyUsed,
     /// This person has already enrolled into the system.
     /// It can also happen if matching returns false-positive.
-    PersonAlreadyEnrolled,
+    PersonAlreadyEnrolled(ScanResultBlob),
     /// Internal error at server-level enrollment due to the underlying request
     /// error at the API level.
     InternalErrorEnrollment(ft::Error),
     /// Internal error at server-level enrollment due to unsuccessful response,
     /// but for some other reason but the FaceScan being rejected.
     /// Rejected FaceScan is explicitly encoded via a different error condition.
-    InternalErrorEnrollmentUnsuccessful,
+    InternalErrorEnrollmentUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB search due to the underlying request
     /// error at the API level.
-    InternalErrorDbSearch(ft::Error),
+    InternalErrorDbSearch(ft::Error, ScanResultBlob),
     /// Internal error at 3D-DB search due to unsuccessful response.
-    InternalErrorDbSearchUnsuccessful,
+    InternalErrorDbSearchUnsuccessful(ScanResultBlob),
     /// Internal error at 3D-DB enrollment due to the underlying request
     /// error at the API level.
-    InternalErrorDbEnroll(ft::Error),
+    InternalErrorDbEnroll(ft::Error, ScanResultBlob),
     /// Internal error at 3D-DB enrollment due to unsuccessful response.
-    InternalErrorDbEnrollUnsuccessful,
+    InternalErrorDbEnrollUnsuccessful(ScanResultBlob),
     /// Internal error at signature verification.
     InternalErrorSignatureVerificationFailed,
 }
@@ -72,7 +75,7 @@ where
     S: Signer<Vec<u8>> + Send + 'static,
     PK: Send + Sync + for<'a> TryFrom<&'a [u8]> + AsRef<[u8]> + Verifier<Vec<u8>>,
 {
-    type Response = ();
+    type Response = Response;
     type Error = Error;
 
     /// An enroll invocation handler.
@@ -125,12 +128,16 @@ where
                 .face_scan_security_checks
                 .all_checks_succeeded()
             {
-                return Err(Error::FaceScanRejected);
+                return Err(Error::FaceScanRejected(enroll_res.scan_result_blob));
             }
-            return Err(Error::InternalErrorEnrollmentUnsuccessful);
+            return Err(Error::InternalErrorEnrollmentUnsuccessful(
+                enroll_res.scan_result_blob,
+            ));
         }
 
-        drop(enroll_res);
+        let ft::enrollment3d::Response {
+            scan_result_blob, ..
+        } = enroll_res;
 
         let search_result = unlocked
             .facetec
@@ -142,7 +149,9 @@ where
             .await;
 
         let results = match db_search_result_adapter(search_result) {
-            DbSearchResult::OtherError(err) => return Err(Error::InternalErrorDbSearch(err)),
+            DbSearchResult::OtherError(err) => {
+                return Err(Error::InternalErrorDbSearch(err, scan_result_blob))
+            }
             DbSearchResult::NoGroupError => {
                 trace!(message = "Got no-group error instead of FaceTec 3D-DB search results, assuming no results");
                 vec![]
@@ -150,7 +159,7 @@ where
             DbSearchResult::Response(search_res) => {
                 trace!(message = "Got FaceTec 3D-DB search results", ?search_res);
                 if !search_res.success {
-                    return Err(Error::InternalErrorDbSearchUnsuccessful);
+                    return Err(Error::InternalErrorDbSearchUnsuccessful(scan_result_blob));
                 }
                 search_res.results
             }
@@ -159,24 +168,27 @@ where
         // If the results set is non-empty - this means that this person has
         // already enrolled with the system. It might also be a false-positive.
         if !results.is_empty() {
-            return Err(Error::PersonAlreadyEnrolled);
+            return Err(Error::PersonAlreadyEnrolled(scan_result_blob));
         }
 
-        let db_enroll_res = unlocked
+        let db_enroll_res = match unlocked
             .facetec
             .db_enroll(ft::db_enroll::Request {
                 external_database_ref_id: &public_key_hex,
                 group_name: DB_GROUP_NAME,
             })
             .await
-            .map_err(Error::InternalErrorDbEnroll)?;
+        {
+            Ok(db_enroll_res) => db_enroll_res,
+            Err(err) => return Err(Error::InternalErrorDbEnroll(err, scan_result_blob)),
+        };
 
         trace!(message = "Got FaceTec 3D-DB enroll results", ?db_enroll_res);
 
         if !db_enroll_res.success {
-            return Err(Error::InternalErrorDbEnrollUnsuccessful);
+            return Err(Error::InternalErrorDbEnrollUnsuccessful(scan_result_blob));
         }
 
-        Ok(())
+        Ok(Response { scan_result_blob })
     }
 }
