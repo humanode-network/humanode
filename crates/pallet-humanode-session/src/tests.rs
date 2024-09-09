@@ -2,7 +2,7 @@
 
 use std::collections::BTreeSet;
 
-use frame_support::assert_ok;
+use frame_support::{assert_noop, assert_ok};
 use mock::{HumanodeSession, RuntimeOrigin};
 use sp_runtime::BoundedBTreeSet;
 
@@ -33,6 +33,53 @@ fn ban_works() {
         assert_eq!(
             <BannedAccounts<Test>>::get().into_inner(),
             vec![1].into_iter().collect::<_>()
+        );
+    });
+}
+
+/// This test prevents ban when the provided account is related to bootnodes.
+#[test]
+fn ban_fails_attempt_to_ban_bootnode() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<BannedAccounts<Test>>::get().is_empty());
+
+        // Invoke the function under test.
+        assert_noop!(
+            HumanodeSession::ban(RuntimeOrigin::root(), 42),
+            Error::<Test>::AttemptToBanBootnode
+        );
+    });
+}
+
+/// This test prevents ban when the banned accounts limit has been reached as `BoundedBTreeSet`.
+#[test]
+fn ban_fails_too_many_banned_accounts() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare test preconditions.
+        let banned_accounts_before = vec![1, 2, 3, 4, 5].into_iter().collect::<BTreeSet<_>>();
+        <BannedAccounts<Test>>::put(BoundedBTreeSet::try_from(banned_accounts_before).unwrap());
+
+        // Invoke the function under test.
+        assert_noop!(
+            HumanodeSession::ban(RuntimeOrigin::root(), 6),
+            Error::<Test>::TooManyBannedAccounts
+        );
+    });
+}
+
+/// This test prevents ban when the provided account is already banned.
+#[test]
+fn ban_fails_account_is_already_banned() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare test preconditions.
+        let banned_accounts_before = vec![1, 2, 3].into_iter().collect::<BTreeSet<_>>();
+        <BannedAccounts<Test>>::put(BoundedBTreeSet::try_from(banned_accounts_before).unwrap());
+
+        // Invoke the function under test.
+        assert_noop!(
+            HumanodeSession::ban(RuntimeOrigin::root(), 3),
+            Error::<Test>::AccountIsAlreadyBanned
         );
     });
 }
