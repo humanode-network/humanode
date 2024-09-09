@@ -12,7 +12,7 @@ use sp_core::{crypto::Infallible, ConstU32, H256};
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
-    BuildStorage,
+    BoundedVec, BuildStorage,
 };
 
 use crate::{self as pallet_humanode_session};
@@ -217,6 +217,16 @@ impl pallet_humanode_session::Config for Test {
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
     let genesis_config = GenesisConfig {
+        session: pallet_session::GenesisConfig {
+            keys: vec![
+                (42, 42, sp_runtime::testing::UintAuthorityId(42)),
+                (43, 43, sp_runtime::testing::UintAuthorityId(43)),
+                (44, 44, sp_runtime::testing::UintAuthorityId(44)),
+            ],
+        },
+        bootnodes: pallet_bootnodes::GenesisConfig {
+            bootnodes: BoundedVec::truncate_from(vec![42, 43, 44]),
+        },
         ..Default::default()
     };
 
