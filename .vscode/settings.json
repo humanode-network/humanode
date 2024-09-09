@@ -26,6 +26,8 @@
     "async-recursion": ["async_recursion"],
     "async-std": ["async_std"]
   },
+  "rust-analyzer.workspace.symbol.search.scope": "workspace_and_dependencies",
+  "rust-analyzer.workspace.symbol.search.kind": "all_symbols",
   "vitest.commandLine": "yarn utils/e2e-tests/ts test:watch --",
   "vitest.include": [
     "utils/e2e-tests/ts/**/tests/**/*.ts",
