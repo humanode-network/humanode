@@ -5,6 +5,7 @@ use frame_support::{
 };
 use frame_system as system;
 use mockall::mock;
+use pallet_session::historical as pallet_session_historical;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_core::{crypto::Infallible, ConstU32, H256};
@@ -34,6 +35,7 @@ frame_support::construct_runtime!(
         Bootnodes: pallet_bootnodes,
         Bioauth: pallet_bioauth,
         Session: pallet_session,
+        Historical: pallet_session_historical,
         HumanodeSession: pallet_humanode_session,
     }
 );
