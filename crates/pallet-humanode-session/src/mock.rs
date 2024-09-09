@@ -164,8 +164,8 @@ impl pallet_bioauth::Config for Test {
     type CurrentMoment = MockCurrentMoment;
     type AuthenticationsExpireAfter = ConstU64<10>;
     type WeightInfo = ();
-    type MaxAuthentications = ConstU32<100>;
-    type MaxNonces = ConstU32<100>;
+    type MaxAuthentications = ConstU32<5>;
+    type MaxNonces = ConstU32<5>;
     type BeforeAuthHook = ();
     type AfterAuthHook = ();
     type DeauthenticationReason = ();
