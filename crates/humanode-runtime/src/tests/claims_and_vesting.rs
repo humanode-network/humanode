@@ -424,15 +424,7 @@ fn direct_claiming_without_vesting_works() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
-        assert_eq!(
-            Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
         // Invoke the claim call.
         assert_ok!(TokenClaims::claim(
@@ -451,15 +443,9 @@ fn direct_claiming_without_vesting_works() {
         );
 
         // Ensure that the balance is not locked.
-        //
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
         );
 
         // Ensure total issuance did not change.
@@ -485,15 +471,7 @@ fn direct_claiming_with_vesting_works() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
-        assert_eq!(
-            Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
         assert!(Vesting::locks(account_id("Alice")).is_none());
 
         // Invoke the claim call.
@@ -513,11 +491,6 @@ fn direct_claiming_with_vesting_works() {
         );
 
         // Ensure that the vesting balance is locked.
-        //
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is equal to vesting balance > existential deposit.
-        //
-        // As a result, usable balance contains existential deposit.
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
         // Ensure that the vesting is armed for the given account and matches the parameters.
@@ -569,15 +542,9 @@ fn direct_unlock_full_balance_works() {
         assert_ok!(Vesting::unlock(Some(account_id("Alice")).into()));
 
         // Ensure funds are unlocked.
-        //
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
         );
 
         // Ensure the vesting is gone from the state.
@@ -623,7 +590,7 @@ fn direct_unlock_partial_balance_works() {
         // Invoke the unlock call.
         assert_ok!(Vesting::unlock(Some(account_id("Alice")).into()));
 
-        let unlocked_balance = VESTING_BALANCE - System::account(account_id("Alice")).data.frozen;
+        let unlocked_balance = Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
 
         // Ensure funds are partially unlocked and rounding works as expected.
         assert_eq!(unlocked_balance, EXPECTED_PARTIAL_UNLOCKED_FUNDS);
@@ -655,15 +622,7 @@ fn direct_claiming_fails_when_eth_signature_invalid() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
-        assert_eq!(
-            Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
         // Invoke the claim call.
         assert_noop!(
@@ -678,15 +637,7 @@ fn direct_claiming_fails_when_eth_signature_invalid() {
         // Ensure claims related state hasn't been changed.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
-        assert_eq!(
-            Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
         assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
@@ -710,15 +661,7 @@ fn direct_claiming_fails_when_no_claim() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_none());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
-        assert_eq!(
-            Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
         // Invoke the claim call.
         assert_noop!(
@@ -733,15 +676,7 @@ fn direct_claiming_fails_when_no_claim() {
         // Ensure claims related state hasn't been changed.
         assert!(TokenClaims::claims(ethereum_address).is_none());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
-        assert_eq!(
-            Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
         assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
@@ -779,11 +714,6 @@ fn direct_unlock_fails_when_no_vesting() {
         );
 
         // Ensure funds are still locked.
-        //
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is equal to vesting balance > existential deposit.
-        //
-        // As a result, usable balance contains existential deposit.
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
         // Ensure the vesting isn't gone from the state.
@@ -830,7 +760,7 @@ fn claims_fails_when_vesting_already_engaged() {
         // Invoke the unlock call.
         assert_ok!(Vesting::unlock(Some(account_id("Alice")).into()));
 
-        let unlocked_balance = VESTING_BALANCE - System::account(account_id("Alice")).data.frozen;
+        let unlocked_balance = Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
 
         // Ensure funds are partially unlocked and rounding works as expected.
         assert_eq!(unlocked_balance, EXPECTED_PARTIAL_UNLOCKED_FUNDS);
@@ -898,15 +828,7 @@ fn dispatch_claiming_without_vesting_works() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
-        assert_eq!(
-            Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
         // Validate already checked extrinsic with all possible transaction sources.
         assert_applyable_validate_all_transaction_sources(
@@ -931,15 +853,9 @@ fn dispatch_claiming_without_vesting_works() {
         );
 
         // Ensure that the balance is not locked.
-        //
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
         );
 
         // Ensure total issuance did not change.
@@ -975,15 +891,7 @@ fn dispatch_claiming_with_vesting_works() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
-        assert_eq!(
-            Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
-        );
+        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
         assert!(Vesting::locks(account_id("Alice")).is_none());
 
         // Validate already checked extrinsic with all possible transaction sources.
@@ -1008,10 +916,7 @@ fn dispatch_claiming_with_vesting_works() {
             INIT_BALANCE + VESTING_BALANCE
         );
 
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is equal to vesting balance > existential deposit.
-        //
-        // As a result, usable balance contains existential deposit.
+        // Ensure that the vesting balance is locked.
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
 
         // Ensure that the vesting is armed for the given account and matches the parameters.
@@ -1069,10 +974,6 @@ fn dispatch_unlock_full_balance_works() {
             Balances::free_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
         );
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is equal to vesting balance < existential deposit.
-        //
-        // As a result, usable balance contains existential deposit.
         assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
         assert!(Vesting::locks(account_id("Alice")).is_some());
 
@@ -1092,15 +993,9 @@ fn dispatch_unlock_full_balance_works() {
         ));
 
         // Ensure funds are unlocked.
-        //
-        // Alice account can't be reaped as the account takes part in consensus (bootnode).
-        // Frozen balance is 0 < existential deposit.
-        //
-        // As a result, usable balance doesn't contain existential deposit.
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
-                - <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance()
         );
 
         // Ensure the vesting is gone from the state.
@@ -1171,7 +1066,7 @@ fn dispatch_unlock_partial_balance_works() {
             len
         ));
 
-        let unlocked_balance = VESTING_BALANCE - System::account(account_id("Alice")).data.frozen;
+        let unlocked_balance = Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
 
         // Ensure funds are partially unlocked and rounding works as expected.
         assert_eq!(unlocked_balance, EXPECTED_PARTIAL_UNLOCKED_FUNDS);
