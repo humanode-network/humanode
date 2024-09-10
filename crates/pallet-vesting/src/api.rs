@@ -15,7 +15,11 @@ pub enum EvaluationError {
 
 sp_api::decl_runtime_apis! {
     /// A runtime API for evaluating the locking logic.
-    pub trait VestingEvaluationApi<AccountId, Balance: Decode> where AccountId: Encode {
+    pub trait VestingEvaluationApi<AccountId, Balance>
+    where
+        AccountId: Encode,
+        Balance: Decode,
+    {
         /// Compute the balance under lock.
         fn evaluate_lock(account: &AccountId) -> Result<Balance, EvaluationError>;
     }
