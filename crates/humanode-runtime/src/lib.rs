@@ -448,6 +448,13 @@ impl pallet_balances::Config for Runtime {
     type DustRemoval = pallet_pot::DepositUnbalancedFungible<Self, PotInstanceTreasury>;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
+    type MaxLocks = ConstU32<50>;
+    // <https://github.com/paritytech/substrate/pull/12951>.
+    type HoldIdentifier = ();
+    type FreezeIdentifier = ();
+    type MaxReserves = ();
+    type MaxHolds = ConstU32<0>;
+    type MaxFreezes = ConstU32<0>;
     type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 }
 
