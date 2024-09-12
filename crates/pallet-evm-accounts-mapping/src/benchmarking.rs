@@ -1,5 +1,8 @@
 //! The benchmarks for the pallet.
 
+// Allow float arithmetic in tests.
+#![allow(clippy::float_arithmetic)]
+
 use frame_benchmarking::benchmarks;
 use frame_system::RawOrigin;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};

@@ -38,7 +38,7 @@ pub fn on_runtime_upgrade<T: Config>() -> Weight {
 ///
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
-pub fn pre_upgrade<T: Config>() -> Result<Vec<u8>, &'static str> {
+pub fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
     // Do nothing.
     Ok(Vec::new())
 }
