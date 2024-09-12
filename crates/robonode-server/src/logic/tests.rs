@@ -156,7 +156,7 @@ async fn setup() -> (
 
     let locked = Locked {
         sequence: Sequence::new(0),
-        execution_id: "test".to_owned(),
+        execution_id: uuid::Uuid::new_v4(),
         facetec,
         signer: TestSigner,
         public_key_type: PhantomData::<TestValidatorPublicKey>,
@@ -201,7 +201,10 @@ async fn first_authenticate() {
         .await
         .unwrap_err();
 
-    assert!(matches!(err, super::op_authenticate::Error::PersonNotFound));
+    assert!(matches!(
+        err,
+        super::op_authenticate::Error::PersonNotFound(_)
+    ));
 }
 
 #[tokio::test]
@@ -254,6 +257,6 @@ async fn double_enroll() {
 
     assert!(matches!(
         err,
-        super::op_enroll::Error::PersonAlreadyEnrolled
+        super::op_enroll::Error::PersonAlreadyEnrolled(_)
     ));
 }
