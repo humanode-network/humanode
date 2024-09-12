@@ -1,5 +1,8 @@
 //! Benchmark for pallet-bioauth extrinsics.
 
+// Allow integer and float arithmetic in tests.
+#![allow(clippy::arithmetic_side_effects, clippy::float_arithmetic)]
+
 use frame_benchmarking::benchmarks;
 use frame_support::traits::{Get, Hooks};
 use frame_system::RawOrigin;
@@ -38,6 +41,7 @@ fn make_pubkey(prefix: &str, idx: u32) -> Vec<u8> {
     pubkey
 }
 
+/// A helper function to make nonce.
 fn make_nonce(prefix: &str, idx: u32) -> Vec<u8> {
     let mut nonce = Vec::from(prefix);
     let idx_in_bytes = idx.to_le_bytes();
@@ -67,9 +71,10 @@ fn make_authentications<Pubkey: From<[u8; 32]>, Moment: Copy>(
     expires_at: Moment,
 ) -> Vec<Authentication<Pubkey, Moment>> {
     (0..count)
-        .into_iter()
         .map(|i| {
-            let public_key: [u8; 32] = make_pubkey(prefix, i as u32).try_into().unwrap();
+            let public_key: [u8; 32] = make_pubkey(prefix, i.try_into().unwrap())
+                .try_into()
+                .unwrap();
             Authentication {
                 public_key: public_key.into(),
                 expires_at,

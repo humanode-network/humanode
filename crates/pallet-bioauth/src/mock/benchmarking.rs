@@ -103,7 +103,6 @@ impl crate::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater 
     ) where
         ValidatorPublicKey: 'a,
     {
-        ()
     }
 
     fn init_validators_set<'a, I: Iterator<Item = &'a ValidatorPublicKey> + 'a>(
@@ -111,7 +110,6 @@ impl crate::ValidatorSetUpdater<ValidatorPublicKey> for MockValidatorSetUpdater 
     ) where
         ValidatorPublicKey: 'a,
     {
-        ()
     }
 }
 
@@ -225,11 +223,8 @@ impl crate::benchmarking::RobonodePublicKeyBuilder for Benchmark {
 
 /// Build benchmark externalities from the default genesis.
 pub fn new_benchmark_ext() -> sp_io::TestExternalities {
-    // Build externalities with default genesis.
-    let externalities = new_benchmark_ext_with(Default::default());
-
-    // Return ready-to-use externalities.
-    externalities
+    // Build externalities with default genesis and return ready-to-use externalities.
+    new_benchmark_ext_with(Default::default())
 }
 
 /// Build benchmark externalities from the custom genesis.

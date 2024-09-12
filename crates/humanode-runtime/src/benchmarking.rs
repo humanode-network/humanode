@@ -1,7 +1,7 @@
 //! The benchmarking utilities.
 
-// Allow simple integer arithmetic in tests.
-#![allow(clippy::integer_arithmetic)]
+// Allow integer arithmetic in tests.
+#![allow(clippy::arithmetic_side_effects)]
 
 use eip712_common::keccak_256;
 use frame_support::{
@@ -44,7 +44,7 @@ fn ethereum_address_from_secret(secret: &libsecp256k1::SecretKey) -> EthereumAdd
 }
 
 fn eth_ecdsa_sign(secret: &libsecp256k1::SecretKey, msg_hash: &[u8; 32]) -> EcdsaSignature {
-    let (sig, recovery_id) = libsecp256k1::sign(&libsecp256k1::Message::parse(&msg_hash), secret);
+    let (sig, recovery_id) = libsecp256k1::sign(&libsecp256k1::Message::parse(msg_hash), secret);
     let mut ecdsa_signature = [0u8; 65];
     ecdsa_signature[0..64].copy_from_slice(&sig.serialize()[..]);
     ecdsa_signature[64] = recovery_id.serialize();
