@@ -292,13 +292,12 @@ mod tests {
                 public_key: b"123",
             };
 
-            let response = match response_includes_blob {
-                ResponseIncludesBlob::Yes => ResponseTemplate::new(status_code)
-                    .set_body_json(mkerr(body, "scan result blob")),
-                ResponseIncludesBlob::No => {
-                    ResponseTemplate::new(status_code).set_body_json(mkerr_before_2023_05(body))
-                }
+            let response_body = match response_includes_blob {
+                ResponseIncludesBlob::Yes => mkerr(body, "scan result blob"),
+                ResponseIncludesBlob::No => mkerr_before_2023_05(body),
             };
+
+            let response = ResponseTemplate::new(status_code).set_body_json(response_body);
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/enroll"))
