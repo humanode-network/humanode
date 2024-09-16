@@ -21,18 +21,18 @@ impl TryFrom<String> for ErrorResponse {
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::test_utils::{mkerr, mkerr_before_2023_05};
+    use crate::test_utils::mkerr;
 
     #[test]
     fn decodes_before_2023_05() {
-        let err = mkerr_before_2023_05("MY_ERR_CODE").to_string();
+        let err = mkerr("MY_ERR_CODE", None).to_string();
         let ErrorResponse { error_code } = err.try_into().unwrap();
         assert_eq!(error_code, "MY_ERR_CODE");
     }
 
     #[test]
     fn decodes() {
-        let err = mkerr("MY_ERR_CODE", "scan result blob").to_string();
+        let err = mkerr("MY_ERR_CODE", Some("scan result blob")).to_string();
         let ErrorResponse { error_code } = err.try_into().unwrap();
         assert_eq!(error_code, "MY_ERR_CODE");
     }

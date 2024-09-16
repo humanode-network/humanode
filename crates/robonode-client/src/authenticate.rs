@@ -96,7 +96,7 @@ mod tests {
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
 
     use super::*;
-    use crate::test_utils::{mkerr, mkerr_before_2023_05};
+    use crate::test_utils::mkerr;
 
     #[test]
     fn request_serialization() {
@@ -257,8 +257,7 @@ mod tests {
                 liveness_data_signature: b"123",
             };
 
-            let response =
-                ResponseTemplate::new(status_code).set_body_json(mkerr_before_2023_05(body));
+            let response = ResponseTemplate::new(status_code).set_body_json(mkerr(body, None));
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/authenticate"))
@@ -332,8 +331,8 @@ mod tests {
             };
 
             let response_body = match response_includes_blob {
-                ResponseIncludesBlob::Yes => mkerr(body, "scan result blob"),
-                ResponseIncludesBlob::No => mkerr_before_2023_05(body),
+                ResponseIncludesBlob::Yes => mkerr(body, Some("scan result blob")),
+                ResponseIncludesBlob::No => mkerr(body, None),
             };
 
             let response = ResponseTemplate::new(status_code).set_body_json(response_body);
