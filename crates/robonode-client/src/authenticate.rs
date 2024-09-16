@@ -325,12 +325,13 @@ mod tests {
                 liveness_data_signature: b"123",
             };
 
-            let response_body = match response_includes_blob {
-                ResponseIncludesBlob::Yes => mkerr(error_code, Some("scan result blob")),
-                ResponseIncludesBlob::No => mkerr(error_code, None),
+            let response_scan_result_blob = match response_includes_blob {
+                ResponseIncludesBlob::Yes => Some("scan result blob"),
+                ResponseIncludesBlob::No => None,
             };
 
-            let response = ResponseTemplate::new(http_code).set_body_json(response_body);
+            let response = ResponseTemplate::new(http_code)
+                .set_body_json(mkerr(error_code, response_scan_result_blob));
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/authenticate"))
