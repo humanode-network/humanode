@@ -1,7 +1,7 @@
 //! The `authenticate_v2` method error.
 
 use super::shared;
-use crate::error_data::{self};
+use crate::error_data;
 
 /// The `authenticate_v2` method error kinds.
 #[derive(Debug)]
