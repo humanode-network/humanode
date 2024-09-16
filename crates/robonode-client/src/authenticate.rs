@@ -249,7 +249,7 @@ mod tests {
             ),
         ];
 
-        for case in cases {
+        for (status_code, body, expected_error) in cases {
             let mock_server = MockServer::start().await;
 
             let sample_request = AuthenticateRequest {
@@ -258,7 +258,7 @@ mod tests {
             };
 
             let response =
-                ResponseTemplate::new(case.0).set_body_json(mkerr_before_2023_05(case.1));
+                ResponseTemplate::new(status_code).set_body_json(mkerr_before_2023_05(body));
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/authenticate"))
@@ -273,7 +273,7 @@ mod tests {
             };
 
             let actual_error = client.authenticate(sample_request).await.unwrap_err();
-            assert_matches!(actual_error, Error::Call(err) if err == case.2);
+            assert_matches!(actual_error, Error::Call(err) if err == expected_error);
         }
     }
 
@@ -288,42 +288,42 @@ mod tests {
             (
                 StatusCode::BAD_REQUEST,
                 "AUTHENTICATE_INVALID_LIVENESS_DATA",
-                AuthenticateError::InvalidLivenessData,
                 ResponseIncludesBlob::No,
+                AuthenticateError::InvalidLivenessData,
             ),
             (
                 StatusCode::NOT_FOUND,
                 "AUTHENTICATE_PERSON_NOT_FOUND",
-                AuthenticateError::PersonNotFound,
                 ResponseIncludesBlob::Yes,
+                AuthenticateError::PersonNotFound,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_FACE_SCAN_REJECTED",
-                AuthenticateError::FaceScanRejected,
                 ResponseIncludesBlob::Yes,
+                AuthenticateError::FaceScanRejected,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_SIGNATURE_INVALID",
-                AuthenticateError::SignatureInvalid,
                 ResponseIncludesBlob::Yes,
+                AuthenticateError::SignatureInvalid,
             ),
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "LOGIC_INTERNAL_ERROR",
-                AuthenticateError::LogicInternal,
                 ResponseIncludesBlob::Yes,
+                AuthenticateError::LogicInternal,
             ),
             (
                 StatusCode::BAD_REQUEST,
                 "MY_ERR_CODE",
-                AuthenticateError::UnknownCode("MY_ERR_CODE".to_owned()),
                 ResponseIncludesBlob::No,
+                AuthenticateError::UnknownCode("MY_ERR_CODE".to_owned()),
             ),
         ];
 
-        for case in cases {
+        for (status_code, body, response_includes_blob, expected_error) in cases {
             let mock_server = MockServer::start().await;
 
             let sample_request = AuthenticateRequest {
@@ -331,12 +331,11 @@ mod tests {
                 liveness_data_signature: b"123",
             };
 
-            let response = match case.3 {
-                ResponseIncludesBlob::Yes => {
-                    ResponseTemplate::new(case.0).set_body_json(mkerr(case.1, "scan result blob"))
-                }
+            let response = match response_includes_blob {
+                ResponseIncludesBlob::Yes => ResponseTemplate::new(status_code)
+                    .set_body_json(mkerr(body, "scan result blob")),
                 ResponseIncludesBlob::No => {
-                    ResponseTemplate::new(case.0).set_body_json(mkerr_before_2023_05(case.1))
+                    ResponseTemplate::new(status_code).set_body_json(mkerr_before_2023_05(body))
                 }
             };
 
@@ -353,7 +352,7 @@ mod tests {
             };
 
             let actual_error = client.authenticate(sample_request).await.unwrap_err();
-            assert_matches!(actual_error, Error::Call(err) if err == case.2);
+            assert_matches!(actual_error, Error::Call(err) if err == expected_error);
         }
     }
 

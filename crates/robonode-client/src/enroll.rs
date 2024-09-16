@@ -202,7 +202,7 @@ mod tests {
             ),
         ];
 
-        for case in cases {
+        for (status_code, body, expected_error) in cases {
             let mock_server = MockServer::start().await;
 
             let sample_request = EnrollRequest {
@@ -212,7 +212,7 @@ mod tests {
             };
 
             let response =
-                ResponseTemplate::new(case.0).set_body_json(mkerr_before_2023_05(case.1));
+                ResponseTemplate::new(status_code).set_body_json(mkerr_before_2023_05(body));
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/enroll"))
@@ -227,7 +227,7 @@ mod tests {
             };
 
             let actual_error = client.enroll(sample_request).await.unwrap_err();
-            assert_matches!(actual_error, Error::Call(err) if err == case.2);
+            assert_matches!(actual_error, Error::Call(err) if err == expected_error);
         }
     }
 
@@ -242,48 +242,48 @@ mod tests {
             (
                 StatusCode::BAD_REQUEST,
                 "ENROLL_INVALID_PUBLIC_KEY",
-                EnrollError::InvalidPublicKey,
                 ResponseIncludesBlob::No,
+                EnrollError::InvalidPublicKey,
             ),
             (
                 StatusCode::BAD_REQUEST,
                 "ENROLL_INVALID_LIVENESS_DATA",
-                EnrollError::InvalidLivenessData,
                 ResponseIncludesBlob::No,
+                EnrollError::InvalidLivenessData,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "ENROLL_FACE_SCAN_REJECTED",
-                EnrollError::FaceScanRejected,
                 ResponseIncludesBlob::Yes,
+                EnrollError::FaceScanRejected,
             ),
             (
                 StatusCode::CONFLICT,
                 "ENROLL_PUBLIC_KEY_ALREADY_USED",
-                EnrollError::PublicKeyAlreadyUsed,
                 ResponseIncludesBlob::No,
+                EnrollError::PublicKeyAlreadyUsed,
             ),
             (
                 StatusCode::CONFLICT,
                 "ENROLL_PERSON_ALREADY_ENROLLED",
-                EnrollError::PersonAlreadyEnrolled,
                 ResponseIncludesBlob::Yes,
+                EnrollError::PersonAlreadyEnrolled,
             ),
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "LOGIC_INTERNAL_ERROR",
-                EnrollError::LogicInternal,
                 ResponseIncludesBlob::Yes,
+                EnrollError::LogicInternal,
             ),
             (
                 StatusCode::BAD_REQUEST,
                 "MY_ERR_CODE",
-                EnrollError::UnknownCode("MY_ERR_CODE".to_owned()),
                 ResponseIncludesBlob::No,
+                EnrollError::UnknownCode("MY_ERR_CODE".to_owned()),
             ),
         ];
 
-        for case in cases {
+        for (status_code, body, response_includes_blob, expected_error) in cases {
             let mock_server = MockServer::start().await;
 
             let sample_request = EnrollRequest {
@@ -292,12 +292,11 @@ mod tests {
                 public_key: b"123",
             };
 
-            let response = match case.3 {
-                ResponseIncludesBlob::Yes => {
-                    ResponseTemplate::new(case.0).set_body_json(mkerr(case.1, "scan result blob"))
-                }
+            let response = match response_includes_blob {
+                ResponseIncludesBlob::Yes => ResponseTemplate::new(status_code)
+                    .set_body_json(mkerr(body, "scan result blob")),
                 ResponseIncludesBlob::No => {
-                    ResponseTemplate::new(case.0).set_body_json(mkerr_before_2023_05(case.1))
+                    ResponseTemplate::new(status_code).set_body_json(mkerr_before_2023_05(body))
                 }
             };
 
@@ -314,7 +313,7 @@ mod tests {
             };
 
             let actual_error = client.enroll(sample_request).await.unwrap_err();
-            assert_matches!(actual_error, Error::Call(err) if err == case.2);
+            assert_matches!(actual_error, Error::Call(err) if err == expected_error);
         }
     }
 
