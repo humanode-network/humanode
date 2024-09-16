@@ -89,7 +89,7 @@ mod tests {
     use wiremock::{matchers, Mock, MockServer, ResponseTemplate};
 
     use super::*;
-    use crate::test_utils::mkerr;
+    use crate::test_utils::{mkerr, ResponseIncludesBlob};
 
     #[test]
     fn request_serialization() {
@@ -232,11 +232,6 @@ mod tests {
 
     #[tokio::test]
     async fn mock_error_response() {
-        enum ResponseIncludesBlob {
-            Yes,
-            No,
-        }
-
         let cases = [
             (
                 StatusCode::BAD_REQUEST,
