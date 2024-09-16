@@ -15,8 +15,8 @@ impl Client {
         let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
             StatusCode::CREATED if res.content_length() == Some(0) => Ok(EnrollResponse {
-                    scan_result_blob: None,
-            })
+                scan_result_blob: None,
+            }),
             StatusCode::CREATED => Ok(res.json().await?),
             status => Err(Error::Call(EnrollError::from_response(
                 status,
