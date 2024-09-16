@@ -233,41 +233,53 @@ mod tests {
 
     #[tokio::test]
     async fn mock_error_response() {
+        enum ResponseIncludesBlob {
+            Yes,
+            No,
+        }
+
         let cases = [
             (
                 StatusCode::BAD_REQUEST,
                 "ENROLL_INVALID_PUBLIC_KEY",
                 EnrollError::InvalidPublicKey,
+                ResponseIncludesBlob::No,
             ),
             (
                 StatusCode::BAD_REQUEST,
                 "ENROLL_INVALID_LIVENESS_DATA",
                 EnrollError::InvalidLivenessData,
+                ResponseIncludesBlob::No,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "ENROLL_FACE_SCAN_REJECTED",
                 EnrollError::FaceScanRejected,
+                ResponseIncludesBlob::Yes,
             ),
             (
                 StatusCode::CONFLICT,
                 "ENROLL_PUBLIC_KEY_ALREADY_USED",
                 EnrollError::PublicKeyAlreadyUsed,
+                ResponseIncludesBlob::No,
             ),
             (
                 StatusCode::CONFLICT,
                 "ENROLL_PERSON_ALREADY_ENROLLED",
                 EnrollError::PersonAlreadyEnrolled,
+                ResponseIncludesBlob::Yes,
             ),
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "LOGIC_INTERNAL_ERROR",
                 EnrollError::LogicInternal,
+                ResponseIncludesBlob::Yes,
             ),
             (
                 StatusCode::BAD_REQUEST,
                 "MY_ERR_CODE",
                 EnrollError::UnknownCode("MY_ERR_CODE".to_owned()),
+                ResponseIncludesBlob::No,
             ),
         ];
 
@@ -280,8 +292,14 @@ mod tests {
                 public_key: b"123",
             };
 
-            let response =
-                ResponseTemplate::new(case.0).set_body_json(mkerr(case.1, "scan result blob"));
+            let response = match case.3 {
+                ResponseIncludesBlob::Yes => {
+                    ResponseTemplate::new(case.0).set_body_json(mkerr(case.1, "scan result blob"))
+                }
+                ResponseIncludesBlob::No => {
+                    ResponseTemplate::new(case.0).set_body_json(mkerr_before_2023_05(case.1))
+                }
+            };
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/enroll"))

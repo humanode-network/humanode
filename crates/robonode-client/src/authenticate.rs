@@ -279,36 +279,47 @@ mod tests {
 
     #[tokio::test]
     async fn mock_error_response() {
+        enum ResponseIncludesBlob {
+            Yes,
+            No,
+        }
+
         let cases = [
             (
                 StatusCode::BAD_REQUEST,
                 "AUTHENTICATE_INVALID_LIVENESS_DATA",
                 AuthenticateError::InvalidLivenessData,
+                ResponseIncludesBlob::No,
             ),
             (
                 StatusCode::NOT_FOUND,
                 "AUTHENTICATE_PERSON_NOT_FOUND",
                 AuthenticateError::PersonNotFound,
+                ResponseIncludesBlob::Yes,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_FACE_SCAN_REJECTED",
                 AuthenticateError::FaceScanRejected,
+                ResponseIncludesBlob::Yes,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_SIGNATURE_INVALID",
                 AuthenticateError::SignatureInvalid,
+                ResponseIncludesBlob::Yes,
             ),
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "LOGIC_INTERNAL_ERROR",
                 AuthenticateError::LogicInternal,
+                ResponseIncludesBlob::Yes,
             ),
             (
                 StatusCode::BAD_REQUEST,
                 "MY_ERR_CODE",
                 AuthenticateError::UnknownCode("MY_ERR_CODE".to_owned()),
+                ResponseIncludesBlob::No,
             ),
         ];
 
@@ -320,8 +331,14 @@ mod tests {
                 liveness_data_signature: b"123",
             };
 
-            let response =
-                ResponseTemplate::new(case.0).set_body_json(mkerr(case.1, "scan result blob"));
+            let response = match case.3 {
+                ResponseIncludesBlob::Yes => {
+                    ResponseTemplate::new(case.0).set_body_json(mkerr(case.1, "scan result blob"))
+                }
+                ResponseIncludesBlob::No => {
+                    ResponseTemplate::new(case.0).set_body_json(mkerr_before_2023_05(case.1))
+                }
+            };
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/authenticate"))
