@@ -14,15 +14,10 @@ impl Client {
         let url = format!("{}/enroll", self.base_url);
         let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
-            StatusCode::CREATED => {
-                if let Some(0) = res.content_length() {
-                    Ok(EnrollResponse {
-                        scan_result_blob: None,
-                    })
-                } else {
-                    Ok(res.json().await?)
-                }
-            }
+            StatusCode::CREATED if res.content_length() == Some(0) => Ok(EnrollResponse {
+                    scan_result_blob: None,
+            })
+            StatusCode::CREATED => Ok(res.json().await?),
             status => Err(Error::Call(EnrollError::from_response(
                 status,
                 res.text().await?,
