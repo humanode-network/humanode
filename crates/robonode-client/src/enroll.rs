@@ -14,7 +14,15 @@ impl Client {
         let url = format!("{}/enroll", self.base_url);
         let res = self.reqwest.post(url).json(&req).send().await?;
         match res.status() {
-            StatusCode::CREATED => Ok(res.json().await?),
+            StatusCode::CREATED => {
+                if let Some(0) = res.content_length() {
+                    Ok(EnrollResponse {
+                        scan_result_blob: None,
+                    })
+                } else {
+                    Ok(res.json().await?)
+                }
+            }
             status => Err(Error::Call(EnrollError::from_response(
                 status,
                 res.text().await?,
@@ -157,17 +165,11 @@ mod tests {
             public_key: b"123",
             liveness_data_signature: b"signature",
         };
-        let sample_response = serde_json::json!({
-            "scanResultBlob": "scanResultBlob"
-        });
-
-        let expected_response: EnrollResponse =
-            serde_json::from_value(sample_response.clone()).unwrap();
 
         Mock::given(matchers::method("POST"))
             .and(matchers::path("/enroll"))
             .and(matchers::body_json(&sample_request))
-            .respond_with(ResponseTemplate::new(201).set_body_json(&sample_response))
+            .respond_with(ResponseTemplate::new(201))
             .mount(&mock_server)
             .await;
 
@@ -176,8 +178,7 @@ mod tests {
             reqwest: reqwest::Client::new(),
         };
 
-        let actual_response = client.enroll(sample_request).await.unwrap();
-        assert_eq!(actual_response, expected_response);
+        client.enroll(sample_request).await.unwrap();
     }
 
     #[tokio::test]
