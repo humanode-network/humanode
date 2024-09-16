@@ -202,7 +202,7 @@ mod tests {
             ),
         ];
 
-        for (status_code, body, expected_error) in cases {
+        for (http_code, error_code, expected_error) in cases {
             let mock_server = MockServer::start().await;
 
             let sample_request = EnrollRequest {
@@ -211,7 +211,7 @@ mod tests {
                 public_key: b"123",
             };
 
-            let response = ResponseTemplate::new(status_code).set_body_json(mkerr(body, None));
+            let response = ResponseTemplate::new(http_code).set_body_json(mkerr(error_code, None));
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/enroll"))
@@ -277,7 +277,7 @@ mod tests {
             ),
         ];
 
-        for (status_code, body, response_includes_blob, expected_error) in cases {
+        for (http_code, error_code, response_includes_blob, expected_error) in cases {
             let mock_server = MockServer::start().await;
 
             let sample_request = EnrollRequest {
@@ -287,11 +287,11 @@ mod tests {
             };
 
             let response_body = match response_includes_blob {
-                ResponseIncludesBlob::Yes => mkerr(body, Some("scan result blob")),
-                ResponseIncludesBlob::No => mkerr(body, None),
+                ResponseIncludesBlob::Yes => mkerr(error_code, Some("scan result blob")),
+                ResponseIncludesBlob::No => mkerr(error_code, None),
             };
 
-            let response = ResponseTemplate::new(status_code).set_body_json(response_body);
+            let response = ResponseTemplate::new(http_code).set_body_json(response_body);
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/enroll"))
