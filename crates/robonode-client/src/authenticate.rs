@@ -3,7 +3,7 @@
 use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 
-use crate::{error_response::ErrorResponse, Client, Error};
+use crate::{error_response::ErrorResponse, Client, Error, ScanResultBlob};
 
 impl Client {
     /// Perform the authenticate call to the server.
@@ -43,6 +43,9 @@ pub struct AuthenticateResponse {
     pub auth_ticket: Box<[u8]>,
     /// The robonode signature for this opaque auth ticket.
     pub auth_ticket_signature: Box<[u8]>,
+    /// Scan result blob.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scan_result_blob: Option<ScanResultBlob>,
 }
 
 /// The authenticate-specific error condition.
@@ -52,18 +55,39 @@ pub enum AuthenticateError {
     #[error("invalid liveness data")]
     InvalidLivenessData,
     /// The person was not found, it is likely because they haven't enrolled first.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
     #[error("person not found")]
-    PersonNotFound,
+    PersonNotFoundNoBlob,
+    /// The person was not found, it is likely because they haven't enrolled first.
+    #[error("person not found")]
+    PersonNotFound(ScanResultBlob),
+    /// The face scan was rejected, this is likely due to a failed liveness check.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("face scan rejected")]
+    FaceScanRejectedNoBlob,
     /// The face scan was rejected, this is likely due to a failed liveness check.
     #[error("face scan rejected")]
-    FaceScanRejected,
+    FaceScanRejected(ScanResultBlob),
+    /// The signature was invalid, which means that the validator private key used for signing and
+    /// the public key that the person enrolled with don't match.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("signature invalid")]
+    SignatureInvalidNoBlob,
     /// The signature was invalid, which means that the validator private key used for signing and
     /// the public key that the person enrolled with don't match.
     #[error("signature invalid")]
-    SignatureInvalid,
+    SignatureInvalid(ScanResultBlob),
+    /// A logic internal error occurred on the server end.
+    ///
+    /// The error data from robonode doesn't contain scan result blob.
+    #[error("logic internal error")]
+    LogicInternalNoBlob,
     /// A logic internal error occurred on the server end.
     #[error("logic internal error")]
-    LogicInternal,
+    LogicInternal(ScanResultBlob),
     /// An error with an unknown code occurred.
     #[error("unknown error code: {0}")]
     UnknownCode(String),
@@ -75,16 +99,31 @@ pub enum AuthenticateError {
 impl AuthenticateError {
     /// Parse the error response.
     fn from_response(_status: StatusCode, body: String) -> Self {
-        let error_code = match body.try_into() {
-            Ok(ErrorResponse { error_code }) => error_code,
+        let (error_code, scan_result_blob) = match body.try_into() {
+            Ok(ErrorResponse {
+                error_code,
+                scan_result_blob,
+            }) => (error_code, scan_result_blob),
             Err(body) => return Self::Unknown(body),
         };
         match error_code.as_str() {
             "AUTHENTICATE_INVALID_LIVENESS_DATA" => Self::InvalidLivenessData,
-            "AUTHENTICATE_PERSON_NOT_FOUND" => Self::PersonNotFound,
-            "AUTHENTICATE_FACE_SCAN_REJECTED" => Self::FaceScanRejected,
-            "AUTHENTICATE_SIGNATURE_INVALID" => Self::SignatureInvalid,
-            "LOGIC_INTERNAL_ERROR" => Self::LogicInternal,
+            "AUTHENTICATE_PERSON_NOT_FOUND" => match scan_result_blob {
+                None => Self::PersonNotFoundNoBlob,
+                Some(scan_result_blob) => Self::PersonNotFound(scan_result_blob),
+            },
+            "AUTHENTICATE_FACE_SCAN_REJECTED" => match scan_result_blob {
+                None => Self::FaceScanRejectedNoBlob,
+                Some(scan_result_blob) => Self::FaceScanRejected(scan_result_blob),
+            },
+            "AUTHENTICATE_SIGNATURE_INVALID" => match scan_result_blob {
+                None => Self::SignatureInvalidNoBlob,
+                Some(scan_result_blob) => Self::SignatureInvalid(scan_result_blob),
+            },
+            "LOGIC_INTERNAL_ERROR" => match scan_result_blob {
+                None => Self::LogicInternalNoBlob,
+                Some(scan_result_blob) => Self::LogicInternal(scan_result_blob),
+            },
             _ => Self::UnknownCode(error_code),
         }
     }
@@ -127,6 +166,7 @@ mod tests {
             AuthenticateResponse {
                 auth_ticket: vec![1, 2, 3].into(),
                 auth_ticket_signature: vec![4, 5, 6].into(),
+                scan_result_blob: None,
             }
         )
     }
@@ -145,6 +185,7 @@ mod tests {
             AuthenticateResponse {
                 auth_ticket: vec![1, 2, 3].into(),
                 auth_ticket_signature: vec![4, 5, 6].into(),
+                scan_result_blob: Some("blob".to_owned())
             }
         )
     }
@@ -225,22 +266,22 @@ mod tests {
             (
                 StatusCode::NOT_FOUND,
                 "AUTHENTICATE_PERSON_NOT_FOUND",
-                AuthenticateError::PersonNotFound,
+                AuthenticateError::PersonNotFoundNoBlob,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_FACE_SCAN_REJECTED",
-                AuthenticateError::FaceScanRejected,
+                AuthenticateError::FaceScanRejectedNoBlob,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_SIGNATURE_INVALID",
-                AuthenticateError::SignatureInvalid,
+                AuthenticateError::SignatureInvalidNoBlob,
             ),
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "LOGIC_INTERNAL_ERROR",
-                AuthenticateError::LogicInternal,
+                AuthenticateError::LogicInternalNoBlob,
             ),
             (
                 StatusCode::BAD_REQUEST,
@@ -288,26 +329,50 @@ mod tests {
             (
                 StatusCode::NOT_FOUND,
                 "AUTHENTICATE_PERSON_NOT_FOUND",
+                ResponseIncludesBlob::No,
+                AuthenticateError::PersonNotFoundNoBlob,
+            ),
+            (
+                StatusCode::NOT_FOUND,
+                "AUTHENTICATE_PERSON_NOT_FOUND",
                 ResponseIncludesBlob::Yes,
-                AuthenticateError::PersonNotFound,
+                AuthenticateError::PersonNotFound("scan result blob".to_owned()),
+            ),
+            (
+                StatusCode::FORBIDDEN,
+                "AUTHENTICATE_FACE_SCAN_REJECTED",
+                ResponseIncludesBlob::No,
+                AuthenticateError::FaceScanRejectedNoBlob,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_FACE_SCAN_REJECTED",
                 ResponseIncludesBlob::Yes,
-                AuthenticateError::FaceScanRejected,
+                AuthenticateError::FaceScanRejected("scan result blob".to_owned()),
+            ),
+            (
+                StatusCode::FORBIDDEN,
+                "AUTHENTICATE_SIGNATURE_INVALID",
+                ResponseIncludesBlob::No,
+                AuthenticateError::SignatureInvalidNoBlob,
             ),
             (
                 StatusCode::FORBIDDEN,
                 "AUTHENTICATE_SIGNATURE_INVALID",
                 ResponseIncludesBlob::Yes,
-                AuthenticateError::SignatureInvalid,
+                AuthenticateError::SignatureInvalid("scan result blob".to_owned()),
+            ),
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "LOGIC_INTERNAL_ERROR",
+                ResponseIncludesBlob::No,
+                AuthenticateError::LogicInternalNoBlob,
             ),
             (
                 StatusCode::INTERNAL_SERVER_ERROR,
                 "LOGIC_INTERNAL_ERROR",
                 ResponseIncludesBlob::Yes,
-                AuthenticateError::LogicInternal,
+                AuthenticateError::LogicInternal("scan result blob".to_owned()),
             ),
             (
                 StatusCode::BAD_REQUEST,
