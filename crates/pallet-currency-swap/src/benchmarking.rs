@@ -1,5 +1,8 @@
 //! The benchmarks for the pallet.
 
+// Allow integer and float arithmetic in tests.
+#![allow(clippy::arithmetic_side_effects, clippy::float_arithmetic)]
+
 use frame_benchmarking::benchmarks;
 use frame_support::{assert_ok, dispatch::DispatchResult, traits::Currency};
 use frame_system::RawOrigin;
@@ -91,7 +94,7 @@ impl Interface for crate::mock::Test {
         swap_ctx.expect().times(1..).return_once(move |_| {
             Ok(
                 <mock::EvmBalances as Currency<mock::EvmAccountId>>::NegativeImbalance::new(
-                    Self::to_balance().into(),
+                    Self::to_balance(),
                 ),
             )
         });
