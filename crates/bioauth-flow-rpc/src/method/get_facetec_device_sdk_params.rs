@@ -1,19 +1,19 @@
-//! The `get_facetec_session_token` method error.
+//! The `get_facetec_device_sdk_params` method error.
 
-use super::api_error_code;
+use crate::error;
 
-/// The `get_facetec_session_token` method error kinds.
+/// The `get_facetec_device_sdk_params` method error kinds.
 #[derive(Debug)]
 pub enum Error {
     /// An error that can occur during doing a call into robonode.
-    Robonode(robonode_client::Error<robonode_client::GetFacetecSessionTokenError>),
+    Robonode(robonode_client::Error<robonode_client::GetFacetecDeviceSdkParamsError>),
 }
 
 impl From<Error> for jsonrpsee::core::Error {
     fn from(err: Error) -> Self {
         match err {
             Error::Robonode(err) => {
-                rpc_error_response::simple(api_error_code::ROBONODE, err.to_string())
+                rpc_error_response::simple(error::code::ROBONODE, err.to_string())
             }
         }
     }
@@ -29,7 +29,7 @@ mod tests {
     #[test]
     fn error_robonode() {
         let error: jsonrpsee::core::Error = Error::Robonode(robonode_client::Error::Call(
-            robonode_client::GetFacetecSessionTokenError::Unknown("test".to_owned()),
+            robonode_client::GetFacetecDeviceSdkParamsError::Unknown("test".to_owned()),
         ))
         .into();
         let error: ErrorObject = error.into();

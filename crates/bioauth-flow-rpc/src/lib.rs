@@ -9,96 +9,29 @@ use std::sync::Arc;
 
 use bioauth_flow_api::BioauthFlowApi;
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
-use errors::{
-    authenticate::Error as AuthenticateError, authenticate_v2::Error as AuthenticateV2Error,
-    enroll::Error as EnrollError, enroll_v2::Error as EnrollV2Error,
-    get_facetec_device_sdk_params::Error as GetFacetecDeviceSdkParamsError,
-    get_facetec_session_token::Error as GetFacetecSessionToken, shared::FlowBaseError,
-    sign::Error as SignError, status::Error as StatusError,
-};
 use futures::StreamExt;
 use jsonrpsee::{core::RpcResult, proc_macros::rpc};
 use primitives_liveness_data::{LivenessData, OpaqueLivenessData};
 use robonode_client::{AuthenticateRequest, AuthenticateResponse, EnrollRequest, EnrollResponse};
 use rpc_deny_unsafe::DenyUnsafe;
 use sc_transaction_pool_api::{TransactionPool as TransactionPoolT, TransactionStatus, TxHash};
-use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value};
 use sp_api::{BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 use tracing::*;
 
-pub mod error_data;
-mod errors;
+pub mod data;
+pub mod error;
+pub mod method;
+pub mod signer;
 
-/// Signer provides signatures for the data.
-#[async_trait::async_trait]
-pub trait Signer<S> {
-    /// Signature error.
-    /// Error may originate from communicating with HSM, or from a thread pool failure, etc.
-    type Error;
-
-    /// Sign the provided data and return the signature, or an error if the signing fails.
-    async fn sign<'a, D>(&self, data: D) -> std::result::Result<S, Self::Error>
-    where
-        D: AsRef<[u8]> + Send + 'a;
-}
-
-/// A factory that spits out [`Signer`]s.
-pub trait SignerFactory<S, K> {
-    /// The type of [`Signer`] this factory will create.
-    type Signer: Signer<S>;
-
-    /// Create a [`Signer`] using the provided public key.
-    fn new_signer(&self, key: K) -> Self::Signer;
-}
-
-impl<S, T, F, K, P> SignerFactory<T, K> for P
-where
-    P: std::ops::Deref<Target = F>,
-    F: Fn(K) -> S,
-    S: Signer<T>,
-{
-    type Signer = S;
-
-    fn new_signer(&self, key: K) -> Self::Signer {
-        self(key)
-    }
-}
-
-/// The parameters necessary to initialize the FaceTec Device SDK.
-type FacetecDeviceSdkParams = Map<String, Value>;
-
-/// The bioauth status as used in the RPC.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub enum BioauthStatus<Timestamp> {
-    /// When the status can't be determined, but there was no error.
-    /// Can happen if the validator key is absent.
-    Unknown,
-    /// There is no active authentication for the currently used validator key.
-    Inactive,
-    /// There is an active authentication for the currently used validator key.
-    Active {
-        /// The timestamp when the authentication will expire.
-        expires_at: Timestamp,
-    },
-}
-
-impl<T> From<bioauth_flow_api::BioauthStatus<T>> for BioauthStatus<T> {
-    fn from(status: bioauth_flow_api::BioauthStatus<T>) -> Self {
-        match status {
-            bioauth_flow_api::BioauthStatus::Inactive => Self::Inactive,
-            bioauth_flow_api::BioauthStatus::Active { expires_at } => Self::Active { expires_at },
-        }
-    }
-}
+pub use self::signer::Signer;
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
 pub trait Bioauth<Timestamp, TxHash> {
     /// Get the configuration required for the Device SDK.
     #[method(name = "bioauth_getFacetecDeviceSdkParams")]
-    async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams>;
+    async fn get_facetec_device_sdk_params(&self) -> RpcResult<data::FacetecDeviceSdkParams>;
 
     /// Get a FaceTec Session Token.
     #[method(name = "bioauth_getFacetecSessionToken")]
@@ -106,7 +39,7 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Get the current bioauth status.
     #[method(name = "bioauth_status")]
-    async fn status(&self) -> RpcResult<BioauthStatus<Timestamp>>;
+    async fn status(&self) -> RpcResult<data::BioauthStatus<Timestamp>>;
 
     /// Enroll with provided liveness data.
     #[method(name = "bioauth_enroll")]
@@ -114,7 +47,7 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Enroll with provided liveness data V2.
     #[method(name = "bioauth_enrollV2")]
-    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollV2Result>;
+    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<data::EnrollV2Result>;
 
     /// Authenticate with provided liveness data.
     #[method(name = "bioauth_authenticate")]
@@ -122,28 +55,10 @@ pub trait Bioauth<Timestamp, TxHash> {
 
     /// Request auth ticket based on provided liveness data.
     #[method(name = "bioauth_authenticateV2")]
-    async fn authenticate_v2(&self, liveness_data: LivenessData)
-        -> RpcResult<AuthenticateV2Result>;
-}
-
-/// `enroll_v2` flow result.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct EnrollV2Result {
-    /// Scan result blob.
-    pub scan_result_blob: Option<String>,
-}
-
-/// `authenticate_v2` related flow result.
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct AuthenticateV2Result {
-    /// An opaque auth ticket generated for this authentication attempt.
-    pub auth_ticket: Box<[u8]>,
-    /// The robonode signature for this opaque auth ticket.
-    pub auth_ticket_signature: Box<[u8]>,
-    /// Scan result blob.
-    pub scan_result_blob: Option<String>,
+    async fn authenticate_v2(
+        &self,
+        liveness_data: LivenessData,
+    ) -> RpcResult<data::AuthenticateV2Result>;
 }
 
 /// The RPC implementation.
@@ -235,20 +150,20 @@ where
     ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
-    ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
-    <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
+    ValidatorSignerFactory: signer::Factory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
+    <<ValidatorSignerFactory as signer::Factory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
     Block: BlockT,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
     /// Return the opaque liveness data and corresponding signature.
-    async fn sign(&self, validator_key: <ValidatorKeyExtractor as KeyExtractorT>::PublicKeyType, liveness_data: &LivenessData) -> Result<(OpaqueLivenessData, Vec<u8>), SignError> {
+    async fn sign(&self, validator_key: <ValidatorKeyExtractor as KeyExtractorT>::PublicKeyType, liveness_data: &LivenessData) -> Result<(OpaqueLivenessData, Vec<u8>), error::Sign> {
         let opaque_liveness_data = OpaqueLivenessData::from(liveness_data);
         let signer = self.validator_signer_factory.new_signer(validator_key);
 
         let signature = signer.sign(&opaque_liveness_data).await.map_err(|error| {
             tracing::error!(message = "Signing failed", ?error);
-            SignError::SigningFailed
+            error::Sign::SigningFailed
         })?;
 
         Ok((opaque_liveness_data, signature))
@@ -257,18 +172,18 @@ where
     /// Do enroll with provided liveness data.
     async fn do_enroll(&self, liveness_data: LivenessData) -> Result<
         EnrollResponse,
-        FlowBaseError<robonode_client::EnrollError>
+        error::shared::FlowBaseError<robonode_client::EnrollError>
     > {
         info!("Bioauth flow - enrolling in progress");
 
         let public_key =
             rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-            .map_err(FlowBaseError::KeyExtraction)?;
+            .map_err(error::shared::FlowBaseError::KeyExtraction)?;
 
         let (opaque_liveness_data, signature) = self
             .sign(public_key.clone(), &liveness_data)
             .await
-            .map_err(FlowBaseError::Sign)?;
+            .map_err(error::shared::FlowBaseError::Sign)?;
 
         let response = self
             .robonode_client
@@ -279,7 +194,7 @@ where
                 public_key: public_key.as_ref(),
             })
             .await
-            .map_err(FlowBaseError::RobonodeClient)?;
+            .map_err(error::shared::FlowBaseError::RobonodeClient)?;
 
         info!("Bioauth flow - enrolling complete");
 
@@ -289,18 +204,18 @@ where
     /// Do authenticate with provided liveness data.
     async fn do_authenticate(&self, liveness_data: LivenessData) -> Result<
         AuthenticateResponse,
-        FlowBaseError<robonode_client::AuthenticateError>
+        error::shared::FlowBaseError<robonode_client::AuthenticateError>
     > {
         info!("Bioauth flow - authentication in progress");
 
         let public_key =
             rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
-            .map_err(FlowBaseError::KeyExtraction)?;
+            .map_err(error::shared::FlowBaseError::KeyExtraction)?;
 
         let (opaque_liveness_data, signature) = self
             .sign(public_key, &liveness_data)
             .await
-            .map_err(FlowBaseError::Sign)?;
+            .map_err(error::shared::FlowBaseError::Sign)?;
 
         let response = self
             .robonode_client
@@ -310,7 +225,7 @@ where
                 liveness_data_signature: signature.as_ref(),
             })
             .await
-            .map_err(FlowBaseError::RobonodeClient)?;
+            .map_err(error::shared::FlowBaseError::RobonodeClient)?;
 
         info!("Bioauth flow - authentication complete");
 
@@ -352,8 +267,8 @@ where
     ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
-    ValidatorSignerFactory: SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
-    <<ValidatorSignerFactory as SignerFactory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
+    ValidatorSignerFactory: signer::Factory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>,
+    <<ValidatorSignerFactory as signer::Factory<Vec<u8>, ValidatorKeyExtractor::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
     Client: HeaderBackend<Block>,
     Client: ProvideRuntimeApi<Block>,
@@ -364,13 +279,13 @@ where
     Timestamp: Encode + Decode,
     TransactionPool: TransactionPoolT<Block = Block>,
 {
-    async fn get_facetec_device_sdk_params(&self) -> RpcResult<FacetecDeviceSdkParams> {
+    async fn get_facetec_device_sdk_params(&self) -> RpcResult<data::FacetecDeviceSdkParams> {
         let res = self
             .robonode_client
             .as_ref()
             .get_facetec_device_sdk_params()
             .await
-            .map_err(GetFacetecDeviceSdkParamsError::Robonode)?;
+            .map_err(method::get_facetec_device_sdk_params::Error::Robonode)?;
         Ok(res)
     }
 
@@ -380,15 +295,15 @@ where
             .as_ref()
             .get_facetec_session_token()
             .await
-            .map_err(GetFacetecSessionToken::Robonode)?;
+            .map_err(method::get_facetec_session_token::Error::Robonode)?;
         Ok(res.session_token)
     }
 
-    async fn status(&self) -> RpcResult<BioauthStatus<Timestamp>> {
+    async fn status(&self) -> RpcResult<data::BioauthStatus<Timestamp>> {
         let own_key = match rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor) {
             Ok(v) => v,
-            Err(rpc_validator_key_logic::Error::MissingValidatorKey) => return Ok(BioauthStatus::Unknown),
-            Err(rpc_validator_key_logic::Error::ValidatorKeyExtraction) => return Err(StatusError::ValidatorKeyExtraction.into()),
+            Err(rpc_validator_key_logic::Error::MissingValidatorKey) => return Ok(data::BioauthStatus::Unknown),
+            Err(rpc_validator_key_logic::Error::ValidatorKeyExtraction) => return Err(method::status::Error::ValidatorKeyExtraction.into()),
         };
 
         // Extract an id of the last imported block.
@@ -398,7 +313,7 @@ where
             .client
             .runtime_api()
             .bioauth_status(at, &own_key)
-            .map_err(StatusError::RuntimeApi)?;
+            .map_err(method::status::Error::RuntimeApi)?;
 
         Ok(status.into())
     }
@@ -406,31 +321,31 @@ where
     async fn enroll(&self, liveness_data: LivenessData) -> RpcResult<()> {
         self.deny_unsafe.check_if_safe()?;
 
-        self.do_enroll(liveness_data).await.map_err(EnrollError)?;
+        self.do_enroll(liveness_data).await.map_err(method::enroll::Error)?;
 
         Ok(())
     }
 
-    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<EnrollV2Result> {
+    async fn enroll_v2(&self, liveness_data: LivenessData) -> RpcResult<data::EnrollV2Result> {
         self.deny_unsafe.check_if_safe()?;
 
         let EnrollResponse { scan_result_blob } = self
             .do_enroll(liveness_data)
             .await
-            .map_err(EnrollV2Error)?;
+            .map_err(method::enroll_v2::Error)?;
 
-        Ok(EnrollV2Result { scan_result_blob })
+        Ok(data::EnrollV2Result { scan_result_blob })
     }
 
     async fn authenticate(&self, liveness_data: LivenessData) -> RpcResult<TxHash<TransactionPool>> {
         self.deny_unsafe.check_if_safe()?;
 
-        let errtype = |val: errors::authenticate::Error<TransactionPool::Error>| {  val };
+        let errtype = |val: method::authenticate::Error<TransactionPool::Error>| {  val };
 
         let response = self
             .do_authenticate(liveness_data)
             .await
-            .map_err(AuthenticateError::RobonodeRequest)
+            .map_err(method::authenticate::Error::RobonodeRequest)
             .map_err(errtype)?;
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?response.auth_ticket);
@@ -445,7 +360,7 @@ where
                 response.auth_ticket.into(),
                 response.auth_ticket_signature.into(),
             )
-            .map_err(AuthenticateError::RuntimeApi).map_err(errtype)?;
+            .map_err(method::authenticate::Error::RuntimeApi).map_err(errtype)?;
 
         info!("Bioauth flow - submitting authenticate transaction");
 
@@ -458,7 +373,7 @@ where
                 ext,
             )
             .await
-            .map_err(AuthenticateError::BioauthTx).map_err(errtype)?.fuse();
+            .map_err(method::authenticate::Error::BioauthTx).map_err(errtype)?.fuse();
 
         tokio::spawn(async move {
             loop {
@@ -532,17 +447,17 @@ where
     async fn authenticate_v2(
         &self,
         liveness_data: LivenessData,
-    ) -> RpcResult<AuthenticateV2Result> {
+    ) -> RpcResult<data::AuthenticateV2Result> {
         self.deny_unsafe.check_if_safe()?;
 
         let AuthenticateResponse {
             auth_ticket,
             auth_ticket_signature,
             scan_result_blob,
-        } = self.do_authenticate(liveness_data).await.map_err(AuthenticateV2Error)?;
+        } = self.do_authenticate(liveness_data).await.map_err(method::authenticate_v2::Error)?;
 
         info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
 
-        Ok(AuthenticateV2Result { auth_ticket, auth_ticket_signature, scan_result_blob })
+        Ok(data::AuthenticateV2Result { auth_ticket, auth_ticket_signature, scan_result_blob })
     }
 }
