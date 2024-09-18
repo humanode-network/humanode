@@ -3,7 +3,7 @@
 use rpc_validator_key_logic::Error as ValidatorKeyError;
 use sp_api::ApiError;
 
-use super::api_error_code;
+use crate::error;
 
 /// The `status` method error kinds.
 #[derive(Debug)]
@@ -19,11 +19,11 @@ impl From<Error> for jsonrpsee::core::Error {
     fn from(err: Error) -> Self {
         match err {
             Error::ValidatorKeyExtraction => rpc_error_response::simple(
-                api_error_code::VALIDATOR_KEY_EXTRACTION,
+                error::code::VALIDATOR_KEY_EXTRACTION,
                 ValidatorKeyError::ValidatorKeyExtraction.to_string(),
             ),
             Error::RuntimeApi(err) => rpc_error_response::simple(
-                api_error_code::RUNTIME_API,
+                error::code::RUNTIME_API,
                 format!("unable to get status from the runtime: {err}"),
             ),
         }

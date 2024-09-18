@@ -3,14 +3,13 @@
 use sp_api::ApiError;
 use sp_runtime::transaction_validity::InvalidTransaction;
 
-use super::{api_error_code, shared};
-use crate::error_data::{self, BioauthTxErrorDetails};
+use crate::error;
 
 /// The `authenticate` method error kinds.
 #[derive(Debug)]
 pub enum Error<TxPoolError> {
     /// An error that can occur during doing a request to robonode.
-    RobonodeRequest(shared::FlowBaseError<robonode_client::AuthenticateError>),
+    RobonodeRequest(error::shared::FlowBaseError<robonode_client::AuthenticateError>),
     /// An error that can occur during doing a call into runtime api.
     RuntimeApi(ApiError),
     /// An error that can occur with transaction pool logic.
@@ -23,11 +22,12 @@ where
 {
     fn from(err: Error<TxPoolError>) -> Self {
         match err {
-            Error::RobonodeRequest(err) => err.to_jsonrpsee_error::<_, error_data::ShouldRetry>(
-                |call_error| match call_error {
+            Error::RobonodeRequest(err) => {
+                err.to_jsonrpsee_error::<_, error::data::ShouldRetry>(|call_error| match call_error
+                {
                     robonode_client::AuthenticateError::FaceScanRejectedNoBlob
                     | robonode_client::AuthenticateError::FaceScanRejected(_) => {
-                        Some(error_data::ShouldRetry)
+                        Some(error::data::ShouldRetry)
                     }
 
                     robonode_client::AuthenticateError::InvalidLivenessData
@@ -39,21 +39,21 @@ where
                     | robonode_client::AuthenticateError::LogicInternal(_)
                     | robonode_client::AuthenticateError::UnknownCode(_)
                     | robonode_client::AuthenticateError::Unknown(_) => None,
-                },
-            ),
+                })
+            }
             Error::RuntimeApi(err) => {
-                rpc_error_response::simple(api_error_code::RUNTIME_API, err.to_string())
+                rpc_error_response::simple(error::code::RUNTIME_API, err.to_string())
             }
             Error::BioauthTx(err) => {
                 let (message, data) = map_txpool_error(err);
-                rpc_error_response::raw(api_error_code::TRANSACTION, message, data)
+                rpc_error_response::raw(error::code::TRANSACTION, message, data)
             }
         }
     }
 }
 
 /// Convert a transaction pool error into a human-readable.
-fn map_txpool_error<T>(err: T) -> (String, Option<error_data::BioauthTxErrorDetails>)
+fn map_txpool_error<T>(err: T) -> (String, Option<error::data::BioauthTxErrorDetails>)
 where
     T: sc_transaction_pool_api::error::IntoPoolError,
 {
@@ -70,7 +70,7 @@ where
     let (kind, message) = match err {
         // Provide some custom-tweaked error messages for a few select cases:
         Error::InvalidTransaction(InvalidTransaction::BadProof) => (
-            error_data::BioauthTxErrorKind::AuthTicketSignatureInvalid,
+            error::data::BioauthTxErrorKind::AuthTicketSignatureInvalid,
             "Invalid auth ticket signature",
         ),
         Error::InvalidTransaction(InvalidTransaction::Custom(custom_code))
@@ -79,16 +79,16 @@ where
                     as u8) =>
         {
             (
-                error_data::BioauthTxErrorKind::UnableToParseAuthTicket,
+                error::data::BioauthTxErrorKind::UnableToParseAuthTicket,
                 "Unable to parse a validly signed auth ticket",
             )
         }
         Error::InvalidTransaction(InvalidTransaction::Stale) => (
-            error_data::BioauthTxErrorKind::NonceAlreadyUsed,
+            error::data::BioauthTxErrorKind::NonceAlreadyUsed,
             "The auth ticket you provided has already been used",
         ),
         Error::InvalidTransaction(InvalidTransaction::Future) => (
-            error_data::BioauthTxErrorKind::AlreadyAuthenticated,
+            error::data::BioauthTxErrorKind::AlreadyAuthenticated,
             "Active authentication exists currently, and you can't authenticate again yet",
         ),
         // For the rest cases, fallback to simple error rendering.
@@ -97,7 +97,7 @@ where
         }
     };
 
-    let data = BioauthTxErrorDetails {
+    let data = error::data::BioauthTxErrorDetails {
         inner_error: err.to_string(),
         kind,
         message,
@@ -115,13 +115,14 @@ mod tests {
     use rpc_validator_key_logic::Error as ValidatorKeyError;
 
     use super::*;
-    use crate::errors::sign::Error as SignError;
 
     #[test]
     fn error_key_extraction_validator_key_extraction() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::FlowBaseError::KeyExtraction(ValidatorKeyError::ValidatorKeyExtraction),
+                error::shared::FlowBaseError::KeyExtraction(
+                    ValidatorKeyError::ValidatorKeyExtraction,
+                ),
             )
             .into();
         let error: ErrorObject = error.into();
@@ -137,7 +138,7 @@ mod tests {
     fn error_key_extraction_missing_validator_key() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::FlowBaseError::KeyExtraction(ValidatorKeyError::MissingValidatorKey),
+                error::shared::FlowBaseError::KeyExtraction(ValidatorKeyError::MissingValidatorKey),
             )
             .into();
         let error: ErrorObject = error.into();
@@ -153,7 +154,7 @@ mod tests {
     fn error_sign() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::FlowBaseError::Sign(SignError::SigningFailed),
+                error::shared::FlowBaseError::Sign(error::Sign::SigningFailed),
             )
             .into();
         let error: ErrorObject = error.into();
@@ -169,7 +170,7 @@ mod tests {
     fn error_robonode_face_scan_rejected() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::FlowBaseError::RobonodeClient(robonode_client::Error::Call(
+                error::shared::FlowBaseError::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::FaceScanRejectedNoBlob,
                 )),
             )
@@ -188,7 +189,7 @@ mod tests {
     fn error_robonode_logic_internal() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::FlowBaseError::RobonodeClient(robonode_client::Error::Call(
+                error::shared::FlowBaseError::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::LogicInternalNoBlob,
                 )),
             )
@@ -207,7 +208,7 @@ mod tests {
     fn error_robonode_other() {
         let error: jsonrpsee::core::Error =
             Error::<sc_transaction_pool_api::error::Error>::RobonodeRequest(
-                shared::FlowBaseError::RobonodeClient(robonode_client::Error::Call(
+                error::shared::FlowBaseError::RobonodeClient(robonode_client::Error::Call(
                     robonode_client::AuthenticateError::Unknown("test".to_owned()),
                 )),
             )

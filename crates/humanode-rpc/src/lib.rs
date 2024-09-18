@@ -4,7 +4,7 @@ use std::{collections::BTreeMap, sync::Arc};
 
 use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtServer};
-use bioauth_flow_rpc::{Bioauth, BioauthServer, Signer, SignerFactory};
+use bioauth_flow_rpc::{signer, Bioauth, BioauthServer, Signer};
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
 use fc_rpc::{
     Eth, EthApiServer, EthBlockDataCacheTask, EthConfig, EthFilter, EthFilterApiServer, EthPubSub,
@@ -175,9 +175,9 @@ where
     VKE: KeyExtractorT + Send + Sync + 'static,
     VKE::PublicKeyType: Encode + AsRef<[u8]> + Clone + Send + Sync + sp_runtime::Serialize,
     VKE::Error: std::fmt::Debug,
-    VSF: SignerFactory<Vec<u8>, VKE::PublicKeyType> + Send + Sync + 'static,
+    VSF: signer::Factory<Vec<u8>, VKE::PublicKeyType> + Send + Sync + 'static,
     VSF::Signer: Send + Sync + 'static,
-    <<VSF as SignerFactory<Vec<u8>, VKE::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
+    <<VSF as signer::Factory<Vec<u8>, VKE::PublicKeyType>>::Signer as Signer<Vec<u8>>>::Error:
         std::error::Error + 'static,
     A: ChainApi<Block = Block> + 'static,
     SC: SelectChain<Block> + 'static,

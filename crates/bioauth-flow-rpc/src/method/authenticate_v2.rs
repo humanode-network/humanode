@@ -1,25 +1,24 @@
 //! The `authenticate_v2` method error.
 
-use super::shared;
-use crate::error_data;
+use crate::error;
 
 /// The `authenticate_v2` method error kinds.
 #[derive(Debug)]
-pub struct Error(pub shared::FlowBaseError<robonode_client::AuthenticateError>);
+pub struct Error(pub error::shared::FlowBaseError<robonode_client::AuthenticateError>);
 
 impl From<Error> for jsonrpsee::core::Error {
     fn from(err: Error) -> Self {
         err.0
-            .to_jsonrpsee_error::<_, error_data::BlobOrRetry>(|call_error| match call_error {
+            .to_jsonrpsee_error::<_, error::data::BlobOrRetry>(|call_error| match call_error {
                 robonode_client::AuthenticateError::PersonNotFound(ref scan_result_blob)
                 | robonode_client::AuthenticateError::FaceScanRejected(ref scan_result_blob)
                 | robonode_client::AuthenticateError::SignatureInvalid(ref scan_result_blob)
                 | robonode_client::AuthenticateError::LogicInternal(ref scan_result_blob) => {
-                    Some(error_data::ScanResultBlob(scan_result_blob.clone()).into())
+                    Some(error::data::ScanResultBlob(scan_result_blob.clone()).into())
                 }
 
                 robonode_client::AuthenticateError::FaceScanRejectedNoBlob => {
-                    Some(error_data::ShouldRetry.into())
+                    Some(error::data::ShouldRetry.into())
                 }
 
                 robonode_client::AuthenticateError::InvalidLivenessData
@@ -39,11 +38,10 @@ mod tests {
     use rpc_validator_key_logic::Error as ValidatorKeyError;
 
     use super::*;
-    use crate::errors::sign::Error as SignError;
 
     #[test]
     fn error_key_extraction_validator_key_extraction() {
-        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::KeyExtraction(
+        let error: jsonrpsee::core::Error = Error(error::shared::FlowBaseError::KeyExtraction(
             ValidatorKeyError::ValidatorKeyExtraction,
         ))
         .into();
@@ -58,7 +56,7 @@ mod tests {
 
     #[test]
     fn error_key_extraction_missing_validator_key() {
-        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::KeyExtraction(
+        let error: jsonrpsee::core::Error = Error(error::shared::FlowBaseError::KeyExtraction(
             ValidatorKeyError::MissingValidatorKey,
         ))
         .into();
@@ -73,8 +71,10 @@ mod tests {
 
     #[test]
     fn error_sign() {
-        let error: jsonrpsee::core::Error =
-            Error(shared::FlowBaseError::Sign(SignError::SigningFailed)).into();
+        let error: jsonrpsee::core::Error = Error(error::shared::FlowBaseError::Sign(
+            error::Sign::SigningFailed,
+        ))
+        .into();
         let error: ErrorObject = error.into();
 
         let expected_error_message = "{\"code\":100,\"message\":\"signing failed\"}";
@@ -86,7 +86,7 @@ mod tests {
 
     #[test]
     fn error_robonode_face_scan_rejected() {
-        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::RobonodeClient(
+        let error: jsonrpsee::core::Error = Error(error::shared::FlowBaseError::RobonodeClient(
             robonode_client::Error::Call(robonode_client::AuthenticateError::FaceScanRejected(
                 "scan result blob".to_owned(),
             )),
@@ -104,7 +104,7 @@ mod tests {
 
     #[test]
     fn error_robonode_logic_internal() {
-        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::RobonodeClient(
+        let error: jsonrpsee::core::Error = Error(error::shared::FlowBaseError::RobonodeClient(
             robonode_client::Error::Call(robonode_client::AuthenticateError::LogicInternal(
                 "scan result blob".to_owned(),
             )),
@@ -122,7 +122,7 @@ mod tests {
 
     #[test]
     fn error_robonode_other() {
-        let error: jsonrpsee::core::Error = Error(shared::FlowBaseError::RobonodeClient(
+        let error: jsonrpsee::core::Error = Error(error::shared::FlowBaseError::RobonodeClient(
             robonode_client::Error::Call(robonode_client::AuthenticateError::Unknown(
                 "test".to_owned(),
             )),
