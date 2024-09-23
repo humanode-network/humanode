@@ -438,8 +438,6 @@ impl pallet_pot::Config<PotInstanceEvmToNativeSwapBridge> for Runtime {
 }
 
 impl pallet_balances::Config for Runtime {
-    type MaxLocks = ConstU32<50>;
-    type MaxReserves = ();
     type ReserveIdentifier = [u8; 8];
     /// The type for recording an account's balance.
     type Balance = Balance;
