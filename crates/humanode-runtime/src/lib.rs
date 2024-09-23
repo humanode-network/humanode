@@ -438,11 +438,11 @@ impl pallet_pot::Config<PotInstanceEvmToNativeSwapBridge> for Runtime {
 }
 
 impl pallet_balances::Config for Runtime {
+    /// The ubiquitous event type.
+    type RuntimeEvent = RuntimeEvent;
     type ReserveIdentifier = [u8; 8];
     /// The type for recording an account's balance.
     type Balance = Balance;
-    /// The ubiquitous event type.
-    type RuntimeEvent = RuntimeEvent;
     type DustRemoval = pallet_pot::DepositUnbalancedFungible<Self, PotInstanceTreasury>;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
