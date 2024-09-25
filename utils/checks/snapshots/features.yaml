@@ -1264,7 +1264,7 @@
 - name: getrandom 0.1.16
   features:
     - std
-- name: getrandom 0.2.14
+- name: getrandom 0.2.15
   features:
     - std
 - name: ghash 0.4.4
@@ -1591,7 +1591,7 @@
     - spin_no_std
 - name: lazycell 1.3.0
   features: []
-- name: libc 0.2.153
+- name: libc 0.2.159
   features:
     - default
     - extra_traits
