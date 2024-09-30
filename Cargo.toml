@@ -55,7 +55,7 @@ sha3 = { version = "0.10", default-features = false }
 similar-asserts = { version = "1", default-features = false }
 static_assertions = { version = "1", default-features = false }
 syn = { version = "2", default-features = false }
-thiserror = { version = "1.0.63", default-features = false }
+thiserror = { version = "1.0.64", default-features = false }
 tiny-bip39 = { version = "1", default-features = false }
 tokio = { version = "1", default-features = false }
 tracing = { version = "0.1", default-features = false }
