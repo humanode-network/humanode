@@ -348,7 +348,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api-augment@npm:13.2.1, @polkadot/api-augment@npm:^13.1.1":
+"@polkadot/api-augment@npm:13.2.1, @polkadot/api-augment@npm:^13.2.1":
   version: 13.2.1
   resolution: "@polkadot/api-augment@npm:13.2.1"
   dependencies:
@@ -376,21 +376,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api-cli@npm:^0.58.2":
-  version: 0.58.2
-  resolution: "@polkadot/api-cli@npm:0.58.2"
+"@polkadot/api-cli@npm:^0.58.3":
+  version: 0.58.3
+  resolution: "@polkadot/api-cli@npm:0.58.3"
   dependencies:
-    "@polkadot/api": ^13.1.1
-    "@polkadot/api-augment": ^13.1.1
+    "@polkadot/api": ^13.2.1
+    "@polkadot/api-augment": ^13.2.1
     "@polkadot/keyring": ^13.1.1
-    "@polkadot/types": ^13.1.1
+    "@polkadot/types": ^13.2.1
     "@polkadot/util": ^13.1.1
     "@polkadot/util-crypto": ^13.1.1
     tslib: ^2.7.0
     yargs: ^17.7.2
   bin:
     polkadot-js-api: runcli.mjs
-  checksum: afcd63f060a183c136d4a30f14f70fbc6c8bf3099a36f132d8c3b5bb870972bb376e49b608bc15f9e86f49c3e49142b43bc30f896dc130def1b1c176046292dc
+  checksum: 0a382add5731b661721f3557af7dffbcf7a9076409a897d15cb0ad74d9bf94d6e0cffb658d666b2c1957ffc17cd6d754996c8be2811b4c9b61388fd902efe2b5
   languageName: node
   linkType: hard
 
@@ -412,7 +412,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/api@npm:13.2.1, @polkadot/api@npm:^13.1.1, @polkadot/api@npm:^13.2.1":
+"@polkadot/api@npm:13.2.1, @polkadot/api@npm:^13.2.1":
   version: 13.2.1
   resolution: "@polkadot/api@npm:13.2.1"
   dependencies:
@@ -571,7 +571,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@polkadot/types@npm:13.2.1, @polkadot/types@npm:^13.1.1":
+"@polkadot/types@npm:13.2.1, @polkadot/types@npm:^13.2.1":
   version: 13.2.1
   resolution: "@polkadot/types@npm:13.2.1"
   dependencies:
@@ -1024,12 +1024,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.5.5":
-  version: 22.5.5
-  resolution: "@types/node@npm:22.5.5"
+"@types/node@npm:22.7.4":
+  version: 22.7.4
+  resolution: "@types/node@npm:22.7.4"
   dependencies:
     undici-types: ~6.19.2
-  checksum: 1f788966ff7df07add0af3481fb68c7fe5091cc72a265c671432abb443788ddacca4ca6378af64fe100c20f857c4d80170d358e66c070171fcea0d4adb1b45b1
+  checksum: a3f4154147639369aed08fe6f8d62eff637cf87b187bb252d7bbccdc82884626007af424b08a653c53f2182adfa0340001b4888cb7cbb942cef351210fc742a5
   languageName: node
   linkType: hard
 
@@ -1856,7 +1856,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "humanode-e2e-tests-bash@workspace:utils/e2e-tests/bash"
   dependencies:
-    "@polkadot/api-cli": ^0.58.2
+    "@polkadot/api-cli": ^0.58.3
   languageName: unknown
   linkType: soft
 
@@ -1865,12 +1865,12 @@ __metadata:
   resolution: "humanode-e2e-tests-ts@workspace:utils/e2e-tests/ts"
   dependencies:
     "@polkadot/api": ^13.2.1
-    "@types/node": 22.5.5
+    "@types/node": 22.7.4
     "@vitest/expect": ^2.1.1
     axios: ^1.7.7
     ethers: ^6.13.2
     typescript: ^5.6.2
-    viem: ^2.21.12
+    viem: ^2.21.16
     vitest: ^2.1.1
   languageName: unknown
   linkType: soft
@@ -2817,9 +2817,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^2.21.12":
-  version: 2.21.12
-  resolution: "viem@npm:2.21.12"
+"viem@npm:^2.21.16":
+  version: 2.21.16
+  resolution: "viem@npm:2.21.16"
   dependencies:
     "@adraffy/ens-normalize": 1.10.0
     "@noble/curves": 1.4.0
@@ -2835,7 +2835,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: a93ef2520f1a0fc9682fe73e6a034b0c91408d036bf561cde47e14fe3993f648ffc0bba3aeda89f4a5f161c6325e93b5d8a76f4add2f79ebf15e1cc2ae53d2b4
+  checksum: f487ecec2f1fd09be192b4fe0a21ae55b59b8e4b00d97eb92a9c16610eb1335003e02b520e08c1003ad7df00a149eef07ca575542c597d55d4a58a1552c282e5
   languageName: node
   linkType: hard
 
