@@ -2077,7 +2077,7 @@
     - registry
     - x509
     - x962
-- name: once_cell 1.20.0
+- name: once_cell 1.20.1
   features:
     - alloc
     - default
@@ -2388,6 +2388,9 @@
   features: []
 - name: polyval 0.6.1
   features: []
+- name: portable-atomic 1.9.0
+  features:
+    - require-cas
 - name: powerfmt 0.2.0
   features: []
 - name: ppv-lite86 0.2.17
@@ -3575,7 +3578,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.77
+- name: syn 2.0.79
   features:
     - clone-impls
     - default
