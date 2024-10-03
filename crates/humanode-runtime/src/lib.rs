@@ -438,16 +438,21 @@ impl pallet_pot::Config<PotInstanceEvmToNativeSwapBridge> for Runtime {
 }
 
 impl pallet_balances::Config for Runtime {
-    type MaxLocks = ConstU32<50>;
-    type MaxReserves = ();
+    /// The ubiquitous event type.
+    type RuntimeEvent = RuntimeEvent;
     type ReserveIdentifier = [u8; 8];
     /// The type for recording an account's balance.
     type Balance = Balance;
-    /// The ubiquitous event type.
-    type RuntimeEvent = RuntimeEvent;
-    type DustRemoval = TreasuryPot;
+    type DustRemoval = pallet_pot::DepositUnbalancedFungible<Self, PotInstanceTreasury>;
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
+    type MaxLocks = ConstU32<50>;
+    // <https://github.com/paritytech/substrate/pull/12951>.
+    type HoldIdentifier = ();
+    type FreezeIdentifier = ();
+    type MaxReserves = ();
+    type MaxHolds = ConstU32<0>;
+    type MaxFreezes = ConstU32<0>;
     type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 }
 
@@ -457,7 +462,10 @@ parameter_types! {
 
 impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
-    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<Balances, FeesPot>;
+    type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<
+        Balances,
+        pallet_pot::DepositUnbalancedCurrency<Self, PotInstanceFees>,
+    >;
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = frame_support::weights::ConstantMultiplier<
         Balance,
@@ -1075,6 +1083,14 @@ impl_runtime_apis! {
         fn metadata() -> OpaqueMetadata {
             OpaqueMetadata::new(Runtime::metadata().into())
         }
+
+        fn metadata_at_version(version: u32) -> Option<OpaqueMetadata> {
+            Runtime::metadata_at_version(version)
+        }
+
+        fn metadata_versions() -> sp_std::vec::Vec<u32> {
+            Runtime::metadata_versions()
+        }
     }
 
     impl sp_block_builder::BlockBuilder<Block> for Runtime {
@@ -1121,7 +1137,9 @@ impl_runtime_apis! {
             session_keys: Vec<u8>
         ) -> Result<<Block as BlockT>::Extrinsic, author_ext_api::CreateSignedSetKeysExtrinsicError> {
             let account_id =
-                AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
+                AccountId::new(
+                    <<KeystoreBioauthAccountId as sp_application_crypto::AppCrypto>::Public as sp_application_crypto::AppPublic>::Generic::from(id.clone()).0
+                );
             let public_id = <KeystoreBioauthAccountId as frame_system::offchain::AppCrypto<
                     <Runtime as frame_system::offchain::SigningTypes>::Public,
                     <Runtime as frame_system::offchain::SigningTypes>::Signature
@@ -1145,7 +1163,9 @@ impl_runtime_apis! {
     impl bioauth_flow_api::BioauthFlowApi<Block, KeystoreBioauthAccountId, UnixMilliseconds> for Runtime {
         fn bioauth_status(id: &KeystoreBioauthAccountId) -> bioauth_flow_api::BioauthStatus<UnixMilliseconds> {
             let id =
-                AccountId::new(<KeystoreBioauthAccountId as sp_application_crypto::AppKey>::UntypedGeneric::from(id.clone()).0);
+                AccountId::new(
+                    <<KeystoreBioauthAccountId as sp_application_crypto::AppCrypto>::Public as sp_application_crypto::AppPublic>::Generic::from(id.clone()).0
+                );
             let active_authentications = Bioauth::active_authentications().into_inner();
             let maybe_active_authentication = active_authentications
                 .iter()

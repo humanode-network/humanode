@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::{fungible::Inspect, Currency};
+use frame_support::traits::{fungible::Inspect, tokens::Provenance, Currency};
 pub use pallet::*;
 use primitives_currency_swap::CurrencySwap as CurrencySwapT;
 pub use weights::*;
@@ -94,11 +94,10 @@ pub mod pallet {
         },
     }
 
-    #[pallet::call]
+    #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Swap balances.
         #[pallet::call_index(0)]
-        #[pallet::weight(T::WeightInfo::swap())]
         pub fn swap(
             origin: OriginFor<T>,
             to: T::AccountIdTo,
@@ -115,7 +114,6 @@ pub mod pallet {
 
         /// Same as the swap call, but with a check that the swap will not kill the origin account.
         #[pallet::call_index(1)]
-        #[pallet::weight(T::WeightInfo::swap_keep_alive())]
         pub fn swap_keep_alive(
             origin: OriginFor<T>,
             to: T::AccountIdTo,
@@ -140,7 +138,8 @@ pub mod pallet {
             existence_requirement: ExistenceRequirement,
         ) -> DispatchResult {
             let estimated_swapped_balance = T::CurrencySwap::estimate_swapped_balance(amount);
-            ToCurrencyOf::<T>::can_deposit(&to, estimated_swapped_balance, false).into_result()?;
+            ToCurrencyOf::<T>::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
+                .into_result()?;
 
             let withdrawed_imbalance = FromCurrencyOf::<T>::withdraw(
                 &who,

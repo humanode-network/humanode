@@ -24,8 +24,9 @@ use crate::{
     token_claims::types::ClaimInfo,
 };
 
-const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
-const VESTING_BALANCE: u128 = 1000;
+const UNIT: u128 = 10u128.pow(18 + 6);
+const INIT_BALANCE: u128 = 10 * UNIT;
+const VESTING_BALANCE: u128 = 1000 * UNIT;
 
 const START_TIMESTAMP: u64 = 1000;
 const CLIFF: u64 = 1000;
@@ -119,16 +120,16 @@ fn new_test_ext() -> sp_io::TestExternalities {
                     .cloned()
                     .chain(pot_accounts)
                     .map(|k| (k, INIT_BALANCE))
-                    .chain(
-                        [(
+                    .chain([
+                        (
                             TokenClaimsPot::account_id(),
-                            2 * VESTING_BALANCE + <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                            2 * VESTING_BALANCE + existential_deposit(),
                         ),
                         (
                             NativeToEvmSwapBridgePot::account_id(),
-                            <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
-                        )]
-                    )
+                            existential_deposit(),
+                        ),
+                    ])
                     .collect()
             },
         },
@@ -406,6 +407,10 @@ fn genesis_claims_invalid_vesting_initialization_with_null() {
     assert_genesis_json(token_claims, 1000000000000000000000500);
 }
 
+fn existential_deposit() -> Balance {
+    <Runtime as pallet_balances::Config>::ExistentialDeposit::get()
+}
+
 /// This test verifies that claiming without vesting works (direct runtime call) in the happy path.
 #[test]
 fn direct_claiming_without_vesting_works() {
@@ -424,7 +429,12 @@ fn direct_claiming_without_vesting_works() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
+        );
 
         // Invoke the claim call.
         assert_ok!(TokenClaims::claim(
@@ -445,7 +455,7 @@ fn direct_claiming_without_vesting_works() {
         // Ensure that the balance is not locked.
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE + VESTING_BALANCE
+            INIT_BALANCE + VESTING_BALANCE - existential_deposit()
         );
 
         // Ensure total issuance did not change.
@@ -471,7 +481,12 @@ fn direct_claiming_with_vesting_works() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
+        );
         assert!(Vesting::locks(account_id("Alice")).is_none());
 
         // Invoke the claim call.
@@ -491,7 +506,10 @@ fn direct_claiming_with_vesting_works() {
         );
 
         // Ensure that the vesting balance is locked.
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+        );
 
         // Ensure that the vesting is armed for the given account and matches the parameters.
         assert_eq!(
@@ -538,6 +556,17 @@ fn direct_unlock_full_balance_works() {
         set_timestamp(START_TIMESTAMP + CLIFF + VESTING_DURATION);
         switch_block();
 
+        // Test preconditions.
+        assert_eq!(
+            Balances::free_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+        );
+        assert!(Vesting::locks(account_id("Alice")).is_some());
+
         // Invoke the unlock call.
         assert_ok!(Vesting::unlock(Some(account_id("Alice")).into()));
 
@@ -545,6 +574,8 @@ fn direct_unlock_full_balance_works() {
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
         );
 
         // Ensure the vesting is gone from the state.
@@ -564,7 +595,7 @@ fn direct_unlock_partial_balance_works() {
         const PARTIAL_DURATION: u64 = 2000;
         const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
         // 2/3 from VESTING_BALANCE rounded up.
-        const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 667;
+        const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 666666666666666666666666667;
 
         // Run blocks to be vesting schedule ready.
         switch_block();
@@ -587,10 +618,23 @@ fn direct_unlock_partial_balance_works() {
         set_timestamp(PARTIAL_VESTING_TIMESTAMP);
         switch_block();
 
+        // Test preconditions.
+        assert_eq!(
+            Balances::free_balance(account_id("Alice")),
+            INIT_BALANCE + VESTING_BALANCE
+        );
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+        );
+        assert!(Vesting::locks(account_id("Alice")).is_some());
+
         // Invoke the unlock call.
         assert_ok!(Vesting::unlock(Some(account_id("Alice")).into()));
 
-        let unlocked_balance = Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
+        let unlocked_balance =
+            // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+            Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
 
         // Ensure funds are partially unlocked and rounding works as expected.
         assert_eq!(unlocked_balance, EXPECTED_PARTIAL_UNLOCKED_FUNDS);
@@ -622,7 +666,12 @@ fn direct_claiming_fails_when_eth_signature_invalid() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
+        );
 
         // Invoke the claim call.
         assert_noop!(
@@ -637,7 +686,10 @@ fn direct_claiming_fails_when_eth_signature_invalid() {
         // Ensure claims related state hasn't been changed.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE - existential_deposit()
+        );
         assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
@@ -661,7 +713,12 @@ fn direct_claiming_fails_when_no_claim() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_none());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
+        );
 
         // Invoke the claim call.
         assert_noop!(
@@ -676,7 +733,10 @@ fn direct_claiming_fails_when_no_claim() {
         // Ensure claims related state hasn't been changed.
         assert!(TokenClaims::claims(ethereum_address).is_none());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE - existential_deposit()
+        );
         assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
@@ -714,7 +774,10 @@ fn direct_unlock_fails_when_no_vesting() {
         );
 
         // Ensure funds are still locked.
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+        );
 
         // Ensure the vesting isn't gone from the state.
         assert!(Vesting::locks(account_id("Alice")).is_some());
@@ -734,7 +797,7 @@ fn claims_fails_when_vesting_already_engaged() {
         const PARTIAL_DURATION: u64 = 2000;
         const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
         // 2/3 from VESTING_BALANCE rounded up.
-        const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 667;
+        const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 666666666666666666666666667;
 
         // Run blocks to be vesting schedule ready.
         switch_block();
@@ -760,7 +823,9 @@ fn claims_fails_when_vesting_already_engaged() {
         // Invoke the unlock call.
         assert_ok!(Vesting::unlock(Some(account_id("Alice")).into()));
 
-        let unlocked_balance = Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
+        let unlocked_balance =
+            // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+            Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
 
         // Ensure funds are partially unlocked and rounding works as expected.
         assert_eq!(unlocked_balance, EXPECTED_PARTIAL_UNLOCKED_FUNDS);
@@ -828,7 +893,12 @@ fn dispatch_claiming_without_vesting_works() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
+        );
 
         // Validate already checked extrinsic with all possible transaction sources.
         assert_applyable_validate_all_transaction_sources(
@@ -855,7 +925,7 @@ fn dispatch_claiming_without_vesting_works() {
         // Ensure that the balance is not locked.
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
-            INIT_BALANCE + VESTING_BALANCE
+            INIT_BALANCE + VESTING_BALANCE - existential_deposit()
         );
 
         // Ensure total issuance did not change.
@@ -891,7 +961,12 @@ fn dispatch_claiming_with_vesting_works() {
         // Test preconditions.
         assert!(TokenClaims::claims(ethereum_address).is_some());
         assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
+        );
         assert!(Vesting::locks(account_id("Alice")).is_none());
 
         // Validate already checked extrinsic with all possible transaction sources.
@@ -917,7 +992,10 @@ fn dispatch_claiming_with_vesting_works() {
         );
 
         // Ensure that the vesting balance is locked.
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+        );
 
         // Ensure that the vesting is armed for the given account and matches the parameters.
         assert_eq!(
@@ -952,6 +1030,8 @@ fn dispatch_unlock_full_balance_works() {
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Batumi", account_id("Alice"));
 
+        let total_issuance_before = Balances::total_issuance();
+
         // Invoke the direct runtime claim call for future unlocking.
         assert_ok!(TokenClaims::claim(
             Some(account_id("Alice")).into(),
@@ -963,21 +1043,22 @@ fn dispatch_unlock_full_balance_works() {
         set_timestamp(START_TIMESTAMP + CLIFF + VESTING_DURATION);
         switch_block();
 
-        // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            RuntimeCall::Vesting(pallet_vesting::Call::unlock {}),
-            account_id("Alice"),
-        );
-
         // Test preconditions.
         assert_eq!(
             Balances::free_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
         );
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+        );
         assert!(Vesting::locks(account_id("Alice")).is_some());
 
-        let total_issuance_before = Balances::total_issuance();
+        // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            RuntimeCall::Vesting(pallet_vesting::Call::unlock {}),
+            account_id("Alice"),
+        );
 
         // Validate already checked extrinsic with all possible transaction sources.
         assert_applyable_validate_all_transaction_sources(
@@ -996,6 +1077,8 @@ fn dispatch_unlock_full_balance_works() {
         assert_eq!(
             Balances::usable_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
         );
 
         // Ensure the vesting is gone from the state.
@@ -1015,7 +1098,7 @@ fn dispatch_unlock_partial_balance_works() {
         const PARTIAL_DURATION: u64 = 2000;
         const PARTIAL_VESTING_TIMESTAMP: u64 = START_TIMESTAMP + CLIFF + PARTIAL_DURATION;
         // 2/3 from VESTING_BALANCE rounded up.
-        const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 667;
+        const EXPECTED_PARTIAL_UNLOCKED_FUNDS: u128 = 666666666666666666666666667;
 
         // Run blocks to be vesting schedule ready.
         switch_block();
@@ -1025,6 +1108,8 @@ fn dispatch_unlock_partial_balance_works() {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Batumi", account_id("Alice"));
+
+        let total_issuance_before = Balances::total_issuance();
 
         // Invoke the direct runtime claim call for future unlocking.
         assert_ok!(TokenClaims::claim(
@@ -1037,21 +1122,22 @@ fn dispatch_unlock_partial_balance_works() {
         set_timestamp(PARTIAL_VESTING_TIMESTAMP);
         switch_block();
 
-        // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
-        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
-            RuntimeCall::Vesting(pallet_vesting::Call::unlock {}),
-            account_id("Alice"),
-        );
-
         // Test preconditions.
         assert_eq!(
             Balances::free_balance(account_id("Alice")),
             INIT_BALANCE + VESTING_BALANCE
         );
-        assert_eq!(Balances::usable_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+        );
         assert!(Vesting::locks(account_id("Alice")).is_some());
 
-        let total_issuance_before = Balances::total_issuance();
+        // Prepare unlock data that are used to validate and apply `CheckedExtrinsic`.
+        let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
+            RuntimeCall::Vesting(pallet_vesting::Call::unlock {}),
+            account_id("Alice"),
+        );
 
         // Validate already checked extrinsic with all possible transaction sources.
         assert_applyable_validate_all_transaction_sources(
@@ -1066,7 +1152,9 @@ fn dispatch_unlock_partial_balance_works() {
             len
         ));
 
-        let unlocked_balance = Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
+        let unlocked_balance =
+             // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
+            Balances::usable_balance(account_id("Alice")) - INIT_BALANCE;
 
         // Ensure funds are partially unlocked and rounding works as expected.
         assert_eq!(unlocked_balance, EXPECTED_PARTIAL_UNLOCKED_FUNDS);
@@ -1085,10 +1173,24 @@ fn dispatch_unlock_partial_balance_works() {
 fn dispatch_claiming_fails_when_eth_signature_invalid() {
     // Build the state from the config.
     new_test_ext().execute_with(move || {
+        let (ethereum_address, _) = sign_sample_token_claim(b"Dubai", account_id("Alice"));
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Test preconditions.
+        assert!(TokenClaims::claims(ethereum_address).is_some());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
+        );
+
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
             RuntimeCall::TokenClaims(pallet_token_claims::Call::claim {
-                ethereum_address: EthereumAddress::default(),
+                ethereum_address,
                 ethereum_signature: EcdsaSignature::default(),
             }),
             account_id("Alice"),
@@ -1114,6 +1216,15 @@ fn dispatch_claiming_fails_when_eth_signature_invalid() {
                 InvalidTransaction::BadProof
             ))
         );
+
+        // Ensure claims related state hasn't been changed.
+        assert!(TokenClaims::claims(ethereum_address).is_some());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE - existential_deposit()
+        );
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
 
@@ -1125,6 +1236,18 @@ fn dispatch_claiming_fails_when_no_claim() {
         // Prepare ethereum_address and signature test data based on EIP-712 type data json.
         let (ethereum_address, ethereum_signature) =
             sign_sample_token_claim(b"Invalid", account_id("Alice"));
+
+        let total_issuance_before = Balances::total_issuance();
+
+        // Test preconditions.
+        assert!(TokenClaims::claims(ethereum_address).is_none());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE
+            // Alice account can't be reaped, so existential deposit is untouchable.
+            - existential_deposit()
+        );
 
         // Prepare token claim data that are used to validate and apply `CheckedExtrinsic`.
         let (checked_extrinsic, normal_dispatch_info, len) = prepare_applyable_data(
@@ -1153,6 +1276,15 @@ fn dispatch_claiming_fails_when_no_claim() {
             Applyable::apply::<Runtime>(checked_extrinsic, &normal_dispatch_info, len),
             Err(TransactionValidityError::Invalid(InvalidTransaction::Call))
         );
+
+        // Ensure claims related state hasn't been changed.
+        assert!(TokenClaims::claims(ethereum_address).is_none());
+        assert_eq!(Balances::free_balance(account_id("Alice")), INIT_BALANCE);
+        assert_eq!(
+            Balances::usable_balance(account_id("Alice")),
+            INIT_BALANCE - existential_deposit()
+        );
+        assert_eq!(Balances::total_issuance(), total_issuance_before);
     })
 }
 
@@ -1209,7 +1341,7 @@ fn dispatch_claiming_zero_balance_works() {
         // Ensure that the balance is not locked.
         assert_eq!(
             Balances::usable_balance(account_id("Zero")),
-            VESTING_BALANCE
+            VESTING_BALANCE // existential deposit is not subtracted because it is overwhelmed with freeze being untouchable
         );
 
         // Ensure total issuance did not change.

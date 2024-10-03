@@ -32,8 +32,11 @@ fn swap_works() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -100,11 +103,17 @@ fn swap_works() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice_evm),
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
             alice_evm_balance - swap_balance - expected_fee
         );
-        assert_eq!(Balances::total_balance(&alice), swap_balance);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(
+            <Balances as Currency<_>>::total_balance(&alice),
+            swap_balance
+        );
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -135,8 +144,11 @@ fn swap_works_almost_full_balance() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -203,12 +215,18 @@ fn swap_works_almost_full_balance() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice_evm),
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
             alice_evm_balance - swap_balance - expected_fee
         );
-        assert_eq!(EvmBalances::total_balance(&alice_evm), 1);
-        assert_eq!(Balances::total_balance(&alice), swap_balance);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(<EvmBalances as Currency<_>>::total_balance(&alice_evm), 1);
+        assert_eq!(
+            <Balances as Currency<_>>::total_balance(&alice),
+            swap_balance
+        );
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -235,8 +253,11 @@ fn swap_fail_no_funds() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -281,9 +302,15 @@ fn swap_fail_no_funds() {
         );
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -314,8 +341,11 @@ fn swap_fail_below_ed() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -364,11 +394,14 @@ fn swap_fail_below_ed() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice_evm),
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
             alice_evm_balance - expected_fee
         );
-        assert_eq!(Balances::total_balance(&alice), 0);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -399,8 +432,11 @@ fn swap_fail_trait_error() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -461,11 +497,14 @@ fn swap_fail_trait_error() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice_evm),
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
             alice_evm_balance - expected_fee
         );
-        assert_eq!(Balances::total_balance(&alice), 0);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -494,8 +533,11 @@ fn swap_works_full_balance() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -563,12 +605,18 @@ fn swap_works_full_balance() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice_evm),
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
             alice_evm_balance - swap_balance - expected_fee
         );
-        assert_eq!(EvmBalances::total_balance(&alice_evm), 0);
-        assert_eq!(Balances::total_balance(&alice), swap_balance);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(<EvmBalances as Currency<_>>::total_balance(&alice_evm), 0);
+        assert_eq!(
+            <Balances as Currency<_>>::total_balance(&alice),
+            swap_balance
+        );
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -598,8 +646,11 @@ fn swap_fail_bad_selector() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -644,11 +695,14 @@ fn swap_fail_bad_selector() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice_evm),
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
             alice_evm_balance - expected_fee
         );
-        assert_eq!(Balances::total_balance(&alice), 0);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -679,8 +733,11 @@ fn swap_fail_value_overflow() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -724,9 +781,15 @@ fn swap_fail_value_overflow() {
         );
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -756,8 +819,11 @@ fn swap_fail_no_arguments() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -802,11 +868,14 @@ fn swap_fail_no_arguments() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice_evm),
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
             alice_evm_balance - expected_fee
         );
-        assert_eq!(Balances::total_balance(&alice), 0);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -836,8 +905,11 @@ fn swap_fail_short_argument() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -883,11 +955,14 @@ fn swap_fail_short_argument() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice_evm),
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
             alice_evm_balance - expected_fee
         );
-        assert_eq!(Balances::total_balance(&alice), 0);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();
@@ -917,8 +992,11 @@ fn swap_fail_trailing_junk() {
         EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
 
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
-        assert_eq!(Balances::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
+            alice_evm_balance
+        );
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -964,11 +1042,14 @@ fn swap_fail_trailing_junk() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice_evm),
+            <EvmBalances as Currency<_>>::total_balance(&alice_evm),
             alice_evm_balance - expected_fee
         );
-        assert_eq!(Balances::total_balance(&alice), 0);
-        assert_eq!(EvmBalances::total_balance(&PRECOMPILE_ADDRESS), 0);
+        assert_eq!(<Balances as Currency<_>>::total_balance(&alice), 0);
+        assert_eq!(
+            <EvmBalances as Currency<_>>::total_balance(&PRECOMPILE_ADDRESS),
+            0
+        );
 
         // Assert mock invocations.
         estimate_swapped_balance_ctx.checkpoint();

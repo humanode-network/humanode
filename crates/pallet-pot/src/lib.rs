@@ -5,8 +5,14 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::{Imbalance, OnUnbalanced, StorageVersion};
-use frame_support::{pallet_prelude::*, traits::Currency, PalletId};
+use frame_support::{
+    pallet_prelude::*,
+    traits::{
+        fungible::{Balanced, Credit, Inspect},
+        Currency, Imbalance, OnUnbalanced, StorageVersion,
+    },
+    PalletId,
+};
 use frame_system::pallet_prelude::*;
 use sp_runtime::traits::{AccountIdConversion, CheckedSub, MaybeDisplay, Saturating};
 
@@ -22,6 +28,9 @@ pub type BalanceOf<T, I = ()> =
 /// The negative implanace accessor.
 pub type NegativeImbalanceOf<T, I = ()> =
     <<T as Config<I>>::Currency as Currency<<T as Config<I>>::AccountId>>::NegativeImbalance;
+
+/// The credit accessor.
+pub type CreditOf<T, I = ()> = Credit<<T as Config<I>>::AccountId, <T as Config<I>>::Currency>;
 
 /// The initial state of the pot, for use in genesis.
 #[cfg(feature = "std")]
@@ -63,8 +72,9 @@ pub mod pallet {
             + Ord
             + MaxEncodedLen;
 
-        /// The currency to operate with.
-        type Currency: Currency<<Self as Config<I>>::AccountId>;
+        /// The fungible asset to operate with.
+        type Currency: Currency<<Self as Config<I>>::AccountId>
+            + Balanced<<Self as Config<I>>::AccountId, Balance = BalanceOf<Self, I>>;
 
         /// The pot's pallet id, used for deriving its sovereign account ID.
         #[pallet::constant]
@@ -128,14 +138,14 @@ pub mod pallet {
                 }
                 InitialState::Initialized => {
                     let current = T::Currency::free_balance(&account_id);
-                    let min = T::Currency::minimum_balance();
+                    let min = <T::Currency as Currency<_>>::minimum_balance();
                     assert!(
                         current >= min,
                         "the initial pot balance must be greater or equal than the existential balance"
                     );
                 }
                 InitialState::Balance { balance } => {
-                    let min = T::Currency::minimum_balance();
+                    let min = <T::Currency as Currency<_>>::minimum_balance();
                     assert!(
                         balance >= min,
                         "the configured initial pot balance must be greater or equal than the existential balance"
@@ -159,9 +169,9 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     // The existential deposit (`minimum_balance`) is not part of
     // the pot so the pot account never gets killed.
     pub fn balance() -> BalanceOf<T, I> {
-        T::Currency::free_balance(&Self::account_id())
+        T::Currency::balance(&Self::account_id())
             // Must never be less than 0 but better be safe.
-            .saturating_sub(T::Currency::minimum_balance())
+            .saturating_sub(<T::Currency as Currency<_>>::minimum_balance())
     }
 
     /// Update the inactive supply for this pot.
@@ -176,10 +186,10 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 
         if balance != current {
             if let Some(delta) = balance.checked_sub(&current) {
-                T::Currency::deactivate(delta)
+                <T::Currency as Currency<_>>::deactivate(delta)
             }
             if let Some(delta) = current.checked_sub(&balance) {
-                T::Currency::reactivate(delta)
+                <T::Currency as Currency<_>>::reactivate(delta)
             }
             Inactive::<T, I>::put(balance);
 
@@ -190,14 +200,39 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
     }
 }
 
-impl<T: Config<I>, I: 'static> OnUnbalanced<NegativeImbalanceOf<T, I>> for Pallet<T, I> {
+/// Handle unbalanced funds by depositing them into this pot.
+///
+/// Implementation for [`Currency`].
+pub struct DepositUnbalancedCurrency<T, I>(PhantomData<(T, I)>);
+
+impl<T: Config<I>, I: 'static> OnUnbalanced<NegativeImbalanceOf<T, I>>
+    for DepositUnbalancedCurrency<T, I>
+{
     fn on_nonzero_unbalanced(amount: NegativeImbalanceOf<T, I>) {
         let numeric_amount = amount.peek();
 
         // Must resolve into existing but better to be safe.
-        T::Currency::resolve_creating(&Self::account_id(), amount);
+        T::Currency::resolve_creating(&Pallet::<T, I>::account_id(), amount);
 
-        Self::deposit_event(Event::Deposit {
+        Pallet::<T, I>::deposit_event(Event::Deposit {
+            value: numeric_amount,
+        });
+    }
+}
+
+/// Handle unbalanced funds by depositing them into this pot.
+///
+/// Implementation for `Fungible` behavior.
+pub struct DepositUnbalancedFungible<T, I>(PhantomData<(T, I)>);
+
+impl<T: Config<I>, I: 'static> OnUnbalanced<CreditOf<T, I>> for DepositUnbalancedFungible<T, I> {
+    fn on_nonzero_unbalanced(amount: CreditOf<T, I>) {
+        let numeric_amount = amount.peek();
+
+        // Pot account already exists.
+        let _ = T::Currency::resolve(&Pallet::<T, I>::account_id(), amount);
+
+        Pallet::<T, I>::deposit_event(Event::Deposit {
             value: numeric_amount,
         });
     }

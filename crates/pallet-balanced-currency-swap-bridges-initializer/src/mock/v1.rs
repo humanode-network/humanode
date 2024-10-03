@@ -71,7 +71,11 @@ impl pallet_balances::Config<BalancesInstanceNative> for Test {
     type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT_NATIVE>;
     type AccountStore = System;
     type MaxLocks = ();
+    type HoldIdentifier = ();
+    type FreezeIdentifier = ();
     type MaxReserves = ();
+    type MaxHolds = ConstU32<0>;
+    type MaxFreezes = ConstU32<0>;
     type ReserveIdentifier = [u8; 8];
     type WeightInfo = ();
 }
@@ -83,12 +87,15 @@ impl pallet_balances::Config<BalancesInstanceEvm> for Test {
     type ExistentialDeposit = ConstU64<EXISTENTIAL_DEPOSIT_EVM>;
     type AccountStore = StorageMapShim<
         pallet_balances::Account<Test, BalancesInstanceEvm>,
-        frame_system::Provider<Test>,
         EvmAccountId,
         pallet_balances::AccountData<Balance>,
     >;
     type MaxLocks = ();
+    type HoldIdentifier = ();
+    type FreezeIdentifier = ();
     type MaxReserves = ();
+    type MaxHolds = ConstU32<0>;
+    type MaxFreezes = ConstU32<0>;
     type ReserveIdentifier = [u8; 8];
     type WeightInfo = ();
 }
