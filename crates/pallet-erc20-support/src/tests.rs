@@ -1,4 +1,4 @@
-use frame_support::{assert_noop, assert_ok, traits::Currency};
+use frame_support::{assert_noop, assert_ok, sp_runtime::TokenError, traits::Currency};
 use sp_core::U256;
 
 use crate::{mock::*, *};
@@ -239,7 +239,7 @@ fn approve_approval_value_more_than_balance_works() {
         // Try to execute transfer_from with all approved balance.
         assert_noop!(
             Erc20Balances::transfer_from(bob, alice, charlie, approved_balance),
-            pallet_balances::Error::<Test>::InsufficientBalance
+            TokenError::FundsUnavailable
         );
 
         // Execute transfer_from with alice initial balance value.

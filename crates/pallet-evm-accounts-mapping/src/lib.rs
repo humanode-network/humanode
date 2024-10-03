@@ -117,13 +117,12 @@ pub mod pallet {
         }
     }
 
-    #[pallet::call]
+    #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Create a permanent two-way binding between an Ethereum address and a native address.
         /// The native address of the exstrinsic signer is used as a native address, while
         /// the address of the payload signature creator is used as Ethereum address.
         #[pallet::call_index(0)]
-        #[pallet::weight(T::WeightInfo::claim_account())]
         pub fn claim_account(
             origin: OriginFor<T>,
             // Due to the fact that ethereum address can be extracted from any signature

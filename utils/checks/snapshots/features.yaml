@@ -204,8 +204,6 @@
 - name: base16ct 0.2.0
   features:
     - alloc
-- name: base58 0.2.0
-  features: []
 - name: base64 0.13.1
   features:
     - alloc
@@ -254,7 +252,6 @@
     - default
 - name: bitflags 2.4.2
   features:
-    - serde
     - std
 - name: bitvec 1.0.1
   features:
@@ -655,7 +652,6 @@
   features:
     - alloc
     - oid
-    - pem
     - std
     - zeroize
 - name: der-parser 7.0.0
@@ -870,8 +866,6 @@
 - name: errno 0.3.8
   features:
     - std
-- name: etcetera 0.8.0
-  features: []
 - name: ethabi 18.0.0
   features:
     - full-serde
@@ -978,14 +972,12 @@
   features: []
 - name: fc-db 2.0.0-dev
   features:
-    - default
     - ethereum
     - fc-storage
     - fp-consensus
     - fp-rpc
     - futures
     - kvdb-rocksdb
-    - parity-db
     - rocksdb
     - sc-client-api
     - smallvec
@@ -1029,11 +1021,6 @@
     - parking_lot
     - scale-info
     - std
-- name: finl_unicode 1.2.0
-  features:
-    - categories
-    - default
-    - grapheme_clusters
 - name: fixed-hash 0.8.0
   features:
     - byteorder
@@ -1127,6 +1114,7 @@
     - serde_full
     - std
     - v14
+    - v15-unstable
 - name: frame-support 4.0.0-dev
   features:
     - default
@@ -1353,8 +1341,6 @@
     - alloc
     - default
     - std
-- name: hex-literal 0.3.4
-  features: []
 - name: hex-literal 0.4.1
   features: []
 - name: hkdf 0.12.4
@@ -1553,15 +1539,6 @@
   features: []
 - name: jsonrpsee-types 0.16.3
   features: []
-- name: k256 0.11.6
-  features:
-    - arithmetic
-    - digest
-    - ecdsa
-    - ecdsa-core
-    - sha2
-    - sha256
-    - std
 - name: k256 0.13.3
   features:
     - alloc
@@ -1583,7 +1560,7 @@
 - name: kvdb-memorydb 0.13.0
   features:
     - default
-- name: kvdb-rocksdb 0.17.0
+- name: kvdb-rocksdb 0.18.0
   features: []
 - name: lazy_static 1.4.0
   features:
@@ -1677,7 +1654,7 @@
 - name: libredox 0.0.1
   features:
     - call
-- name: librocksdb-sys 0.8.3+7.4.4
+- name: librocksdb-sys 0.10.0+7.9.2
   features:
     - default
     - jemalloc
@@ -1796,7 +1773,6 @@
   features: []
 - name: merlin 2.0.1
   features:
-    - default
     - std
 - name: mime 0.3.17
   features: []
@@ -1971,13 +1947,6 @@
   features:
     - default
     - std
-- name: num-bigint-dig 0.8.4
-  features:
-    - i128
-    - prime
-    - rand
-    - u64_digit
-    - zeroize
 - name: num-complex 0.4.5
   features:
     - std
@@ -2010,6 +1979,8 @@
 - name: num_cpus 1.16.0
   features: []
 - name: num_enum 0.5.11
+  features: []
+- name: num_enum 0.6.1
   features:
     - std
 - name: num_enum 0.7.3
@@ -2017,6 +1988,8 @@
     - default
     - std
 - name: num_enum_derive 0.5.11
+  features: []
+- name: num_enum_derive 0.6.1
   features:
     - proc-macro-crate
     - std
@@ -2327,9 +2300,6 @@
 - name: pem-rfc7468 0.6.0
   features:
     - alloc
-- name: pem-rfc7468 0.7.0
-  features:
-    - alloc
 - name: percent-encoding 2.3.1
   features:
     - alloc
@@ -2362,17 +2332,9 @@
   features: []
 - name: pin-utils 0.1.0
   features: []
-- name: pkcs1 0.7.5
-  features:
-    - alloc
-    - pem
-    - pkcs8
-    - std
-    - zeroize
 - name: pkcs8 0.10.2
   features:
     - alloc
-    - pem
     - std
 - name: pkcs8 0.9.0
   features:
@@ -2485,6 +2447,8 @@
     - syn
     - syn-error
 - name: proc-macro-error-attr 1.0.4
+  features: []
+- name: proc-macro-warning 0.3.1
   features: []
 - name: proc-macro2 1.0.86
   features:
@@ -2743,7 +2707,7 @@
   features: []
 - name: robonode-server 0.1.0
   features: []
-- name: rocksdb 0.19.0
+- name: rocksdb 0.20.1
   features:
     - jemalloc
     - snappy
@@ -2755,12 +2719,6 @@
   features: []
 - name: rpc-validator-key-logic 0.1.0
   features: []
-- name: rsa 0.9.6
-  features:
-    - default
-    - pem
-    - std
-    - u64_digit
 - name: rtcp 0.7.2
   features: []
 - name: rtnetlink 0.10.1
@@ -2858,7 +2816,6 @@
   features: []
 - name: sc-client-db 0.10.0-dev
   features:
-    - default
     - kvdb-rocksdb
     - rocksdb
 - name: sc-consensus 0.10.0-dev
@@ -2960,7 +2917,6 @@
     - runtime-rng
 - name: schnorrkel 0.9.1
   features:
-    - default
     - getrandom
     - preaudit_deprecated
     - rand
@@ -3063,6 +3019,9 @@
 - name: serde_qs 0.8.5
   features:
     - default
+- name: serde_spanned 0.6.7
+  features:
+    - serde
 - name: serde_urlencoded 0.7.1
   features: []
 - name: sha-1 0.9.8
@@ -3163,6 +3122,7 @@
     - blake2
     - chacha20poly1305
     - curve25519-dalek
+    - default
     - default-resolver
     - ring
     - ring-resolver
@@ -3231,15 +3191,11 @@
     - default
     - serde
     - std
-- name: sp-consensus-vrf 0.10.0-dev
-  features:
-    - default
-    - std
 - name: sp-core 7.0.0
   features:
     - array-bytes
-    - base58
     - blake2
+    - bs58
     - default
     - dyn-clonable
     - ed25519-zebra
@@ -3248,11 +3204,9 @@
     - impl-serde
     - lazy_static
     - libsecp256k1
-    - merlin
     - parking_lot
     - rand
     - regex
-    - schnorrkel
     - secp256k1
     - serde
     - sp-core-hashing
@@ -3306,6 +3260,9 @@
     - std
 - name: sp-maybe-compressed-blob 4.1.0-dev
   features: []
+- name: sp-metadata-ir 0.1.0
+  features:
+    - std
 - name: sp-offchain 4.0.0-dev
   features:
     - default
@@ -3334,6 +3291,7 @@
     - std
 - name: sp-staking 4.0.0-dev
   features:
+    - serde
     - std
 - name: sp-state-machine 0.13.0
   features:
@@ -3436,18 +3394,13 @@
 - name: spki 0.7.3
   features:
     - alloc
-    - pem
     - std
 - name: sqlformat 0.2.3
   features: []
 - name: sqlx 0.7.3
   features:
     - _rt-tokio
-    - any
-    - default
-    - json
     - macros
-    - migrate
     - runtime-tokio
     - runtime-tokio-native-tls
     - sqlite
@@ -3461,12 +3414,10 @@
     - any
     - crc
     - default
-    - json
     - migrate
     - native-tls
     - offline
     - serde
-    - serde_json
     - sha2
     - tokio
     - tokio-stream
@@ -3475,35 +3426,17 @@
     - _rt-tokio
     - _tls-native-tls
     - default
-    - json
-    - migrate
     - sqlite
 - name: sqlx-macros-core 0.7.3
   features:
     - _rt-tokio
     - _tls-native-tls
     - default
-    - json
-    - migrate
     - sqlite
     - sqlx-sqlite
     - tokio
-- name: sqlx-mysql 0.7.3
-  features:
-    - any
-    - json
-    - migrate
-    - offline
-    - serde
-- name: sqlx-postgres 0.7.3
-  features:
-    - any
-    - json
-    - migrate
 - name: sqlx-sqlite 0.7.3
   features:
-    - any
-    - json
     - migrate
     - offline
     - serde
@@ -3521,8 +3454,6 @@
   features:
     - default
 - name: static_init_macro 1.0.2
-  features: []
-- name: stringprep 0.1.4
   features: []
 - name: strsim 0.10.0
   features: []
@@ -3724,8 +3655,18 @@
 - name: toml 0.5.11
   features:
     - default
+- name: toml 0.7.8
+  features:
+    - default
+    - display
+    - parse
 - name: toml_datetime 0.6.5
-  features: []
+  features:
+    - serde
+- name: toml_edit 0.19.15
+  features:
+    - default
+    - serde
 - name: toml_edit 0.20.2
   features:
     - default
@@ -3987,8 +3928,6 @@
   features:
     - default
     - std
-- name: wasite 0.1.0
-  features: []
 - name: wasm-bindgen 0.2.91
   features:
     - default
@@ -4131,8 +4070,6 @@
     - vnet
 - name: which 4.4.2
   features: []
-- name: whoami 1.5.1
-  features: []
 - name: wide 0.7.15
   features:
     - std
@@ -4242,8 +4179,6 @@
     - Win32_System_Threading
     - Win32_System_Time
     - Win32_System_WindowsProgramming
-    - Win32_UI
-    - Win32_UI_Shell
     - default
 - name: windows-sys 0.52.0
   features:
@@ -4379,7 +4314,12 @@
   features: []
 - name: zstd 0.11.2+zstd.1.5.2
   features: []
+- name: zstd 0.12.4
+  features: []
 - name: zstd-safe 5.0.2+zstd.1.5.2
+  features:
+    - std
+- name: zstd-safe 6.0.6
   features:
     - std
 - name: zstd-sys 2.0.9+zstd.1.5.5

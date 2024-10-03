@@ -73,12 +73,7 @@ type FrontierBackend = fc_db::Backend<Block>;
 pub fn keystore_container(
     config: &Configuration,
 ) -> Result<(KeystoreContainer, TaskManager), ServiceError> {
-    let executor = Executor::new(
-        config.substrate.wasm_method,
-        config.substrate.default_heap_pages,
-        config.substrate.max_runtime_instances,
-        config.substrate.runtime_cache_size,
-    );
+    let executor = sc_service::new_native_or_wasm_executor::<ExecutorDispatch>(&config.substrate);
 
     let (_client, _backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, _>(&config.substrate, None, executor)?;
@@ -97,6 +92,7 @@ pub fn new_partial(
         sc_transaction_pool::FullPool<Block, FullClient>,
         (
             sc_consensus_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
+            sc_consensus_babe::BabeWorkerHandle<Block>,
             sc_consensus_babe::BabeLink<Block>,
             EffectiveFullBlockImport,
             inherents::Creator<FullClient>,
@@ -124,12 +120,7 @@ pub fn new_partial(
         })
         .transpose()?;
 
-    let executor = Executor::new(
-        config.wasm_method,
-        config.default_heap_pages,
-        config.max_runtime_instances,
-        config.runtime_cache_size,
-    );
+    let executor = sc_service::new_native_or_wasm_executor(config);
 
     let (client, backend, keystore_container, task_manager) =
         sc_service::new_full_parts::<Block, RuntimeApi, _>(
@@ -185,7 +176,7 @@ pub fn new_partial(
         time_warp: time_warp_config.clone(),
     };
 
-    let import_queue = sc_consensus_babe::import_queue(
+    let (import_queue, babe_worker_handle) = sc_consensus_babe::import_queue(
         babe_link.clone(),
         frontier_block_import.clone(),
         Some(Box::new(grandpa_block_import)),
@@ -206,6 +197,7 @@ pub fn new_partial(
         transaction_pool,
         other: (
             grandpa_link,
+            babe_worker_handle,
             babe_link,
             frontier_block_import,
             inherent_data_providers_creator,
@@ -229,6 +221,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         other:
             (
                 grandpa_link,
+                babe_worker_handle,
                 babe_link,
                 block_import,
                 inherent_data_providers_creator,
@@ -273,7 +266,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let role = config.role.clone();
     let name = config.network.node_name.clone();
-    let keystore = Some(keystore_container.sync_keystore());
+    let keystore = Some(keystore_container.keystore());
     let enable_grandpa = !config.disable_grandpa;
     let force_authoring = config.force_authoring;
     let backoff_authoring_blocks: Option<()> = None;
@@ -297,7 +290,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 
     let account_validator_key_extractor =
         Arc::new(bioauth_keys::KeyExtractor::<KeystoreBioauthId, _>::new(
-            keystore_container.sync_keystore(),
+            keystore_container.keystore(),
             bioauth_keys::OneOfOneSelector,
         ));
 
@@ -355,10 +348,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 Some(grandpa_shared_authority_set.clone()),
             );
 
-        let babe_config = babe_link.config().clone();
-        let babe_shared_epoch_changes = babe_link.epoch_changes().clone();
-
-        let keystore = keystore_container.sync_keystore();
+        let keystore = keystore_container.keystore();
         let chain_spec = config.chain_spec.cloned_box();
         let select_chain = select_chain.clone();
 
@@ -403,8 +393,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                     bioauth_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
                 },
                 babe: humanode_rpc::BabeDeps {
-                    babe_config: babe_config.clone(),
-                    babe_shared_epoch_changes: babe_shared_epoch_changes.clone(),
+                    babe_worker_handle: babe_worker_handle.clone(),
                     keystore: Arc::clone(&keystore),
                 },
                 grandpa: humanode_rpc::GrandpaDeps {
@@ -439,7 +428,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     };
 
     {
-        let keystore = keystore_container.sync_keystore();
+        let keystore = keystore_container.keystore();
         init_dev_bioauth_keystore_keys(keystore.as_ref(), config.dev_key_seed.as_deref())
             .map_err(|err| sc_service::Error::Other(err.to_string()))?;
     }
@@ -447,7 +436,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
         network: Arc::clone(&network) as _,
         client: Arc::clone(&client),
-        keystore: keystore_container.sync_keystore(),
+        keystore: keystore_container.keystore(),
         task_manager: &mut task_manager,
         transaction_pool: Arc::clone(&transaction_pool),
         rpc_builder: rpc_extensions_builder,
@@ -460,7 +449,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
     })?;
 
     let babe_config = sc_consensus_babe::BabeParams {
-        keystore: keystore_container.sync_keystore(),
+        keystore: keystore_container.keystore(),
         client: Arc::clone(&client),
         select_chain,
         env: proposer_factory,
@@ -610,17 +599,15 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
 /// is not a part of the session keys set, so it wont be populated that way.
 ///
 /// We need [`KeystoreBioauthId`] for the block production though, so we initialize it manually.
-fn init_dev_bioauth_keystore_keys<Keystore: sp_keystore::SyncCryptoStore + ?Sized>(
+fn init_dev_bioauth_keystore_keys<Keystore: sp_keystore::Keystore + ?Sized>(
     keystore: &Keystore,
     seed: Option<&str>,
 ) -> Result<(), sp_keystore::Error> {
     if let Some(seed) = seed {
-        use sp_application_crypto::AppKey;
-        let _public = sp_keystore::SyncCryptoStore::sr25519_generate_new(
-            keystore,
-            KeystoreBioauthId::ID,
-            Some(seed),
-        )?;
+        use sp_application_crypto::AppCrypto;
+        let _public = tokio::task::block_in_place(move || {
+            sp_keystore::Keystore::sr25519_generate_new(keystore, KeystoreBioauthId::ID, Some(seed))
+        })?;
     }
     Ok(())
 }

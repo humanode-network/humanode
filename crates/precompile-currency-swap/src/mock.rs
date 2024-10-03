@@ -88,7 +88,11 @@ impl pallet_balances::Config for Test {
     type ExistentialDeposit = ConstU128<2>; // 2 because we test the account kills via 1 balance
     type AccountStore = System;
     type MaxLocks = ();
+    type HoldIdentifier = ();
+    type FreezeIdentifier = ();
     type MaxReserves = ();
+    type MaxHolds = ConstU32<0>;
+    type MaxFreezes = ConstU32<0>;
     type ReserveIdentifier = [u8; 8];
     type WeightInfo = ();
 }

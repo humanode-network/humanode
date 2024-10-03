@@ -33,14 +33,20 @@ Options:
           Specify custom base path
 
   -l, --log <LOG_PATTERN>...
-          Sets a custom logging filter. Syntax is `<target>=<level>`, e.g. -lsync=debug.
+          Sets a custom logging filter (syntax: `<target>=<level>`).
           
-          Log levels (least to most verbose) are error, warn, info, debug, and trace. By default, all targets log `info`. The global log level can be set with `-l<level>`.
+          Log levels (least to most verbose) are `error`, `warn`, `info`, `debug`, and `trace`.
+          
+          By default, all targets log `info`. The global log level can be set with `-l<level>`.
+          
+          Multiple `<target>=<level>` entries can be specified and separated by a comma.
+          
+          *Example*: `--log error,sync=debug,grandpa=warn`. Sets Global log level to `error`, sets `sync` target to debug and grandpa target to `warn`.
 
       --detailed-log-output
           Enable detailed log output.
           
-          This includes displaying the log target, log level and thread name.
+          Includes displaying the log target, log level and thread name.
           
           This is automatically enabled when something is logged with any higher level than `info`.
 
@@ -55,7 +61,9 @@ Options:
           The `system_addLogFilter` and `system_resetLogFilter` RPCs will have no effect with this option not being set.
 
       --tracing-targets <TARGETS>
-          Sets a custom profiling filter. Syntax is the same as for logging: `<target>=<level>`
+          Sets a custom profiling filter.
+          
+          Syntax is the same as for logging (`--log`).
 
       --tracing-receiver <RECEIVER>
           Receiver to process tracing messages
@@ -68,42 +76,12 @@ Options:
       --state-pruning <PRUNING_MODE>
           Specify the state pruning mode.
           
-          This mode specifies when the block's state (ie, storage) should be pruned (ie, removed) from the database.
-          
-          This setting can only be set on the first creation of the database. Every subsequent run will load the pruning mode from the database and will error if the stored mode doesn't match this CLI value. It is fine to drop this CLI flag for subsequent runs.
-          
-          Possible values:
-          
-          - archive:
-          
-          Keep the state of all blocks.
-          
-          - 'archive-canonical'
-          
-          Keep only the state of finalized blocks.
-          
-          - number
-          
-          Keep the state of the last number of finalized blocks.
-          
-          [default: 256]
+          This mode specifies when the block's state (ie, storage) should be pruned (ie, removed) from the database. This setting can only be set on the first creation of the database. Every subsequent run will load the pruning mode from the database and will error if the stored mode doesn't match this CLI value. It is fine to drop this CLI flag for subsequent runs. Possible values: - archive: Keep the state of all blocks. - 'archive-canonical' Keep only the state of finalized blocks. - number Keep the state of the last number of finalized blocks. [default: 256]
 
       --blocks-pruning <PRUNING_MODE>
           Specify the blocks pruning mode.
           
-          This mode specifies when the block's body (including justifications) should be pruned (ie, removed) from the database.
-          
-          Possible values: - 'archive'
-          
-          Keep all blocks.
-          
-          - 'archive-canonical'
-          
-          Keep only finalized blocks.
-          
-          - number
-          
-          Keep the last `number` of finalized blocks.
+          This mode specifies when the block's body (including justifications) should be pruned (ie, removed) from the database. Possible values: - 'archive' Keep all blocks. - 'archive-canonical' Keep only finalized blocks. - number Keep the last `number` of finalized blocks.
           
           [default: archive-canonical]
 
@@ -131,13 +109,7 @@ Options:
       --wasmtime-instantiation-strategy <STRATEGY>
           The WASM instantiation method to use.
           
-          Only has an effect when `wasm-execution` is set to `compiled`.
-          
-          The copy-on-write strategies are only supported on Linux. If the copy-on-write variant of a strategy is unsupported the executor will fall back to the non-CoW equivalent.
-          
-          The fastest (and the default) strategy available is `pooling-copy-on-write`.
-          
-          The `legacy-instance-reuse` strategy is deprecated and will be removed in the future. It should only be used in case of issues with the default instantiation strategy.
+          Only has an effect when `wasm-execution` is set to `compiled`. The copy-on-write strategies are only supported on Linux. If the copy-on-write variant of a strategy is unsupported the executor will fall back to the non-CoW equivalent. The fastest (and the default) strategy available is `pooling-copy-on-write`. The `legacy-instance-reuse` strategy is deprecated and will be removed in the future. It should only be used in case of issues with the default instantiation strategy.
           
           [default: pooling-copy-on-write]
 
@@ -154,7 +126,7 @@ Options:
           These runtimes will override on-chain runtimes when the version matches.
 
       --execution-syncing <STRATEGY>
-          The means of execution used when calling into the runtime for importing blocks as part of an initial sync
+          Runtime execution strategy for importing blocks during initial sync
 
           Possible values:
           - native:           Execute with native build (if available, WebAssembly otherwise)
@@ -163,7 +135,7 @@ Options:
           - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --execution-import-block <STRATEGY>
-          The means of execution used when calling into the runtime for general block import (including locally authored blocks)
+          Runtime execution strategy for general block import (including locally authored blocks)
 
           Possible values:
           - native:           Execute with native build (if available, WebAssembly otherwise)
@@ -172,7 +144,7 @@ Options:
           - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --execution-block-construction <STRATEGY>
-          The means of execution used when calling into the runtime while constructing blocks
+          Runtime execution strategy for constructing blocks
 
           Possible values:
           - native:           Execute with native build (if available, WebAssembly otherwise)
@@ -181,7 +153,7 @@ Options:
           - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --execution-offchain-worker <STRATEGY>
-          The means of execution used when calling into the runtime while using an off-chain worker
+          Runtime execution strategy for offchain workers
 
           Possible values:
           - native:           Execute with native build (if available, WebAssembly otherwise)
@@ -190,7 +162,7 @@ Options:
           - native-else-wasm: Execute with the native build if possible; if it fails, then execute with WebAssembly
 
       --execution-other <STRATEGY>
-          The means of execution used when calling into the runtime while not syncing, importing or constructing blocks
+          Runtime execution strategy when not syncing, importing or constructing blocks
 
           Possible values:
           - native:           Execute with native build (if available, WebAssembly otherwise)
@@ -215,9 +187,7 @@ Options:
           [default: 67108864]
 
       --state-cache-size <STATE_CACHE_SIZE>
-          DEPRECATED
-          
-          Switch to `--trie-cache-size`.
+          DEPRECATED: switch to `--trie-cache-size`
 
       --from <FROM>
           Number of the first block to consider
