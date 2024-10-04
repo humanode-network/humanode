@@ -8,7 +8,7 @@ use mockall::mock;
 use pallet_session::historical as pallet_session_historical;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
-use sp_core::{crypto::Infallible, ConstU32, H256};
+use sp_core::{crypto::DeriveError, ConstU32, H256};
 use sp_runtime::{
     testing::Header,
     traits::{BlakeTwo256, IdentityLookup},
@@ -99,7 +99,7 @@ impl AsRef<[u8]> for MockOpaqueAuthTicket {
 pub struct MockVerifier;
 
 impl pallet_bioauth::Verifier<Vec<u8>> for MockVerifier {
-    type Error = Infallible;
+    type Error = DeriveError;
 
     fn verify<'a, D>(&self, _data: D, _signature: Vec<u8>) -> Result<bool, Self::Error>
     where
@@ -120,7 +120,7 @@ pub struct MockAuthTicketConverter;
 impl pallet_bioauth::TryConvert<MockOpaqueAuthTicket, pallet_bioauth::AuthTicket<AccountId>>
     for MockAuthTicketConverter
 {
-    type Error = Infallible;
+    type Error = DeriveError;
 
     fn try_convert(
         _value: MockOpaqueAuthTicket,
