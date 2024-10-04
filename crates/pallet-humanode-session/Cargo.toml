@@ -31,6 +31,8 @@ std = [
   "frame-system/std",
   "pallet-session/std",
   "scale-info/std",
+  "serde/std",
+  "sp-core/std",
   "sp-runtime/std",
   "sp-std/std",
 ]
