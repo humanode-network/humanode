@@ -12,6 +12,9 @@ pub mod weights;
 
 mod migrations;
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
@@ -62,6 +65,9 @@ pub mod pallet {
 
         /// The maximum number of banned accounts.
         type MaxBannedAccounts: Get<u32>;
+
+        /// Weight information for extrinsics in this pallet.
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::pallet]
@@ -106,7 +112,10 @@ pub mod pallet {
     impl<T: Config> Pallet<T> {
         /// Ban account.
         #[pallet::call_index(0)]
-        #[pallet::weight(0)]
+        #[pallet::weight(<T as Config>::WeightInfo::ban(
+            <BannedAccounts<T>>::get().len().try_into()
+            .expect("u32 is big enough for this overflow to be practically impossible")
+        ))]
         pub fn ban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
             ensure_root(origin)?;
 
@@ -133,7 +142,10 @@ pub mod pallet {
 
         /// Unban account.
         #[pallet::call_index(1)]
-        #[pallet::weight(0)]
+        #[pallet::weight(<T as Config>::WeightInfo::unban(
+            <BannedAccounts<T>>::get().len().try_into()
+            .expect("u32 is big enough for this overflow to be practically impossible")
+        ))]
         pub fn unban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
             ensure_root(origin)?;
 
