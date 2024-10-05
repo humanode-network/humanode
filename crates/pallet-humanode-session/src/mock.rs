@@ -213,6 +213,7 @@ impl pallet_humanode_session::Config for Test {
     type MaxBootnodeValidators = <Test as pallet_bootnodes::Config>::MaxBootnodes;
     type MaxBioauthValidators = <Test as pallet_bioauth::Config>::MaxAuthentications;
     type MaxBannedAccounts = <Test as pallet_bioauth::Config>::MaxAuthentications;
+    type WeightInfo = ();
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
