@@ -9,6 +9,7 @@ pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
 pallet-bootnodes = { path = "../pallet-bootnodes", default-features = false }
 
 codec = { workspace = true, features = ["derive"] }
+frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 pallet-session = { workspace = true, features = ["historical"] }
@@ -23,6 +24,12 @@ sp-core = { workspace = true }
 
 [features]
 default = ["std"]
+runtime-benchmarks = [
+  "frame-benchmarking/runtime-benchmarks",
+  "frame-support/runtime-benchmarks",
+  "frame-system/runtime-benchmarks",
+  "sp-runtime/runtime-benchmarks",
+]
 std = [
   "pallet-bioauth/std",
   "pallet-bootnodes/std",
