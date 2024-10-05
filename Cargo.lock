@@ -6647,6 +6647,7 @@ dependencies = [
 name = "pallet-humanode-session"
 version = "0.1.0"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "mockall",
