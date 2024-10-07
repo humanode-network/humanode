@@ -1063,6 +1063,7 @@ mod benches {
         [pallet_token_claims, TokenClaims]
         [pallet_utility, Utility]
         [pallet_vesting, Vesting]
+        [pallet_humanode_session, HumanodeSession]
     );
 }
 
