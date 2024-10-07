@@ -204,7 +204,7 @@ impl pallet_vesting::benchmarking::SchedulingDriver for vesting::SchedulingDrive
 }
 
 impl pallet_humanode_session::benchmarking::Interface for Runtime {
-    fn account_id_from(account_index: u32) -> <Self as frame_system::Config>::AccountId {
+    fn provide_account_id(account_index: u32) -> <Self as frame_system::Config>::AccountId {
         let account_index_bytes = account_index.to_le_bytes();
         AccountId::new(keccak_256(&account_index_bytes))
     }
