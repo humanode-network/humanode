@@ -2286,8 +2286,6 @@
   features: []
 - name: paste 1.0.14
   features: []
-- name: pbkdf2 0.11.0
-  features: []
 - name: pbkdf2 0.12.2
   features:
     - hmac
@@ -3570,15 +3568,17 @@
   features:
     - formatting
     - parsing
-- name: tiny-bip39 1.0.0
+- name: tiny-bip39 1.0.1
   features:
     - chinese-simplified
     - chinese-traditional
     - default
+    - default-langs
     - french
     - italian
     - japanese
     - korean
+    - rand
     - spanish
 - name: tiny-keccak 2.0.2
   features:
