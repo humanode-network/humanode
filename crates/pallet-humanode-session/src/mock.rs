@@ -223,10 +223,20 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
                 (42, 42, sp_runtime::testing::UintAuthorityId(42)),
                 (43, 43, sp_runtime::testing::UintAuthorityId(43)),
                 (44, 44, sp_runtime::testing::UintAuthorityId(44)),
+                // Not bootnode.
+                (1, 1, sp_runtime::testing::UintAuthorityId(1)),
             ],
         },
         bootnodes: pallet_bootnodes::GenesisConfig {
             bootnodes: BoundedVec::truncate_from(vec![42, 43, 44]),
+        },
+        bioauth: pallet_bioauth::GenesisConfig {
+            active_authentications: BoundedVec::try_from(vec![pallet_bioauth::Authentication {
+                public_key: 1,
+                expires_at: 1000,
+            }])
+            .unwrap(),
+            ..Default::default()
         },
         ..Default::default()
     };
