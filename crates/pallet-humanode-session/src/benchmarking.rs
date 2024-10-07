@@ -16,7 +16,7 @@ use crate::*;
 /// The benchmark interface into the environment.
 pub trait Interface: pallet::Config {
     /// Obtain an Account ID based on provided account index.
-    fn account_id_from(account_index: u32) -> <Self as frame_system::Config>::AccountId;
+    fn provide_account_id(account_index: u32) -> <Self as frame_system::Config>::AccountId;
 }
 
 /// Populate the [`BannedAccounts`] storage with generated data.
@@ -24,7 +24,7 @@ fn populate_banned_accounts<T: Interface>(count: u32) {
     let mut banned_accounts = BTreeSet::new();
 
     for i in 0..count {
-        banned_accounts.insert(T::account_id_from(i));
+        banned_accounts.insert(T::provide_account_id(i));
     }
 
     let bounded_banned_accounts =
@@ -43,7 +43,7 @@ benchmarks! {
         // Vary the amount of pre-populated banned accounts.
         let b in 0 .. (T::MaxBannedAccounts::get() - 1) =>  populate_banned_accounts::<T>(b);
 
-        let account_to_be_banned = T::account_id_from(T::MaxBannedAccounts::get());
+        let account_to_be_banned = T::provide_account_id(T::MaxBannedAccounts::get());
 
         // Capture some data used during the verification.
         let banned_accounts_before_len = BannedAccounts::<T>::get().len();
@@ -61,7 +61,7 @@ benchmarks! {
         // Vary the amount of pre-populated banned accounts.
         let b in 1 .. (T::MaxBannedAccounts::get()) =>  populate_banned_accounts::<T>(b);
 
-        let account_to_be_unbanned = T::account_id_from(0);
+        let account_to_be_unbanned = T::provide_account_id(0);
 
         // Capture some data used during the verification.
         let banned_accounts_before_len = BannedAccounts::<T>::get().len();
@@ -84,7 +84,7 @@ benchmarks! {
 
 #[cfg(test)]
 impl Interface for crate::mock::Test {
-    fn account_id_from(account_index: u32) -> <Self as frame_system::Config>::AccountId {
+    fn provide_account_id(account_index: u32) -> <Self as frame_system::Config>::AccountId {
         account_index.into()
     }
 }
