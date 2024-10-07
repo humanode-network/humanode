@@ -59,7 +59,7 @@ benchmarks! {
 
     unban {
         // Vary the amount of pre-populated banned accounts.
-        let b in 0 .. (T::MaxBannedAccounts::get()) =>  populate_banned_accounts::<T>(b);
+        let b in 1 .. (T::MaxBannedAccounts::get()) =>  populate_banned_accounts::<T>(b);
 
         let account_to_be_unbanned = T::account_id_from(0);
 
