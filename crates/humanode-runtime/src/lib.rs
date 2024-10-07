@@ -567,7 +567,7 @@ impl pallet_humanode_session::Config for Runtime {
     type MaxBootnodeValidators = <Runtime as pallet_bootnodes::Config>::MaxBootnodes;
     type MaxBioauthValidators = <Runtime as pallet_bioauth::Config>::MaxAuthentications;
     type MaxBannedAccounts = <Runtime as pallet_bioauth::Config>::MaxAuthentications;
-    type WeightInfo = ();
+    type WeightInfo = weights::pallet_humanode_session::WeightInfo<Runtime>;
 }
 
 pub struct OffenceSlasher;
