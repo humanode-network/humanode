@@ -2447,7 +2447,7 @@
   features: []
 - name: proc-macro-warning 0.3.1
   features: []
-- name: proc-macro2 1.0.86
+- name: proc-macro2 1.0.87
   features:
     - default
     - proc-macro
