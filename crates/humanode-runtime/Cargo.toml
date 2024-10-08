@@ -128,6 +128,7 @@ runtime-benchmarks = [
   "pallet-evm-accounts-mapping/runtime-benchmarks",
   "pallet-evm/runtime-benchmarks",
   "pallet-grandpa/runtime-benchmarks",
+  "pallet-humanode-session/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
   "pallet-multisig/runtime-benchmarks",
   "pallet-offences/runtime-benchmarks",
