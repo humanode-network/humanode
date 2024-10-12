@@ -21,11 +21,13 @@ where
     O: Offence<Offender>,
 {
     fn report_offence(reporters: Vec<Reporter>, offence: O) -> Result<(), OffenceError> {
+        let offenders = offence.offenders();
+        T::report_offence(reporters, offence)?;
+
         match <O as Offence<Offender>>::ID {
             <pallet_im_online::UnresponsivenessOffence<Offender> as Offence<Offender>>::ID
             | <pallet_babe::EquivocationOffence<Offender> as Offence<Offender>>::ID
             | <pallet_grandpa::EquivocationOffence<Offender> as Offence<Offender>>::ID => {
-                let offenders = offence.offenders();
                 let mut should_be_deauthenticated = Vec::with_capacity(offenders.len());
 
                 for details in offenders {
@@ -51,7 +53,8 @@ where
                 // Ignore other cases.
             }
         }
-        T::report_offence(reporters, offence)
+
+        Ok(())
     }
 
     fn is_known_offence(
