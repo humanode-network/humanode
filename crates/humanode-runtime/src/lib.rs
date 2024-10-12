@@ -584,11 +584,8 @@ impl
         >],
         _slash_fraction: &[Perbill],
         _session: sp_staking::SessionIndex,
-        disable_strategy: sp_staking::offence::DisableStrategy,
+        _disable_strategy: sp_staking::offence::DisableStrategy,
     ) -> Weight {
-        if disable_strategy == sp_staking::offence::DisableStrategy::Never {
-            return Weight::zero();
-        }
         let mut weight: Weight = Weight::zero();
         let weights = <Runtime as frame_system::Config>::DbWeight::get();
         let mut should_be_deauthenticated = Vec::with_capacity(offenders.len());
