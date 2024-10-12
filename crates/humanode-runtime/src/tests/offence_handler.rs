@@ -1,4 +1,4 @@
-//! Tests to verify offence slasher logic.
+//! Tests to verify offence handler logic.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::arithmetic_side_effects)]
@@ -114,7 +114,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 }
 
 #[test]
-fn offence_slasher() {
+fn works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Check test preconditions.
@@ -127,7 +127,7 @@ fn offence_slasher() {
         );
 
         // Report unresponsiveness offence.
-        Offences::report_offence(
+        OffenceHandler::<Offences>::report_offence(
             vec![],
             pallet_im_online::UnresponsivenessOffence {
                 session_index: 0,
