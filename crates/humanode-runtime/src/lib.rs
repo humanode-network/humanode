@@ -93,6 +93,7 @@ mod display_moment;
 pub mod eth_sig;
 mod find_author;
 mod fixed_supply;
+mod offence_handler;
 pub mod robonode;
 pub mod storage_version_initializer;
 #[cfg(test)]
@@ -110,6 +111,7 @@ pub use constants::{
     im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
 };
 use deauthentication_reason::DeauthenticationReason;
+use offence_handler::OffenceHandler;
 use static_assertions::const_assert;
 
 /// An index to a block.
@@ -319,7 +321,7 @@ impl pallet_babe::Config for Runtime {
         <Historical as KeyOwnerProofSystem<(KeyTypeId, pallet_babe::AuthorityId)>>::Proof;
     type EquivocationReportSystem = pallet_babe::EquivocationReportSystem<
         Self,
-        Offences,
+        OffenceHandler<Offences>,
         Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
@@ -360,7 +362,7 @@ impl pallet_grandpa::Config for Runtime {
     type KeyOwnerProof = <Historical as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
     type EquivocationReportSystem = pallet_grandpa::EquivocationReportSystem<
         Self,
-        Offences,
+        OffenceHandler<Offences>,
         Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
@@ -571,61 +573,12 @@ impl pallet_humanode_session::Config for Runtime {
     type WeightInfo = weights::pallet_humanode_session::WeightInfo<Runtime>;
 }
 
-pub struct OffenceSlasher;
-
-impl
-    sp_staking::offence::OnOffenceHandler<
-        AccountId,
-        <Runtime as pallet_offences::Config>::IdentificationTuple,
-        Weight,
-    > for OffenceSlasher
-{
-    fn on_offence(
-        offenders: &[sp_staking::offence::OffenceDetails<
-            AccountId,
-            <Runtime as pallet_offences::Config>::IdentificationTuple,
-        >],
-        _slash_fraction: &[Perbill],
-        _session: sp_staking::SessionIndex,
-        _disable_strategy: sp_staking::offence::DisableStrategy,
-    ) -> Weight {
-        let mut weight: Weight = Weight::zero();
-        let weights = <Runtime as frame_system::Config>::DbWeight::get();
-        let mut should_be_deauthenticated = Vec::with_capacity(offenders.len());
-        for details in offenders {
-            let (_offender, identity) = &details.offender;
-            match identity {
-                pallet_humanode_session::Identification::Bioauth(authentication) => {
-                    should_be_deauthenticated.push(authentication.public_key.clone());
-                }
-                pallet_humanode_session::Identification::Bootnode(..) => {
-                    // Never slash the bootnodes.
-                }
-            }
-        }
-        if !should_be_deauthenticated.is_empty() {
-            let deauthenticated_public_keys =
-                Bioauth::deauthenticate(should_be_deauthenticated, DeauthenticationReason::Offence);
-            weight = weight.saturating_add(
-                weights.reads_writes(
-                    1,
-                    deauthenticated_public_keys
-                        .len()
-                        .try_into()
-                        .expect("casting usize to u64 never fails in 64bit and 32bit word cpus"),
-                ),
-            );
-        }
-        weight
-    }
-}
-
 impl pallet_im_online::Config for Runtime {
     type AuthorityId = ImOnlineId;
     type RuntimeEvent = RuntimeEvent;
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
-    type ReportUnresponsiveness = Offences;
+    type ReportUnresponsiveness = OffenceHandler<Offences>;
     type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
     type WeightInfo = weights::pallet_im_online::WeightInfo<Runtime>;
     type MaxKeys = ConstU32<MAX_KEYS>;
@@ -636,7 +589,7 @@ impl pallet_im_online::Config for Runtime {
 impl pallet_offences::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
-    type OnOffenceHandler = OffenceSlasher;
+    type OnOffenceHandler = ();
 }
 
 const WEIGHT_MILLISECS_PER_BLOCK: u64 = EXPECTED_BLOCK_WEIGHT.ref_time()
