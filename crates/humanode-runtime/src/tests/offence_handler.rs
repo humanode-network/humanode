@@ -1,4 +1,4 @@
-//! Tests to verify offence slasher logic.
+//! Tests to verify offence handler logic.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::arithmetic_side_effects)]
@@ -127,7 +127,7 @@ fn works() {
         );
 
         // Report unresponsiveness offence.
-        Offences::report_offence(
+        OffenceHandler::<Offences>::report_offence(
             vec![],
             pallet_im_online::UnresponsivenessOffence {
                 session_index: 0,
