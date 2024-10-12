@@ -114,7 +114,7 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
 }
 
 #[test]
-fn offence_slasher() {
+fn works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Check test preconditions.
