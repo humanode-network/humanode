@@ -235,8 +235,8 @@ impl<T: Config> Pallet<T> {
             .take(T::MaxBioauthValidators::get().try_into().unwrap())
             .filter_map(move |authentication| {
                 T::ValidatorPublicKeyOf::convert(authentication.public_key.clone())
+                    .filter(|account_id| !banned_accounts.contains(account_id))
                     .map(|account_id| (account_id, Identification::Bioauth(authentication)))
-                    .filter(|(account_id, _)| !banned_accounts.contains(account_id))
             });
 
         bootnodes.chain(bioauth_active_authentications)
