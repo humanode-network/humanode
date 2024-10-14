@@ -17,7 +17,7 @@ impl<T: frame_system::Config> pallet_humanode_session::WeightInfo for WeightInfo
     //  Measured:  `233 + b * (32 ±0)`
     //  Estimated: `0`
     // Minimum execution time: 10_000_000 picoseconds.
-    Weight::from_parts(112_000_000, 0)
+    Weight::from_parts(99_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(2))
       .saturating_add(T::DbWeight::get().writes(1))
   }
@@ -26,8 +26,8 @@ impl<T: frame_system::Config> pallet_humanode_session::WeightInfo for WeightInfo
     // Proof Size summary in bytes:
     //  Measured:  `171 + b * (32 ±0)`
     //  Estimated: `0`
-    // Minimum execution time: 7_000_000 picoseconds.
-    Weight::from_parts(102_000_000, 0)
+    // Minimum execution time: 6_000_000 picoseconds.
+    Weight::from_parts(97_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(1))
       .saturating_add(T::DbWeight::get().writes(1))
   }

@@ -24,8 +24,8 @@ impl<T: frame_system::Config> pallet_token_claims::WeightInfo for WeightInfo<T> 
     // Proof Size summary in bytes:
     //  Measured:  `264`
     //  Estimated: `0`
-    // Minimum execution time: 26_000_000 picoseconds.
-    Weight::from_parts(26_000_000, 0)
+    // Minimum execution time: 25_000_000 picoseconds.
+    Weight::from_parts(25_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(3))
       .saturating_add(T::DbWeight::get().writes(4))
   }
@@ -33,8 +33,8 @@ impl<T: frame_system::Config> pallet_token_claims::WeightInfo for WeightInfo<T> 
     // Proof Size summary in bytes:
     //  Measured:  `264`
     //  Estimated: `0`
-    // Minimum execution time: 27_000_000 picoseconds.
-    Weight::from_parts(27_000_000, 0)
+    // Minimum execution time: 25_000_000 picoseconds.
+    Weight::from_parts(25_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(3))
       .saturating_add(T::DbWeight::get().writes(4))
   }
@@ -42,8 +42,8 @@ impl<T: frame_system::Config> pallet_token_claims::WeightInfo for WeightInfo<T> 
     // Proof Size summary in bytes:
     //  Measured:  `264`
     //  Estimated: `0`
-    // Minimum execution time: 26_000_000 picoseconds.
-    Weight::from_parts(26_000_000, 0)
+    // Minimum execution time: 25_000_000 picoseconds.
+    Weight::from_parts(25_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(3))
       .saturating_add(T::DbWeight::get().writes(4))
   }
