@@ -558,7 +558,7 @@ impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
 
 impl pallet_bootnodes::Config for Runtime {
     type BootnodeId = AccountId;
-    type MaxBootnodes = ConstU32<16>;
+    type MaxBootnodes = ConstU32<2000>;
 }
 
 impl pallet_humanode_session::Config for Runtime {
