@@ -6,8 +6,19 @@ use frame_support::traits::{Get, StorageVersion};
 pub use pallet::*;
 use sp_runtime::traits::Convert;
 use sp_std::prelude::*;
+pub use weights::*;
+
+pub mod weights;
 
 mod migrations;
+
+#[cfg(feature = "runtime-benchmarks")]
+pub mod benchmarking;
+
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
 
 /// The type representing the session index in our chain.
 type SessionIndex = u32;
@@ -22,6 +33,7 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(1);
 pub mod pallet {
     use frame_support::pallet_prelude::*;
     use frame_system::pallet_prelude::*;
+    use sp_runtime::BoundedBTreeSet;
 
     use super::*;
 
@@ -50,6 +62,12 @@ pub mod pallet {
 
         /// The max amount of bioauth-powered session validators.
         type MaxBioauthValidators: Get<u32>;
+
+        /// The maximum number of banned accounts.
+        type MaxBannedAccounts: Get<u32>;
+
+        /// Weight information for extrinsics in this pallet.
+        type WeightInfo: WeightInfo;
     }
 
     #[pallet::pallet]
@@ -71,6 +89,77 @@ pub mod pallet {
     /// The number of the current session, as filled in by the session manager.
     #[pallet::storage]
     pub type CurrentSessionIndex<T: Config> = StorageValue<_, SessionIndex, OptionQuery>;
+
+    /// A set of all banned accounts that can't be validators in the network.
+    #[pallet::storage]
+    pub type BannedAccounts<T: Config> =
+        StorageValue<_, BoundedBTreeSet<T::AccountId, T::MaxBannedAccounts>, ValueQuery>;
+
+    /// Possible errors.
+    #[pallet::error]
+    pub enum Error<T> {
+        /// Banning bootnodes is not allowed.
+        AttemptToBanBootnode,
+        /// The account is already banned for ban call.
+        AccountIsAlreadyBanned,
+        /// The account is not banned for unban call.
+        AccountIsNotBanned,
+        /// The BannedAccounts storage has reached the limit as BoundedVec.
+        TooManyBannedAccounts,
+    }
+
+    #[pallet::call]
+    impl<T: Config> Pallet<T> {
+        /// Ban account.
+        #[pallet::call_index(0)]
+        #[pallet::weight(<T as Config>::WeightInfo::ban(
+            <BannedAccounts<T>>::get().len().try_into()
+            .expect("u32 is big enough for this overflow to be practically impossible")
+        ))]
+        pub fn ban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
+            ensure_root(origin)?;
+
+            if <pallet_bootnodes::Pallet<T>>::bootnodes()
+                .iter()
+                .any(|bootnode| T::BootnodeIdOf::convert(bootnode.clone()) == account_id)
+            {
+                return Err(Error::<T>::AttemptToBanBootnode.into());
+            }
+
+            <BannedAccounts<T>>::try_mutate::<_, DispatchError, _>(move |banned_accounts| {
+                if !banned_accounts
+                    .try_insert(account_id)
+                    .map_err(|_| Error::<T>::TooManyBannedAccounts)?
+                {
+                    return Err(Error::<T>::AccountIsAlreadyBanned.into());
+                }
+
+                Ok(())
+            })?;
+
+            Ok(())
+        }
+
+        /// Unban account.
+        #[pallet::call_index(1)]
+        #[pallet::weight(<T as Config>::WeightInfo::unban(
+            <BannedAccounts<T>>::get().len().try_into()
+            .expect("u32 is big enough for this overflow to be practically impossible")
+        ))]
+        pub fn unban(origin: OriginFor<T>, account_id: T::AccountId) -> DispatchResult {
+            ensure_root(origin)?;
+
+            BannedAccounts::<T>::try_mutate::<_, DispatchError, _>(move |banned_accounts| {
+                if !banned_accounts.remove(&account_id) {
+                    return Err(Error::<T>::AccountIsNotBanned.into());
+                }
+
+                Ok(())
+            })?;
+
+            Ok(())
+        }
+    }
 
     #[pallet::hooks]
     impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
@@ -138,12 +227,15 @@ impl<T: Config> Pallet<T> {
                 )
             });
 
+        let banned_accounts = <BannedAccounts<T>>::get();
+
         let bioauth_active_authentications = <pallet_bioauth::Pallet<T>>::active_authentications()
             .into_inner()
             .into_iter()
             .take(T::MaxBioauthValidators::get().try_into().unwrap())
-            .filter_map(|authentication| {
+            .filter_map(move |authentication| {
                 T::ValidatorPublicKeyOf::convert(authentication.public_key.clone())
+                    .filter(|account_id| !banned_accounts.contains(account_id))
                     .map(|account_id| (account_id, Identification::Bioauth(authentication)))
             });
 

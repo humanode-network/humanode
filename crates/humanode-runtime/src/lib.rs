@@ -566,6 +566,8 @@ impl pallet_humanode_session::Config for Runtime {
     type BootnodeIdOf = sp_runtime::traits::Identity;
     type MaxBootnodeValidators = <Runtime as pallet_bootnodes::Config>::MaxBootnodes;
     type MaxBioauthValidators = <Runtime as pallet_bioauth::Config>::MaxAuthentications;
+    type MaxBannedAccounts = <Runtime as pallet_bioauth::Config>::MaxAuthentications;
+    type WeightInfo = weights::pallet_humanode_session::WeightInfo<Runtime>;
 }
 
 pub struct OffenceSlasher;
@@ -1058,6 +1060,7 @@ mod benches {
         [pallet_token_claims, TokenClaims]
         [pallet_utility, Utility]
         [pallet_vesting, Vesting]
+        [pallet_humanode_session, HumanodeSession]
     );
 }
 
