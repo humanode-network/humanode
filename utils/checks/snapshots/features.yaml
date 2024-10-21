@@ -3004,7 +3004,7 @@
 - name: serde_derive 1.0.210
   features:
     - default
-- name: serde_json 1.0.128
+- name: serde_json 1.0.129
   features:
     - alloc
     - default
