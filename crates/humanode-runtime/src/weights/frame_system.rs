@@ -17,7 +17,7 @@ impl<T: frame_system::Config> frame_system::WeightInfo for WeightInfo<T> {
     //  Measured:  `0`
     //  Estimated: `0`
     // Minimum execution time: 2_000_000 picoseconds.
-    Weight::from_parts(407_000_000, 0)
+    Weight::from_parts(316_000_000, 0)
   }
   /// The range of component `b` is `[0, 3932160]`.
   fn remark_with_event(_b: u32, ) -> Weight {
@@ -25,7 +25,7 @@ impl<T: frame_system::Config> frame_system::WeightInfo for WeightInfo<T> {
     //  Measured:  `0`
     //  Estimated: `0`
     // Minimum execution time: 4_000_000 picoseconds.
-    Weight::from_parts(4_118_000_000, 0)
+    Weight::from_parts(4_392_000_000, 0)
   }
   fn set_heap_pages() -> Weight {
     // Proof Size summary in bytes:
@@ -36,26 +36,22 @@ impl<T: frame_system::Config> frame_system::WeightInfo for WeightInfo<T> {
       .saturating_add(T::DbWeight::get().reads(1))
       .saturating_add(T::DbWeight::get().writes(2))
   }
-  /// Storage: System Digest (r:1 w:1)
-  /// Proof Skipped: System Digest (max_values: Some(1), max_size: None, mode: Measured)
-  /// Storage: unknown `0x3a636f6465` (r:0 w:1)
-  /// Proof Skipped: unknown `0x3a636f6465` (r:0 w:1)
   fn set_code() -> Weight {
-	// Proof Size summary in bytes:
-	//  Measured:  `0`
-	//  Estimated: `1485`
-	// Minimum execution time: 58_606_683_000 picoseconds.
-	Weight::from_parts(59_115_121_000, 1485)
-      .saturating_add(T::DbWeight::get().reads(1_u64))
-	  .saturating_add(T::DbWeight::get().writes(2_u64))
+    // Proof Size summary in bytes:
+    //  Measured:  `0`
+    //  Estimated: `0`
+    // Minimum execution time: 71_462_000_000 picoseconds.
+    Weight::from_parts(71_462_000_000, 0)
+      .saturating_add(T::DbWeight::get().reads(1))
+      .saturating_add(T::DbWeight::get().writes(2))
   }
   /// The range of component `i` is `[0, 1000]`.
   fn set_storage(_i: u32, ) -> Weight {
     // Proof Size summary in bytes:
     //  Measured:  `0`
     //  Estimated: `0`
-    // Minimum execution time: 1_000_000 picoseconds.
-    Weight::from_parts(599_000_000, 0)
+    // Minimum execution time: 2_000_000 picoseconds.
+    Weight::from_parts(595_000_000, 0)
       .saturating_add(T::DbWeight::get().writes(1000))
   }
   /// The range of component `i` is `[0, 1000]`.
@@ -63,8 +59,8 @@ impl<T: frame_system::Config> frame_system::WeightInfo for WeightInfo<T> {
     // Proof Size summary in bytes:
     //  Measured:  `0`
     //  Estimated: `0`
-    // Minimum execution time: 1_000_000 picoseconds.
-    Weight::from_parts(498_000_000, 0)
+    // Minimum execution time: 2_000_000 picoseconds.
+    Weight::from_parts(635_000_000, 0)
       .saturating_add(T::DbWeight::get().writes(1000))
   }
   /// The range of component `p` is `[0, 1000]`.
@@ -73,7 +69,7 @@ impl<T: frame_system::Config> frame_system::WeightInfo for WeightInfo<T> {
     //  Measured:  `149 + p * (69 ±0)`
     //  Estimated: `0`
     // Minimum execution time: 4_000_000 picoseconds.
-    Weight::from_parts(1_160_000_000, 0)
+    Weight::from_parts(1_126_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(1000))
       .saturating_add(T::DbWeight::get().writes(1000))
   }
