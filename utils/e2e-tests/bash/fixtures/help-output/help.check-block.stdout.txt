@@ -94,7 +94,7 @@ Options:
           [default: compiled]
 
           Possible values:
-          - interpreted-i-know-what-i-do: Uses an interpreter
+          - interpreted-i-know-what-i-do: Uses an interpreter which now is deprecated
           - compiled:                     Uses a compiled runtime
 
       --wasmtime-instantiation-strategy <STRATEGY>

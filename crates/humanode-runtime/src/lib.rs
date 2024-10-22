@@ -481,6 +481,7 @@ impl pallet_transaction_payment::Config for Runtime {
 impl pallet_sudo::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
+    type WeightInfo = weights::pallet_sudo::WeightInfo<Runtime>;
 }
 
 pub struct PrimitiveAuthTicketConverter;
@@ -1056,6 +1057,7 @@ mod benches {
         [pallet_grandpa, Grandpa]
         [pallet_im_online, ImOnline]
         [pallet_multisig, Multisig]
+        [pallet_sudo, Sudo]
         [pallet_timestamp, Timestamp]
         [pallet_token_claims, TokenClaims]
         [pallet_utility, Utility]

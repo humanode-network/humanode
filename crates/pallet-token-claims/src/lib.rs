@@ -9,7 +9,10 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::{Currency, StorageVersion};
+use frame_support::{
+    inherent::Vec,
+    traits::{Currency, StorageVersion},
+};
 pub use weights::*;
 
 pub use self::pallet::*;
@@ -105,6 +108,7 @@ pub mod pallet {
     pub type TotalClaimable<T> = StorageValue<_, BalanceOf<T>, ValueQuery>;
 
     #[pallet::genesis_config]
+    #[derive(frame_support::DefaultNoBound)]
     pub struct GenesisConfig<T: Config> {
         /// The claims to initialize at genesis.
         pub claims: Vec<(EthereumAddress, ClaimInfoOf<T>)>,
@@ -113,16 +117,6 @@ pub mod pallet {
         /// If provided, must be equal to the sum of all claims balances.
         /// This is useful for double-checking the expected sum during the genesis construction.
         pub total_claimable: Option<BalanceOf<T>>,
-    }
-
-    #[cfg(feature = "std")]
-    impl<T: Config> Default for GenesisConfig<T> {
-        fn default() -> Self {
-            GenesisConfig {
-                claims: Default::default(),
-                total_claimable: None,
-            }
-        }
     }
 
     #[pallet::genesis_build]
