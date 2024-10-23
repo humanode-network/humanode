@@ -684,8 +684,12 @@
   features: []
 - name: derive_builder_macro 0.11.2
   features: []
-- name: derive_more 0.99.17
+- name: derive_more 1.0.0
   features:
+    - from
+- name: derive_more-impl 1.0.0
+  features:
+    - default
     - from
 - name: devutil-auth-ticket 0.1.0
   features: []
@@ -2894,7 +2898,7 @@
   features:
     - default
     - metered
-- name: scale-info 2.11.3
+- name: scale-info 2.11.4
   features:
     - decode
     - default
@@ -2902,7 +2906,7 @@
     - scale-info-derive
     - serde
     - std
-- name: scale-info-derive 2.11.3
+- name: scale-info-derive 2.11.4
   features: []
 - name: schannel 0.1.23
   features: []
