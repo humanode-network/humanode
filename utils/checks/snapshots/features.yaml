@@ -3538,9 +3538,9 @@
   features: []
 - name: termtree 0.4.1
   features: []
-- name: thiserror 1.0.64
+- name: thiserror 1.0.65
   features: []
-- name: thiserror-impl 1.0.64
+- name: thiserror-impl 1.0.65
   features: []
 - name: thousands 0.2.0
   features: []
