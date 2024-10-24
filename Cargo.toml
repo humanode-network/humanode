@@ -84,7 +84,6 @@ pallet-balances = { git = "https://github.com/humanode-network/substrate", tag =
 pallet-grandpa = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-09-12", default-features = false }
 pallet-im-online = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-09-12", default-features = false }
 pallet-multisig = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-09-12", default-features = false }
-pallet-offences = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-09-12", default-features = false }
 pallet-session = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-09-12", default-features = false }
 pallet-sudo = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-09-12", default-features = false }
 pallet-timestamp = { git = "https://github.com/humanode-network/substrate", tag = "locked/polkadot-v0.9.42-2024-09-12", default-features = false }
