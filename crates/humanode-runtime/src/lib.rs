@@ -111,7 +111,7 @@ pub use constants::{
     im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
 };
 use deauthentication_reason::DeauthenticationReason;
-use offence_handler::OffenceHandler;
+use offence_handler::OnOffence;
 use static_assertions::const_assert;
 
 /// An index to a block.
@@ -321,7 +321,7 @@ impl pallet_babe::Config for Runtime {
         <Historical as KeyOwnerProofSystem<(KeyTypeId, pallet_babe::AuthorityId)>>::Proof;
     type EquivocationReportSystem = pallet_babe::EquivocationReportSystem<
         Self,
-        OffenceHandler<Offences>,
+        HumanodeOffences,
         Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
@@ -362,7 +362,7 @@ impl pallet_grandpa::Config for Runtime {
     type KeyOwnerProof = <Historical as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
     type EquivocationReportSystem = pallet_grandpa::EquivocationReportSystem<
         Self,
-        OffenceHandler<Offences>,
+        HumanodeOffences,
         Historical,
         ConstU64<REPORT_LONGEVITY>,
     >;
@@ -573,12 +573,17 @@ impl pallet_humanode_session::Config for Runtime {
     type WeightInfo = weights::pallet_humanode_session::WeightInfo<Runtime>;
 }
 
+impl pallet_humanode_offences::Config for Runtime {
+    type Offender = pallet_session::historical::IdentificationTuple<Runtime>;
+    type OnOffence = OnOffence;
+}
+
 impl pallet_im_online::Config for Runtime {
     type AuthorityId = ImOnlineId;
     type RuntimeEvent = RuntimeEvent;
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
-    type ReportUnresponsiveness = OffenceHandler<Offences>;
+    type ReportUnresponsiveness = HumanodeOffences;
     type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
     type WeightInfo = weights::pallet_im_online::WeightInfo<Runtime>;
     type MaxKeys = ConstU32<MAX_KEYS>;
@@ -840,6 +845,7 @@ construct_runtime!(
         BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
         EvmBalancesErc20Support: pallet_erc20_support = 37,
         DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
+        HumanodeOffences: pallet_humanode_offences = 39,
     }
 );
 

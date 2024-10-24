@@ -27,6 +27,7 @@ pallet-dummy-precompiles-code = { path = "../pallet-dummy-precompiles-code", def
 pallet-erc20-support = { path = "../pallet-erc20-support", default-features = false }
 pallet-ethereum-chain-id = { path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { path = "../pallet-evm-accounts-mapping", default-features = false }
+pallet-humanode-offences = { path = "../pallet-humanode-offences", default-features = false }
 pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
 pallet-pot = { path = "../pallet-pot", default-features = false }
 pallet-token-claims = { path = "../pallet-token-claims", default-features = false }
@@ -184,6 +185,7 @@ std = [
   "pallet-evm-balances/std",
   "pallet-evm-system/std",
   "pallet-grandpa/std",
+  "pallet-humanode-offences/std",
   "pallet-humanode-session/std",
   "pallet-im-online/std",
   "pallet-multisig/std",
@@ -254,6 +256,7 @@ try-runtime = [
   "pallet-evm-balances/try-runtime",
   "pallet-evm-system/try-runtime",
   "pallet-grandpa/try-runtime",
+  "pallet-humanode-offences/try-runtime",
   "pallet-humanode-session/try-runtime",
   "pallet-im-online/try-runtime",
   "pallet-multisig/try-runtime",
