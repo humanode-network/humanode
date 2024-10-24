@@ -18,6 +18,7 @@ std = [
   "frame-support/std",
   "frame-system/std",
   "scale-info/std",
+  "sp-staking/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
