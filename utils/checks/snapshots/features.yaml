@@ -2898,7 +2898,7 @@
   features:
     - default
     - metered
-- name: scale-info 2.11.4
+- name: scale-info 2.11.5
   features:
     - decode
     - default
@@ -2906,7 +2906,7 @@
     - scale-info-derive
     - serde
     - std
-- name: scale-info-derive 2.11.4
+- name: scale-info-derive 2.11.5
   features: []
 - name: schannel 0.1.23
   features: []
