@@ -4131,7 +4131,6 @@ dependencies = [
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-multisig",
- "pallet-offences",
  "pallet-pot",
  "pallet-session",
  "pallet-sudo",
@@ -6714,23 +6713,6 @@ dependencies = [
  "scale-info",
  "sp-io",
  "sp-runtime",
- "sp-std",
-]
-
-[[package]]
-name = "pallet-offences"
-version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.42-2024-09-12#56b16fefbd7a5ba07afd94cb37367d078da0ac52"
-dependencies = [
- "frame-support",
- "frame-system",
- "log",
- "pallet-balances",
- "parity-scale-codec",
- "scale-info",
- "serde",
- "sp-runtime",
- "sp-staking",
  "sp-std",
 ]
 

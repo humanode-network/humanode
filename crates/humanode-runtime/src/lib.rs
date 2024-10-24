@@ -591,12 +591,6 @@ impl pallet_im_online::Config for Runtime {
     type MaxPeerDataEncodingSize = ConstU32<MAX_PEER_DATA_ENCODING_SIZE>;
 }
 
-impl pallet_offences::Config for Runtime {
-    type RuntimeEvent = RuntimeEvent;
-    type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
-    type OnOffenceHandler = ();
-}
-
 const WEIGHT_MILLISECS_PER_BLOCK: u64 = EXPECTED_BLOCK_WEIGHT.ref_time()
     / frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS;
 // An assertion to ensure this value is what we expect it to be here.
@@ -822,7 +816,7 @@ construct_runtime!(
         TokenClaimsPot: pallet_pot::<Instance3> = 11,
         TransactionPayment: pallet_transaction_payment = 12,
         Session: pallet_session = 13,
-        Offences: pallet_offences = 14,
+        HumanodeOffences: pallet_humanode_offences = 14,
         Historical: pallet_session_historical = 15,
         HumanodeSession: pallet_humanode_session = 16,
         ChainProperties: pallet_chain_properties = 17,
@@ -845,7 +839,6 @@ construct_runtime!(
         BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
         EvmBalancesErc20Support: pallet_erc20_support = 37,
         DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
-        HumanodeOffences: pallet_humanode_offences = 39,
     }
 );
 
