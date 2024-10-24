@@ -4127,6 +4127,7 @@ dependencies = [
  "pallet-evm-precompile-simple",
  "pallet-evm-system",
  "pallet-grandpa",
+ "pallet-humanode-offences",
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-multisig",
