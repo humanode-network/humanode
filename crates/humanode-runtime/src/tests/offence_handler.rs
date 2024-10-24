@@ -127,7 +127,7 @@ fn works() {
         );
 
         // Report unresponsiveness offence.
-        OffenceHandler::<Offences>::report_offence(
+        HumanodeOffences::report_offence(
             vec![],
             pallet_im_online::UnresponsivenessOffence {
                 session_index: 0,
