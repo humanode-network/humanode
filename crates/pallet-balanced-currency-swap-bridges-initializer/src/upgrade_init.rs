@@ -40,7 +40,7 @@ pub fn on_runtime_upgrade<T: Config>() -> Weight {
 
     weight.saturating_accrue(T::DbWeight::get().reads(1));
 
-    if onchain_storage_version == 0 && current_storage_version > 0 {
+    if onchain_storage_version == 0 && current_storage_version != 0 {
         // Set new storage version.
         current_storage_version.put::<Pallet<T>>();
 
