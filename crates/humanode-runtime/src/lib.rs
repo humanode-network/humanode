@@ -889,6 +889,8 @@ pub type Executive = frame_executive::Executive<
             ConstU32<1000>,
             frontier_precompiles::FrontierPrecompilesAddresses<Runtime>,
         >,
+        pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
+        storage_version_initializer::StorageVersionInitializer<Balances, Runtime>,
     ),
 >;
 
