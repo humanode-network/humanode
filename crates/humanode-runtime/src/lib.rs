@@ -875,6 +875,17 @@ pub type UncheckedExtrinsic =
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 
+/// All migrations that will run on next runtime upgrade.
+pub type Migrations = (
+    pallet_multisig::migrations::v1::MigrateToV1<Runtime>,
+    storage_version_initializer::StorageVersionInitializer<DummyPrecompilesCode, Runtime>,
+    storage_version_initializer::StorageVersionInitializer<
+        BalancedCurrencySwapBridgesInitializer,
+        Runtime,
+    >,
+    storage_version_initializer::StorageVersionInitializer<Balances, Runtime>,
+);
+
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
     Runtime,
@@ -882,13 +893,7 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
-    (
-        storage_version_initializer::StorageVersionInitializer<DummyPrecompilesCode, Runtime>,
-        storage_version_initializer::StorageVersionInitializer<
-            BalancedCurrencySwapBridgesInitializer,
-            Runtime,
-        >,
-    ),
+    Migrations,
 >;
 
 impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
