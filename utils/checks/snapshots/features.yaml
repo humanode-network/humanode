@@ -3508,7 +3508,7 @@
     - quote
     - visit
     - visit-mut
-- name: syn 2.0.85
+- name: syn 2.0.86
   features:
     - clone-impls
     - default
@@ -3542,9 +3542,9 @@
   features: []
 - name: termtree 0.4.1
   features: []
-- name: thiserror 1.0.65
+- name: thiserror 1.0.66
   features: []
-- name: thiserror-impl 1.0.65
+- name: thiserror-impl 1.0.66
   features: []
 - name: thousands 0.2.0
   features: []
