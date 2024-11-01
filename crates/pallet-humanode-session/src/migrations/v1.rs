@@ -1,13 +1,39 @@
 //! Migration to Version 1.
 
-use frame_support::pallet_prelude::*;
-use frame_support::storage_alias;
-use frame_support::{dispatch::GetStorageVersion, log::info, traits::Get, weights::Weight};
+use frame_support::{
+    log::info,
+    pallet_prelude::*,
+    sp_std, storage_alias,
+    traits::{Get, OnRuntimeUpgrade},
+    weights::Weight,
+};
 #[cfg(feature = "try-runtime")]
-use sp_std::{vec, vec::Vec};
+use frame_support::{
+    sp_runtime::TryRuntimeError,
+    sp_std::{vec, vec::Vec},
+};
 
-use crate::IdentificationFor;
-use crate::{Config, CurrentSessionIndex, Pallet, SessionIdentities};
+use crate::{Config, CurrentSessionIndex, IdentificationFor, Pallet, SessionIdentities};
+
+/// Execute migration to Version 1.
+pub struct MigrationToV1<T>(sp_std::marker::PhantomData<T>);
+
+impl<T: Config> OnRuntimeUpgrade for MigrationToV1<T> {
+    fn on_runtime_upgrade() -> Weight {
+        migrate::<T>()
+    }
+
+    #[cfg(feature = "try-runtime")]
+    fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
+        Ok(pre_migrate::<T>())
+    }
+
+    #[cfg(feature = "try-runtime")]
+    fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
+        post_migrate::<T>(state);
+        Ok(())
+    }
+}
 
 /// The Version 0 identities storage.
 #[storage_alias]
@@ -21,18 +47,17 @@ pub type CurrentSessionIdentities<T: Config> = StorageMap<
 
 /// Migrate from version 0 to 1.
 pub fn migrate<T: Config>() -> Weight {
-    let current = <Pallet<T>>::current_storage_version();
     let onchain = <Pallet<T>>::on_chain_storage_version();
 
     // Read the onchain version.
     let mut weight: Weight = T::DbWeight::get().reads(1);
 
-    info!("Running migration to v1 from {onchain:?}");
-
-    if onchain == 1 {
-        info!("Already at version 1, nothing to do");
+    if onchain != 0 {
+        info!("Already not at version 0, nothing to do. This migrarion probably should be removed");
         return weight;
     }
+
+    info!("Running migration to v1");
 
     // Restore session index from the session pallet.
     let session_index = <pallet_session::Pallet<T>>::current_index();
@@ -49,11 +74,9 @@ pub fn migrate<T: Config>() -> Weight {
         None
     });
 
-    // Set new version.
-    current.put::<Pallet<T>>();
-
-    // Write the onchain version.
-    weight = weight.saturating_add(T::DbWeight::get().writes(1));
+    // Set storage version to `1`.
+    StorageVersion::new(1).put::<Pallet<T>>();
+    weight.saturating_accrue(T::DbWeight::get().writes(1));
 
     // Done.
     weight
