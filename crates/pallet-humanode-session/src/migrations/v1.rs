@@ -1,16 +1,13 @@
 //! Migration to Version 1.
 
+#[cfg(feature = "try-runtime")]
+use frame_support::sp_std::{vec, vec::Vec};
 use frame_support::{
     log::info,
     pallet_prelude::*,
     sp_std, storage_alias,
     traits::{Get, OnRuntimeUpgrade},
     weights::Weight,
-};
-#[cfg(feature = "try-runtime")]
-use frame_support::{
-    sp_runtime::TryRuntimeError,
-    sp_std::{vec, vec::Vec},
 };
 
 use crate::{Config, CurrentSessionIndex, IdentificationFor, Pallet, SessionIdentities};
@@ -24,12 +21,12 @@ impl<T: Config> OnRuntimeUpgrade for MigrationToV1<T> {
     }
 
     #[cfg(feature = "try-runtime")]
-    fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
+    fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
         Ok(pre_migrate::<T>())
     }
 
     #[cfg(feature = "try-runtime")]
-    fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
+    fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
         post_migrate::<T>(state);
         Ok(())
     }

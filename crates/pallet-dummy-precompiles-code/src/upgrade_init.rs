@@ -1,13 +1,13 @@
 //! Upgrade init implementation.
 
-#[cfg(feature = "try-runtime")]
-use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec, traits::GetStorageVersion};
 use frame_support::{
     sp_std,
     sp_tracing::info,
     traits::{Get, OnRuntimeUpgrade},
     weights::Weight,
 };
+#[cfg(feature = "try-runtime")]
+use frame_support::{sp_std::vec::Vec, traits::GetStorageVersion};
 
 use crate::{
     Config, LastExecutionVersion, LastForceExecuteAskCounter, Pallet, CURRENT_EXECUTION_VERSION,
@@ -41,13 +41,13 @@ impl<T: Config> OnRuntimeUpgrade for UpgradeInit<T> {
     }
 
     #[cfg(feature = "try-runtime")]
-    fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
+    fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
         // Do nothing.
         Ok(Vec::new())
     }
 
     #[cfg(feature = "try-runtime")]
-    fn post_upgrade(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
+    fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
         use crate::DUMMY_CODE;
 
         let mut not_created_precompiles = Vec::new();
@@ -60,9 +60,7 @@ impl<T: Config> OnRuntimeUpgrade for UpgradeInit<T> {
         }
 
         if !not_created_precompiles.is_empty() {
-            return Err(TryRuntimeError::Other(
-                "precompiles not created properly: {:not_created_precompiles}",
-            ));
+            return Err("precompiles not created properly: {:not_created_precompiles}");
         }
 
         assert_eq!(

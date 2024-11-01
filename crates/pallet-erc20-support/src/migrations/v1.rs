@@ -1,16 +1,13 @@
 //! Migration to Version 1.
 
+#[cfg(feature = "try-runtime")]
+use frame_support::sp_std::{vec, vec::Vec};
 use frame_support::{
     log::info,
     pallet_prelude::*,
     sp_std,
     traits::{Get, OnRuntimeUpgrade},
     weights::Weight,
-};
-#[cfg(feature = "try-runtime")]
-use frame_support::{
-    sp_runtime::TryRuntimeError,
-    sp_std::{vec, vec::Vec},
 };
 
 use crate::{Approvals, BalanceOf, Config, Pallet};
@@ -24,12 +21,12 @@ impl<T: Config<I>, I: 'static> OnRuntimeUpgrade for MigrationToV1<T, I> {
     }
 
     #[cfg(feature = "try-runtime")]
-    fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
+    fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
         Ok(vec![])
     }
 
     #[cfg(feature = "try-runtime")]
-    fn post_upgrade(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
+    fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
         ensure!(
             <Pallet<T, I>>::on_chain_storage_version() == <Pallet<T, I>>::current_storage_version(),
             "the current storage version and onchain storage version should be the same"
