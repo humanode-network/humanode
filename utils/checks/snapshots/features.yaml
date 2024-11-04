@@ -1430,15 +1430,45 @@
     - fallback
 - name: iana-time-zone-haiku 0.1.2
   features: []
+- name: icu_collections 1.5.0
+  features: []
+- name: icu_locid 1.5.0
+  features:
+    - zerovec
+- name: icu_locid_transform 1.5.0
+  features:
+    - compiled_data
+- name: icu_locid_transform_data 1.5.0
+  features: []
+- name: icu_normalizer 1.5.0
+  features:
+    - compiled_data
+    - default
+- name: icu_normalizer_data 1.5.0
+  features: []
+- name: icu_properties 1.5.1
+  features:
+    - compiled_data
+    - default
+- name: icu_properties_data 1.5.0
+  features: []
+- name: icu_provider 1.5.0
+  features:
+    - macros
+- name: icu_provider_macros 1.5.0
+  features: []
 - name: ident_case 1.0.1
   features: []
 - name: idna 0.2.3
   features: []
-- name: idna 0.5.0
+- name: idna 1.0.3
   features:
     - alloc
-    - default
+    - compiled_data
     - std
+- name: idna_adapter 1.2.0
+  features:
+    - compiled_data
 - name: if-addrs 0.10.2
   features: []
 - name: if-watch 3.2.0
@@ -1720,6 +1750,9 @@
     - no_std
     - prctl
     - xdp
+- name: litemap 0.7.3
+  features:
+    - alloc
 - name: lock_api 0.4.11
   features:
     - atomic_usize
@@ -3527,6 +3560,10 @@
   features:
     - default
     - proc-macro
+- name: synstructure 0.13.1
+  features:
+    - default
+    - proc-macro
 - name: system-configuration 0.5.1
   features: []
 - name: system-configuration-sys 0.5.0
@@ -3591,6 +3628,10 @@
     - keccak
     - sha3
     - shake
+- name: tinystr 0.7.6
+  features:
+    - alloc
+    - zerovec
 - name: tinytemplate 1.2.1
   features: []
 - name: tinyvec 1.6.0
@@ -3859,13 +3900,18 @@
   features: []
 - name: untrusted 0.9.0
   features: []
-- name: url 2.5.2
+- name: url 2.5.3
   features:
     - default
     - serde
+    - std
 - name: urlencoding 2.1.3
   features: []
 - name: utf-8 0.7.6
+  features: []
+- name: utf16_iter 1.0.5
+  features: []
+- name: utf8_iter 1.0.4
   features: []
 - name: utf8parse 0.2.1
   features:
@@ -4272,6 +4318,11 @@
   features: []
 - name: wiremock 0.5.22
   features: []
+- name: write16 1.0.0
+  features:
+    - alloc
+- name: writeable 0.5.5
+  features: []
 - name: wyz 0.5.1
   features: []
 - name: x25519-dalek 1.1.1
@@ -4301,10 +4352,24 @@
     - default
     - std
     - time
+- name: yoke 0.7.4
+  features:
+    - alloc
+    - default
+    - derive
+    - zerofrom
+- name: yoke-derive 0.7.4
+  features: []
 - name: zerocopy 0.7.32
   features:
     - simd
 - name: zerocopy-derive 0.7.32
+  features: []
+- name: zerofrom 0.1.4
+  features:
+    - alloc
+    - derive
+- name: zerofrom-derive 0.1.4
   features: []
 - name: zeroize 1.7.0
   features:
@@ -4312,6 +4377,12 @@
     - default
     - zeroize_derive
 - name: zeroize_derive 1.4.2
+  features: []
+- name: zerovec 0.10.4
+  features:
+    - derive
+    - yoke
+- name: zerovec-derive 0.10.3
   features: []
 - name: zstd 0.11.2+zstd.1.5.2
   features: []
