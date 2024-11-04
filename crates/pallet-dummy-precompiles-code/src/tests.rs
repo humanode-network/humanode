@@ -1,6 +1,6 @@
 use frame_support::traits::OnRuntimeUpgrade;
 
-use crate::{mock::*, DUMMY_CODE};
+use crate::{mock::*, UpgradeInit, DUMMY_CODE};
 
 /// This test verifies that genesis initialization properly assigns the state.
 #[test]
@@ -47,7 +47,7 @@ fn runtime_upgrade() {
             );
 
             // Do runtime upgrade hook.
-            v1::AllPalletsWithoutSystem::on_runtime_upgrade();
+            UpgradeInit::<v1::Test>::on_runtime_upgrade();
 
             // Verify precompiles addresses creation.
             for precompile_address in &v1::PrecompilesAddresses::get() {
