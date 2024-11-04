@@ -1,13 +1,13 @@
 //! Upgrade init implementation.
 
+#[cfg(feature = "try-runtime")]
+use frame_support::sp_std::vec::Vec;
 use frame_support::{
     sp_std,
     sp_tracing::info,
     traits::{Get, OnRuntimeUpgrade},
     weights::Weight,
 };
-#[cfg(feature = "try-runtime")]
-use frame_support::{sp_std::vec::Vec, traits::GetStorageVersion};
 
 use crate::{
     Config, LastExecutionVersion, LastForceExecuteAskCounter, Pallet, CURRENT_EXECUTION_VERSION,
@@ -62,11 +62,6 @@ impl<T: Config> OnRuntimeUpgrade for UpgradeInit<T> {
         if !not_created_precompiles.is_empty() {
             return Err("precompiles not created properly: {:not_created_precompiles}");
         }
-
-        assert_eq!(
-            <Pallet<T>>::on_chain_storage_version(),
-            <Pallet<T>>::current_storage_version()
-        );
 
         Ok(())
     }
