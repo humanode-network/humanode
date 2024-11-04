@@ -5,7 +5,7 @@ use frame_support::{
 
 use crate::{
     mock::{new_test_ext_with, v0, v1, v2, with_runtime_lock, *},
-    swappable_balance, LastForceRebalanceAskCounter, LastInitializerVersion,
+    swappable_balance, LastForceRebalanceAskCounter, LastInitializerVersion, UpgradeInit,
 };
 
 /// This test verifies that balanced bridges initialization works in case bridge pot accounts
@@ -411,7 +411,7 @@ fn runtime_upgrade() {
             assert_eq!(<LastForceRebalanceAskCounter<v1::Test>>::get(), 0);
 
             // Do runtime upgrade hook.
-            v1::AllPalletsWithoutSystem::on_runtime_upgrade();
+            UpgradeInit::<v1::Test>::on_runtime_upgrade();
 
             // Verify bridges initialization result.
             assert_eq!(
@@ -457,7 +457,7 @@ fn runtime_upgrade() {
                 v2::EvmBalances::total_balance(&v2::SwapBridgeEvmToNativePot::account_id());
 
             // Do runtime upgrade hook.
-            v2::AllPalletsWithoutSystem::on_runtime_upgrade();
+            UpgradeInit::<v2::Test>::on_runtime_upgrade();
 
             // Verify result.
             assert_eq!(

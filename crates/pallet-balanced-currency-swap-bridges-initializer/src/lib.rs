@@ -14,13 +14,12 @@ use frame_support::{
 };
 pub use pallet::*;
 use sp_std::cmp::Ordering;
-#[cfg(feature = "try-runtime")]
-use sp_std::vec::Vec;
+
+mod weights;
 pub use weights::*;
 
-pub mod weights;
-
 mod upgrade_init;
+pub use upgrade_init::UpgradeInit;
 
 #[cfg(test)]
 mod mock;
@@ -145,23 +144,6 @@ pub mod pallet {
     pub enum Error<T> {
         /// The currencies are not balanced.
         NotBalanced,
-    }
-
-    #[pallet::hooks]
-    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-        fn on_runtime_upgrade() -> Weight {
-            upgrade_init::on_runtime_upgrade::<T>()
-        }
-
-        #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-            upgrade_init::pre_upgrade()
-        }
-
-        #[cfg(feature = "try-runtime")]
-        fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
-            upgrade_init::post_upgrade::<T>(state)
-        }
     }
 
     #[pallet::call(weight(T::WeightInfo))]
