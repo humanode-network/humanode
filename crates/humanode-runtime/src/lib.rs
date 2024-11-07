@@ -1597,14 +1597,6 @@ impl_runtime_apis! {
             signature_check: bool,
             select: frame_try_runtime::TryStateSelect
         ) -> Weight {
-            sp_tracing::info!(
-                target: "humanode-runtime",
-                "try-runtime: executing block {:?} / root checks: {:?} / signature check: {:?} / try-state-select: {:?}",
-                block.header.hash(),
-                state_root_check,
-                signature_check,
-                select,
-            );
             // NOTE: intentional unwrap: we don't want to propagate the error backwards, and want to
             // have a backtrace here.
             Executive::try_execute_block(block, state_root_check, signature_check, select).unwrap()
