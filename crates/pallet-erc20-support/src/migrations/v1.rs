@@ -1,6 +1,6 @@
 //! Migration to Version 1.
 
-use frame_support::{sp_tracing::info, traits::Get, weights::Weight};
+use frame_support::{log::info, traits::Get, weights::Weight};
 
 use crate::BalanceOf;
 use crate::{Approvals, Config};

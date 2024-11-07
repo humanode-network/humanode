@@ -2,7 +2,7 @@
 
 use frame_support::pallet_prelude::*;
 use frame_support::storage_alias;
-use frame_support::{dispatch::GetStorageVersion, sp_tracing::info, traits::Get, weights::Weight};
+use frame_support::{dispatch::GetStorageVersion, log::info, traits::Get, weights::Weight};
 #[cfg(feature = "try-runtime")]
 use sp_std::{vec, vec::Vec};
 
@@ -27,10 +27,10 @@ pub fn migrate<T: Config>() -> Weight {
     // Read the onchain version.
     let mut weight: Weight = T::DbWeight::get().reads(1);
 
-    info!(message = "Running migration to v1", from = ?onchain);
+    info!("Running migration to v1 from {onchain:?}");
 
     if onchain == 1 {
-        info!(message = "Already at version 1, nothing to do");
+        info!("Already at version 1, nothing to do");
         return weight;
     }
 

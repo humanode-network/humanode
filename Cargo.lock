@@ -4167,7 +4167,6 @@ dependencies = [
  "sp-session",
  "sp-staking",
  "sp-std",
- "sp-tracing",
  "sp-transaction-pool",
  "sp-version",
  "static_assertions",
@@ -6342,7 +6341,6 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-std",
- "sp-tracing",
 ]
 
 [[package]]

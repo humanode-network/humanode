@@ -62,10 +62,7 @@ where
                 incoming_imbalance,
             }) => {
                 let error: frame_support::sp_runtime::DispatchError = error.into();
-                frame_support::sp_tracing::error!(
-                    message = "unable to route the funds through the swap",
-                    ?error
-                );
+                frame_support::log::error!("unable to route the funds through the swap: {error:?}");
                 Fallback::on_unbalanceds(sp_std::iter::once(incoming_imbalance));
                 return;
             }
