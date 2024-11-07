@@ -27,7 +27,7 @@ pub fn migrate<T: Config>() -> Weight {
     // Read the onchain version.
     let mut weight: Weight = T::DbWeight::get().reads(1);
 
-    info!("Running migration to v1");
+    info!("Running migration to v1 from {onchain:?}");
 
     if onchain == 1 {
         info!("Already at version 1, nothing to do");
