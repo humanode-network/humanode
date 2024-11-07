@@ -35,4 +35,5 @@ rustflags = [
   "-Aclippy::cargo-common-metadata",
   "-Aclippy::derive-partial-eq-without-eq",
   "-Aclippy::multiple-crate-versions",
+  "-Aclippy::redundant-feature-names",
 ]
