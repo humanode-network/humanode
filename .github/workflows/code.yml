@@ -78,7 +78,7 @@ jobs:
           - suite: "base"
             build-args: ""
           - suite: "try-runtime"
-            build-args: "--features try-runtime,with-tracing"
+            build-args: "--features try-runtime"
       fail-fast: false
     name: End-to-end tests / ${{ matrix.test.suite }}
     runs-on: ubuntu-22.04
