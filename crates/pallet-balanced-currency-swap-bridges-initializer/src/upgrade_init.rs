@@ -1,6 +1,6 @@
 //! Initialization of the bridge pot accounts on runtime upgrade.
 
-use frame_support::pallet_prelude::*;
+use frame_support::{log::error, pallet_prelude::*};
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
 
@@ -23,7 +23,7 @@ pub fn on_runtime_upgrade<T: Config>() -> Weight {
     if is_version_mismatch || is_forced {
         match Pallet::<T>::initialize() {
             Ok(w) => weight.saturating_accrue(w),
-            Err(err) => sp_tracing::error!("error during bridges initialization: {err:?}"),
+            Err(err) => error!("error during bridges initialization: {err:?}"),
         }
 
         <LastInitializerVersion<T>>::put(CURRENT_BRIDGES_INITIALIZER_VERSION);
