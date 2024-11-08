@@ -27,13 +27,22 @@ where
         let mut weight = R::DbWeight::get().reads(1);
 
         if onchain_storage_version == 0 && current_storage_version != 0 {
+            info!(
+                "{}: Initializing onchain storage version to {:?}",
+                P::name(),
+                current_storage_version,
+            );
+
             // Set new storage version.
             current_storage_version.put::<P>();
 
             // Write the onchain storage version.
             weight = weight.saturating_add(R::DbWeight::get().writes(1));
         } else {
-            info!("Nothing to do. This runtime upgrade probably should be removed");
+            info!(
+                "{}: Nothing to do. This runtime upgrade probably should be removed.",
+                P::name(),
+            );
         }
 
         weight
@@ -48,7 +57,6 @@ where
     #[cfg(feature = "try-runtime")]
     fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
         assert_eq!(P::on_chain_storage_version(), P::current_storage_version());
-
         Ok(())
     }
 }

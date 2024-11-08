@@ -55,6 +55,8 @@ pub fn migrate<T: Config>() -> Weight {
     // Write the onchain version.
     weight = weight.saturating_add(T::DbWeight::get().writes(1));
 
+    info!("Migrated to v1");
+
     // Done.
     weight
 }
