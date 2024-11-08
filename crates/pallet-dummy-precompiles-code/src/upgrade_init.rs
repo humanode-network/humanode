@@ -3,8 +3,8 @@
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_std::vec::Vec;
 use frame_support::{
+    log::info,
     sp_std,
-    sp_tracing::info,
     traits::{Get, OnRuntimeUpgrade},
     weights::Weight,
 };
@@ -34,7 +34,7 @@ impl<T: Config> OnRuntimeUpgrade for UpgradeInit<T> {
             <LastForceExecuteAskCounter<T>>::put(current_force_execute_ask_counter);
             weight.saturating_accrue(T::DbWeight::get().writes(2));
         } else {
-            info!(message = "Nothing to do. This runtime upgrade probably should be removed");
+            info!("Nothing to do. This runtime upgrade probably should be removed");
         }
 
         weight
