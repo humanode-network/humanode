@@ -1,4 +1,4 @@
-//! Migration to Version 1.
+//! Migration to Version 1 from Version 0.
 
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_std::{vec, vec::Vec};
@@ -12,10 +12,10 @@ use frame_support::{
 
 use crate::{Config, CurrentSessionIndex, IdentificationFor, Pallet, SessionIdentities};
 
-/// Execute migration to Version 1.
-pub struct MigrationToV1<T>(sp_std::marker::PhantomData<T>);
+/// Execute migration to Version 1 from Version 0.
+pub struct MigrationV0ToV1<T>(sp_std::marker::PhantomData<T>);
 
-impl<T: Config> OnRuntimeUpgrade for MigrationToV1<T> {
+impl<T: Config> OnRuntimeUpgrade for MigrationV0ToV1<T> {
     fn on_runtime_upgrade() -> Weight {
         migrate::<T>()
     }
@@ -50,7 +50,7 @@ pub fn migrate<T: Config>() -> Weight {
     let mut weight: Weight = T::DbWeight::get().reads(1);
 
     if onchain != 0 {
-        info!("Already not at version 0, nothing to do. This migrarion probably should be removed");
+        info!("Not at version 0, nothing to do. This migrarion probably should be removed");
         return weight;
     }
 

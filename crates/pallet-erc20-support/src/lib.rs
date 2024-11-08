@@ -11,7 +11,7 @@ use frame_support::{
 pub use pallet::*;
 
 mod migrations;
-pub use migrations::v1::MigrationToV1;
+pub use migrations::v1::MigrationV0ToV1;
 
 #[cfg(test)]
 mod mock;

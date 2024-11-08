@@ -1,4 +1,4 @@
-//! Migration to Version 1.
+//! Migration to Version 1 from Version 0.
 
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_std::{vec, vec::Vec};
@@ -12,10 +12,10 @@ use frame_support::{
 
 use crate::{Approvals, BalanceOf, Config, Pallet};
 
-/// Execute migration to Version 1.
-pub struct MigrationToV1<T, I = ()>(sp_std::marker::PhantomData<(T, I)>);
+/// Execute migration to Version 1 from Version 0.
+pub struct MigrationV0ToV1<T, I = ()>(sp_std::marker::PhantomData<(T, I)>);
 
-impl<T: Config<I>, I: 'static> OnRuntimeUpgrade for MigrationToV1<T, I> {
+impl<T: Config<I>, I: 'static> OnRuntimeUpgrade for MigrationV0ToV1<T, I> {
     fn on_runtime_upgrade() -> Weight {
         migrate::<T, I>()
     }
