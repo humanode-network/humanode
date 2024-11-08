@@ -927,6 +927,10 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
+    (
+        init_storage_version::InitStorageVersion<DummyPrecompilesCode, Runtime>,
+        init_storage_version::InitStorageVersion<BalancedCurrencySwapBridgesInitializer, Runtime>,
+    ),
 >;
 
 impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
