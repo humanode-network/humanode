@@ -43,7 +43,7 @@ fn migrate<T: Config<I>, I: 'static>() -> Weight {
     let mut weight: Weight = T::DbWeight::get().reads(1);
 
     if onchain_version != 0 {
-        info!("Already not at version 0, nothing to do. This migrarion probably should be removed");
+        info!("Not at version 0, nothing to do. This migrarion probably should be removed");
         return weight;
     }
 
