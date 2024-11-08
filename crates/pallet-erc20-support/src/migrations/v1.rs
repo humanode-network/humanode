@@ -27,9 +27,9 @@ impl<T: Config<I>, I: 'static> OnRuntimeUpgrade for MigrationV0ToV1<T, I> {
 
     #[cfg(feature = "try-runtime")]
     fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-        ensure!(
-            <Pallet<T, I>>::on_chain_storage_version() == <Pallet<T, I>>::current_storage_version(),
-            "the current storage version and onchain storage version should be the same"
+        assert_eq!(
+            <Pallet<T, I>>::on_chain_storage_version(),
+            <Pallet<T, I>>::current_storage_version()
         );
         Ok(())
     }
