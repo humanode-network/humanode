@@ -1,7 +1,7 @@
 use core::marker::PhantomData;
 
 use frame_support::{
-    sp_tracing::info,
+    log::info,
     traits::{Get, GetStorageVersion, OnRuntimeUpgrade, PalletInfoAccess},
     weights::Weight,
 };
@@ -33,7 +33,7 @@ where
             // Write the onchain storage version.
             weight = weight.saturating_add(R::DbWeight::get().writes(1));
         } else {
-            info!(target: "runtime", message = "Nothing to do. This runtime upgrade probably should be removed");
+            info!("Nothing to do. This runtime upgrade probably should be removed");
         }
 
         weight

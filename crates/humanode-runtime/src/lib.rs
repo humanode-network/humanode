@@ -93,6 +93,7 @@ mod display_moment;
 pub mod eth_sig;
 mod find_author;
 mod fixed_supply;
+pub mod init_storage_version;
 pub mod robonode;
 #[cfg(test)]
 mod tests;
