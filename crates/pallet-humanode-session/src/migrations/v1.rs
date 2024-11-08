@@ -75,6 +75,8 @@ pub fn migrate<T: Config>() -> Weight {
     StorageVersion::new(1).put::<Pallet<T>>();
     weight.saturating_accrue(T::DbWeight::get().writes(1));
 
+    info!("Migrated to v1");
+
     // Done.
     weight
 }
