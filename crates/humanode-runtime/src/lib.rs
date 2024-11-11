@@ -93,7 +93,6 @@ mod display_moment;
 pub mod eth_sig;
 mod find_author;
 mod fixed_supply;
-mod offence_handler;
 pub mod robonode;
 pub mod storage_version_initializer;
 #[cfg(test)]
@@ -111,7 +110,6 @@ pub use constants::{
     im_online::{MAX_KEYS, MAX_PEER_DATA_ENCODING_SIZE, MAX_PEER_IN_HEARTBEATS},
 };
 use deauthentication_reason::DeauthenticationReason;
-use offence_handler::OnOffence;
 use static_assertions::const_assert;
 
 /// An index to a block.
@@ -573,9 +571,12 @@ impl pallet_humanode_session::Config for Runtime {
     type WeightInfo = weights::pallet_humanode_session::WeightInfo<Runtime>;
 }
 
+parameter_types! {
+    pub const DeauthenticationReasonOnOffenceReport: DeauthenticationReason = DeauthenticationReason::Offence;
+}
+
 impl pallet_humanode_offences::Config for Runtime {
-    type Offender = pallet_session::historical::IdentificationTuple<Runtime>;
-    type OnOffence = OnOffence;
+    type DeauthenticationReasonOnOffenceReport = DeauthenticationReasonOnOffenceReport;
 }
 
 impl pallet_im_online::Config for Runtime {

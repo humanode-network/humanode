@@ -6656,6 +6656,8 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
+ "pallet-bioauth",
+ "pallet-humanode-session",
  "parity-scale-codec",
  "scale-info",
  "sp-staking",

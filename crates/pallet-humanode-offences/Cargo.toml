@@ -5,6 +5,9 @@ edition = "2021"
 publish = false
 
 [dependencies]
+pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
+pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
+
 codec = { workspace = true, features = ["derive"] }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
@@ -17,10 +20,12 @@ std = [
   "codec/std",
   "frame-support/std",
   "frame-system/std",
+  "pallet-bioauth/std",
   "scale-info/std",
   "sp-staking/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
   "frame-system/try-runtime",
+  "pallet-bioauth/std",
 ]
