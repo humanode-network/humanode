@@ -21,11 +21,13 @@ std = [
   "frame-support/std",
   "frame-system/std",
   "pallet-bioauth/std",
+  "pallet-humanode-session/std",
   "scale-info/std",
   "sp-staking/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
   "frame-system/try-runtime",
-  "pallet-bioauth/std",
+  "pallet-bioauth/try-runtime",
+  "pallet-humanode-session/try-runtime",
 ]
