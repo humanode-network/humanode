@@ -28,7 +28,7 @@ where
 
         if onchain_storage_version == 0 && current_storage_version != 0 {
             info!(
-                "{}: Initializing onchain storage version to {:?}",
+                "{}: Initializing an unset on-chain storage version to {:?}, assuming the effective state version is the latest pallet version",
                 P::name(),
                 current_storage_version,
             );
