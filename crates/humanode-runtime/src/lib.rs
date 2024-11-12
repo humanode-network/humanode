@@ -874,7 +874,7 @@ pub type UncheckedExtrinsic =
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 
 parameter_types! {
-    pub const Offences: &'static str = "offences";
+    pub const Offences: &'static str = "Offences";
 }
 
 /// Executive: handles dispatch to the various modules.
