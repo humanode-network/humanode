@@ -17,6 +17,8 @@ const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
+    use frame_support::pallet_prelude::*;
+
     use super::*;
 
     /// Configure the pallet by specifying the parameters and types on which it depends.
@@ -29,6 +31,10 @@ pub mod pallet {
     #[pallet::pallet]
     #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T>(_);
+
+    /// The total number of offences.
+    #[pallet::storage]
+    pub type Total<T: Config> = StorageValue<_, u64>;
 }
 
 /// The offender type alias.
@@ -54,12 +60,25 @@ where
             }
         }
 
+        let offences_number: u64 = should_be_deauthenticated
+            .len()
+            .try_into()
+            .expect("u64 is big enough for this overflow to be practically impossible");
+
         if !should_be_deauthenticated.is_empty() {
             let _ = <pallet_bioauth::Pallet<T>>::deauthenticate(
                 should_be_deauthenticated,
                 T::DeauthenticationReasonOnOffenceReport::get(),
             );
         }
+
+        <Total<T>>::mutate(|total| {
+            let new_total = total.map_or(offences_number, |t| {
+                t.checked_add(offences_number)
+                    .expect("u64 is big enough for this overflow to be practically impossible")
+            });
+            *total = Some(new_total);
+        });
 
         Ok(())
     }
