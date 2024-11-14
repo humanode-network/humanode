@@ -9,6 +9,11 @@ use frame_support::{
 pub use pallet::*;
 use sp_staking::offence::{Offence, OffenceError, ReportOffence};
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
