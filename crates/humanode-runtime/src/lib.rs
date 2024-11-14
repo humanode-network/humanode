@@ -817,7 +817,6 @@ construct_runtime!(
         TokenClaimsPot: pallet_pot::<Instance3> = 11,
         TransactionPayment: pallet_transaction_payment = 12,
         Session: pallet_session = 13,
-        HumanodeOffences: pallet_humanode_offences = 14,
         Historical: pallet_session_historical = 15,
         HumanodeSession: pallet_humanode_session = 16,
         ChainProperties: pallet_chain_properties = 17,
@@ -840,6 +839,7 @@ construct_runtime!(
         BalancedCurrencySwapBridgesInitializer: pallet_balanced_currency_swap_bridges_initializer = 36,
         EvmBalancesErc20Support: pallet_erc20_support = 37,
         DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
+        HumanodeOffences: pallet_humanode_offences = 39,
     }
 );
 
