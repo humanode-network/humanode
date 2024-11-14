@@ -16,7 +16,7 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_core::{crypto::DeriveError, ConstU32, H256};
 
-use crate::{self as pallet_humanode_offences};
+use crate::{self as pallet_humanode_offences, OffenderOf};
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -180,29 +180,18 @@ impl pallet_bioauth::Config for Test {
     type DeauthenticationReason = DeauthenticationReason;
 }
 
-mock! {
-    pub ShouldEndSession {
-        pub fn should_end_session(now: BlockNumber) -> bool;
-    }
-}
+pub struct MockShouldEndSession;
 
 impl pallet_session::ShouldEndSession<BlockNumber> for MockShouldEndSession {
-    fn should_end_session(now: BlockNumber) -> bool {
-        MockShouldEndSession::should_end_session(now)
-    }
-}
-
-pub struct IdentityValidatorIdOf;
-impl sp_runtime::traits::Convert<AccountId, Option<AccountId>> for IdentityValidatorIdOf {
-    fn convert(account_id: AccountId) -> Option<AccountId> {
-        Some(account_id)
+    fn should_end_session(_now: BlockNumber) -> bool {
+        panic!("should be unused in tests")
     }
 }
 
 impl pallet_session::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type ValidatorId = AccountId;
-    type ValidatorIdOf = IdentityValidatorIdOf;
+    type ValidatorIdOf = ();
     type ShouldEndSession = MockShouldEndSession;
     type NextSessionRotation = ();
     type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, HumanodeSession>;
@@ -217,7 +206,7 @@ impl pallet_session::historical::Config for Test {
 }
 
 impl pallet_humanode_session::Config for Test {
-    type ValidatorPublicKeyOf = IdentityValidatorIdOf;
+    type ValidatorPublicKeyOf = ();
     type BootnodeIdOf = sp_runtime::traits::Identity;
     type MaxBootnodeValidators = <Test as pallet_bootnodes::Config>::MaxBootnodes;
     type MaxBioauthValidators = <Test as pallet_bioauth::Config>::MaxAuthentications;
@@ -233,19 +222,48 @@ impl pallet_humanode_offences::Config for Test {
     type DeauthenticationReasonOnOffenceReport = DeauthenticationReasonOnOffenceReport;
 }
 
+mock! {
+    pub Offence {
+        pub fn offenders() -> Vec<OffenderOf<Test>>;
+    }
+}
+
+impl sp_staking::offence::Offence<OffenderOf<Test>> for MockOffence {
+    const ID: sp_staking::offence::Kind = *b"-mocked-offence-";
+    type TimeSlot = ();
+
+    fn offenders(&self) -> Vec<OffenderOf<Test>> {
+        MockOffence::offenders()
+    }
+
+    fn session_index(&self) -> sp_staking::SessionIndex {
+        panic!("should be unused in tests")
+    }
+
+    fn validator_set_count(&self) -> u32 {
+        panic!("should be unused in tests")
+    }
+
+    fn time_slot(&self) -> Self::TimeSlot {
+        panic!("should be unused in tests")
+    }
+
+    fn slash_fraction(&self, _offenders_count: u32) -> sp_runtime::Perbill {
+        panic!("should be unused in tests")
+    }
+}
+
 pub fn new_test_ext() -> sp_io::TestExternalities {
     let genesis_config = GenesisConfig {
         session: pallet_session::GenesisConfig {
             keys: vec![
                 (42, 42, sp_runtime::testing::UintAuthorityId(42)),
-                (43, 43, sp_runtime::testing::UintAuthorityId(43)),
-                (44, 44, sp_runtime::testing::UintAuthorityId(44)),
                 // Not bootnode.
                 (1, 1, sp_runtime::testing::UintAuthorityId(1)),
             ],
         },
         bootnodes: pallet_bootnodes::GenesisConfig {
-            bootnodes: BoundedVec::truncate_from(vec![42, 43, 44]),
+            bootnodes: BoundedVec::truncate_from(vec![42]),
         },
         bioauth: pallet_bioauth::GenesisConfig {
             active_authentications: BoundedVec::try_from(vec![pallet_bioauth::Authentication {

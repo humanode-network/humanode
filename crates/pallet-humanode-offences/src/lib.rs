@@ -43,7 +43,7 @@ pub mod pallet {
 }
 
 /// The offender type alias.
-type OffenderOf<T> = pallet_humanode_session::IdentificationTupleFor<T>;
+pub(crate) type OffenderOf<T> = pallet_humanode_session::IdentificationTupleFor<T>;
 
 impl<T: Config, O> ReportOffence<T::AccountId, OffenderOf<T>, O> for Pallet<T>
 where
