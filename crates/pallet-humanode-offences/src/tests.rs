@@ -84,7 +84,7 @@ fn offence_report_not_slash_bootnode_works() {
         HumanodeOffences::report_offence(vec![], MockOffence {}).unwrap();
 
         // Assert state changes.
-        assert_eq!(<Total<Test>>::get(), Some(0));
+        assert_eq!(<Total<Test>>::get(), None);
         assert_eq!(
             Bioauth::active_authentications(),
             vec![pallet_bioauth::Authentication {

@@ -65,25 +65,25 @@ where
             }
         }
 
-        let offences_number: u64 = should_be_deauthenticated
-            .len()
-            .try_into()
-            .expect("u64 is big enough for this overflow to be practically impossible");
-
         if !should_be_deauthenticated.is_empty() {
+            let offences_number: u64 = should_be_deauthenticated
+                .len()
+                .try_into()
+                .expect("u64 is big enough for this overflow to be practically impossible");
+
             let _ = <pallet_bioauth::Pallet<T>>::deauthenticate(
                 should_be_deauthenticated,
                 T::DeauthenticationReasonOnOffenceReport::get(),
             );
-        }
 
-        <Total<T>>::mutate(|total| {
-            let new_total = total.map_or(offences_number, |t| {
-                t.checked_add(offences_number)
-                    .expect("u64 is big enough for this overflow to be practically impossible")
+            <Total<T>>::mutate(|total| {
+                let new_total = total.map_or(offences_number, |t| {
+                    t.checked_add(offences_number)
+                        .expect("u64 is big enough for this overflow to be practically impossible")
+                });
+                *total = Some(new_total);
             });
-            *total = Some(new_total);
-        });
+        }
 
         Ok(())
     }
