@@ -9,9 +9,9 @@ use frame_support::{
 use sp_std::vec::Vec;
 
 /// Pallet storage version initializer.
-pub struct InitStorageVersion<P, R>(PhantomData<(P, R)>);
+pub struct StorageVersionInitializer<P, R>(PhantomData<(P, R)>);
 
-impl<P, R> OnRuntimeUpgrade for InitStorageVersion<P, R>
+impl<P, R> OnRuntimeUpgrade for StorageVersionInitializer<P, R>
 where
     P: GetStorageVersion + PalletInfoAccess,
     R: frame_system::Config,

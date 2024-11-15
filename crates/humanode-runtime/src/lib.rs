@@ -93,8 +93,8 @@ mod display_moment;
 pub mod eth_sig;
 mod find_author;
 mod fixed_supply;
-pub mod init_storage_version;
 pub mod robonode;
+pub mod storage_version_initializer;
 #[cfg(test)]
 mod tests;
 mod weights;
@@ -928,8 +928,11 @@ pub type Executive = frame_executive::Executive<
     Runtime,
     AllPalletsWithSystem,
     (
-        init_storage_version::InitStorageVersion<DummyPrecompilesCode, Runtime>,
-        init_storage_version::InitStorageVersion<BalancedCurrencySwapBridgesInitializer, Runtime>,
+        storage_version_initializer::StorageVersionInitializer<DummyPrecompilesCode, Runtime>,
+        storage_version_initializer::StorageVersionInitializer<
+            BalancedCurrencySwapBridgesInitializer,
+            Runtime,
+        >,
     ),
 >;
 
