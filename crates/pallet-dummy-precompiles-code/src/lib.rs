@@ -97,23 +97,6 @@ pub mod pallet {
                 weight.saturating_accrue(T::DbWeight::get().writes(2));
             }
 
-            // Properly manage default on chain storage version as the pallet was added after genesis
-            // with initial storage version != 0.
-            //
-            // <https://github.com/paritytech/substrate/pull/14641>
-            let current_storage_version = <Pallet<T>>::current_storage_version();
-            let onchain_storage_version = <Pallet<T>>::on_chain_storage_version();
-
-            weight.saturating_accrue(T::DbWeight::get().reads(1));
-
-            if onchain_storage_version == 0 && current_storage_version != 0 {
-                // Set new storage version.
-                current_storage_version.put::<Pallet<T>>();
-
-                // Write the onchain storage version.
-                weight = weight.saturating_add(T::DbWeight::get().writes(1));
-            }
-
             weight
         }
 
@@ -139,11 +122,6 @@ pub mod pallet {
             if !not_created_precompiles.is_empty() {
                 return Err("precompiles not created properly: {:not_created_precompiles}");
             }
-
-            assert_eq!(
-                <Pallet<T>>::on_chain_storage_version(),
-                <Pallet<T>>::current_storage_version()
-            );
 
             Ok(())
         }
