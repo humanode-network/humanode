@@ -7,7 +7,7 @@ use frame_support::{
     traits::{Get, StorageVersion},
 };
 pub use pallet::*;
-use sp_staking::offence::{Offence, OffenceError, ReportOffence};
+use sp_staking::offence::{Kind, Offence, OffenceError, ReportOffence};
 
 #[cfg(test)]
 mod mock;
@@ -16,6 +16,9 @@ mod tests;
 
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
+
+/// The offender type alias.
+pub(crate) type OffenderOf<T> = pallet_humanode_session::IdentificationTupleFor<T>;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -29,6 +32,9 @@ pub mod pallet {
     /// Configure the pallet by specifying the parameters and types on which it depends.
     #[pallet::config]
     pub trait Config: frame_system::Config + pallet_humanode_session::Config {
+        /// The overarching event type.
+        type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+
         /// Deauthentication reason on offence report.
         type DeauthenticationReasonOnOffenceReport: Get<Self::DeauthenticationReason>;
     }
@@ -40,10 +46,19 @@ pub mod pallet {
     /// The total number of offences.
     #[pallet::storage]
     pub type Total<T: Config> = StorageValue<_, u64>;
-}
 
-/// The offender type alias.
-pub(crate) type OffenderOf<T> = pallet_humanode_session::IdentificationTupleFor<T>;
+    #[pallet::event]
+    #[pallet::generate_deposit(pub(crate) fn deposit_event)]
+    pub enum Event<T: Config> {
+        /// An event on reported offence.
+        ReportedOffence {
+            /// The offence kind.
+            kind: Kind,
+            /// The offenders list in report.
+            offenders: Vec<OffenderOf<T>>,
+        },
+    }
+}
 
 impl<T: Config, O> ReportOffence<T::AccountId, OffenderOf<T>, O> for Pallet<T>
 where
@@ -51,6 +66,12 @@ where
 {
     fn report_offence(_reporters: Vec<T::AccountId>, offence: O) -> Result<(), OffenceError> {
         let offenders = offence.offenders();
+
+        Self::deposit_event(Event::ReportedOffence {
+            kind: O::ID,
+            offenders: offenders.clone(),
+        });
+
         let mut should_be_deauthenticated = Vec::with_capacity(offenders.len());
 
         for offender in offenders {

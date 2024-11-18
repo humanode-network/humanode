@@ -219,6 +219,7 @@ parameter_types! {
 }
 
 impl pallet_humanode_offences::Config for Test {
+    type RuntimeEvent = RuntimeEvent;
     type DeauthenticationReasonOnOffenceReport = DeauthenticationReasonOnOffenceReport;
 }
 
@@ -228,8 +229,10 @@ mock! {
     }
 }
 
+pub const MOCKED_OFFENCE_KIND: [u8; 16] = *b"-mocked-offence-";
+
 impl sp_staking::offence::Offence<OffenderOf<Test>> for MockOffence {
-    const ID: sp_staking::offence::Kind = *b"-mocked-offence-";
+    const ID: sp_staking::offence::Kind = MOCKED_OFFENCE_KIND;
     type TimeSlot = ();
 
     fn offenders(&self) -> Vec<OffenderOf<Test>> {

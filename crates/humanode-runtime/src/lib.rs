@@ -576,6 +576,7 @@ parameter_types! {
 }
 
 impl pallet_humanode_offences::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
     type DeauthenticationReasonOnOffenceReport = DeauthenticationReasonOnOffenceReport;
 }
 
