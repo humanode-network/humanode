@@ -94,6 +94,7 @@ pub mod eth_sig;
 mod find_author;
 mod fixed_supply;
 pub mod robonode;
+pub mod storage_version_initializer;
 #[cfg(test)]
 mod tests;
 mod weights;
@@ -926,6 +927,13 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
+    (
+        storage_version_initializer::StorageVersionInitializer<DummyPrecompilesCode, Runtime>,
+        storage_version_initializer::StorageVersionInitializer<
+            BalancedCurrencySwapBridgesInitializer,
+            Runtime,
+        >,
+    ),
 >;
 
 impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
