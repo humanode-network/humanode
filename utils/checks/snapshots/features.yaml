@@ -2197,6 +2197,10 @@
 - name: pallet-grandpa 4.0.0-dev
   features:
     - std
+- name: pallet-humanode-offences 0.1.0
+  features:
+    - default
+    - std
 - name: pallet-humanode-session 0.1.0
   features:
     - default
@@ -2207,10 +2211,6 @@
     - std
 - name: pallet-multisig 4.0.0-dev
   features:
-    - std
-- name: pallet-offences 4.0.0-dev
-  features:
-    - serde
     - std
 - name: pallet-pot 0.1.0
   features:

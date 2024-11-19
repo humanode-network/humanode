@@ -1,0 +1,46 @@
+[package]
+name = "pallet-humanode-offences"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
+pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
+
+codec = { workspace = true, features = ["derive"] }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
+sp-staking = { workspace = true }
+
+[dev-dependencies]
+pallet-bootnodes = { path = "../pallet-bootnodes" }
+
+mockall = { workspace = true }
+pallet-session = { workspace = true, features = ["historical"] }
+serde = { workspace = true }
+sp-core = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+  "codec/std",
+  "frame-support/std",
+  "frame-system/std",
+  "pallet-bioauth/std",
+  "pallet-humanode-session/std",
+  "pallet-session/std",
+  "scale-info/std",
+  "serde/std",
+  "sp-core/std",
+  "sp-staking/std",
+]
+try-runtime = [
+  "frame-support/try-runtime",
+  "frame-system/try-runtime",
+  "pallet-bioauth/try-runtime",
+  "pallet-bootnodes/try-runtime",
+  "pallet-humanode-session/try-runtime",
+  "pallet-session/try-runtime",
+]
