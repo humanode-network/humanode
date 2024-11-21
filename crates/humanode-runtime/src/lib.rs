@@ -887,10 +887,6 @@ pub type Executive = frame_executive::Executive<
             BalancedCurrencySwapBridgesInitializer,
             Runtime,
         >,
-        pallet_dummy_precompiles_code::UpgradeInit<Runtime>,
-        pallet_balanced_currency_swap_bridges_initializer::UpgradeInit<Runtime>,
-        pallet_erc20_support::MigrationV0ToV1<Runtime>,
-        pallet_humanode_session::MigrationV0ToV1<Runtime>,
     ),
 >;
 
