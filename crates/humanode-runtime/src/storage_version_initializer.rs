@@ -1,10 +1,10 @@
 use core::marker::PhantomData;
 
 #[cfg(feature = "try-runtime")]
-use frame_support::sp_runtime::TryRuntimeError;
+use frame_support::{ensure, sp_runtime::TryRuntimeError};
 use frame_support::{
     log::info,
-    traits::{Get, GetStorageVersion, OnRuntimeUpgrade, PalletInfoAccess},
+    traits::{Get, GetStorageVersion, OnRuntimeUpgrade, PalletInfoAccess, StorageVersion},
     weights::Weight,
 };
 #[cfg(feature = "try-runtime")]
@@ -15,7 +15,7 @@ pub struct StorageVersionInitializer<P, R>(PhantomData<(P, R)>);
 
 impl<P, R> OnRuntimeUpgrade for StorageVersionInitializer<P, R>
 where
-    P: GetStorageVersion + PalletInfoAccess,
+    P: GetStorageVersion<CurrentStorageVersion = StorageVersion> + PalletInfoAccess,
     R: frame_system::Config,
 {
     fn on_runtime_upgrade() -> Weight {
