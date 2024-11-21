@@ -1,8 +1,8 @@
 //! Initialization of the bridge pot accounts on runtime upgrade.
 
-use frame_support::{log, pallet_prelude::*};
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_runtime::TryRuntimeError;
+use frame_support::{log, pallet_prelude::*};
 #[cfg(feature = "try-runtime")]
 use sp_std::vec::Vec;
 
