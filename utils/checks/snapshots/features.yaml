@@ -1453,7 +1453,7 @@
   features:
     - default
     - std
-- name: impl-trait-for-tuples 0.2.2
+- name: impl-trait-for-tuples 0.2.3
   features: []
 - name: indexmap 1.9.3
   features:
@@ -3500,7 +3500,6 @@
     - default
     - derive
     - extra-traits
-    - fold
     - full
     - parsing
     - printing
