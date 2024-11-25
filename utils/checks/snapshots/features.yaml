@@ -3237,7 +3237,6 @@
     - proc-macro
     - quote
     - visit
-    - visit-mut
 - name: syn 2.0.90
   features:
     - clone-impls
