@@ -1,0 +1,38 @@
+From 0168cdb4ed4c8cf367f2677bdd77a2fae2489c49 Mon Sep 17 00:00:00 2001
+From: Dmitry Lavrenov <39522748+dmitrylavrenov@users.noreply.github.com>
+Date: Tue, 19 Dec 2023 14:20:10 +0300
+Subject: [PATCH] Fix casting `usize` to `u8` at `pallet::error` macro  (#91)
+ (#95) (#99)
+
+Fix casting `usize` to `u8` at `pallet::error` macro (reapplying `3f6bdf2`) (#74) (#80)
+
+* Fix casting usize to u8 at pallet::error macro
+
+* Edit error message
+
+Co-authored-by: MOZGIII <mike-n@narod.ru>
+---
+ frame/support/procedural/src/pallet/expand/error.rs | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/frame/support/procedural/src/pallet/expand/error.rs b/frame/support/procedural/src/pallet/expand/error.rs
+index 70f9fdfc711..136a45b638e 100644
+--- a/frame/support/procedural/src/pallet/expand/error.rs
++++ b/frame/support/procedural/src/pallet/expand/error.rs
+@@ -152,11 +152,11 @@ pub fn expand_error(def: &mut Def) -> proc_macro2::TokenStream {
+ 		{
+ 			fn from(err: #error_ident<#type_use_gen>) -> Self {
+ 				use #frame_support::codec::Encode;
+-				let index = <
++				let index: u8 = <
+ 					<T as #frame_system::Config>::PalletInfo
+ 					as #frame_support::traits::PalletInfo
+ 				>::index::<Pallet<#type_use_gen>>()
+-					.expect("Every active module has an index in the runtime; qed") as u8;
++					.expect("Every active module has an index in the runtime; qed").try_into().expect("Index should fit into u8");
+ 				let mut encoded = err.encode();
+ 				encoded.resize(#frame_support::MAX_MODULE_ERROR_ENCODED_SIZE, 0);
+ 
+-- 
+2.39.2 (Apple Git-143)
+

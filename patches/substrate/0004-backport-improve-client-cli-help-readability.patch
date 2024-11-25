@@ -1,0 +1,639 @@
+From 56b16fefbd7a5ba07afd94cb37367d078da0ac52 Mon Sep 17 00:00:00 2001
+From: Dmitry Lavrenov <39522748+dmitrylavrenov@users.noreply.github.com>
+Date: Wed, 11 Sep 2024 18:56:06 +0300
+Subject: [PATCH] [backport] Improve Client CLI help readability (#109)
+
+---
+ client/cli/src/commands/run_cmd.rs            | 62 ++++++++++++++-----
+ client/cli/src/params/import_params.rs        | 19 +++---
+ client/cli/src/params/keystore_params.rs      |  5 +-
+ client/cli/src/params/network_params.rs       | 43 ++++++++-----
+ client/cli/src/params/node_key_params.rs      | 42 ++++++++-----
+ .../cli/src/params/offchain_worker_params.rs  |  8 +--
+ client/cli/src/params/prometheus_params.rs    |  2 +
+ client/cli/src/params/pruning_params.rs       |  2 +
+ client/cli/src/params/runtime_params.rs       |  4 +-
+ client/cli/src/params/shared_params.rs        | 27 ++++++--
+ client/cli/src/params/telemetry_params.rs     |  3 +
+ .../cli/src/params/transaction_pool_params.rs |  4 +-
+ client/storage-monitor/src/lib.rs             |  9 ++-
+ 13 files changed, 157 insertions(+), 73 deletions(-)
+
+diff --git a/client/cli/src/commands/run_cmd.rs b/client/cli/src/commands/run_cmd.rs
+index 7cc1e6c730c..90b84a38f32 100644
+--- a/client/cli/src/commands/run_cmd.rs
++++ b/client/cli/src/commands/run_cmd.rs
+@@ -38,31 +38,39 @@ use std::net::{IpAddr, Ipv4Addr, SocketAddr};
+ #[derive(Debug, Clone, Parser)]
+ pub struct RunCmd {
+ 	/// Enable validator mode.
++	///
+ 	/// The node will be started with the authority role and actively
+ 	/// participate in any consensus task that it can (e.g. depending on
+ 	/// availability of local keys).
+ 	#[arg(long)]
+ 	pub validator: bool,
+ 
+-	/// Disable GRANDPA voter when running in validator mode, otherwise disable the GRANDPA
++	/// Disable GRANDPA.
++	///
++	/// Disables voter when running in validator mode, otherwise disable the GRANDPA
+ 	/// observer.
+ 	#[arg(long)]
+ 	pub no_grandpa: bool,
+ 
+-	/// Listen to all RPC interfaces.
+-	/// Default is local. Note: not all RPC methods are safe to be exposed publicly. Use an RPC
+-	/// proxy server to filter out dangerous methods. More details:
++	/// Listen to all RPC interfaces (default: local).
++	///
++	/// Not all RPC methods are safe to be exposed publicly.
++	///
++	/// Use an RPC proxy server to filter out dangerous methods. More details:
+ 	/// <https://docs.substrate.io/main-docs/build/custom-rpc/#public-rpcs>.
++	///
+ 	/// Use `--unsafe-rpc-external` to suppress the warning if you understand the risks.
+ 	#[arg(long)]
+ 	pub rpc_external: bool,
+ 
+ 	/// Listen to all RPC interfaces.
++	///
+ 	/// Same as `--rpc-external`.
+ 	#[arg(long)]
+ 	pub unsafe_rpc_external: bool,
+ 
+ 	/// RPC methods to expose.
++	///
+ 	/// - `unsafe`: Exposes every RPC method.
+ 	/// - `safe`: Exposes only a safe subset of RPC methods, denying unsafe RPC methods.
+ 	/// - `auto`: Acts as `safe` if RPC is served externally, e.g. when `--{rpc,ws}-external` is
+@@ -78,6 +86,7 @@ pub struct RunCmd {
+ 	pub rpc_methods: RpcMethods,
+ 
+ 	/// Listen to all Websocket interfaces.
++	///
+ 	/// Default is local. Note: not all RPC methods are safe to be exposed publicly. Use an RPC
+ 	/// proxy server to filter out dangerous methods. More details:
+ 	/// <https://docs.substrate.io/main-docs/build/custom-rpc/#public-rpcs>.
+@@ -86,6 +95,7 @@ pub struct RunCmd {
+ 	pub ws_external: bool,
+ 
+ 	/// Listen to all Websocket interfaces.
++	///
+ 	/// Same as `--ws-external` but doesn't warn you about it.
+ 	#[arg(long)]
+ 	pub unsafe_ws_external: bool,
+@@ -130,15 +140,17 @@ pub struct RunCmd {
+ 	#[arg(long)]
+ 	pub ws_max_out_buffer_capacity: Option<usize>,
+ 
+-	/// Specify browser Origins allowed to access the HTTP & WS RPC servers.
+-	/// A comma-separated list of origins (protocol://domain or special `null`
++	/// Specify browser *origins* allowed to access the HTTP and WS RPC servers.
++	///
++	/// A comma-separated list of origins (`protocol://domain` or special `null`
+ 	/// value). Value of `all` will disable origin validation. Default is to
+ 	/// allow localhost and <https://polkadot.js.org> origins. When running in
+-	/// --dev mode the default is to allow all origins.
++	/// `--dev` mode the default is to allow all origins.
+ 	#[arg(long, value_name = "ORIGINS", value_parser = parse_cors)]
+ 	pub rpc_cors: Option<Cors>,
+ 
+ 	/// The human-readable name for this node.
++	///
+ 	/// It's used as network node name.
+ 	#[arg(long, value_name = "NAME")]
+ 	pub name: Option<String>,
+@@ -179,36 +191,51 @@ pub struct RunCmd {
+ 	#[clap(flatten)]
+ 	pub keystore_params: KeystoreParams,
+ 
+-	/// Shortcut for `--name Alice --validator` with session keys for `Alice` added to keystore.
++	/// Shortcut for `--name Alice --validator`.
++	///
++	/// Session keys for `Alice` are added to keystore.
+ 	#[arg(long, conflicts_with_all = &["bob", "charlie", "dave", "eve", "ferdie", "one", "two"])]
+ 	pub alice: bool,
+ 
+-	/// Shortcut for `--name Bob --validator` with session keys for `Bob` added to keystore.
++	/// Shortcut for `--name Bob --validator`.
++	///
++	/// Session keys for `Bob` are added to keystore.
+ 	#[arg(long, conflicts_with_all = &["alice", "charlie", "dave", "eve", "ferdie", "one", "two"])]
+ 	pub bob: bool,
+ 
+-	/// Shortcut for `--name Charlie --validator` with session keys for `Charlie` added to
+-	/// keystore.
++	/// Shortcut for `--name Charlie --validator`.
++	///
++	/// Session keys for `Charlie` are added to keystore.
+ 	#[arg(long, conflicts_with_all = &["alice", "bob", "dave", "eve", "ferdie", "one", "two"])]
+ 	pub charlie: bool,
+ 
+-	/// Shortcut for `--name Dave --validator` with session keys for `Dave` added to keystore.
++	/// Shortcut for `--name Dave --validator`.
++	///
++	/// Session keys for `Dave` are added to keystore.
+ 	#[arg(long, conflicts_with_all = &["alice", "bob", "charlie", "eve", "ferdie", "one", "two"])]
+ 	pub dave: bool,
+ 
+-	/// Shortcut for `--name Eve --validator` with session keys for `Eve` added to keystore.
++	/// Shortcut for `--name Eve --validator`.
++	///
++	/// Session keys for `Eve` are added to keystore.
+ 	#[arg(long, conflicts_with_all = &["alice", "bob", "charlie", "dave", "ferdie", "one", "two"])]
+ 	pub eve: bool,
+ 
+-	/// Shortcut for `--name Ferdie --validator` with session keys for `Ferdie` added to keystore.
++	/// Shortcut for `--name Ferdie --validator`.
++	///
++	/// Session keys for `Ferdie` are added to keystore.
+ 	#[arg(long, conflicts_with_all = &["alice", "bob", "charlie", "dave", "eve", "one", "two"])]
+ 	pub ferdie: bool,
+ 
+-	/// Shortcut for `--name One --validator` with session keys for `One` added to keystore.
++	/// Shortcut for `--name One --validator`.
++	///
++	/// Session keys for `One` are added to keystore.
+ 	#[arg(long, conflicts_with_all = &["alice", "bob", "charlie", "dave", "eve", "ferdie", "two"])]
+ 	pub one: bool,
+ 
+-	/// Shortcut for `--name Two --validator` with session keys for `Two` added to keystore.
++	/// Shortcut for `--name Two --validator`.
++	///
++	/// Session keys for `Two` are added to keystore.
+ 	#[arg(long, conflicts_with_all = &["alice", "bob", "charlie", "dave", "eve", "ferdie", "one"])]
+ 	pub two: bool,
+ 
+@@ -217,10 +244,13 @@ pub struct RunCmd {
+ 	pub force_authoring: bool,
+ 
+ 	/// Run a temporary node.
++	///
+ 	/// A temporary directory will be created to store the configuration and will be deleted
+ 	/// at the end of the process.
++	///
+ 	/// Note: the directory is random per process execution. This directory is used as base path
+ 	/// which includes: database, node key and keystore.
++	///
+ 	/// When `--dev` is given and no explicit `--base-path`, this option is implied.
+ 	#[arg(long, conflicts_with = "base_path")]
+ 	pub tmp: bool,
+diff --git a/client/cli/src/params/import_params.rs b/client/cli/src/params/import_params.rs
+index 9e57a017e51..6c32486309c 100644
+--- a/client/cli/src/params/import_params.rs
++++ b/client/cli/src/params/import_params.rs
+@@ -52,6 +52,7 @@ pub struct ImportParams {
+ 	pub wasm_method: WasmExecutionMethod,
+ 
+ 	/// The WASM instantiation method to use.
++	///
+ 	/// Only has an effect when `wasm-execution` is set to `compiled`.
+ 	/// The copy-on-write strategies are only supported on Linux.
+ 	/// If the copy-on-write variant of a strategy is unsupported
+@@ -69,6 +70,7 @@ pub struct ImportParams {
+ 	pub wasmtime_instantiation_strategy: WasmtimeInstantiationStrategy,
+ 
+ 	/// Specify the path where local WASM runtimes are stored.
++	///
+ 	/// These runtimes will override on-chain runtimes when the version matches.
+ 	#[arg(long, value_name = "PATH")]
+ 	pub wasm_runtime_overrides: Option<PathBuf>,
+@@ -78,12 +80,12 @@ pub struct ImportParams {
+ 	pub execution_strategies: ExecutionStrategiesParams,
+ 
+ 	/// Specify the state cache size.
++	///
+ 	/// Providing `0` will disable the cache.
+ 	#[arg(long, value_name = "Bytes", default_value_t = 67108864)]
+ 	pub trie_cache_size: usize,
+ 
+-	/// DEPRECATED
+-	/// Switch to `--trie-cache-size`.
++	/// DEPRECATED: switch to `--trie-cache-size`.
+ 	#[arg(long)]
+ 	state_cache_size: Option<usize>,
+ }
+@@ -147,26 +149,23 @@ impl ImportParams {
+ /// Execution strategies parameters.
+ #[derive(Debug, Clone, Args)]
+ pub struct ExecutionStrategiesParams {
+-	/// The means of execution used when calling into the runtime for importing blocks as
+-	/// part of an initial sync.
++	/// Runtime execution strategy for importing blocks during initial sync.
+ 	#[arg(long, value_name = "STRATEGY", value_enum, ignore_case = true)]
+ 	pub execution_syncing: Option<ExecutionStrategy>,
+ 
+-	/// The means of execution used when calling into the runtime for general block import
+-	/// (including locally authored blocks).
++	/// Runtime execution strategy for general block import (including locally authored blocks).
+ 	#[arg(long, value_name = "STRATEGY", value_enum, ignore_case = true)]
+ 	pub execution_import_block: Option<ExecutionStrategy>,
+ 
+-	/// The means of execution used when calling into the runtime while constructing blocks.
++	/// Runtime execution strategy for constructing blocks.
+ 	#[arg(long, value_name = "STRATEGY", value_enum, ignore_case = true)]
+ 	pub execution_block_construction: Option<ExecutionStrategy>,
+ 
+-	/// The means of execution used when calling into the runtime while using an off-chain worker.
++	/// Runtime execution strategy for offchain workers.
+ 	#[arg(long, value_name = "STRATEGY", value_enum, ignore_case = true)]
+ 	pub execution_offchain_worker: Option<ExecutionStrategy>,
+ 
+-	/// The means of execution used when calling into the runtime while not syncing, importing or
+-	/// constructing blocks.
++	/// Runtime execution strategy when not syncing, importing or constructing blocks.
+ 	#[arg(long, value_name = "STRATEGY", value_enum, ignore_case = true)]
+ 	pub execution_other: Option<ExecutionStrategy>,
+ 
+diff --git a/client/cli/src/params/keystore_params.rs b/client/cli/src/params/keystore_params.rs
+index a2fdd6b2218..2281baa39ae 100644
+--- a/client/cli/src/params/keystore_params.rs
++++ b/client/cli/src/params/keystore_params.rs
+@@ -43,8 +43,9 @@ pub struct KeystoreParams {
+ 	#[arg(long, conflicts_with_all = &["password", "password_filename"])]
+ 	pub password_interactive: bool,
+ 
+-	/// Password used by the keystore. This allows appending an extra user-defined secret to the
+-	/// seed.
++	/// Password used by the keystore.
++	///
++	/// This allows appending an extra user-defined secret to the seed.
+ 	#[arg(
+ 		long,
+ 		value_parser = secret_string_from_str,
+diff --git a/client/cli/src/params/network_params.rs b/client/cli/src/params/network_params.rs
+index 13e43382576..50c1e2a7d49 100644
+--- a/client/cli/src/params/network_params.rs
++++ b/client/cli/src/params/network_params.rs
+@@ -42,6 +42,7 @@ pub struct NetworkParams {
+ 	pub reserved_nodes: Vec<MultiaddrWithPeerId>,
+ 
+ 	/// Whether to only synchronize the chain with reserved nodes.
++	///
+ 	/// Also disables automatic peer discovery.
+ 	/// TCP connections might still be established with non-reserved nodes.
+ 	/// In particular, if you are a validator your node might still connect to other
+@@ -50,7 +51,8 @@ pub struct NetworkParams {
+ 	#[arg(long)]
+ 	pub reserved_only: bool,
+ 
+-	/// The public address that other nodes will use to connect to it.
++	/// Public address that other nodes will use to connect to this node.
++	///
+ 	/// This can be used if there's a proxy in front of this node.
+ 	#[arg(long, value_name = "PUBLIC_ADDR", num_args = 1..)]
+ 	pub public_addr: Vec<Multiaddr>,
+@@ -67,20 +69,28 @@ pub struct NetworkParams {
+ 	#[arg(long, value_name = "PORT", conflicts_with_all = &[ "listen_addr" ])]
+ 	pub port: Option<u16>,
+ 
+-	/// Always forbid connecting to private IPv4/IPv6 addresses (as specified in
+-	/// [RFC1918](https://tools.ietf.org/html/rfc1918)), unless the address was passed with
+-	/// `--reserved-nodes` or `--bootnodes`. Enabled by default for chains marked as "live" in
+-	/// their chain specifications.
++	/// Always forbid connecting to private IPv4/IPv6 addresses.
++	///
++	/// The option doesn't apply to addresses passed with `--reserved-nodes` or
++	/// `--bootnodes`. Enabled by default for chains marked as "live" in their chain
++	/// specifications.
++	///
++	/// Address allocation for private networks is specified by
++	/// [RFC1918](https://tools.ietf.org/html/rfc1918)).
+ 	#[arg(long, alias = "no-private-ipv4", conflicts_with_all = &["allow_private_ip"])]
+ 	pub no_private_ip: bool,
+ 
+-	/// Always accept connecting to private IPv4/IPv6 addresses (as specified in
+-	/// [RFC1918](https://tools.ietf.org/html/rfc1918)). Enabled by default for chains marked as
+-	/// "local" in their chain specifications, or when `--dev` is passed.
++	/// Always accept connecting to private IPv4/IPv6 addresses.
++	///
++	/// Enabled by default for chains marked as "local" in their chain specifications,
++	/// or when `--dev` is passed.
++	///
++	/// Address allocation for private networks is specified by
++	/// [RFC1918](https://tools.ietf.org/html/rfc1918)).
+ 	#[arg(long, alias = "allow-private-ipv4", conflicts_with_all = &["no_private_ip"])]
+ 	pub allow_private_ip: bool,
+ 
+-	/// Specify the number of outgoing connections we're trying to maintain.
++	/// Number of outgoing connections we're trying to maintain.
+ 	#[arg(long, value_name = "COUNT", default_value_t = 8)]
+ 	pub out_peers: u32,
+ 
+@@ -92,15 +102,17 @@ pub struct NetworkParams {
+ 	#[arg(long, value_name = "COUNT", default_value_t = 100)]
+ 	pub in_peers_light: u32,
+ 
+-	/// Disable mDNS discovery.
++	/// Disable mDNS discovery (default: true).
++	///
+ 	/// By default, the network will use mDNS to discover other nodes on the
+ 	/// local network. This disables it. Automatically implied when using --dev.
+ 	#[arg(long)]
+ 	pub no_mdns: bool,
+ 
+ 	/// Maximum number of peers from which to ask for the same blocks in parallel.
+-	/// This allows downloading announced blocks from multiple peers. Decrease to save
+-	/// traffic and risk increased latency.
++	///
++	/// This allows downloading announced blocks from multiple peers.
++	/// Decrease to save traffic and risk increased latency.
+ 	#[arg(long, value_name = "COUNT", default_value_t = 5)]
+ 	pub max_parallel_downloads: u32,
+ 
+@@ -109,13 +121,16 @@ pub struct NetworkParams {
+ 	pub node_key_params: NodeKeyParams,
+ 
+ 	/// Enable peer discovery on local networks.
++	///
+ 	/// By default this option is `true` for `--dev` or when the chain type is
+ 	/// `Local`/`Development` and false otherwise.
+ 	#[arg(long)]
+ 	pub discover_local: bool,
+ 
+-	/// Require iterative Kademlia DHT queries to use disjoint paths for increased resiliency in
+-	/// the presence of potentially adversarial nodes.
++	/// Require iterative Kademlia DHT queries to use disjoint paths.
++	///
++	/// Disjoint paths increase resiliency in the presence of potentially adversarial nodes.
++	///
+ 	/// See the S/Kademlia paper for more information on the high level design as well as its
+ 	/// security improvements.
+ 	#[arg(long)]
+diff --git a/client/cli/src/params/node_key_params.rs b/client/cli/src/params/node_key_params.rs
+index e31963d2f8b..6d8a08f883b 100644
+--- a/client/cli/src/params/node_key_params.rs
++++ b/client/cli/src/params/node_key_params.rs
+@@ -32,39 +32,49 @@ const NODE_KEY_ED25519_FILE: &str = "secret_ed25519";
+ /// used for libp2p networking.
+ #[derive(Debug, Clone, Args)]
+ pub struct NodeKeyParams {
+-	/// The secret key to use for libp2p networking.
++	/// Secret key to use for p2p networking.
++	///
+ 	/// The value is a string that is parsed according to the choice of
+ 	/// `--node-key-type` as follows:
+-	///   `ed25519`:
+-	///   The value is parsed as a hex-encoded Ed25519 32 byte secret key,
+-	///   i.e. 64 hex characters.
++	///
++	///  - `ed25519`: the value is parsed as a hex-encoded Ed25519 32 byte secret key (64 hex
++	///    chars)
++	///
+ 	/// The value of this option takes precedence over `--node-key-file`.
++	///
+ 	/// WARNING: Secrets provided as command-line arguments are easily exposed.
+ 	/// Use of this option should be limited to development and testing. To use
+ 	/// an externally managed secret key, use `--node-key-file` instead.
+ 	#[arg(long, value_name = "KEY")]
+ 	pub node_key: Option<String>,
+ 
+-	/// The type of secret key to use for libp2p networking.
++	/// Crypto primitive to use for p2p networking.
++	///
+ 	/// The secret key of the node is obtained as follows:
+-	///   * If the `--node-key` option is given, the value is parsed as a secret key according to
+-	///     the type. See the documentation for `--node-key`.
+-	///   * If the `--node-key-file` option is given, the secret key is read from the specified
+-	///     file. See the documentation for `--node-key-file`.
+-	///   * Otherwise, the secret key is read from a file with a predetermined, type-specific name
+-	///     from the chain-specific network config directory inside the base directory specified by
+-	///     `--base-dir`. If this file does not exist, it is created with a newly generated secret
+-	///     key of the chosen type.
++	///
++	/// - If the `--node-key` option is given, the value is parsed as a secret key according to the
++	///   type. See the documentation for `--node-key`.
++	///
++	/// - If the `--node-key-file` option is given, the secret key is read from the specified file.
++	///   See the documentation for `--node-key-file`.
++	///
++	/// - Otherwise, the secret key is read from a file with a predetermined, type-specific name
++	///   from the chain-specific network config directory inside the base directory specified by
++	///   `--base-dir`. If this file does not exist, it is created with a newly generated secret
++	///   key of the chosen type.
++	///
+ 	/// The node's secret key determines the corresponding public key and hence the
+ 	/// node's peer ID in the context of libp2p.
+ 	#[arg(long, value_name = "TYPE", value_enum, ignore_case = true, default_value_t = NodeKeyType::Ed25519)]
+ 	pub node_key_type: NodeKeyType,
+ 
+-	/// The file from which to read the node's secret key to use for libp2p networking.
++	/// File from which to read the node's secret key to use for p2p networking.
++	///
+ 	/// The contents of the file are parsed according to the choice of `--node-key-type`
+ 	/// as follows:
+-	///   `ed25519`:
+-	///   The file must contain an unencoded 32 byte or hex encoded Ed25519 secret key.
++	///
++	/// - `ed25519`: the file must contain an unencoded 32 byte or hex encoded Ed25519 secret key.
++	///
+ 	/// If the file does not exist, it is created with a newly generated secret key of
+ 	/// the chosen type.
+ 	#[arg(long, value_name = "FILE")]
+diff --git a/client/cli/src/params/offchain_worker_params.rs b/client/cli/src/params/offchain_worker_params.rs
+index d1fedab4cb2..3583d85c00a 100644
+--- a/client/cli/src/params/offchain_worker_params.rs
++++ b/client/cli/src/params/offchain_worker_params.rs
+@@ -32,8 +32,7 @@ use crate::{error, OffchainWorkerEnabled};
+ /// Offchain worker related parameters.
+ #[derive(Debug, Clone, Args)]
+ pub struct OffchainWorkerParams {
+-	/// Should execute offchain workers on every block.
+-	/// By default it's only enabled for nodes that are authoring new blocks.
++	/// Execute offchain workers on every block.
+ 	#[arg(
+ 		long = "offchain-worker",
+ 		value_name = "ENABLED",
+@@ -43,8 +42,9 @@ pub struct OffchainWorkerParams {
+ 	)]
+ 	pub enabled: OffchainWorkerEnabled,
+ 
+-	/// Enable Offchain Indexing API, which allows block import to write to Offchain DB.
+-	/// Enables a runtime to write directly to a offchain workers DB during block import.
++	/// Enable offchain indexing API.
++	///
++	/// Allows the runtime to write directly to offchain workers DB during block import.
+ 	#[arg(long = "enable-offchain-indexing", value_name = "ENABLE_OFFCHAIN_INDEXING", default_value_t = false, action = ArgAction::Set)]
+ 	pub indexing_enabled: bool,
+ }
+diff --git a/client/cli/src/params/prometheus_params.rs b/client/cli/src/params/prometheus_params.rs
+index 4d234ea33c2..69199ad5b26 100644
+--- a/client/cli/src/params/prometheus_params.rs
++++ b/client/cli/src/params/prometheus_params.rs
+@@ -27,10 +27,12 @@ pub struct PrometheusParams {
+ 	#[arg(long, value_name = "PORT")]
+ 	pub prometheus_port: Option<u16>,
+ 	/// Expose Prometheus exporter on all interfaces.
++	///
+ 	/// Default is local.
+ 	#[arg(long)]
+ 	pub prometheus_external: bool,
+ 	/// Do not expose a Prometheus exporter endpoint.
++	///
+ 	/// Prometheus metric endpoint is enabled by default.
+ 	#[arg(long)]
+ 	pub no_prometheus: bool,
+diff --git a/client/cli/src/params/pruning_params.rs b/client/cli/src/params/pruning_params.rs
+index 1b5bf247d94..25b17b53289 100644
+--- a/client/cli/src/params/pruning_params.rs
++++ b/client/cli/src/params/pruning_params.rs
+@@ -24,6 +24,7 @@ use sc_service::{BlocksPruning, PruningMode};
+ #[derive(Debug, Clone, Args)]
+ pub struct PruningParams {
+ 	/// Specify the state pruning mode.
++	///
+ 	/// This mode specifies when the block's state (ie, storage)
+ 	/// should be pruned (ie, removed) from the database.
+ 	/// This setting can only be set on the first creation of the database. Every subsequent run
+@@ -38,6 +39,7 @@ pub struct PruningParams {
+ 	pub state_pruning: Option<DatabasePruningMode>,
+ 
+ 	/// Specify the blocks pruning mode.
++	///
+ 	/// This mode specifies when the block's body (including justifications)
+ 	/// should be pruned (ie, removed) from the database.
+ 	/// Possible values:
+diff --git a/client/cli/src/params/runtime_params.rs b/client/cli/src/params/runtime_params.rs
+index 79035fc7d4c..a0d6e2a104f 100644
+--- a/client/cli/src/params/runtime_params.rs
++++ b/client/cli/src/params/runtime_params.rs
+@@ -22,7 +22,9 @@ use std::str::FromStr;
+ /// Parameters used to config runtime.
+ #[derive(Debug, Clone, Args)]
+ pub struct RuntimeParams {
+-	/// The size of the instances cache for each runtime. The values higher than 256 are illegal.
++	/// The size of the instances cache for each runtime [max: 32].
++	///
++	/// Values higher than 32 are illegal.
+ 	#[arg(long, default_value_t = 8, value_parser = parse_max_runtime_instances)]
+ 	pub max_runtime_instances: usize,
+ 
+diff --git a/client/cli/src/params/shared_params.rs b/client/cli/src/params/shared_params.rs
+index 3d20ca504a6..6419e15c62a 100644
+--- a/client/cli/src/params/shared_params.rs
++++ b/client/cli/src/params/shared_params.rs
+@@ -25,12 +25,14 @@ use std::path::PathBuf;
+ #[derive(Debug, Clone, Args)]
+ pub struct SharedParams {
+ 	/// Specify the chain specification.
+-	/// It can be one of the predefined ones (dev, local, or staging) or it can be a path to a file
+-	/// with the chainspec (such as one exported by the `build-spec` subcommand).
++	///
++	/// It can be one of the predefined ones (dev, local, or staging) or it can be a path to
++	/// a file with the chainspec (such as one exported by the `build-spec` subcommand).
+ 	#[arg(long, value_name = "CHAIN_SPEC")]
+ 	pub chain: Option<String>,
+ 
+ 	/// Specify the development chain.
++	///
+ 	/// This flag sets `--chain=dev`, `--force-authoring`, `--rpc-cors=all`,
+ 	/// `--alice`, and `--tmp` flags, unless explicitly overridden.
+ 	#[arg(long, conflicts_with_all = &["chain"])]
+@@ -40,14 +42,23 @@ pub struct SharedParams {
+ 	#[arg(long, short = 'd', value_name = "PATH")]
+ 	pub base_path: Option<PathBuf>,
+ 
+-	/// Sets a custom logging filter. Syntax is `<target>=<level>`, e.g. -lsync=debug.
+-	/// Log levels (least to most verbose) are error, warn, info, debug, and trace.
++	/// Sets a custom logging filter (syntax: `<target>=<level>`).
++	///
++	/// Log levels (least to most verbose) are `error`, `warn`, `info`, `debug`, and `trace`.
++	///
+ 	/// By default, all targets log `info`. The global log level can be set with `-l<level>`.
++	///
++	/// Multiple `<target>=<level>` entries can be specified and separated by a comma.
++	///
++	/// *Example*: `--log error,sync=debug,grandpa=warn`.
++	/// Sets Global log level to `error`, sets `sync` target to debug and grandpa target to `warn`.
+ 	#[arg(short = 'l', long, value_name = "LOG_PATTERN", num_args = 1..)]
+ 	pub log: Vec<String>,
+ 
+ 	/// Enable detailed log output.
+-	/// This includes displaying the log target, log level and thread name.
++	///
++	/// Includes displaying the log target, log level and thread name.
++	///
+ 	/// This is automatically enabled when something is logged with any higher level than `info`.
+ 	#[arg(long)]
+ 	pub detailed_log_output: bool,
+@@ -57,14 +68,18 @@ pub struct SharedParams {
+ 	pub disable_log_color: bool,
+ 
+ 	/// Enable feature to dynamically update and reload the log filter.
++	///
+ 	/// Be aware that enabling this feature can lead to a performance decrease up to factor six or
+ 	/// more. Depending on the global logging level the performance decrease changes.
++	///
+ 	/// The `system_addLogFilter` and `system_resetLogFilter` RPCs will have no effect with this
+ 	/// option not being set.
+ 	#[arg(long)]
+ 	pub enable_log_reloading: bool,
+ 
+-	/// Sets a custom profiling filter. Syntax is the same as for logging: `<target>=<level>`.
++	/// Sets a custom profiling filter.
++	///
++	/// Syntax is the same as for logging (`--log`).
+ 	#[arg(long, value_name = "TARGETS")]
+ 	pub tracing_targets: Option<String>,
+ 
+diff --git a/client/cli/src/params/telemetry_params.rs b/client/cli/src/params/telemetry_params.rs
+index 67f44107141..3b3d91e6b04 100644
+--- a/client/cli/src/params/telemetry_params.rs
++++ b/client/cli/src/params/telemetry_params.rs
+@@ -22,14 +22,17 @@ use clap::Args;
+ #[derive(Debug, Clone, Args)]
+ pub struct TelemetryParams {
+ 	/// Disable connecting to the Substrate telemetry server.
++	///
+ 	/// Telemetry is on by default on global chains.
+ 	#[arg(long)]
+ 	pub no_telemetry: bool,
+ 
+ 	/// The URL of the telemetry server to connect to.
++	///
+ 	/// This flag can be passed multiple times as a means to specify multiple
+ 	/// telemetry endpoints. Verbosity levels range from 0-9, with 0 denoting
+ 	/// the least verbosity.
++	///
+ 	/// Expected format is 'URL VERBOSITY', e.g. `--telemetry-url 'wss://foo/bar 0'`.
+ 	#[arg(long = "telemetry-url", value_name = "URL VERBOSITY", value_parser = parse_telemetry_endpoints)]
+ 	pub telemetry_endpoints: Vec<(String, u8)>,
+diff --git a/client/cli/src/params/transaction_pool_params.rs b/client/cli/src/params/transaction_pool_params.rs
+index b2bf0b9b364..48b2e5b1572 100644
+--- a/client/cli/src/params/transaction_pool_params.rs
++++ b/client/cli/src/params/transaction_pool_params.rs
+@@ -30,7 +30,9 @@ pub struct TransactionPoolParams {
+ 	#[arg(long, value_name = "COUNT", default_value_t = 20480)]
+ 	pub pool_kbytes: usize,
+ 
+-	/// How long a transaction is banned for, if it is considered invalid. Defaults to 1800s.
++	/// How long a transaction is banned for.
++	///
++	/// If it is considered invalid. Defaults to 1800s.
+ 	#[arg(long, value_name = "SECONDS")]
+ 	pub tx_ban_seconds: Option<u64>,
+ }
+diff --git a/client/storage-monitor/src/lib.rs b/client/storage-monitor/src/lib.rs
+index 277a74de08b..5724e8ea223 100644
+--- a/client/storage-monitor/src/lib.rs
++++ b/client/storage-monitor/src/lib.rs
+@@ -39,9 +39,12 @@ pub enum Error {
+ /// Parameters used to create the storage monitor.
+ #[derive(Default, Debug, Clone, Args)]
+ pub struct StorageMonitorParams {
+-	/// Required available space on database storage. If available space for DB storage drops below
+-	/// the given threshold, node will be gracefully terminated. If `0` is given monitoring will be
+-	/// disabled.
++	/// Required available space on database storage.
++ 	///
++ 	/// If available space for DB storage drops below the given threshold, node will
++ 	/// be gracefully terminated.
++ 	///
++ 	/// If `0` is given monitoring will be disabled.
+ 	#[arg(long = "db-storage-threshold", value_name = "MB", default_value_t = 1000)]
+ 	pub threshold: u64,
+ 
+-- 
+2.39.2 (Apple Git-143)
+

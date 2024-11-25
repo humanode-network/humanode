@@ -1,0 +1,38 @@
+From 3a42ab7f4fe113fea218bf41c678eeae5692e9e7 Mon Sep 17 00:00:00 2001
+From: Dmitry Lavrenov <39522748+dmitrylavrenov@users.noreply.github.com>
+Date: Tue, 19 Dec 2023 14:25:50 +0300
+Subject: [PATCH] [Hotfix] Fix default http max connections value for RPC
+ servers (#92) (#96) (#100)
+
+[Hotfix] Fix default http max connections value for RPC servers (#90)
+
+Fix default http max connections value for RPC servers
+---
+ client/rpc-servers/src/lib.rs | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/client/rpc-servers/src/lib.rs b/client/rpc-servers/src/lib.rs
+index 62a9b4fc4a0..0071eee8ed3 100644
+--- a/client/rpc-servers/src/lib.rs
++++ b/client/rpc-servers/src/lib.rs
+@@ -45,6 +45,9 @@ pub const RPC_MAX_PAYLOAD_DEFAULT: usize = 15 * MEGABYTE;
+ /// Default maximum number of connections for WS RPC servers.
+ const WS_MAX_CONNECTIONS: usize = 100;
+ 
++/// Default maximum number of connections for HTTP RPC servers.
++const HTTP_MAX_CONNECTIONS: u32 = 16000;
++
+ /// Default maximum number subscriptions per connection for WS RPC servers.
+ const WS_MAX_SUBS_PER_CONN: usize = 1024;
+ 
+@@ -102,6 +105,7 @@ pub async fn start_http<M: Send + Sync + 'static>(
+ 	let builder = ServerBuilder::new()
+ 		.max_request_body_size(max_payload_in)
+ 		.max_response_body_size(max_payload_out)
++		.max_connections(HTTP_MAX_CONNECTIONS)
+ 		.set_host_filtering(host_filter)
+ 		.set_middleware(middleware)
+ 		.custom_tokio_runtime(rt)
+-- 
+2.39.2 (Apple Git-143)
+
