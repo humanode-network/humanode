@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/../.."
+
+PATCHES_PATH="$(pwd)/patches"
+echo $PATCHES_PATH
+
+PROJECT="${1?Specify a github project to be patched}"
+BASE_BRANCH="${2?Specify a base branch}"
+PATCHED_BRANCH="${3?Specify a patched branch}"
+
+TMP_REPO="$(mktemp -d)"
+echo $TMP_REPO
+
+cd "$TMP_REPO"
+
+git clone https://github.com/humanode-network/$PROJECT
+
+cd $PROJECT
+
+git checkout $BASE_BRANCH
+
+git checkout -b $PATCHED_BRANCH
+
+for PATCH in $PATCHES_PATH/$PROJECT/*.patch; do
+  git am "$PATCH"
+  git commit -m "Apply $PATCH"
+done
