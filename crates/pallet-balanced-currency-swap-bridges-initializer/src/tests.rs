@@ -1,7 +1,4 @@
-use frame_support::{
-    assert_storage_noop,
-    traits::{Currency, OnRuntimeUpgrade},
-};
+use frame_support::{assert_storage_noop, traits::Currency};
 
 use crate::{
     mock::{new_test_ext_with, v0, v1, v2, with_runtime_lock, *},
@@ -411,7 +408,7 @@ fn runtime_upgrade() {
             assert_eq!(<LastForceRebalanceAskCounter<v1::Test>>::get(), 0);
 
             // Do runtime upgrade hook.
-            v1::AllPalletsWithoutSystem::on_runtime_upgrade();
+            v1::Executive::execute_on_runtime_upgrade();
 
             // Verify bridges initialization result.
             assert_eq!(
@@ -457,7 +454,7 @@ fn runtime_upgrade() {
                 v2::EvmBalances::total_balance(&v2::SwapBridgeEvmToNativePot::account_id());
 
             // Do runtime upgrade hook.
-            v2::AllPalletsWithoutSystem::on_runtime_upgrade();
+            v2::Executive::execute_on_runtime_upgrade();
 
             // Verify result.
             assert_eq!(

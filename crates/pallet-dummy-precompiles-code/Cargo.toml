@@ -11,10 +11,10 @@ frame-system = { workspace = true }
 pallet-evm = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
 sp-core = { workspace = true }
-sp-std = { workspace = true }
 
 [dev-dependencies]
 fp-evm = { workspace = true }
+frame-executive = { workspace = true }
 hex-literal = { workspace = true }
 pallet-balances = { workspace = true, features = ["default"] }
 pallet-evm-balances = { workspace = true, features = ["default"] }
@@ -26,6 +26,7 @@ default = ["std"]
 std = [
   "codec/std",
   "fp-evm/std",
+  "frame-executive/std",
   "frame-support/std",
   "frame-system/std",
   "pallet-balances/std",
@@ -35,9 +36,9 @@ std = [
   "pallet-timestamp/std",
   "scale-info/std",
   "sp-core/std",
-  "sp-std/std",
 ]
 try-runtime = [
+  "frame-executive/try-runtime",
   "frame-support/try-runtime",
   "frame-system/try-runtime",
   "pallet-balances/try-runtime",
