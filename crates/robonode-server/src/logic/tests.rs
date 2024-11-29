@@ -1,5 +1,3 @@
-#![cfg(feature = "logic-integration-tests")]
-
 use std::marker::PhantomData;
 
 use facetec_api_client as ft;
@@ -174,6 +172,7 @@ async fn setup() -> (
 }
 
 #[tokio::test]
+#[ignore = "requires FaceTec server"]
 #[tracing_test::traced_test]
 async fn standalone_enroll() {
     let (_guard, test_params, logic) = setup().await;
@@ -189,6 +188,7 @@ async fn standalone_enroll() {
 }
 
 #[tokio::test]
+#[ignore = "requires FaceTec server"]
 #[tracing_test::traced_test]
 async fn first_authenticate() {
     let (_guard, test_params, logic) = setup().await;
@@ -208,6 +208,7 @@ async fn first_authenticate() {
 }
 
 #[tokio::test]
+#[ignore = "requires FaceTec server"]
 #[tracing_test::traced_test]
 async fn enroll_authenticate() {
     let (_guard, test_params, logic) = setup().await;
@@ -233,6 +234,7 @@ async fn enroll_authenticate() {
 }
 
 #[tokio::test]
+#[ignore = "requires FaceTec server"]
 #[tracing_test::traced_test]
 async fn double_enroll() {
     let (_guard, test_params, logic) = setup().await;

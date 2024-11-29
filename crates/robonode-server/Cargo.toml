@@ -26,6 +26,3 @@ codec = { workspace = true }
 mockall = { workspace = true }
 serde_json = { workspace = true }
 tracing-test = { workspace = true }
-
-[features]
-logic-integration-tests = []
