@@ -1797,6 +1797,11 @@
     - net
     - os-ext
     - os-poll
+- name: mio 1.0.3
+  features:
+    - net
+    - os-ext
+    - os-poll
 - name: mockall 0.11.4
   features: []
 - name: mockall_derive 0.11.4
@@ -3599,7 +3604,7 @@
     - tinyvec_macros
 - name: tinyvec_macros 0.1.1
   features: []
-- name: tokio 1.38.1
+- name: tokio 1.41.1
   features:
     - bytes
     - default
@@ -3611,7 +3616,6 @@
     - macros
     - mio
     - net
-    - num_cpus
     - parking_lot
     - process
     - rt
@@ -3623,7 +3627,7 @@
     - time
     - tokio-macros
     - windows-sys
-- name: tokio-macros 2.3.0
+- name: tokio-macros 2.4.0
   features: []
 - name: tokio-native-tls 0.3.1
   features: []
@@ -4185,6 +4189,8 @@
     - Wdk_Foundation
     - Wdk_Storage
     - Wdk_Storage_FileSystem
+    - Wdk_System
+    - Wdk_System_IO
     - Win32
     - Win32_Foundation
     - Win32_NetworkManagement
@@ -4206,6 +4212,8 @@
     - Win32_System_IO
     - Win32_System_LibraryLoader
     - Win32_System_Memory
+    - Win32_System_Pipes
+    - Win32_System_SystemServices
     - Win32_System_Threading
     - Win32_System_WindowsProgramming
     - Win32_UI
