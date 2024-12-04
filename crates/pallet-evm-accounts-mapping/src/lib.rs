@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{inherent::Vec, pallet_prelude::*};
+use frame_support::{pallet_prelude::*, sp_std::prelude::*};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
