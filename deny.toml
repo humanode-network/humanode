@@ -28,6 +28,8 @@ ignore = [
   "RUSTSEC-2024-0336",
   # TODO(#1197): update the sqlx internal dependency to 0.8.1+
   "RUSTSEC-2024-0363",
+  # TODO(#1352): update the hashbrown internal dependency to 0.15.1+
+  "RUSTSEC-2024-0402",
 ]
 
 [licenses]
