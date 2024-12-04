@@ -9,10 +9,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{
-    inherent::Vec,
-    traits::{Currency, StorageVersion},
-};
+use frame_support::traits::{Currency, StorageVersion};
 pub use weights::*;
 
 pub use self::pallet::*;
@@ -49,6 +46,7 @@ pub mod pallet {
     use frame_support::{
         pallet_prelude::{ValueQuery, *},
         sp_runtime::traits::Saturating,
+        sp_std::prelude::*,
         storage::with_storage_layer,
         traits::{ExistenceRequirement, WithdrawReasons},
     };
