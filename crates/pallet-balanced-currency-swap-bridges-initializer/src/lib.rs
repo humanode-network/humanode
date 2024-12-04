@@ -14,8 +14,6 @@ use frame_support::{
 };
 pub use pallet::*;
 use sp_std::cmp::Ordering;
-#[cfg(feature = "try-runtime")]
-use sp_std::vec::Vec;
 pub use weights::*;
 
 pub mod weights;
@@ -47,8 +45,6 @@ pub const CURRENT_BRIDGES_INITIALIZER_VERSION: u16 = 1;
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    #[cfg(feature = "try-runtime")]
-    use frame_support::sp_runtime::TryRuntimeError;
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay};
     use frame_system::pallet_prelude::*;
     use sp_std::fmt::Debug;
@@ -149,12 +145,15 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
+        fn pre_upgrade() -> Result<sp_std::vec::Vec<u8>, frame_support::sp_runtime::TryRuntimeError>
+        {
             upgrade_init::pre_upgrade()
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
+        fn post_upgrade(
+            state: sp_std::vec::Vec<u8>,
+        ) -> Result<(), frame_support::sp_runtime::TryRuntimeError> {
             upgrade_init::post_upgrade::<T>(state)
         }
     }
