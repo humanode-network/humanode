@@ -46,11 +46,6 @@ type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountIdOf<T, I>
 pub mod pallet {
 
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug};
-    #[cfg(feature = "try-runtime")]
-    use frame_support::{
-        sp_runtime::TryRuntimeError,
-        sp_std::{vec, vec::Vec},
-    };
     use frame_system::pallet_prelude::*;
 
     use super::*;
@@ -123,12 +118,16 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
-            Ok(vec![])
+        fn pre_upgrade(
+        ) -> Result<frame_support::sp_std::vec::Vec<u8>, frame_support::sp_runtime::TryRuntimeError>
+        {
+            Ok(frame_support::sp_std::vec![])
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
+        fn post_upgrade(
+            _state: frame_support::sp_std::vec::Vec<u8>,
+        ) -> Result<(), frame_support::sp_runtime::TryRuntimeError> {
             ensure!(
                 <Pallet<T, I>>::on_chain_storage_version()
                     == <Pallet<T, I>>::current_storage_version(),
