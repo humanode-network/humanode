@@ -1,16 +1,22 @@
 exclude = ["target/**"]
 include = ["**/*.toml"]
 
-[schema]
-path = "taplo://taplo.toml"
-
 [formatting]
 reorder_keys = false
 column_width = 120
 
 [[rule]]
 include = ["**/Cargo.toml"]
-keys = ["dependencies", "dev-dependencies", "build-dependencies", "features"]
+keys = [
+  "dependencies",
+  "dev-dependencies",
+  "build-dependencies",
+  "features",
+  "target.*.dependencies",
+  "target.*.dev-dependencies",
+  "target.*.build-dependencies",
+  "workspace.dependencies",
+]
 
 [rule.formatting]
 reorder_keys = true
