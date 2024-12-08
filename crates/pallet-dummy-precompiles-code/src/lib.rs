@@ -101,15 +101,13 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+        fn pre_upgrade() -> Result<Vec<u8>, frame_support::sp_runtime::TryRuntimeError> {
             // Do nothing.
             Ok(Vec::new())
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-            use sp_std::vec::Vec;
-
+        fn post_upgrade(_state: Vec<u8>) -> Result<(), frame_support::sp_runtime::TryRuntimeError> {
             let mut not_created_precompiles = Vec::new();
 
             for precompile_address in &T::PrecompilesAddresses::get() {
@@ -120,7 +118,9 @@ pub mod pallet {
             }
 
             if !not_created_precompiles.is_empty() {
-                return Err("precompiles not created properly: {:not_created_precompiles}");
+                return Err(frame_support::sp_runtime::TryRuntimeError::Other(
+                    "precompiles not created properly: {:not_created_precompiles}",
+                ));
             }
 
             Ok(())
