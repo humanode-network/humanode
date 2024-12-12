@@ -107,7 +107,7 @@ where
         _len: usize,
     ) -> TransactionValidity {
         match call.is_sub_type() {
-            // Disallow `claim` call - can't be used an unsigned tx.
+            // Disallow `claim` call - can't be used as an unsigned tx.
             Some(Call::claim { .. }) => InvalidTransaction::Call.into(),
             _ => Ok(Default::default()),
         }
