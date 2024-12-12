@@ -9,6 +9,7 @@ use frame_support::{
     traits::IsSubType,
     unsigned::{TransactionValidity, TransactionValidityError},
 };
+use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 use sp_runtime::traits::{DispatchInfoOf, SignedExtension};
 
 use super::*;
@@ -18,18 +19,11 @@ impl<T: Config> Pallet<T> {
     /// Validate that the `claim` is correct and should be allowed for inclusion.
     ///
     /// Implement the flood protection logic.
-    fn validate_claim_call(who: &T::AccountId, call: &Call<T>) -> TransactionValidity {
-        // Check if the call matches.
-        let (ethereum_address, ethereum_signature) = match call {
-            // Allow `claim` call.
-            Call::claim {
-                ethereum_address,
-                ethereum_signature,
-            } => (ethereum_address, ethereum_signature),
-            // Deny all unknown calls.
-            _ => return Err(TransactionValidityError::Invalid(InvalidTransaction::Call)),
-        };
-
+    fn validate_claim_call(
+        who: &T::AccountId,
+        ethereum_address: &EthereumAddress,
+        ethereum_signature: &EcdsaSignature,
+    ) -> TransactionValidity {
         // Check the signature.
         let message_params = EthereumSignatureMessageParams {
             account_id: who.clone(),
@@ -98,7 +92,23 @@ where
         _len: usize,
     ) -> TransactionValidity {
         match call.is_sub_type() {
-            Some(call) => Pallet::<T>::validate_claim_call(who, call),
+            // Allow `claim` call.
+            Some(Call::claim {
+                ethereum_address,
+                ethereum_signature,
+            }) => Pallet::<T>::validate_claim_call(who, ethereum_address, ethereum_signature),
+            _ => Ok(Default::default()),
+        }
+    }
+
+    fn validate_unsigned(
+        call: &Self::Call,
+        _info: &DispatchInfoOf<Self::Call>,
+        _len: usize,
+    ) -> TransactionValidity {
+        match call.is_sub_type() {
+            // Disallow `claim` call - can't be used an unsigned tx.
+            Some(Call::claim { .. }) => InvalidTransaction::Call.into(),
             _ => Ok(Default::default()),
         }
     }
