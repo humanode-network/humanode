@@ -647,7 +647,7 @@ pub mod pallet {
                 &auth_ticket,
             )
             .map_err(|err| {
-                log::error!("Authentication attemption failed: {err:?}");
+                log::error!("Authentication attempt failed: {err:?}");
 
                 TransactionValidityError::Invalid(match err {
                     AuthenticationAttemptValidationError::NonceConflict => {
