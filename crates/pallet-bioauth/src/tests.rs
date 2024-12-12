@@ -4,8 +4,8 @@
 use std::ops::Div;
 
 use frame_support::{
-    assert_err, assert_noop, assert_ok, assert_storage_noop, pallet_prelude::*, traits::ConstU32,
-    BoundedVec,
+    assert_err, assert_noop, assert_ok, assert_storage_noop, dispatch::DispatchInfo,
+    pallet_prelude::*, traits::ConstU32, BoundedVec,
 };
 use mockall::predicate;
 

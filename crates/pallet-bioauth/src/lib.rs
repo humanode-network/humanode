@@ -6,7 +6,6 @@
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use frame_support::{
-    dispatch::DispatchInfo,
     traits::{ConstU32, IsSubType, StorageVersion},
     BoundedVec,
 };
@@ -15,7 +14,7 @@ use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 use sp_runtime::{
-    traits::{DispatchInfoOf, Dispatchable, SignedExtension},
+    traits::{DispatchInfoOf, SignedExtension},
     transaction_validity::{TransactionValidity, TransactionValidityError},
 };
 use sp_std::{fmt::Debug, marker::PhantomData, prelude::*};
@@ -612,17 +611,9 @@ pub mod pallet {
             Ok(auth_ticket)
         }
 
-        pub fn check_tx(call: &Call<T>) -> TransactionValidity {
-            let transaction = match call {
-                Call::authenticate { req: transaction } => transaction,
-                // Deny all unknown transactions.
-                _ => {
-                    // The only supported transaction by this pallet is `authenticate`, so anything
-                    // else is illegal.
-                    return Err(TransactionValidityError::Invalid(InvalidTransaction::Call));
-                }
-            };
-
+        pub fn check_tx(
+            transaction: &Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
+        ) -> TransactionValidity {
             let auth_ticket =
                 Self::extract_auth_ticket_checked(transaction.clone()).map_err(|error| {
                     log::error!("Auth Ticket could not be extracted: {error:?}");
@@ -745,7 +736,6 @@ impl<T: Config + Send + Sync> Debug for CheckBioauthTx<T> {
 
 impl<T: Config + Send + Sync> SignedExtension for CheckBioauthTx<T>
 where
-    T::RuntimeCall: Dispatchable<Info = DispatchInfo>,
     <T as frame_system::Config>::RuntimeCall: IsSubType<Call<T>>,
 {
     type AccountId = T::AccountId;
@@ -770,16 +760,12 @@ where
 
     fn validate(
         &self,
-        who: &Self::AccountId,
+        _who: &Self::AccountId,
         call: &Self::Call,
         _info: &DispatchInfoOf<Self::Call>,
         _len: usize,
     ) -> TransactionValidity {
-        let _account_id = who;
-        match call.is_sub_type() {
-            Some(call) => Pallet::<T>::check_tx(call),
-            _ => Ok(Default::default()),
-        }
+        Self::do_validate(call)
     }
 
     fn validate_unsigned(
@@ -787,9 +773,30 @@ where
         _info: &DispatchInfoOf<Self::Call>,
         _len: usize,
     ) -> TransactionValidity {
-        match call.is_sub_type() {
-            Some(call) => Pallet::<T>::check_tx(call),
-            _ => Ok(Default::default()),
-        }
+        Self::do_validate(call)
+    }
+}
+
+impl<T: Config + Send + Sync> CheckBioauthTx<T>
+where
+    <T as frame_system::Config>::RuntimeCall: IsSubType<Call<T>>,
+{
+    /// Perform the call validation.
+    ///
+    /// For the `authenticate` call checks the validity and correctness and lets everything else
+    /// through.
+    fn do_validate(call: &T::RuntimeCall) -> TransactionValidity {
+        // Reduce to calls from this pallet.
+        let Some(call) = call.is_sub_type() else {
+            return Ok(Default::default());
+        };
+
+        // Reduce to `authenticate` call.
+        let Call::authenticate { req: transaction } = call else {
+            return Ok(Default::default());
+        };
+
+        // Check the `authenticate` transaction.
+        Pallet::<T>::check_tx(transaction)
     }
 }
