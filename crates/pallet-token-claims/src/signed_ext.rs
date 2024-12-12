@@ -7,7 +7,7 @@ use frame_support::{
     pallet_prelude::*,
     sp_runtime,
     traits::IsSubType,
-    unsigned::{TransactionValidity, TransactionValidityError},
+    unsigned::TransactionValidity,
 };
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
 use sp_runtime::traits::{DispatchInfoOf, SignedExtension};
@@ -34,14 +34,12 @@ impl<T: Config> Pallet<T> {
             &message_params,
             ethereum_address,
         ) {
-            return Err(TransactionValidityError::Invalid(
-                InvalidTransaction::BadProof,
-            ));
+            return InvalidTransaction::BadProof.into();
         }
 
         // Check the presence of a claim.
         if !<Claims<T>>::contains_key(ethereum_address) {
-            return Err(TransactionValidityError::Invalid(InvalidTransaction::Call));
+            return InvalidTransaction::Call.into();
         }
 
         // All good, letting through.
