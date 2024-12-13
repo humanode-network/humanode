@@ -2722,7 +2722,7 @@ checksum = "25cbce373ec4653f1a01a31e8a5e5ec0c622dc27ff9c4e6606eefef5cbbed4a5"
 [[package]]
 name = "fc-cli"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "clap",
  "ethereum-types",
@@ -2740,7 +2740,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "async-trait",
  "fp-consensus",
@@ -2756,7 +2756,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "async-trait",
  "ethereum",
@@ -2786,7 +2786,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -2809,7 +2809,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2859,7 +2859,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2872,7 +2872,7 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3050,7 +3050,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "hex",
  "impl-serde",
@@ -3069,7 +3069,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -3081,7 +3081,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3095,7 +3095,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "evm 0.39.1 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
  "frame-support",
@@ -3110,7 +3110,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3127,7 +3127,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -3139,7 +3139,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -6531,7 +6531,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -6567,7 +6567,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "environmental",
  "evm 0.39.1 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
@@ -6607,7 +6607,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-balances"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6621,7 +6621,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "fp-evm",
 ]
@@ -6629,7 +6629,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "fp-evm",
  "sp-core",
@@ -6639,7 +6639,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "fp-evm",
  "num",
@@ -6648,7 +6648,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "fp-evm",
  "tiny-keccak",
@@ -6657,7 +6657,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -6667,7 +6667,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-system"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -6682,7 +6682,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-test-vector-support"
 version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#4b3c7839ffe68a3a0469cb1f5a51ecd6e9626483"
+source = "git+https://github.com/humanode-network/frontier?branch=debug-opcodes-v0.9.42#b9bc714ed6af8be877151035733d6d5a0e366b5d"
 dependencies = [
  "evm 0.39.1 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
  "fp-evm",
