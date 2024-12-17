@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+
+export ETH_RPC_URL=http://localhost:9944
+
+TX=$(cat "tx-failed.txt")
+
+cast publish "$TX"

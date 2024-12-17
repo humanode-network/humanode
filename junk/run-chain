@@ -1,0 +1,20 @@
+#!/bin/bash
+set -euo pipefail
+
+cd -- "$(dirname -- "${BASH_SOURCE[0]}")"
+
+ROOT_DIR=".."
+
+WASM="wasm"
+
+rm -rf "$WASM"
+mkdir "$WASM"
+
+cp "$ROOT_DIR/target/debug/wbuild/humanode-runtime/humanode_runtime.wasm" "$WASM"
+
+export RUST_LOG="${RUST_LOG:-"info,evm=debug"}"
+"$ROOT_DIR/target/debug/humanode-peer" \
+  --chain genesis/patched-chain-exported-10507907.json \
+  --alice \
+  --tmp \
+  --wasm-runtime-overrides "$WASM"
