@@ -164,6 +164,12 @@ pallet-evm-precompile-simple = { git = "https://github.com/humanode-network/fron
 pallet-evm-system = { git = "https://github.com/humanode-network/frontier", branch = "debug-opcodes-v0.9.42", default-features = false }
 pallet-evm-test-vector-support = { git = "https://github.com/humanode-network/frontier", branch = "debug-opcodes-v0.9.42", default-features = false }
 
+[patch."https://github.com/humanode-network/evm"]
+evm = { path = "../evm" }
+evm-core = { path = "../evm/core" }
+evm-gasometer = { path = "../evm/gasometer" }
+evm-runtime = { path = "../evm/runtime" }
+
 [profile.release]
 debug = "line-tables-only"
 

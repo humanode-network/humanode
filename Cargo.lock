@@ -2550,7 +2550,6 @@ dependencies = [
 [[package]]
 name = "evm"
 version = "0.39.1"
-source = "git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556#a2fbe7416c8767b125222ead5219cb7347835556"
 dependencies = [
  "auto_impl",
  "environmental",
@@ -2570,7 +2569,6 @@ dependencies = [
 [[package]]
 name = "evm-core"
 version = "0.39.0"
-source = "git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556#a2fbe7416c8767b125222ead5219cb7347835556"
 dependencies = [
  "parity-scale-codec",
  "primitive-types",
@@ -2581,7 +2579,6 @@ dependencies = [
 [[package]]
 name = "evm-gasometer"
 version = "0.39.0"
-source = "git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556#a2fbe7416c8767b125222ead5219cb7347835556"
 dependencies = [
  "environmental",
  "evm-core",
@@ -2592,7 +2589,6 @@ dependencies = [
 [[package]]
 name = "evm-runtime"
 version = "0.39.0"
-source = "git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556#a2fbe7416c8767b125222ead5219cb7347835556"
 dependencies = [
  "auto_impl",
  "environmental",
