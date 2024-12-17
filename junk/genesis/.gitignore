@@ -1,0 +1,4 @@
+**/*
+!.gitignore
+
+!patched-chain-exported-10507907.json
