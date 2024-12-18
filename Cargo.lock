@@ -2570,6 +2570,7 @@ dependencies = [
 name = "evm-core"
 version = "0.39.0"
 dependencies = [
+ "log",
  "parity-scale-codec",
  "primitive-types",
  "scale-info",
@@ -2593,6 +2594,7 @@ dependencies = [
  "auto_impl",
  "environmental",
  "evm-core",
+ "log",
  "primitive-types",
  "sha3 0.10.8",
 ]
