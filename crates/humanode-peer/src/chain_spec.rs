@@ -386,6 +386,7 @@ fn testnet_genesis(
         },
         balanced_currency_swap_bridges_initializer: Default::default(),
         dummy_precompiles_code: Default::default(),
+        base_fee: Default::default(),
     }
 }
 

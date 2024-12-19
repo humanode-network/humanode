@@ -96,6 +96,7 @@ sp-std = { workspace = true }
 sp-transaction-pool = { workspace = true }
 sp-version = { workspace = true }
 static_assertions = { workspace = true }
+pallet-base-fee = { workspace = true }
 
 [dev-dependencies]
 crypto-utils = { path = "../crypto-utils" }
@@ -227,6 +228,7 @@ std = [
   "substrate-wasm-builder",
   "vesting-schedule-linear/std",
   "vesting-scheduling-timestamp/std",
+  "pallet-base-fee/std",
 ]
 try-runtime = [
   "bridge-pot-currency-swap/try-runtime",

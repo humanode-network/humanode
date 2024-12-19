@@ -104,7 +104,7 @@ pub mod evm_fees {
     /// The max amount of gas per block.
     /// Set to the value that fits our fee requirements.
     /// Ref: <https://ethereum.org/en/developers/docs/gas/#block-size>
-    pub const BLOCK_GAS_LIMIT: u64 = 60_000_000;
+    pub const BLOCK_GAS_LIMIT: u64 = 75_000_000;
 
     /// The amount of fee per gas unit.
     /// Comes from the following rationale:
@@ -118,7 +118,8 @@ pub mod evm_fees {
     /// Set to the zero as humanode is solo chain. Otherwise, additional used gas has
     /// been added to transactions cost.
     /// Ref: <https://github.com/paritytech/frontier/pull/1039>
-    pub const GAS_LIMIT_POV_SIZE_RATIO: u64 = 0;
+    const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
+    pub const GAS_LIMIT_POV_SIZE_RATIO: u64 = BLOCK_GAS_LIMIT.saturating_div(MAX_POV_SIZE);
 }
 
 /// Ethereum related constants.

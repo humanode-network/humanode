@@ -4108,6 +4108,7 @@ dependencies = [
  "pallet-babe",
  "pallet-balanced-currency-swap-bridges-initializer",
  "pallet-balances",
+ "pallet-base-fee",
  "pallet-bioauth",
  "pallet-bootnodes",
  "pallet-chain-properties",
@@ -4198,7 +4199,7 @@ dependencies = [
  "httpdate",
  "itoa",
  "pin-project-lite 0.2.13",
- "socket2 0.4.10",
+ "socket2 0.5.5",
  "tokio",
  "tower-service",
  "tracing",
@@ -6367,6 +6368,20 @@ dependencies = [
  "scale-info",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-base-fee"
+version = "1.0.0"
+source = "git+https://github.com/humanode-network/frontier?tag=locked/polkadot-v0.9.42-2024-09-12#1afab28e8d5aebe7d44f9043b3ba19e9555123dc"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]

@@ -65,7 +65,7 @@ use sp_runtime::{
     traits::{
         AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
         IdentifyAccount, Identity, NumberFor, One, OpaqueKeys, PostDispatchInfoOf, StaticLookup,
-        Verify,
+        Verify, UniqueSaturatedInto,
     },
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
@@ -80,7 +80,7 @@ use sp_version::RuntimeVersion;
 
 mod frontier_precompiles;
 mod vesting;
-use frontier_precompiles::{precompiles_constants, FrontierPrecompiles};
+use frontier_precompiles::{FrontierPrecompiles};
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
@@ -238,10 +238,10 @@ pub fn native_version() -> NativeVersion {
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const MAX_BLOCK_LENGTH: u32 = 5 * 1024 * 1024;
-
+pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2000;
 /// We allow for 2 seconds of compute with a 6 second average block time.
 const EXPECTED_BLOCK_WEIGHT: Weight =
-    Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND.saturating_mul(2), u64::MAX);
+    Weight::from_parts(WEIGHT_MILLISECS_PER_BLOCK * frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS, u64::MAX);
 
 parameter_types! {
     pub const Version: RuntimeVersion = VERSION;
@@ -461,6 +461,10 @@ parameter_types! {
     pub FeeMultiplier: pallet_transaction_payment::Multiplier = pallet_transaction_payment::Multiplier::one();
 }
 
+parameter_types! {
+	pub const TransactionByteFee: Balance = 1;
+}
+
 impl pallet_transaction_payment::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type OnChargeTransaction = pallet_transaction_payment::CurrencyAdapter<
@@ -468,15 +472,9 @@ impl pallet_transaction_payment::Config for Runtime {
         pallet_pot::DepositUnbalancedCurrency<Self, PotInstanceFees>,
     >;
     type OperationalFeeMultiplier = ConstU8<5>;
-    type WeightToFee = frame_support::weights::ConstantMultiplier<
-        Balance,
-        ConstU128<{ constants::fees::WEIGHT_TO_FEE }>,
-    >;
-    type LengthToFee = frame_support::weights::ConstantMultiplier<
-        Balance,
-        ConstU128<{ constants::fees::LENGTH_TO_FEE }>,
-    >;
-    type FeeMultiplierUpdate = pallet_transaction_payment::ConstFeeMultiplier<FeeMultiplier>;
+    type WeightToFee = frame_support::weights::IdentityFee<Balance>;
+    type LengthToFee = frame_support::weights::ConstantMultiplier<Balance, TransactionByteFee>;
+    type FeeMultiplierUpdate = ();
 }
 
 impl pallet_sudo::Config for Runtime {
@@ -593,15 +591,15 @@ impl pallet_im_online::Config for Runtime {
     type MaxPeerDataEncodingSize = ConstU32<MAX_PEER_DATA_ENCODING_SIZE>;
 }
 
-const WEIGHT_MILLISECS_PER_BLOCK: u64 = EXPECTED_BLOCK_WEIGHT.ref_time()
-    / frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS;
-// An assertion to ensure this value is what we expect it to be here.
-const_assert!(WEIGHT_MILLISECS_PER_BLOCK == 2000u64);
+// const WEIGHT_MILLISECS_PER_BLOCK: u64 = EXPECTED_BLOCK_WEIGHT.ref_time()
+//     / frame_support::weights::constants::WEIGHT_REF_TIME_PER_MILLIS;
+// // An assertion to ensure this value is what we expect it to be here.
+// const_assert!(WEIGHT_MILLISECS_PER_BLOCK == 2000u64);
 
 parameter_types! {
     pub BlockGasLimit: U256 = U256::from(constants::evm_fees::BLOCK_GAS_LIMIT);
     pub GasLimitPovSizeRatio: u64 = constants::evm_fees::GAS_LIMIT_POV_SIZE_RATIO;
-    pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
+    pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
     pub WeightPerGas: Weight = Weight::from_parts(fp_evm::weight_per_gas(
         constants::evm_fees::BLOCK_GAS_LIMIT,
         NORMAL_DISPATCH_RATIO,
@@ -643,9 +641,34 @@ impl fp_evm::FeeCalculator for EvmFeePerGas {
     }
 }
 
+parameter_types! {
+	pub DefaultBaseFeePerGas: U256 = U256::from(1_000_000_000);
+	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
+}
+
+pub struct BaseFeeThreshold;
+impl pallet_base_fee::BaseFeeThreshold for BaseFeeThreshold {
+	fn lower() -> Permill {
+		Permill::zero()
+	}
+	fn ideal() -> Permill {
+		Permill::from_parts(500_000)
+	}
+	fn upper() -> Permill {
+		Permill::from_parts(1_000_000)
+	}
+}
+
+impl pallet_base_fee::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Threshold = BaseFeeThreshold;
+	type DefaultBaseFeePerGas = DefaultBaseFeePerGas;
+	type DefaultElasticity = DefaultElasticity;
+}
+
 impl pallet_evm::Config for Runtime {
     type AccountProvider = EvmSystem;
-    type FeeCalculator = EvmFeePerGas;
+    type FeeCalculator = BaseFee;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
@@ -783,10 +806,10 @@ impl pallet_erc20_support::Config for Runtime {
 frame_support::parameter_types! {
     pub PrecompilesAddresses: Vec<H160> =
         vec![
-            frontier_precompiles::hash(precompiles_constants::BIOAUTH),
-            frontier_precompiles::hash(precompiles_constants::EVM_ACCOUNTS_MAPPING),
-            frontier_precompiles::hash(precompiles_constants::NATIVE_CURRENCY),
-            frontier_precompiles::hash(precompiles_constants::CURRENCY_SWAP),
+            // frontier_precompiles::hash(precompiles_constants::BIOAUTH),
+            // frontier_precompiles::hash(precompiles_constants::EVM_ACCOUNTS_MAPPING),
+            // frontier_precompiles::hash(precompiles_constants::NATIVE_CURRENCY),
+            // frontier_precompiles::hash(precompiles_constants::CURRENCY_SWAP),
         ];
 }
 
@@ -841,6 +864,7 @@ construct_runtime!(
         EvmBalancesErc20Support: pallet_erc20_support = 37,
         DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
         HumanodeOffences: pallet_humanode_offences = 39,
+        BaseFee: pallet_base_fee = 40,
     }
 );
 
@@ -1191,23 +1215,14 @@ impl_runtime_apis! {
             >,
             key_owner_proof: fg_primitives::OpaqueKeyOwnershipProof,
         ) -> Option<()> {
-            let key_owner_proof = key_owner_proof.decode()?;
-
-            Grandpa::submit_unsigned_equivocation_report(
-                equivocation_proof,
-                key_owner_proof,
-            )
+            None
         }
 
         fn generate_key_ownership_proof(
             _set_id: fg_primitives::SetId,
             authority_id: GrandpaId,
         ) -> Option<fg_primitives::OpaqueKeyOwnershipProof> {
-            use codec::Encode;
-
-            Historical::prove((fg_primitives::KEY_TYPE, authority_id))
-                .map(|p| p.encode())
-                .map(fg_primitives::OpaqueKeyOwnershipProof::new)
+            None
         }
     }
 
@@ -1316,19 +1331,20 @@ impl_runtime_apis! {
             let config = if estimate {
                 let mut config = <Runtime as pallet_evm::Config>::config().clone();
                 config.estimate = true;
-                config
+                Some(config)
             } else {
-                <Runtime as pallet_evm::Config>::config().clone()
+                None
             };
 
             let is_transactional = false;
             let validate = true;
+            let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
             <Runtime as pallet_evm::Config>::Runner::call(
                 from,
                 to,
                 data,
                 value,
-                gas_limit.low_u64(),
+                gas_limit.unique_saturated_into(),
                 max_fee_per_gas,
                 max_priority_fee_per_gas,
                 nonce,
@@ -1338,7 +1354,7 @@ impl_runtime_apis! {
                 // TODO(#864): set proper values.
                 None,
                 None,
-                &config,
+                evm_config,
             ).map_err(|err| err.error.into())
         }
 
@@ -1356,18 +1372,19 @@ impl_runtime_apis! {
             let config = if estimate {
                 let mut config = <Runtime as pallet_evm::Config>::config().clone();
                 config.estimate = true;
-                config
+                Some(config)
             } else {
-                <Runtime as pallet_evm::Config>::config().clone()
+                None
             };
 
             let is_transactional = false;
             let validate = true;
+            let evm_config = config.as_ref().unwrap_or(<Runtime as pallet_evm::Config>::config());
             <Runtime as pallet_evm::Config>::Runner::create(
                 from,
                 data,
                 value,
-                gas_limit.low_u64(),
+                gas_limit.unique_saturated_into(),
                 max_fee_per_gas,
                 max_priority_fee_per_gas,
                 nonce,
@@ -1377,7 +1394,7 @@ impl_runtime_apis! {
                 // TODO(#864): set proper values.
                 None,
                 None,
-                &config,
+                evm_config,
             ).map_err(|err| err.error.into())
         }
 
@@ -1415,7 +1432,7 @@ impl_runtime_apis! {
         }
 
         fn elasticity() -> Option<Permill> {
-            None
+            Some(pallet_base_fee::Elasticity::<Runtime>::get())
         }
 
         fn gas_limit_multiplier_support() {}
