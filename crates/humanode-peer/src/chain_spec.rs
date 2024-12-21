@@ -1,5 +1,7 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
+use std::{collections::BTreeMap, str::FromStr};
+
 use crypto_utils::{authority_keys_from_seed, evm_account_from_seed, get_account_id_from_seed};
 use frame_support::BoundedVec;
 use hex_literal::hex;
@@ -15,9 +17,9 @@ use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
 use sc_service::ChainType;
 use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
-use sp_core::H160;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{app_crypto::sr25519, traits::Verify};
+use sp_core::{H160, U256};
 
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
@@ -347,6 +349,19 @@ fn testnet_genesis(
                     evm_genesis_account(INITIAL_POT_ACCOUNT_BALANCE),
                 )];
 
+                let dev_accounts = vec![
+                    H160::from_str("0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")
+						.expect("internal H160 is valid; qed"),
+                    H160::from_str("0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0")
+						.expect("internal H160 is valid; qed"),
+                    H160::from_str("0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc")
+						.expect("internal H160 is valid; qed"),
+                    H160::from_str("0x773539d4Ac0e786233D90A233654ccEE26a613D9")
+						.expect("internal H160 is valid; qed"),
+                    H160::from_str("0xFf64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB")
+						.expect("internal H160 is valid; qed"),
+                ];
+
                 evm_pot_accounts
                     .into_iter()
                     .chain(
@@ -354,9 +369,14 @@ fn testnet_genesis(
                             .into_iter()
                             .map(|k| (k, evm_genesis_account(DEV_ACCOUNT_BALANCE))),
                     )
+                    .chain(
+                        dev_accounts
+                            .into_iter()
+                            .map(|k| (k, evm_genesis_account(DEV_ACCOUNT_BALANCE))),
+                    )
                     .collect()
             },
-        },
+		},
         evm_accounts_mapping: Default::default(),
         ethereum: EthereumConfig {},
         dynamic_fee: Default::default(),
