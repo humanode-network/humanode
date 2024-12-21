@@ -601,10 +601,14 @@ impl pallet_offences::Config for Runtime {
     type OnOffenceHandler = OffenceSlasher;
 }
 
+const BLOCK_GAS_LIMIT: u64 = 60_000_000;
+/// We allow for 2000ms of compute with a 6 second average block time.
+pub const WEIGHT_MILLISECS_PER_BLOCK: u64 = 2000;
+
 parameter_types! {
-    pub BlockGasLimit: U256 = U256::from(u32::max_value());
+    pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
     pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::default();
-    pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+    pub WeightPerGas: Weight = Weight::from_parts(fp_evm::weight_per_gas(BLOCK_GAS_LIMIT, NORMAL_DISPATCH_RATIO, WEIGHT_MILLISECS_PER_BLOCK), 0);
 }
 
 impl pallet_evm::Config for Runtime {

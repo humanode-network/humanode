@@ -1,5 +1,7 @@
 //! Provides the [`ChainSpec`] portion of the config.
 
+use std::{collections::BTreeMap, str::FromStr};
+
 use crypto_utils::{authority_keys_from_seed, evm_account_from_seed, get_account_id_from_seed};
 use frame_support::BoundedVec;
 use hex_literal::hex;
@@ -8,7 +10,7 @@ use humanode_runtime::{
     BalancesConfig, BioauthConfig, BootnodesConfig, ChainPropertiesConfig, EthereumAddress,
     EthereumChainIdConfig, EthereumConfig, EvmAccountsMappingConfig, GenesisConfig, GrandpaConfig,
     ImOnlineConfig, SessionConfig, Signature, SudoConfig, SystemConfig, TokenClaimsConfig,
-    WASM_BINARY,
+    WASM_BINARY, EVMConfig,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -17,6 +19,7 @@ use serde::{Deserialize, Serialize};
 use sp_consensus_babe::AuthorityId as BabeId;
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::{app_crypto::sr25519, traits::Verify};
+use sp_core::{H160, U256};
 
 /// The concrete chain spec type we're using for the humanode network.
 pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfig, Extensions>;
@@ -328,7 +331,88 @@ fn testnet_genesis(
         ethereum_chain_id: EthereumChainIdConfig {
             chain_id: ETH_CHAIN_ID,
         },
-        evm: Default::default(),
+        evm: EVMConfig {
+			accounts: {
+				let mut map = BTreeMap::new();
+				map.insert(
+					// H160 address of Alice dev account
+					// Derived from SS58 (42 prefix) address
+					// SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
+					// hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
+					// Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
+					H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
+						.expect("internal H160 is valid; qed"),
+					fp_evm::GenesisAccount {
+						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+							.expect("internal U256 is valid; qed"),
+						code: Default::default(),
+						nonce: Default::default(),
+						storage: Default::default(),
+					},
+				);
+				map.insert(
+					// H160 address of CI test runner account
+					H160::from_str("0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac")
+						.expect("internal H160 is valid; qed"),
+					fp_evm::GenesisAccount {
+						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+							.expect("internal U256 is valid; qed"),
+						code: Default::default(),
+						nonce: Default::default(),
+						storage: Default::default(),
+					},
+				);
+                map.insert(
+					// H160 address of CI test runner account
+					H160::from_str("0x3Cd0A705a2DC65e5b1E1205896BaA2be8A07c6e0")
+						.expect("internal H160 is valid; qed"),
+					fp_evm::GenesisAccount {
+						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+							.expect("internal U256 is valid; qed"),
+						code: Default::default(),
+						nonce: Default::default(),
+						storage: Default::default(),
+					},
+				);
+                map.insert(
+					// H160 address of CI test runner account
+					H160::from_str("0x798d4Ba9baf0064Ec19eB4F0a1a45785ae9D6DFc")
+						.expect("internal H160 is valid; qed"),
+					fp_evm::GenesisAccount {
+						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+							.expect("internal U256 is valid; qed"),
+						code: Default::default(),
+						nonce: Default::default(),
+						storage: Default::default(),
+					},
+				);
+                map.insert(
+					// H160 address of CI test runner account
+					H160::from_str("0x773539d4Ac0e786233D90A233654ccEE26a613D9")
+						.expect("internal H160 is valid; qed"),
+					fp_evm::GenesisAccount {
+						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+							.expect("internal U256 is valid; qed"),
+						code: Default::default(),
+						nonce: Default::default(),
+						storage: Default::default(),
+					},
+				);
+                map.insert(
+					// H160 address of CI test runner account
+					H160::from_str("0xFf64d3F6efE2317EE2807d223a0Bdc4c0c49dfDB")
+						.expect("internal H160 is valid; qed"),
+					fp_evm::GenesisAccount {
+						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
+							.expect("internal U256 is valid; qed"),
+						code: Default::default(),
+						nonce: Default::default(),
+						storage: Default::default(),
+					},
+				);
+				map
+			},
+		},
         evm_accounts_mapping: EvmAccountsMappingConfig {
             mappings: vec![
                 (

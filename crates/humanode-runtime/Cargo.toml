@@ -53,6 +53,7 @@ pallet-balances = { default-features = false, git = "https://github.com/humanode
 pallet-base-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-dynamic-fee = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-ethereum = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
+fp-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm-precompile-modexp = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
 pallet-evm-precompile-sha3fips = { default-features = false, git = "https://github.com/humanode-network/frontier", branch = "locked/polkadot-v0.9.38" }
@@ -134,6 +135,7 @@ std = [
   "eip712-account-claim/std",
   "eip712-common/std",
   "eip712-token-claim/std",
+  "fp-evm/std",
   "fp-rpc/std",
   "fp-self-contained/std",
   "frame-executive/std",
