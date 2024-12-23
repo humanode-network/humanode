@@ -121,7 +121,7 @@ pub mod pallet {
     impl<T: Config<I>, I: 'static> Default for GenesisConfig<T, I> {
         fn default() -> Self {
             Self {
-                initial_state: InitialState::Initialized,
+                initial_state: InitialState::Unchecked,
             }
         }
     }

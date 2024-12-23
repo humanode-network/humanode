@@ -644,23 +644,22 @@ impl fp_evm::FeeCalculator for EvmFeePerGas {
 }
 
 impl pallet_evm::Config for Runtime {
-    type AccountProvider = EvmSystem;
+    type AccountProvider = pallet_evm::NativeSystemAccountProvider<Self>;
     type FeeCalculator = EvmFeePerGas;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
-    type CallOrigin = pallet_evm::EnsureAddressNever<EvmAccountId>;
-    type WithdrawOrigin = pallet_evm::EnsureAddressNever<EvmAccountId>;
-    type AddressMapping = pallet_evm::IdentityAddressMapping;
-    type Currency = EvmBalances;
+    type CallOrigin = pallet_evm::EnsureAddressTruncated;
+    type WithdrawOrigin = pallet_evm::EnsureAddressTruncated;
+    type AddressMapping = pallet_evm::HashedAddressMapping<BlakeTwo256>;
+    type Currency = Balances;
     type RuntimeEvent = RuntimeEvent;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
     type PrecompilesType = FrontierPrecompiles<Self>;
     type PrecompilesValue = PrecompilesValue;
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
-    type OnChargeTransaction =
-        fixed_supply::EvmTransactionCharger<EvmBalances, currency_swap::FeesPotProxy>;
+    type OnChargeTransaction = ();
     type OnCreate = ();
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
