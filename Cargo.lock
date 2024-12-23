@@ -2550,13 +2550,34 @@ dependencies = [
 [[package]]
 name = "evm"
 version = "0.39.1"
+source = "git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556#a2fbe7416c8767b125222ead5219cb7347835556"
 dependencies = [
  "auto_impl",
  "environmental",
  "ethereum",
- "evm-core",
- "evm-gasometer",
- "evm-runtime",
+ "evm-core 0.39.0 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
+ "evm-gasometer 0.39.0 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
+ "evm-runtime 0.39.0 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
+ "log",
+ "parity-scale-codec",
+ "primitive-types",
+ "rlp",
+ "scale-info",
+ "serde",
+ "sha3 0.10.8",
+]
+
+[[package]]
+name = "evm"
+version = "0.39.1"
+source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
+dependencies = [
+ "auto_impl",
+ "environmental",
+ "ethereum",
+ "evm-core 0.39.0 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
+ "evm-gasometer 0.39.0 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
+ "evm-runtime 0.39.0 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
  "log",
  "parity-scale-codec",
  "primitive-types",
@@ -2569,8 +2590,19 @@ dependencies = [
 [[package]]
 name = "evm-core"
 version = "0.39.0"
+source = "git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556#a2fbe7416c8767b125222ead5219cb7347835556"
 dependencies = [
- "log",
+ "parity-scale-codec",
+ "primitive-types",
+ "scale-info",
+ "serde",
+]
+
+[[package]]
+name = "evm-core"
+version = "0.39.0"
+source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
+dependencies = [
  "parity-scale-codec",
  "primitive-types",
  "scale-info",
@@ -2580,21 +2612,45 @@ dependencies = [
 [[package]]
 name = "evm-gasometer"
 version = "0.39.0"
+source = "git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556#a2fbe7416c8767b125222ead5219cb7347835556"
 dependencies = [
  "environmental",
- "evm-core",
- "evm-runtime",
+ "evm-core 0.39.0 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
+ "evm-runtime 0.39.0 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
+ "primitive-types",
+]
+
+[[package]]
+name = "evm-gasometer"
+version = "0.39.0"
+source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
+dependencies = [
+ "environmental",
+ "evm-core 0.39.0 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
+ "evm-runtime 0.39.0 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
  "primitive-types",
 ]
 
 [[package]]
 name = "evm-runtime"
 version = "0.39.0"
+source = "git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556#a2fbe7416c8767b125222ead5219cb7347835556"
 dependencies = [
  "auto_impl",
  "environmental",
- "evm-core",
- "log",
+ "evm-core 0.39.0 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
+ "primitive-types",
+ "sha3 0.10.8",
+]
+
+[[package]]
+name = "evm-runtime"
+version = "0.39.0"
+source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
+dependencies = [
+ "auto_impl",
+ "environmental",
+ "evm-core 0.39.0 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
  "primitive-types",
  "sha3 0.10.8",
 ]
@@ -2666,6 +2722,7 @@ checksum = "25cbce373ec4653f1a01a31e8a5e5ec0c622dc27ff9c4e6606eefef5cbbed4a5"
 [[package]]
 name = "fc-cli"
 version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "clap",
  "ethereum-types",
@@ -2683,6 +2740,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "async-trait",
  "fp-consensus",
@@ -2698,6 +2756,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "async-trait",
  "ethereum",
@@ -2727,6 +2786,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -2749,10 +2809,11 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "ethereum",
  "ethereum-types",
- "evm",
+ "evm 0.39.1 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc-core",
@@ -2798,6 +2859,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2810,6 +2872,7 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -2987,6 +3050,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "hex",
  "impl-serde",
@@ -3005,6 +3069,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -3016,6 +3081,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3029,8 +3095,9 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
- "evm",
+ "evm 0.39.1 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
  "frame-support",
  "parity-scale-codec",
  "scale-info",
@@ -3043,6 +3110,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "ethereum",
  "ethereum-types",
@@ -3059,6 +3127,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -3070,6 +3139,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -6461,10 +6531,11 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "ethereum",
  "ethereum-types",
- "evm",
+ "evm 0.39.1 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
  "fp-consensus",
  "fp-ethereum",
  "fp-evm",
@@ -6496,9 +6567,10 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "environmental",
- "evm",
+ "evm 0.39.1 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
  "fp-account",
  "fp-evm",
  "frame-benchmarking",
@@ -6535,6 +6607,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-balances"
 version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6548,6 +6621,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "fp-evm",
 ]
@@ -6555,6 +6629,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "fp-evm",
  "sp-core",
@@ -6564,6 +6639,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "fp-evm",
  "num",
@@ -6572,6 +6648,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "fp-evm",
  "tiny-keccak",
@@ -6580,6 +6657,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -6589,6 +6667,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-system"
 version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -6603,8 +6682,9 @@ dependencies = [
 [[package]]
 name = "pallet-evm-test-vector-support"
 version = "1.0.0-dev"
+source = "git+https://github.com/humanode-network/frontier?branch=fix-reducible-balance#cd639b2dd523b8060c0909b813c40e6cac07a7f3"
 dependencies = [
- "evm",
+ "evm 0.39.1 (git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65)",
  "fp-evm",
  "hex",
  "serde",
@@ -7324,7 +7404,7 @@ dependencies = [
 name = "precompile-utils"
 version = "0.1.0"
 dependencies = [
- "evm",
+ "evm 0.39.1 (git+https://github.com/humanode-network/evm?rev=a2fbe7416c8767b125222ead5219cb7347835556)",
  "fp-evm",
  "frame-support",
  "frame-system",
