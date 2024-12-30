@@ -3002,7 +3002,7 @@
     - std
 - name: semver-parser 0.7.0
   features: []
-- name: serde 1.0.216
+- name: serde 1.0.217
   features:
     - alloc
     - default
@@ -3010,7 +3010,7 @@
     - rc
     - serde_derive
     - std
-- name: serde_derive 1.0.216
+- name: serde_derive 1.0.217
   features:
     - default
 - name: serde_json 1.0.133
