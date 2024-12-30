@@ -10,3 +10,4 @@
 !/.yarn/releases
 !/.yarn/sdks
 !/.yarn/versions
+/utils/e2e-tests/ts/node_modules

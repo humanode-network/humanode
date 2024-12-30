@@ -37,7 +37,7 @@ export const runNode = (
   addCleanup: AddCleanup,
 ): RunNodeState => {
   const { args, stdio = "inherit" } = params;
-  const childProcess = spawn(PEER_PATH, args, { stdio });
+  const childProcess = spawn(PEER_PATH, args, { stdio, env: { RUST_LOG: 'info,evm=debug' } });
   console.log(`Spawned peer as pid ${childProcess.pid}`);
 
   const sendSig = (sig: number) => {
