@@ -1,7 +1,9 @@
 #!/bin/bash
 set -euo pipefail
 
-PROTOBUF_VERSION="22.0"
+source depversions.sh
+
+PROTOBUF_VERSION="${PROTOC_VERSION:?Check depversions.sh}"
 PROTOBUF_RELEASES_URL="https://github.com/protocolbuffers/protobuf/releases"
 
 # Aw, how cure, they use python instead of uname...
