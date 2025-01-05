@@ -4,6 +4,8 @@ set -euo pipefail
 # Change directory to the project root.
 cd "$(dirname "${BASH_SOURCE[0]}")"/..
 
+source depversions.sh
+
 # Build parameters.
 PLATFORM="linux/amd64"
 BUILDER_CONTAINER_BASE="rust:bullseye"
@@ -24,6 +26,7 @@ trap 'rm -rf "$TMP_BUILDER_DATA_DIR"' EXIT
 docker build \
   --platform "$PLATFORM" \
   --build-arg BASE="$BUILDER_CONTAINER_BASE" \
+  --build-arg PROTOC_VERSION="$PROTOC_VERSION" \
   --file docker/Dockerfile.builder \
   --tag "$BUILDER_CONTAINER_TAG" \
   "$TMP_BUILDER_DATA_DIR"
