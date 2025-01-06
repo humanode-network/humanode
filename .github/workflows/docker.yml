@@ -64,7 +64,7 @@ jobs:
             target/docker/*/*/cargo/registry/cache/
             target/docker/*/*/cargo/git/db/
             target/docker/*/*/target/
-          key: docker-cargo-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock') }}
+          key: docker-cargo-${{ hashFiles('rust-toolchain.toml', 'Cargo.lock', 'docker/Dockerfile.*', 'docker/build.sh') }}
 
       - name: Build the code and docker image
         run: docker/build.sh
