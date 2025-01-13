@@ -417,7 +417,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.24
+- name: clap 4.5.25
   features:
     - color
     - default
@@ -429,7 +429,7 @@
     - string
     - suggestions
     - usage
-- name: clap_builder 4.5.24
+- name: clap_builder 4.5.25
   features:
     - color
     - deprecated
@@ -3872,7 +3872,7 @@
 - name: utf8parse 0.2.1
   features:
     - default
-- name: uuid 1.11.0
+- name: uuid 1.11.1
   features:
     - default
     - rng
