@@ -32,6 +32,5 @@
   "vitest.include": [
     "utils/e2e-tests/ts/**/tests/**/*.ts",
     "utils/e2e-tests/ts/**/*.{test,spec}.ts"
-  ],
-  "prettier.prettierPath": "./node_modules/.bin/prettier"
+  ]
 }
