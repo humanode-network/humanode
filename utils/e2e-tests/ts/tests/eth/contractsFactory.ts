@@ -24,6 +24,7 @@ describe("contracts factory", () => {
     const deployContractTxHash = await alice.deployContract({
       abi: contractsFactory.abi,
       bytecode: contractsFactory.bytecode,
+      value: 1n,
     });
     const deployContractTxReceipt =
       await publicClient.waitForTransactionReceipt({
@@ -32,27 +33,8 @@ describe("contracts factory", () => {
       });
     const factoryAddress = deployContractTxReceipt.contractAddress!;
 
-    const depositPromise = alice
-      .writeContract({
-        address: factoryAddress,
-        abi: contractsFactory.abi,
-        functionName: "deposit",
-        value: 1n, // Even the smallest deposit is enough
-      })
-      .then((depositTx) =>
-        publicClient.waitForTransactionReceipt({
-          hash: depositTx,
-          timeout: 18_000,
-        }),
-      );
-    const item1AddressPromise = build(factoryAddress, bob, publicClient);
-    // Trying to wait for responses in parallel is worth it, since the test is already too long.
-    // Ordering between `deposit` and 1st `build` doesn't matter.
     // Contract factory's `CREATE` nonce for the 1st `build` will be 1.
-    const [item1Address] = await Promise.all([
-      item1AddressPromise,
-      depositPromise,
-    ]);
+    const item1Address = await build(factoryAddress, bob, publicClient);
 
     // If there's a bug in the EVM, it will clear the contract state after `withdrawAll`.
     const withdrawalTx = await alice.writeContract({
