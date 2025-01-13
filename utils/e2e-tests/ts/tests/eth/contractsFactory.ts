@@ -1,4 +1,4 @@
-import { expect, describe, it } from "vitest";
+import { describe, it, expect, assert } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
 import contractsFactory from "../../lib/abis/contractsFactory";
@@ -10,7 +10,10 @@ describe("contracts factory", () => {
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;
   beforeEachWithCleanup(async (cleanup) => {
-    node = runNode({ args: ["--dev", "--tmp"] }, cleanup.push);
+    node = runNode(
+      { args: ["--dev", "--tmp"] /*, env: { RUST_LOG: "info,evm=debug" }*/ },
+      cleanup.push,
+    );
 
     await node.waitForBoot;
 
@@ -18,61 +21,66 @@ describe("contracts factory", () => {
     devClients = eth.devClientsFromNodeWebSocket(node, cleanup.push);
   }, 60 * 1000);
 
-  it("creates contracts at unique addresses", async () => {
-    const [alice, bob] = devClients;
+  it("builds contracts after emptying the wallet", async () => {
+    const [alice, _] = devClients;
 
     const deployContractTxHash = await alice.deployContract({
       abi: contractsFactory.abi,
       bytecode: contractsFactory.bytecode,
-      value: 1n,
+      value: 1n, // Even the smallest deposit is enough
+      gas: 150_274n,
     });
     const deployContractTxReceipt =
       await publicClient.waitForTransactionReceipt({
         hash: deployContractTxHash,
         timeout: 18_000,
       });
-    const factoryAddress = deployContractTxReceipt.contractAddress!;
+    expect(deployContractTxReceipt.status).toBe("success");
+    const factoryAddress = deployContractTxReceipt.contractAddress;
+    assert(factoryAddress);
 
+    const buildParams = {
+      address: factoryAddress,
+      functionName: "build",
+      abi: contractsFactory.abi,
+      gas: 67_566n,
+    } as const;
     // Contract factory's `CREATE` nonce for the 1st `build` will be 1.
-    const item1Address = await build(factoryAddress, bob, publicClient);
+    const build1Tx = await alice.writeContract(buildParams);
+    const build1Receipt = await publicClient.waitForTransactionReceipt({
+      hash: build1Tx,
+      timeout: 18_000,
+    });
+    expect(build1Receipt.status).toBe("success");
 
     // If there's a bug in the EVM, it will clear the contract state after `withdrawAll`.
     const withdrawalTx = await alice.writeContract({
       address: factoryAddress,
       abi: contractsFactory.abi,
       functionName: "withdrawAll",
+      gas: 30_585n,
     });
-    await publicClient.waitForTransactionReceipt({
+    const withdrawalReceipt = await publicClient.waitForTransactionReceipt({
       hash: withdrawalTx,
       timeout: 18_000,
     });
+    expect(withdrawalReceipt.status).toBe("success");
 
     // Contract factory's `CREATE` nonce for the 2nd `build` should be 2 (in the buggy EVM: 0).
-    await build(factoryAddress, bob, publicClient);
+    const build2Tx = await alice.writeContract(buildParams);
+    const build2Receipt = await publicClient.waitForTransactionReceipt({
+      hash: build2Tx,
+      timeout: 18_000,
+    });
+    expect(build2Receipt.status).toBe("success");
 
     // Contract factory's `CREATE` nonce for the 3rd `build` should be 3.
-    // In the buggy EVM nonce = 1, the same as for the 1st `build`; transaction will be reverted.
-    const item3Address = await build(factoryAddress, bob, publicClient);
-    expect(item1Address).not.toBe(item3Address);
-  });
-});
-
-async function build(
-  factoryAddress: `0x${string}`,
-  client: eth.DevClientsWebSocket[0],
-  publicClient: eth.PublicClientWebSocket,
-): Promise<`0x${string}`> {
-  const { request: buildingRequest, result: itemAddress } =
-    await publicClient.simulateContract({
-      address: factoryAddress,
-      abi: contractsFactory.abi,
-      functionName: "build",
-      account: client.account,
+    // In the buggy EVM execution: nonce = 1, the same as for the 1st `build`; transaction will be reverted.
+    const build3 = await alice.writeContract(buildParams);
+    const build3Receipt = await publicClient.waitForTransactionReceipt({
+      hash: build3,
+      timeout: 18_000,
     });
-  const buildingTx = await client.writeContract(buildingRequest);
-  await publicClient.waitForTransactionReceipt({
-    hash: buildingTx,
-    timeout: 18_000,
-  });
-  return itemAddress;
-}
+    expect(build3Receipt.status, "status of third `build`").toBe("success");
+  }, 40_000);
+});

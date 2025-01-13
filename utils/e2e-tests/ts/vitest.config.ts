@@ -20,4 +20,5 @@ export default defineConfig({
     },
     testTimeout: 30_000,
   },
+  cacheDir: "../../../node_modules/.vite/", // Default value: "./node_modules/.vite/"
 });

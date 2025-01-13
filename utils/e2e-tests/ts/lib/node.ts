@@ -7,6 +7,7 @@ import { AddCleanup } from "./cleanup";
 export type RunNodeParams = {
   args: string[];
   stdio?: StdioOptions;
+  env?: NodeJS.ProcessEnv | undefined;
 };
 
 export type CleanupFn = () => Promise<void>;
@@ -36,8 +37,8 @@ export const runNode = (
   params: RunNodeParams,
   addCleanup: AddCleanup,
 ): RunNodeState => {
-  const { args, stdio = "inherit" } = params;
-  const childProcess = spawn(PEER_PATH, args, { stdio });
+  const { args, stdio = "inherit", env } = params;
+  const childProcess = spawn(PEER_PATH, args, { stdio, env });
   console.log(`Spawned peer as pid ${childProcess.pid}`);
 
   const sendSig = (sig: number) => {
