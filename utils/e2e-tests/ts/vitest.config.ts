@@ -20,4 +20,7 @@ export default defineConfig({
     },
     testTimeout: 30_000,
   },
+  // Path relative to this config file or absolute path.
+  // Default value: "./node_modules/.vite/"
+  cacheDir: "../../../node_modules/.e2e-vite/",
 });
