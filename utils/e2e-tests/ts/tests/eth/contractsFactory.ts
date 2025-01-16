@@ -10,10 +10,7 @@ describe("contracts factory", () => {
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;
   beforeEachWithCleanup(async (cleanup) => {
-    node = runNode(
-      { args: ["--dev", "--tmp"] /*, env: { RUST_LOG: "info,evm=debug" }*/ },
-      cleanup.push,
-    );
+    node = runNode({ args: ["--dev", "--tmp"] }, cleanup.push);
 
     await node.waitForBoot;
 
@@ -46,39 +43,45 @@ describe("contracts factory", () => {
       gas: 67_566n,
     } as const;
     // Contract factory's `CREATE` nonce for the 1st `build` will be 1.
-    const build1Tx = await alice.writeContract(buildParams);
-    const build1Receipt = await publicClient.waitForTransactionReceipt({
-      hash: build1Tx,
-      timeout: 18_000,
-    });
-    expect(build1Receipt.status).toBe("success");
-
-    // If there's a bug in the EVM, it will clear the contract state after `withdrawAll`.
-    const withdrawalTx = await alice.writeContract({
-      address: factoryAddress,
-      abi: contractsFactory.abi,
-      functionName: "withdrawAll",
-      gas: 30_585n,
-    });
-    const withdrawalReceipt = await publicClient.waitForTransactionReceipt({
-      hash: withdrawalTx,
-      timeout: 18_000,
-    });
-    expect(withdrawalReceipt.status).toBe("success");
-
-    // Contract factory's `CREATE` nonce for the 2nd `build` should be 2 (in the buggy EVM: 0).
-    const build2Tx = await alice.writeContract(buildParams);
-    const build2Receipt = await publicClient.waitForTransactionReceipt({
-      hash: build2Tx,
-      timeout: 18_000,
-    });
-    expect(build2Receipt.status).toBe("success");
+    const build1Promise = alice.writeContract(buildParams).then((txHash) =>
+      publicClient.waitForTransactionReceipt({
+        hash: txHash,
+        timeout: 18_000,
+      }),
+    );
+    // If there's a bug in the EVM execution, it will clear the contract state after `withdrawAll`.
+    const withdrawalPromise = alice
+      .writeContract({
+        address: factoryAddress,
+        abi: contractsFactory.abi,
+        functionName: "withdrawAll",
+        gas: 53_090n,
+      })
+      .then((txHash) =>
+        publicClient.waitForTransactionReceipt({
+          hash: txHash,
+          timeout: 18_000,
+        }),
+      );
+    // Contract factory's `CREATE` nonce for the 2nd `build` should be 2 (in the buggy EVM execution: 0).
+    const build2Promise = alice.writeContract(buildParams).then((txHash) =>
+      publicClient.waitForTransactionReceipt({
+        hash: txHash,
+        timeout: 18_000,
+      }),
+    );
+    const [build1Receipt, withdrawalReceipt, build2Receipt] = await Promise.all(
+      [build1Promise, withdrawalPromise, build2Promise],
+    );
+    expect(build1Receipt.status, "status of first `build`").toBe("success");
+    expect(withdrawalReceipt.status, "status of withdrawal").toBe("success");
+    expect(build2Receipt.status, "status of second `build`").toBe("success");
 
     // Contract factory's `CREATE` nonce for the 3rd `build` should be 3.
     // In the buggy EVM execution: nonce = 1, the same as for the 1st `build`; transaction will be reverted.
-    const build3 = await alice.writeContract(buildParams);
+    const build3Tx = await alice.writeContract(buildParams);
     const build3Receipt = await publicClient.waitForTransactionReceipt({
-      hash: build3,
+      hash: build3Tx,
       timeout: 18_000,
     });
     expect(build3Receipt.status, "status of third `build`").toBe("success");

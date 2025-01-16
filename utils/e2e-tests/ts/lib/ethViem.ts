@@ -14,7 +14,7 @@ import {
   http,
   webSocket,
 } from "viem";
-import { mnemonicToAccount } from "viem/accounts";
+import { mnemonicToAccount, nonceManager } from "viem/accounts";
 import { AddCleanup } from "./cleanup";
 
 export type ExtraParams = {
@@ -89,6 +89,7 @@ export const publicClientFromNodeWebSocket = (
 export const devAccounts = arrayMap(DEV_ACCOUNT_INDICES, (accountIndex) =>
   mnemonicToAccount(SUBSTRATE_DEV_SEED_PHRASE, {
     path: `${ROOT_DEV_ACCOUNT_DERIVATION_PATH}/${accountIndex}`,
+    nonceManager,
   }),
 );
 
