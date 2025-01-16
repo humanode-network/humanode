@@ -1,7 +1,7 @@
 import { expect, describe, it } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
-import contractsFactory from "../../lib/abis/contractsFactory";
+import contractsFactory from "../../lib/abis/deposit";
 import "../../lib/expect";
 import { beforeEachWithCleanup } from "../../lib/lifecycle";
 
