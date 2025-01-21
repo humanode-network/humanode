@@ -874,6 +874,15 @@ pub type UncheckedExtrinsic =
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 
+/// Evm provider.
+pub struct EvmProvider;
+
+impl pallet_evm_system::migrations::v1::EvmProvider<EvmAccountId> for EvmProvider {
+    fn is_managed_by_evm(account_id: &EvmAccountId) -> bool {
+        pallet_evm::AccountCodes::<Runtime>::contains_key(account_id)
+    }
+}
+
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
     Runtime,
@@ -887,6 +896,7 @@ pub type Executive = frame_executive::Executive<
             BalancedCurrencySwapBridgesInitializer,
             Runtime,
         >,
+        pallet_evm_system::migrations::v1::MigrationV0ToV1<EvmProvider, Runtime>,
     ),
 >;
 
