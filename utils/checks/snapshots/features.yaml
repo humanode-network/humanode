@@ -3872,7 +3872,7 @@
 - name: utf8parse 0.2.1
   features:
     - default
-- name: uuid 1.12.0
+- name: uuid 1.12.1
   features:
     - default
     - rng
