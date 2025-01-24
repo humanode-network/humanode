@@ -123,11 +123,33 @@ fn inc_account_nonce_works() {
 		// Check test preconditions.
 		let nonce_before = EvmSystem::account_nonce(&account_id);
 
+		// Set block number to enable events.
+		System::set_block_number(1);
+
+		// Set mock expectations.
+		let on_new_account_ctx = MockDummyOnNewAccount::on_new_account_context();
+		on_new_account_ctx
+			.expect()
+			.once()
+			.with(predicate::eq(account_id))
+			.return_const(());
+
 		// Invoke the function under test.
 		EvmSystem::inc_account_nonce(&account_id);
 
 		// Assert state changes.
 		assert_eq!(EvmSystem::account_nonce(&account_id), nonce_before + 1);
+		System::assert_has_event(RuntimeEvent::EvmSystem(Event::NewAccount {
+			account: account_id,
+		}));
+
+		// Invoke the function under test again to check that the account is not being created now.
+		EvmSystem::inc_account_nonce(&account_id);
+		// Assert state changes.
+		assert_eq!(EvmSystem::account_nonce(&account_id), nonce_before + 2);
+
+		// Assert mock invocations.
+		on_new_account_ctx.checkpoint();
 	});
 }
 
