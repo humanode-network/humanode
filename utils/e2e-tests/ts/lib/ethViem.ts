@@ -27,8 +27,8 @@ export type ExtraParams = {
 
 export const makeChain = (url: string) =>
   defineChain({
-    id: 5234,
-    network: "5234",
+    id: 1337,
+    network: "1337",
     name: "Humanode Dev",
     rpcUrls: {
       default: {

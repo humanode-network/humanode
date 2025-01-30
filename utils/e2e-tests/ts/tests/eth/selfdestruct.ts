@@ -11,7 +11,7 @@ describe("selfdestruct", () => {
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;
   beforeEachWithCleanup(async (cleanup) => {
-    node = runNode({ args: ["--dev", "--tmp"] }, cleanup.push);
+    node = runNode({ args: ["--datadir", "dev-chain", "--dev", "--dev.period", "6", "--http", "--http.port", "9933", "-ws", "--ws.port", "9944"] }, cleanup.push);
 
     await node.waitForBoot;
 
@@ -51,6 +51,11 @@ describe("selfdestruct", () => {
       address: contract,
     });
     expect(contractBalanceBefore).toBe(transferValue);
+    // Check nonce before executing selfdestruct.
+    const contractNonceBefore = await publicClient.getTransactionCount({
+      address: contract,
+    });
+    expect(contractNonceBefore).toBe(1);
 
     // Execute selfdestruct.
     const selfdestructHash = await alice.writeContract({
@@ -68,5 +73,10 @@ describe("selfdestruct", () => {
       address: contract,
     });
     expect(contractBalanceAfter).toBe(transferValue);
+    // Verify nonce after executing selfdestruct.
+    const contractNonceAfter = await publicClient.getTransactionCount({
+      address: contract,
+    });
+    expect(contractNonceAfter).toBe(1);
   });
 });

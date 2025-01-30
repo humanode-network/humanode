@@ -64,7 +64,7 @@ export const runNode = (
 
       try {
         await axios.get(meta.rpcUrlHttp, {
-          validateStatus: (status) => status === 405,
+          validateStatus: (status) => status === 200,
         });
       } catch (error) {
         if (attempts > 100) {
