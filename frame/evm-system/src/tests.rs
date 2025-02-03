@@ -113,14 +113,17 @@ fn remove_account_fails() {
 	});
 }
 
-/// This test verifies that incrementing account nonce works in the happy path.
+/// This test verifies that incrementing account nonce works in the happy path
+/// in case a new account should be created.
 #[test]
-fn inc_account_nonce_works() {
+fn inc_account_nonce_account_created() {
 	new_test_ext().execute_with_ext(|_| {
 		// Prepare test data.
 		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 
 		// Check test preconditions.
+		assert!(!EvmSystem::account_exists(&account_id));
+
 		let nonce_before = EvmSystem::account_nonce(&account_id);
 
 		// Set block number to enable events.
@@ -139,6 +142,7 @@ fn inc_account_nonce_works() {
 
 		// Assert state changes.
 		assert_eq!(EvmSystem::account_nonce(&account_id), nonce_before + 1);
+		assert!(EvmSystem::account_exists(&account_id));
 		System::assert_has_event(RuntimeEvent::EvmSystem(Event::NewAccount {
 			account: account_id,
 		}));
@@ -147,9 +151,33 @@ fn inc_account_nonce_works() {
 		EvmSystem::inc_account_nonce(&account_id);
 		// Assert state changes.
 		assert_eq!(EvmSystem::account_nonce(&account_id), nonce_before + 2);
+		assert!(EvmSystem::account_exists(&account_id));
 
 		// Assert mock invocations.
 		on_new_account_ctx.checkpoint();
+	});
+}
+
+/// This test verifies that incrementing account nonce works in the happy path
+/// in case an account already exists.
+#[test]
+fn inc_account_nonce_account_exists() {
+	new_test_ext().execute_with_ext(|_| {
+		// Prepare test data.
+		let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
+		<Account<Test>>::insert(account_id.clone(), AccountInfo::<_, _>::default());
+
+		// Check test preconditions.
+		assert!(EvmSystem::account_exists(&account_id));
+
+		let nonce_before = EvmSystem::account_nonce(&account_id);
+
+		// Invoke the function under test.
+		EvmSystem::inc_account_nonce(&account_id);
+
+		// Assert state changes.
+		assert!(EvmSystem::account_exists(&account_id));
+		assert_eq!(EvmSystem::account_nonce(&account_id), nonce_before + 1);
 	});
 }
 
