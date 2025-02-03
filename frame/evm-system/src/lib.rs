@@ -160,16 +160,19 @@ impl<T: Config> Pallet<T> {
 
 	/// Increment a particular account's nonce by 1.
 	pub fn inc_account_nonce(who: &<T as Config>::AccountId) {
-		Account::<T>::mutate(who, |a| {
-			a.nonce += <T as Config>::Index::one();
+		let is_new_account = Account::<T>::mutate_exists(who, |maybe_account| {
+			let is_new_account = maybe_account.is_none();
 
-			// Meaning that account is being created.
-			if a.nonce == <T as Config>::Index::one()
-				&& a.data == <T as Config>::AccountData::default()
-			{
-				Self::on_created_account(who.clone());
-			}
+			let account = maybe_account.get_or_insert_default();
+			account.nonce += <T as Config>::Index::one();
+
+			is_new_account
 		});
+
+		// Meaning that account is being created.
+		if is_new_account {
+			Self::on_created_account(who.clone());
+		}
 	}
 
 	/// Create an account.
