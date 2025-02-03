@@ -2078,14 +2078,14 @@
     - std
 - name: open-fastrlp-derive 0.1.1
   features: []
-- name: openssl 0.10.66
+- name: openssl 0.10.70
   features:
     - default
 - name: openssl-macros 0.1.1
   features: []
 - name: openssl-probe 0.1.5
   features: []
-- name: openssl-sys 0.9.103
+- name: openssl-sys 0.9.105
   features: []
 - name: overload 0.1.1
   features: []
@@ -3013,7 +3013,7 @@
 - name: serde_derive 1.0.217
   features:
     - default
-- name: serde_json 1.0.137
+- name: serde_json 1.0.138
   features:
     - alloc
     - default
