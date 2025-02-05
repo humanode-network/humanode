@@ -1259,6 +1259,8 @@
 - name: getrandom 0.2.15
   features:
     - std
+- name: getrandom 0.3.1
+  features: []
 - name: ghash 0.4.4
   features: []
 - name: ghash 0.5.0
@@ -3872,7 +3874,7 @@
 - name: utf8parse 0.2.1
   features:
     - default
-- name: uuid 1.12.1
+- name: uuid 1.13.1
   features:
     - default
     - rng
@@ -3927,6 +3929,8 @@
   features:
     - default
     - std
+- name: wasi 0.13.3+wasi-0.2.2
+  features: []
 - name: wasi 0.9.0+wasi-snapshot-preview1
   features:
     - default
@@ -4278,6 +4282,9 @@
   features: []
 - name: wiremock 0.5.22
   features: []
+- name: wit-bindgen-rt 0.33.0
+  features:
+    - bitflags
 - name: wyz 0.5.1
   features: []
 - name: x25519-dalek 1.1.1
