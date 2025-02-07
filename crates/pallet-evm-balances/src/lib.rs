@@ -1,8 +1,5 @@
-// SPDX-License-Identifier: Apache-2.0
-
 //! # EVM Balances Pallet.
 
-// Ensure we're `no_std` when compiling for Wasm.
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Codec, Decode, Encode, MaxEncodedLen};
