@@ -4132,13 +4132,13 @@ dependencies = [
  "pallet-ethereum-chain-id",
  "pallet-evm",
  "pallet-evm-accounts-mapping",
- "pallet-evm-balances",
+ "pallet-evm-balances 1.0.0-dev",
  "pallet-evm-precompile-blake2",
  "pallet-evm-precompile-bn128",
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
- "pallet-evm-system",
+ "pallet-evm-system 1.0.0-dev",
  "pallet-grandpa",
  "pallet-humanode-offences",
  "pallet-humanode-session",
@@ -6446,8 +6446,8 @@ dependencies = [
  "frame-system",
  "mockall",
  "pallet-balances",
- "pallet-evm-balances",
- "pallet-evm-system",
+ "pallet-evm-balances 1.0.0-dev",
+ "pallet-evm-system 1.0.0-dev",
  "parity-scale-codec",
  "primitives-currency-swap",
  "scale-info",
@@ -6466,8 +6466,8 @@ dependencies = [
  "hex-literal",
  "pallet-balances",
  "pallet-evm",
- "pallet-evm-balances",
- "pallet-evm-system",
+ "pallet-evm-balances 1.0.0-dev",
+ "pallet-evm-system 1.0.0-dev",
  "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
@@ -6565,6 +6565,24 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-balances"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "pallet-evm",
+ "pallet-evm-system 0.1.0",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-evm-balances"
 version = "1.0.0-dev"
 source = "git+https://github.com/humanode-network/frontier?tag=locked/polkadot-v0.9.42-2025-02-08#174c0227af00dbc26485c1eac68738e1d01980e8"
 dependencies = [
@@ -6621,6 +6639,22 @@ dependencies = [
  "fp-evm",
  "ripemd",
  "sp-io",
+]
+
+[[package]]
+name = "pallet-evm-system"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "mockall",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
@@ -7309,8 +7343,8 @@ dependencies = [
  "num_enum 0.7.3",
  "pallet-balances",
  "pallet-evm",
- "pallet-evm-balances",
- "pallet-evm-system",
+ "pallet-evm-balances 1.0.0-dev",
+ "pallet-evm-system 1.0.0-dev",
  "pallet-timestamp",
  "parity-scale-codec",
  "precompile-utils",
@@ -7350,8 +7384,8 @@ dependencies = [
  "pallet-balances",
  "pallet-erc20-support",
  "pallet-evm",
- "pallet-evm-balances",
- "pallet-evm-system",
+ "pallet-evm-balances 1.0.0-dev",
+ "pallet-evm-system 1.0.0-dev",
  "pallet-timestamp",
  "parity-scale-codec",
  "precompile-utils",
