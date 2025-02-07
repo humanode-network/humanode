@@ -38,6 +38,9 @@ pub use pallet::*;
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
+// We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
+// fix them at their end.
+#[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::pallet_prelude::*;
