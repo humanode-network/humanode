@@ -53,13 +53,13 @@ fn evm_system_removing_account_non_zero_balance() {
             ExistenceRequirement::KeepAlive
         ));
 
-        assert_eq!(EvmBalances::free_balance(&contract), 1000);
+        assert_eq!(EvmBalances::free_balance(contract), 1000);
 
         // Invoke the function under test.
         EVM::remove_account(&contract);
 
         // Assert state changes.
-        assert_eq!(EvmBalances::free_balance(&contract), 1000);
+        assert_eq!(EvmBalances::free_balance(contract), 1000);
         assert!(EvmSystem::account_exists(&contract));
 
         assert_total_issuance_invariant();
@@ -73,7 +73,7 @@ fn evm_fee_deduction() {
 
 		// Seed account
 		let _ = <Test as pallet_evm::Config>::Currency::deposit_creating(&charlie, 100);
-		assert_eq!(EvmBalances::free_balance(&charlie), 100);
+		assert_eq!(EvmBalances::free_balance(charlie), 100);
 
 		// Deduct fees as 10 units
 		let imbalance =
@@ -82,11 +82,11 @@ fn evm_fee_deduction() {
 				U256::from(10),
 			)
 			.unwrap();
-		assert_eq!(EvmBalances::free_balance(&charlie), 90);
+		assert_eq!(EvmBalances::free_balance(charlie), 90);
 
 		// Refund fees as 5 units
 		<<Test as pallet_evm::Config>::OnChargeTransaction as pallet_evm::OnChargeEVMTransaction<Test>>::correct_and_deposit_fee(&charlie, U256::from(5), U256::from(5), imbalance);
-		assert_eq!(EvmBalances::free_balance(&charlie), 95);
+		assert_eq!(EvmBalances::free_balance(charlie), 95);
 
 		assert_total_issuance_invariant();
 	});
@@ -202,7 +202,7 @@ fn evm_refunds_and_priority_should_work() {
 
         let (base_fee, _) = <Test as pallet_evm::Config>::FeeCalculator::min_gas_price();
         let actual_tip = (max_fee_per_gas - base_fee).min(tip) * used_gas;
-        let total_cost = (used_gas * base_fee) + U256::from(actual_tip) + U256::from(1);
+        let total_cost = (used_gas * base_fee) + actual_tip + U256::from(1);
         let after_call = EVM::account_basic(&alice()).0.balance;
         // The tip is deducted but never refunded to the caller.
         assert_eq!(after_call, before_call - total_cost);

@@ -27,7 +27,7 @@ fn total_balance_works() {
 fn free_balance_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check the free balance value.
-        assert_eq!(EvmBalances::free_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::free_balance(alice()), INIT_BALANCE);
     });
 }
 
@@ -551,7 +551,7 @@ fn evm_system_account_should_be_reaped() {
         ));
 
         // Assert state changes.
-        assert_eq!(EvmBalances::free_balance(&bob()), 0);
+        assert_eq!(EvmBalances::free_balance(bob()), 0);
         assert!(!EvmSystem::account_exists(&bob()));
         System::assert_has_event(RuntimeEvent::EvmSystem(
             pallet_evm_system::Event::KilledAccount { account: bob() },
