@@ -7,7 +7,7 @@ use frame_support::traits::StoredMap;
 use scale_info::TypeInfo;
 use sp_runtime::{
     traits::{One, Zero},
-    DispatchError, RuntimeDebug,
+    DispatchError, RuntimeDebug, Saturating,
 };
 
 #[cfg(test)]
@@ -145,7 +145,8 @@ impl<T: Config> Pallet<T> {
             let is_new_account = maybe_account.is_none();
 
 			let account = maybe_account.get_or_insert_with(Default::default);
-			account.nonce += <T as Config>::Index::one();
+			// `AtLeast32Bit` is big enough for this overflow to be practically impossible.
+            account.nonce = account.nonce.saturating_add(<T as Config>::Index::one());
 
             is_new_account
         });
