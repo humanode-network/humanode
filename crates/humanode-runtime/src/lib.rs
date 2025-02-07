@@ -147,6 +147,7 @@ pub type Signature = MultiSignature;
 ///     salt/nonce; note that there are currently multiple simultaneously supported algorithms for
 ///     how the contract addresses can be constructed by the EVM, and new might be introduced in
 ///     the future.
+///
 ///   Both of the 20-byte EVM address types are stored with a certain format in a wider 32-byte
 ///   [`AccountId32`] type, that enables us to distinguish them from other address types; there's
 ///   a certain chance that a non-EVM address would just so happen to be matching the EVM address

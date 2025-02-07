@@ -1,3 +1,6 @@
+// Ignore incompatible lints from original project.
+#![allow(missing_docs)]
+
 use sha3::{Digest, Keccak256};
 
 #[precompile_utils_macro::generate_function_selector]

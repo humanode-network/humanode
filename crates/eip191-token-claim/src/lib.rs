@@ -12,7 +12,7 @@ pub struct Message<'a> {
     pub genesis_hash: &'a [u8; 32],
 }
 
-impl<'a> Message<'a> {
+impl Message<'_> {
     /// Prepare EIP-191 token claim message.
     pub fn prepare_message(&self) -> Vec<u8> {
         let mut buf = vec![];

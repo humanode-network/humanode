@@ -64,7 +64,7 @@ impl<'a> From<&'a [u8]> for OpaqueLivenessDataRef<'a> {
     }
 }
 
-impl<'a> AsRef<[u8]> for OpaqueLivenessDataRef<'a> {
+impl AsRef<[u8]> for OpaqueLivenessDataRef<'_> {
     fn as_ref(&self) -> &[u8] {
         self.0
     }
