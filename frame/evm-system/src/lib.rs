@@ -8,7 +8,10 @@
 use frame_support::traits::StoredMap;
 use scale_codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use scale_info::TypeInfo;
-use sp_runtime::{traits::One, DispatchError, RuntimeDebug};
+use sp_runtime::{
+	traits::{One, Zero},
+	DispatchError, RuntimeDebug,
+};
 
 #[cfg(test)]
 mod mock;
@@ -105,14 +108,6 @@ pub mod pallet {
 		/// An account was reaped.
 		KilledAccount { account: <T as Config>::AccountId },
 	}
-
-	#[pallet::error]
-	pub enum Error<T> {
-		/// The account already exists in case creating it.
-		AccountAlreadyExist,
-		/// The account doesn't exist in case removing it.
-		AccountNotExist,
-	}
 }
 
 /// The outcome of the account creation operation.
@@ -122,17 +117,6 @@ pub enum AccountCreationOutcome {
 	Created,
 	/// Account already exists in the system, so action was taken.
 	AlreadyExists,
-}
-
-/// The outcome of the account removal operation.
-#[derive(Eq, PartialEq, RuntimeDebug)]
-pub enum AccountRemovalOutcome {
-	/// Account was destroyed and no longer exists.
-	Reaped,
-	/// Account was non-empty, and it was retained and still exists in the system.
-	Retained,
-	/// Account did not exist in the first place, so no action was taken.
-	DidNotExist,
 }
 
 impl<T: Config> Pallet<T> {
@@ -185,21 +169,6 @@ impl<T: Config> Pallet<T> {
 		Self::on_created_account(who.clone());
 		AccountCreationOutcome::Created
 	}
-
-	/// Remove an account.
-	pub fn remove_account(who: &<T as Config>::AccountId) -> AccountRemovalOutcome {
-		if !Self::account_exists(who) {
-			return AccountRemovalOutcome::DidNotExist;
-		}
-
-		if Account::<T>::get(who).data != <T as Config>::AccountData::default() {
-			return AccountRemovalOutcome::Retained;
-		}
-
-		Account::<T>::remove(who);
-		Self::on_killed_account(who.clone());
-		AccountRemovalOutcome::Reaped
-	}
 }
 
 impl<T: Config> StoredMap<<T as Config>::AccountId, <T as Config>::AccountData> for Pallet<T> {
@@ -211,10 +180,11 @@ impl<T: Config> StoredMap<<T as Config>::AccountId, <T as Config>::AccountData> 
 		k: &<T as Config>::AccountId,
 		f: impl FnOnce(&mut Option<<T as Config>::AccountData>) -> Result<R, E>,
 	) -> Result<R, E> {
-		let (mut maybe_account_data, was_providing) = if Self::account_exists(k) {
-			(Some(Account::<T>::get(k).data), true)
+		let (mut maybe_account_data, nonce, was_providing) = if Self::account_exists(k) {
+			let account_info = Account::<T>::get(k);
+			(Some(account_info.data), account_info.nonce, true)
 		} else {
-			(None, false)
+			(None, <T as Config>::Index::zero(), false)
 		};
 
 		let result = f(&mut maybe_account_data)?;
@@ -228,8 +198,12 @@ impl<T: Config> StoredMap<<T as Config>::AccountId, <T as Config>::AccountData> 
 				Account::<T>::mutate(k, |a| a.data = data);
 			}
 			(None, true) => {
-				Account::<T>::remove(k);
-				Self::on_killed_account(k.clone());
+				if nonce != <T as Config>::Index::zero() {
+					Account::<T>::mutate(k, |a| a.data = Default::default());
+				} else {
+					Account::<T>::remove(k);
+					Self::on_killed_account(k.clone());
+				}
 			}
 			(None, false) => {
 				// Do nothing.
@@ -248,8 +222,8 @@ impl<T: Config> fp_evm::AccountProvider for Pallet<T> {
 		let _ = Self::create_account(who);
 	}
 
-	fn remove_account(who: &Self::AccountId) {
-		let _ = Self::remove_account(who);
+	fn on_account_self_destruct(_who: &Self::AccountId) {
+		// Do nothing as account state shouldn't be modified.
 	}
 
 	fn account_nonce(who: &Self::AccountId) -> Self::Index {
