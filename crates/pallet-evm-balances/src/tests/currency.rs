@@ -123,7 +123,7 @@ fn transfer_works() {
         // Check test preconditions.
         assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
 
-        let transfered_amount = 100;
+        let transferred_amount = 100;
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -132,23 +132,23 @@ fn transfer_works() {
         assert_ok!(EvmBalances::transfer(
             &alice(),
             &bob(),
-            transfered_amount,
+            transferred_amount,
             ExistenceRequirement::KeepAlive
         ));
 
         // Assert state changes.
         assert_eq!(
             EvmBalances::total_balance(&alice()),
-            INIT_BALANCE - transfered_amount
+            INIT_BALANCE - transferred_amount
         );
         assert_eq!(
             EvmBalances::total_balance(&bob()),
-            INIT_BALANCE + transfered_amount
+            INIT_BALANCE + transferred_amount
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(crate::Event::Transfer {
             from: alice(),
             to: bob(),
-            amount: transfered_amount,
+            amount: transferred_amount,
         }));
 
         assert_total_issuance_invariant();
@@ -161,7 +161,7 @@ fn transfer_works_full_balance() {
         // Check test preconditions.
         assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
 
-        let transfered_amount = INIT_BALANCE;
+        let transferred_amount = INIT_BALANCE;
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -170,23 +170,23 @@ fn transfer_works_full_balance() {
         assert_ok!(EvmBalances::transfer(
             &alice(),
             &bob(),
-            transfered_amount,
+            transferred_amount,
             ExistenceRequirement::AllowDeath
         ));
 
         // Assert state changes.
         assert_eq!(
             EvmBalances::total_balance(&alice()),
-            INIT_BALANCE - transfered_amount
+            INIT_BALANCE - transferred_amount
         );
         assert_eq!(
             EvmBalances::total_balance(&bob()),
-            INIT_BALANCE + transfered_amount
+            INIT_BALANCE + transferred_amount
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(crate::Event::Transfer {
             from: alice(),
             to: bob(),
-            amount: transfered_amount,
+            amount: transferred_amount,
         }));
         assert!(!EvmSystem::account_exists(&alice()));
         System::assert_has_event(RuntimeEvent::EvmSystem(
@@ -203,7 +203,7 @@ fn transfer_fails_funds_unavailable() {
         // Check test preconditions.
         assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
 
-        let transfered_amount = INIT_BALANCE + 1;
+        let transferred_amount = INIT_BALANCE + 1;
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -213,7 +213,7 @@ fn transfer_fails_funds_unavailable() {
             EvmBalances::transfer(
                 &alice(),
                 &bob(),
-                transfered_amount,
+                transferred_amount,
                 ExistenceRequirement::KeepAlive
             ),
             TokenError::FundsUnavailable
@@ -227,7 +227,7 @@ fn transfer_fails_not_expendable() {
         // Check test preconditions.
         assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
 
-        let transfered_amount = INIT_BALANCE;
+        let transferred_amount = INIT_BALANCE;
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -237,7 +237,7 @@ fn transfer_fails_not_expendable() {
             EvmBalances::transfer(
                 &alice(),
                 &bob(),
-                transfered_amount,
+                transferred_amount,
                 ExistenceRequirement::KeepAlive
             ),
             TokenError::NotExpendable
