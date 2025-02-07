@@ -5,6 +5,7 @@
 // Ensure we're `no_std` when compiling for Wasm.
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use codec::{Codec, Decode, Encode, MaxEncodedLen};
 use frame_support::{
     ensure,
     traits::{
@@ -14,7 +15,6 @@ use frame_support::{
         StoredMap, WithdrawReasons,
     },
 };
-use scale_codec::{Codec, Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{
     traits::{Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Zero},

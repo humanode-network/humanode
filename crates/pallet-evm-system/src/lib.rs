@@ -3,8 +3,8 @@
 // Ensure we're `no_std` when compiling for Wasm.
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use frame_support::traits::StoredMap;
-use scale_codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{
     traits::{One, Zero},
