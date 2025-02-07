@@ -32,10 +32,16 @@ std = [
   "pallet-evm/std",
   "pallet-timestamp/std",
   "scale-info/std",
+  "sp-core/std",
+  "sp-io/std",
   "sp-runtime/std",
   "sp-std/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
   "frame-system/try-runtime",
+  "pallet-evm-system/try-runtime",
+  "pallet-evm/try-runtime",
+  "pallet-timestamp/try-runtime",
+  "sp-runtime/try-runtime",
 ]
