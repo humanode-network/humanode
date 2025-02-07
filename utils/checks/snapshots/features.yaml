@@ -3563,7 +3563,7 @@
     - background_threads_runtime_support
     - default
     - unprefixed_malloc_on_supported_platforms
-- name: time 0.3.34
+- name: time 0.3.37
   features:
     - alloc
     - default
@@ -3574,7 +3574,7 @@
     - std
 - name: time-core 0.1.2
   features: []
-- name: time-macros 0.2.17
+- name: time-macros 0.2.19
   features:
     - formatting
     - parsing
