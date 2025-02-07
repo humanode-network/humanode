@@ -1,4 +1,4 @@
-//! Unit tests.
+//! The tests for the pallet.
 
 use frame_support::{assert_ok, traits::Currency, weights::Weight};
 use pallet_evm::{FeeCalculator, FixedGasWeightMapping, GasWeightMapping, Runner};

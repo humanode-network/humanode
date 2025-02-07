@@ -1,4 +1,4 @@
-//! Unit tests.
+//! The tests for the pallet.
 
 use frame_support::{assert_noop, assert_storage_noop};
 use mockall::predicate;
