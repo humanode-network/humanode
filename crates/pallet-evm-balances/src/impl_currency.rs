@@ -131,14 +131,21 @@ where
             return (NegativeImbalance::zero(), value);
         }
 
-        let result = match Self::try_mutate_account_handling_dust(
+        let mutate_closure = |account: &mut AccountData<<T as Config<I>>::Balance>| -> Result<
+            (Self::NegativeImbalance, Self::Balance),
+            DispatchError,
+        > {
+            // Best value is the most amount we can slash following liveness rules.
+            let actual = value.min(account.free);
+            account.free.saturating_reduce(actual);
+            let remaining = value.saturating_sub(actual);
+            Ok((NegativeImbalance::new(actual), remaining))
+        };
+
+        match Self::try_mutate_account_handling_dust(
             who,
             |account, _is_new| -> Result<(Self::NegativeImbalance, Self::Balance), DispatchError> {
-                // Best value is the most amount we can slash following liveness rules.
-                let actual = value.min(account.free);
-                account.free.saturating_reduce(actual);
-                let remaining = value.saturating_sub(actual);
-                Ok((NegativeImbalance::new(actual), remaining))
+                mutate_closure(account)
             },
         ) {
             Ok((imbalance, remaining)) => {
@@ -149,8 +156,7 @@ where
                 (imbalance, remaining)
             }
             Err(_) => (Self::NegativeImbalance::zero(), value),
-        };
-        result
+        }
     }
 
     /// Deposit some `value` into the free balance of an existing target account `who`.
