@@ -67,7 +67,9 @@ where
         }
         <TotalIssuance<T, I>>::mutate(|issued| {
             *issued = issued.checked_add(&amount).unwrap_or_else(|| {
-                amount = Self::Balance::max_value() - *issued;
+                amount = Self::Balance::max_value()
+                    .checked_sub(issued)
+                    .expect("valid operation; qed.");
                 Self::Balance::max_value()
             })
         });
@@ -283,9 +285,17 @@ where
 				ensure!(value >= ed || !is_new, Error::<T, I>::ExistentialDeposit);
 
 				let imbalance = if account.free <= value {
-					SignedImbalance::Positive(PositiveImbalance::new(value - account.free))
+					SignedImbalance::Positive(PositiveImbalance::new(
+                        value
+                            .checked_sub(&account.free)
+                            .expect("valid operation due to the check before; qed.")
+                    ))
 				} else {
-					SignedImbalance::Negative(NegativeImbalance::new(account.free - value))
+					SignedImbalance::Negative(NegativeImbalance::new(
+                        account.free
+                            .checked_sub(&value)
+                            .expect("valid operation due to the check before; qed.")
+                    ))
 				};
 				account.free = value;
 				Self::deposit_event(Event::BalanceSet {

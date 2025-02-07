@@ -60,7 +60,10 @@ impl<T: Config<I>, I: 'static> Imbalance<T::Balance> for PositiveImbalance<T, I>
 
     fn split(self, amount: T::Balance) -> (Self, Self) {
         let first = self.0.min(amount);
-        let second = self.0 - first;
+        let second = self
+            .0
+            .checked_sub(&first)
+            .expect("valid operation due to the check before; qed.");
 
         mem::forget(self);
         (Self(first), Self(second))
@@ -83,8 +86,12 @@ impl<T: Config<I>, I: 'static> Imbalance<T::Balance> for PositiveImbalance<T, I>
         mem::forget((self, other));
 
         match a.cmp(&b) {
-            Ordering::Greater => SameOrOther::Same(Self(a - b)),
-            Ordering::Less => SameOrOther::Other(NegativeImbalance::new(b - a)),
+            Ordering::Greater => {
+                SameOrOther::Same(Self(a.checked_sub(&b).expect("a is greater than b; qed.")))
+            }
+            Ordering::Less => SameOrOther::Other(NegativeImbalance::new(
+                b.checked_sub(&a).expect("b is greater than a; qed."),
+            )),
             Ordering::Equal => SameOrOther::None,
         }
     }
@@ -123,7 +130,10 @@ impl<T: Config<I>, I: 'static> Imbalance<T::Balance> for NegativeImbalance<T, I>
 
     fn split(self, amount: T::Balance) -> (Self, Self) {
         let first = self.0.min(amount);
-        let second = self.0 - first;
+        let second = self
+            .0
+            .checked_sub(&first)
+            .expect("valid operation due to the check before; qed.");
 
         mem::forget(self);
         (Self(first), Self(second))
@@ -146,8 +156,12 @@ impl<T: Config<I>, I: 'static> Imbalance<T::Balance> for NegativeImbalance<T, I>
         mem::forget((self, other));
 
         match a.cmp(&b) {
-            Ordering::Greater => SameOrOther::Same(Self(a - b)),
-            Ordering::Less => SameOrOther::Other(PositiveImbalance::new(b - a)),
+            Ordering::Greater => {
+                SameOrOther::Same(Self(a.checked_sub(&b).expect("a is greater than b; qed.")))
+            }
+            Ordering::Less => SameOrOther::Other(PositiveImbalance::new(
+                b.checked_sub(&a).expect("b is greater than a; qed."),
+            )),
             Ordering::Equal => SameOrOther::None,
         }
     }
