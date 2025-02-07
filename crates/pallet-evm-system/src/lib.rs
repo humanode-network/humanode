@@ -95,9 +95,15 @@ pub mod pallet {
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// A new account was created.
-        NewAccount { account: <T as Config>::AccountId },
+        NewAccount {
+            /// The associated account id.
+            account: <T as Config>::AccountId,
+        },
         /// An account was reaped.
-        KilledAccount { account: <T as Config>::AccountId },
+        KilledAccount {
+            /// The associated account id.
+            account: <T as Config>::AccountId,
+        },
     }
 }
 
