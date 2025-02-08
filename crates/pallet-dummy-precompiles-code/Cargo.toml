@@ -14,11 +14,12 @@ sp-core = { workspace = true }
 sp-std = { workspace = true }
 
 [dev-dependencies]
+pallet-evm-balances = { path = "../pallet-evm-balances", features = ["default"] }
+pallet-evm-system = { path = "../pallet-evm-system", features = ["default"] }
+
 fp-evm = { workspace = true }
 hex-literal = { workspace = true }
 pallet-balances = { workspace = true, features = ["default"] }
-pallet-evm-balances = { workspace = true, features = ["default"] }
-pallet-evm-system = { workspace = true, features = ["default"] }
 pallet-timestamp = { workspace = true, features = ["default"] }
 
 [features]

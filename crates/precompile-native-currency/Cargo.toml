@@ -6,6 +6,7 @@ publish = false
 
 [dependencies]
 pallet-erc20-support = { path = "../pallet-erc20-support", default-features = false }
+pallet-evm-balances = { path = "../pallet-evm-balances", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
 
 codec = { workspace = true, features = ["derive"] }
@@ -13,18 +14,17 @@ fp-evm = { workspace = true }
 frame-support = { workspace = true }
 num_enum = { workspace = true }
 pallet-evm = { workspace = true }
-pallet-evm-balances = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
 sp-core = { workspace = true }
 
 [dev-dependencies]
+pallet-evm-system = { path = "../pallet-evm-system", features = ["default"] }
 precompile-utils = { path = "../precompile-utils", features = ["testing"] }
 
 frame-system = { workspace = true }
 hex-literal = { workspace = true }
 pallet-balances = { workspace = true, features = ["default"] }
 pallet-evm = { workspace = true }
-pallet-evm-system = { workspace = true, features = ["default"] }
 pallet-timestamp = { workspace = true, features = ["default"] }
 
 [features]
