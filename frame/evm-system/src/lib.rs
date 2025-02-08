@@ -147,7 +147,7 @@ impl<T: Config> Pallet<T> {
 		let is_new_account = Account::<T>::mutate_exists(who, |maybe_account| {
 			let is_new_account = maybe_account.is_none();
 
-			let account = maybe_account.get_or_insert_default();
+			let account = maybe_account.get_or_insert_with(Default::default);
 			account.nonce += <T as Config>::Index::one();
 
 			is_new_account
