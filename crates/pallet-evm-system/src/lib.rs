@@ -144,8 +144,8 @@ impl<T: Config> Pallet<T> {
         let is_new_account = Account::<T>::mutate_exists(who, |maybe_account| {
             let is_new_account = maybe_account.is_none();
 
-			let account = maybe_account.get_or_insert_with(Default::default);
-			// `AtLeast32Bit` is big enough for this overflow to be practically impossible.
+            let account = maybe_account.get_or_insert_with(Default::default);
+            // `AtLeast32Bit` is big enough for this overflow to be practically impossible.
             account.nonce = account.nonce.saturating_add(<T as Config>::Index::one());
 
             is_new_account
