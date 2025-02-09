@@ -1,26 +1,25 @@
 [package]
-name = "pallet-dummy-precompiles-code"
+name = "pallet-evm-balances"
 version = "0.1.0"
 edition = "2021"
 publish = false
 
 [dependencies]
-codec = { workspace = true, features = ["derive"] }
+codec = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
-pallet-evm = { workspace = true }
-scale-info = { workspace = true, features = ["derive"] }
-sp-core = { workspace = true }
+scale-info = { workspace = true }
+sp-runtime = { workspace = true }
 sp-std = { workspace = true }
 
 [dev-dependencies]
-pallet-evm-balances = { path = "../pallet-evm-balances", features = ["default"] }
 pallet-evm-system = { path = "../pallet-evm-system", features = ["default"] }
 
 fp-evm = { workspace = true }
-hex-literal = { workspace = true }
-pallet-balances = { workspace = true, features = ["default"] }
-pallet-timestamp = { workspace = true, features = ["default"] }
+pallet-evm = { workspace = true }
+pallet-timestamp = { workspace = true }
+sp-core = { workspace = true }
+sp-io = { workspace = true }
 
 [features]
 default = ["std"]
@@ -29,21 +28,20 @@ std = [
   "fp-evm/std",
   "frame-support/std",
   "frame-system/std",
-  "pallet-balances/std",
-  "pallet-evm-balances/std",
   "pallet-evm-system/std",
   "pallet-evm/std",
   "pallet-timestamp/std",
   "scale-info/std",
   "sp-core/std",
+  "sp-io/std",
+  "sp-runtime/std",
   "sp-std/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
   "frame-system/try-runtime",
-  "pallet-balances/try-runtime",
-  "pallet-evm-balances/try-runtime",
   "pallet-evm-system/try-runtime",
   "pallet-evm/try-runtime",
   "pallet-timestamp/try-runtime",
+  "sp-runtime/try-runtime",
 ]

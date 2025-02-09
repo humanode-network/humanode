@@ -17,13 +17,14 @@ scale-info = { workspace = true, features = ["derive"] }
 sp-core = { workspace = true }
 
 [dev-dependencies]
+pallet-evm-balances = { path = "../pallet-evm-balances", features = ["default"] }
+pallet-evm-system = { path = "../pallet-evm-system", features = ["default"] }
+
 frame-system = { workspace = true }
 hex-literal = { workspace = true }
 mockall = { workspace = true }
 pallet-balances = { workspace = true, features = ["default"] }
 pallet-evm = { workspace = true }
-pallet-evm-balances = { workspace = true, features = ["default"] }
-pallet-evm-system = { workspace = true, features = ["default"] }
 pallet-timestamp = { workspace = true, features = ["default"] }
 
 [features]
