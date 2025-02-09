@@ -1,10 +1,8 @@
-// SPDX-License-Identifier: Apache-2.0
-
 //! # EVM Balances Pallet.
 
-// Ensure we're `no_std` when compiling for Wasm.
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use codec::{Codec, Decode, Encode, MaxEncodedLen};
 use frame_support::{
     ensure,
     traits::{
@@ -14,7 +12,6 @@ use frame_support::{
         StoredMap, WithdrawReasons,
     },
 };
-use scale_codec::{Codec, Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{
     traits::{Bounded, CheckedAdd, CheckedSub, MaybeSerializeDeserialize, Zero},
@@ -41,6 +38,9 @@ pub use pallet::*;
 /// The current storage version.
 const STORAGE_VERSION: StorageVersion = StorageVersion::new(0);
 
+// We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
+// fix them at their end.
+#[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::pallet_prelude::*;
@@ -111,65 +111,94 @@ pub mod pallet {
     pub enum Event<T: Config<I>, I: 'static = ()> {
         /// An account was created with some free balance.
         Endowed {
+            /// The associated account id.
             account: <T as Config<I>>::AccountId,
+            /// The `free_balance` balance value.
             free_balance: T::Balance,
         },
         /// An account was removed whose balance was non-zero but below ExistentialDeposit,
         /// resulting in an outright loss.
         DustLost {
+            /// The associated account id.
             account: <T as Config<I>>::AccountId,
+            /// The `amount` balance value.
             amount: T::Balance,
         },
         /// Transfer succeeded.
         Transfer {
+            /// The associated account id transferred from.
             from: <T as Config<I>>::AccountId,
+            /// The associated account id transferred to.
             to: <T as Config<I>>::AccountId,
+            /// The `amount` balance value.
             amount: T::Balance,
         },
         /// A balance was set by root.
         BalanceSet {
+            /// The associated account id.
             who: <T as Config<I>>::AccountId,
+            /// The `free` balance value.
             free: T::Balance,
         },
         /// Some amount was deposited (e.g. for transaction fees).
         Deposit {
+            /// The associated account id.
             who: <T as Config<I>>::AccountId,
+            /// The `amount` balance value.
             amount: T::Balance,
         },
         /// Some amount was withdrawn from the account (e.g. for transaction fees).
         Withdraw {
+            /// The associated account id.
             who: <T as Config<I>>::AccountId,
+            /// The `amount` balance value.
             amount: T::Balance,
         },
         /// Some amount was removed from the account (e.g. for misbehavior).
         Slashed {
+            /// The associated account id.
             who: <T as Config<I>>::AccountId,
+            /// The `amount` balance value.
             amount: T::Balance,
         },
         /// Some amount was minted into an account.
         Minted {
+            /// The associated account id.
             who: <T as Config<I>>::AccountId,
+            /// The `amount` balance value.
             amount: T::Balance,
         },
         /// Some amount was burned from an account.
         Burned {
+            /// The associated account id.
             who: <T as Config<I>>::AccountId,
+            /// The `amount` balance value.
             amount: T::Balance,
         },
         /// Some amount was suspended from an account (it can be restored later).
         Suspended {
+            /// The associated account id.
             who: <T as Config<I>>::AccountId,
+            /// The `amount` balance value.
             amount: T::Balance,
         },
         /// Some amount was restored into an account.
         Restored {
+            /// The associated account id.
             who: <T as Config<I>>::AccountId,
+            /// The `amount` balance value.
             amount: T::Balance,
         },
         /// Total issuance was increased by `amount`, creating a credit to be balanced.
-        Issued { amount: T::Balance },
+        Issued {
+            /// The `amount` balance value.
+            amount: T::Balance,
+        },
         /// Total issuance was decreased by `amount`, creating a debt to be balanced.
-        Rescinded { amount: T::Balance },
+        Rescinded {
+            /// The `amount` balance value.
+            amount: T::Balance,
+        },
     }
 
     #[pallet::error]

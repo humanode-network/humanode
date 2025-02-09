@@ -1,4 +1,4 @@
-//! Unit tests.
+//! The tests for the pallet.
 
 use frame_support::{assert_noop, assert_storage_noop};
 use mockall::predicate;
@@ -38,7 +38,7 @@ fn create_account_created() {
         // Assert state changes.
         assert!(EvmSystem::account_exists(&account_id));
         assert_eq!(
-            <Account<Test>>::get(&account_id),
+            <Account<Test>>::get(account_id),
             AccountInfo::<_, _>::default()
         );
         System::assert_has_event(RuntimeEvent::EvmSystem(Event::NewAccount {
@@ -57,7 +57,7 @@ fn create_account_already_exists() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare test data.
         let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
-        <Account<Test>>::insert(account_id.clone(), AccountInfo::<_, _>::default());
+        <Account<Test>>::insert(account_id, AccountInfo::<_, _>::default());
 
         // Invoke the function under test.
         assert_storage_noop!(assert_eq!(
@@ -119,7 +119,7 @@ fn inc_account_nonce_account_exists() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare test data.
         let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
-        <Account<Test>>::insert(account_id.clone(), AccountInfo::<_, _>::default());
+        <Account<Test>>::insert(account_id, AccountInfo::<_, _>::default());
 
         // Check test preconditions.
         assert!(EvmSystem::account_exists(&account_id));
@@ -135,7 +135,7 @@ fn inc_account_nonce_account_exists() {
     });
 }
 
-/// This test verifies that try_mutate_exists works as expected in case data wasn't providing
+/// This test verifies that `try_mutate_exists` works as expected in case data wasn't providing
 /// and returned data is `Some`. As a result, a new account has been created.
 #[test]
 fn try_mutate_exists_account_created() {
@@ -167,7 +167,7 @@ fn try_mutate_exists_account_created() {
         // Assert state changes.
         assert!(EvmSystem::account_exists(&account_id));
         assert_eq!(
-            <Account<Test>>::get(&account_id),
+            <Account<Test>>::get(account_id),
             AccountInfo {
                 data: 1,
                 ..Default::default()
@@ -182,7 +182,7 @@ fn try_mutate_exists_account_created() {
     });
 }
 
-/// This test verifies that try_mutate_exists works as expected in case data was providing
+/// This test verifies that `try_mutate_exists` works as expected in case data was providing
 /// and returned data is `Some`. As a result, the account has been updated.
 #[test]
 fn try_mutate_exists_account_updated() {
@@ -191,7 +191,7 @@ fn try_mutate_exists_account_updated() {
         let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
         let nonce = 1;
         let data = 1;
-        <Account<Test>>::insert(account_id.clone(), AccountInfo { nonce, data });
+        <Account<Test>>::insert(account_id, AccountInfo { nonce, data });
 
         // Check test preconditions.
         assert!(EvmSystem::account_exists(&account_id));
@@ -211,7 +211,7 @@ fn try_mutate_exists_account_updated() {
         // Assert state changes.
         assert!(EvmSystem::account_exists(&account_id));
         assert_eq!(
-            <Account<Test>>::get(&account_id),
+            <Account<Test>>::get(account_id),
             AccountInfo {
                 nonce,
                 data: data + 1,
@@ -220,14 +220,14 @@ fn try_mutate_exists_account_updated() {
     });
 }
 
-/// This test verifies that try_mutate_exists works as expected in case data was providing
+/// This test verifies that `try_mutate_exists` works as expected in case data was providing
 /// and returned data is `None`, account has zero nonce. As a result, the account has been removed.
 #[test]
 fn try_mutate_exists_account_removed() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare test data.
         let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
-        <Account<Test>>::insert(account_id.clone(), AccountInfo::<_, _>::default());
+        <Account<Test>>::insert(account_id, AccountInfo::<_, _>::default());
 
         // Check test preconditions.
         assert!(EvmSystem::account_exists(&account_id));
@@ -261,7 +261,7 @@ fn try_mutate_exists_account_removed() {
     });
 }
 
-/// This test verifies that try_mutate_exists works as expected in case data was providing
+/// This test verifies that `try_mutate_exists` works as expected in case data was providing
 /// and returned data is `None`, account has non zero nonce. As a result, the account has been retained.
 #[test]
 fn try_mutate_exists_account_retained() {
@@ -272,7 +272,7 @@ fn try_mutate_exists_account_retained() {
         let data = 100;
 
         let account_info = AccountInfo { nonce, data };
-        <Account<Test>>::insert(account_id.clone(), account_info);
+        <Account<Test>>::insert(account_id, account_info);
 
         // Check test preconditions.
         assert!(EvmSystem::account_exists(&account_id));
@@ -287,7 +287,7 @@ fn try_mutate_exists_account_retained() {
         // Assert state changes.
         assert!(EvmSystem::account_exists(&account_id));
         assert_eq!(
-            <Account<Test>>::get(&account_id),
+            <Account<Test>>::get(account_id),
             AccountInfo {
                 nonce,
                 ..Default::default()
@@ -296,7 +296,7 @@ fn try_mutate_exists_account_retained() {
     });
 }
 
-/// This test verifies that try_mutate_exists works as expected in case data wasn't providing
+/// This test verifies that `try_mutate_exists` works as expected in case data wasn't providing
 /// and returned data is `None`. As a result, the account hasn't been created.
 #[test]
 fn try_mutate_exists_account_not_created() {
@@ -322,14 +322,14 @@ fn try_mutate_exists_account_not_created() {
     });
 }
 
-/// This test verifies that try_mutate_exists works as expected in case getting error
+/// This test verifies that `try_mutate_exists` works as expected in case getting error
 /// during data mutation.
 #[test]
 fn try_mutate_exists_without_changes() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare test data.
         let account_id = H160::from_str("1000000000000000000000000000000000000001").unwrap();
-        <Account<Test>>::insert(account_id.clone(), AccountInfo::<_, _>::default());
+        <Account<Test>>::insert(account_id, AccountInfo::<_, _>::default());
 
         // Check test preconditions.
         assert!(EvmSystem::account_exists(&account_id));

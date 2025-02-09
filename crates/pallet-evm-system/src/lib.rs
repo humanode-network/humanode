@@ -1,14 +1,13 @@
 //! # EVM System Pallet.
 
-// Ensure we're `no_std` when compiling for Wasm.
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use frame_support::traits::StoredMap;
-use scale_codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{
     traits::{One, Zero},
-    DispatchError, RuntimeDebug,
+    DispatchError, RuntimeDebug, Saturating,
 };
 
 #[cfg(test)]
@@ -28,6 +27,9 @@ pub struct AccountInfo<Index, AccountData> {
     pub data: AccountData,
 }
 
+// We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
+// fix them at their end.
+#[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::pallet_prelude::*;
@@ -93,9 +95,15 @@ pub mod pallet {
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// A new account was created.
-        NewAccount { account: <T as Config>::AccountId },
+        NewAccount {
+            /// The associated account id.
+            account: <T as Config>::AccountId,
+        },
         /// An account was reaped.
-        KilledAccount { account: <T as Config>::AccountId },
+        KilledAccount {
+            /// The associated account id.
+            account: <T as Config>::AccountId,
+        },
     }
 }
 
@@ -136,8 +144,9 @@ impl<T: Config> Pallet<T> {
         let is_new_account = Account::<T>::mutate_exists(who, |maybe_account| {
             let is_new_account = maybe_account.is_none();
 
-			let account = maybe_account.get_or_insert_with(Default::default);
-			account.nonce += <T as Config>::Index::one();
+            let account = maybe_account.get_or_insert_with(Default::default);
+            // `AtLeast32Bit` is big enough for this overflow to be practically impossible.
+            account.nonce = account.nonce.saturating_add(<T as Config>::Index::one());
 
             is_new_account
         });

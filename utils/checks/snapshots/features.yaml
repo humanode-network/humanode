@@ -2176,7 +2176,7 @@
     - default
     - frame-benchmarking
     - std
-- name: pallet-evm-balances 1.0.0-dev
+- name: pallet-evm-balances 0.1.0
   features:
     - default
     - std
@@ -2195,7 +2195,7 @@
 - name: pallet-evm-precompile-simple 2.0.0-dev
   features:
     - std
-- name: pallet-evm-system 1.0.0-dev
+- name: pallet-evm-system 0.1.0
   features:
     - default
     - std

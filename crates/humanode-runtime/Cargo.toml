@@ -27,6 +27,8 @@ pallet-dummy-precompiles-code = { path = "../pallet-dummy-precompiles-code", def
 pallet-erc20-support = { path = "../pallet-erc20-support", default-features = false }
 pallet-ethereum-chain-id = { path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { path = "../pallet-evm-accounts-mapping", default-features = false }
+pallet-evm-balances = { path = "../pallet-evm-balances", default-features = false }
+pallet-evm-system = { path = "../pallet-evm-system", default-features = false }
 pallet-humanode-offences = { path = "../pallet-humanode-offences", default-features = false }
 pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
 pallet-pot = { path = "../pallet-pot", default-features = false }
@@ -64,13 +66,11 @@ pallet-babe = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-ethereum = { workspace = true }
 pallet-evm = { workspace = true }
-pallet-evm-balances = { workspace = true }
 pallet-evm-precompile-blake2 = { workspace = true }
 pallet-evm-precompile-bn128 = { workspace = true }
 pallet-evm-precompile-modexp = { workspace = true }
 pallet-evm-precompile-sha3fips = { workspace = true }
 pallet-evm-precompile-simple = { workspace = true }
-pallet-evm-system = { workspace = true }
 pallet-grandpa = { workspace = true }
 pallet-im-online = { workspace = true }
 pallet-multisig = { workspace = true }

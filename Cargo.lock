@@ -6565,14 +6565,18 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-balances"
-version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?tag=locked/polkadot-v0.9.42-2025-02-08#174c0227af00dbc26485c1eac68738e1d01980e8"
+version = "0.1.0"
 dependencies = [
+ "fp-evm",
  "frame-support",
  "frame-system",
- "log",
+ "pallet-evm",
+ "pallet-evm-system",
+ "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
@@ -6625,15 +6629,16 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-system"
-version = "1.0.0-dev"
-source = "git+https://github.com/humanode-network/frontier?tag=locked/polkadot-v0.9.42-2025-02-08#174c0227af00dbc26485c1eac68738e1d01980e8"
+version = "0.1.0"
 dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "log",
+ "mockall",
  "parity-scale-codec",
  "scale-info",
+ "sp-core",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
