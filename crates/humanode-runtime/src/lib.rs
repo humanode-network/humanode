@@ -881,9 +881,23 @@ impl pallet_evm_system::migrations::broken_nonces_recovery::EvmStateProvider<Evm
     for EvmStateProvider
 {
     fn has(account_id: &EvmAccountId) -> (bool, Weight) {
-        let flag = pallet_evm::AccountCodes::<Runtime>::contains_key(account_id);
+        let has_code = pallet_evm::AccountCodes::<Runtime>::contains_key(account_id);
         let weight = <Runtime as frame_system::Config>::DbWeight::get().reads(1);
-        (flag, weight)
+        (has_code, weight)
+    }
+
+    fn accounts_managed_by_evm() -> impl Iterator<Item = (EvmAccountId, Weight)> {
+        let precompiles: sp_std::collections::btree_set::BTreeSet<_> =
+            FrontierPrecompiles::<Runtime>::used_addresses()
+                .into_iter()
+                .collect();
+        pallet_evm::AccountCodes::<Runtime>::iter_keys().filter_map(move |account_id| {
+            let is_precompiled = precompiles.contains(&account_id);
+            (!is_precompiled).then(|| {
+                let weight = <Runtime as frame_system::Config>::DbWeight::get().reads(1);
+                (account_id, weight)
+            })
+        })
     }
 }
 
