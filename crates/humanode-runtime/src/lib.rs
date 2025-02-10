@@ -875,6 +875,7 @@ pub type UncheckedExtrinsic =
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 
 parameter_types! {
+    /// A static string representing already removed offences pallet name.
     pub const Offences: &'static str = "Offences";
 }
 
