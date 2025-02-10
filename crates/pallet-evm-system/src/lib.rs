@@ -10,6 +10,7 @@ use sp_runtime::{
     DispatchError, RuntimeDebug, Saturating,
 };
 
+pub mod migrations;
 #[cfg(test)]
 mod mock;
 #[cfg(test)]
