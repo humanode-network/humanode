@@ -28,10 +28,12 @@ pub struct MigrationBrokenNoncesRecovery<EP, T>(PhantomData<(EP, T)>);
 /// Key indicators of the state before runtime upgrade.
 #[cfg(feature = "try-runtime")]
 #[derive(Encode, Decode)]
-struct PreUpgradeState {
-    /// Accounts' count.
-    accounts: u64,
+struct PreUpgradeState<T: Config> {
+    /// Accounts' state.
+    accounts: Vec<(<T as Config>::AccountId, AccountInfoOf<T>)>,
 }
+
+type AccountInfoOf<T> = AccountInfo<<T as Config>::Index, <T as Config>::AccountData>;
 
 impl<EP, T> OnRuntimeUpgrade for MigrationBrokenNoncesRecovery<EP, T>
 where
@@ -63,27 +65,28 @@ where
 
     #[cfg(feature = "try-runtime")]
     fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-        let accounts = <Account<T>>::iter_keys()
-            .count()
-            .try_into()
-            .expect("Accounts count mustn't overflow");
-        Ok(PreUpgradeState { accounts }.encode())
+        let accounts = <Account<T>>::iter().collect();
+        Ok(PreUpgradeState::<T> { accounts }.encode())
     }
 
     #[cfg(feature = "try-runtime")]
     fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
-        let accounts_count: u64 = <Account<T>>::iter_keys()
-            .count()
-            .try_into()
-            .expect("Accounts count mustn't overflow");
-        let PreUpgradeState {
-            accounts: prev_accounts_count,
+        let PreUpgradeState::<T> {
+            accounts: prev_accounts,
         } = Decode::decode(&mut state.as_slice())
             .map_err(|_err| "Failed pre-upgrade state decoding")?;
-        ensure!(
-            accounts_count >= prev_accounts_count,
-            "Accounts count shouldn't decrease",
-        );
+        for (account_id, prev_account) in prev_accounts {
+            let account = <Account<T>>::try_get(account_id)
+                .map_err(|_: ()| "There should be no lost accounts")?;
+            ensure!(
+                account.data == prev_account.data,
+                "Account's data should remain unchanged",
+            );
+            ensure!(
+                account.nonce >= prev_account.nonce,
+                "Account's nonce shouldn't decrease",
+            );
+        }
 
         let account_to_recover = EP::accounts_managed_by_evm().find(|(account_id, _weight)| {
             <Account<T>>::try_get(account_id)
@@ -116,10 +119,7 @@ where
     /// Bug #1402 made it possible for "Self-destruct" to delete not only the contract code,
     /// but also its state with the nonces used. We have no way to restore their nonces here,
     /// but in the future, contracts won't be created at such addresses anyway.
-    fn recover(
-        id: &<T as Config>::AccountId,
-        account: &mut Option<AccountInfo<<T as Config>::Index, <T as Config>::AccountData>>,
-    ) -> Weight {
+    fn recover(id: &<T as Config>::AccountId, account: &mut Option<AccountInfoOf<T>>) -> Weight {
         let Some(account) = account.as_mut() else {
             info!("Account {id} lacks its state");
             let (nonce, weight) = Self::min_nonce(id);
