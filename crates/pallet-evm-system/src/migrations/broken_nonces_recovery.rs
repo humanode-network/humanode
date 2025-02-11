@@ -8,7 +8,7 @@ use frame_support::{log::info, pallet_prelude::*, traits::OnRuntimeUpgrade};
 use rlp::RlpStream;
 use sp_core::H160;
 use sp_io::hashing::keccak_256;
-use sp_runtime::traits::{CheckedAdd, One, Zero};
+use sp_runtime::traits::Zero;
 
 use crate::{Account, AccountInfo, Config, Pallet};
 
@@ -37,7 +37,6 @@ impl<EP, T> OnRuntimeUpgrade for MigrationBrokenNoncesRecovery<EP, T>
 where
     EP: EvmStateProvider<<T as Config>::AccountId>,
     T: Config<AccountId = H160>,
-    <T as Config>::Index: rlp::Encodable,
 {
     fn on_runtime_upgrade() -> Weight {
         let pallet_name = Pallet::<T>::name();
@@ -103,7 +102,6 @@ impl<EP, T> MigrationBrokenNoncesRecovery<EP, T>
 where
     EP: EvmStateProvider<<T as Config>::AccountId>,
     T: Config<AccountId = H160>,
-    <T as Config>::Index: rlp::Encodable,
 {
     /// Checks the contract account state and recovers it if necessary.
     /// - If the state is missing, recreates it.
@@ -143,28 +141,28 @@ where
     /// Computes the minimum possible nonce for a given account.
     fn min_nonce(id: &<T as Config>::AccountId) -> (<T as Config>::Index, Weight) {
         let mut weight = Weight::default();
-        let mut nonce = <T as Config>::Index::one();
-        while {
-            let contract_id = contract_address(id, nonce);
-            let (is_known_to_evm, w) = EP::has(&contract_id);
-            weight.saturating_accrue(w);
-            let has_state = <Account<T>>::contains_key(contract_id);
-            weight.saturating_accrue(T::DbWeight::get().reads(1));
-            is_known_to_evm || has_state
-        } {
-            nonce = nonce
-                .checked_add(&One::one())
-                .expect("Nonce value mustn't overflow");
-        }
-        info!("Account {id} minimal valid nonce is {nonce:?}");
-        (nonce, weight)
+        let nonce = (1..)
+            .find(|&nonce| {
+                let contract_id = contract_address(id, nonce);
+                let (is_known_to_evm, w) = EP::has(&contract_id);
+                weight.saturating_accrue(w);
+                if is_known_to_evm {
+                    return false;
+                }
+                let has_state = <Account<T>>::contains_key(contract_id);
+                weight.saturating_accrue(T::DbWeight::get().reads(1));
+                !has_state
+            })
+            .expect("There must be unused nonce");
+        info!("Account {id} minimal valid nonce is {nonce}");
+        (nonce.into(), weight)
     }
 }
 
 /// Contract address that will be produced by the [`CREATE` opcode][1].
 ///
 /// [1]: https://ethereum.github.io/yellowpaper/paper.pdf#section.7
-fn contract_address(sender: &H160, nonce: impl rlp::Encodable) -> H160 {
+fn contract_address(sender: &H160, nonce: u32) -> H160 {
     let mut rlp = RlpStream::new_list(2);
     rlp.append(sender);
     rlp.append(&nonce);
