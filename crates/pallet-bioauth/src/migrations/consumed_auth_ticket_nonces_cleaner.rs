@@ -15,6 +15,8 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
         info!("{pallet_name}: Running migration to clean consumed auth ticket nonces");
 
         ConsumedAuthTicketNonces::<T>::mutate(|consumed_auth_ticket_nonces| {
+            let consumed_auth_ticket_nonces_number_before = consumed_auth_ticket_nonces.len();
+
             if let Some(last_consumed_auth_ticket_nonce) = consumed_auth_ticket_nonces.last() {
                 // Current generation is represented by first 16 bytes at nonce.
                 let current_generation = last_consumed_auth_ticket_nonce[..16].to_vec();
@@ -23,6 +25,12 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
                     consumed_auth_ticket_nonce.starts_with(&current_generation)
                 });
             }
+
+            let removed_number = consumed_auth_ticket_nonces_number_before
+                .checked_sub(consumed_auth_ticket_nonces.len())
+                .expect("valid operation; qed");
+
+            info!("{pallet_name}: Removed {removed_number} consumed auth ticket nonces");
         });
 
         info!("{pallet_name}: Migrated");
