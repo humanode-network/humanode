@@ -19,7 +19,8 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
 
     #[cfg(feature = "try-runtime")]
     fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-        todo!()
+        // Do nothing.
+        Ok(Vec::new())
     }
 
     #[cfg(feature = "try-runtime")]
