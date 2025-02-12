@@ -886,7 +886,10 @@ pub type Executive = frame_executive::Executive<
     frame_system::ChainContext<Runtime>,
     Runtime,
     AllPalletsWithSystem,
-    (frame_support::migrations::RemovePallet<Offences, RocksDbWeight>,),
+    (
+        frame_support::migrations::RemovePallet<Offences, RocksDbWeight>,
+        pallet_bioauth::migrations::consumed_auth_ticket_nonces_cleaner::ConsumedAuthTicketNoncesCleaner<Runtime>,
+    ),
 >;
 
 impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
