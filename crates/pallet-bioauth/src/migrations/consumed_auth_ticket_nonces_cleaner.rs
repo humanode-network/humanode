@@ -16,6 +16,7 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
 
         ConsumedAuthTicketNonces::<T>::mutate(|consumed_auth_ticket_nonces| {
             if let Some(last_consumed_auth_ticket_nonce) = consumed_auth_ticket_nonces.last() {
+                // Current generation is represented by first 16 bytes at nonce.
                 let current_generation = last_consumed_auth_ticket_nonce[..16].to_vec();
 
                 consumed_auth_ticket_nonces.retain(|consumed_auth_ticket_nonce| {
