@@ -1,4 +1,4 @@
-//! Migration to clean consumed auth ticket nonces.
+//! Migration to clean consumed auth ticket nonces except ones related to current generation.
 
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_std::vec::Vec;
@@ -12,28 +12,28 @@ pub struct ConsumedAuthTicketNoncesCleaner<T>(sp_std::marker::PhantomData<T>);
 impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
     fn on_runtime_upgrade() -> Weight {
         let pallet_name = Pallet::<T>::name();
-        info!("{pallet_name}: Running migration to clean consumed auth ticket nonces");
+        info!("{pallet_name}: Running migration to clean consumed auth ticket nonces except ones related to current generation");
 
         ConsumedAuthTicketNonces::<T>::mutate(|consumed_auth_ticket_nonces| {
-            let consumed_auth_ticket_nonces_number_before = consumed_auth_ticket_nonces.len();
-
             if let Some(last_consumed_auth_ticket_nonce) = consumed_auth_ticket_nonces.last() {
+                let consumed_auth_ticket_nonces_number_before = consumed_auth_ticket_nonces.len();
+
                 // Current generation is represented by first 16 bytes at nonce.
                 let current_generation = last_consumed_auth_ticket_nonce[..16].to_vec();
 
                 consumed_auth_ticket_nonces.retain(|consumed_auth_ticket_nonce| {
                     consumed_auth_ticket_nonce.starts_with(&current_generation)
                 });
+
+                let removed_number = consumed_auth_ticket_nonces_number_before
+                    .checked_sub(consumed_auth_ticket_nonces.len())
+                    .expect("valid operation; qed");
+
+                info!("{pallet_name}: Removed {removed_number} consumed auth ticket nonces");
+            } else {
+                info!("{pallet_name}: Nothing to remove");
             }
-
-            let removed_number = consumed_auth_ticket_nonces_number_before
-                .checked_sub(consumed_auth_ticket_nonces.len())
-                .expect("valid operation; qed");
-
-            info!("{pallet_name}: Removed {removed_number} consumed auth ticket nonces");
         });
-
-        info!("{pallet_name}: Migrated");
 
         T::DbWeight::get().reads_writes(1, 1)
     }
@@ -52,6 +52,7 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
 
     #[cfg(feature = "try-runtime")]
     fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+        // Empty state means there are no consumed auth ticket nonces.
         if state.is_empty() {
             return Ok(());
         }
