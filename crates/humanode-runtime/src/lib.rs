@@ -877,9 +877,7 @@ pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// EVM state provider.
 pub struct EvmStateProvider;
 
-impl pallet_evm_system::migrations::broken_nonces_recovery::EvmStateProvider<EvmAccountId>
-    for EvmStateProvider
-{
+impl evm_nonces_recovery::EvmStateProvider<EvmAccountId> for EvmStateProvider {
     fn has(account_id: &EvmAccountId) -> (bool, Weight) {
         let has_code = pallet_evm::AccountCodes::<Runtime>::contains_key(account_id);
         let weight = <Runtime as frame_system::Config>::DbWeight::get().reads(1);
@@ -910,10 +908,7 @@ pub type Executive = frame_executive::Executive<
     AllPalletsWithSystem,
     (
         pallet_bioauth::migrations::consumed_auth_ticket_nonces_cleaner::ConsumedAuthTicketNoncesCleaner<Runtime>,
-        pallet_evm_system::migrations::broken_nonces_recovery::MigrationBrokenNoncesRecovery<
-            EvmStateProvider,
-            Runtime,
-        >,
+        evm_nonces_recovery::MigrationBrokenNoncesRecovery<EvmStateProvider, Runtime>,
     ),
 >;
 

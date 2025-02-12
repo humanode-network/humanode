@@ -1,16 +1,18 @@
 //! Migration to recover broken nonces.
 
+// Either generate code at standard mode, or `no_std`, based on the `std` feature presence.
+#![cfg_attr(not(feature = "std"), no_std)]
+
 use core::marker::PhantomData;
 
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_std::vec::Vec;
 use frame_support::{log::info, pallet_prelude::*, traits::OnRuntimeUpgrade};
+use pallet_evm_system::{Account, AccountInfo, Config, Pallet};
 use rlp::RlpStream;
 use sp_core::H160;
 use sp_io::hashing::keccak_256;
 use sp_runtime::traits::Zero;
-
-use crate::{Account, AccountInfo, Config, Pallet};
 
 /// EVM state provider.
 pub trait EvmStateProvider<AccountId> {
