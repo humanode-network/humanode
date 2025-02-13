@@ -874,31 +874,6 @@ pub type UncheckedExtrinsic =
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 
-/// EVM state provider.
-pub struct EvmStateProvider;
-
-impl evm_nonces_recovery::EvmStateProvider<EvmAccountId> for EvmStateProvider {
-    fn has(account_id: &EvmAccountId) -> (bool, Weight) {
-        let has_code = pallet_evm::AccountCodes::<Runtime>::contains_key(account_id);
-        let weight = <Runtime as frame_system::Config>::DbWeight::get().reads(1);
-        (has_code, weight)
-    }
-
-    fn accounts_managed_by_evm() -> impl Iterator<Item = (EvmAccountId, Weight)> {
-        let precompiles: sp_std::collections::btree_set::BTreeSet<_> =
-            FrontierPrecompiles::<Runtime>::used_addresses()
-                .into_iter()
-                .collect();
-        pallet_evm::AccountCodes::<Runtime>::iter_keys().filter_map(move |account_id| {
-            let is_precompiled = precompiles.contains(&account_id);
-            (!is_precompiled).then(|| {
-                let weight = <Runtime as frame_system::Config>::DbWeight::get().reads(1);
-                (account_id, weight)
-            })
-        })
-    }
-}
-
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
     Runtime,
@@ -908,7 +883,10 @@ pub type Executive = frame_executive::Executive<
     AllPalletsWithSystem,
     (
         pallet_bioauth::migrations::consumed_auth_ticket_nonces_cleaner::ConsumedAuthTicketNoncesCleaner<Runtime>,
-        evm_nonces_recovery::MigrationBrokenNoncesRecovery<EvmStateProvider, Runtime>,
+        evm_nonces_recovery::MigrationBrokenNoncesRecovery<
+            Runtime,
+            frontier_precompiles::FrontierPrecompilesAddresses<Runtime>,
+        >,
     ),
 >;
 

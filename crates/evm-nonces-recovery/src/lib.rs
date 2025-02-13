@@ -7,58 +7,57 @@ use core::marker::PhantomData;
 
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_std::vec::Vec;
-use frame_support::{log::info, pallet_prelude::*, traits::OnRuntimeUpgrade};
-use pallet_evm_system::{Account, AccountInfo, Config, Pallet};
+use frame_support::{
+    log::info, pallet_prelude::*, sp_std::collections::btree_set::BTreeSet,
+    traits::OnRuntimeUpgrade,
+};
+use pallet_evm::AccountCodes;
+use pallet_evm_system::{Account, AccountInfo, Pallet};
 use rlp::RlpStream;
 use sp_core::H160;
 use sp_io::hashing::keccak_256;
 use sp_runtime::traits::Zero;
 
-/// EVM state provider.
-pub trait EvmStateProvider<AccountId> {
-    /// Checks if such account exists in EVM.
-    fn has(account_id: &AccountId) -> (bool, Weight);
-
-    /// Gives accounts managed by EVM. Considers precompiled contracts' accounts
-    /// as not "managed by EVM".
-    fn accounts_managed_by_evm() -> impl Iterator<Item = (AccountId, Weight)>;
-}
-
 /// Execute migration to recover broken nonces.
-pub struct MigrationBrokenNoncesRecovery<EP, T>(PhantomData<(EP, T)>);
+pub struct MigrationBrokenNoncesRecovery<R, Precompiles>(PhantomData<(R, Precompiles)>);
 
 /// Key indicators of the state before runtime upgrade.
 #[cfg(feature = "try-runtime")]
 #[derive(Encode, Decode)]
-struct PreUpgradeState<T: Config> {
+struct PreUpgradeState<R: pallet_evm_system::Config> {
     /// Accounts' state.
-    accounts: Vec<(<T as Config>::AccountId, AccountInfoOf<T>)>,
+    accounts: Vec<(H160, AccountInfoOf<R>)>,
 }
 
-type AccountInfoOf<T> = AccountInfo<<T as Config>::Index, <T as Config>::AccountData>;
+type AccountInfoOf<R> = AccountInfo<
+    <R as pallet_evm_system::Config>::Index,
+    <R as pallet_evm_system::Config>::AccountData,
+>;
 
-impl<EP, T> OnRuntimeUpgrade for MigrationBrokenNoncesRecovery<EP, T>
+impl<R, Precompiles> OnRuntimeUpgrade for MigrationBrokenNoncesRecovery<R, Precompiles>
 where
-    EP: EvmStateProvider<<T as Config>::AccountId>,
-    T: Config<AccountId = H160>,
+    R: pallet_evm::Config,
+    R: pallet_evm_system::Config<AccountId = H160>,
+    Precompiles: TypedGet,
+    Precompiles::Type: IntoIterator<Item = H160>,
 {
     fn on_runtime_upgrade() -> Weight {
-        let pallet_name = Pallet::<T>::name();
+        let pallet_name = Pallet::<R>::name();
         info!("{pallet_name}: Running migration to recover broken nonces");
 
         let mut weight = Weight::default();
 
-        let accounts_count = EP::accounts_managed_by_evm()
+        let accounts_count = Self::accounts_managed_by_evm()
             .map(|(id, retrieval_weight)| {
                 weight.saturating_accrue(retrieval_weight);
                 let recovery_weight =
-                    <Account<T>>::mutate_exists(id, |account| Self::recover(&id, account));
+                    <Account<R>>::mutate_exists(id, |account| Self::recover(&id, account));
                 weight.saturating_accrue(recovery_weight);
             })
             .count()
             .try_into()
             .expect("Accounts count mustn't overflow");
-        weight.saturating_accrue(T::DbWeight::get().reads_writes(accounts_count, accounts_count));
+        weight.saturating_accrue(R::DbWeight::get().reads_writes(accounts_count, accounts_count));
 
         info!("{pallet_name}: Migrated");
 
@@ -67,18 +66,18 @@ where
 
     #[cfg(feature = "try-runtime")]
     fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-        let accounts = <Account<T>>::iter().collect();
-        Ok(PreUpgradeState::<T> { accounts }.encode())
+        let accounts = <Account<R>>::iter().collect();
+        Ok(PreUpgradeState::<R> { accounts }.encode())
     }
 
     #[cfg(feature = "try-runtime")]
     fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
-        let PreUpgradeState::<T> {
+        let PreUpgradeState::<R> {
             accounts: prev_accounts,
         } = Decode::decode(&mut state.as_slice())
             .map_err(|_err| "Failed pre-upgrade state decoding")?;
         for (account_id, prev_account) in prev_accounts {
-            let account = <Account<T>>::try_get(account_id)
+            let account = <Account<R>>::try_get(account_id)
                 .map_err(|_: ()| "There should be no lost accounts")?;
             ensure!(
                 account.data == prev_account.data,
@@ -90,8 +89,8 @@ where
             );
         }
 
-        let account_to_recover = EP::accounts_managed_by_evm().find(|(account_id, _weight)| {
-            <Account<T>>::try_get(account_id)
+        let account_to_recover = Self::accounts_managed_by_evm().find(|(account_id, _weight)| {
+            <Account<R>>::try_get(account_id)
                 .map(|account| account.nonce.is_zero())
                 .unwrap_or(true)
         });
@@ -103,10 +102,12 @@ where
     }
 }
 
-impl<EP, T> MigrationBrokenNoncesRecovery<EP, T>
+impl<R, Precompiles> MigrationBrokenNoncesRecovery<R, Precompiles>
 where
-    EP: EvmStateProvider<<T as Config>::AccountId>,
-    T: Config<AccountId = H160>,
+    R: pallet_evm::Config,
+    R: pallet_evm_system::Config<AccountId = H160>,
+    Precompiles: TypedGet,
+    Precompiles::Type: IntoIterator<Item = H160>,
 {
     /// Checks the contract account state and recovers it if necessary.
     /// - If the state is missing, recreates it.
@@ -121,7 +122,7 @@ where
     /// Bug #1402 made it possible for "Self-destruct" to delete not only the contract code,
     /// but also its state with the nonces used. We have no way to restore their nonces here,
     /// but in the future, contracts won't be created at such addresses anyway.
-    fn recover(id: &<T as Config>::AccountId, account: &mut Option<AccountInfoOf<T>>) -> Weight {
+    fn recover(id: &H160, account: &mut Option<AccountInfoOf<R>>) -> Weight {
         let Some(account) = account.as_mut() else {
             info!("Account {id} lacks its state");
             let (nonce, weight) = Self::min_nonce(id);
@@ -141,23 +142,36 @@ where
     }
 
     /// Computes the minimum possible nonce for a given account.
-    fn min_nonce(id: &<T as Config>::AccountId) -> (<T as Config>::Index, Weight) {
+    fn min_nonce(id: &H160) -> (<R as pallet_evm_system::Config>::Index, Weight) {
         let mut weight = Weight::default();
         let nonce = (1..)
             .find(|&nonce| {
                 let contract_id = contract_address(id, nonce);
-                let (is_known_to_evm, w) = EP::has(&contract_id);
-                weight.saturating_accrue(w);
+                let is_known_to_evm = AccountCodes::<R>::contains_key(contract_id);
                 if is_known_to_evm {
                     return false;
                 }
-                let has_state = <Account<T>>::contains_key(contract_id);
-                weight.saturating_accrue(T::DbWeight::get().reads(1));
+                let has_state = <Account<R>>::contains_key(contract_id);
+                weight.saturating_accrue(R::DbWeight::get().reads(1));
                 !has_state
             })
             .expect("There must be unused nonce");
         info!("Account {id} minimal valid nonce is {nonce}");
+        let weight = R::DbWeight::get().reads(nonce.into());
         (nonce.into(), weight)
+    }
+
+    /// Gives accounts managed by EVM. Considers precompiled contracts' accounts
+    /// as not "managed by EVM".
+    fn accounts_managed_by_evm() -> impl Iterator<Item = (H160, Weight)> {
+        let precompiles: BTreeSet<_> = Precompiles::get().into_iter().collect();
+        AccountCodes::<R>::iter_keys().filter_map(move |account_id| {
+            let is_precompiled = precompiles.contains(&account_id);
+            (!is_precompiled).then(|| {
+                let weight = <R as frame_system::Config>::DbWeight::get().reads(1);
+                (account_id, weight)
+            })
+        })
     }
 }
 

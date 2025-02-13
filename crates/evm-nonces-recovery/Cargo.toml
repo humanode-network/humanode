@@ -9,6 +9,8 @@ pallet-evm-system = { path = "../pallet-evm-system", default-features = false }
 
 codec = { workspace = true }
 frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-evm = { workspace = true }
 rlp = { workspace = true }
 sp-core = { workspace = true }
 sp-io = { workspace = true }
@@ -22,7 +24,9 @@ default = ["std"]
 std = [
   "codec/std",
   "frame-support/std",
+  "frame-system/std",
   "rlp/std",
+  "pallet-evm/std",
   "pallet-evm-system/std",
   "sp-core/std",
   "sp-io/std",
@@ -30,6 +34,8 @@ std = [
 ]
 try-runtime = [
   "frame-support/try-runtime",
+  "frame-system/try-runtime",
+  "pallet-evm/try-runtime",
   "pallet-evm-system/try-runtime",
   "sp-runtime/try-runtime",
 ]
