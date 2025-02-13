@@ -22,14 +22,10 @@ ignore = [
   "RUSTSEC-2024-0344",
   # TODO(#723): update the ed25519-dalek 1 internal dependency to 2.0.0+
   "RUSTSEC-2022-0093",
-  # TODO(#742): vulnerable webpki.
-  "RUSTSEC-2023-0052",
   # TODO(#1013): vulnerable rustls.
   "RUSTSEC-2024-0336",
   # TODO(#1197): update the sqlx internal dependency to 0.8.1+
   "RUSTSEC-2024-0363",
-  # TODO(#1352): update the hashbrown internal dependency to 0.15.1+
-  "RUSTSEC-2024-0402",
   # TODO(#1361): update the idna internal dependency to 1.0.0+
   "RUSTSEC-2024-0421",
 ]
