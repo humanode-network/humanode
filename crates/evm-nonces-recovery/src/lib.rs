@@ -150,17 +150,16 @@ where
 
     /// Computes the minimum possible nonce for a given account.
     fn min_nonce(id: &H160) -> (<R as pallet_evm_system::Config>::Index, Weight) {
-        let mut weight = Weight::default();
         let nonce = (1..)
             .find(|&nonce| {
                 let contract_id = contract_address(id, nonce);
                 let is_known_to_evm = AccountCodes::<R>::contains_key(contract_id);
-                if is_known_to_evm {
-                    return false;
-                }
-                let has_state = <Account<R>>::contains_key(contract_id);
-                weight.saturating_accrue(R::DbWeight::get().reads(1));
-                !has_state
+                !is_known_to_evm
+                // EVM system may also have a state (pallet_evm_system::Account) behind this
+                // contract_id that MUST NOT cause us to skip the nonce. This state may keep
+                // a deposit made to the address before the contract was created ("pre-funded
+                // contract"). The balance of the future contract must include this deposit
+                // (v' in section 7 of yellowpaper).
             })
             .expect("There must be unused nonce");
         info!("Account {id} minimal valid nonce is {nonce}");
