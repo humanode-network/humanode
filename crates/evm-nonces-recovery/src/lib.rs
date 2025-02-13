@@ -46,10 +46,14 @@ where
         info!("{pallet_name}: Running migration to recover broken nonces");
 
         let mut weight = Weight::default();
+        let mut retrieval_weight = Weight::default();
 
         let accounts_count = Self::accounts_managed_by_evm()
-            .map(|(id, retrieval_weight)| {
-                weight.saturating_accrue(retrieval_weight);
+            .filter_map(|(id, w)| {
+                retrieval_weight.saturating_accrue(w);
+                id
+            })
+            .map(|id| {
                 let recovery_weight =
                     <Account<R>>::mutate_exists(id, |account| Self::recover(&id, account));
                 weight.saturating_accrue(recovery_weight);
@@ -57,6 +61,7 @@ where
             .count()
             .try_into()
             .expect("Accounts count mustn't overflow");
+        weight.saturating_accrue(retrieval_weight);
         weight.saturating_accrue(R::DbWeight::get().reads_writes(accounts_count, accounts_count));
 
         info!("{pallet_name}: Migrated");
@@ -89,11 +94,13 @@ where
             );
         }
 
-        let account_to_recover = Self::accounts_managed_by_evm().find(|(account_id, _weight)| {
-            <Account<R>>::try_get(account_id)
-                .map(|account| account.nonce.is_zero())
-                .unwrap_or(true)
-        });
+        let account_to_recover = Self::accounts_managed_by_evm()
+            .filter_map(|(account_id, _weight)| account_id)
+            .find(|account_id| {
+                <Account<R>>::try_get(account_id)
+                    .map(|account| account.nonce.is_zero())
+                    .unwrap_or(true)
+            });
         ensure!(
             account_to_recover.is_none(),
             "There should be no accounts left for recovery",
@@ -163,14 +170,12 @@ where
 
     /// Gives accounts managed by EVM. Considers precompiled contracts' accounts
     /// as not "managed by EVM".
-    fn accounts_managed_by_evm() -> impl Iterator<Item = (H160, Weight)> {
+    fn accounts_managed_by_evm() -> impl Iterator<Item = (Option<H160>, Weight)> {
         let precompiles: BTreeSet<_> = Precompiles::get().into_iter().collect();
-        AccountCodes::<R>::iter_keys().filter_map(move |account_id| {
+        let weight = <R as frame_system::Config>::DbWeight::get().reads(1);
+        AccountCodes::<R>::iter_keys().map(move |account_id| {
             let is_precompiled = precompiles.contains(&account_id);
-            (!is_precompiled).then(|| {
-                let weight = <R as frame_system::Config>::DbWeight::get().reads(1);
-                (account_id, weight)
-            })
+            ((!is_precompiled).then_some(account_id), weight)
         })
     }
 }
