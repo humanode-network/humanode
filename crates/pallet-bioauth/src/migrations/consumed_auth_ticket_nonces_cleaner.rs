@@ -40,6 +40,8 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
 
     #[cfg(feature = "try-runtime")]
     fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+        // Record the current generation value based on latest added nonce value,
+        // otherwise return an empty result if there are no nonces yet.
         let pre_upgrade_state = match ConsumedAuthTicketNonces::<T>::get().last() {
             Some(last_consumed_auth_ticket_nonce) => {
                 last_consumed_auth_ticket_nonce.clone()[..16].to_vec()
