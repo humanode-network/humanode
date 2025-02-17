@@ -9,7 +9,7 @@
     "prettier:fix": "prettier -w ."
   },
   "devDependencies": {
-    "prettier": "^3.5.0"
+    "prettier": "^3.5.1"
   },
   "packageManager": "yarn@3.6.1"
 }
