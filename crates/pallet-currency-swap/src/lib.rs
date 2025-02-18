@@ -37,6 +37,22 @@ type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
 /// the [`primitives_currency_swap::CurrencySwap::To`] type.
 type ToBalanceOf<T> = <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>::Balance;
 
+pub trait BeforeCurrencySwapHook<AccountIdFrom, Balance> {
+    fn hook(account_id_from: &AccountIdFrom, value: Balance);
+}
+
+impl<AccountIdFrom, Balance> BeforeCurrencySwapHook<AccountIdFrom, Balance> for () {
+    fn hook(_account_id_from: &AccountIdFrom, _value: Balance) {}
+}
+
+pub trait AfterCurrencySwapHook<AccountIdTo, Balance> {
+    fn hook(account_id_to: &AccountIdTo, value: Balance);
+}
+
+impl<AccountIdTo, Balance> AfterCurrencySwapHook<AccountIdTo, Balance> for () {
+    fn hook(_account_id_to: &AccountIdTo, _value: Balance) {}
+}
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -73,6 +89,10 @@ pub mod pallet {
 
         /// Interface into currency swap implementation.
         type CurrencySwap: CurrencySwapT<Self::AccountId, Self::AccountIdTo>;
+
+        type BeforeCurrencySwapHook: BeforeCurrencySwapHook<Self::AccountId, FromBalanceOf<Self>>;
+
+        type AfterCurrencySwapHook: AfterCurrencySwapHook<Self::AccountIdTo, ToBalanceOf<Self>>;
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
