@@ -40,12 +40,10 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
 
     #[cfg(feature = "try-runtime")]
     fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-        // Record the current generation value based on latest added nonce value,
-        // otherwise return an empty result if there are no nonces yet.
+        // Record the last consumed auth ticket nonce, otherwise return an empty result
+        // if there are no nonces yet.
         let pre_upgrade_state = match ConsumedAuthTicketNonces::<T>::get().last() {
-            Some(last_consumed_auth_ticket_nonce) => {
-                last_consumed_auth_ticket_nonce.clone()[..16].to_vec()
-            }
+            Some(last_consumed_auth_ticket_nonce) => last_consumed_auth_ticket_nonce.to_vec(),
             None => Vec::new(),
         };
 
@@ -59,10 +57,19 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
             return Ok(());
         }
 
+        let last_consumed_auth_ticket_nonce = state;
+        let current_generation = &last_consumed_auth_ticket_nonce[..16];
+
         let consumed_auth_ticket_nonces = ConsumedAuthTicketNonces::<T>::get();
+
+        ensure!(
+            last_consumed_auth_ticket_nonce == consumed_auth_ticket_nonces.last().unwrap().to_vec(),
+            "The last record we selected earlier should remain in it's position of being last"
+        );
+
         for consumed_auth_ticket_nonce in consumed_auth_ticket_nonces {
             ensure!(
-                consumed_auth_ticket_nonce.starts_with(&state),
+                consumed_auth_ticket_nonce.starts_with(current_generation),
                 "Consumed auth ticket nonce should belong to current generation",
             );
         }
