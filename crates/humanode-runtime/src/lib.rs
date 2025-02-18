@@ -874,11 +874,6 @@ pub type UncheckedExtrinsic =
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 
-parameter_types! {
-    /// A static string representing already removed offences pallet name.
-    pub const Offences: &'static str = "Offences";
-}
-
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
     Runtime,
@@ -887,7 +882,6 @@ pub type Executive = frame_executive::Executive<
     Runtime,
     AllPalletsWithSystem,
     (
-        frame_support::migrations::RemovePallet<Offences, RocksDbWeight>,
         pallet_bioauth::migrations::consumed_auth_ticket_nonces_cleaner::ConsumedAuthTicketNoncesCleaner<Runtime>,
     ),
 >;
