@@ -6801,6 +6801,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-support"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+]
+
+[[package]]
 name = "pallet-timestamp"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.42-2024-09-12#56b16fefbd7a5ba07afd94cb37367d078da0ac52"
