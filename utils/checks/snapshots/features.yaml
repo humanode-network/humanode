@@ -2232,6 +2232,10 @@
 - name: pallet-sudo 4.0.0-dev
   features:
     - std
+- name: pallet-support 0.1.0
+  features:
+    - default
+    - std
 - name: pallet-timestamp 4.0.0-dev
   features:
     - default
