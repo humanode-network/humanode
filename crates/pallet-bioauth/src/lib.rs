@@ -22,6 +22,7 @@ pub use weights::*;
 
 #[cfg(feature = "runtime-benchmarks")]
 pub mod benchmarking;
+pub mod migrations;
 pub mod weights;
 
 #[cfg(test)]
