@@ -63,7 +63,7 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
         let consumed_auth_ticket_nonces = ConsumedAuthTicketNonces::<T>::get();
 
         ensure!(
-            last_consumed_auth_ticket_nonce == consumed_auth_ticket_nonces.last().unwrap().to_vec(),
+            last_consumed_auth_ticket_nonce == consumed_auth_ticket_nonces.last().unwrap()[..],
             "The last record we selected earlier should remain in it's position of being last"
         );
 
