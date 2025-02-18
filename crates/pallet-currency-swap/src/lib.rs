@@ -59,26 +59,10 @@ pub trait DoWithdraw<AccountIdFrom, Balance, NegativeImbalance> {
     ) -> Result<NegativeImbalance, sp_runtime::DispatchError>;
 }
 
-impl<AccountIdFrom, Balance, NegativeImbalance: Default>
-    DoWithdraw<AccountIdFrom, Balance, NegativeImbalance> for ()
-{
-    fn do_withdraw(
-        _account_id_from: &AccountIdFrom,
-        _value: Balance,
-        _existence_requirement: ExistenceRequirement,
-    ) -> Result<NegativeImbalance, sp_runtime::DispatchError> {
-        Ok(NegativeImbalance::default())
-    }
-}
-
 /// TODO: docs.
 pub trait DoDeposit<AccountIdTo, NegativeImbalance> {
     /// TODO: docs.
     fn do_deposit(account_id_to: &AccountIdTo, negative_imbalance: NegativeImbalance);
-}
-
-impl<AccountIdTo, NegativeImbalance> DoDeposit<AccountIdTo, NegativeImbalance> for () {
-    fn do_deposit(_account_id_to: &AccountIdTo, _negative_imbalance: NegativeImbalance) {}
 }
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
