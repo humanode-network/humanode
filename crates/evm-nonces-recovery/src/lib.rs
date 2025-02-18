@@ -8,7 +8,9 @@ use core::marker::PhantomData;
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_std::vec::Vec;
 use frame_support::{
-    log::info, pallet_prelude::*, sp_std::collections::btree_set::BTreeSet,
+    log::{error, info},
+    pallet_prelude::*,
+    sp_std::collections::btree_set::BTreeSet,
     traits::OnRuntimeUpgrade,
 };
 use pallet_evm::AccountCodes;
@@ -19,7 +21,9 @@ use sp_io::hashing::keccak_256;
 use sp_runtime::traits::Zero;
 
 /// Execute migration to recover broken nonces.
-pub struct MigrationBrokenNoncesRecovery<R, Precompiles>(PhantomData<(R, Precompiles)>);
+pub struct MigrationBrokenNoncesRecovery<R, MaxNonceGuesses, Precompiles>(
+    PhantomData<(R, MaxNonceGuesses, Precompiles)>,
+);
 
 /// Key indicators of the state before runtime upgrade.
 #[cfg(feature = "try-runtime")]
@@ -34,10 +38,12 @@ type AccountInfoOf<R> = AccountInfo<
     <R as pallet_evm_system::Config>::AccountData,
 >;
 
-impl<R, Precompiles> OnRuntimeUpgrade for MigrationBrokenNoncesRecovery<R, Precompiles>
+impl<R, MaxNonceGuesses, Precompiles> OnRuntimeUpgrade
+    for MigrationBrokenNoncesRecovery<R, MaxNonceGuesses, Precompiles>
 where
     R: pallet_evm::Config,
     R: pallet_evm_system::Config<AccountId = H160>,
+    MaxNonceGuesses: Get<u32>,
     Precompiles: TypedGet,
     Precompiles::Type: IntoIterator<Item = H160>,
 {
@@ -109,10 +115,11 @@ where
     }
 }
 
-impl<R, Precompiles> MigrationBrokenNoncesRecovery<R, Precompiles>
+impl<R, MaxNonceGuesses, Precompiles> MigrationBrokenNoncesRecovery<R, MaxNonceGuesses, Precompiles>
 where
     R: pallet_evm::Config,
     R: pallet_evm_system::Config<AccountId = H160>,
+    MaxNonceGuesses: Get<u32>,
     Precompiles: TypedGet,
     Precompiles::Type: IntoIterator<Item = H160>,
 {
@@ -130,27 +137,49 @@ where
     /// but also its state with the nonces used. We have no way to restore their nonces here,
     /// but in the future, contracts won't be created at such addresses anyway.
     fn recover(id: &H160, account: &mut Option<AccountInfoOf<R>>) -> Weight {
-        let Some(account) = account.as_mut() else {
-            info!("Account {id} lacks its state");
-            let (nonce, weight) = Self::min_nonce(id);
-            *account = Some(AccountInfo {
-                nonce,
-                data: Default::default(),
-            });
-            return weight;
-        };
-        if !account.nonce.is_zero() {
-            return Default::default();
+        match account {
+            Some(account) if account.nonce.is_zero() => info!("Account {id} has zero nonce"),
+            Some(_) => return Default::default(),
+            None => info!("Account {id} lacks its state"),
         }
-        info!("Account {id} has zero nonce");
-        let (nonce, weight) = Self::min_nonce(id);
-        account.nonce = nonce;
+        let (nonce, weight) = match Self::min_nonce(id) {
+            Ok(nonce) => nonce,
+            Err(weight) => {
+                error!("Unable to compute nonce for account {id}");
+                return weight;
+            }
+        };
+        account.get_or_insert_with(Default::default).nonce = nonce;
         weight
     }
 
     /// Computes the minimum possible nonce for a given account.
-    fn min_nonce(id: &H160) -> (<R as pallet_evm_system::Config>::Index, Weight) {
-        let nonce = (1..)
+    ///
+    /// # Note
+    ///
+    /// This routine might not be accurate.
+    ///
+    /// We had a bug #1402 which would cause a self-destructed contract to clear out
+    /// all of its state, instead of just clearing up the code and leaving the nonce intact.
+    /// This migration is the very thing that aims to fix this situation. This explains why this fn
+    /// is implemented by just looking at the [`AccountCodes`], and not considering account balance
+    /// or nonce ([`pallet_evm_system::Account`]) to check the account existence — but either way
+    /// would work here.
+    ///
+    /// However! Due to above, this routing might not be actually finding the nonces suitable
+    /// for recovery. Here we stop at the first "unused nonce", but given that self-destruct-induced
+    /// gaps in the allocated contract addresses are possible, this code may end up giving a nonce
+    /// that has no contract address, yet is not at the end of the span of all the allocated
+    /// contract addresses but in the middle of it (in the gap). Recovering to this nonce would not
+    /// really work, and only allow for one (or however long the gap sequence is) contract
+    /// to be created.
+    ///
+    /// A better implementation would be to scan for the gaps and fill them with dummy contract
+    /// entries occupying the gap (matching the outcome of a state that a self-destructed account
+    /// would have, if we didn't have a bugged code) in addition to fixing the creating
+    /// contract nonce.
+    fn min_nonce(id: &H160) -> Result<(<R as pallet_evm_system::Config>::Index, Weight), Weight> {
+        let nonce = (1..=MaxNonceGuesses::get())
             .find(|&nonce| {
                 let contract_id = contract_address(id, nonce);
                 let is_known_to_evm = AccountCodes::<R>::contains_key(contract_id);
@@ -161,10 +190,10 @@ where
                 // contract"). The balance of the future contract must include this deposit
                 // (v' in section 7 of yellowpaper).
             })
-            .expect("There must be unused nonce");
+            .ok_or_else(|| R::DbWeight::get().reads(MaxNonceGuesses::get().into()))?;
         info!("Account {id} minimal valid nonce is {nonce}");
         let weight = R::DbWeight::get().reads(nonce.into());
-        (nonce.into(), weight)
+        Ok((nonce.into(), weight))
     }
 
     /// Gives accounts managed by EVM. Considers precompiled contracts' accounts
