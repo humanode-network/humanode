@@ -32,6 +32,7 @@ pallet-evm-system = { path = "../pallet-evm-system", default-features = false }
 pallet-humanode-offences = { path = "../pallet-humanode-offences", default-features = false }
 pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
 pallet-pot = { path = "../pallet-pot", default-features = false }
+pallet-support = { path = "../pallet-support", default-features = false }
 pallet-token-claims = { path = "../pallet-token-claims", default-features = false }
 pallet-vesting = { path = "../pallet-vesting", default-features = false }
 precompile-bioauth = { path = "../precompile-bioauth", default-features = false }
@@ -190,6 +191,7 @@ std = [
   "pallet-pot/std",
   "pallet-session/std",
   "pallet-sudo/std",
+  "pallet-support/std",
   "pallet-timestamp/std",
   "pallet-token-claims/std",
   "pallet-transaction-payment-rpc-runtime-api/std",
@@ -260,6 +262,7 @@ try-runtime = [
   "pallet-pot/try-runtime",
   "pallet-session/try-runtime",
   "pallet-sudo/try-runtime",
+  "pallet-support/try-runtime",
   "pallet-timestamp/try-runtime",
   "pallet-token-claims/try-runtime",
   "pallet-transaction-payment/try-runtime",

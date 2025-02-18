@@ -4147,6 +4147,7 @@ dependencies = [
  "pallet-pot",
  "pallet-session",
  "pallet-sudo",
+ "pallet-support",
  "pallet-timestamp",
  "pallet-token-claims",
  "pallet-transaction-payment",
