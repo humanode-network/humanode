@@ -630,7 +630,9 @@ impl pallet_evm_balances::Config for Runtime {
 impl pallet_currency_swap::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type AccountIdTo = EvmAccountId;
+    type DoWithdraw = ();
     type CurrencySwap = currency_swap::NativeToEvmOneToOne;
+    type DoDeposit = ();
     type WeightInfo = ();
 }
 

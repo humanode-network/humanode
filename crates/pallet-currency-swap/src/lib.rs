@@ -27,6 +27,11 @@ type FromCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
 type FromBalanceOf<T> =
     <FromCurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
+/// Utility alias for easy access to the [`Currency::NegativeImbalance`] of
+/// the [`primitives_currency_swap::CurrencySwap::From`] type.
+type FromNegativeImbalanceOf<T> =
+    <FromCurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance;
+
 /// Utility alias for easy access to [`primitives_currency_swap::CurrencySwap::To`] type from a given config.
 type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
     <T as frame_system::Config>::AccountId,
@@ -37,20 +42,41 @@ type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
 /// the [`primitives_currency_swap::CurrencySwap::To`] type.
 type ToBalanceOf<T> = <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>::Balance;
 
-pub trait BeforeCurrencySwapHook<AccountIdFrom, Balance> {
-    fn hook(account_id_from: &AccountIdFrom, value: Balance);
+/// Utility alias for easy access to the [`Currency::NegativeImbalance`] of
+/// the [`primitives_currency_swap::CurrencySwap::To`] type.
+type ToNegativeImbalanceOf<T> =
+    <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>::NegativeImbalance;
+
+/// TODO: docs.
+pub trait DoWithdraw<AccountIdFrom, Balance, ExistenceRequirement, NegativeImbalance> {
+    /// TODO: docs.
+    fn do_withdraw(
+        account_id_from: &AccountIdFrom,
+        value: Balance,
+        existence_requirement: ExistenceRequirement,
+    ) -> NegativeImbalance;
 }
 
-impl<AccountIdFrom, Balance> BeforeCurrencySwapHook<AccountIdFrom, Balance> for () {
-    fn hook(_account_id_from: &AccountIdFrom, _value: Balance) {}
+impl<AccountIdFrom, Balance, ExistenceRequirement, NegativeImbalance: Default>
+    DoWithdraw<AccountIdFrom, Balance, ExistenceRequirement, NegativeImbalance> for ()
+{
+    fn do_withdraw(
+        _account_id_from: &AccountIdFrom,
+        _value: Balance,
+        _existence_requirement: ExistenceRequirement,
+    ) -> NegativeImbalance {
+        NegativeImbalance::default()
+    }
 }
 
-pub trait AfterCurrencySwapHook<AccountIdTo, Balance> {
-    fn hook(account_id_to: &AccountIdTo, value: Balance);
+/// TODO: docs.
+pub trait DoDeposit<AccountIdTo, NegativeImbalance> {
+    /// TODO: docs.
+    fn do_deposit(account_id_to: &AccountIdTo, negative_imbalance: NegativeImbalance);
 }
 
-impl<AccountIdTo, Balance> AfterCurrencySwapHook<AccountIdTo, Balance> for () {
-    fn hook(_account_id_to: &AccountIdTo, _value: Balance) {}
+impl<AccountIdTo, NegativeImbalance> DoDeposit<AccountIdTo, NegativeImbalance> for () {
+    fn do_deposit(_account_id_to: &AccountIdTo, _negative_imbalance: NegativeImbalance) {}
 }
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
@@ -61,7 +87,7 @@ pub mod pallet {
     use frame_support::{
         pallet_prelude::*,
         storage::with_storage_layer,
-        traits::{ExistenceRequirement, Imbalance, WithdrawReasons},
+        traits::{ExistenceRequirement, Imbalance},
     };
     use frame_system::pallet_prelude::*;
     use sp_runtime::traits::MaybeDisplay;
@@ -87,12 +113,19 @@ pub mod pallet {
             + Ord
             + MaxEncodedLen;
 
+        /// TODO: docs.
+        type DoWithdraw: DoWithdraw<
+            Self::AccountId,
+            FromBalanceOf<Self>,
+            ExistenceRequirement,
+            FromNegativeImbalanceOf<Self>,
+        >;
+
         /// Interface into currency swap implementation.
         type CurrencySwap: CurrencySwapT<Self::AccountId, Self::AccountIdTo>;
 
-        type BeforeCurrencySwapHook: BeforeCurrencySwapHook<Self::AccountId, FromBalanceOf<Self>>;
-
-        type AfterCurrencySwapHook: AfterCurrencySwapHook<Self::AccountIdTo, ToBalanceOf<Self>>;
+        /// TODO: docs.
+        type DoDeposit: DoDeposit<Self::AccountIdTo, ToNegativeImbalanceOf<Self>>;
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
@@ -161,12 +194,15 @@ pub mod pallet {
             ToCurrencyOf::<T>::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
-            let withdrawed_imbalance = FromCurrencyOf::<T>::withdraw(
-                &who,
-                amount,
-                WithdrawReasons::TRANSFER,
-                existence_requirement,
-            )?;
+            // let withdrawed_imbalance = FromCurrencyOf::<T>::withdraw(
+            //     &who,
+            //     amount,
+            //     WithdrawReasons::TRANSFER,
+            //     existence_requirement,
+            // )?;
+            let withdrawed_imbalance =
+                T::DoWithdraw::do_withdraw(&who, amount, existence_requirement);
+
             let withdrawed_amount = withdrawed_imbalance.peek();
 
             let deposited_imbalance =
@@ -177,7 +213,9 @@ pub mod pallet {
                 })?;
             let deposited_amount = deposited_imbalance.peek();
 
-            ToCurrencyOf::<T>::resolve_creating(&to, deposited_imbalance);
+            // ToCurrencyOf::<T>::resolve_creating(&to, deposited_imbalance);
+
+            T::DoDeposit::do_deposit(&to, deposited_imbalance);
 
             Self::deposit_event(Event::BalancesSwapped {
                 from: who,

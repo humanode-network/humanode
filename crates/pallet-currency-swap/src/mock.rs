@@ -126,7 +126,9 @@ mock! {
 impl pallet_currency_swap::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type AccountIdTo = H160;
+    type DoWithdraw = ();
     type CurrencySwap = MockCurrencySwap;
+    type DoDeposit = ();
     type WeightInfo = ();
 }
 
