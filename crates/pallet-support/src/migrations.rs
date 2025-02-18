@@ -1,5 +1,7 @@
 //! Migrations related support code.
 
+#[cfg(feature = "try-runtime")]
+use frame_support::sp_std::vec::Vec;
 use frame_support::{
     log,
     pallet_prelude::*,
