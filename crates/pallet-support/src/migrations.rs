@@ -5,7 +5,7 @@ use frame_support::sp_std::vec::Vec;
 use frame_support::{
     log,
     pallet_prelude::*,
-    sp_io::{hashing::twox_128, storage::clear_prefix, KillStorageResult},
+    sp_io::{hashing::twox_128, KillStorageResult},
     weights::RuntimeDbWeight,
 };
 
@@ -32,17 +32,18 @@ impl<P: Get<&'static str>, Limit: Get<Option<u32>>, DbWeight: Get<RuntimeDbWeigh
         let pallet_name = P::get();
         let hashed_prefix = twox_128(P::get().as_bytes());
 
-        let keys_removed: u64 = match clear_prefix(&hashed_prefix, Limit::get()) {
-            KillStorageResult::AllRemoved(value) => {
-                log::info!("{pallet_name}: Removed all {value} keys 🧹");
-                value
+        let keys_removed: u64 =
+            match frame_support::sp_io::storage::clear_prefix(&hashed_prefix, Limit::get()) {
+                KillStorageResult::AllRemoved(value) => {
+                    log::info!("{pallet_name}: Removed all {value} keys 🧹");
+                    value
+                }
+                KillStorageResult::SomeRemaining(value) => {
+                    log::info!("{pallet_name}: Removed {value} keys, some of them still remain 🧹");
+                    value
+                }
             }
-            KillStorageResult::SomeRemaining(value) => {
-                log::info!("{pallet_name}: Removed {value} keys, some of them still remain 🧹");
-                value
-            }
-        }
-        .into();
+            .into();
 
         DbWeight::get().reads_writes(keys_removed, keys_removed)
     }
