@@ -49,13 +49,13 @@ impl<P: Get<&'static str>, Limit: Get<Option<u32>>, DbWeight: Get<RuntimeDbWeigh
 
     #[cfg(feature = "try-runtime")]
     fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-        // TODO: ...
+        // Do nothing.
         Ok(Vec::new())
     }
 
     #[cfg(feature = "try-runtime")]
     fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-        // TODO: ...
+        // Do nothing.
         Ok(())
     }
 }
