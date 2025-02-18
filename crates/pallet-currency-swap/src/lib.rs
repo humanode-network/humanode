@@ -2,7 +2,9 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::{fungible::Inspect, tokens::Provenance, Currency};
+use frame_support::traits::{
+    fungible::Inspect, tokens::Provenance, Currency, ExistenceRequirement,
+};
 pub use pallet::*;
 use primitives_currency_swap::CurrencySwap as CurrencySwapT;
 pub use weights::*;
@@ -48,24 +50,24 @@ type ToNegativeImbalanceOf<T> =
     <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>::NegativeImbalance;
 
 /// TODO: docs.
-pub trait DoWithdraw<AccountIdFrom, Balance, ExistenceRequirement, NegativeImbalance> {
+pub trait DoWithdraw<AccountIdFrom, Balance, NegativeImbalance> {
     /// TODO: docs.
     fn do_withdraw(
         account_id_from: &AccountIdFrom,
         value: Balance,
         existence_requirement: ExistenceRequirement,
-    ) -> NegativeImbalance;
+    ) -> Result<NegativeImbalance, sp_runtime::DispatchError>;
 }
 
-impl<AccountIdFrom, Balance, ExistenceRequirement, NegativeImbalance: Default>
-    DoWithdraw<AccountIdFrom, Balance, ExistenceRequirement, NegativeImbalance> for ()
+impl<AccountIdFrom, Balance, NegativeImbalance: Default>
+    DoWithdraw<AccountIdFrom, Balance, NegativeImbalance> for ()
 {
     fn do_withdraw(
         _account_id_from: &AccountIdFrom,
         _value: Balance,
         _existence_requirement: ExistenceRequirement,
-    ) -> NegativeImbalance {
-        NegativeImbalance::default()
+    ) -> Result<NegativeImbalance, sp_runtime::DispatchError> {
+        Ok(NegativeImbalance::default())
     }
 }
 
@@ -84,11 +86,7 @@ impl<AccountIdTo, NegativeImbalance> DoDeposit<AccountIdTo, NegativeImbalance> f
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
-    use frame_support::{
-        pallet_prelude::*,
-        storage::with_storage_layer,
-        traits::{ExistenceRequirement, Imbalance},
-    };
+    use frame_support::{pallet_prelude::*, storage::with_storage_layer, traits::Imbalance};
     use frame_system::pallet_prelude::*;
     use sp_runtime::traits::MaybeDisplay;
     use sp_std::fmt::Debug;
@@ -117,7 +115,6 @@ pub mod pallet {
         type DoWithdraw: DoWithdraw<
             Self::AccountId,
             FromBalanceOf<Self>,
-            ExistenceRequirement,
             FromNegativeImbalanceOf<Self>,
         >;
 
@@ -194,14 +191,8 @@ pub mod pallet {
             ToCurrencyOf::<T>::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
-            // let withdrawed_imbalance = FromCurrencyOf::<T>::withdraw(
-            //     &who,
-            //     amount,
-            //     WithdrawReasons::TRANSFER,
-            //     existence_requirement,
-            // )?;
             let withdrawed_imbalance =
-                T::DoWithdraw::do_withdraw(&who, amount, existence_requirement);
+                T::DoWithdraw::do_withdraw(&who, amount, existence_requirement)?;
 
             let withdrawed_amount = withdrawed_imbalance.peek();
 
@@ -212,8 +203,6 @@ pub mod pallet {
                     error.cause.into()
                 })?;
             let deposited_amount = deposited_imbalance.peek();
-
-            // ToCurrencyOf::<T>::resolve_creating(&to, deposited_imbalance);
 
             T::DoDeposit::do_deposit(&to, deposited_imbalance);
 

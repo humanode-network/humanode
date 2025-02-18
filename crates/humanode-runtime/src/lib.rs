@@ -627,10 +627,65 @@ impl pallet_evm_balances::Config for Runtime {
     type DustRemoval = currency_swap::TreasuryPotProxy;
 }
 
+pub struct DoWithdraw;
+
+impl
+    pallet_currency_swap::DoWithdraw<
+        AccountId,
+        Balance,
+        <Balances as frame_support::traits::Currency<AccountId>>::NegativeImbalance,
+    > for DoWithdraw
+{
+    fn do_withdraw(
+        account_id_from: &AccountId,
+        value: Balance,
+        existence_requirement: frame_support::traits::ExistenceRequirement,
+    ) -> Result<
+        <Balances as frame_support::traits::Currency<AccountId>>::NegativeImbalance,
+        sp_runtime::DispatchError,
+    > {
+        <Balances as frame_support::traits::Currency<AccountId>>::withdraw(
+            account_id_from,
+            value,
+            frame_support::traits::WithdrawReasons::TRANSFER,
+            existence_requirement,
+        )
+    }
+}
+
+pub struct DoDeposit;
+
+impl
+    pallet_currency_swap::DoDeposit<
+        EvmAccountId,
+        <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::NegativeImbalance,
+    > for DoDeposit
+{
+    fn do_deposit(
+        account_id_to: &EvmAccountId,
+        negative_imbalance: <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::NegativeImbalance,
+    ) {
+        // Previous logic as commented code.
+        //
+        // <EvmBalances as frame_support::traits::Currency<EvmAccountId>::resolve_creating(account_id_to, negative_imbalance);
+
+        // New logic
+        //
+        // - return back to pot account
+        // - execute pallet ethereum transact
+        <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::resolve_creating(
+            &EvmToNativeSwapBridgePotAccountId::get(),
+            negative_imbalance,
+        );
+        let transaction = todo!();
+        pallet_ethereum::Call::<Runtime>::transact { transaction };
+    }
+}
+
 impl pallet_currency_swap::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type AccountIdTo = EvmAccountId;
-    type DoWithdraw = ();
+    type DoWithdraw = DoWithdraw;
     type CurrencySwap = currency_swap::NativeToEvmOneToOne;
     type DoDeposit = ();
     type WeightInfo = ();
