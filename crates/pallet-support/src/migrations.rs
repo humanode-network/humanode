@@ -9,7 +9,16 @@ use frame_support::{
     weights::RuntimeDbWeight,
 };
 
-/// TODO: ...
+/// `RemovePallet` is a utility struct used to remove all storage items associated with a specific
+/// pallet.
+///
+/// The implementation is based on [`frame_support::migrations::RemovePallet`], but doesn't focus
+/// just on removing all storage items per one runtime upgrade in one block. Additionally, it allows
+/// to use capabilities of `clear_prefix` with limit that can be used to partially delete a prefix
+/// storage in case it is too large to delete in one block.
+///
+/// We are going to upstream improved logic to <https://github.com/paritytech/polkadot-sdk> when
+/// we switched our substrate dependencies from archived substrate fork to polkadot-sdk fork.
 pub struct RemovePallet<
     P: Get<&'static str>,
     Limit: Get<Option<u32>>,
