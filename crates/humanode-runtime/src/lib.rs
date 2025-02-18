@@ -627,14 +627,14 @@ impl pallet_evm_balances::Config for Runtime {
     type DustRemoval = currency_swap::TreasuryPotProxy;
 }
 
-pub struct DoWithdraw;
+pub struct WithdrawImbalanceToBeSwapped;
 
 impl
-    pallet_currency_swap::DoWithdraw<
+    pallet_currency_swap::WithdrawImbalanceToBeSwapped<
         AccountId,
         Balance,
         <Balances as frame_support::traits::Currency<AccountId>>::NegativeImbalance,
-    > for DoWithdraw
+    > for WithdrawImbalanceToBeSwapped
 {
     fn do_withdraw(
         account_id_from: &AccountId,
@@ -653,13 +653,13 @@ impl
     }
 }
 
-pub struct DoDeposit;
+pub struct DepositSwappedImbalance;
 
 impl
-    pallet_currency_swap::DoDeposit<
+    pallet_currency_swap::DepositSwappedImbalance<
         EvmAccountId,
         <EvmBalances as frame_support::traits::Currency<EvmAccountId>>::NegativeImbalance,
-    > for DoDeposit
+    > for DepositSwappedImbalance
 {
     fn do_deposit(
         account_id_to: &EvmAccountId,
@@ -685,9 +685,9 @@ impl
 impl pallet_currency_swap::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type AccountIdTo = EvmAccountId;
-    type DoWithdraw = DoWithdraw;
+    type WithdrawImbalanceToBeSwapped = WithdrawImbalanceToBeSwapped;
     type CurrencySwap = currency_swap::NativeToEvmOneToOne;
-    type DoDeposit = ();
+    type DepositSwappedImbalance = DepositSwappedImbalance;
     type WeightInfo = ();
 }
 

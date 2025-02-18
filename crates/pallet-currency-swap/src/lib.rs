@@ -50,7 +50,7 @@ type ToNegativeImbalanceOf<T> =
     <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>::NegativeImbalance;
 
 /// TODO: docs.
-pub trait DoWithdraw<AccountIdFrom, Balance, NegativeImbalance> {
+pub trait WithdrawImbalanceToBeSwapped<AccountIdFrom, Balance, NegativeImbalance> {
     /// TODO: docs.
     fn do_withdraw(
         account_id_from: &AccountIdFrom,
@@ -60,7 +60,7 @@ pub trait DoWithdraw<AccountIdFrom, Balance, NegativeImbalance> {
 }
 
 /// TODO: docs.
-pub trait DoDeposit<AccountIdTo, NegativeImbalance> {
+pub trait DepositSwappedImbalance<AccountIdTo, NegativeImbalance> {
     /// TODO: docs.
     fn do_deposit(account_id_to: &AccountIdTo, negative_imbalance: NegativeImbalance);
 }
@@ -96,7 +96,7 @@ pub mod pallet {
             + MaxEncodedLen;
 
         /// TODO: docs.
-        type DoWithdraw: DoWithdraw<
+        type WithdrawImbalanceToBeSwapped: WithdrawImbalanceToBeSwapped<
             Self::AccountId,
             FromBalanceOf<Self>,
             FromNegativeImbalanceOf<Self>,
@@ -106,7 +106,10 @@ pub mod pallet {
         type CurrencySwap: CurrencySwapT<Self::AccountId, Self::AccountIdTo>;
 
         /// TODO: docs.
-        type DoDeposit: DoDeposit<Self::AccountIdTo, ToNegativeImbalanceOf<Self>>;
+        type DepositSwappedImbalance: DepositSwappedImbalance<
+            Self::AccountIdTo,
+            ToNegativeImbalanceOf<Self>,
+        >;
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
@@ -176,7 +179,7 @@ pub mod pallet {
                 .into_result()?;
 
             let withdrawed_imbalance =
-                T::DoWithdraw::do_withdraw(&who, amount, existence_requirement)?;
+                T::WithdrawImbalanceToBeSwapped::do_withdraw(&who, amount, existence_requirement)?;
 
             let withdrawed_amount = withdrawed_imbalance.peek();
 
@@ -188,7 +191,7 @@ pub mod pallet {
                 })?;
             let deposited_amount = deposited_imbalance.peek();
 
-            T::DoDeposit::do_deposit(&to, deposited_imbalance);
+            T::DepositSwappedImbalance::do_deposit(&to, deposited_imbalance);
 
             Self::deposit_event(Event::BalancesSwapped {
                 from: who,
