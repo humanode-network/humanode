@@ -140,7 +140,7 @@ pub mod pallet {
             T::EvmCurrency::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
-            let balance_to_be_deposited: u64 = estimated_swapped_balance.unique_saturated_into();
+            let balance_to_be_deposited: u128 = estimated_swapped_balance.unique_saturated_into();
 
             T::NativeCurrency::transfer(&who, &T::PotNativeBrige::get(), amount, preservation)?;
 
