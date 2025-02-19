@@ -7,6 +7,7 @@ publish = false
 [dependencies]
 codec = { workspace = true, features = ["derive"] }
 ethereum = { workspace = true }
+fp-ethereum = { workspace = true }
 frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
@@ -26,6 +27,7 @@ runtime-benchmarks = [
 ]
 std = [
   "codec/std",
+  "fp-ethereum/std",
   "frame-support/std",
   "frame-system/std",
   "pallet-ethereum/std",
