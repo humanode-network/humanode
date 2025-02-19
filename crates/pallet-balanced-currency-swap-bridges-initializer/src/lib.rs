@@ -3,6 +3,8 @@
 // Either generate code at standard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "try-runtime")]
+use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec};
 use frame_support::{
     sp_runtime::{
         traits::{CheckedAdd, CheckedSub, Convert, Get, Zero},
@@ -145,15 +147,12 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<sp_std::vec::Vec<u8>, frame_support::sp_runtime::TryRuntimeError>
-        {
+        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
             upgrade_init::pre_upgrade()
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(
-            state: sp_std::vec::Vec<u8>,
-        ) -> Result<(), frame_support::sp_runtime::TryRuntimeError> {
+        fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
             upgrade_init::post_upgrade::<T>(state)
         }
     }
