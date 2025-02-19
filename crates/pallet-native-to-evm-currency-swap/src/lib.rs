@@ -23,7 +23,7 @@ type EvmBalanceOf<T> =
 pub mod pallet {
     use frame_support::{
         pallet_prelude::*,
-        sp_runtime::traits::{Convert, MaybeDisplay},
+        sp_runtime::traits::{Convert, MaybeDisplay, UniqueSaturatedInto},
         sp_std::fmt::Debug,
         storage::with_storage_layer,
         traits::{
@@ -32,6 +32,8 @@ pub mod pallet {
         },
     };
     use frame_system::pallet_prelude::*;
+    use pallet_evm::FeeCalculator;
+    use sp_core::{H160, U256};
 
     use super::*;
 
@@ -40,7 +42,7 @@ pub mod pallet {
 
     /// Configuration trait of this pallet.
     #[pallet::config]
-    pub trait Config: frame_system::Config {
+    pub trait Config: frame_system::Config + pallet_ethereum::Config {
         /// Overarching event type.
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -51,7 +53,8 @@ pub mod pallet {
             + Debug
             + MaybeDisplay
             + Ord
-            + MaxEncodedLen;
+            + MaxEncodedLen
+            + Into<H160>;
 
         /// Native currency.
         type NativeCurrency: Inspect<Self::AccountId> + Mutate<Self::AccountId>;
@@ -89,7 +92,7 @@ pub mod pallet {
         },
     }
 
-    #[pallet::call(weight(T::WeightInfo))]
+    #[pallet::call(weight(<T as Config>::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Swap balances.
         #[pallet::call_index(0)]
@@ -136,9 +139,33 @@ pub mod pallet {
             T::EvmCurrency::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
+            let balance_to_be_deposited: u64 = estimated_swapped_balance.unique_saturated_into();
+
             T::NativeCurrency::transfer(&who, &T::PotNativeBrige::get(), amount, preservation)?;
 
-            // TODO: do visible ethereum transaction.
+            let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
+                chain_id: <T as pallet_evm::Config>::ChainId::get(),
+                nonce: pallet_evm::Pallet::<T>::account_basic(&T::PotEvmBridge::get().into())
+                    .0
+                    .nonce,
+                max_priority_fee_per_gas: 0.into(),
+                max_fee_per_gas: <T as pallet_evm::Config>::FeeCalculator::min_gas_price().0,
+                gas_limit: 21000.into(), // simple transfer
+                action: ethereum::TransactionAction::Call(to.clone().into()),
+                value: U256::from(balance_to_be_deposited),
+                input: Default::default(),
+                access_list: Default::default(),
+                odd_y_parity: false,
+                r: Default::default(),
+                s: Default::default(),
+            });
+
+            pallet_ethereum::Pallet::<T>::execute(
+                T::PotEvmBridge::get().into(),
+                &transaction,
+                None,
+            )
+            .unwrap();
 
             Self::deposit_event(Event::BalancesSwapped {
                 from: who,
