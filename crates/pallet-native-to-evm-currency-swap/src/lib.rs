@@ -63,14 +63,14 @@ pub mod pallet {
         /// EVM currency.
         type EvmCurrency: Inspect<Self::EvmAccountId>;
 
-        /// The converter to determine how the balance amount should be converted from one currency to
-        /// another.
+        /// The converter to determine how the balance amount should be converted from native
+        /// to evm currency.
         type BalanceConverter: Convert<NativeBalanceOf<Self>, EvmBalanceOf<Self>>;
 
-        /// The account to land the balances to when receiving the funds as part of the swap operation.
+        /// The pot native bridge account.
         type PotNativeBridge: Get<Self::AccountId>;
 
-        /// The account to take the balances from when sending the funds as part of the swap operation.
+        /// The pot evm bridge account.
         type PotEvmBridge: Get<Self::EvmAccountId>;
 
         /// Weight information for extrinsics in this pallet.
@@ -140,9 +140,10 @@ pub mod pallet {
             T::EvmCurrency::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
-            let balance_to_be_deposited: u128 = estimated_swapped_balance.unique_saturated_into();
-
             T::NativeCurrency::transfer(&who, &T::PotNativeBridge::get(), amount, preservation)?;
+
+            let evm_balance_to_be_deposited: u128 =
+                estimated_swapped_balance.unique_saturated_into();
 
             let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
                 chain_id: <T as pallet_evm::Config>::ChainId::get(),
@@ -153,7 +154,7 @@ pub mod pallet {
                 max_fee_per_gas: <T as pallet_evm::Config>::FeeCalculator::min_gas_price().0,
                 gas_limit: 21000.into(), // simple transfer
                 action: ethereum::TransactionAction::Call(to.clone().into()),
-                value: U256::from(balance_to_be_deposited),
+                value: U256::from(evm_balance_to_be_deposited),
                 input: Default::default(),
                 access_list: Default::default(),
                 odd_y_parity: false,
