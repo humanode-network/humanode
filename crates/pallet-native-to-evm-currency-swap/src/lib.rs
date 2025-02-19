@@ -21,6 +21,7 @@ type EvmBalanceOf<T> =
 #[allow(clippy::missing_docs_in_private_items)]
 #[frame_support::pallet]
 pub mod pallet {
+    use fp_ethereum::ValidatedTransaction;
     use frame_support::{
         pallet_prelude::*,
         sp_runtime::traits::{Convert, MaybeDisplay, UniqueSaturatedInto},
@@ -160,10 +161,9 @@ pub mod pallet {
                 s: Default::default(),
             });
 
-            pallet_ethereum::Pallet::<T>::execute(
+            pallet_ethereum::ValidatedTransaction::<T>::apply(
                 T::PotEvmBridge::get().into(),
-                &transaction,
-                None,
+                transaction,
             )
             .unwrap();
 
