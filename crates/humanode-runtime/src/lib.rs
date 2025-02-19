@@ -641,7 +641,7 @@ impl pallet_native_to_evm_currency_swap::Config for Runtime {
     type NativeCurrency = Balances;
     type EvmCurrency = EvmBalances;
     type BalanceConverter = Identity;
-    type PotNativeBrige = NativeToEvmSwapBridgePotAccountId;
+    type PotNativeBridge = NativeToEvmSwapBridgePotAccountId;
     type PotEvmBridge = EvmToNativeSwapBridgePotAccountId;
     type WeightInfo = ();
 }
