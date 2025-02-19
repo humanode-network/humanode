@@ -68,7 +68,7 @@ pub mod pallet {
         type BalanceConverter: Convert<NativeBalanceOf<Self>, EvmBalanceOf<Self>>;
 
         /// The account to land the balances to when receiving the funds as part of the swap operation.
-        type PotNativeBrige: Get<Self::AccountId>;
+        type PotNativeBridge: Get<Self::AccountId>;
 
         /// The account to take the balances from when sending the funds as part of the swap operation.
         type PotEvmBridge: Get<Self::EvmAccountId>;
@@ -142,7 +142,7 @@ pub mod pallet {
 
             let balance_to_be_deposited: u128 = estimated_swapped_balance.unique_saturated_into();
 
-            T::NativeCurrency::transfer(&who, &T::PotNativeBrige::get(), amount, preservation)?;
+            T::NativeCurrency::transfer(&who, &T::PotNativeBridge::get(), amount, preservation)?;
 
             let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
                 chain_id: <T as pallet_evm::Config>::ChainId::get(),
