@@ -8,7 +8,6 @@ publish = false
 codec = { workspace = true, features = ["derive"] }
 ethereum = { workspace = true }
 fp-ethereum = { workspace = true }
-frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 pallet-ethereum = { workspace = true }
@@ -19,7 +18,6 @@ sp-core = { workspace = true }
 [features]
 default = ["std"]
 runtime-benchmarks = [
-  "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
   "frame-system/runtime-benchmarks",
   "pallet-ethereum/runtime-benchmarks",
