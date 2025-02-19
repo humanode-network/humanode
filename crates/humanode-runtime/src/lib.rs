@@ -635,6 +635,17 @@ impl pallet_currency_swap::Config for Runtime {
     type WeightInfo = ();
 }
 
+impl pallet_native_to_evm_currency_swap::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type EvmAccountId = EvmAccountId;
+    type NativeCurrency = Balances;
+    type EvmCurrency = EvmBalances;
+    type BalanceConverter = Identity;
+    type PotNativeBrige = NativeToEvmSwapBridgePotAccountId;
+    type PotEvmBridge = EvmToNativeSwapBridgePotAccountId;
+    type WeightInfo = ();
+}
+
 /// A simple fixed fee per gas calculator.
 pub struct EvmFeePerGas;
 
@@ -842,6 +853,7 @@ construct_runtime!(
         EvmBalancesErc20Support: pallet_erc20_support = 37,
         DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
         HumanodeOffences: pallet_humanode_offences = 39,
+        NativeToEvmCurrencySwap: pallet_native_to_evm_currency_swap = 40,
     }
 );
 
