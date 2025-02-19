@@ -1,41 +1,20 @@
-//! A substrate pallet containing the currency swap integration.
+//! A substrate pallet containing the native to evm currency swap integration.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::traits::{fungible::Inspect, tokens::Provenance, Currency};
+use frame_support::traits::fungible::Inspect;
 pub use pallet::*;
-use primitives_currency_swap::CurrencySwap as CurrencySwapT;
 pub use weights::*;
 
 pub mod weights;
 
-#[cfg(feature = "runtime-benchmarks")]
-pub mod benchmarking;
-#[cfg(test)]
-mod mock;
-#[cfg(test)]
-mod tests;
+/// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::NativeCurrency`] type.
+type NativeBalanceOf<T> =
+    <<T as Config>::NativeCurrency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
-/// Utility alias for easy access to [`primitives_currency_swap::CurrencySwap::From`] type from a given config.
-type FromCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
-    <T as frame_system::Config>::AccountId,
-    <T as Config>::AccountIdTo,
->>::From;
-
-/// Utility alias for easy access to the [`Currency::Balance`] of
-/// the [`primitives_currency_swap::CurrencySwap::From`] type.
-type FromBalanceOf<T> =
-    <FromCurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-
-/// Utility alias for easy access to [`primitives_currency_swap::CurrencySwap::To`] type from a given config.
-type ToCurrencyOf<T> = <<T as Config>::CurrencySwap as CurrencySwapT<
-    <T as frame_system::Config>::AccountId,
-    <T as Config>::AccountIdTo,
->>::To;
-
-/// Utility alias for easy access to the [`Currency::Balance`] of
-/// the [`primitives_currency_swap::CurrencySwap::To`] type.
-type ToBalanceOf<T> = <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>::Balance;
+/// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::EvmCurrency`] type.
+type EvmBalanceOf<T> =
+    <<T as Config>::EvmCurrency as Inspect<<T as Config>::EvmAccountId>>::Balance;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -44,12 +23,15 @@ type ToBalanceOf<T> = <ToCurrencyOf<T> as Currency<<T as Config>::AccountIdTo>>:
 pub mod pallet {
     use frame_support::{
         pallet_prelude::*,
+        sp_runtime::traits::{Convert, MaybeDisplay},
+        sp_std::fmt::Debug,
         storage::with_storage_layer,
-        traits::{ExistenceRequirement, Imbalance, WithdrawReasons},
+        traits::{
+            fungible::Mutate,
+            tokens::{Preservation, Provenance},
+        },
     };
     use frame_system::pallet_prelude::*;
-    use sp_runtime::traits::MaybeDisplay;
-    use sp_std::fmt::Debug;
 
     use super::*;
 
@@ -62,8 +44,8 @@ pub mod pallet {
         /// Overarching event type.
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
-        /// The user account identifier type to convert to.
-        type AccountIdTo: Parameter
+        /// The EVM user account identifier type.
+        type EvmAccountId: Parameter
             + Member
             + MaybeSerializeDeserialize
             + Debug
@@ -71,8 +53,21 @@ pub mod pallet {
             + Ord
             + MaxEncodedLen;
 
-        /// Interface into currency swap implementation.
-        type CurrencySwap: CurrencySwapT<Self::AccountId, Self::AccountIdTo>;
+        /// Native currency.
+        type NativeCurrency: Inspect<Self::AccountId> + Mutate<Self::AccountId>;
+
+        /// EVM currency.
+        type EvmCurrency: Inspect<Self::EvmAccountId>;
+
+        /// The converter to determine how the balance amount should be converted from one currency to
+        /// another.
+        type BalanceConverter: Convert<NativeBalanceOf<Self>, EvmBalanceOf<Self>>;
+
+        /// The account to land the balances to when receiving the funds as part of the swap operation.
+        type PotNativeBrige: Get<Self::AccountId>;
+
+        /// The account to take the balances from when sending the funds as part of the swap operation.
+        type PotEvmBridge: Get<Self::EvmAccountId>;
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
@@ -86,11 +81,11 @@ pub mod pallet {
             /// The account id balances withdrawed from.
             from: T::AccountId,
             /// The withdrawed balances amount.
-            withdrawed_amount: FromBalanceOf<T>,
+            withdrawed_amount: NativeBalanceOf<T>,
             /// The account id balances deposited to.
-            to: T::AccountIdTo,
+            to: T::EvmAccountId,
             /// The deposited balances amount.
-            deposited_amount: ToBalanceOf<T>,
+            deposited_amount: EvmBalanceOf<T>,
         },
     }
 
@@ -100,13 +95,13 @@ pub mod pallet {
         #[pallet::call_index(0)]
         pub fn swap(
             origin: OriginFor<T>,
-            to: T::AccountIdTo,
-            #[pallet::compact] amount: FromBalanceOf<T>,
+            to: T::EvmAccountId,
+            #[pallet::compact] amount: NativeBalanceOf<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
             with_storage_layer(move || {
-                Self::do_swap(who, to, amount, ExistenceRequirement::AllowDeath)?;
+                Self::do_swap(who, to, amount, Preservation::Expendable)?;
 
                 Ok(())
             })
@@ -116,13 +111,13 @@ pub mod pallet {
         #[pallet::call_index(1)]
         pub fn swap_keep_alive(
             origin: OriginFor<T>,
-            to: T::AccountIdTo,
-            #[pallet::compact] amount: FromBalanceOf<T>,
+            to: T::EvmAccountId,
+            #[pallet::compact] amount: NativeBalanceOf<T>,
         ) -> DispatchResult {
             let who = ensure_signed(origin)?;
 
             with_storage_layer(move || {
-                Self::do_swap(who, to, amount, ExistenceRequirement::KeepAlive)?;
+                Self::do_swap(who, to, amount, Preservation::Preserve)?;
 
                 Ok(())
             })
@@ -133,37 +128,23 @@ pub mod pallet {
         /// General swap balances implementation.
         pub fn do_swap(
             who: T::AccountId,
-            to: T::AccountIdTo,
-            amount: FromBalanceOf<T>,
-            existence_requirement: ExistenceRequirement,
+            to: T::EvmAccountId,
+            amount: NativeBalanceOf<T>,
+            preservation: Preservation,
         ) -> DispatchResult {
-            let estimated_swapped_balance = T::CurrencySwap::estimate_swapped_balance(amount);
-            ToCurrencyOf::<T>::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
+            let estimated_swapped_balance = T::BalanceConverter::convert(amount);
+            T::EvmCurrency::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
-            let withdrawed_imbalance = FromCurrencyOf::<T>::withdraw(
-                &who,
-                amount,
-                WithdrawReasons::TRANSFER,
-                existence_requirement,
-            )?;
-            let withdrawed_amount = withdrawed_imbalance.peek();
+            T::NativeCurrency::transfer(&who, &T::PotNativeBrige::get(), amount, preservation)?;
 
-            let deposited_imbalance =
-                T::CurrencySwap::swap(withdrawed_imbalance).map_err(|error| {
-                    // Here we undo the withdrawal to avoid having a dangling imbalance.
-                    FromCurrencyOf::<T>::resolve_creating(&who, error.incoming_imbalance);
-                    error.cause.into()
-                })?;
-            let deposited_amount = deposited_imbalance.peek();
-
-            ToCurrencyOf::<T>::resolve_creating(&to, deposited_imbalance);
+            // TODO: do visible ethereum transaction.
 
             Self::deposit_event(Event::BalancesSwapped {
                 from: who,
-                withdrawed_amount,
+                withdrawed_amount: amount,
                 to,
-                deposited_amount,
+                deposited_amount: estimated_swapped_balance,
             });
 
             Ok(())

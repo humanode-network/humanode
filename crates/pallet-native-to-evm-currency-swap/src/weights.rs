@@ -1,4 +1,4 @@
-//! Weights definition for pallet-currency-swap.
+//! Weights definition for pallet-native-to-evm-currency-swap.
 
 use frame_support::weights::Weight;
 

@@ -3817,6 +3817,7 @@ dependencies = [
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-multisig",
+ "pallet-native-to-evm-currency-swap",
  "pallet-pot",
  "pallet-session",
  "pallet-sudo",
@@ -6296,16 +6297,8 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall",
- "pallet-balances",
- "pallet-evm-balances",
- "pallet-evm-system",
  "parity-scale-codec",
- "primitives-currency-swap",
  "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]

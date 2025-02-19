@@ -5,23 +5,11 @@ edition = "2021"
 publish = false
 
 [dependencies]
-primitives-currency-swap = { path = "../primitives-currency-swap", default-features = false }
-
 codec = { workspace = true, features = ["derive"] }
 frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
-sp-runtime = { workspace = true }
-sp-std = { workspace = true }
-
-[dev-dependencies]
-pallet-evm-balances = { path = "../pallet-evm-balances", features = ["default"] }
-pallet-evm-system = { path = "../pallet-evm-system", features = ["default"] }
-
-mockall = { workspace = true }
-pallet-balances = { workspace = true, features = ["default"] }
-sp-core = { workspace = true }
 
 [features]
 default = ["std"]
@@ -29,28 +17,14 @@ runtime-benchmarks = [
   "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
   "frame-system/runtime-benchmarks",
-  "pallet-balances/runtime-benchmarks",
-  "sp-runtime/runtime-benchmarks",
 ]
 std = [
   "codec/std",
   "frame-support/std",
   "frame-system/std",
-  "pallet-balances/std",
-  "pallet-evm-balances/std",
-  "pallet-evm-system/std",
-  "primitives-currency-swap/std",
   "scale-info/std",
-  "sp-core/std",
-  "sp-runtime/std",
-  "sp-std/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
   "frame-system/try-runtime",
-  "pallet-balances/try-runtime",
-  "pallet-evm-balances/try-runtime",
-  "pallet-evm-system/try-runtime",
-  "primitives-currency-swap/try-runtime",
-  "sp-runtime/try-runtime",
 ]
