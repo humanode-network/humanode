@@ -2008,6 +2008,10 @@
 - name: pallet-multisig 4.0.0-dev
   features:
     - std
+- name: pallet-native-to-evm-currency-swap 0.1.0
+  features:
+    - default
+    - std
 - name: pallet-pot 0.1.0
   features:
     - default
