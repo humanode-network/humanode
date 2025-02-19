@@ -6295,6 +6295,7 @@ name = "pallet-native-to-evm-currency-swap"
 version = "0.1.0"
 dependencies = [
  "ethereum",
+ "fp-ethereum",
  "frame-benchmarking",
  "frame-support",
  "frame-system",

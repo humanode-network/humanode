@@ -150,6 +150,7 @@ fc-mapping-sync = { git = "https://github.com/humanode-network/frontier", tag = 
 fc-rpc = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.43-2025-03-22", default-features = false }
 fc-rpc-core = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.43-2025-03-22", default-features = false }
 fc-storage = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.43-2025-03-22", default-features = false }
+fp-ethereum = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.43-2025-03-22", default-features = false }
 fp-evm = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.43-2025-03-22", default-features = false }
 fp-rpc = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.43-2025-03-22", default-features = false }
 fp-self-contained = { git = "https://github.com/humanode-network/frontier", tag = "locked/polkadot-v0.9.43-2025-03-22", default-features = false }
