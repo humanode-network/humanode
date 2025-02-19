@@ -6,10 +6,14 @@ publish = false
 
 [dependencies]
 codec = { workspace = true, features = ["derive"] }
+ethereum = { workspace = true }
 frame-benchmarking = { workspace = true, optional = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
+pallet-ethereum = { workspace = true }
+pallet-evm = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
+sp-core = { workspace = true }
 
 [features]
 default = ["std"]
@@ -17,14 +21,21 @@ runtime-benchmarks = [
   "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
   "frame-system/runtime-benchmarks",
+  "pallet-ethereum/runtime-benchmarks",
+  "pallet-evm/runtime-benchmarks",
 ]
 std = [
   "codec/std",
   "frame-support/std",
   "frame-system/std",
+  "pallet-ethereum/std",
+  "pallet-evm/std",
   "scale-info/std",
+  "sp-core/std",
 ]
 try-runtime = [
   "frame-support/try-runtime",
   "frame-system/try-runtime",
+  "pallet-ethereum/try-runtime",
+  "pallet-evm/try-runtime",
 ]
