@@ -131,9 +131,14 @@ fn rpc_url_from_params(params: &BioauthFlowParams, rpc_port: Option<u16>) -> Rpc
         return RpcUrl::Unset;
     }
     if params.rpc_url_ngrok_detect {
+        let ws_rpc_endpoint_port = match params.rpc_url_scheme_preference {
+            // If there's no preference - try switching to WebSocket if it's available.
+            RpcUrlSchemePreference::NoPreference | RpcUrlSchemePreference::Ws => rpc_port,
+            RpcUrlSchemePreference::Http => None,
+        };
         return RpcUrl::DetectFromNgrok {
             tunnel_name: params.rpc_url_ngrok_detect_from.clone(),
-            ws_rpc_endpoint_port: rpc_port,
+            ws_rpc_endpoint_port,
         };
     }
 
