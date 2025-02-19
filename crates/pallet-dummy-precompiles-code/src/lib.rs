@@ -2,6 +2,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "try-runtime")]
+use frame_support::sp_runtime::TryRuntimeError;
 use frame_support::{
     traits::{Get, StorageVersion},
     weights::Weight,
@@ -101,13 +103,13 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, frame_support::sp_runtime::TryRuntimeError> {
+        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
             // Do nothing.
             Ok(Vec::new())
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(_state: Vec<u8>) -> Result<(), frame_support::sp_runtime::TryRuntimeError> {
+        fn post_upgrade(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
             let mut not_created_precompiles = Vec::new();
 
             for precompile_address in &T::PrecompilesAddresses::get() {
@@ -118,7 +120,7 @@ pub mod pallet {
             }
 
             if !not_created_precompiles.is_empty() {
-                return Err(frame_support::sp_runtime::TryRuntimeError::Other(
+                return Err(TryRuntimeError::Other(
                     "precompiles not created properly: {:not_created_precompiles}",
                 ));
             }

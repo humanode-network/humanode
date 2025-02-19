@@ -5,6 +5,8 @@ use frame_support::{
     traits::{Get, GetStorageVersion, OnRuntimeUpgrade, PalletInfoAccess, StorageVersion},
     weights::Weight,
 };
+#[cfg(feature = "try-runtime")]
+use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec};
 
 /// Pallet storage version initializer.
 pub struct StorageVersionInitializer<P, R>(PhantomData<(P, R)>);
@@ -47,15 +49,13 @@ where
     }
 
     #[cfg(feature = "try-runtime")]
-    fn pre_upgrade() -> Result<sp_std::vec::Vec<u8>, frame_support::sp_runtime::TryRuntimeError> {
+    fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
         // Do nothing.
-        Ok(sp_std::vec::Vec::new())
+        Ok(Vec::new())
     }
 
     #[cfg(feature = "try-runtime")]
-    fn post_upgrade(
-        _state: sp_std::vec::Vec<u8>,
-    ) -> Result<(), frame_support::sp_runtime::TryRuntimeError> {
+    fn post_upgrade(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
         frame_support::ensure!(
             P::on_chain_storage_version() == P::current_storage_version(),
             "the current storage version and onchain storage version should be the same"

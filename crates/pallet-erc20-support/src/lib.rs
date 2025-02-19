@@ -8,6 +8,8 @@ use frame_support::{
     storage::with_storage_layer,
     traits::{Currency, StorageVersion},
 };
+#[cfg(feature = "try-runtime")]
+use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec};
 pub use pallet::*;
 
 mod migrations;
@@ -118,16 +120,12 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade(
-        ) -> Result<frame_support::sp_std::vec::Vec<u8>, frame_support::sp_runtime::TryRuntimeError>
-        {
-            Ok(frame_support::sp_std::vec![])
+        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
+            Ok(Vec::new())
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(
-            _state: frame_support::sp_std::vec::Vec<u8>,
-        ) -> Result<(), frame_support::sp_runtime::TryRuntimeError> {
+        fn post_upgrade(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
             ensure!(
                 <Pallet<T, I>>::on_chain_storage_version()
                     == <Pallet<T, I>>::current_storage_version(),

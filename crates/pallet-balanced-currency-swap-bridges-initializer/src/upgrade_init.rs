@@ -1,6 +1,8 @@
 //! Initialization of the bridge pot accounts on runtime upgrade.
 
 use frame_support::{log, pallet_prelude::*};
+#[cfg(feature = "try-runtime")]
+use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec};
 
 use crate::{
     Config, LastForceRebalanceAskCounter, LastInitializerVersion, Pallet,
@@ -36,26 +38,22 @@ pub fn on_runtime_upgrade<T: Config>() -> Weight {
 ///
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
-pub fn pre_upgrade() -> Result<sp_std::vec::Vec<u8>, frame_support::sp_runtime::TryRuntimeError> {
+pub fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
     // Do nothing.
-    Ok(sp_std::vec::Vec::new())
+    Ok(Vec::new())
 }
 
 /// Check the state after the bridges initialization.
 ///
 /// Panics if anything goes wrong.
 #[cfg(feature = "try-runtime")]
-pub fn post_upgrade<T: Config>(
-    _state: sp_std::vec::Vec<u8>,
-) -> Result<(), frame_support::sp_runtime::TryRuntimeError> {
+pub fn post_upgrade<T: Config>(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
     use frame_support::{storage_root, StateVersion};
 
     let storage_root_before = storage_root(StateVersion::V1);
 
     if !Pallet::<T>::is_balanced()? {
-        return Err(frame_support::sp_runtime::TryRuntimeError::Other(
-            "currencies are not balanced",
-        ));
+        return Err(TryRuntimeError::Other("currencies are not balanced"));
     }
 
     ensure!(
