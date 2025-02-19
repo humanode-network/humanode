@@ -27,6 +27,7 @@ runtime-benchmarks = [
 ]
 std = [
   "codec/std",
+  "ethereum/std",
   "fp-ethereum/std",
   "frame-support/std",
   "frame-system/std",
