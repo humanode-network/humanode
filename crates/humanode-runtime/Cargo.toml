@@ -32,7 +32,7 @@ pallet-evm-balances = { path = "../pallet-evm-balances", default-features = fals
 pallet-evm-system = { path = "../pallet-evm-system", default-features = false }
 pallet-humanode-offences = { path = "../pallet-humanode-offences", default-features = false }
 pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
-pallet-native-to-evm-currency-swap = { path = "../pallet-native-to-evm-currency-swap", default-features = false }
+pallet-native-to-evm-swap = { path = "../pallet-native-to-evm-swap", default-features = false }
 pallet-pot = { path = "../pallet-pot", default-features = false }
 pallet-token-claims = { path = "../pallet-token-claims", default-features = false }
 pallet-vesting = { path = "../pallet-vesting", default-features = false }
@@ -133,7 +133,7 @@ runtime-benchmarks = [
   "pallet-im-online/runtime-benchmarks",
   "pallet-multisig/runtime-benchmarks",
   "pallet-sudo/runtime-benchmarks",
-  "pallet-native-to-evm-currency-swap/runtime-benchmarks",
+  "pallet-native-to-evm-swap/runtime-benchmarks",
   "pallet-timestamp/runtime-benchmarks",
   "pallet-token-claims/runtime-benchmarks",
   "pallet-utility/runtime-benchmarks",
@@ -192,7 +192,7 @@ std = [
   "pallet-humanode-session/std",
   "pallet-im-online/std",
   "pallet-multisig/std",
-  "pallet-native-to-evm-currency-swap/std",
+  "pallet-native-to-evm-swap/std",
   "pallet-pot/std",
   "pallet-session/std",
   "pallet-sudo/std",
@@ -264,7 +264,7 @@ try-runtime = [
   "pallet-humanode-session/try-runtime",
   "pallet-im-online/try-runtime",
   "pallet-multisig/try-runtime",
-  "pallet-native-to-evm-currency-swap/try-runtime",
+  "pallet-native-to-evm-swap/try-runtime",
   "pallet-pot/try-runtime",
   "pallet-session/try-runtime",
   "pallet-sudo/try-runtime",

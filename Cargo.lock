@@ -3817,7 +3817,7 @@ dependencies = [
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-multisig",
- "pallet-native-to-evm-currency-swap",
+ "pallet-native-to-evm-swap",
  "pallet-pot",
  "pallet-session",
  "pallet-sudo",
@@ -6291,7 +6291,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-native-to-evm-currency-swap"
+name = "pallet-native-to-evm-swap"
 version = "0.1.0"
 dependencies = [
  "ethereum",
