@@ -638,8 +638,8 @@ impl pallet_currency_swap::Config for Runtime {
 impl pallet_native_to_evm_swap::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type EvmAccountId = EvmAccountId;
-    type NativeCurrency = Balances;
-    type EvmCurrency = EvmBalances;
+    type NativeToken = Balances;
+    type EvmToken = EvmBalances;
     type BalanceConverter = Identity;
     type BridgePotNative = NativeToEvmSwapBridgePotAccountId;
     type BridgePotEvm = EvmToNativeSwapBridgePotAccountId;

@@ -1,4 +1,4 @@
-//! A substrate pallet containing the native to evm currency swap integration.
+//! A substrate pallet containing the native to evm token swap integration.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -8,13 +8,12 @@ pub use weights::*;
 
 pub mod weights;
 
-/// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::NativeCurrency`] type.
+/// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::NativeToken`] type.
 type NativeBalanceOf<T> =
-    <<T as Config>::NativeCurrency as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
+    <<T as Config>::NativeToken as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
-/// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::EvmCurrency`] type.
-type EvmBalanceOf<T> =
-    <<T as Config>::EvmCurrency as Inspect<<T as Config>::EvmAccountId>>::Balance;
+/// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::EvmToken`] type.
+type EvmBalanceOf<T> = <<T as Config>::EvmToken as Inspect<<T as Config>::EvmAccountId>>::Balance;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -48,14 +47,14 @@ pub mod pallet {
         /// The EVM user account identifier type.
         type EvmAccountId: Parameter + Into<H160>;
 
-        /// Native currency.
-        type NativeCurrency: Inspect<Self::AccountId> + Mutate<Self::AccountId>;
+        /// Native token.
+        type NativeToken: Inspect<Self::AccountId> + Mutate<Self::AccountId>;
 
-        /// EVM currency.
-        type EvmCurrency: Inspect<Self::EvmAccountId>;
+        /// EVM token.
+        type EvmToken: Inspect<Self::EvmAccountId>;
 
         /// The converter to determine how the balance amount should be converted from native
-        /// to evm currency.
+        /// to evm token.
         type BalanceConverter: Convert<NativeBalanceOf<Self>, EvmBalanceOf<Self>>;
 
         /// The bridge pot native account.
@@ -130,10 +129,10 @@ pub mod pallet {
             preservation: Preservation,
         ) -> DispatchResult {
             let estimated_swapped_balance = T::BalanceConverter::convert(amount);
-            T::EvmCurrency::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
+            T::EvmToken::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
-            T::NativeCurrency::transfer(&who, &T::BridgePotNative::get(), amount, preservation)?;
+            T::NativeToken::transfer(&who, &T::BridgePotNative::get(), amount, preservation)?;
 
             let evm_balance_to_be_deposited: u128 =
                 estimated_swapped_balance.unique_saturated_into();
