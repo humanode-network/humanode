@@ -145,7 +145,9 @@ pub mod pallet {
                     .nonce,
                 max_priority_fee_per_gas: 0.into(),
                 max_fee_per_gas: 0.into(),
-                gas_limit: 21000.into(), // simple transfer
+                gas_limit: <T as pallet_evm::Config>::config()
+                    .gas_transaction_call
+                    .into(), // simple transfer
                 action: ethereum::TransactionAction::Call(to.clone().into()),
                 value: U256::from(evm_balance_to_be_deposited),
                 input: Default::default(),
