@@ -66,11 +66,11 @@ pub mod pallet {
         /// to evm currency.
         type BalanceConverter: Convert<NativeBalanceOf<Self>, EvmBalanceOf<Self>>;
 
-        /// The pot native bridge account.
-        type PotNativeBridge: Get<Self::AccountId>;
+        /// The bridge pot native account.
+        type BridgePotNative: Get<Self::AccountId>;
 
-        /// The pot evm bridge account.
-        type PotEvmBridge: Get<Self::EvmAccountId>;
+        /// The bridge pot evm account.
+        type BridgePotEvm: Get<Self::EvmAccountId>;
 
         /// Weight information for extrinsics in this pallet.
         type WeightInfo: WeightInfo;
@@ -141,14 +141,14 @@ pub mod pallet {
             T::EvmCurrency::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
-            T::NativeCurrency::transfer(&who, &T::PotNativeBridge::get(), amount, preservation)?;
+            T::NativeCurrency::transfer(&who, &T::BridgePotNative::get(), amount, preservation)?;
 
             let evm_balance_to_be_deposited: u128 =
                 estimated_swapped_balance.unique_saturated_into();
 
             let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
                 chain_id: <T as pallet_evm::Config>::ChainId::get(),
-                nonce: pallet_evm::Pallet::<T>::account_basic(&T::PotEvmBridge::get().into())
+                nonce: pallet_evm::Pallet::<T>::account_basic(&T::BridgePotEvm::get().into())
                     .0
                     .nonce,
                 max_priority_fee_per_gas: 0.into(),
@@ -166,7 +166,7 @@ pub mod pallet {
             let evm_transaction_hash = transaction.hash();
 
             let _post_info = pallet_ethereum::ValidatedTransaction::<T>::apply(
-                T::PotEvmBridge::get().into(),
+                T::BridgePotEvm::get().into(),
                 transaction,
             )
             .map_err(|dispatch_error_with_post_info| dispatch_error_with_post_info.error)?;
