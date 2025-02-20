@@ -1,4 +1,4 @@
-//! A substrate pallet containing the native to evm token swap integration.
+//! A substrate pallet containing the Native to EVM token swap integration.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -54,13 +54,13 @@ pub mod pallet {
         type EvmToken: Inspect<Self::EvmAccountId>;
 
         /// The converter to determine how the balance amount should be converted from native
-        /// to evm token.
+        /// to EVM token.
         type BalanceConverter: Convert<NativeBalanceOf<Self>, EvmBalanceOf<Self>>;
 
         /// The bridge pot native account.
         type BridgePotNative: Get<Self::AccountId>;
 
-        /// The bridge pot evm account.
+        /// The bridge pot EVM account.
         type BridgePotEvm: Get<Self::EvmAccountId>;
 
         /// Weight information for extrinsics in this pallet.
@@ -80,7 +80,7 @@ pub mod pallet {
             to: T::EvmAccountId,
             /// The deposited balances amount.
             deposited_amount: EvmBalanceOf<T>,
-            /// The corresponding transaction hash executed in evm.
+            /// The corresponding transaction hash executed in EVM.
             evm_transaction_hash: H256,
         },
     }
