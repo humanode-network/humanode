@@ -2591,6 +2591,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "evm-nonces-recovery"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "pallet-evm",
+ "pallet-evm-system",
+ "parity-scale-codec",
+ "rlp",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+]
+
+[[package]]
 name = "evm-runtime"
 version = "0.39.0"
 source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
@@ -4103,6 +4119,7 @@ dependencies = [
  "eip712-common-test-utils",
  "eip712-token-claim",
  "ethereum",
+ "evm-nonces-recovery",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",

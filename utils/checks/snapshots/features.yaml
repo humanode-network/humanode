@@ -945,6 +945,10 @@
   features:
     - environmental
     - std
+- name: evm-nonces-recovery 0.1.0
+  features:
+    - default
+    - std
 - name: evm-runtime 0.39.0
   features:
     - environmental

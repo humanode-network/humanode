@@ -194,6 +194,16 @@ where
     }
 }
 
+pub struct FrontierPrecompilesAddresses<R>(PhantomData<R>);
+
+impl<R: pallet_evm::Config> sp_core::TypedGet for FrontierPrecompilesAddresses<R> {
+    type Type = sp_std::vec::Vec<H160>;
+
+    fn get() -> Self::Type {
+        FrontierPrecompiles::<R>::used_addresses()
+    }
+}
+
 pub fn hash(a: u64) -> H160 {
     H160::from_low_u64_be(a)
 }

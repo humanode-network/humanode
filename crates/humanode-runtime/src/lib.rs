@@ -883,6 +883,11 @@ pub type Executive = frame_executive::Executive<
     AllPalletsWithSystem,
     (
         pallet_bioauth::migrations::consumed_auth_ticket_nonces_cleaner::ConsumedAuthTicketNoncesCleaner<Runtime>,
+        evm_nonces_recovery::MigrationBrokenNoncesRecovery<
+            Runtime,
+            ConstU32<1000>,
+            frontier_precompiles::FrontierPrecompilesAddresses<Runtime>,
+        >,
     ),
 >;
 
