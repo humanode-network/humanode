@@ -90,7 +90,7 @@ pub mod pallet {
             /// The deposited balances amount.
             deposited_amount: EvmBalanceOf<T>,
             /// The corresponding transaction hash executed in evm.
-            evm_trx_hash: H256,
+            evm_transaction_hash: H256,
         },
     }
 
@@ -163,7 +163,7 @@ pub mod pallet {
                 s: Default::default(),
             });
 
-            let evm_trx_hash = transaction.hash();
+            let evm_transaction_hash = transaction.hash();
 
             let _post_info = pallet_ethereum::ValidatedTransaction::<T>::apply(
                 T::PotEvmBridge::get().into(),
@@ -176,7 +176,7 @@ pub mod pallet {
                 withdrawed_amount: amount,
                 to,
                 deposited_amount: estimated_swapped_balance,
-                evm_trx_hash,
+                evm_transaction_hash,
             });
 
             Ok(())
