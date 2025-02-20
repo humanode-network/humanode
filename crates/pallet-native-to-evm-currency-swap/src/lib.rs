@@ -165,11 +165,11 @@ pub mod pallet {
 
             let evm_trx_hash = transaction.hash();
 
-            pallet_ethereum::ValidatedTransaction::<T>::apply(
+            let _post_info = pallet_ethereum::ValidatedTransaction::<T>::apply(
                 T::PotEvmBridge::get().into(),
                 transaction,
             )
-            .unwrap();
+            .map_err(|dispatch_error_with_post_info| dispatch_error_with_post_info.error)?;
 
             Self::deposit_event(Event::BalancesSwapped {
                 from: who,
