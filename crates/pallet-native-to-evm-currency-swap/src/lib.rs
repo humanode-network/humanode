@@ -33,7 +33,6 @@ pub mod pallet {
         },
     };
     use frame_system::pallet_prelude::*;
-    use pallet_evm::FeeCalculator;
     use sp_core::{H160, H256, U256};
 
     use super::*;
@@ -153,7 +152,7 @@ pub mod pallet {
                     .0
                     .nonce,
                 max_priority_fee_per_gas: 0.into(),
-                max_fee_per_gas: <T as pallet_evm::Config>::FeeCalculator::min_gas_price().0,
+                max_fee_per_gas: 0.into(),
                 gas_limit: 21000.into(), // simple transfer
                 action: ethereum::TransactionAction::Call(to.clone().into()),
                 value: U256::from(evm_balance_to_be_deposited),
