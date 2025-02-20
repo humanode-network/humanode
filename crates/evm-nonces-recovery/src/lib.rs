@@ -5,14 +5,14 @@
 
 use core::marker::PhantomData;
 
-#[cfg(feature = "try-runtime")]
-use frame_support::sp_std::vec::Vec;
 use frame_support::{
     log::{error, info},
     pallet_prelude::*,
     sp_std::collections::btree_set::BTreeSet,
     traits::OnRuntimeUpgrade,
 };
+#[cfg(feature = "try-runtime")]
+use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec};
 use pallet_evm::AccountCodes;
 use pallet_evm_system::{Account, AccountInfo, Pallet};
 use rlp::RlpStream;
@@ -76,13 +76,13 @@ where
     }
 
     #[cfg(feature = "try-runtime")]
-    fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+    fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
         let accounts = <Account<R>>::iter().collect();
         Ok(PreUpgradeState::<R> { accounts }.encode())
     }
 
     #[cfg(feature = "try-runtime")]
-    fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+    fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
         let PreUpgradeState::<R> {
             accounts: prev_accounts,
         } = Decode::decode(&mut state.as_slice())
