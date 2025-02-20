@@ -34,7 +34,7 @@ pub mod pallet {
     };
     use frame_system::pallet_prelude::*;
     use pallet_evm::FeeCalculator;
-    use sp_core::{H160, U256};
+    use sp_core::{H160, H256, U256};
 
     use super::*;
 
@@ -90,6 +90,8 @@ pub mod pallet {
             to: T::EvmAccountId,
             /// The deposited balances amount.
             deposited_amount: EvmBalanceOf<T>,
+            /// The corresponding transaction hash executed in evm.
+            evm_trx_hash: H256,
         },
     }
 
@@ -162,6 +164,8 @@ pub mod pallet {
                 s: Default::default(),
             });
 
+            let evm_trx_hash = transaction.hash();
+
             pallet_ethereum::ValidatedTransaction::<T>::apply(
                 T::PotEvmBridge::get().into(),
                 transaction,
@@ -173,6 +177,7 @@ pub mod pallet {
                 withdrawed_amount: amount,
                 to,
                 deposited_amount: estimated_swapped_balance,
+                evm_trx_hash,
             });
 
             Ok(())
