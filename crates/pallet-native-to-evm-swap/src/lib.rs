@@ -24,8 +24,7 @@ pub mod pallet {
     use fp_ethereum::ValidatedTransaction;
     use frame_support::{
         pallet_prelude::*,
-        sp_runtime::traits::{Convert, MaybeDisplay, UniqueSaturatedInto},
-        sp_std::fmt::Debug,
+        sp_runtime::traits::{Convert, UniqueSaturatedInto},
         storage::with_storage_layer,
         traits::{
             fungible::Mutate,
@@ -47,14 +46,7 @@ pub mod pallet {
         type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
         /// The EVM user account identifier type.
-        type EvmAccountId: Parameter
-            + Member
-            + MaybeSerializeDeserialize
-            + Debug
-            + MaybeDisplay
-            + Ord
-            + MaxEncodedLen
-            + Into<H160>;
+        type EvmAccountId: Parameter + Into<H160>;
 
         /// Native currency.
         type NativeCurrency: Inspect<Self::AccountId> + Mutate<Self::AccountId>;
