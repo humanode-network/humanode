@@ -22,6 +22,7 @@ type EvmBalanceOf<T> = <<T as Config>::EvmToken as Inspect<<T as Config>::EvmAcc
 pub mod pallet {
     use fp_ethereum::ValidatedTransaction;
     use frame_support::{
+        dispatch::PostDispatchInfo,
         pallet_prelude::*,
         sp_runtime::traits::{Convert, UniqueSaturatedInto},
         storage::with_storage_layer,
@@ -31,6 +32,7 @@ pub mod pallet {
         },
     };
     use frame_system::pallet_prelude::*;
+    use pallet_evm::GasWeightMapping;
     use sp_core::{H160, H256, U256};
 
     use super::*;
@@ -137,6 +139,8 @@ pub mod pallet {
             let evm_balance_to_be_deposited: u128 =
                 estimated_swapped_balance.unique_saturated_into();
 
+            let gas_simple_transfer_call = <T as pallet_evm::Config>::config().gas_transaction_call;
+
             let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
                 chain_id: <T as pallet_evm::Config>::ChainId::get(),
                 nonce: pallet_evm::Pallet::<T>::account_basic(&T::BridgePotEvm::get().into())
@@ -144,9 +148,7 @@ pub mod pallet {
                     .nonce,
                 max_priority_fee_per_gas: 0.into(),
                 max_fee_per_gas: 0.into(),
-                gas_limit: <T as pallet_evm::Config>::config()
-                    .gas_transaction_call
-                    .into(), // simple transfer
+                gas_limit: gas_simple_transfer_call.into(),
                 action: ethereum::TransactionAction::Call(to.clone().into()),
                 value: U256::from(evm_balance_to_be_deposited),
                 input: Default::default(),
@@ -158,11 +160,25 @@ pub mod pallet {
 
             let evm_transaction_hash = transaction.hash();
 
-            let _post_info = pallet_ethereum::ValidatedTransaction::<T>::apply(
+            let post_info = pallet_ethereum::ValidatedTransaction::<T>::apply(
                 T::BridgePotEvm::get().into(),
                 transaction,
             )
             .map_err(|dispatch_error_with_post_info| dispatch_error_with_post_info.error)?;
+
+            debug_assert!(
+                post_info
+                    == PostDispatchInfo {
+                        actual_weight: Some(
+                            <T as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+                                gas_simple_transfer_call.unique_saturated_into(),
+                                true,
+                            )
+                        ),
+                        pays_fee: Pays::No
+                    },
+                "we must ensure that actual weight corresponds to gas used for simple transfer call"
+            );
 
             Self::deposit_event(Event::BalancesSwapped {
                 from: who,
