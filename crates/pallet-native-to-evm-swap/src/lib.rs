@@ -136,21 +136,42 @@ pub mod pallet {
 
             T::NativeToken::transfer(&who, &T::BridgePotNative::get(), amount, preservation)?;
 
-            let evm_balance_to_be_deposited: u128 =
-                estimated_swapped_balance.unique_saturated_into();
+            let evm_transaction_hash = Self::execute_ethereum_transfer(
+                T::BridgePotEvm::get().into(),
+                to.clone().into(),
+                estimated_swapped_balance.unique_saturated_into(),
+            )?;
 
+            Self::deposit_event(Event::BalancesSwapped {
+                from: who,
+                withdrawed_amount: amount,
+                to,
+                deposited_amount: estimated_swapped_balance,
+                evm_transaction_hash,
+            });
+
+            Ok(())
+        }
+
+        /// Execute ethereum transfer from source address to target EVM address with provided
+        /// balance to be sent.
+        fn execute_ethereum_transfer(
+            source_address: H160,
+            target_address: H160,
+            balance: u128,
+        ) -> Result<H256, DispatchError> {
             let gas_simple_transfer_call = <T as pallet_evm::Config>::config().gas_transaction_call;
 
             let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
                 chain_id: <T as pallet_evm::Config>::ChainId::get(),
-                nonce: pallet_evm::Pallet::<T>::account_basic(&T::BridgePotEvm::get().into())
+                nonce: pallet_evm::Pallet::<T>::account_basic(&source_address)
                     .0
                     .nonce,
                 max_priority_fee_per_gas: 0.into(),
                 max_fee_per_gas: 0.into(),
                 gas_limit: gas_simple_transfer_call.into(),
-                action: ethereum::TransactionAction::Call(to.clone().into()),
-                value: U256::from(evm_balance_to_be_deposited),
+                action: ethereum::TransactionAction::Call(target_address),
+                value: U256::from(balance),
                 input: Default::default(),
                 access_list: Default::default(),
                 odd_y_parity: false,
@@ -158,13 +179,11 @@ pub mod pallet {
                 s: Default::default(),
             });
 
-            let evm_transaction_hash = transaction.hash();
+            let transaction_hash = transaction.hash();
 
-            let post_info = pallet_ethereum::ValidatedTransaction::<T>::apply(
-                T::BridgePotEvm::get().into(),
-                transaction,
-            )
-            .map_err(|dispatch_error_with_post_info| dispatch_error_with_post_info.error)?;
+            let post_info =
+                pallet_ethereum::ValidatedTransaction::<T>::apply(source_address, transaction)
+                    .map_err(|dispatch_error_with_post_info| dispatch_error_with_post_info.error)?;
 
             debug_assert!(
                 post_info
@@ -180,15 +199,7 @@ pub mod pallet {
                 "we must ensure that actual weight corresponds to gas used for simple transfer call"
             );
 
-            Self::deposit_event(Event::BalancesSwapped {
-                from: who,
-                withdrawed_amount: amount,
-                to,
-                deposited_amount: estimated_swapped_balance,
-                evm_transaction_hash,
-            });
-
-            Ok(())
+            Ok(transaction_hash)
         }
     }
 }
