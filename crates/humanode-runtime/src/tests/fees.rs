@@ -247,7 +247,9 @@ fn simple_evm_transaction_via_query_call_info() {
                 nonce: 0.into(),
                 max_priority_fee_per_gas: 0.into(),
                 max_fee_per_gas,
-                gas_limit: 21000.into(), // simple transfer
+                gas_limit: <Runtime as pallet_evm::Config>::config()
+                    .gas_transaction_call
+                    .into(),
                 action: ethereum::TransactionAction::Call(to),
                 value: U256::from(ONE_BALANCE_UNIT),
                 input: Default::default(),
@@ -294,7 +296,7 @@ fn simple_evm_transaction_via_runner_estimate() {
         ));
         let data = Default::default();
         let value = raw_value.into();
-        let gas_limit = 21000;
+        let gas_limit = <Runtime as pallet_evm::Config>::config().gas_transaction_call;
         let max_fee_per_gas = Some(max_fee_per_gas);
         let max_priority_fee_per_gas = None;
         let nonce = None;
@@ -326,8 +328,8 @@ fn simple_evm_transaction_via_runner_estimate() {
                 exit_reason: fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Stopped),
                 value: vec![],
                 used_gas: fp_evm::UsedGas {
-                    standard: 21000.into(),
-                    effective: 21000.into(),
+                    standard: gas_limit.into(),
+                    effective: gas_limit.into(),
                 },
                 weight_info: Default::default(),
                 logs: vec![]

@@ -383,7 +383,7 @@ fn total_issuance_transaction_fee_ethereum_transact() {
         let evm_bob_origin =
             pallet_ethereum::RawOrigin::EthereumTransaction(evm_account_id("EvmBob"));
         let gas_price: u128 = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0.try_into().unwrap();
-        let gas_limit = 21000;
+        let gas_limit: u128 = <Runtime as pallet_evm::Config>::config().gas_transaction_call.into();
 
         // This test legacy data transaction obtained from
         // <https://github.com/rust-blockchain/ethereum/blob/0ffbe47d1da71841be274442a3050da9c895e10a/src/transaction.rs#L788>.
