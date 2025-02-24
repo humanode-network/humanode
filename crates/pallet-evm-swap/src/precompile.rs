@@ -7,8 +7,8 @@ use frame_support::{
     sp_runtime::traits::Convert,
     sp_std::{marker::PhantomData, prelude::*},
     traits::{
-        fungible::{Balanced, Inspect},
-        tokens::{Fortitude, Precision, Preservation, Provenance},
+        fungible::Inspect,
+        tokens::{Preservation, Provenance},
     },
 };
 use pallet_evm::{
@@ -17,7 +17,7 @@ use pallet_evm::{
 use precompile_utils::{succeed, EvmDataWriter, EvmResult, PrecompileHandleExt};
 use sp_core::{Get, H160, H256, U256};
 
-use crate::{Config, EvmBalanceOf};
+use crate::{balanced_transfer, Config, EvmBalanceOf};
 
 /// Possible actions for this interface.
 #[precompile_utils::generate_function_selector]
@@ -118,25 +118,21 @@ where
                 },
             })?;
 
-        let credit = EvmSwapT::EvmToken::withdraw(
+        balanced_transfer::<_, EvmSwapT::EvmToken>(
             &from,
+            &EvmSwapT::BridgePotEvm::get(),
             value,
-            Precision::Exact,
             Preservation::Expendable,
-            Fortitude::Polite,
         )
         .unwrap();
-        let _ = EvmSwapT::EvmToken::resolve(&EvmSwapT::BridgePotEvm::get(), credit);
 
-        let credit = EvmSwapT::NativeToken::withdraw(
+        balanced_transfer::<_, EvmSwapT::NativeToken>(
             &EvmSwapT::BridgePotNative::get(),
+            &to,
             estimated_swapped_balance,
-            Precision::Exact,
             Preservation::Expendable,
-            Fortitude::Polite,
         )
         .unwrap();
-        let _ = EvmSwapT::NativeToken::resolve(&to, credit);
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
