@@ -6171,11 +6171,14 @@ version = "0.1.0"
 dependencies = [
  "ethereum",
  "fp-ethereum",
+ "fp-evm",
  "frame-support",
  "frame-system",
+ "num_enum 0.7.3",
  "pallet-ethereum",
  "pallet-evm",
  "parity-scale-codec",
+ "precompile-utils",
  "scale-info",
  "sp-core",
 ]

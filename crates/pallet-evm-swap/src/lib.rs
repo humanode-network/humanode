@@ -6,14 +6,16 @@ use frame_support::traits::fungible::Inspect;
 pub use pallet::*;
 pub use weights::*;
 
+pub mod precompile;
 pub mod weights;
 
 /// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::NativeToken`] type.
-type NativeBalanceOf<T> =
+pub type NativeBalanceOf<T> =
     <<T as Config>::NativeToken as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
 /// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::EvmToken`] type.
-type EvmBalanceOf<T> = <<T as Config>::EvmToken as Inspect<<T as Config>::EvmAccountId>>::Balance;
+pub type EvmBalanceOf<T> =
+    <<T as Config>::EvmToken as Inspect<<T as Config>::EvmAccountId>>::Balance;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -27,8 +29,8 @@ pub mod pallet {
         sp_runtime::traits::{Convert, UniqueSaturatedInto},
         storage::with_storage_layer,
         traits::{
-            fungible::Mutate,
-            tokens::{Preservation, Provenance},
+            fungible::Balanced,
+            tokens::{Fortitude, Precision, Preservation, Provenance},
         },
     };
     use frame_system::pallet_prelude::*;
@@ -50,14 +52,18 @@ pub mod pallet {
         type EvmAccountId: Parameter + Into<H160>;
 
         /// Native token.
-        type NativeToken: Inspect<Self::AccountId> + Mutate<Self::AccountId>;
+        type NativeToken: Inspect<Self::AccountId> + Balanced<Self::AccountId>;
 
         /// EVM token.
-        type EvmToken: Inspect<Self::EvmAccountId>;
+        type EvmToken: Inspect<Self::EvmAccountId> + Balanced<Self::EvmAccountId>;
 
         /// The converter to determine how the balance amount should be converted from native
         /// to EVM token.
-        type BalanceConverter: Convert<NativeBalanceOf<Self>, EvmBalanceOf<Self>>;
+        type BalanceConverterNativeToEvm: Convert<NativeBalanceOf<Self>, EvmBalanceOf<Self>>;
+
+        /// The converter to determine how the balance amount should be converted from EVM
+        /// to native token.
+        type BalanceConverterEvmToNative: Convert<EvmBalanceOf<Self>, NativeBalanceOf<Self>>;
 
         /// The bridge pot native account.
         type BridgePotNative: Get<Self::AccountId>;
@@ -130,11 +136,18 @@ pub mod pallet {
             amount: NativeBalanceOf<T>,
             preservation: Preservation,
         ) -> DispatchResult {
-            let estimated_swapped_balance = T::BalanceConverter::convert(amount);
+            let estimated_swapped_balance = T::BalanceConverterNativeToEvm::convert(amount);
             T::EvmToken::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
-            T::NativeToken::transfer(&who, &T::BridgePotNative::get(), amount, preservation)?;
+            let credit = T::NativeToken::withdraw(
+                &who,
+                amount,
+                Precision::Exact,
+                preservation,
+                Fortitude::Polite,
+            )?;
+            let _ = T::NativeToken::resolve(&T::BridgePotNative::get(), credit);
 
             let evm_transaction_hash = Self::execute_ethereum_transfer(
                 T::BridgePotEvm::get().into(),
