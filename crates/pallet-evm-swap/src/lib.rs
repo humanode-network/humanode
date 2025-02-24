@@ -1,4 +1,4 @@
-//! A substrate pallet containing the Native to EVM token swap integration.
+//! A substrate pallet containing the EVM swap integration.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
