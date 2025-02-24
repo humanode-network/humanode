@@ -1984,6 +1984,10 @@
 - name: pallet-evm-precompile-simple 2.0.0-dev
   features:
     - std
+- name: pallet-evm-swap 0.1.0
+  features:
+    - default
+    - std
 - name: pallet-evm-system 0.1.0
   features:
     - default
@@ -2007,10 +2011,6 @@
     - std
 - name: pallet-multisig 4.0.0-dev
   features:
-    - std
-- name: pallet-native-to-evm-swap 0.1.0
-  features:
-    - default
     - std
 - name: pallet-pot 0.1.0
   features:
