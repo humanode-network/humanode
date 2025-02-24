@@ -5,11 +5,15 @@ edition = "2021"
 publish = false
 
 [dependencies]
+precompile-utils = { path = "../precompile-utils", default-features = false }
+
 codec = { workspace = true, features = ["derive"] }
 ethereum = { workspace = true }
 fp-ethereum = { workspace = true }
+fp-evm = { workspace = true }
 frame-support = { workspace = true }
 frame-system = { workspace = true }
+num_enum = { workspace = true }
 pallet-ethereum = { workspace = true }
 pallet-evm = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
@@ -27,10 +31,13 @@ std = [
   "codec/std",
   "ethereum/std",
   "fp-ethereum/std",
+  "fp-evm/std",
   "frame-support/std",
   "frame-system/std",
+  "num_enum/std",
   "pallet-ethereum/std",
   "pallet-evm/std",
+  "precompile-utils/std",
   "scale-info/std",
   "sp-core/std",
 ]
