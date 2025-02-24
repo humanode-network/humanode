@@ -1,5 +1,5 @@
 [package]
-name = "pallet-native-to-evm-swap"
+name = "pallet-evm-swap"
 version = "0.1.0"
 edition = "2021"
 publish = false
