@@ -4,6 +4,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::{
+    dispatch::DispatchError,
     sp_runtime::traits::Convert,
     sp_std::{marker::PhantomData, prelude::*},
     traits::{
@@ -107,16 +108,7 @@ where
 
         EvmSwapT::NativeToken::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
             .into_result()
-            .map_err(|error| match error {
-                frame_support::sp_runtime::DispatchError::Token(
-                    frame_support::sp_runtime::TokenError::BelowMinimum,
-                ) => PrecompileFailure::Error {
-                    exit_status: ExitError::OutOfFund,
-                },
-                _ => PrecompileFailure::Error {
-                    exit_status: ExitError::Other("unable to deposit funds".into()),
-                },
-            })?;
+            .map_err(process_dispatch_error)?;
 
         balanced_transfer::<_, EvmSwapT::EvmToken>(
             &from,
@@ -124,7 +116,7 @@ where
             value,
             Preservation::Expendable,
         )
-        .unwrap();
+        .map_err(process_dispatch_error)?;
 
         balanced_transfer::<_, EvmSwapT::NativeToken>(
             &EvmSwapT::BridgePotNative::get(),
@@ -132,8 +124,22 @@ where
             estimated_swapped_balance,
             Preservation::Expendable,
         )
-        .unwrap();
+        .map_err(process_dispatch_error)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
+    }
+}
+
+/// A helper function to process dispatch related errors.
+fn process_dispatch_error(error: DispatchError) -> PrecompileFailure {
+    match error {
+        DispatchError::Token(frame_support::sp_runtime::TokenError::FundsUnavailable) => {
+            PrecompileFailure::Error {
+                exit_status: ExitError::OutOfFund,
+            }
+        }
+        _ => PrecompileFailure::Error {
+            exit_status: ExitError::Other("unable to swap funds".into()),
+        },
     }
 }
