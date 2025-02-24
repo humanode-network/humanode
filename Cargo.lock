@@ -3811,13 +3811,13 @@ dependencies = [
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
+ "pallet-evm-swap",
  "pallet-evm-system",
  "pallet-grandpa",
  "pallet-humanode-offences",
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-multisig",
- "pallet-native-to-evm-swap",
  "pallet-pot",
  "pallet-session",
  "pallet-sudo",
@@ -6166,6 +6166,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-swap"
+version = "0.1.0"
+dependencies = [
+ "ethereum",
+ "fp-ethereum",
+ "frame-support",
+ "frame-system",
+ "pallet-ethereum",
+ "pallet-evm",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "pallet-evm-system"
 version = "0.1.0"
 dependencies = [
@@ -6288,21 +6303,6 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
-]
-
-[[package]]
-name = "pallet-native-to-evm-swap"
-version = "0.1.0"
-dependencies = [
- "ethereum",
- "fp-ethereum",
- "frame-support",
- "frame-system",
- "pallet-ethereum",
- "pallet-evm",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
 ]
 
 [[package]]

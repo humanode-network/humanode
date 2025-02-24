@@ -635,7 +635,7 @@ impl pallet_currency_swap::Config for Runtime {
     type WeightInfo = ();
 }
 
-impl pallet_native_to_evm_swap::Config for Runtime {
+impl pallet_evm_swap::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type EvmAccountId = EvmAccountId;
     type NativeToken = Balances;
@@ -853,7 +853,7 @@ construct_runtime!(
         EvmBalancesErc20Support: pallet_erc20_support = 37,
         DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
         HumanodeOffences: pallet_humanode_offences = 39,
-        NativeToEvmSwap: pallet_native_to_evm_swap = 40,
+        EvmSwap: pallet_evm_swap = 40,
     }
 );
 
