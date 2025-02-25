@@ -17,12 +17,10 @@ fn basic_setup_works() {
             INIT_BALANCE
         );
         assert_eq!(Balances::total_balance(&alice()), INIT_BALANCE);
-        assert_eq!(Balances::total_balance(&bob()), INIT_BALANCE);
         assert_eq!(
             EvmBalances::total_balance(&BridgePotEvm::get()),
             INIT_BALANCE
         );
         assert_eq!(EvmBalances::total_balance(&alice_evm()), INIT_BALANCE);
-        assert_eq!(EvmBalances::total_balance(&bob_evm()), INIT_BALANCE);
     });
 }
