@@ -15,6 +15,12 @@ pub use weights::*;
 pub mod precompile;
 pub mod weights;
 
+#[cfg(test)]
+mod mock;
+
+#[cfg(test)]
+mod tests;
+
 /// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::NativeToken`] type.
 pub type NativeBalanceOf<T> =
     <<T as Config>::NativeToken as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
