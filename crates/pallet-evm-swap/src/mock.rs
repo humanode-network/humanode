@@ -18,6 +18,8 @@ use sp_core::{Get, H160, H256, U256};
 use crate::{self as pallet_evm_swap, precompile};
 
 pub(crate) const INIT_BALANCE: u128 = 10_000_000_000_000_000;
+// Add some tokens to test swap with full balance.
+pub(crate) const BRIDGE_INIT_BALANCE: u128 = INIT_BALANCE + 100;
 
 pub(crate) fn alice() -> AccountId {
     AccountId::from(hex_literal::hex!(
@@ -254,21 +256,31 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
     let config = GenesisConfig {
         balances: BalancesConfig {
             balances: vec![
-                (BridgePotNative::get(), INIT_BALANCE),
+                (BridgePotNative::get(), BRIDGE_INIT_BALANCE),
                 (alice(), INIT_BALANCE),
             ],
         },
         evm: EVMConfig {
             accounts: {
                 let mut map = BTreeMap::new();
-                let init_genesis_account = fp_evm::GenesisAccount {
-                    balance: INIT_BALANCE.into(),
-                    code: Default::default(),
-                    nonce: Default::default(),
-                    storage: Default::default(),
-                };
-                map.insert(BridgePotEvm::get(), init_genesis_account.clone());
-                map.insert(alice_evm(), init_genesis_account.clone());
+                map.insert(
+                    BridgePotEvm::get(),
+                    fp_evm::GenesisAccount {
+                        balance: BRIDGE_INIT_BALANCE.into(),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
+                map.insert(
+                    alice_evm(),
+                    fp_evm::GenesisAccount {
+                        balance: INIT_BALANCE.into(),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
                 map
             },
         },
