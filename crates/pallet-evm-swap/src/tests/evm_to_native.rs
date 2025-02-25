@@ -75,7 +75,7 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_gas_usage: u64)
 
     // Assert state changes.
 
-    // Verify that source swap evm account balance has been decreased by swap value.
+    // Verify that source swap evm balance has been decreased by swap value.
     assert_eq!(
         <EvmBalances>::total_balance(&source_swap_evm_account()),
         INIT_BALANCE - swap_balance,
