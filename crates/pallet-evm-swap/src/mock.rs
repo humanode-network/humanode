@@ -25,21 +25,9 @@ pub(crate) fn alice() -> AccountId {
     ))
 }
 
-pub(crate) fn bob() -> AccountId {
-    AccountId::from(hex_literal::hex!(
-        "2200000000000000000000000000000000000000000000000000000000000022"
-    ))
-}
-
 pub(crate) fn alice_evm() -> EvmAccountId {
     EvmAccountId::from(hex_literal::hex!(
         "1100000000000000000000000000000000000011"
-    ))
-}
-
-pub(crate) fn bob_evm() -> EvmAccountId {
-    EvmAccountId::from(hex_literal::hex!(
-        "2200000000000000000000000000000000000022"
     ))
 }
 
@@ -268,7 +256,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
             balances: vec![
                 (BridgePotNative::get(), INIT_BALANCE),
                 (alice(), INIT_BALANCE),
-                (bob(), INIT_BALANCE),
             ],
         },
         evm: EVMConfig {
@@ -282,7 +269,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
                 };
                 map.insert(BridgePotEvm::get(), init_genesis_account.clone());
                 map.insert(alice_evm(), init_genesis_account.clone());
-                map.insert(bob_evm(), init_genesis_account.clone());
                 map
             },
         },
