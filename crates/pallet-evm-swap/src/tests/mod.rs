@@ -22,5 +22,6 @@ fn basic_setup_works() {
             BRIDGE_INIT_BALANCE
         );
         assert_eq!(EvmBalances::total_balance(&alice_evm()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
     });
 }

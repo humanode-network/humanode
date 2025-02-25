@@ -50,7 +50,7 @@ fn swap_works() {
             EvmBalances::total_balance(&BridgePotEvm::get()),
             BRIDGE_INIT_BALANCE - swap_balance
         );
-        assert_eq!(Balances::total_issuance(), EvmBalances::total_issuance());
+        assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
         System::assert_has_event(RuntimeEvent::EvmSwap(Event::BalancesSwapped {
             from: alice(),
             withdrawed_amount: swap_balance,
