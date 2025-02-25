@@ -1,5 +1,5 @@
 use pallet_evm::{Config, Runner};
-use precompile_utils::EvmDataWriter;
+use precompile_utils::{EvmDataWriter, LogsBuilder};
 use sp_core::H256;
 
 use crate::{mock::*, *};
@@ -58,6 +58,15 @@ fn swap_works() {
         );
         assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
         assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                precompile::SELECTOR_LOG_SWAP,
+                alice_evm(),
+                H256::from(swap_native_account.as_ref()),
+                EvmDataWriter::new().write(swap_balance).build(),
+            )]
+        );
 
         // Assert state changes.
         assert_eq!(
@@ -66,12 +75,12 @@ fn swap_works() {
         );
         assert_eq!(
             EvmBalances::total_balance(&BridgePotEvm::get()),
-            INIT_BALANCE + swap_balance + expected_fee,
+            INIT_BALANCE + swap_balance,
         );
         assert_eq!(Balances::total_balance(&swap_native_account), swap_balance);
         assert_eq!(
             Balances::total_balance(&BridgePotNative::get()),
-            INIT_BALANCE - swap_balance - expected_fee
+            INIT_BALANCE - swap_balance
         );
     });
 }
