@@ -1,6 +1,3 @@
-// Allow simple integer arithmetic in tests.
-#![allow(clippy::arithmetic_side_effects)]
-
 use std::collections::BTreeMap;
 
 use fp_evm::{IsPrecompileResult, PrecompileHandle};

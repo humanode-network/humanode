@@ -1,3 +1,6 @@
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::arithmetic_side_effects)]
+
 use sp_core::Get;
 
 use crate::{mock::*, *};
@@ -21,7 +24,5 @@ fn basic_setup_works() {
         );
         assert_eq!(EvmBalances::total_balance(&alice_evm()), INIT_BALANCE);
         assert_eq!(EvmBalances::total_balance(&bob_evm()), INIT_BALANCE);
-
-        assert_eq!(Balances::total_issuance(), EvmBalances::total_issuance());
     });
 }

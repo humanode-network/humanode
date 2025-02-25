@@ -4,25 +4,24 @@ use sp_core::Get;
 
 use crate::{mock::*, *};
 
-/// This test verifies that swap call works as expected in case origin left balances amount
-/// is greater or equal than existential deposit.
+/// This test verifies that the swap call works in the happy path.
 #[test]
 fn swap_works() {
     new_test_ext().execute_with_ext(|_| {
-        let swap_evm_address = EvmAccountId::from(hex_literal::hex!(
+        let swap_evm_account = EvmAccountId::from(hex_literal::hex!(
             "7700000000000000000000000000000000000077"
         ));
         let swap_balance = 100;
 
         // Check test preconditions.
         assert_eq!(Balances::total_balance(&alice()), INIT_BALANCE);
-        assert_eq!(EvmBalances::total_balance(&swap_evm_address), 0);
+        assert_eq!(EvmBalances::total_balance(&swap_evm_account), 0);
 
         // We should remember expected evm transaction hash before execution as nonce is increased
         // after the execution.
         let expected_evm_transaction_hash = ethereum_transfer_transaction::<Test>(
             BridgePotEvm::get(),
-            swap_evm_address,
+            swap_evm_account,
             swap_balance,
         )
         .hash();
@@ -33,7 +32,7 @@ fn swap_works() {
         // Invoke the function under test.
         assert_ok!(EvmSwap::swap(
             RuntimeOrigin::signed(alice()),
-            swap_evm_address,
+            swap_evm_account,
             swap_balance
         ));
 
@@ -46,7 +45,7 @@ fn swap_works() {
             Balances::total_balance(&BridgePotNative::get()),
             INIT_BALANCE + swap_balance
         );
-        assert_eq!(EvmBalances::total_balance(&swap_evm_address), swap_balance);
+        assert_eq!(EvmBalances::total_balance(&swap_evm_account), swap_balance);
         assert_eq!(
             EvmBalances::total_balance(&BridgePotEvm::get()),
             INIT_BALANCE - swap_balance
@@ -55,13 +54,13 @@ fn swap_works() {
         System::assert_has_event(RuntimeEvent::EvmSwap(Event::BalancesSwapped {
             from: alice(),
             withdrawed_amount: swap_balance,
-            to: swap_evm_address,
+            to: swap_evm_account,
             deposited_amount: swap_balance,
             evm_transaction_hash: expected_evm_transaction_hash,
         }));
         System::assert_has_event(RuntimeEvent::Ethereum(pallet_ethereum::Event::Executed {
             from: BridgePotEvm::get(),
-            to: swap_evm_address,
+            to: swap_evm_account,
             transaction_hash: expected_evm_transaction_hash,
             exit_reason: ExitReason::Succeed(ExitSucceed::Stopped),
             extra_data: vec![],
