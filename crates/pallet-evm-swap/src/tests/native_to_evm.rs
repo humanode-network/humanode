@@ -1,5 +1,9 @@
 use fp_evm::{ExitReason, ExitSucceed};
-use frame_support::assert_ok;
+use frame_support::{
+    assert_noop, assert_ok,
+    sp_runtime::{ArithmeticError, TokenError},
+    traits::fungible::Unbalanced,
+};
 use sp_core::Get;
 
 use crate::{
@@ -101,7 +105,7 @@ fn run_succeeded_test_and_assert(
     }));
 }
 
-/// This test verifies that the swap call works in the happy path.
+/// This test verifies that the `swap` call works in the happy path.
 #[test]
 fn swap_works() {
     new_test_ext().execute_with_ext(|_| {
@@ -109,7 +113,7 @@ fn swap_works() {
     });
 }
 
-/// This test verifies that swap call works as expected in case origin left balances amount
+/// This test verifies that `swap` call works as expected in case origin left balances amount
 /// is less than existential deposit. The origin account should be killed.
 #[test]
 fn swap_works_kill_origin() {
@@ -123,5 +127,81 @@ fn swap_works_kill_origin() {
 fn swap_keep_alive_works() {
     new_test_ext().execute_with_ext(|_| {
         run_succeeded_test_and_assert(TestCall::SwapKeepAlive, 100, INIT_BALANCE - 100);
+    });
+}
+
+/// This test verifies that `swap` call fails in case source account has no the sufficient balance.
+#[test]
+fn swap_fails_no_funds() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_balance = INIT_BALANCE + 1;
+
+        // Invoke the function under test.
+        assert_noop!(
+            EvmSwap::swap(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                swap_balance
+            ),
+            DispatchError::Token(TokenError::FundsUnavailable)
+        );
+    });
+}
+
+/// This test verifies that `swap` call fails in case target deposit results into overflow.
+#[test]
+fn swap_fails_overflow() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_balance = 1;
+
+        EvmBalances::write_balance(&target_swap_evm_account(), Balance::MAX).unwrap();
+
+        // Invoke the function under test.
+        assert_noop!(
+            EvmSwap::swap(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                swap_balance
+            ),
+            DispatchError::Arithmetic(ArithmeticError::Overflow)
+        );
+    });
+}
+
+/// This test verifies that `swap_keep_alive` call fails in case source account has no the sufficient balance.
+#[test]
+fn swap_keep_alive_fails_no_funds() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_balance = INIT_BALANCE + 1;
+
+        // Invoke the function under test.
+        assert_noop!(
+            EvmSwap::swap_keep_alive(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                swap_balance
+            ),
+            DispatchError::Token(TokenError::FundsUnavailable)
+        );
+    });
+}
+
+/// This test verifies that `swap_keep_alive` call fails in case target deposit results into overflow.
+#[test]
+fn swap_keep_alive_fails_overflow() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_balance = 1;
+
+        EvmBalances::write_balance(&target_swap_evm_account(), Balance::MAX).unwrap();
+
+        // Invoke the function under test.
+        assert_noop!(
+            EvmSwap::swap_keep_alive(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                swap_balance
+            ),
+            DispatchError::Arithmetic(ArithmeticError::Overflow)
+        );
     });
 }
