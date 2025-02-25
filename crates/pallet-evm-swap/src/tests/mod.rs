@@ -2,6 +2,9 @@ use sp_core::Get;
 
 use crate::{mock::*, *};
 
+mod evm_to_native;
+mod native_to_evm;
+
 /// This test verifies that basic genesis setup works in the happy path.
 #[test]
 fn basic_setup_works() {
