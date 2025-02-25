@@ -15,10 +15,15 @@ use frame_support::{
 use pallet_evm::{
     ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
 };
-use precompile_utils::{succeed, EvmDataWriter, EvmResult, PrecompileHandleExt};
+use precompile_utils::{
+    keccak256, succeed, EvmDataWriter, EvmResult, LogExt, LogsBuilder, PrecompileHandleExt,
+};
 use sp_core::{Get, H160, H256, U256};
 
 use crate::{balanced_transfer, Config, EvmBalanceOf};
+
+/// Solidity selector of the Swap log, which is the Keccak of the Log signature.
+pub const SELECTOR_LOG_SWAP: [u8; 32] = keccak256!("Swap(address,bytes32,uint256)");
 
 /// Possible actions for this interface.
 #[precompile_utils::generate_function_selector]
@@ -78,6 +83,7 @@ where
             ..
         } = handle.context();
 
+        let value_u256 = *value;
         let value: EvmBalanceOf<EvmSwapT> =
             (*value).try_into().map_err(|_| PrecompileFailure::Error {
                 exit_status: ExitError::Other("value is out of bounds".into()),
@@ -125,6 +131,17 @@ where
             Preservation::Expendable,
         )
         .map_err(process_dispatch_error)?;
+
+        let logs_builder = LogsBuilder::new(handle.context().address);
+
+        logs_builder
+            .log3(
+                SELECTOR_LOG_SWAP,
+                handle.context().caller,
+                to_h256,
+                EvmDataWriter::new().write(value_u256).build(),
+            )
+            .record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
