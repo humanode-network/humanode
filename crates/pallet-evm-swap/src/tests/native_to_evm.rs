@@ -14,10 +14,23 @@ fn target_swap_evm_account() -> EvmAccountId {
     ))
 }
 
+/// A helper to identify call used in tests.
+enum TestCall {
+    Swap,
+    SwapKeepAlive,
+}
+
 /// A helper function to run succeeded test and assert state changes.
-fn run_succeeded_test_and_assert(swap_balance: Balance, expected_left_origin_balance: Balance) {
+fn run_succeeded_test_and_assert(
+    call: TestCall,
+    swap_balance: Balance,
+    expected_left_origin_balance: Balance,
+) {
     // Check test preconditions.
-    assert_eq!(Balances::total_balance(&alice()), INIT_BALANCE);
+    assert_eq!(
+        Balances::total_balance(&source_swap_native_account()),
+        INIT_BALANCE
+    );
     assert_eq!(EvmBalances::total_balance(&target_swap_evm_account()), 0);
 
     // We should remember expected evm transaction hash before execution as nonce is increased
@@ -33,15 +46,22 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_left_origin_bal
     System::set_block_number(1);
 
     // Invoke the function under test.
-    assert_ok!(EvmSwap::swap(
-        RuntimeOrigin::signed(alice()),
-        target_swap_evm_account(),
-        swap_balance
-    ));
+    assert_ok!(match call {
+        TestCall::Swap => EvmSwap::swap(
+            RuntimeOrigin::signed(source_swap_native_account()),
+            target_swap_evm_account(),
+            swap_balance
+        ),
+        TestCall::SwapKeepAlive => EvmSwap::swap_keep_alive(
+            RuntimeOrigin::signed(source_swap_native_account()),
+            target_swap_evm_account(),
+            swap_balance
+        ),
+    });
 
     // Assert state changes.
 
-    // Verify that source swap native balance has been decreased by swap value.
+    // Verify that source swap native balance is equal to expected left origin balance value.
     assert_eq!(
         <Balances>::total_balance(&source_swap_native_account()),
         expected_left_origin_balance,
@@ -65,7 +85,7 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_left_origin_bal
     assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
     // Verifyt that we have a corresponding evm swap event.
     System::assert_has_event(RuntimeEvent::EvmSwap(Event::BalancesSwapped {
-        from: alice(),
+        from: source_swap_native_account(),
         withdrawed_amount: swap_balance,
         to: target_swap_evm_account(),
         deposited_amount: swap_balance,
@@ -85,7 +105,7 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_left_origin_bal
 #[test]
 fn swap_works() {
     new_test_ext().execute_with_ext(|_| {
-        run_succeeded_test_and_assert(100, INIT_BALANCE - 100);
+        run_succeeded_test_and_assert(TestCall::Swap, 100, INIT_BALANCE - 100);
     });
 }
 
@@ -94,6 +114,14 @@ fn swap_works() {
 #[test]
 fn swap_works_kill_origin() {
     new_test_ext().execute_with_ext(|_| {
-        run_succeeded_test_and_assert(INIT_BALANCE - 1, 0);
+        run_succeeded_test_and_assert(TestCall::Swap, INIT_BALANCE - 1, 0);
+    });
+}
+
+/// This test verifies that `swap_keep_alive` call works in the happy path.
+#[test]
+fn swap_keep_alive_works() {
+    new_test_ext().execute_with_ext(|_| {
+        run_succeeded_test_and_assert(TestCall::SwapKeepAlive, 100, INIT_BALANCE - 100);
     });
 }
