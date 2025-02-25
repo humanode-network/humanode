@@ -660,3 +660,93 @@ fn swap_fail_value_overflow() {
         }));
     });
 }
+
+/// This test verifies that the swap precompile call behaves as expected when the call has no
+/// arguments.
+#[test]
+fn swap_fail_no_arguments() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_native_account = AccountId::from(hex_literal::hex!(
+            "7700000000000000000000000000000000000000000000000000000000000077"
+        ));
+        let swap_balance = 1;
+
+        let expected_gas_usage: u64 = 50_000; // all fee will be consumed
+
+        // Check test preconditions.
+        assert_eq!(<EvmBalances>::total_balance(&alice_evm()), INIT_BALANCE);
+        assert_eq!(<Balances>::total_balance(&swap_native_account), 0);
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Prepare EVM call.
+        let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
+            chain_id: <Test as pallet_evm::Config>::ChainId::get(),
+            nonce: pallet_evm::Pallet::<Test>::account_basic(&alice_evm())
+                .0
+                .nonce,
+            max_priority_fee_per_gas: 0.into(),
+            max_fee_per_gas: 0.into(),
+            gas_limit: 50_000.into(), // a reasonable upper bound for tests
+            action: ethereum::TransactionAction::Call(*PRECOMPILE_ADDRESS),
+            value: U256::from(swap_balance),
+            input: EvmDataWriter::new_with_selector(precompile::Action::Swap).build(),
+            access_list: Default::default(),
+            odd_y_parity: false,
+            r: Default::default(),
+            s: Default::default(),
+        });
+        let transaction_hash = transaction.hash();
+
+        // Invoke the function under test.
+        let post_info =
+            pallet_ethereum::ValidatedTransaction::<Test>::apply(alice_evm(), transaction).unwrap();
+
+        assert_eq!(
+            post_info,
+            PostDispatchInfo {
+                actual_weight: Some(
+                    <Test as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+                        expected_gas_usage,
+                        true
+                    )
+                ),
+                pays_fee: Pays::No
+            },
+        );
+
+        // Assert state changes.
+        assert_eq!(<EvmBalances>::total_balance(&alice_evm()), INIT_BALANCE);
+        assert_eq!(
+            EvmBalances::total_balance(&BridgePotEvm::get()),
+            BRIDGE_INIT_BALANCE,
+        );
+        assert_eq!(<Balances>::total_balance(&swap_native_account), 0);
+        assert_eq!(
+            Balances::total_balance(&BridgePotNative::get()),
+            BRIDGE_INIT_BALANCE,
+        );
+        assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
+        System::assert_has_event(RuntimeEvent::Ethereum(pallet_ethereum::Event::Executed {
+            from: alice_evm(),
+            to: *PRECOMPILE_ADDRESS,
+            transaction_hash,
+            exit_reason: ExitReason::Error(ExitError::Other(
+                "exactly one argument is expected".into(),
+            )),
+            extra_data: vec![],
+        }));
+
+        // Finalize block to check transaction logs.
+        Ethereum::on_finalize(1);
+
+        let transaction_logs = pallet_ethereum::pallet::CurrentTransactionStatuses::<Test>::get()
+            .unwrap()
+            .first()
+            .cloned()
+            .unwrap()
+            .logs;
+        assert_eq!(transaction_logs, vec![]);
+    });
+}
