@@ -43,12 +43,12 @@ fn swap_works() {
         );
         assert_eq!(
             Balances::total_balance(&BridgePotNative::get()),
-            INIT_BALANCE + swap_balance
+            BRIDGE_INIT_BALANCE + swap_balance
         );
         assert_eq!(EvmBalances::total_balance(&swap_evm_account), swap_balance);
         assert_eq!(
             EvmBalances::total_balance(&BridgePotEvm::get()),
-            INIT_BALANCE - swap_balance
+            BRIDGE_INIT_BALANCE - swap_balance
         );
         assert_eq!(Balances::total_issuance(), EvmBalances::total_issuance());
         System::assert_has_event(RuntimeEvent::EvmSwap(Event::BalancesSwapped {
