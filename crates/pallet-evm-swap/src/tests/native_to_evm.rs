@@ -15,7 +15,7 @@ fn target_swap_evm_account() -> EvmAccountId {
 }
 
 /// A helper function to run succeeded test and assert state changes.
-fn run_succeeded_test_and_assert(swap_balance: Balance) {
+fn run_succeeded_test_and_assert(swap_balance: Balance, expected_left_origin_balance: Balance) {
     // Check test preconditions.
     assert_eq!(Balances::total_balance(&alice()), INIT_BALANCE);
     assert_eq!(EvmBalances::total_balance(&target_swap_evm_account()), 0);
@@ -44,7 +44,7 @@ fn run_succeeded_test_and_assert(swap_balance: Balance) {
     // Verify that source swap native balance has been decreased by swap value.
     assert_eq!(
         <Balances>::total_balance(&source_swap_native_account()),
-        INIT_BALANCE - swap_balance,
+        expected_left_origin_balance,
     );
     // Verify that bridge pot native balance has been increased by swap value.
     assert_eq!(
@@ -85,6 +85,15 @@ fn run_succeeded_test_and_assert(swap_balance: Balance) {
 #[test]
 fn swap_works() {
     new_test_ext().execute_with_ext(|_| {
-        run_succeeded_test_and_assert(100);
+        run_succeeded_test_and_assert(100, INIT_BALANCE - 100);
+    });
+}
+
+/// This test verifies that swap call works as expected in case origin left balances amount
+/// is less than existential deposit. The origin account should be killed.
+#[test]
+fn swap_works_kill_origin() {
+    new_test_ext().execute_with_ext(|_| {
+        run_succeeded_test_and_assert(INIT_BALANCE - 1, 0);
     });
 }
