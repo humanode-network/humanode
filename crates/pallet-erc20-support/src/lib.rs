@@ -11,6 +11,7 @@ use frame_support::{
 pub use pallet::*;
 
 mod migrations;
+pub use migrations::v1::MigrationV0ToV1;
 
 #[cfg(test)]
 mod mock;
@@ -45,10 +46,7 @@ type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountIdOf<T, I>
 #[frame_support::pallet]
 pub mod pallet {
 
-    #[cfg(feature = "try-runtime")]
-    use frame_support::sp_std::{vec, vec::Vec};
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug};
-    use frame_system::pallet_prelude::*;
 
     use super::*;
 
@@ -103,35 +101,6 @@ pub mod pallet {
     pub enum Error<T, I = ()> {
         /// Spender can't transfer tokens more than allowed.
         SpendMoreThanAllowed,
-    }
-
-    #[pallet::hooks]
-    impl<T: Config<I>, I: 'static> Hooks<BlockNumberFor<T>> for Pallet<T, I> {
-        fn on_runtime_upgrade() -> Weight {
-            let mut weight = T::DbWeight::get().reads(1);
-
-            if StorageVersion::get::<Pallet<T, I>>() == 0 {
-                weight.saturating_accrue(migrations::v1::migrate::<T, I>());
-                StorageVersion::new(1).put::<Pallet<T, I>>();
-                weight.saturating_accrue(T::DbWeight::get().writes(1));
-            }
-
-            weight
-        }
-
-        #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-            Ok(vec![])
-        }
-
-        #[cfg(feature = "try-runtime")]
-        fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-            assert_eq!(
-                <Pallet<T, I>>::on_chain_storage_version(),
-                <Pallet<T, I>>::current_storage_version()
-            );
-            Ok(())
-        }
     }
 }
 

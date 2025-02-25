@@ -9,6 +9,9 @@ use frame_support::{
 pub use pallet::*;
 use sp_core::H160;
 
+mod upgrade_init;
+pub use upgrade_init::UpgradeInit;
+
 #[cfg(test)]
 mod mock;
 
@@ -33,7 +36,6 @@ pub const DUMMY_CODE: &[u8] = &[0x5F, 0x5F, 0xFD];
 #[frame_support::pallet]
 pub mod pallet {
     use frame_support::{pallet_prelude::*, sp_std::vec::Vec};
-    use frame_system::pallet_prelude::*;
 
     use super::*;
 
@@ -74,56 +76,6 @@ pub mod pallet {
 
             <LastExecutionVersion<T>>::put(CURRENT_EXECUTION_VERSION);
             <LastForceExecuteAskCounter<T>>::put(T::ForceExecuteAskCounter::get());
-        }
-    }
-
-    #[pallet::hooks]
-    impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
-        fn on_runtime_upgrade() -> Weight {
-            let last_execution_version = Self::last_execution_version();
-            let last_force_execute_ask_counter = Self::last_force_execute_ask_counter();
-
-            let current_force_execute_ask_counter = T::ForceExecuteAskCounter::get();
-            let mut weight = T::DbWeight::get().reads(2);
-
-            let is_version_mismatch = last_execution_version != CURRENT_EXECUTION_VERSION;
-            let is_forced = last_force_execute_ask_counter < current_force_execute_ask_counter;
-
-            if is_version_mismatch || is_forced {
-                weight.saturating_accrue(Self::precompiles_addresses_add_dummy_code());
-
-                <LastExecutionVersion<T>>::put(CURRENT_EXECUTION_VERSION);
-                <LastForceExecuteAskCounter<T>>::put(current_force_execute_ask_counter);
-                weight.saturating_accrue(T::DbWeight::get().writes(2));
-            }
-
-            weight
-        }
-
-        #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-            // Do nothing.
-            Ok(Vec::new())
-        }
-
-        #[cfg(feature = "try-runtime")]
-        fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-            use sp_std::vec::Vec;
-
-            let mut not_created_precompiles = Vec::new();
-
-            for precompile_address in &T::PrecompilesAddresses::get() {
-                let code = pallet_evm::AccountCodes::<T>::get(*precompile_address);
-                if code != DUMMY_CODE {
-                    not_created_precompiles.push(*precompile_address);
-                }
-            }
-
-            if !not_created_precompiles.is_empty() {
-                return Err("precompiles not created properly: {:not_created_precompiles}");
-            }
-
-            Ok(())
         }
     }
 }
