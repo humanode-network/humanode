@@ -2,12 +2,9 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{
-    dispatch::DispatchError,
-    traits::{
-        fungible::{Balanced, Inspect},
-        tokens::{Fortitude, Precision, Preservation, Provenance},
-    },
+use frame_support::traits::{
+    fungible::{Inspect, Mutate},
+    tokens::{Preservation, Provenance},
 };
 pub use pallet::*;
 use sp_core::{Get, H160, U256};
@@ -61,10 +58,14 @@ pub mod pallet {
         type EvmAccountId: Parameter + Into<H160>;
 
         /// Native token.
-        type NativeToken: Inspect<Self::AccountId> + Balanced<Self::AccountId>;
+        ///
+        /// TODO(#1462): switch from `Mutate` to `Balanced` fungible interface.
+        type NativeToken: Inspect<Self::AccountId> + Mutate<Self::AccountId>;
 
         /// EVM token.
-        type EvmToken: Inspect<Self::EvmAccountId> + Balanced<Self::EvmAccountId>;
+        ///
+        /// TODO(#1462): switch from `Mutate` to `Balanced` fungible interface.
+        type EvmToken: Inspect<Self::EvmAccountId> + Mutate<Self::EvmAccountId>;
 
         /// The converter to determine how the balance amount should be converted from native
         /// to EVM token.
@@ -149,12 +150,7 @@ pub mod pallet {
             T::EvmToken::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
 
-            balanced_transfer::<_, T::NativeToken>(
-                &who,
-                &T::BridgePotNative::get(),
-                amount,
-                preservation,
-            )?;
+            T::NativeToken::transfer(&who, &T::BridgePotNative::get(), amount, preservation)?;
 
             let evm_transaction_hash = Self::execute_ethereum_transfer(
                 T::BridgePotEvm::get().into(),
@@ -229,30 +225,4 @@ pub(crate) fn ethereum_transfer_transaction<T: pallet_evm::Config>(
         r: Default::default(),
         s: Default::default(),
     })
-}
-
-/// A helper function to execute balanced transfer.
-pub(crate) fn balanced_transfer<AccountId, Token: Inspect<AccountId> + Balanced<AccountId>>(
-    from: &AccountId,
-    to: &AccountId,
-    amount: Token::Balance,
-    preservation: Preservation,
-) -> Result<(), DispatchError> {
-    let credit = Token::withdraw(
-        from,
-        amount,
-        Precision::Exact,
-        preservation,
-        Fortitude::Polite,
-    )?;
-
-    if let Err(credit) = Token::resolve(to, credit) {
-        // Here we undo the withdrawal to avoid having a dangling credit.
-        //
-        // Drop the result which will trigger the `OnDrop` of the credit in case of
-        // resolving back fails.
-        let _ = Token::resolve(from, credit);
-    }
-
-    Ok(())
 }

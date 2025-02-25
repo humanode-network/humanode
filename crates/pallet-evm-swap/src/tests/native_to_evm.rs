@@ -1,6 +1,7 @@
 use fp_evm::{ExitReason, ExitSucceed};
 use frame_support::{
     assert_noop, assert_ok,
+    dispatch::DispatchError,
     sp_runtime::{ArithmeticError, TokenError},
     traits::fungible::Unbalanced,
 };

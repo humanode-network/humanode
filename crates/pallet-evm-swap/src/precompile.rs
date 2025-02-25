@@ -8,7 +8,7 @@ use frame_support::{
     sp_runtime::traits::Convert,
     sp_std::{marker::PhantomData, prelude::*},
     traits::{
-        fungible::Inspect,
+        fungible::{Inspect, Mutate},
         tokens::{Preservation, Provenance},
     },
 };
@@ -20,7 +20,7 @@ use precompile_utils::{
 };
 use sp_core::{Get, H160, H256, U256};
 
-use crate::{balanced_transfer, Config, EvmBalanceOf};
+use crate::{Config, EvmBalanceOf};
 
 /// Solidity selector of the Swap log, which is the Keccak of the Log signature.
 pub const SELECTOR_LOG_SWAP: [u8; 32] = keccak256!("Swap(address,bytes32,uint256)");
@@ -116,7 +116,7 @@ where
             .into_result()
             .map_err(process_dispatch_error)?;
 
-        balanced_transfer::<_, EvmSwapT::EvmToken>(
+        EvmSwapT::EvmToken::transfer(
             &from,
             &EvmSwapT::BridgePotEvm::get(),
             value,
@@ -124,7 +124,7 @@ where
         )
         .map_err(process_dispatch_error)?;
 
-        balanced_transfer::<_, EvmSwapT::NativeToken>(
+        EvmSwapT::NativeToken::transfer(
             &EvmSwapT::BridgePotNative::get(),
             &to,
             estimated_swapped_balance,
