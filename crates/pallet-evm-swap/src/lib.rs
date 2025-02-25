@@ -10,6 +10,7 @@ use frame_support::{
     },
 };
 pub use pallet::*;
+use sp_core::{Get, H160, U256};
 pub use weights::*;
 
 pub mod precompile;
@@ -43,7 +44,7 @@ pub mod pallet {
     };
     use frame_system::pallet_prelude::*;
     use pallet_evm::GasWeightMapping;
-    use sp_core::{H160, H256, U256};
+    use sp_core::H256;
 
     use super::*;
 
@@ -179,25 +180,8 @@ pub mod pallet {
             target_address: H160,
             balance: u128,
         ) -> Result<H256, DispatchError> {
-            let gas_simple_transfer_call = <T as pallet_evm::Config>::config().gas_transaction_call;
-
-            let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
-                chain_id: <T as pallet_evm::Config>::ChainId::get(),
-                nonce: pallet_evm::Pallet::<T>::account_basic(&source_address)
-                    .0
-                    .nonce,
-                max_priority_fee_per_gas: 0.into(),
-                max_fee_per_gas: 0.into(),
-                gas_limit: gas_simple_transfer_call.into(),
-                action: ethereum::TransactionAction::Call(target_address),
-                value: U256::from(balance),
-                input: Default::default(),
-                access_list: Default::default(),
-                odd_y_parity: false,
-                r: Default::default(),
-                s: Default::default(),
-            });
-
+            let transaction =
+                ethereum_transfer_transaction::<T>(source_address, target_address, balance);
             let transaction_hash = transaction.hash();
 
             let post_info =
@@ -208,8 +192,8 @@ pub mod pallet {
                 post_info
                     == PostDispatchInfo {
                         actual_weight: Some(
-                            <T as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
-                                gas_simple_transfer_call.unique_saturated_into(),
+                            T::GasWeightMapping::gas_to_weight(
+                                T::config().gas_transaction_call.unique_saturated_into(),
                                 true,
                             )
                         ),
@@ -221,6 +205,30 @@ pub mod pallet {
             Ok(transaction_hash)
         }
     }
+}
+
+/// A helper function to prepare simple ethereum transfer transaction.
+pub(crate) fn ethereum_transfer_transaction<T: pallet_evm::Config>(
+    source_address: H160,
+    target_address: H160,
+    balance: u128,
+) -> pallet_ethereum::Transaction {
+    pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
+        chain_id: T::ChainId::get(),
+        nonce: pallet_evm::Pallet::<T>::account_basic(&source_address)
+            .0
+            .nonce,
+        max_priority_fee_per_gas: 0.into(),
+        max_fee_per_gas: 0.into(),
+        gas_limit: T::config().gas_transaction_call.into(),
+        action: ethereum::TransactionAction::Call(target_address),
+        value: U256::from(balance),
+        input: Default::default(),
+        access_list: Default::default(),
+        odd_y_parity: false,
+        r: Default::default(),
+        s: Default::default(),
+    })
 }
 
 /// A helper function to execute balanced transfer.
