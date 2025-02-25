@@ -168,6 +168,25 @@ fn swap_fails_overflow() {
     });
 }
 
+/// This test verifies that `swap_keep_alive` call fails in case origin left balances amount
+/// is less than existential deposit. The call should prevent swap operation.
+#[test]
+fn swap_keep_alive_fails() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_balance = INIT_BALANCE - 1;
+
+        // Invoke the function under test.
+        assert_noop!(
+            EvmSwap::swap_keep_alive(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                swap_balance
+            ),
+            DispatchError::Token(TokenError::NotExpendable)
+        );
+    });
+}
+
 /// This test verifies that `swap_keep_alive` call fails in case source account has no the sufficient balance.
 #[test]
 fn swap_keep_alive_fails_no_funds() {
