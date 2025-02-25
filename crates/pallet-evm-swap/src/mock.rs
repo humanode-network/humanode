@@ -1,6 +1,5 @@
 use std::collections::BTreeMap;
 
-use fp_evm::{IsPrecompileResult, PrecompileHandle};
 use frame_support::{
     once_cell::sync::Lazy,
     parameter_types, sp_io,
@@ -13,21 +12,22 @@ use frame_support::{
     weights::Weight,
 };
 use pallet_ethereum::PostLogContent as EthereumPostLogContent;
+use precompile_utils::precompile_set::{PrecompileAt, PrecompileSetBuilder};
 use sp_core::{Get, H160, H256, U256};
 
 use crate::{self as pallet_evm_swap, precompile};
 
-pub(crate) const INIT_BALANCE: u128 = 10_000_000_000_000_000;
+pub const INIT_BALANCE: u128 = 10_000_000_000_000_000;
 // Add some tokens to test swap with full balance.
-pub(crate) const BRIDGE_INIT_BALANCE: u128 = INIT_BALANCE + 100;
+pub const BRIDGE_INIT_BALANCE: u128 = INIT_BALANCE + 100;
 
-pub(crate) fn alice() -> AccountId {
+pub fn alice() -> AccountId {
     AccountId::from(hex_literal::hex!(
         "1100000000000000000000000000000000000000000000000000000000000011"
     ))
 }
 
-pub(crate) fn alice_evm() -> EvmAccountId {
+pub fn alice_evm() -> EvmAccountId {
     EvmAccountId::from(hex_literal::hex!(
         "1100000000000000000000000000000000000011"
     ))
@@ -36,9 +36,9 @@ pub(crate) fn alice_evm() -> EvmAccountId {
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-pub(crate) type AccountId = frame_support::sp_runtime::AccountId32;
-pub(crate) type EvmAccountId = H160;
-pub(crate) type Balance = u128;
+pub type AccountId = frame_support::sp_runtime::AccountId32;
+pub type EvmAccountId = H160;
+pub type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -131,7 +131,7 @@ impl pallet_timestamp::Config for Test {
     type WeightInfo = ();
 }
 
-pub(crate) static GAS_PRICE: Lazy<U256> = Lazy::new(|| 1_000_000_000u128.into());
+pub static GAS_PRICE: Lazy<U256> = Lazy::new(|| 1_000_000_000u128.into());
 
 pub struct FixedGasPrice;
 impl fp_evm::FeeCalculator for FixedGasPrice {
@@ -141,11 +141,19 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
     }
 }
 
+pub static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x901));
+
+pub type EvmSwapPrecompile = precompile::EvmSwap<Test, ConstU64<200>>;
+
+pub type Precompiles<R> =
+    PrecompileSetBuilder<R, PrecompileAt<PrecompileAddress, EvmSwapPrecompile>>;
+
 parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
     pub GasLimitPovSizeRatio: u64 = 0;
     pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
-    pub MockPrecompiles: MockPrecompileSet = MockPrecompileSet;
+    pub PrecompileAddress: H160 = *PRECOMPILE_ADDRESS;
+    pub PrecompilesValue: Precompiles<Test> = Precompiles::new();
 }
 
 impl pallet_evm::Config for Test {
@@ -163,8 +171,8 @@ impl pallet_evm::Config for Test {
     type AddressMapping = pallet_evm::IdentityAddressMapping;
     type Currency = EvmBalances;
     type RuntimeEvent = RuntimeEvent;
-    type PrecompilesType = MockPrecompileSet;
-    type PrecompilesValue = MockPrecompiles;
+    type PrecompilesType = Precompiles<Self>;
+    type PrecompilesValue = PrecompilesValue;
     type ChainId = ();
     type BlockGasLimit = BlockGasLimit;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
@@ -217,38 +225,6 @@ impl pallet_evm_swap::Config for Test {
     type BridgePotNative = BridgePotNative;
     type BridgePotEvm = BridgePotEvm;
     type WeightInfo = ();
-}
-
-type EvmSwapPrecompile = precompile::EvmSwap<Test, ConstU64<200>>;
-
-/// The precompile set containing the precompile under test.
-pub struct MockPrecompileSet;
-
-pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x900));
-
-impl pallet_evm::PrecompileSet for MockPrecompileSet {
-    /// Tries to execute a precompile in the precompile set.
-    /// If the provided address is not a precompile, returns None.
-    fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<pallet_evm::PrecompileResult> {
-        use pallet_evm::Precompile;
-        let address = handle.code_address();
-
-        if address == *PRECOMPILE_ADDRESS {
-            return Some(EvmSwapPrecompile::execute(handle));
-        }
-
-        None
-    }
-
-    /// Check if the given address is a precompile. Should only be called to
-    /// perform the check while not executing the precompile afterward, since
-    /// `execute` already performs a check internally.
-    fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
-        IsPrecompileResult::Answer {
-            is_precompile: address == *PRECOMPILE_ADDRESS,
-            extra_cost: 0,
-        }
-    }
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
