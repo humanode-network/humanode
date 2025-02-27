@@ -114,7 +114,9 @@ where
 
         EvmSwapT::NativeToken::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
             .into_result()
-            .map_err(process_dispatch_error)?;
+            .map_err(|err| {
+                process_dispatch_error(err, "unable to deposit into target native account")
+            })?;
 
         EvmSwapT::EvmToken::transfer(
             &from,
@@ -122,7 +124,12 @@ where
             value,
             Preservation::Expendable,
         )
-        .map_err(process_dispatch_error)?;
+        .map_err(|err| {
+            process_dispatch_error(
+                err,
+                "unable to transfer from source evm to bridge pot evm account",
+            )
+        })?;
 
         EvmSwapT::NativeToken::transfer(
             &EvmSwapT::BridgePotNative::get(),
@@ -130,7 +137,12 @@ where
             estimated_swapped_balance,
             Preservation::Expendable,
         )
-        .map_err(process_dispatch_error)?;
+        .map_err(|err| {
+            process_dispatch_error(
+                err,
+                "unable to transfer from bridge pot native to target native account",
+            )
+        })?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -148,15 +160,20 @@ where
 }
 
 /// A helper function to process dispatch related errors.
-fn process_dispatch_error(error: DispatchError) -> PrecompileFailure {
+fn process_dispatch_error(
+    error: DispatchError,
+    other_error_message: &'static str,
+) -> PrecompileFailure {
     match error {
         DispatchError::Token(frame_support::sp_runtime::TokenError::FundsUnavailable) => {
             PrecompileFailure::Error {
                 exit_status: ExitError::OutOfFund,
             }
         }
-        _ => PrecompileFailure::Error {
-            exit_status: ExitError::Other("unable to swap funds".into()),
+        other_error_details => PrecompileFailure::Error {
+            exit_status: ExitError::Other(
+                format!("{other_error_message}: {other_error_details:?}").into(),
+            ),
         },
     }
 }
