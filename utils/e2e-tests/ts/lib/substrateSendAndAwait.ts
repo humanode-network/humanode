@@ -38,7 +38,8 @@ const execute = <
     f(extrinsic, (result) => {
       if (fired) return;
 
-      const { isCompleted, internalError, dispatchError } = result;
+      const { isCompleted, internalError, events, status, dispatchError } =
+        result;
 
       if (internalError) {
         reject(internalError);
@@ -47,6 +48,20 @@ const execute = <
       }
 
       if (isCompleted) {
+        console.log(`    Complete!`);
+        console.log(`    Status: ${status.type}`);
+        console.log(`    Error: ${dispatchError ? "yes" : "no"}`);
+        console.log(`    Events:`);
+
+        for (const item of events) {
+          console.log(`      ${item.event.section} / ${item.event.method}:`);
+          console.log(
+            `        ${JSON.stringify(item.event.data.toHuman(), null, 2).replaceAll("\n", "\n        ")}\n`,
+          );
+        }
+
+        console.log("    ... events end\n");
+
         fired = true;
 
         if (dispatchError) {
