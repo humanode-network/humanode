@@ -307,6 +307,46 @@ fn swap_fail_target_balance_below_ed() {
     });
 }
 
+/// This test verifies that the swap precompile call behaves as expected when
+/// estimated swapped balance results into target swap native account balance overflow.
+#[test]
+fn swap_fail_target_balance_overflow() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_balance = 1;
+        let expected_gas_usage: u64 = 50_000; // all gas will be consumed
+
+        Balances::write_balance(&target_swap_native_account(), Balance::MAX).unwrap();
+
+        // Prepare EVM call.
+        let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
+            chain_id: <Test as pallet_evm::Config>::ChainId::get(),
+            nonce: pallet_evm::Pallet::<Test>::account_basic(&source_swap_evm_account())
+                .0
+                .nonce,
+            max_priority_fee_per_gas: 0.into(),
+            max_fee_per_gas: 0.into(),
+            gas_limit: 50_000.into(), // a reasonable upper bound for tests
+            action: ethereum::TransactionAction::Call(*PRECOMPILE_ADDRESS),
+            value: U256::from(swap_balance),
+            input: EvmDataWriter::new_with_selector(precompile::Action::Swap)
+                .write(H256::from(target_swap_native_account().as_ref()))
+                .build(),
+            access_list: Default::default(),
+            odd_y_parity: false,
+            r: Default::default(),
+            s: Default::default(),
+        });
+
+        run_failed_test_and_assert(
+            expected_gas_usage,
+            transaction,
+            ExitReason::Error(ExitError::Other(
+                "unable to deposit into target native account: Arithmetic(Overflow)".into(),
+            )),
+        );
+    });
+}
+
 /// This test verifies that the swap precompile call behaves as expected when a bad selector is
 /// passed.
 #[test]
