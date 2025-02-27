@@ -135,7 +135,8 @@ where
             &EvmSwapT::BridgePotNative::get(),
             &to,
             estimated_swapped_balance,
-            Preservation::Expendable,
+            // Bridge pot native account shouldn't be killed.
+            Preservation::Preserve,
         )
         .map_err(|err| {
             process_dispatch_error(
