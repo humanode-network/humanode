@@ -301,7 +301,9 @@ fn swap_fail_below_ed() {
         run_failed_test_and_assert(
             expected_gas_usage,
             transaction,
-            ExitReason::Error(ExitError::Other("unable to swap funds".into())),
+            ExitReason::Error(ExitError::Other(
+                "unable to deposit into target native account: Token(BelowMinimum)".into(),
+            )),
         );
     });
 }
