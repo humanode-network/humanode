@@ -24,6 +24,8 @@ fn target_swap_native_account() -> AccountId {
 fn run_succeeded_test_and_assert(swap_balance: Balance, expected_gas_usage: u64) {
     let source_swap_evm_account_balance_before =
         EvmBalances::total_balance(&source_swap_evm_account());
+    let bridge_pot_evm_account_balance_before = EvmBalances::total_balance(&BridgePotEvm::get());
+    let bridge_pot_native_account_balance_before = Balances::total_balance(&BridgePotNative::get());
     let target_swap_native_account_balance_before =
         Balances::total_balance(&target_swap_native_account());
 
@@ -81,7 +83,7 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_gas_usage: u64)
     // Verify that bridge pot evm balance has been increased by swap value.
     assert_eq!(
         EvmBalances::total_balance(&BridgePotEvm::get()),
-        BRIDGE_INIT_BALANCE + swap_balance,
+        bridge_pot_evm_account_balance_before + swap_balance,
     );
     // Verify that target swap native balance has been increased by swap value.
     assert_eq!(
@@ -91,7 +93,7 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_gas_usage: u64)
     // Verify that bridge pot native balance has been decreased by swap value.
     assert_eq!(
         Balances::total_balance(&BridgePotNative::get()),
-        BRIDGE_INIT_BALANCE - swap_balance,
+        bridge_pot_native_account_balance_before - swap_balance,
     );
     // Verify that precompile balance remains the same.
     assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
@@ -159,6 +161,8 @@ fn run_failed_test_and_assert(
 ) {
     let source_swap_evm_account_balance_before =
         EvmBalances::total_balance(&source_swap_evm_account());
+    let bridge_pot_evm_account_balance_before = EvmBalances::total_balance(&BridgePotEvm::get());
+    let bridge_pot_native_account_balance_before = Balances::total_balance(&BridgePotNative::get());
     let target_swap_native_account_balance_before =
         Balances::total_balance(&target_swap_native_account());
 
@@ -195,7 +199,7 @@ fn run_failed_test_and_assert(
     // Verify that bridge pot evm balance remains the same.
     assert_eq!(
         EvmBalances::total_balance(&BridgePotEvm::get()),
-        BRIDGE_INIT_BALANCE,
+        bridge_pot_evm_account_balance_before,
     );
     // Verify that target swap native balance remains the same.
     assert_eq!(
@@ -205,7 +209,7 @@ fn run_failed_test_and_assert(
     // Verify that bridge pot native balance remains the same.
     assert_eq!(
         Balances::total_balance(&BridgePotNative::get()),
-        BRIDGE_INIT_BALANCE,
+        bridge_pot_native_account_balance_before,
     );
     // Verify that precompile balance remains the same.
     assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
@@ -342,6 +346,46 @@ fn swap_fail_target_balance_overflow() {
             transaction,
             ExitReason::Error(ExitError::Other(
                 "unable to deposit into target native account: Arithmetic(Overflow)".into(),
+            )),
+        );
+    });
+}
+
+/// This test verifies that the swap precompile call behaves as expected when
+/// swapped balance results into bridge pot evm account balance overflow.
+#[test]
+fn swap_fail_bridge_evm_overflow() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_balance = 100;
+        let expected_gas_usage: u64 = 50_000; // all gas will be consumed
+
+        EvmBalances::write_balance(&BridgePotEvm::get(), Balance::MAX).unwrap();
+
+        // Prepare EVM call.
+        let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
+            chain_id: <Test as pallet_evm::Config>::ChainId::get(),
+            nonce: pallet_evm::Pallet::<Test>::account_basic(&source_swap_evm_account())
+                .0
+                .nonce,
+            max_priority_fee_per_gas: 0.into(),
+            max_fee_per_gas: 0.into(),
+            gas_limit: 50_000.into(), // a reasonable upper bound for tests
+            action: ethereum::TransactionAction::Call(*PRECOMPILE_ADDRESS),
+            value: U256::from(swap_balance),
+            input: EvmDataWriter::new_with_selector(precompile::Action::Swap)
+                .write(H256::from(target_swap_native_account().as_ref()))
+                .build(),
+            access_list: Default::default(),
+            odd_y_parity: false,
+            r: Default::default(),
+            s: Default::default(),
+        });
+
+        run_failed_test_and_assert(
+            expected_gas_usage,
+            transaction,
+            ExitReason::Error(ExitError::Other(
+                "unable to transfer from source evm to bridge pot evm account: Arithmetic(Overflow)".into(),
             )),
         );
     });
