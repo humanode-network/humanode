@@ -2,7 +2,7 @@ use fp_ethereum::ValidatedTransaction;
 use fp_evm::{ExitError, ExitReason, ExitSucceed};
 use frame_support::{
     dispatch::{Pays, PostDispatchInfo},
-    traits::OnFinalize,
+    traits::{fungible::Unbalanced, OnFinalize},
 };
 use pallet_evm::GasWeightMapping;
 use precompile_utils::{EvmDataWriter, LogsBuilder};
@@ -22,12 +22,10 @@ fn target_swap_native_account() -> AccountId {
 
 /// A helper function to run succeeded test and assert state changes.
 fn run_succeeded_test_and_assert(swap_balance: Balance, expected_gas_usage: u64) {
-    // Check test preconditions.
-    assert_eq!(
-        EvmBalances::total_balance(&source_swap_evm_account()),
-        INIT_BALANCE
-    );
-    assert_eq!(Balances::total_balance(&target_swap_native_account()), 0);
+    let source_swap_evm_account_balance_before =
+        EvmBalances::total_balance(&source_swap_evm_account());
+    let target_swap_native_account_balance_before =
+        Balances::total_balance(&target_swap_native_account());
 
     // Set block number to enable events.
     System::set_block_number(1);
@@ -78,7 +76,7 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_gas_usage: u64)
     // Verify that source swap evm balance has been decreased by swap value.
     assert_eq!(
         <EvmBalances>::total_balance(&source_swap_evm_account()),
-        INIT_BALANCE - swap_balance,
+        source_swap_evm_account_balance_before - swap_balance,
     );
     // Verify that bridge pot evm balance has been increased by swap value.
     assert_eq!(
@@ -88,7 +86,7 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_gas_usage: u64)
     // Verify that target swap native balance has been increased by swap value.
     assert_eq!(
         <Balances>::total_balance(&target_swap_native_account()),
-        swap_balance
+        target_swap_native_account_balance_before + swap_balance
     );
     // Verify that bridge pot native balance has been decreased by swap value.
     assert_eq!(
@@ -159,12 +157,10 @@ fn run_failed_test_and_assert(
     transaction: pallet_ethereum::Transaction,
     exit_reason: ExitReason,
 ) {
-    // Check test preconditions.
-    assert_eq!(
-        EvmBalances::total_balance(&source_swap_evm_account()),
-        INIT_BALANCE
-    );
-    assert_eq!(Balances::total_balance(&target_swap_native_account()), 0);
+    let source_swap_evm_account_balance_before =
+        EvmBalances::total_balance(&source_swap_evm_account());
+    let target_swap_native_account_balance_before =
+        Balances::total_balance(&target_swap_native_account());
 
     // Set block number to enable events.
     System::set_block_number(1);
@@ -194,7 +190,7 @@ fn run_failed_test_and_assert(
     // Verify that source swap evm balance remains the same.
     assert_eq!(
         <EvmBalances>::total_balance(&source_swap_evm_account()),
-        INIT_BALANCE
+        source_swap_evm_account_balance_before,
     );
     // Verify that bridge pot evm balance remains the same.
     assert_eq!(
@@ -202,7 +198,10 @@ fn run_failed_test_and_assert(
         BRIDGE_INIT_BALANCE,
     );
     // Verify that target swap native balance remains the same.
-    assert_eq!(<Balances>::total_balance(&target_swap_native_account()), 0);
+    assert_eq!(
+        <Balances>::total_balance(&target_swap_native_account()),
+        target_swap_native_account_balance_before
+    );
     // Verify that bridge pot native balance remains the same.
     assert_eq!(
         Balances::total_balance(&BridgePotNative::get()),
@@ -237,7 +236,7 @@ fn run_failed_test_and_assert(
 /// This test verifies that the swap precompile call behaves as expected when called without
 /// the sufficient balance.
 #[test]
-fn swap_fail_no_funds() {
+fn swap_fail_source_balance_no_funds() {
     new_test_ext().execute_with_ext(|_| {
         let swap_balance = INIT_BALANCE + 1; // more than we have
         let expected_gas_usage: u64 = 21216; // precompile gas cost is not included
@@ -273,7 +272,7 @@ fn swap_fail_no_funds() {
 /// This test verifies that the swap precompile call behaves as expected when
 /// estimated swapped balance less or equal than target currency existential deposit.
 #[test]
-fn swap_fail_below_ed() {
+fn swap_fail_target_balance_below_ed() {
     new_test_ext().execute_with_ext(|_| {
         let swap_balance = 1;
         let expected_gas_usage: u64 = 50_000; // all gas will be consumed
