@@ -309,7 +309,7 @@ fn swap_fail_target_balance_below_ed() {
             expected_gas_usage,
             transaction,
             ExitReason::Error(ExitError::Other(
-                "unable to deposit into target native account: Token(BelowMinimum)".into(),
+                "resulted balance is less than existential deposit".into(),
             )),
         );
     });
@@ -348,9 +348,7 @@ fn swap_fail_target_balance_overflow() {
         run_failed_test_and_assert(
             expected_gas_usage,
             transaction,
-            ExitReason::Error(ExitError::Other(
-                "unable to deposit into target native account: Arithmetic(Overflow)".into(),
-            )),
+            ExitReason::Error(ExitError::Other("unable to execute swap".into())),
         );
     });
 }
@@ -388,9 +386,7 @@ fn swap_fail_bridge_evm_overflow() {
         run_failed_test_and_assert(
             expected_gas_usage,
             transaction,
-            ExitReason::Error(ExitError::Other(
-                "unable to transfer from source evm to bridge pot evm account: Arithmetic(Overflow)".into(),
-            )),
+            ExitReason::Error(ExitError::Other("unable to execute swap".into())),
         );
     });
 }
@@ -428,9 +424,7 @@ fn swap_fail_bridge_native_killed() {
         run_failed_test_and_assert(
             expected_gas_usage,
             transaction,
-            ExitReason::Error(ExitError::Other(
-                "unable to transfer from bridge pot native to target native account: Token(NotExpendable)".into(),
-            )),
+            ExitReason::Error(ExitError::Other("account would be killed".into())),
         );
     });
 }
