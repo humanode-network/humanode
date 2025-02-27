@@ -376,7 +376,7 @@
     - rand_core
 - name: checked_int_cast 1.0.0
   features: []
-- name: chrono 0.4.39
+- name: chrono 0.4.40
   features:
     - alloc
     - android-tzdata
@@ -390,7 +390,7 @@
     - wasm-bindgen
     - wasmbind
     - winapi
-    - windows-targets
+    - windows-link
 - name: cid 0.8.6
   features:
     - alloc
@@ -4139,6 +4139,8 @@
 - name: windows-core 0.51.1
   features:
     - default
+- name: windows-link 0.1.0
+  features: []
 - name: windows-sys 0.42.0
   features:
     - Win32
