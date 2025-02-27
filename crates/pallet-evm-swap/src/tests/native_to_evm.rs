@@ -29,7 +29,7 @@ enum TestCall {
 fn run_succeeded_test_and_assert(
     call: TestCall,
     swap_balance: Balance,
-    expected_left_origin_balance: Balance,
+    source_native_expected_left_balance: Balance,
 ) {
     // Check test preconditions.
     assert_eq!(
@@ -69,7 +69,7 @@ fn run_succeeded_test_and_assert(
     // Verify that source swap native balance is equal to expected left origin balance value.
     assert_eq!(
         <Balances>::total_balance(&source_swap_native_account()),
-        expected_left_origin_balance,
+        source_native_expected_left_balance,
     );
     // Verify that bridge pot native balance has been increased by swap value.
     assert_eq!(
