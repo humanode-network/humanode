@@ -29,14 +29,12 @@ enum TestCall {
 fn run_succeeded_test_and_assert(
     call: TestCall,
     swap_balance: Balance,
-    source_native_expected_left_balance: Balance,
+    is_origin_should_be_killed: bool,
 ) {
-    // Check test preconditions.
-    assert_eq!(
-        Balances::total_balance(&source_swap_native_account()),
-        INIT_BALANCE
-    );
-    assert_eq!(EvmBalances::total_balance(&target_swap_evm_account()), 0);
+    let source_swap_native_account_balance_before =
+        Balances::total_balance(&source_swap_native_account());
+    let target_swap_evm_account_balance_before =
+        EvmBalances::total_balance(&target_swap_evm_account());
 
     // We should remember expected evm transaction hash before execution as nonce is increased
     // after the execution.
@@ -66,11 +64,17 @@ fn run_succeeded_test_and_assert(
 
     // Assert state changes.
 
-    // Verify that source swap native balance is equal to expected left origin balance value.
-    assert_eq!(
-        <Balances>::total_balance(&source_swap_native_account()),
-        source_native_expected_left_balance,
-    );
+    // Verify that source swap native balance either has been decreased by swap value or equal to 0
+    // due to left balance becomes less than existential deposit.
+    if is_origin_should_be_killed {
+        assert_eq!(<Balances>::total_balance(&source_swap_native_account()), 0,);
+    } else {
+        assert_eq!(
+            <Balances>::total_balance(&source_swap_native_account()),
+            source_swap_native_account_balance_before - swap_balance,
+        );
+    }
+
     // Verify that bridge pot native balance has been increased by swap value.
     assert_eq!(
         Balances::total_balance(&BridgePotNative::get()),
@@ -79,7 +83,7 @@ fn run_succeeded_test_and_assert(
     // Verify that target swap evm balance has been increased by swap value.
     assert_eq!(
         <EvmBalances>::total_balance(&target_swap_evm_account()),
-        swap_balance
+        target_swap_evm_account_balance_before + swap_balance
     );
     // Verify that bridge pot evm balance has been decreased by swap value.
     assert_eq!(
@@ -110,7 +114,7 @@ fn run_succeeded_test_and_assert(
 #[test]
 fn swap_works() {
     new_test_ext().execute_with_ext(|_| {
-        run_succeeded_test_and_assert(TestCall::Swap, 100, INIT_BALANCE - 100);
+        run_succeeded_test_and_assert(TestCall::Swap, 100, false);
     });
 }
 
@@ -119,7 +123,7 @@ fn swap_works() {
 #[test]
 fn swap_works_kill_origin() {
     new_test_ext().execute_with_ext(|_| {
-        run_succeeded_test_and_assert(TestCall::Swap, INIT_BALANCE - 1, 0);
+        run_succeeded_test_and_assert(TestCall::Swap, INIT_BALANCE - 1, true);
     });
 }
 
@@ -127,7 +131,7 @@ fn swap_works_kill_origin() {
 #[test]
 fn swap_keep_alive_works() {
     new_test_ext().execute_with_ext(|_| {
-        run_succeeded_test_and_assert(TestCall::SwapKeepAlive, 100, INIT_BALANCE - 100);
+        run_succeeded_test_and_assert(TestCall::SwapKeepAlive, 100, false);
     });
 }
 
