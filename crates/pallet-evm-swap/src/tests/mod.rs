@@ -8,7 +8,7 @@ use crate::{mock::*, *};
 mod evm_to_native;
 mod native_to_evm;
 
-/// This test verifies that basic genesis setup works in the happy path.
+/// This test verifies that basic tests setup works in the happy path.
 #[test]
 fn basic_setup_works() {
     new_test_ext().execute_with_ext(|_| {

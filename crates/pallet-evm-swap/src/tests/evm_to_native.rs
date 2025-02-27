@@ -8,10 +8,14 @@ use pallet_evm::GasWeightMapping;
 use precompile_utils::{EvmDataWriter, LogsBuilder};
 use sp_core::H256;
 
-use crate::{
-    mock::{alice_evm as source_swap_evm_account, *},
-    *,
-};
+use crate::{mock::*, *};
+
+/// Returns source swap evm account used in tests.
+fn source_swap_evm_account() -> EvmAccountId {
+    EvmAccountId::from(hex_literal::hex!(
+        "1100000000000000000000000000000000000011"
+    ))
+}
 
 /// Returns target swap native account used in tests.
 fn target_swap_native_account() -> AccountId {
@@ -274,7 +278,7 @@ fn swap_fail_source_balance_no_funds() {
 }
 
 /// This test verifies that the swap precompile call behaves as expected when
-/// estimated swapped balance less or equal than target currency existential deposit.
+/// estimated swapped balance less or equal than native token existential deposit.
 #[test]
 fn swap_fail_target_balance_below_ed() {
     new_test_ext().execute_with_ext(|_| {
@@ -386,6 +390,46 @@ fn swap_fail_bridge_evm_overflow() {
             transaction,
             ExitReason::Error(ExitError::Other(
                 "unable to transfer from source evm to bridge pot evm account: Arithmetic(Overflow)".into(),
+            )),
+        );
+    });
+}
+
+/// This test verifies that the swap precompile call behaves as expected when
+/// swapped balance results into bridge pot evm account balance overflow.
+#[test]
+fn swap_fail_bridge_native_killed() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_balance = BRIDGE_INIT_BALANCE;
+        let expected_gas_usage: u64 = 50_000; // all gas will be consumed
+
+        EvmBalances::write_balance(&source_swap_evm_account(), BRIDGE_INIT_BALANCE).unwrap();
+
+        // Prepare EVM call.
+        let transaction = pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
+            chain_id: <Test as pallet_evm::Config>::ChainId::get(),
+            nonce: pallet_evm::Pallet::<Test>::account_basic(&source_swap_evm_account())
+                .0
+                .nonce,
+            max_priority_fee_per_gas: 0.into(),
+            max_fee_per_gas: 0.into(),
+            gas_limit: 50_000.into(), // a reasonable upper bound for tests
+            action: ethereum::TransactionAction::Call(*PRECOMPILE_ADDRESS),
+            value: U256::from(swap_balance),
+            input: EvmDataWriter::new_with_selector(precompile::Action::Swap)
+                .write(H256::from(target_swap_native_account().as_ref()))
+                .build(),
+            access_list: Default::default(),
+            odd_y_parity: false,
+            r: Default::default(),
+            s: Default::default(),
+        });
+
+        run_failed_test_and_assert(
+            expected_gas_usage,
+            transaction,
+            ExitReason::Error(ExitError::Other(
+                "unable to transfer from bridge pot native to target native account: Token(NotExpendable)".into(),
             )),
         );
     });
