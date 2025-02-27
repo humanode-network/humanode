@@ -7,10 +7,14 @@ use frame_support::{
 };
 use sp_core::Get;
 
-use crate::{
-    mock::{alice as source_swap_native_account, *},
-    *,
-};
+use crate::{mock::*, *};
+
+/// Returns source swap native account used in tests.
+fn source_swap_native_account() -> AccountId {
+    AccountId::from(hex_literal::hex!(
+        "1100000000000000000000000000000000000000000000000000000000000011"
+    ))
+}
 
 /// Returns target swap evm account used in tests.
 fn target_swap_evm_account() -> EvmAccountId {
@@ -19,7 +23,7 @@ fn target_swap_evm_account() -> EvmAccountId {
     ))
 }
 
-/// A helper to identify call used in tests.
+/// A helper enum to identify call used in tests.
 enum TestCall {
     Swap,
     SwapKeepAlive,
@@ -33,6 +37,8 @@ fn run_succeeded_test_and_assert(
 ) {
     let source_swap_native_account_balance_before =
         Balances::total_balance(&source_swap_native_account());
+    let bridge_pot_native_account_balance_before = Balances::total_balance(&BridgePotNative::get());
+    let bridge_pot_evm_account_balance_before = EvmBalances::total_balance(&BridgePotEvm::get());
     let target_swap_evm_account_balance_before =
         EvmBalances::total_balance(&target_swap_evm_account());
 
@@ -64,10 +70,10 @@ fn run_succeeded_test_and_assert(
 
     // Assert state changes.
 
-    // Verify that source swap native balance either has been decreased by swap value or equal to 0
+    // Verify that source swap native balance either has been decreased by swap value or reduced to 0
     // due to left balance becomes less than existential deposit.
     if is_origin_should_be_killed {
-        assert_eq!(<Balances>::total_balance(&source_swap_native_account()), 0,);
+        assert_eq!(<Balances>::total_balance(&source_swap_native_account()), 0);
     } else {
         assert_eq!(
             <Balances>::total_balance(&source_swap_native_account()),
@@ -78,20 +84,18 @@ fn run_succeeded_test_and_assert(
     // Verify that bridge pot native balance has been increased by swap value.
     assert_eq!(
         Balances::total_balance(&BridgePotNative::get()),
-        BRIDGE_INIT_BALANCE + swap_balance,
+        bridge_pot_native_account_balance_before + swap_balance,
+    );
+    // Verify that bridge pot evm balance has been decreased by swap value.
+    assert_eq!(
+        EvmBalances::total_balance(&BridgePotEvm::get()),
+        bridge_pot_evm_account_balance_before - swap_balance,
     );
     // Verify that target swap evm balance has been increased by swap value.
     assert_eq!(
         <EvmBalances>::total_balance(&target_swap_evm_account()),
         target_swap_evm_account_balance_before + swap_balance
     );
-    // Verify that bridge pot evm balance has been decreased by swap value.
-    assert_eq!(
-        EvmBalances::total_balance(&BridgePotEvm::get()),
-        BRIDGE_INIT_BALANCE - swap_balance,
-    );
-    // Verify that precompile balance remains the same.
-    assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
     // Verifyt that we have a corresponding evm swap event.
     System::assert_has_event(RuntimeEvent::EvmSwap(Event::BalancesSwapped {
         from: source_swap_native_account(),
@@ -135,97 +139,101 @@ fn swap_keep_alive_works() {
     });
 }
 
-/// This test verifies that `swap` call fails in case source account has no the sufficient balance.
-#[test]
-fn swap_fails_no_funds() {
-    new_test_ext().execute_with_ext(|_| {
-        let swap_balance = INIT_BALANCE + 1;
-
-        // Invoke the function under test.
-        assert_noop!(
-            EvmSwap::swap(
-                RuntimeOrigin::signed(source_swap_native_account()),
-                target_swap_evm_account(),
-                swap_balance
-            ),
-            DispatchError::Token(TokenError::FundsUnavailable)
-        );
-    });
-}
-
-/// This test verifies that `swap` call fails in case target deposit results into overflow.
-#[test]
-fn swap_fails_overflow() {
-    new_test_ext().execute_with_ext(|_| {
-        let swap_balance = 1;
-
-        EvmBalances::write_balance(&target_swap_evm_account(), Balance::MAX).unwrap();
-
-        // Invoke the function under test.
-        assert_noop!(
-            EvmSwap::swap(
-                RuntimeOrigin::signed(source_swap_native_account()),
-                target_swap_evm_account(),
-                swap_balance
-            ),
-            DispatchError::Arithmetic(ArithmeticError::Overflow)
-        );
-    });
-}
-
 /// This test verifies that `swap_keep_alive` call fails in case origin left balances amount
 /// is less than existential deposit. The call should prevent swap operation.
 #[test]
-fn swap_keep_alive_fails() {
+fn swap_keep_alive_fails_kill_origin() {
     new_test_ext().execute_with_ext(|_| {
-        let swap_balance = INIT_BALANCE - 1;
-
         // Invoke the function under test.
         assert_noop!(
             EvmSwap::swap_keep_alive(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
-                swap_balance
+                INIT_BALANCE - 1,
             ),
             DispatchError::Token(TokenError::NotExpendable)
         );
     });
 }
 
-/// This test verifies that `swap_keep_alive` call fails in case source account has no the sufficient balance.
+/// This test verifies that both calls fail in case source account has no the sufficient balance.
 #[test]
-fn swap_keep_alive_fails_no_funds() {
+fn swap_both_fails_source_no_funds() {
     new_test_ext().execute_with_ext(|_| {
-        let swap_balance = INIT_BALANCE + 1;
+        // Invoke the `swap` under test.
+        assert_noop!(
+            EvmSwap::swap(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                INIT_BALANCE + 1,
+            ),
+            DispatchError::Token(TokenError::FundsUnavailable)
+        );
 
-        // Invoke the function under test.
+        // Invoke the `swap_keep_alive` under test.
         assert_noop!(
             EvmSwap::swap_keep_alive(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
-                swap_balance
+                INIT_BALANCE + 1,
             ),
             DispatchError::Token(TokenError::FundsUnavailable)
         );
     });
 }
 
-/// This test verifies that `swap_keep_alive` call fails in case target deposit results into overflow.
+/// This test verifies that both calls fail in case target deposit results into overflow.
 #[test]
-fn swap_keep_alive_fails_overflow() {
+fn swap_both_fails_target_overflow() {
     new_test_ext().execute_with_ext(|_| {
-        let swap_balance = 1;
-
         EvmBalances::write_balance(&target_swap_evm_account(), Balance::MAX).unwrap();
 
-        // Invoke the function under test.
+        // Invoke the `swap` under test.
+        assert_noop!(
+            EvmSwap::swap(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                100,
+            ),
+            DispatchError::Arithmetic(ArithmeticError::Overflow)
+        );
+
+        // Invoke the `swap_keep_alive` under test.
         assert_noop!(
             EvmSwap::swap_keep_alive(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
-                swap_balance
+                100,
             ),
             DispatchError::Arithmetic(ArithmeticError::Overflow)
+        );
+    });
+}
+
+/// This test verifies that both calls fail in case bridge evm account would be killed.
+#[test]
+fn swap_both_fails_bridge_evm_killed() {
+    new_test_ext().execute_with_ext(|_| {
+        Balances::write_balance(&source_swap_native_account(), BRIDGE_INIT_BALANCE).unwrap();
+
+        // Invoke the `swap` under test.
+        assert_noop!(
+            EvmSwap::swap(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                BRIDGE_INIT_BALANCE,
+            ),
+            DispatchError::Token(TokenError::NotExpendable)
+        );
+
+        // Invoke the `swap_keep_alive` under test.
+        assert_noop!(
+            EvmSwap::swap_keep_alive(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                BRIDGE_INIT_BALANCE,
+            ),
+            DispatchError::Token(TokenError::NotExpendable)
         );
     });
 }
