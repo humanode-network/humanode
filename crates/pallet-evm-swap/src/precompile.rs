@@ -114,9 +114,7 @@ where
 
         EvmSwapT::NativeToken::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
             .into_result()
-            .map_err(|err| {
-                process_dispatch_error(err, "unable to deposit into target native account")
-            })?;
+            .map_err(process_dispatch_error)?;
 
         EvmSwapT::EvmToken::transfer(
             &from,
@@ -124,12 +122,7 @@ where
             value,
             Preservation::Expendable,
         )
-        .map_err(|err| {
-            process_dispatch_error(
-                err,
-                "unable to transfer from source evm to bridge pot evm account",
-            )
-        })?;
+        .map_err(process_dispatch_error)?;
 
         EvmSwapT::NativeToken::transfer(
             &EvmSwapT::BridgePotNative::get(),
@@ -138,12 +131,7 @@ where
             // Bridge pot native account shouldn't be killed.
             Preservation::Preserve,
         )
-        .map_err(|err| {
-            process_dispatch_error(
-                err,
-                "unable to transfer from bridge pot native to target native account",
-            )
-        })?;
+        .map_err(process_dispatch_error)?;
 
         let logs_builder = LogsBuilder::new(handle.context().address);
 
@@ -161,20 +149,27 @@ where
 }
 
 /// A helper function to process dispatch related errors.
-fn process_dispatch_error(
-    error: DispatchError,
-    other_error_message: &'static str,
-) -> PrecompileFailure {
+fn process_dispatch_error(error: DispatchError) -> PrecompileFailure {
     match error {
         DispatchError::Token(frame_support::sp_runtime::TokenError::FundsUnavailable) => {
             PrecompileFailure::Error {
                 exit_status: ExitError::OutOfFund,
             }
         }
-        other_error_details => PrecompileFailure::Error {
-            exit_status: ExitError::Other(
-                format!("{other_error_message}: {other_error_details:?}").into(),
-            ),
+        DispatchError::Token(frame_support::sp_runtime::TokenError::BelowMinimum) => {
+            PrecompileFailure::Error {
+                exit_status: ExitError::Other(
+                    "resulted balance is less than existential deposit".into(),
+                ),
+            }
+        }
+        DispatchError::Token(frame_support::sp_runtime::TokenError::NotExpendable) => {
+            PrecompileFailure::Error {
+                exit_status: ExitError::Other("account would be killed".into()),
+            }
+        }
+        _ => PrecompileFailure::Error {
+            exit_status: ExitError::Other("unable to execute swap".into()),
         },
     }
 }
