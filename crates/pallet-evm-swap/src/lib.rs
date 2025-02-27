@@ -149,6 +149,7 @@ pub mod pallet {
             let estimated_swapped_balance = T::BalanceConverterNativeToEvm::convert(amount);
             T::EvmToken::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
                 .into_result()?;
+
             T::EvmToken::can_withdraw(&T::BridgePotEvm::get(), estimated_swapped_balance)
                 // Bridge pot EVM account shouldn't be killed.
                 .into_result(true)?;
