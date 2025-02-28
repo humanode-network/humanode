@@ -7,6 +7,7 @@ import evmSwap from "../../lib/abis/evmSwap";
 import { decodeEventLog } from "viem";
 
 const evmSwapPrecompileAddress = "0x0000000000000000000000000000000000000901";
+const bridgePotEvmAddress = "0x6d6f646c686d63732f656e310000000000000000";
 
 describe("evm to native tokens swap", () => {
   let node: RunNodeState;
@@ -27,6 +28,13 @@ describe("evm to native tokens swap", () => {
     const swapBalance = 1_000_000n;
     const targetNativeAccount =
       "0x7700000000000000000000000000000000000000000000000000000000000077";
+
+    const aliceBalanceBefore = await publicClient.getBalance({
+      address: alice.account.address,
+    });
+    const bridgePotEvmAddressBalanceBefore = await publicClient.getBalance({
+      address: bridgePotEvmAddress,
+    });
 
     const swapTxHash = await alice.writeContract({
       abi: evmSwap.abi,
@@ -59,5 +67,25 @@ describe("evm to native tokens swap", () => {
         value: swapBalance,
       },
     });
+
+    const fee =
+      swapTxReceipt.cumulativeGasUsed * swapTxReceipt.effectiveGasPrice;
+
+    const aliceBalanceAfter = await publicClient.getBalance({
+      address: alice.account.address,
+    });
+    expect(aliceBalanceAfter).toEqual(aliceBalanceBefore - swapBalance - fee);
+
+    const bridgePotEvmAddressBalanceAfter = await publicClient.getBalance({
+      address: bridgePotEvmAddress,
+    });
+    expect(bridgePotEvmAddressBalanceAfter).toEqual(
+      bridgePotEvmAddressBalanceBefore + swapBalance + fee,
+    );
+
+    const evmSwapPrecompileBalance = await publicClient.getBalance({
+      address: evmSwapPrecompileAddress,
+    });
+    expect(evmSwapPrecompileBalance).toEqual(0n);
   });
 });
