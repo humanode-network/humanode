@@ -237,3 +237,31 @@ fn swap_both_fails_bridge_evm_killed() {
         );
     });
 }
+
+/// This test verifies that both calls fail in case bridge evm account has no funds.
+#[test]
+fn swap_both_fails_bridge_evm_no_funds() {
+    new_test_ext().execute_with_ext(|_| {
+        EvmBalances::write_balance(&BridgePotEvm::get(), 0).unwrap();
+
+        // Invoke the `swap` under test.
+        assert_noop!(
+            EvmSwap::swap(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                100,
+            ),
+            DispatchError::Token(TokenError::FundsUnavailable)
+        );
+
+        // Invoke the `swap_keep_alive` under test.
+        assert_noop!(
+            EvmSwap::swap_keep_alive(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                100,
+            ),
+            DispatchError::Token(TokenError::FundsUnavailable)
+        );
+    });
+}
