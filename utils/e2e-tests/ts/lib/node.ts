@@ -90,6 +90,6 @@ export const runNode = (
 };
 
 const meta: NodeMeta = {
-  rpcUrlHttp: "http://127.0.0.1:9933",
+  rpcUrlHttp: "http://127.0.0.1:9944",
   rpcUrlWs: "ws://127.0.0.1:9944",
 };
