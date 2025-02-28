@@ -103,6 +103,13 @@ pub mod pallet {
         },
     }
 
+    /// Possible error conditions during tokens swap.
+    #[pallet::error]
+    pub enum Error<T> {
+        /// Ethereum transfer execution has not succeeded.
+        EthereumExecutionNotSucceeded,
+    }
+
     #[pallet::call(weight(<T as Config>::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Swap balances.
@@ -184,9 +191,22 @@ pub mod pallet {
                 ethereum_transfer_transaction::<T>(source_address, target_address, balance);
             let transaction_hash = transaction.hash();
 
-            let post_info =
+            let (post_info, call_info) =
                 pallet_ethereum::ValidatedTransaction::<T>::apply(source_address, transaction)
                     .map_err(|dispatch_error_with_post_info| dispatch_error_with_post_info.error)?;
+
+            match call_info {
+                fp_evm::CallOrCreateInfo::Call(execution_info) => {
+                    match execution_info.exit_reason {
+                        fp_evm::ExitReason::Succeed(_) => {
+                            // We are fine.
+                        }
+                        _ => return Err(Error::<T>::EthereumExecutionNotSucceeded.into()),
+                    }
+                }
+                // We use explicitly `ethereum::TransactionAction::Call` in prepared transaction.
+                fp_evm::CallOrCreateInfo::Create(_) => unreachable!(),
+            }
 
             debug_assert!(
                 post_info

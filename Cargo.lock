@@ -6169,6 +6169,7 @@ dependencies = [
 name = "pallet-evm-swap"
 version = "0.1.0"
 dependencies = [
+ "assert_matches",
  "ethereum",
  "fp-ethereum",
  "fp-evm",

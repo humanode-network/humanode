@@ -2,7 +2,7 @@ use fp_ethereum::ValidatedTransaction;
 use fp_evm::{ExitError, ExitReason, ExitSucceed};
 use frame_support::{
     dispatch::{Pays, PostDispatchInfo},
-    traits::{fungible::Unbalanced, OnFinalize},
+    traits::fungible::Unbalanced,
 };
 use pallet_evm::GasWeightMapping;
 use precompile_utils::{EvmDataWriter, LogsBuilder};
@@ -58,11 +58,34 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_gas_usage: u64)
     let transaction_hash = transaction.hash();
 
     // Invoke the function under test.
-    let post_info = pallet_ethereum::ValidatedTransaction::<Test>::apply(
+    let (post_info, call_info) = pallet_ethereum::ValidatedTransaction::<Test>::apply(
         source_swap_evm_account(),
         transaction,
     )
     .unwrap();
+
+    match call_info {
+        fp_evm::CallOrCreateInfo::Call(execution_info) => {
+            assert_eq!(
+                execution_info.exit_reason,
+                ExitReason::Succeed(ExitSucceed::Returned)
+            );
+
+            // Verify that we have expected transaction log corresponding to swap execution.
+            let transaction_logs = execution_info.logs;
+            assert_eq!(
+                transaction_logs,
+                vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                    precompile::SELECTOR_LOG_SWAP,
+                    source_swap_evm_account(),
+                    H256::from(target_swap_native_account().as_ref()),
+                    EvmDataWriter::new().write(swap_balance).build(),
+                )]
+            );
+        }
+        // We use explicitly `ethereum::TransactionAction::Call` in prepared transaction.
+        fp_evm::CallOrCreateInfo::Create(_) => unreachable!(),
+    }
 
     assert_eq!(
         post_info,
@@ -109,26 +132,6 @@ fn run_succeeded_test_and_assert(swap_balance: Balance, expected_gas_usage: u64)
         exit_reason: ExitReason::Succeed(ExitSucceed::Returned),
         extra_data: vec![],
     }));
-
-    // Finalize block to check transaction logs.
-    Ethereum::on_finalize(1);
-
-    // Verify that we have expected transaction log corresponding to swap execution.
-    let transaction_logs = pallet_ethereum::pallet::CurrentTransactionStatuses::<Test>::get()
-        .unwrap()
-        .first()
-        .cloned()
-        .unwrap()
-        .logs;
-    assert_eq!(
-        transaction_logs,
-        vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
-            precompile::SELECTOR_LOG_SWAP,
-            source_swap_evm_account(),
-            H256::from(target_swap_native_account().as_ref()),
-            EvmDataWriter::new().write(swap_balance).build(),
-        )]
-    );
 }
 
 /// This test verifies that the swap precompile call works in the happy path.
@@ -176,11 +179,23 @@ fn run_failed_test_and_assert(
     let transaction_hash = transaction.hash();
 
     // Invoke the function under test.
-    let post_info = pallet_ethereum::ValidatedTransaction::<Test>::apply(
+    let (post_info, call_info) = pallet_ethereum::ValidatedTransaction::<Test>::apply(
         source_swap_evm_account(),
         transaction,
     )
     .unwrap();
+
+    match call_info {
+        fp_evm::CallOrCreateInfo::Call(execution_info) => {
+            assert_eq!(execution_info.exit_reason, exit_reason);
+
+            // Verify that we don't have a transaction log corresponding to swap execution.
+            let transaction_logs = execution_info.logs;
+            assert_eq!(transaction_logs, vec![]);
+        }
+        // We use explicitly `ethereum::TransactionAction::Call` in prepared transaction.
+        fp_evm::CallOrCreateInfo::Create(_) => unreachable!(),
+    }
 
     assert_eq!(
         post_info,
@@ -225,20 +240,6 @@ fn run_failed_test_and_assert(
         exit_reason,
         extra_data: vec![],
     }));
-
-    // Finalize block to check transaction logs.
-    Ethereum::on_finalize(1);
-
-    // Verify that we don't have a transaction log corresponding to swap execution.
-    assert_eq!(
-        pallet_ethereum::pallet::CurrentTransactionStatuses::<Test>::get()
-            .unwrap()
-            .first()
-            .cloned()
-            .unwrap()
-            .logs,
-        vec![]
-    );
 }
 
 /// This test verifies that the swap precompile call behaves as expected when called without
