@@ -23,6 +23,7 @@ sp-core = { workspace = true }
 pallet-evm-balances = { path = "../pallet-evm-balances", features = ["default"] }
 pallet-evm-system = { path = "../pallet-evm-system", features = ["default"] }
 
+assert_matches = { workspace = true }
 hex-literal = { workspace = true }
 pallet-balances = { workspace = true, features = ["default"] }
 pallet-timestamp = { workspace = true, features = ["default"] }
