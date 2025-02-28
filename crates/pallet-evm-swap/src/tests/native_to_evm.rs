@@ -265,3 +265,31 @@ fn swap_both_fails_bridge_evm_no_funds() {
         );
     });
 }
+
+/// This test verifies that both calls fail in case bridge native balance results into overflow.
+#[test]
+fn swap_both_fails_bridge_native_overflow() {
+    new_test_ext().execute_with_ext(|_| {
+        Balances::write_balance(&BridgePotNative::get(), Balance::MAX).unwrap();
+
+        // Invoke the `swap` under test.
+        assert_noop!(
+            EvmSwap::swap(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                100,
+            ),
+            DispatchError::Arithmetic(ArithmeticError::Overflow)
+        );
+
+        // Invoke the `swap_keep_alive` under test.
+        assert_noop!(
+            EvmSwap::swap_keep_alive(
+                RuntimeOrigin::signed(source_swap_native_account()),
+                target_swap_evm_account(),
+                100,
+            ),
+            DispatchError::Arithmetic(ArithmeticError::Overflow)
+        );
+    });
+}
