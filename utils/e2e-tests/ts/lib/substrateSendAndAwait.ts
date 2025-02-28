@@ -16,8 +16,11 @@ class TxFailedError extends Error {
     super(message);
 
     // Hide the uselessly long properties from the error inspect printing.
-    Object.defineProperty(this, "extrinsic", { enumerable: false });
-    Object.defineProperty(this, "result", { enumerable: false });
+    Object.defineProperty(this, "extrinsic", {
+      enumerable: false,
+      value: extrinsic,
+    });
+    Object.defineProperty(this, "result", { enumerable: false, value: result });
   }
 }
 
