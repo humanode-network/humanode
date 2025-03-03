@@ -176,7 +176,7 @@ fn ewm_swap_precompile_call_works() {
 
         let expected_gas_usage: u64 = 21216 + 560;
         let expected_fee: Balance =
-            u128::from(expected_gas_usage) * u128::try_from(*GAS_PRICE).unwrap();
+            Balance::from(expected_gas_usage) * Balance::try_from(*GAS_PRICE).unwrap();
 
         // Invoke the function under test.
         let execinfo = <Runtime as pallet_evm::Config>::Runner::call(
