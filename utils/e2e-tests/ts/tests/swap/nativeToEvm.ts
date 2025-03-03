@@ -6,11 +6,7 @@ import { Keyring } from "@polkadot/api";
 import { Codec, IEvent } from "@polkadot/types/types";
 import sendAndWait from "../../lib/substrateSendAndAwait";
 import * as eth from "../../lib/ethViem";
-import {
-  getNativeBalance,
-  bridgePotEvmAddress,
-  bridgePotNativeAccount,
-} from "../swap/utils";
+import { getNativeBalance } from "../../lib/substrateUtils";
 
 type EvmSwapBalancesSwappedEvent = Record<
   "from" | "withdrawedAmount" | "to" | "depositedAmount" | "evmTransactionHash",
@@ -23,6 +19,10 @@ type EthereumExecutedEvent = Record<
 >;
 
 type TransactionPaymentEvent = Record<"who" | "actualFee", Codec>;
+
+const bridgePotEvmAddress = "0x6d6f646c686d63732f656e310000000000000000";
+const bridgePotNativeAccount =
+  "hmpwhPbL5XJM1pYFVL6wRPkUP5gHQyvC6R5jMkziwnGTQ6hFr";
 
 describe("native to evm tokens swap", () => {
   let node: RunNodeState;
