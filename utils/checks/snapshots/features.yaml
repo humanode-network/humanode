@@ -165,7 +165,7 @@
   features:
     - default
     - std
-- name: async-trait 0.1.86
+- name: async-trait 0.1.87
   features: []
 - name: asynchronous-codec 0.6.2
   features:
