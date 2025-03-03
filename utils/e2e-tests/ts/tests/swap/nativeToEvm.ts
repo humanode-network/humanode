@@ -47,7 +47,7 @@ describe("native to evm tokens swap", () => {
     const swap = substrateApi.tx["evmSwap"]?.["swap"];
     assert(swap);
 
-    const aliceBalanceBefore = await getNativeBalance(
+    const sourceSwapBalanceBefore = await getNativeBalance(
       substrateApi,
       alice.address,
     );
@@ -55,7 +55,7 @@ describe("native to evm tokens swap", () => {
       substrateApi,
       bridgePotNativeAccount,
     );
-    const targetEvmBalanceBefore = await ethPiblicClient.getBalance({
+    const targetEvmAccountBalanceBefore = await ethPiblicClient.getBalance({
       address: targetEvmAddress,
     });
     const bridgePotEvmBalanceBefore = await ethPiblicClient.getBalance({
@@ -146,11 +146,13 @@ describe("native to evm tokens swap", () => {
       alice.address,
     );
 
-    const aliceBalanceAfter = await getNativeBalance(
+    const sourceSwapBalanceAfter = await getNativeBalance(
       substrateApi,
       alice.address,
     );
-    expect(aliceBalanceAfter).toEqual(aliceBalanceBefore - swapBalance - fee);
+    expect(sourceSwapBalanceAfter).toEqual(
+      sourceSwapBalanceBefore - swapBalance - fee,
+    );
 
     const bridgePotNativeBalanceAfter = await getNativeBalance(
       substrateApi,
@@ -160,10 +162,12 @@ describe("native to evm tokens swap", () => {
       bridgePotNativeBalanceBefore + swapBalance,
     );
 
-    const targetEvmBalanceAfter = await ethPiblicClient.getBalance({
+    const targetEvmAccountBalanceAfter = await ethPiblicClient.getBalance({
       address: targetEvmAddress,
     });
-    expect(targetEvmBalanceAfter).toEqual(targetEvmBalanceBefore + swapBalance);
+    expect(targetEvmAccountBalanceAfter).toEqual(
+      targetEvmAccountBalanceBefore + swapBalance,
+    );
 
     const bridgePotEvmBalanceAfter = await ethPiblicClient.getBalance({
       address: bridgePotEvmAddress,
