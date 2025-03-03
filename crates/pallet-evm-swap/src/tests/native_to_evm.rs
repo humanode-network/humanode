@@ -11,9 +11,7 @@ use crate::{mock::*, *};
 
 /// Returns source swap native account used in tests.
 fn source_swap_native_account() -> AccountId {
-    AccountId::from(hex_literal::hex!(
-        "1100000000000000000000000000000000000000000000000000000000000011"
-    ))
+    alice()
 }
 
 /// Returns target swap evm account used in tests.
