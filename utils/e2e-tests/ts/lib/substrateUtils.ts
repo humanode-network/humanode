@@ -1,10 +1,6 @@
-//! Common swap utils.
+//! Common substrate utils.
 
-import * as substrate from "../../lib/substrate";
-
-export const bridgePotEvmAddress = "0x6d6f646c686d63732f656e310000000000000000";
-export const bridgePotNativeAccount =
-  "hmpwhPbL5XJM1pYFVL6wRPkUP5gHQyvC6R5jMkziwnGTQ6hFr";
+import * as substrate from "../lib/substrate";
 
 type SystemAccount = {
   data: {
@@ -23,6 +19,6 @@ export const getNativeBalance = async (
 
   const free = systemAccount.data.free;
 
-  // We should explicitly convert to native bigint for future math operations.
+  // We should explicitly convert to native bigint for math operations.
   return BigInt(free);
 };
