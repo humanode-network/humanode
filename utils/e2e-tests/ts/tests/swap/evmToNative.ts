@@ -6,12 +6,13 @@ import { beforeEachWithCleanup } from "../../lib/lifecycle";
 import evmSwap from "../../lib/abis/evmSwap";
 import { decodeEventLog } from "viem";
 import * as substrate from "../../lib/substrate";
-import { getNativeBalance } from "../swap/utils";
+import {
+  getNativeBalance,
+  bridgePotEvmAddress,
+  bridgePotNativeAccount,
+} from "../swap/utils";
 
 const evmSwapPrecompileAddress = "0x0000000000000000000000000000000000000901";
-const bridgePotEvmAddress = "0x6d6f646c686d63732f656e310000000000000000";
-const bridgePotNativeAccount =
-  "hmpwhPbL5XJM1pYFVL6wRPkUP5gHQyvC6R5jMkziwnGTQ6hFr";
 
 describe("evm to native tokens swap", () => {
   let node: RunNodeState;

@@ -5,6 +5,11 @@ import { beforeEachWithCleanup } from "../../lib/lifecycle";
 import { Keyring } from "@polkadot/api";
 import { Codec, IEvent } from "@polkadot/types/types";
 import sendAndWait from "../../lib/substrateSendAndAwait";
+import {
+  getNativeBalance,
+  bridgePotEvmAddress,
+  bridgePotNativeAccount,
+} from "../swap/utils";
 
 type EvmSwapBalancesSwappedEvent = Record<
   "from" | "withdrawedAmount" | "to" | "depositedAmount" | "evmTransactionHash",
@@ -16,7 +21,7 @@ type EthereumExecutedEvent = Record<
   Codec
 >;
 
-const bridgePotEvmAddress = "0x6d6f646c686d63732f656e310000000000000000";
+type TransactionPaymentEvent = Record<"who" | "actualFee", Codec>;
 
 describe("native to evm tokens swap", () => {
   let node: RunNodeState;
@@ -34,10 +39,16 @@ describe("native to evm tokens swap", () => {
     const alice = keyring.addFromUri("//Alice");
 
     const targetEvmAddress = "0x1100000000000000000000000000000000000011";
-    const swapBalance = 1_000_000;
+    const swapBalance = 1_000_000n;
 
     const swap = api.tx["evmSwap"]?.["swap"];
     assert(swap);
+
+    const aliceBalanceBefore = await getNativeBalance(api, alice.address);
+    const bridgePotNativeBalanceBefore = await getNativeBalance(
+      api,
+      bridgePotNativeAccount,
+    );
 
     const { isCompleted, internalError, events, status, dispatchError } =
       await sendAndWait(swap(targetEvmAddress, swapBalance), {
@@ -51,6 +62,7 @@ describe("native to evm tokens swap", () => {
 
     let ewmSwapBalancesSwappedEvent;
     let ethereumExecutedEvent;
+    let transactionPaymentEvent;
 
     for (const item of events) {
       if (
@@ -69,41 +81,68 @@ describe("native to evm tokens swap", () => {
           EthereumExecutedEvent
         >;
       }
+
+      if (
+        item.event.section == "transactionPayment" &&
+        item.event.method == "TransactionFeePaid"
+      ) {
+        transactionPaymentEvent = item.event as unknown as IEvent<
+          Codec[],
+          TransactionPaymentEvent
+        >;
+      }
     }
 
     assert(ewmSwapBalancesSwappedEvent);
     assert(ethereumExecutedEvent);
+    assert(transactionPaymentEvent);
 
+    // Events related asserts.
     expect(ewmSwapBalancesSwappedEvent.data.from.toPrimitive()).toEqual(
       alice.address,
     );
-
     expect(
-      ewmSwapBalancesSwappedEvent.data.withdrawedAmount.toPrimitive(),
+      BigInt(
+        ewmSwapBalancesSwappedEvent.data.withdrawedAmount.toPrimitive() as unknown as bigint,
+      ),
     ).toEqual(swapBalance);
-
     expect(ewmSwapBalancesSwappedEvent.data.to.toPrimitive()).toEqual(
       targetEvmAddress,
     );
-
     expect(
-      ewmSwapBalancesSwappedEvent.data.depositedAmount.toPrimitive(),
+      BigInt(
+        ewmSwapBalancesSwappedEvent.data.depositedAmount.toPrimitive() as unknown as bigint,
+      ),
     ).toEqual(swapBalance);
-
     expect(ewmSwapBalancesSwappedEvent.data.evmTransactionHash).toEqual(
       ethereumExecutedEvent.data.transactionHash,
     );
-
     expect(ethereumExecutedEvent.data.from.toPrimitive()).toEqual(
       bridgePotEvmAddress,
     );
-
     expect(ethereumExecutedEvent.data.to.toPrimitive()).toEqual(
       targetEvmAddress,
     );
-
     expect(ethereumExecutedEvent.data.exitReason.toPrimitive()).toEqual({
       succeed: "Stopped",
     });
+
+    const fee = BigInt(
+      transactionPaymentEvent.data.actualFee.toPrimitive() as unknown as bigint,
+    );
+    expect(transactionPaymentEvent.data.who.toPrimitive()).toEqual(
+      alice.address,
+    );
+
+    const aliceBalanceAfter = await getNativeBalance(api, alice.address);
+    expect(aliceBalanceAfter).toEqual(aliceBalanceBefore - swapBalance - fee);
+
+    const bridgePotNativeBalanceAfter = await getNativeBalance(
+      api,
+      bridgePotNativeAccount,
+    );
+    expect(bridgePotNativeBalanceAfter).toEqual(
+      bridgePotNativeBalanceBefore + swapBalance,
+    );
   });
 });
