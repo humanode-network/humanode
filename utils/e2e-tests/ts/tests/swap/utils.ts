@@ -2,6 +2,10 @@
 
 import * as substrate from "../../lib/substrate";
 
+export const bridgePotEvmAddress = "0x6d6f646c686d63732f656e310000000000000000";
+export const bridgePotNativeAccount =
+  "hmpwhPbL5XJM1pYFVL6wRPkUP5gHQyvC6R5jMkziwnGTQ6hFr";
+
 type SystemAccount = {
   data: {
     free: bigint;
