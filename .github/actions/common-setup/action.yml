@@ -50,7 +50,7 @@ runs:
 
     - name: Install rust toolchain
       shell: bash
-      run: rustup show
+      run: rustup show active-toolchain || rustup toolchain install
       if: ${{ inputs.requiresRust == 'true' }}
 
     - name: Prepare the build environment

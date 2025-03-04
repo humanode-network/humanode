@@ -42,6 +42,7 @@ docker run \
   --rm \
   -i \
   --platform "$PLATFORM" \
+  --init \
   --mount "type=bind,src=$(pwd),dst=/build" \
   --volume "${BUILD_VOLUMES_PATH}/cargo:/cargo-host:rw" \
   --volume "${BUILD_VOLUMES_PATH}/rustup:/rustup-host:rw" \
@@ -51,7 +52,7 @@ docker run \
   --workdir /build \
   --user "$(id -u):$(id -g)" \
   "$BUILDER_CONTAINER_TAG" \
-  cargo build --release
+  /bin/sh -c 'rustup toolchain install && cargo build --release'
 
 # Prepare artifacts.
 TMP_ARTIFACTS_DIR="$(mktemp -d)"
