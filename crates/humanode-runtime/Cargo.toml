@@ -38,7 +38,6 @@ pallet-token-claims = { path = "../pallet-token-claims", default-features = fals
 pallet-vesting = { path = "../pallet-vesting", default-features = false }
 precompile-bioauth = { path = "../precompile-bioauth", default-features = false }
 precompile-bls12381 = { path = "../precompile-bls12381", default-features = false }
-precompile-currency-swap = { path = "../precompile-currency-swap", default-features = false }
 precompile-evm-accounts-mapping = { path = "../precompile-evm-accounts-mapping", default-features = false }
 precompile-native-currency = { path = "../precompile-native-currency", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
@@ -204,7 +203,6 @@ std = [
   "pallet-vesting/std",
   "precompile-bioauth/std",
   "precompile-bls12381/std",
-  "precompile-currency-swap/std",
   "precompile-evm-accounts-mapping/std",
   "precompile-native-currency/std",
   "precompile-utils/std",
