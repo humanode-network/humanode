@@ -8,6 +8,8 @@ use frame_support::{
     storage::with_storage_layer,
     traits::{Currency, StorageVersion},
 };
+#[cfg(feature = "try-runtime")]
+use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec};
 pub use pallet::*;
 
 mod migrations;
@@ -45,8 +47,6 @@ type BalanceOf<T, I> = <<T as Config<I>>::Currency as Currency<AccountIdOf<T, I>
 #[frame_support::pallet]
 pub mod pallet {
 
-    #[cfg(feature = "try-runtime")]
-    use frame_support::sp_std::{vec, vec::Vec};
     use frame_support::{pallet_prelude::*, sp_runtime::traits::MaybeDisplay, sp_std::fmt::Debug};
     use frame_system::pallet_prelude::*;
 
@@ -120,15 +120,16 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
-            Ok(vec![])
+        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
+            Ok(Vec::new())
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(_state: Vec<u8>) -> Result<(), &'static str> {
-            assert_eq!(
-                <Pallet<T, I>>::on_chain_storage_version(),
-                <Pallet<T, I>>::current_storage_version()
+        fn post_upgrade(_state: Vec<u8>) -> Result<(), TryRuntimeError> {
+            ensure!(
+                <Pallet<T, I>>::on_chain_storage_version()
+                    == <Pallet<T, I>>::current_storage_version(),
+                "the current storage version and onchain storage version should be the same"
             );
             Ok(())
         }

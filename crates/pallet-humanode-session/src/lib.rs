@@ -2,6 +2,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "try-runtime")]
+use frame_support::sp_runtime::TryRuntimeError;
 use frame_support::traits::{Get, StorageVersion};
 pub use pallet::*;
 use sp_runtime::traits::Convert;
@@ -168,12 +170,12 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
             Ok(migrations::v1::pre_migrate::<T>())
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+        fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
             migrations::v1::post_migrate::<T>(state);
             Ok(())
         }

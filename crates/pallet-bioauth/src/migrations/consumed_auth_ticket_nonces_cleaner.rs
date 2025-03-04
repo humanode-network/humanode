@@ -1,8 +1,8 @@
 //! Migration to clean consumed auth ticket nonces except ones related to current generation.
 
-#[cfg(feature = "try-runtime")]
-use frame_support::sp_std::vec::Vec;
 use frame_support::{log::info, pallet_prelude::*, traits::OnRuntimeUpgrade};
+#[cfg(feature = "try-runtime")]
+use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec};
 
 use crate::{Config, ConsumedAuthTicketNonces, Pallet};
 
@@ -39,7 +39,7 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
     }
 
     #[cfg(feature = "try-runtime")]
-    fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+    fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
         // Record the last consumed auth ticket nonce, otherwise return an empty result
         // if there are no nonces yet.
         let pre_upgrade_state = match ConsumedAuthTicketNonces::<T>::get().last() {
@@ -51,7 +51,7 @@ impl<T: Config> OnRuntimeUpgrade for ConsumedAuthTicketNoncesCleaner<T> {
     }
 
     #[cfg(feature = "try-runtime")]
-    fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+    fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
         // Empty state means there are no consumed auth ticket nonces.
         if state.is_empty() {
             return Ok(());
