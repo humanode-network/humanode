@@ -13,14 +13,13 @@ use precompile_bls12381::{
     Bls12381G1Add, Bls12381G1Mul, Bls12381G1MultiExp, Bls12381G2Add, Bls12381G2Mul,
     Bls12381G2MultiExp, Bls12381MapG1, Bls12381MapG2, Bls12381Pairing,
 };
-use precompile_currency_swap::CurrencySwap;
 use precompile_evm_accounts_mapping::EvmAccountsMapping;
 use precompile_native_currency::NativeCurrency;
 use precompile_utils::EvmData;
 use sp_core::{H160, U256};
 use sp_std::marker::PhantomData;
 
-use crate::{currency_swap, AccountId, ConstU64, EvmAccountId};
+use crate::ConstU64;
 
 /// A set of constant values used to indicate precompiles.
 pub mod precompiles_constants {
@@ -75,10 +74,8 @@ pub mod precompiles_constants {
     pub const EVM_ACCOUNTS_MAPPING: u64 = 2049;
     /// `NativeCurrency` precompile constant.
     pub const NATIVE_CURRENCY: u64 = 2050;
-    /// `CurrencySwap` precompile constant.
-    pub const CURRENCY_SWAP: u64 = 2304;
     /// `EvmSwap` precompile constant.
-    pub const EVM_SWAP: u64 = 2305;
+    pub const EVM_SWAP: u64 = 2304;
 }
 
 use precompiles_constants::*;
@@ -120,7 +117,6 @@ where
             BIOAUTH,
             EVM_ACCOUNTS_MAPPING,
             NATIVE_CURRENCY,
-            CURRENCY_SWAP,
             EVM_SWAP,
         ]
         .into_iter()
@@ -179,15 +175,6 @@ where
             a if a == hash(EVM_ACCOUNTS_MAPPING) => Some(EvmAccountsMapping::<R>::execute(handle)),
             a if a == hash(NATIVE_CURRENCY) => {
                 Some(NativeCurrency::<R, ConstU64<200>>::execute(handle))
-            }
-            a if a == hash(CURRENCY_SWAP) => {
-                Some(CurrencySwap::<
-                    currency_swap::EvmToNativeOneToOne,
-                    EvmAccountId,
-                    AccountId,
-                    // TODO(#697): implement proper dynamic gas cost estimation.
-                    ConstU64<200>,
-                >::execute(handle))
             }
             a if a == hash(EVM_SWAP) => Some(EvmSwap::<
                 R,

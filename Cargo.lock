@@ -3823,7 +3823,6 @@ dependencies = [
  "parity-scale-codec",
  "precompile-bioauth",
  "precompile-bls12381",
- "precompile-currency-swap",
  "precompile-evm-accounts-mapping",
  "precompile-native-currency",
  "precompile-utils",

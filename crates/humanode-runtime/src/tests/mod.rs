@@ -1,7 +1,6 @@
 use super::*;
 
 mod claims_and_vesting;
-mod currency_swap;
 mod evm_swap;
 mod fees;
 mod fixed_supply;
