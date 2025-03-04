@@ -51,7 +51,7 @@ docker run \
   --workdir /build \
   --user "$(id -u):$(id -g)" \
   "$BUILDER_CONTAINER_TAG" \
-  cargo build --release
+  rustup toolchain install && cargo build --release
 
 # Prepare artifacts.
 TMP_ARTIFACTS_DIR="$(mktemp -d)"
