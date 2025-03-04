@@ -29,6 +29,7 @@ pallet-erc20-support = { path = "../pallet-erc20-support", default-features = fa
 pallet-ethereum-chain-id = { path = "../pallet-ethereum-chain-id", default-features = false }
 pallet-evm-accounts-mapping = { path = "../pallet-evm-accounts-mapping", default-features = false }
 pallet-evm-balances = { path = "../pallet-evm-balances", default-features = false }
+pallet-evm-swap = { path = "../pallet-evm-swap", default-features = false }
 pallet-evm-system = { path = "../pallet-evm-system", default-features = false }
 pallet-humanode-offences = { path = "../pallet-humanode-offences", default-features = false }
 pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
@@ -37,7 +38,6 @@ pallet-token-claims = { path = "../pallet-token-claims", default-features = fals
 pallet-vesting = { path = "../pallet-vesting", default-features = false }
 precompile-bioauth = { path = "../precompile-bioauth", default-features = false }
 precompile-bls12381 = { path = "../precompile-bls12381", default-features = false }
-precompile-currency-swap = { path = "../precompile-currency-swap", default-features = false }
 precompile-evm-accounts-mapping = { path = "../precompile-evm-accounts-mapping", default-features = false }
 precompile-native-currency = { path = "../precompile-native-currency", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
@@ -126,6 +126,7 @@ runtime-benchmarks = [
   "pallet-currency-swap/runtime-benchmarks",
   "pallet-ethereum/runtime-benchmarks",
   "pallet-evm-accounts-mapping/runtime-benchmarks",
+  "pallet-evm-swap/runtime-benchmarks",
   "pallet-evm/runtime-benchmarks",
   "pallet-grandpa/runtime-benchmarks",
   "pallet-humanode-session/runtime-benchmarks",
@@ -184,6 +185,7 @@ std = [
   "pallet-evm-precompile-simple/std",
   "pallet-evm/std",
   "pallet-evm-balances/std",
+  "pallet-evm-swap/std",
   "pallet-evm-system/std",
   "pallet-grandpa/std",
   "pallet-humanode-offences/std",
@@ -201,7 +203,6 @@ std = [
   "pallet-vesting/std",
   "precompile-bioauth/std",
   "precompile-bls12381/std",
-  "precompile-currency-swap/std",
   "precompile-evm-accounts-mapping/std",
   "precompile-native-currency/std",
   "precompile-utils/std",
@@ -255,6 +256,7 @@ try-runtime = [
   "pallet-evm-accounts-mapping/try-runtime",
   "pallet-evm/try-runtime",
   "pallet-evm-balances/try-runtime",
+  "pallet-evm-swap/try-runtime",
   "pallet-evm-system/try-runtime",
   "pallet-grandpa/try-runtime",
   "pallet-humanode-offences/try-runtime",
