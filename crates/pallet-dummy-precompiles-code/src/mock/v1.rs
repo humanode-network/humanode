@@ -15,10 +15,11 @@ use frame_support::{
 use sp_core::{ConstU16, H256, U256};
 
 use super::*;
-use crate::{self as pallet_dummy_precompiles_code};
+use crate::{self as pallet_dummy_precompiles_code, UpgradeInit};
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-type Block = frame_system::mocking::MockBlock<Test>;
+type UncheckedExtrinsic =
+    frame_support::sp_runtime::testing::TestXt<RuntimeCall, frame_system::CheckEra<Test>>;
+type Block = frame_support::sp_runtime::testing::Block<UncheckedExtrinsic>;
 
 pub(crate) type AccountId = u64;
 pub(crate) type EvmAccountId = H160;
@@ -165,3 +166,12 @@ impl pallet_dummy_precompiles_code::Config for Test {
     type PrecompilesAddresses = PrecompilesAddresses;
     type ForceExecuteAskCounter = ConstU16<0>;
 }
+
+pub(crate) type Executive = frame_executive::Executive<
+    Test,
+    Block,
+    frame_system::ChainContext<Test>,
+    Test,
+    AllPalletsWithSystem,
+    UpgradeInit<Test>,
+>;

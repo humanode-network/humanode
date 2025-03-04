@@ -17,9 +17,11 @@ use sp_core::{ConstU16, H256};
 pub(crate) const FORCE_REBALANCE_ASK_COUNTER: u16 = 1;
 
 use super::*;
+use crate::UpgradeInit;
 
-type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-type Block = frame_system::mocking::MockBlock<Test>;
+type UncheckedExtrinsic =
+    frame_support::sp_runtime::testing::TestXt<RuntimeCall, frame_system::CheckEra<Test>>;
+type Block = frame_support::sp_runtime::testing::Block<UncheckedExtrinsic>;
 
 frame_support::construct_runtime!(
     pub struct Test
@@ -144,3 +146,12 @@ impl pallet_balanced_currency_swap_bridges_initializer::Config for Test {
     type ForceRebalanceAskCounter = ConstU16<FORCE_REBALANCE_ASK_COUNTER>;
     type WeightInfo = ();
 }
+
+pub(crate) type Executive = frame_executive::Executive<
+    Test,
+    Block,
+    frame_system::ChainContext<Test>,
+    Test,
+    AllPalletsWithSystem,
+    UpgradeInit<Test>,
+>;

@@ -6374,6 +6374,7 @@ dependencies = [
 name = "pallet-balanced-currency-swap-bridges-initializer"
 version = "0.1.0"
 dependencies = [
+ "frame-executive",
  "frame-support",
  "frame-system",
  "pallet-balances",
@@ -6478,6 +6479,7 @@ name = "pallet-dummy-precompiles-code"
 version = "0.1.0"
 dependencies = [
  "fp-evm",
+ "frame-executive",
  "frame-support",
  "frame-system",
  "hex-literal",
@@ -6489,7 +6491,6 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "sp-core",
- "sp-std",
 ]
 
 [[package]]
@@ -6730,7 +6731,6 @@ dependencies = [
  "serde",
  "sp-core",
  "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
