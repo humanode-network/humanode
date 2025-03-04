@@ -8,7 +8,7 @@ import { decodeEventLog } from "viem";
 import * as substrate from "../../lib/substrate";
 import { getNativeBalance } from "../../lib/substrateUtils";
 
-const evmSwapPrecompileAddress = "0x0000000000000000000000000000000000000901";
+const evmSwapPrecompileAddress = "0x0000000000000000000000000000000000000900";
 const bridgePotEvmAddress = "0x6d6f646c686d63732f656e310000000000000000";
 const bridgePotNativeAccount =
   "hmpwhPbL5XJM1pYFVL6wRPkUP5gHQyvC6R5jMkziwnGTQ6hFr";

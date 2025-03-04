@@ -799,7 +799,6 @@ frame_support::parameter_types! {
             frontier_precompiles::hash(precompiles_constants::BIOAUTH),
             frontier_precompiles::hash(precompiles_constants::EVM_ACCOUNTS_MAPPING),
             frontier_precompiles::hash(precompiles_constants::NATIVE_CURRENCY),
-            frontier_precompiles::hash(precompiles_constants::CURRENCY_SWAP),
             frontier_precompiles::hash(precompiles_constants::EVM_SWAP),
         ];
 }
