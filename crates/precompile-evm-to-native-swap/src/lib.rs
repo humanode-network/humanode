@@ -26,14 +26,13 @@ mod mock;
 mod tests;
 
 /// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::NativeToken`] type.
-pub type NativeBalanceOf<T> =
+type NativeBalanceOf<T> =
     <<T as Config>::NativeToken as Inspect<<T as Config>::AccountId>>::Balance;
 
 /// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::EvmToken`] type.
-pub type EvmBalanceOf<T> =
-    <<T as Config>::EvmToken as Inspect<<T as Config>::EvmAccountId>>::Balance;
+type EvmBalanceOf<T> = <<T as Config>::EvmToken as Inspect<<T as Config>::EvmAccountId>>::Balance;
 
-/// The config for the swap logic.
+/// The config for EVM to native swap logic.
 pub trait Config {
     /// The native user account identifier type.
     type AccountId: From<[u8; 32]>;
@@ -74,20 +73,20 @@ pub enum Action {
 }
 
 /// Exposes the swap interface.
-pub struct EvmToNativeSwap<ConfigT, GasCost>(PhantomData<(ConfigT, GasCost)>)
+pub struct EvmToNativeSwap<C, GasCost>(PhantomData<(C, GasCost)>)
 where
-    ConfigT: Config,
-    EvmBalanceOf<ConfigT>: TryFrom<U256>,
-    ConfigT::EvmAccountId: From<H160>,
-    ConfigT::AccountId: From<[u8; 32]>,
+    C: Config,
+    EvmBalanceOf<C>: TryFrom<U256>,
+    C::EvmAccountId: From<H160>,
+    C::AccountId: From<[u8; 32]>,
     GasCost: Get<u64>;
 
-impl<ConfigT, GasCost> Precompile for EvmToNativeSwap<ConfigT, GasCost>
+impl<C, GasCost> Precompile for EvmToNativeSwap<C, GasCost>
 where
-    ConfigT: Config,
-    EvmBalanceOf<ConfigT>: TryFrom<U256>,
-    ConfigT::EvmAccountId: From<H160>,
-    ConfigT::AccountId: From<[u8; 32]>,
+    C: Config,
+    EvmBalanceOf<C>: TryFrom<U256>,
+    C::EvmAccountId: From<H160>,
+    C::AccountId: From<[u8; 32]>,
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
@@ -105,12 +104,12 @@ where
     }
 }
 
-impl<ConfigT, GasCost> EvmToNativeSwap<ConfigT, GasCost>
+impl<C, GasCost> EvmToNativeSwap<C, GasCost>
 where
-    ConfigT: Config,
-    EvmBalanceOf<ConfigT>: TryFrom<U256>,
-    ConfigT::EvmAccountId: From<H160>,
-    ConfigT::AccountId: From<[u8; 32]>,
+    C: Config,
+    EvmBalanceOf<C>: TryFrom<U256>,
+    C::EvmAccountId: From<H160>,
+    C::AccountId: From<[u8; 32]>,
     GasCost: Get<u64>,
 {
     /// Swap EVM tokens to native chain tokens.
@@ -124,10 +123,9 @@ where
         } = handle.context();
 
         let value_u256 = *value;
-        let value: EvmBalanceOf<ConfigT> =
-            (*value).try_into().map_err(|_| PrecompileFailure::Error {
-                exit_status: ExitError::Other("value is out of bounds".into()),
-            })?;
+        let value: EvmBalanceOf<C> = (*value).try_into().map_err(|_| PrecompileFailure::Error {
+            exit_status: ExitError::Other("value is out of bounds".into()),
+        })?;
 
         input
             .expect_arguments(1)
@@ -137,7 +135,7 @@ where
 
         let to_h256: H256 = input.read()?;
         let to: [u8; 32] = to_h256.into();
-        let to: ConfigT::AccountId = to.into();
+        let to: C::AccountId = to.into();
 
         let junk_data = input.read_till_end()?;
         if !junk_data.is_empty() {
@@ -148,24 +146,24 @@ where
 
         // Here we must withdraw from self (i.e. from the precompile address, not from the caller
         // address), since the funds have already been transferred to us (precompile) as this point.
-        let from: ConfigT::EvmAccountId = (*address).into();
+        let from: C::EvmAccountId = (*address).into();
 
-        let estimated_swapped_balance = ConfigT::BalanceConverterEvmToNative::convert(value);
+        let estimated_swapped_balance = C::BalanceConverterEvmToNative::convert(value);
 
-        ConfigT::NativeToken::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
+        C::NativeToken::can_deposit(&to, estimated_swapped_balance, Provenance::Extant)
             .into_result()
             .map_err(process_dispatch_error)?;
 
-        ConfigT::EvmToken::transfer(
+        C::EvmToken::transfer(
             &from,
-            &ConfigT::BridgePotEvm::get(),
+            &C::BridgePotEvm::get(),
             value,
             Preservation::Expendable,
         )
         .map_err(process_dispatch_error)?;
 
-        ConfigT::NativeToken::transfer(
-            &ConfigT::BridgePotNative::get(),
+        C::NativeToken::transfer(
+            &C::BridgePotNative::get(),
             &to,
             estimated_swapped_balance,
             // Bridge pot native account shouldn't be killed.

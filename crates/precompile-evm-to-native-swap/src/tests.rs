@@ -185,7 +185,7 @@ fn run_failed_test_and_assert(
     assert_eq!(execinfo.value, expected_exit_value);
     assert_eq!(execinfo.logs, vec![]);
 
-    // Verify that source swap evm balance remains the same.
+    // Verify that source swap evm balance is reduced just by spent fee.
     assert_eq!(
         <EvmBalances>::total_balance(&source_swap_evm_account()),
         source_swap_evm_account_balance_before - expected_fee,
