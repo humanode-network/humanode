@@ -1,5 +1,5 @@
 use bridge_pot_currency_swap::ExistenceRequired;
-use precompile_evm_swap::Config;
+use precompile_evm_swap::Config as PrecompileConfigT;
 use sp_runtime::traits::Identity;
 
 use crate::{
@@ -14,7 +14,7 @@ parameter_types! {
 }
 pub struct PrecompileConfig;
 
-impl Config for PrecompileConfig {
+impl PrecompileConfigT for PrecompileConfig {
     type AccountId = AccountId;
     type EvmAccountId = EvmAccountId;
     type NativeToken = Balances;
