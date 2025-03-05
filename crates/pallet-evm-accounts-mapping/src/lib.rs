@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::pallet_prelude::*;
+use frame_support::{pallet_prelude::*, sp_std::prelude::*};
 use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use primitives_ethereum::{EcdsaSignature, EthereumAddress};
@@ -92,19 +92,10 @@ pub mod pallet {
     pub struct Pallet<T>(_);
 
     #[pallet::genesis_config]
+    #[derive(frame_support::DefaultNoBound)]
     pub struct GenesisConfig<T: Config> {
         /// The mappings to set at genesis.
         pub mappings: Vec<(T::AccountId, EthereumAddress)>,
-    }
-
-    // The default value for the genesis config type.
-    #[cfg(feature = "std")]
-    impl<T: Config> Default for GenesisConfig<T> {
-        fn default() -> Self {
-            Self {
-                mappings: Default::default(),
-            }
-        }
     }
 
     #[pallet::genesis_build]

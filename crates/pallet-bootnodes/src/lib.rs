@@ -38,19 +38,10 @@ pub mod pallet {
         StorageValue<_, BoundedVec<T::BootnodeId, T::MaxBootnodes>, ValueQuery>;
 
     #[pallet::genesis_config]
+    #[derive(frame_support::DefaultNoBound)]
     pub struct GenesisConfig<T: Config> {
         /// The list of bootnodes to use.
         pub bootnodes: BoundedVec<T::BootnodeId, T::MaxBootnodes>,
-    }
-
-    // The default value for the genesis config type.
-    #[cfg(feature = "std")]
-    impl<T: Config> Default for GenesisConfig<T> {
-        fn default() -> Self {
-            Self {
-                bootnodes: Default::default(),
-            }
-        }
     }
 
     // The build of genesis for the pallet.

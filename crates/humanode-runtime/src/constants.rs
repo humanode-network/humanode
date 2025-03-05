@@ -93,7 +93,7 @@ pub mod fees {
     ///
     /// We compute the fee to weight multiplier based on the weight of the `balances.transfer` call,
     /// and try to fit the fee such that a single transfer call costs ~0.1 HMND.
-    pub const WEIGHT_TO_FEE: Balance = 382_000_000;
+    pub const WEIGHT_TO_FEE: Balance = 385_000_000;
 
     /// The multiplier to get the fee from length.
     pub const LENGTH_TO_FEE: Balance = 1;

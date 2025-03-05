@@ -75,6 +75,18 @@ Options:
           
           [default: archive-canonical]
 
+      --database <DB>
+          Select database backend to use
+
+          Possible values:
+          - rocksdb:               Facebooks RocksDB
+          - paritydb:              ParityDb. <https://github.com/paritytech/parity-db/>
+          - auto:                  Detect whether there is an existing database. Use it, if there is, if not, create new instance of ParityDb
+          - paritydb-experimental: ParityDb. <https://github.com/paritytech/parity-db/>
+
+      --db-cache <MiB>
+          Limit the memory the database cache can use
+
   -h, --help
           Print help (see a summary with '-h')
 

@@ -3,6 +3,8 @@
 // Either generate code at standard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
 
+#[cfg(feature = "try-runtime")]
+use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec};
 use frame_support::{
     sp_runtime::{
         traits::{CheckedAdd, CheckedSub, Convert, Get, Zero},
@@ -14,8 +16,6 @@ use frame_support::{
 };
 pub use pallet::*;
 use sp_std::cmp::Ordering;
-#[cfg(feature = "try-runtime")]
-use sp_std::vec::Vec;
 pub use weights::*;
 
 pub mod weights;
@@ -113,15 +113,8 @@ pub mod pallet {
     pub type LastForceRebalanceAskCounter<T: Config> = StorageValue<_, u16, ValueQuery>;
 
     #[pallet::genesis_config]
+    #[derive(frame_support::DefaultNoBound)]
     pub struct GenesisConfig<T: Config>(PhantomData<T>);
-
-    // The default value for the genesis config type.
-    #[cfg(feature = "std")]
-    impl<T: Config> Default for GenesisConfig<T> {
-        fn default() -> Self {
-            Self(PhantomData)
-        }
-    }
 
     // The build of genesis for the pallet.
     #[pallet::genesis_build]
@@ -154,12 +147,12 @@ pub mod pallet {
         }
 
         #[cfg(feature = "try-runtime")]
-        fn pre_upgrade() -> Result<Vec<u8>, &'static str> {
+        fn pre_upgrade() -> Result<Vec<u8>, TryRuntimeError> {
             upgrade_init::pre_upgrade()
         }
 
         #[cfg(feature = "try-runtime")]
-        fn post_upgrade(state: Vec<u8>) -> Result<(), &'static str> {
+        fn post_upgrade(state: Vec<u8>) -> Result<(), TryRuntimeError> {
             upgrade_init::post_upgrade::<T>(state)
         }
     }
