@@ -3825,6 +3825,7 @@ dependencies = [
  "precompile-bioauth",
  "precompile-bls12381",
  "precompile-evm-accounts-mapping",
+ "precompile-evm-swap",
  "precompile-native-currency",
  "precompile-utils",
  "primitives-auth-ticket",
@@ -6177,7 +6178,6 @@ dependencies = [
  "pallet-evm-system",
  "pallet-timestamp",
  "parity-scale-codec",
- "precompile-utils",
  "scale-info",
  "sp-core",
 ]
@@ -6831,28 +6831,6 @@ dependencies = [
  "ark-std",
  "fp-evm",
  "pallet-evm-test-vector-support",
-]
-
-[[package]]
-name = "precompile-currency-swap"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex-literal",
- "mockall",
- "num_enum 0.7.3",
- "pallet-balances",
- "pallet-evm",
- "pallet-evm-balances",
- "pallet-evm-system",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils",
- "primitives-currency-swap",
- "scale-info",
- "sp-core",
 ]
 
 [[package]]

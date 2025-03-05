@@ -1,3 +1,6 @@
+// Allow simple integer arithmetic in tests.
+#![allow(clippy::arithmetic_side_effects)]
+
 use fp_evm::{ExitReason, ExitSucceed};
 use frame_support::{
     assert_noop, assert_ok,
