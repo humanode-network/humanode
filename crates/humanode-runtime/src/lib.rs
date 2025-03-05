@@ -85,12 +85,12 @@ use frontier_precompiles::{precompiles_constants, FrontierPrecompiles};
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;
 pub mod constants;
-mod currency_swap;
 mod deauthentication_reason;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
 pub mod eth_sig;
+mod evm_swap;
 mod find_author;
 mod fixed_supply;
 pub mod robonode;
@@ -625,13 +625,13 @@ impl pallet_evm_balances::Config for Runtime {
     type Balance = Balance;
     type ExistentialDeposit = ConstU128<1>;
     type AccountStore = EvmSystem;
-    type DustRemoval = currency_swap::TreasuryPotProxy;
+    type DustRemoval = evm_swap::TreasuryPotProxy;
 }
 
 impl pallet_currency_swap::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type AccountIdTo = EvmAccountId;
-    type CurrencySwap = currency_swap::NativeToEvmOneToOne;
+    type CurrencySwap = evm_swap::NativeToEvmOneToOne;
     type WeightInfo = ();
 }
 
@@ -672,7 +672,7 @@ impl pallet_evm::Config for Runtime {
     type ChainId = EthereumChainId;
     type BlockGasLimit = BlockGasLimit;
     type OnChargeTransaction =
-        fixed_supply::EvmTransactionCharger<EvmBalances, currency_swap::FeesPotProxy>;
+        fixed_supply::EvmTransactionCharger<EvmBalances, evm_swap::FeesPotProxy>;
     type OnCreate = ();
     type FindAuthor = find_author::FindAuthorTruncated<
         find_author::FindAuthorFromSession<find_author::FindAuthorBabe, BabeId>,
