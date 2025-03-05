@@ -13,6 +13,8 @@ const evmToNativeSwapPrecompileAddress =
 const bridgePotEvmAddress = "0x6d6f646c686d63732f656e310000000000000000";
 const bridgePotNativeAccount =
   "hmpwhPbL5XJM1pYFVL6wRPkUP5gHQyvC6R5jMkziwnGTQ6hFr";
+const feesPotNativeAccount =
+  "hmpwhPbL5XJTYPWXPMkacfqGhJ3eoQRPLKphajpvcot5Q5zkk";
 
 describe("evm to native tokens swap", () => {
   let node: RunNodeState;
@@ -51,6 +53,10 @@ describe("evm to native tokens swap", () => {
     const targetNativeAccountBalanceBefore = await getNativeBalance(
       substrateApi,
       targetSwapNativeAccountSs58,
+    );
+    const feesPotNativeAccountBalanceBefore = await getNativeBalance(
+      substrateApi,
+      feesPotNativeAccount,
     );
 
     const swapTxHash = await alice.writeContract({
@@ -115,6 +121,14 @@ describe("evm to native tokens swap", () => {
     );
     expect(targetNativeAccountBalanceAfter).toEqual(
       targetNativeAccountBalanceBefore + swapBalance,
+    );
+
+    const feesPotNativeAccountBalanceAfter = await getNativeBalance(
+      substrateApi,
+      feesPotNativeAccount,
+    );
+    expect(feesPotNativeAccountBalanceAfter).toEqual(
+      feesPotNativeAccountBalanceBefore + fee,
     );
 
     const evmSwapPrecompileBalance = await ethPublicClient.getBalance({

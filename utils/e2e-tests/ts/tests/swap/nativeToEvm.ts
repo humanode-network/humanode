@@ -23,6 +23,8 @@ type TransactionPaymentEvent = Record<"who" | "actualFee", Codec>;
 const bridgePotEvmAddress = "0x6d6f646c686d63732f656e310000000000000000";
 const bridgePotNativeAccount =
   "hmpwhPbL5XJM1pYFVL6wRPkUP5gHQyvC6R5jMkziwnGTQ6hFr";
+const feesPotNativeAccount =
+  "hmpwhPbL5XJTYPWXPMkacfqGhJ3eoQRPLKphajpvcot5Q5zkk";
 
 describe("native to evm tokens swap", () => {
   let node: RunNodeState;
@@ -61,6 +63,10 @@ describe("native to evm tokens swap", () => {
     const bridgePotEvmBalanceBefore = await ethPublicClient.getBalance({
       address: bridgePotEvmAddress,
     });
+    const feesPotNativeAccountBalanceBefore = await getNativeBalance(
+      substrateApi,
+      feesPotNativeAccount,
+    );
 
     const { isCompleted, internalError, events, status, dispatchError } =
       await sendAndWait(swap(targetEvmAddress, swapBalance), {
@@ -174,6 +180,14 @@ describe("native to evm tokens swap", () => {
     });
     expect(bridgePotEvmBalanceAfter).toEqual(
       bridgePotEvmBalanceBefore - swapBalance,
+    );
+
+    const feesPotNativeAccountBalanceAfter = await getNativeBalance(
+      substrateApi,
+      feesPotNativeAccount,
+    );
+    expect(feesPotNativeAccountBalanceAfter).toEqual(
+      feesPotNativeAccountBalanceBefore + fee,
     );
   });
 });
