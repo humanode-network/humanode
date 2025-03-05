@@ -57,12 +57,12 @@ fn run_succeeded_test_and_assert(
 
     // Invoke the function under test.
     assert_ok!(match call {
-        TestCall::Swap => EvmSwap::swap(
+        TestCall::Swap => NativeToEvmSwap::swap(
             RuntimeOrigin::signed(source_swap_native_account()),
             target_swap_evm_account(),
             swap_balance
         ),
-        TestCall::SwapKeepAlive => EvmSwap::swap_keep_alive(
+        TestCall::SwapKeepAlive => NativeToEvmSwap::swap_keep_alive(
             RuntimeOrigin::signed(source_swap_native_account()),
             target_swap_evm_account(),
             swap_balance
@@ -98,7 +98,7 @@ fn run_succeeded_test_and_assert(
         target_swap_evm_account_balance_before + swap_balance
     );
     // Verifyt that we have a corresponding evm swap event.
-    System::assert_has_event(RuntimeEvent::EvmSwap(Event::BalancesSwapped {
+    System::assert_has_event(RuntimeEvent::NativeToEvmSwap(Event::BalancesSwapped {
         from: source_swap_native_account(),
         withdrawed_amount: swap_balance,
         to: target_swap_evm_account(),
@@ -147,7 +147,7 @@ fn swap_keep_alive_fails_kill_origin() {
     new_test_ext().execute_with_ext(|_| {
         // Invoke the function under test.
         assert_noop!(
-            EvmSwap::swap_keep_alive(
+            NativeToEvmSwap::swap_keep_alive(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 INIT_BALANCE - 1,
@@ -163,7 +163,7 @@ fn swap_both_fails_source_no_funds() {
     new_test_ext().execute_with_ext(|_| {
         // Invoke the `swap` under test.
         assert_noop!(
-            EvmSwap::swap(
+            NativeToEvmSwap::swap(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 INIT_BALANCE + 1,
@@ -173,7 +173,7 @@ fn swap_both_fails_source_no_funds() {
 
         // Invoke the `swap_keep_alive` under test.
         assert_noop!(
-            EvmSwap::swap_keep_alive(
+            NativeToEvmSwap::swap_keep_alive(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 INIT_BALANCE + 1,
@@ -191,7 +191,7 @@ fn swap_both_fails_target_overflow() {
 
         // Invoke the `swap` under test.
         assert_noop!(
-            EvmSwap::swap(
+            NativeToEvmSwap::swap(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 100,
@@ -201,7 +201,7 @@ fn swap_both_fails_target_overflow() {
 
         // Invoke the `swap_keep_alive` under test.
         assert_noop!(
-            EvmSwap::swap_keep_alive(
+            NativeToEvmSwap::swap_keep_alive(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 100,
@@ -219,7 +219,7 @@ fn swap_both_fails_bridge_evm_killed() {
 
         // Invoke the `swap` under test.
         assert_noop!(
-            EvmSwap::swap(
+            NativeToEvmSwap::swap(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 BRIDGE_INIT_BALANCE,
@@ -229,7 +229,7 @@ fn swap_both_fails_bridge_evm_killed() {
 
         // Invoke the `swap_keep_alive` under test.
         assert_noop!(
-            EvmSwap::swap_keep_alive(
+            NativeToEvmSwap::swap_keep_alive(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 BRIDGE_INIT_BALANCE,
@@ -247,7 +247,7 @@ fn swap_both_fails_bridge_evm_no_funds() {
 
         // Invoke the `swap` under test.
         assert_noop!(
-            EvmSwap::swap(
+            NativeToEvmSwap::swap(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 100,
@@ -257,7 +257,7 @@ fn swap_both_fails_bridge_evm_no_funds() {
 
         // Invoke the `swap_keep_alive` under test.
         assert_noop!(
-            EvmSwap::swap_keep_alive(
+            NativeToEvmSwap::swap_keep_alive(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 100,
@@ -275,7 +275,7 @@ fn swap_both_fails_bridge_native_overflow() {
 
         // Invoke the `swap` under test.
         assert_noop!(
-            EvmSwap::swap(
+            NativeToEvmSwap::swap(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 100,
@@ -285,7 +285,7 @@ fn swap_both_fails_bridge_native_overflow() {
 
         // Invoke the `swap_keep_alive` under test.
         assert_noop!(
-            EvmSwap::swap_keep_alive(
+            NativeToEvmSwap::swap_keep_alive(
                 RuntimeOrigin::signed(source_swap_native_account()),
                 target_swap_evm_account(),
                 100,

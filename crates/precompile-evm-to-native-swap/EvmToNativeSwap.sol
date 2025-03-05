@@ -3,14 +3,14 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 /**
- * @title Evm Swap Interface
+ * @title Evm to Native tokens Swap Interface
  *
  * An interface enabling swapping the funds from EVM accounts to
  * native Substrate accounts.
  *
  * Address: 0x0000000000000000000000000000000000000900
  */
-interface EvmSwap {
+interface EvmToNativeSwap {
   /**
    * Transfer the funds from an EVM account to native substrate account.
    * Selector: 76467cbd

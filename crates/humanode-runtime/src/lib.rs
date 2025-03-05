@@ -635,7 +635,7 @@ impl pallet_currency_swap::Config for Runtime {
     type WeightInfo = ();
 }
 
-impl pallet_evm_swap::Config for Runtime {
+impl pallet_native_to_evm_swap::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type EvmAccountId = EvmAccountId;
     type NativeToken = Balances;
@@ -798,7 +798,7 @@ frame_support::parameter_types! {
             frontier_precompiles::hash(precompiles_constants::BIOAUTH),
             frontier_precompiles::hash(precompiles_constants::EVM_ACCOUNTS_MAPPING),
             frontier_precompiles::hash(precompiles_constants::NATIVE_CURRENCY),
-            frontier_precompiles::hash(precompiles_constants::EVM_SWAP),
+            frontier_precompiles::hash(precompiles_constants::EVM_TO_NATIVE_SWAP),
         ];
 }
 
@@ -853,7 +853,7 @@ construct_runtime!(
         EvmBalancesErc20Support: pallet_erc20_support = 37,
         DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
         HumanodeOffences: pallet_humanode_offences = 39,
-        EvmSwap: pallet_evm_swap = 40,
+        NativeToEvmSwap: pallet_native_to_evm_swap = 40,
     }
 );
 
