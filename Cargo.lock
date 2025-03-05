@@ -3811,13 +3811,13 @@ dependencies = [
  "pallet-evm-precompile-modexp",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
- "pallet-evm-swap",
  "pallet-evm-system",
  "pallet-grandpa",
  "pallet-humanode-offences",
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-multisig",
+ "pallet-native-to-evm-swap",
  "pallet-pot",
  "pallet-session",
  "pallet-sudo",
@@ -3831,7 +3831,7 @@ dependencies = [
  "precompile-bioauth",
  "precompile-bls12381",
  "precompile-evm-accounts-mapping",
- "precompile-evm-swap",
+ "precompile-evm-to-native-swap",
  "precompile-native-currency",
  "precompile-utils",
  "primitives-auth-ticket",
@@ -6166,29 +6166,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-evm-swap"
-version = "0.1.0"
-dependencies = [
- "assert_matches",
- "ethereum",
- "fp-ethereum",
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex-literal",
- "num_enum 0.7.3",
- "pallet-balances",
- "pallet-ethereum",
- "pallet-evm",
- "pallet-evm-balances",
- "pallet-evm-system",
- "pallet-timestamp",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
-]
-
-[[package]]
 name = "pallet-evm-system"
 version = "0.1.0"
 dependencies = [
@@ -6311,6 +6288,29 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-native-to-evm-swap"
+version = "0.1.0"
+dependencies = [
+ "assert_matches",
+ "ethereum",
+ "fp-ethereum",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "num_enum 0.7.3",
+ "pallet-balances",
+ "pallet-ethereum",
+ "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
 ]
 
 [[package]]
@@ -6859,7 +6859,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "precompile-evm-swap"
+name = "precompile-evm-to-native-swap"
 version = "0.1.0"
 dependencies = [
  "fp-evm",
