@@ -12,10 +12,9 @@ use frame_support::{
     weights::Weight,
 };
 use pallet_ethereum::PostLogContent as EthereumPostLogContent;
-use precompile_utils::precompile_set::{PrecompileAt, PrecompileSetBuilder};
 use sp_core::{Get, H160, H256, U256};
 
-use crate::{self as pallet_evm_swap, precompile};
+use crate::{self as pallet_evm_swap};
 
 pub const INIT_BALANCE: u128 = 10_000_000_000_000_000;
 // Add some tokens to test swap with full balance.
@@ -24,12 +23,6 @@ pub const BRIDGE_INIT_BALANCE: u128 = INIT_BALANCE + 100;
 pub fn alice() -> AccountId {
     AccountId::from(hex_literal::hex!(
         "1100000000000000000000000000000000000000000000000000000000000011"
-    ))
-}
-
-pub fn alice_evm() -> EvmAccountId {
-    EvmAccountId::from(hex_literal::hex!(
-        "1100000000000000000000000000000000000011"
     ))
 }
 
@@ -132,7 +125,6 @@ impl pallet_timestamp::Config for Test {
 }
 
 pub static GAS_PRICE: Lazy<U256> = Lazy::new(|| 1_000_000_000u128.into());
-
 pub struct FixedGasPrice;
 impl fp_evm::FeeCalculator for FixedGasPrice {
     fn min_gas_price() -> (U256, Weight) {
@@ -141,19 +133,10 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
     }
 }
 
-pub static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x901));
-
-pub type EvmSwapPrecompile = precompile::EvmSwap<Test, ConstU64<200>>;
-
-pub type Precompiles<R> =
-    PrecompileSetBuilder<R, PrecompileAt<PrecompileAddress, EvmSwapPrecompile>>;
-
 parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
     pub GasLimitPovSizeRatio: u64 = 0;
     pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
-    pub PrecompileAddress: H160 = *PRECOMPILE_ADDRESS;
-    pub PrecompilesValue: Precompiles<Test> = Precompiles::new();
 }
 
 impl pallet_evm::Config for Test {
@@ -171,8 +154,8 @@ impl pallet_evm::Config for Test {
     type AddressMapping = pallet_evm::IdentityAddressMapping;
     type Currency = EvmBalances;
     type RuntimeEvent = RuntimeEvent;
-    type PrecompilesType = Precompiles<Self>;
-    type PrecompilesValue = PrecompilesValue;
+    type PrecompilesType = ();
+    type PrecompilesValue = ();
     type ChainId = ();
     type BlockGasLimit = BlockGasLimit;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
@@ -221,7 +204,6 @@ impl pallet_evm_swap::Config for Test {
     type NativeToken = Balances;
     type EvmToken = EvmBalances;
     type BalanceConverterNativeToEvm = Identity;
-    type BalanceConverterEvmToNative = Identity;
     type BridgePotNative = BridgePotNative;
     type BridgePotEvm = BridgePotEvm;
     type WeightInfo = ();
@@ -243,15 +225,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
                     BridgePotEvm::get(),
                     fp_evm::GenesisAccount {
                         balance: BRIDGE_INIT_BALANCE.into(),
-                        code: Default::default(),
-                        nonce: Default::default(),
-                        storage: Default::default(),
-                    },
-                );
-                map.insert(
-                    alice_evm(),
-                    fp_evm::GenesisAccount {
-                        balance: INIT_BALANCE.into(),
                         code: Default::default(),
                         nonce: Default::default(),
                         storage: Default::default(),

@@ -10,7 +10,6 @@ pub use pallet::*;
 use sp_core::{Get, H160, U256};
 pub use weights::*;
 
-pub mod precompile;
 pub mod weights;
 
 #[cfg(test)]
@@ -20,12 +19,11 @@ mod mock;
 mod tests;
 
 /// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::NativeToken`] type.
-pub type NativeBalanceOf<T> =
+type NativeBalanceOf<T> =
     <<T as Config>::NativeToken as Inspect<<T as frame_system::Config>::AccountId>>::Balance;
 
 /// Utility alias for easy access to the [`Inspect::Balance`] of the [`Config::EvmToken`] type.
-pub type EvmBalanceOf<T> =
-    <<T as Config>::EvmToken as Inspect<<T as Config>::EvmAccountId>>::Balance;
+type EvmBalanceOf<T> = <<T as Config>::EvmToken as Inspect<<T as Config>::EvmAccountId>>::Balance;
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
@@ -70,10 +68,6 @@ pub mod pallet {
         /// The converter to determine how the balance amount should be converted from native
         /// to EVM token.
         type BalanceConverterNativeToEvm: Convert<NativeBalanceOf<Self>, EvmBalanceOf<Self>>;
-
-        /// The converter to determine how the balance amount should be converted from EVM
-        /// to native token.
-        type BalanceConverterEvmToNative: Convert<EvmBalanceOf<Self>, NativeBalanceOf<Self>>;
 
         /// The bridge pot native account.
         type BridgePotNative: Get<Self::AccountId>;
