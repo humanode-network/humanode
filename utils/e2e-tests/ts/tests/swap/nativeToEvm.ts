@@ -27,14 +27,14 @@ const bridgePotNativeAccount =
 describe("native to evm tokens swap", () => {
   let node: RunNodeState;
   let substrateApi: substrate.Api;
-  let ethPiblicClient: eth.PublicClientWebSocket;
+  let ethPublicClient: eth.PublicClientWebSocket;
   beforeEachWithCleanup(async (cleanup) => {
     node = runNode({ args: ["--dev", "--tmp"] }, cleanup.push);
 
     await node.waitForBoot;
 
     substrateApi = await substrate.apiFromNodeWebSocket(node, cleanup.push);
-    ethPiblicClient = eth.publicClientFromNodeWebSocket(node, cleanup.push);
+    ethPublicClient = eth.publicClientFromNodeWebSocket(node, cleanup.push);
   }, 60 * 1000);
 
   it("success", async () => {
@@ -55,10 +55,10 @@ describe("native to evm tokens swap", () => {
       substrateApi,
       bridgePotNativeAccount,
     );
-    const targetEvmAccountBalanceBefore = await ethPiblicClient.getBalance({
+    const targetEvmAccountBalanceBefore = await ethPublicClient.getBalance({
       address: targetEvmAddress,
     });
-    const bridgePotEvmBalanceBefore = await ethPiblicClient.getBalance({
+    const bridgePotEvmBalanceBefore = await ethPublicClient.getBalance({
       address: bridgePotEvmAddress,
     });
 
@@ -72,7 +72,7 @@ describe("native to evm tokens swap", () => {
     expect(dispatchError).toBe(undefined);
     expect(internalError).toBe(undefined);
 
-    let ewmSwapBalancesSwappedEvent;
+    let evmSwapBalancesSwappedEvent;
     let ethereumExecutedEvent;
     let transactionPaymentEvent;
 
@@ -81,7 +81,7 @@ describe("native to evm tokens swap", () => {
         item.event.section == "evmSwap" &&
         item.event.method == "BalancesSwapped"
       ) {
-        ewmSwapBalancesSwappedEvent = item.event as unknown as IEvent<
+        evmSwapBalancesSwappedEvent = item.event as unknown as IEvent<
           Codec[],
           EvmSwapBalancesSwappedEvent
         >;
@@ -105,28 +105,28 @@ describe("native to evm tokens swap", () => {
       }
     }
 
-    assert(ewmSwapBalancesSwappedEvent);
+    assert(evmSwapBalancesSwappedEvent);
     assert(ethereumExecutedEvent);
     assert(transactionPaymentEvent);
 
     // Events related asserts.
-    expect(ewmSwapBalancesSwappedEvent.data.from.toPrimitive()).toEqual(
+    expect(evmSwapBalancesSwappedEvent.data.from.toPrimitive()).toEqual(
       alice.address,
     );
     expect(
       BigInt(
-        ewmSwapBalancesSwappedEvent.data.withdrawedAmount.toPrimitive() as unknown as bigint,
+        evmSwapBalancesSwappedEvent.data.withdrawedAmount.toPrimitive() as unknown as bigint,
       ),
     ).toEqual(swapBalance);
-    expect(ewmSwapBalancesSwappedEvent.data.to.toPrimitive()).toEqual(
+    expect(evmSwapBalancesSwappedEvent.data.to.toPrimitive()).toEqual(
       targetEvmAddress,
     );
     expect(
       BigInt(
-        ewmSwapBalancesSwappedEvent.data.depositedAmount.toPrimitive() as unknown as bigint,
+        evmSwapBalancesSwappedEvent.data.depositedAmount.toPrimitive() as unknown as bigint,
       ),
     ).toEqual(swapBalance);
-    expect(ewmSwapBalancesSwappedEvent.data.evmTransactionHash).toEqual(
+    expect(evmSwapBalancesSwappedEvent.data.evmTransactionHash).toEqual(
       ethereumExecutedEvent.data.transactionHash,
     );
     expect(ethereumExecutedEvent.data.from.toPrimitive()).toEqual(
@@ -162,14 +162,14 @@ describe("native to evm tokens swap", () => {
       bridgePotNativeBalanceBefore + swapBalance,
     );
 
-    const targetEvmAccountBalanceAfter = await ethPiblicClient.getBalance({
+    const targetEvmAccountBalanceAfter = await ethPublicClient.getBalance({
       address: targetEvmAddress,
     });
     expect(targetEvmAccountBalanceAfter).toEqual(
       targetEvmAccountBalanceBefore + swapBalance,
     );
 
-    const bridgePotEvmBalanceAfter = await ethPiblicClient.getBalance({
+    const bridgePotEvmBalanceAfter = await ethPublicClient.getBalance({
       address: bridgePotEvmAddress,
     });
     expect(bridgePotEvmBalanceAfter).toEqual(

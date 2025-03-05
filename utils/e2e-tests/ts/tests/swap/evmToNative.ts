@@ -15,7 +15,7 @@ const bridgePotNativeAccount =
 
 describe("evm to native tokens swap", () => {
   let node: RunNodeState;
-  let ethPiblicClient: eth.PublicClientWebSocket;
+  let ethPublicClient: eth.PublicClientWebSocket;
   let ethDevClients: eth.DevClientsWebSocket;
   let substrateApi: substrate.Api;
   beforeEachWithCleanup(async (cleanup) => {
@@ -23,7 +23,7 @@ describe("evm to native tokens swap", () => {
 
     await node.waitForBoot;
 
-    ethPiblicClient = eth.publicClientFromNodeWebSocket(node, cleanup.push);
+    ethPublicClient = eth.publicClientFromNodeWebSocket(node, cleanup.push);
     ethDevClients = eth.devClientsFromNodeWebSocket(node, cleanup.push);
     substrateApi = await substrate.apiFromNodeWebSocket(node, cleanup.push);
   }, 60 * 1000);
@@ -37,10 +37,10 @@ describe("evm to native tokens swap", () => {
     const targetSwapNativeAccountSs58 =
       "hmqAEn816d1W6TxbT7Md2Zc4hq1AUXFiLEs8yXW5BCUHFx54W";
 
-    const sourceSwapBalanceBefore = await ethPiblicClient.getBalance({
+    const sourceSwapBalanceBefore = await ethPublicClient.getBalance({
       address: alice.account.address,
     });
-    const bridgePotEvmBalanceBefore = await ethPiblicClient.getBalance({
+    const bridgePotEvmBalanceBefore = await ethPublicClient.getBalance({
       address: bridgePotEvmAddress,
     });
     const bridgePotNativeBalanceBefore = await getNativeBalance(
@@ -60,7 +60,7 @@ describe("evm to native tokens swap", () => {
       value: swapBalance,
     });
 
-    const swapTxReceipt = await ethPiblicClient.waitForTransactionReceipt({
+    const swapTxReceipt = await ethPublicClient.waitForTransactionReceipt({
       hash: swapTxHash,
       timeout: 18_000,
     });
@@ -86,14 +86,14 @@ describe("evm to native tokens swap", () => {
     const fee =
       swapTxReceipt.cumulativeGasUsed * swapTxReceipt.effectiveGasPrice;
 
-    const sourceSwapBalanceAfter = await ethPiblicClient.getBalance({
+    const sourceSwapBalanceAfter = await ethPublicClient.getBalance({
       address: alice.account.address,
     });
     expect(sourceSwapBalanceAfter).toEqual(
       sourceSwapBalanceBefore - swapBalance - fee,
     );
 
-    const bridgePotEvmBalanceAfter = await ethPiblicClient.getBalance({
+    const bridgePotEvmBalanceAfter = await ethPublicClient.getBalance({
       address: bridgePotEvmAddress,
     });
     expect(bridgePotEvmBalanceAfter).toEqual(
@@ -116,7 +116,7 @@ describe("evm to native tokens swap", () => {
       targetNativeAccountBalanceBefore + swapBalance,
     );
 
-    const evmSwapPrecompileBalance = await ethPiblicClient.getBalance({
+    const evmSwapPrecompileBalance = await ethPublicClient.getBalance({
       address: evmSwapPrecompileAddress,
     });
     expect(evmSwapPrecompileBalance).toEqual(0n);
