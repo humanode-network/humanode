@@ -12,6 +12,7 @@ parameter_types! {
     pub NativeToEvmSwapBridgePotAccountId: AccountId = NativeToEvmSwapBridgePot::account_id();
     pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
 }
+
 pub struct PrecompileConfig;
 
 impl PrecompileConfigT for PrecompileConfig {

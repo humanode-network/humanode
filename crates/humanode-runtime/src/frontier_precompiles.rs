@@ -137,7 +137,6 @@ where
         <R as pallet_erc20_support::Config>::AccountId,
     >>::Balance: Into<U256> + TryFrom<U256>,
     <R as pallet_erc20_support::Config>::Allowance: TryFrom<U256> + EvmData,
-    <R as frame_system::Config>::AccountId: From<[u8; 32]>,
     R::ValidatorPublicKey: for<'a> TryFrom<&'a [u8]> + Eq,
 {
     fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
