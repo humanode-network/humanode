@@ -6875,7 +6875,6 @@ dependencies = [
  "pallet-timestamp",
  "parity-scale-codec",
  "precompile-utils",
- "primitives-currency-swap",
  "scale-info",
  "sp-core",
 ]
