@@ -2160,11 +2160,11 @@
   features:
     - default
     - std
-- name: precompile-currency-swap 0.1.0
+- name: precompile-evm-accounts-mapping 0.1.0
   features:
     - default
     - std
-- name: precompile-evm-accounts-mapping 0.1.0
+- name: precompile-evm-swap 0.1.0
   features:
     - default
     - std
