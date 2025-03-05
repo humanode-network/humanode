@@ -19,7 +19,7 @@ use precompile_utils::EvmData;
 use sp_core::{H160, U256};
 use sp_std::marker::PhantomData;
 
-use crate::{currency_swap, ConstU64};
+use crate::{evm_swap, ConstU64};
 
 /// A set of constant values used to indicate precompiles.
 pub mod precompiles_constants {
@@ -174,7 +174,7 @@ where
                 Some(NativeCurrency::<R, ConstU64<200>>::execute(handle))
             }
             a if a == hash(EVM_SWAP) => Some(EvmSwap::<
-                currency_swap::PrecompileConfig,
+                evm_swap::PrecompileConfig,
                 // TODO(#697): implement proper dynamic gas cost estimation.
                 ConstU64<200>,
             >::execute(handle)),
