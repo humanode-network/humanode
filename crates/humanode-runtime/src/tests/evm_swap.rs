@@ -182,7 +182,7 @@ fn ewm_swap_precompile_call_works() {
         let execinfo = <Runtime as pallet_evm::Config>::Runner::call(
             evm_account_id("EvmAlice"),
             *PRECOMPILE_ADDRESS,
-            EvmDataWriter::new_with_selector(pallet_evm_swap::precompile::Action::Swap)
+            EvmDataWriter::new_with_selector(precompile_evm_swap::Action::Swap)
                 .write(H256::from(account_id("Alice").as_ref()))
                 .build(),
             swap_balance.into(),
@@ -207,7 +207,7 @@ fn ewm_swap_precompile_call_works() {
         assert_eq!(
             execinfo.logs,
             vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
-                pallet_evm_swap::precompile::SELECTOR_LOG_SWAP,
+                precompile_evm_swap::SELECTOR_LOG_SWAP,
                 evm_account_id("EvmAlice"),
                 H256::from(account_id("Alice").as_ref()),
                 EvmDataWriter::new().write(swap_balance).build(),

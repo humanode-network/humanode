@@ -641,7 +641,6 @@ impl pallet_evm_swap::Config for Runtime {
     type NativeToken = Balances;
     type EvmToken = EvmBalances;
     type BalanceConverterNativeToEvm = Identity;
-    type BalanceConverterEvmToNative = Identity;
     type BridgePotNative = NativeToEvmSwapBridgePotAccountId;
     type BridgePotEvm = EvmToNativeSwapBridgePotAccountId;
     type WeightInfo = ();

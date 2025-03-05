@@ -134,9 +134,29 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
 
 pub static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x900));
 
-pub struct EvmSwapConfig;
+pub struct BridgePotNative;
 
-impl Config for EvmSwapConfig {
+impl Get<AccountId> for BridgePotNative {
+    fn get() -> AccountId {
+        AccountId::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000000000000000000000000000001"
+        ))
+    }
+}
+
+pub struct BridgePotEvm;
+
+impl Get<EvmAccountId> for BridgePotEvm {
+    fn get() -> EvmAccountId {
+        EvmAccountId::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ))
+    }
+}
+
+pub struct PrecompileConfig;
+
+impl Config for PrecompileConfig {
     type AccountId = AccountId;
     type EvmAccountId = EvmAccountId;
     type NativeToken = Balances;
@@ -146,7 +166,7 @@ impl Config for EvmSwapConfig {
     type BridgePotEvm = BridgePotEvm;
 }
 
-pub type EvmSwapPrecompile = EvmSwap<EvmSwapConfig, ConstU64<200>>;
+pub type EvmSwapPrecompile = EvmSwap<PrecompileConfig, ConstU64<200>>;
 
 pub type Precompiles<R> =
     PrecompileSetBuilder<R, PrecompileAt<PrecompileAddress, EvmSwapPrecompile>>;
@@ -185,26 +205,6 @@ impl pallet_evm::Config for Test {
     type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
     type Timestamp = Timestamp;
     type WeightInfo = ();
-}
-
-pub struct BridgePotNative;
-
-impl Get<AccountId> for BridgePotNative {
-    fn get() -> AccountId {
-        AccountId::from(hex_literal::hex!(
-            "1000000000000000000000000000000000000000000000000000000000000001"
-        ))
-    }
-}
-
-pub struct BridgePotEvm;
-
-impl Get<EvmAccountId> for BridgePotEvm {
-    fn get() -> EvmAccountId {
-        EvmAccountId::from(hex_literal::hex!(
-            "1000000000000000000000000000000000000001"
-        ))
-    }
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
