@@ -160,7 +160,7 @@ fn native_to_evm_swap_call_works() {
     })
 }
 
-/// This test verifies that the ewm to native swap precompile call works in the happy path.
+/// This test verifies that ewm to native swap precompile call works in the happy path.
 #[test]
 fn ewm_to_native_precompile_call_works() {
     // Build the state from the config.

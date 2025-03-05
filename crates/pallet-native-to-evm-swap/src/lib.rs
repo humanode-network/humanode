@@ -1,4 +1,4 @@
-//! A substrate pallet containing the EVM swap integration.
+//! A substrate pallet containing native to EVM swap tokens integration.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -160,7 +160,7 @@ pub mod pallet {
             let evm_transaction_hash = Self::execute_ethereum_transfer(
                 T::BridgePotEvm::get().into(),
                 to.clone().into(),
-                estimated_swapped_balance.unique_saturated_into(),
+                estimated_swapped_balance,
             )?;
 
             Self::deposit_event(Event::BalancesSwapped {
@@ -175,14 +175,17 @@ pub mod pallet {
         }
 
         /// Execute ethereum transfer from source address to target EVM address with provided
-        /// balance to be sent.
+        /// balance value to be sent.
         fn execute_ethereum_transfer(
             source_address: H160,
             target_address: H160,
-            balance: u128,
+            value: EvmBalanceOf<T>,
         ) -> Result<H256, DispatchError> {
-            let transaction =
-                ethereum_transfer_transaction::<T>(source_address, target_address, balance);
+            let transaction = ethereum_transfer_transaction::<T>(
+                source_address,
+                target_address,
+                value.unique_saturated_into(),
+            );
             let transaction_hash = transaction.hash();
 
             let (post_info, call_info) =
@@ -225,7 +228,7 @@ pub mod pallet {
 pub(crate) fn ethereum_transfer_transaction<T: pallet_evm::Config>(
     source_address: H160,
     target_address: H160,
-    balance: u128,
+    value: u128,
 ) -> pallet_ethereum::Transaction {
     pallet_ethereum::Transaction::EIP1559(ethereum::EIP1559Transaction {
         chain_id: T::ChainId::get(),
@@ -236,7 +239,7 @@ pub(crate) fn ethereum_transfer_transaction<T: pallet_evm::Config>(
         max_fee_per_gas: 0.into(),
         gas_limit: T::config().gas_transaction_call.into(),
         action: ethereum::TransactionAction::Call(target_address),
-        value: U256::from(balance),
+        value: U256::from(value),
         input: Default::default(),
         access_list: Default::default(),
         odd_y_parity: false,
