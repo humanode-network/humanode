@@ -44,7 +44,7 @@ describe("native to evm tokens swap", () => {
     const targetEvmAddress = "0x1100000000000000000000000000000000000011";
     const swapBalance = 1_000_000n;
 
-    const swap = substrateApi.tx["evmSwap"]?.["swap"];
+    const swap = substrateApi.tx["nativeToEvmSwap"]?.["swap"];
     assert(swap);
 
     const sourceSwapBalanceBefore = await getNativeBalance(
@@ -72,16 +72,16 @@ describe("native to evm tokens swap", () => {
     expect(dispatchError).toBe(undefined);
     expect(internalError).toBe(undefined);
 
-    let evmSwapBalancesSwappedEvent;
+    let nativeToEvmSwapBalancesSwappedEvent;
     let ethereumExecutedEvent;
     let transactionPaymentEvent;
 
     for (const item of events) {
       if (
-        item.event.section == "evmSwap" &&
+        item.event.section == "nativeToEvmSwap" &&
         item.event.method == "BalancesSwapped"
       ) {
-        evmSwapBalancesSwappedEvent = item.event as unknown as IEvent<
+        nativeToEvmSwapBalancesSwappedEvent = item.event as unknown as IEvent<
           Codec[],
           EvmSwapBalancesSwappedEvent
         >;
@@ -105,28 +105,28 @@ describe("native to evm tokens swap", () => {
       }
     }
 
-    assert(evmSwapBalancesSwappedEvent);
+    assert(nativeToEvmSwapBalancesSwappedEvent);
     assert(ethereumExecutedEvent);
     assert(transactionPaymentEvent);
 
     // Events related asserts.
-    expect(evmSwapBalancesSwappedEvent.data.from.toPrimitive()).toEqual(
+    expect(nativeToEvmSwapBalancesSwappedEvent.data.from.toPrimitive()).toEqual(
       alice.address,
     );
     expect(
       BigInt(
-        evmSwapBalancesSwappedEvent.data.withdrawedAmount.toPrimitive() as unknown as bigint,
+        nativeToEvmSwapBalancesSwappedEvent.data.withdrawedAmount.toPrimitive() as unknown as bigint,
       ),
     ).toEqual(swapBalance);
-    expect(evmSwapBalancesSwappedEvent.data.to.toPrimitive()).toEqual(
+    expect(nativeToEvmSwapBalancesSwappedEvent.data.to.toPrimitive()).toEqual(
       targetEvmAddress,
     );
     expect(
       BigInt(
-        evmSwapBalancesSwappedEvent.data.depositedAmount.toPrimitive() as unknown as bigint,
+        nativeToEvmSwapBalancesSwappedEvent.data.depositedAmount.toPrimitive() as unknown as bigint,
       ),
     ).toEqual(swapBalance);
-    expect(evmSwapBalancesSwappedEvent.data.evmTransactionHash).toEqual(
+    expect(nativeToEvmSwapBalancesSwappedEvent.data.evmTransactionHash).toEqual(
       ethereumExecutedEvent.data.transactionHash,
     );
     expect(ethereumExecutedEvent.data.from.toPrimitive()).toEqual(

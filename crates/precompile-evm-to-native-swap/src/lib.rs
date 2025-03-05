@@ -1,4 +1,4 @@
-//! A precompile to swap EVM tokens with native chain tokens using fungible interfaces.
+//! A precompile to swap EVM tokens to native chain tokens using fungible interfaces.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -73,8 +73,8 @@ pub enum Action {
     Swap = "swap(bytes32)",
 }
 
-/// Exposes the EVM swap interface.
-pub struct EvmSwap<ConfigT, GasCost>(PhantomData<(ConfigT, GasCost)>)
+/// Exposes the swap interface.
+pub struct EvmToNativeSwap<ConfigT, GasCost>(PhantomData<(ConfigT, GasCost)>)
 where
     ConfigT: Config,
     EvmBalanceOf<ConfigT>: TryFrom<U256>,
@@ -82,7 +82,7 @@ where
     ConfigT::AccountId: From<[u8; 32]>,
     GasCost: Get<u64>;
 
-impl<ConfigT, GasCost> Precompile for EvmSwap<ConfigT, GasCost>
+impl<ConfigT, GasCost> Precompile for EvmToNativeSwap<ConfigT, GasCost>
 where
     ConfigT: Config,
     EvmBalanceOf<ConfigT>: TryFrom<U256>,
@@ -105,7 +105,7 @@ where
     }
 }
 
-impl<ConfigT, GasCost> EvmSwap<ConfigT, GasCost>
+impl<ConfigT, GasCost> EvmToNativeSwap<ConfigT, GasCost>
 where
     ConfigT: Config,
     EvmBalanceOf<ConfigT>: TryFrom<U256>,
@@ -113,7 +113,7 @@ where
     ConfigT::AccountId: From<[u8; 32]>,
     GasCost: Get<u64>,
 {
-    /// Swap EVM tokens to native tokens.
+    /// Swap EVM tokens to native chain tokens.
     fn swap(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
 

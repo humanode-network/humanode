@@ -13,7 +13,7 @@ use precompile_bls12381::{
     Bls12381G2MultiExp, Bls12381MapG1, Bls12381MapG2, Bls12381Pairing,
 };
 use precompile_evm_accounts_mapping::EvmAccountsMapping;
-use precompile_evm_swap::EvmSwap;
+use precompile_evm_to_native_swap::EvmToNativeSwap;
 use precompile_native_currency::NativeCurrency;
 use precompile_utils::EvmData;
 use sp_core::{H160, U256};
@@ -74,8 +74,8 @@ pub mod precompiles_constants {
     pub const EVM_ACCOUNTS_MAPPING: u64 = 2049;
     /// `NativeCurrency` precompile constant.
     pub const NATIVE_CURRENCY: u64 = 2050;
-    /// `EvmSwap` precompile constant.
-    pub const EVM_SWAP: u64 = 2304;
+    /// `EvmToNativeSwap` precompile constant.
+    pub const EVM_TO_NATIVE_SWAP: u64 = 2304;
 }
 
 use precompiles_constants::*;
@@ -117,7 +117,7 @@ where
             BIOAUTH,
             EVM_ACCOUNTS_MAPPING,
             NATIVE_CURRENCY,
-            EVM_SWAP,
+            EVM_TO_NATIVE_SWAP,
         ]
         .into_iter()
         .map(hash)
@@ -172,8 +172,8 @@ where
             a if a == hash(NATIVE_CURRENCY) => {
                 Some(NativeCurrency::<R, ConstU64<200>>::execute(handle))
             }
-            a if a == hash(EVM_SWAP) => Some(EvmSwap::<
-                evm_swap::PrecompileConfig,
+            a if a == hash(EVM_TO_NATIVE_SWAP) => Some(EvmToNativeSwap::<
+                evm_swap::EvmToNativeSwapConfig,
                 // TODO(#697): implement proper dynamic gas cost estimation.
                 ConstU64<200>,
             >::execute(handle)),

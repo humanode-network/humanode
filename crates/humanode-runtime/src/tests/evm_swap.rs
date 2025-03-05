@@ -119,9 +119,9 @@ fn currencies_are_balanced() {
     })
 }
 
-/// This test verifies that evm swap native call works in the happy path.
+/// This test verifies that native to evm swap call works in the happy path.
 #[test]
-fn evm_swap_native_call_works() {
+fn native_to_evm_swap_call_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         let alice_balance_before = Balances::total_balance(&account_id("Alice"));
@@ -133,7 +133,7 @@ fn evm_swap_native_call_works() {
         let swap_balance: Balance = 1000;
 
         // Make swap.
-        assert_ok!(EvmSwap::swap(
+        assert_ok!(NativeToEvmSwap::swap(
             Some(account_id("Alice")).into(),
             evm_account_id("EvmAlice"),
             swap_balance
@@ -160,9 +160,9 @@ fn evm_swap_native_call_works() {
     })
 }
 
-/// This test verifies that the ewm swap precompile call works in the happy path.
+/// This test verifies that the ewm to native swap precompile call works in the happy path.
 #[test]
-fn ewm_swap_precompile_call_works() {
+fn ewm_to_native_precompile_call_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         let alice_balance_before = Balances::total_balance(&account_id("Alice"));
@@ -182,7 +182,7 @@ fn ewm_swap_precompile_call_works() {
         let execinfo = <Runtime as pallet_evm::Config>::Runner::call(
             evm_account_id("EvmAlice"),
             *PRECOMPILE_ADDRESS,
-            EvmDataWriter::new_with_selector(precompile_evm_swap::Action::Swap)
+            EvmDataWriter::new_with_selector(precompile_evm_to_native_swap::Action::Swap)
                 .write(H256::from(account_id("Alice").as_ref()))
                 .build(),
             swap_balance.into(),
@@ -207,7 +207,7 @@ fn ewm_swap_precompile_call_works() {
         assert_eq!(
             execinfo.logs,
             vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
-                precompile_evm_swap::SELECTOR_LOG_SWAP,
+                precompile_evm_to_native_swap::SELECTOR_LOG_SWAP,
                 evm_account_id("EvmAlice"),
                 H256::from(account_id("Alice").as_ref()),
                 EvmDataWriter::new().write(swap_balance).build(),
