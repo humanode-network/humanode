@@ -6881,6 +6881,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "precompile-evm-swap"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "mockall",
+ "num_enum 0.7.3",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "precompile-utils",
+ "primitives-currency-swap",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "precompile-native-currency"
 version = "0.1.0"
 dependencies = [
