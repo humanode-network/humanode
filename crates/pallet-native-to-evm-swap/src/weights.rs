@@ -1,8 +1,8 @@
-//! Weights definition for pallet-native-to-evm-currency-swap.
+//! Weights definition for pallet-native-to-evm-swap.
 
 use frame_support::weights::Weight;
 
-/// Weight functions needed for pallet-currency-swap.
+/// Weight functions needed for pallet-native-to-evm-swap.
 pub trait WeightInfo {
     /// A function to calculate required weights for swap call.
     fn swap() -> Weight;
