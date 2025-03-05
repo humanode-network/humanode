@@ -97,7 +97,7 @@ fn run_succeeded_test_and_assert(
         <EvmBalances>::total_balance(&target_swap_evm_account()),
         target_swap_evm_account_balance_before + swap_balance
     );
-    // Verifyt that we have a corresponding evm swap event.
+    // Verifyt that we have a corresponding native to evm swap event.
     System::assert_has_event(RuntimeEvent::NativeToEvmSwap(Event::BalancesSwapped {
         from: source_swap_native_account(),
         withdrawed_amount: swap_balance,
