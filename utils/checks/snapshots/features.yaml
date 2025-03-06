@@ -282,7 +282,7 @@
     - default
     - i128
     - std
-- name: bytes 1.10.0
+- name: bytes 1.10.1
   features:
     - default
     - serde
