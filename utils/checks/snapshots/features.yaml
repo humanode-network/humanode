@@ -2292,7 +2292,7 @@
     - rustls
     - tls-rustls
     - webpki
-- name: quote 1.0.38
+- name: quote 1.0.39
   features:
     - default
     - proc-macro
