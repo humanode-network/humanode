@@ -72,13 +72,13 @@ where
             offenders: offenders.clone(),
         });
 
-        let mut maybe_should_be_deauthenticated = Vec::with_capacity(offenders.len());
+        let mut should_be_deauthenticated = Vec::with_capacity(offenders.len());
 
         for offender in offenders {
             let (_offender, identity) = &offender;
             match identity {
                 pallet_humanode_session::Identification::Bioauth(authentication) => {
-                    maybe_should_be_deauthenticated.push(authentication.clone());
+                    should_be_deauthenticated.push(authentication.clone());
                 }
                 pallet_humanode_session::Identification::Bootnode(..) => {
                     // Never slash the bootnodes.
@@ -86,9 +86,9 @@ where
             }
         }
 
-        if !maybe_should_be_deauthenticated.is_empty() {
+        if !should_be_deauthenticated.is_empty() {
             let deauthenticated_number = <pallet_bioauth::Pallet<T>>::deauthenticate(
-                maybe_should_be_deauthenticated,
+                should_be_deauthenticated,
                 T::DeauthenticationReasonOnOffenceReport::get(),
             )
             .len();
