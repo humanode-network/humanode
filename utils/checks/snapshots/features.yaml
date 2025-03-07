@@ -1328,7 +1328,7 @@
   features:
     - default
     - std
-- name: indoc 2.0.5
+- name: indoc 2.0.6
   features: []
 - name: infer 0.2.3
   features: []
