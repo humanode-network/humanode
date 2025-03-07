@@ -40,7 +40,7 @@ describe("evm to native tokens swap", () => {
     const targetSwapNativeAccountSs58 =
       "hmqAEn816d1W6TxbT7Md2Zc4hq1AUXFiLEs8yXW5BCUHFx54W";
 
-    const sourceSwapBalanceBefore = await ethPublicClient.getBalance({
+    const sourceSwapEvmBalanceBefore = await ethPublicClient.getBalance({
       address: alice.account.address,
     });
     const bridgePotEvmBalanceBefore = await ethPublicClient.getBalance({
@@ -50,11 +50,11 @@ describe("evm to native tokens swap", () => {
       substrateApi,
       bridgePotNativeAccount,
     );
-    const targetNativeAccountBalanceBefore = await getNativeBalance(
+    const targetSwapNativeBalanceBefore = await getNativeBalance(
       substrateApi,
       targetSwapNativeAccountSs58,
     );
-    const feesPotNativeAccountBalanceBefore = await getNativeBalance(
+    const feesPotNativeBalanceBefore = await getNativeBalance(
       substrateApi,
       feesPotNativeAccount,
     );
@@ -74,11 +74,14 @@ describe("evm to native tokens swap", () => {
 
     expect(swapTxReceipt.status).toBe("success");
 
-    const log = swapTxReceipt.logs[0]!;
+    const logs = swapTxReceipt.logs;
+    expect(logs.length).toEqual(1);
+
+    const swapLog = logs[0]!;
     const event = decodeEventLog({
       abi: evmSwap.abi,
-      data: log.data,
-      topics: log.topics,
+      data: swapLog.data,
+      topics: swapLog.topics,
     });
 
     expect(event).toEqual({
@@ -93,11 +96,11 @@ describe("evm to native tokens swap", () => {
     const fee =
       swapTxReceipt.cumulativeGasUsed * swapTxReceipt.effectiveGasPrice;
 
-    const sourceSwapBalanceAfter = await ethPublicClient.getBalance({
+    const sourceSwapEvmBalanceAfter = await ethPublicClient.getBalance({
       address: alice.account.address,
     });
-    expect(sourceSwapBalanceAfter).toEqual(
-      sourceSwapBalanceBefore - swapBalance - fee,
+    expect(sourceSwapEvmBalanceAfter).toEqual(
+      sourceSwapEvmBalanceBefore - swapBalance - fee,
     );
 
     const bridgePotEvmBalanceAfter = await ethPublicClient.getBalance({
@@ -115,21 +118,19 @@ describe("evm to native tokens swap", () => {
       bridgePotNativeBalanceBefore - swapBalance - fee,
     );
 
-    const targetNativeAccountBalanceAfter = await getNativeBalance(
+    const targetSwapNativeBalanceAfter = await getNativeBalance(
       substrateApi,
       targetSwapNativeAccountSs58,
     );
-    expect(targetNativeAccountBalanceAfter).toEqual(
-      targetNativeAccountBalanceBefore + swapBalance,
+    expect(targetSwapNativeBalanceAfter).toEqual(
+      targetSwapNativeBalanceBefore + swapBalance,
     );
 
-    const feesPotNativeAccountBalanceAfter = await getNativeBalance(
+    const feesPotNativeBalanceAfter = await getNativeBalance(
       substrateApi,
       feesPotNativeAccount,
     );
-    expect(feesPotNativeAccountBalanceAfter).toEqual(
-      feesPotNativeAccountBalanceBefore + fee,
-    );
+    expect(feesPotNativeBalanceAfter).toEqual(feesPotNativeBalanceBefore + fee);
 
     const evmSwapPrecompileBalance = await ethPublicClient.getBalance({
       address: evmToNativeSwapPrecompileAddress,
