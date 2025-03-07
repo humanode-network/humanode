@@ -168,7 +168,7 @@ fn run_failed_test_and_assert(
         *PRECOMPILE_ADDRESS,
         input,
         value,
-        expected_gas_usage, // the exact amount of fee we'll be using
+        50_000, // a reasonable upper bound for tests
         Some(*GAS_PRICE),
         Some(*GAS_PRICE),
         None,
