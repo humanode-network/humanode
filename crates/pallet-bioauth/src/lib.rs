@@ -330,7 +330,7 @@ pub mod pallet {
         AuthenticationsExpired { expired: Vec<T::ValidatorPublicKey> },
         /// The authentications has been removed from the state for some reason.
         AuthenticationsRemoved {
-            removed: Vec<T::ValidatorPublicKey>,
+            removed: Vec<Authentication<T::ValidatorPublicKey, T::Moment>>,
             reason: T::DeauthenticationReason,
         },
     }
@@ -393,27 +393,29 @@ pub mod pallet {
         }
 
         pub fn deauthenticate(
-            public_keys: Vec<<T as Config>::ValidatorPublicKey>,
+            authentications: Vec<
+                Authentication<<T as Config>::ValidatorPublicKey, <T as Config>::Moment>,
+            >,
             reason: <T as Config>::DeauthenticationReason,
-        ) -> Vec<<T as Config>::ValidatorPublicKey> {
-            let mut removed_public_keys = Vec::with_capacity(public_keys.len());
+        ) -> Vec<Authentication<<T as Config>::ValidatorPublicKey, <T as Config>::Moment>> {
+            let mut removed_authentications = Vec::with_capacity(authentications.len());
             ActiveAuthentications::<T>::mutate(|active_authentications| {
                 active_authentications.retain(|authentication| {
-                    if public_keys.contains(&authentication.public_key) {
-                        removed_public_keys.push(authentication.public_key.clone());
+                    if authentications.contains(authentication) {
+                        removed_authentications.push(authentication.clone());
                         return false;
                     }
                     true
                 });
             });
-            if !removed_public_keys.is_empty() {
+            if !removed_authentications.is_empty() {
                 // Emit an event.
                 Self::deposit_event(Event::AuthenticationsRemoved {
-                    removed: removed_public_keys.clone(),
+                    removed: removed_authentications.clone(),
                     reason,
                 });
             }
-            removed_public_keys
+            removed_authentications
         }
     }
 
