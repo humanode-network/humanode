@@ -28,6 +28,8 @@ ignore = [
   "RUSTSEC-2024-0363",
   # TODO(#1361): update the idna internal dependency to 1.0.0+
   "RUSTSEC-2024-0421",
+  # TODO(#1478): update the ring internal dependency to 0.17.12+
+  "RUSTSEC-2025-0009",
 ]
 
 [licenses]
