@@ -72,13 +72,13 @@ where
             offenders: offenders.clone(),
         });
 
-        let mut should_be_deauthenticated = Vec::with_capacity(offenders.len());
+        let mut maybe_should_be_deauthenticated = Vec::with_capacity(offenders.len());
 
         for offender in offenders {
             let (_offender, identity) = &offender;
             match identity {
                 pallet_humanode_session::Identification::Bioauth(authentication) => {
-                    should_be_deauthenticated.push(authentication.public_key.clone());
+                    maybe_should_be_deauthenticated.push(authentication.clone());
                 }
                 pallet_humanode_session::Identification::Bootnode(..) => {
                     // Never slash the bootnodes.
@@ -86,24 +86,27 @@ where
             }
         }
 
-        if !should_be_deauthenticated.is_empty() {
-            let offences_number: u64 = should_be_deauthenticated
-                .len()
-                .try_into()
-                .expect("u64 is big enough for this overflow to be practically impossible");
-
-            let _ = <pallet_bioauth::Pallet<T>>::deauthenticate(
-                should_be_deauthenticated,
+        if !maybe_should_be_deauthenticated.is_empty() {
+            let deauthenticated_number = <pallet_bioauth::Pallet<T>>::deauthenticate(
+                maybe_should_be_deauthenticated,
                 T::DeauthenticationReasonOnOffenceReport::get(),
-            );
+            )
+            .len();
 
-            <Total<T>>::mutate(|total| {
-                let new_total = total.map_or(offences_number, |t| {
-                    t.checked_add(offences_number)
-                        .expect("u64 is big enough for this overflow to be practically impossible")
+            if deauthenticated_number != 0 {
+                let offences_number: u64 = deauthenticated_number
+                    .try_into()
+                    .expect("u64 is big enough for this overflow to be practically impossible");
+
+                <Total<T>>::mutate(|total| {
+                    let new_total = total.map_or(offences_number, |t| {
+                        t.checked_add(offences_number).expect(
+                            "u64 is big enough for this overflow to be practically impossible",
+                        )
+                    });
+                    *total = Some(new_total);
                 });
-                *total = Some(new_total);
-            });
+            }
         }
 
         Ok(())
