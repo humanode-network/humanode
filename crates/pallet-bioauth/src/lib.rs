@@ -324,7 +324,7 @@ pub mod pallet {
     pub enum Event<T: Config> {
         /// New authentication was added to the state.
         NewAuthentication {
-            validator_public_key: T::ValidatorPublicKey,
+            authentication: Authentication<T::ValidatorPublicKey, T::Moment>,
         },
         /// The authentications has been expired.
         AuthenticationsExpired {
@@ -480,7 +480,7 @@ pub mod pallet {
                                 .map_err(|_| Error::<T>::TooManyNonces)?;
 
                             let authentication = Authentication {
-                                public_key: public_key.clone(),
+                                public_key,
                                 expires_at: current_moment
                                     .checked_add(&T::AuthenticationsExpireAfter::get())
                                     .expect("32 bits should be enough for this overflow to be practically impossible"),
@@ -491,7 +491,7 @@ pub mod pallet {
                                 <T as Config>::BeforeAuthHook::hook(&authentication)?;
 
                             active_authentications
-                                .try_push(authentication)
+                                .try_push(authentication.clone())
                                 .map_err(|_| Error::<T>::TooManyAuthentications)?;
 
                             // Issue an update to the external validators set.
@@ -501,9 +501,7 @@ pub mod pallet {
                             <T as Config>::AfterAuthHook::hook(before_hook_data);
 
                             // Emit an event.
-                            Self::deposit_event(Event::NewAuthentication {
-                                validator_public_key: public_key,
-                            });
+                            Self::deposit_event(Event::NewAuthentication { authentication });
                             Ok(())
                         },
                     )?;
