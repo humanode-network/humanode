@@ -327,7 +327,9 @@ pub mod pallet {
             validator_public_key: T::ValidatorPublicKey,
         },
         /// The authentications has been expired.
-        AuthenticationsExpired { expired: Vec<T::ValidatorPublicKey> },
+        AuthenticationsExpired {
+            expired: Vec<Authentication<T::ValidatorPublicKey, T::Moment>>,
+        },
         /// The authentications has been removed from the state for some reason.
         AuthenticationsRemoved {
             removed: Vec<Authentication<T::ValidatorPublicKey, T::Moment>>,
@@ -534,7 +536,7 @@ pub mod pallet {
             let current_moment = T::CurrentMoment::now();
             let possibly_expired_authentications = <ActiveAuthentications<T>>::get();
             let possibly_expired_authentications_len = possibly_expired_authentications.len();
-            let mut expired_validator_public_keys =
+            let mut expired_authentications =
                 Vec::with_capacity(possibly_expired_authentications_len);
             let mut active_authentications =
                 Vec::with_capacity(possibly_expired_authentications_len);
@@ -544,7 +546,7 @@ pub mod pallet {
                     active_authentications.push(possibly_expired_authentication);
                 } else {
                     // Expired!
-                    expired_validator_public_keys.push(possibly_expired_authentication.public_key)
+                    expired_authentications.push(possibly_expired_authentication)
                 }
             }
 
@@ -561,7 +563,7 @@ pub mod pallet {
                 <ActiveAuthentications<T>>::put(bounded_active_authentications);
 
                 Self::deposit_event(Event::AuthenticationsExpired {
-                    expired: expired_validator_public_keys,
+                    expired: expired_authentications,
                 });
             }
 
