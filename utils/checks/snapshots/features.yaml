@@ -302,9 +302,8 @@
 - name: cargo_metadata 0.18.1
   features:
     - default
-- name: cc 1.0.83
+- name: cc 1.2.16
   features:
-    - jobserver
     - parallel
 - name: cexpr 0.6.0
   features: []
@@ -1370,7 +1369,7 @@
     - use_std
 - name: itoa 1.0.10
   features: []
-- name: jobserver 0.1.28
+- name: jobserver 0.1.32
   features: []
 - name: js-sys 0.3.68
   features: []
@@ -2459,7 +2458,7 @@
     - default
     - dev_urandom_fallback
     - once_cell
-- name: ring 0.17.7
+- name: ring 0.17.13
   features:
     - alloc
     - default
