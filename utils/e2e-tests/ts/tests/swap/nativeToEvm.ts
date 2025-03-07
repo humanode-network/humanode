@@ -43,13 +43,13 @@ describe("native to evm tokens swap", () => {
     const keyring = new Keyring({ type: "sr25519", ss58Format: 5234 });
     const alice = keyring.addFromUri("//Alice");
 
-    const targetEvmAddress = "0x1100000000000000000000000000000000000011";
+    const targetSwapEvmAddress = "0x1100000000000000000000000000000000000011";
     const swapBalance = 1_000_000n;
 
     const swap = substrateApi.tx["nativeToEvmSwap"]?.["swap"];
     assert(swap);
 
-    const sourceSwapBalanceBefore = await getNativeBalance(
+    const sourceSwapNativeBalanceBefore = await getNativeBalance(
       substrateApi,
       alice.address,
     );
@@ -57,19 +57,19 @@ describe("native to evm tokens swap", () => {
       substrateApi,
       bridgePotNativeAccount,
     );
-    const targetEvmAccountBalanceBefore = await ethPublicClient.getBalance({
-      address: targetEvmAddress,
+    const targetSwapEvmBalanceBefore = await ethPublicClient.getBalance({
+      address: targetSwapEvmAddress,
     });
     const bridgePotEvmBalanceBefore = await ethPublicClient.getBalance({
       address: bridgePotEvmAddress,
     });
-    const feesPotNativeAccountBalanceBefore = await getNativeBalance(
+    const feesPotNativeBalanceBefore = await getNativeBalance(
       substrateApi,
       feesPotNativeAccount,
     );
 
     const { isCompleted, internalError, events, status, dispatchError } =
-      await sendAndWait(swap(targetEvmAddress, swapBalance), {
+      await sendAndWait(swap(targetSwapEvmAddress, swapBalance), {
         signWith: alice,
       });
 
@@ -125,7 +125,7 @@ describe("native to evm tokens swap", () => {
       ),
     ).toEqual(swapBalance);
     expect(nativeToEvmSwapBalancesSwappedEvent.data.to.toPrimitive()).toEqual(
-      targetEvmAddress,
+      targetSwapEvmAddress,
     );
     expect(
       BigInt(
@@ -139,7 +139,7 @@ describe("native to evm tokens swap", () => {
       bridgePotEvmAddress,
     );
     expect(ethereumExecutedEvent.data.to.toPrimitive()).toEqual(
-      targetEvmAddress,
+      targetSwapEvmAddress,
     );
     expect(ethereumExecutedEvent.data.exitReason.toPrimitive()).toEqual({
       succeed: "Stopped",
@@ -152,12 +152,12 @@ describe("native to evm tokens swap", () => {
       alice.address,
     );
 
-    const sourceSwapBalanceAfter = await getNativeBalance(
+    const sourceSwapNativeBalanceAfter = await getNativeBalance(
       substrateApi,
       alice.address,
     );
-    expect(sourceSwapBalanceAfter).toEqual(
-      sourceSwapBalanceBefore - swapBalance - fee,
+    expect(sourceSwapNativeBalanceAfter).toEqual(
+      sourceSwapNativeBalanceBefore - swapBalance - fee,
     );
 
     const bridgePotNativeBalanceAfter = await getNativeBalance(
@@ -168,11 +168,11 @@ describe("native to evm tokens swap", () => {
       bridgePotNativeBalanceBefore + swapBalance,
     );
 
-    const targetEvmAccountBalanceAfter = await ethPublicClient.getBalance({
-      address: targetEvmAddress,
+    const targetSwapEvmBalanceAfter = await ethPublicClient.getBalance({
+      address: targetSwapEvmAddress,
     });
-    expect(targetEvmAccountBalanceAfter).toEqual(
-      targetEvmAccountBalanceBefore + swapBalance,
+    expect(targetSwapEvmBalanceAfter).toEqual(
+      targetSwapEvmBalanceBefore + swapBalance,
     );
 
     const bridgePotEvmBalanceAfter = await ethPublicClient.getBalance({
@@ -182,12 +182,10 @@ describe("native to evm tokens swap", () => {
       bridgePotEvmBalanceBefore - swapBalance,
     );
 
-    const feesPotNativeAccountBalanceAfter = await getNativeBalance(
+    const feesPotNativeBalanceAfter = await getNativeBalance(
       substrateApi,
       feesPotNativeAccount,
     );
-    expect(feesPotNativeAccountBalanceAfter).toEqual(
-      feesPotNativeAccountBalanceBefore + fee,
-    );
+    expect(feesPotNativeBalanceAfter).toEqual(feesPotNativeBalanceBefore + fee);
   });
 });
