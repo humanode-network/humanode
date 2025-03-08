@@ -1,4 +1,5 @@
 use bridge_pot_currency_swap::ExistenceRequired;
+use precompile_evm_to_native_swap::Config as PrecompileConfig;
 use sp_runtime::traits::Identity;
 
 use crate::{
@@ -10,6 +11,18 @@ use crate::{
 parameter_types! {
     pub NativeToEvmSwapBridgePotAccountId: AccountId = NativeToEvmSwapBridgePot::account_id();
     pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
+}
+
+pub struct EvmToNativeSwapConfig;
+
+impl PrecompileConfig for EvmToNativeSwapConfig {
+    type AccountId = AccountId;
+    type EvmAccountId = EvmAccountId;
+    type NativeToken = Balances;
+    type EvmToken = EvmBalances;
+    type BalanceConverterEvmToNative = Identity;
+    type BridgePotNative = NativeToEvmSwapBridgePotAccountId;
+    type BridgePotEvm = EvmToNativeSwapBridgePotAccountId;
 }
 
 pub type NativeToEvmOneToOne =

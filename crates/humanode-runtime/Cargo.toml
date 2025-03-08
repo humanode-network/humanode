@@ -32,13 +32,14 @@ pallet-evm-balances = { path = "../pallet-evm-balances", default-features = fals
 pallet-evm-system = { path = "../pallet-evm-system", default-features = false }
 pallet-humanode-offences = { path = "../pallet-humanode-offences", default-features = false }
 pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
+pallet-native-to-evm-swap = { path = "../pallet-native-to-evm-swap", default-features = false }
 pallet-pot = { path = "../pallet-pot", default-features = false }
 pallet-token-claims = { path = "../pallet-token-claims", default-features = false }
 pallet-vesting = { path = "../pallet-vesting", default-features = false }
 precompile-bioauth = { path = "../precompile-bioauth", default-features = false }
 precompile-bls12381 = { path = "../precompile-bls12381", default-features = false }
-precompile-currency-swap = { path = "../precompile-currency-swap", default-features = false }
 precompile-evm-accounts-mapping = { path = "../precompile-evm-accounts-mapping", default-features = false }
+precompile-evm-to-native-swap = { path = "../precompile-evm-to-native-swap", default-features = false }
 precompile-native-currency = { path = "../precompile-native-currency", default-features = false }
 precompile-utils = { path = "../precompile-utils", default-features = false }
 primitives-auth-ticket = { path = "../primitives-auth-ticket", default-features = false }
@@ -131,6 +132,7 @@ runtime-benchmarks = [
   "pallet-humanode-session/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
   "pallet-multisig/runtime-benchmarks",
+  "pallet-native-to-evm-swap/runtime-benchmarks",
   "pallet-sudo/runtime-benchmarks",
   "pallet-timestamp/runtime-benchmarks",
   "pallet-token-claims/runtime-benchmarks",
@@ -190,6 +192,7 @@ std = [
   "pallet-humanode-session/std",
   "pallet-im-online/std",
   "pallet-multisig/std",
+  "pallet-native-to-evm-swap/std",
   "pallet-pot/std",
   "pallet-session/std",
   "pallet-sudo/std",
@@ -201,8 +204,8 @@ std = [
   "pallet-vesting/std",
   "precompile-bioauth/std",
   "precompile-bls12381/std",
-  "precompile-currency-swap/std",
   "precompile-evm-accounts-mapping/std",
+  "precompile-evm-to-native-swap/std",
   "precompile-native-currency/std",
   "precompile-utils/std",
   "primitives-auth-ticket/std",
@@ -261,6 +264,7 @@ try-runtime = [
   "pallet-humanode-session/try-runtime",
   "pallet-im-online/try-runtime",
   "pallet-multisig/try-runtime",
+  "pallet-native-to-evm-swap/try-runtime",
   "pallet-pot/try-runtime",
   "pallet-session/try-runtime",
   "pallet-sudo/try-runtime",
