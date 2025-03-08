@@ -119,6 +119,9 @@ fn authentication_with_empty_state() {
                 .return_const(());
         });
 
+        // Set block number to enable events.
+        System::set_block_number(1);
+
         // Ensure that authentication call is processed successfully.
         assert_ok!(Bioauth::authenticate(RuntimeOrigin::none(), input));
 
@@ -135,6 +138,13 @@ fn authentication_with_empty_state() {
             Bioauth::consumed_auth_ticket_nonces().into_inner(),
             vec![b"rty".to_vec()]
         );
+
+        System::assert_has_event(RuntimeEvent::Bioauth(Event::NewAuthentication {
+            authentication: Authentication {
+                public_key: bounded(b"qwe"),
+                expires_at,
+            },
+        }));
     });
 }
 
@@ -179,6 +189,9 @@ fn authentication_expires_exactly_at_the_moment() {
             mock.expect_hook().never();
         });
 
+        // Set block number to enable events.
+        System::set_block_number(1);
+
         // Process the block that certainly has to expire the authentication.
         Bioauth::on_initialize(block_to_process_moment(expires_at));
 
@@ -189,6 +202,13 @@ fn authentication_expires_exactly_at_the_moment() {
             Bioauth::consumed_auth_ticket_nonces().into_inner(),
             vec![b"alice_auth_ticket_nonce".to_vec()]
         );
+
+        System::assert_has_event(RuntimeEvent::Bioauth(Event::AuthenticationsExpired {
+            expired: vec![Authentication {
+                public_key: bounded(b"alice_pk"),
+                expires_at,
+            }],
+        }));
     });
 }
 
@@ -234,6 +254,9 @@ fn authentication_expires_in_successive_block() {
             mock.expect_hook().never();
         });
 
+        // Set block number to enable events.
+        System::set_block_number(1);
+
         // Process the block that certainly has to expire the authentication.
         Bioauth::on_initialize(block_to_process_moment(expires_at));
 
@@ -244,6 +267,13 @@ fn authentication_expires_in_successive_block() {
             Bioauth::consumed_auth_ticket_nonces().into_inner(),
             vec![b"alice_auth_ticket_nonce".to_vec()]
         );
+
+        System::assert_has_event(RuntimeEvent::Bioauth(Event::AuthenticationsExpired {
+            expired: vec![Authentication {
+                public_key: bounded(b"alice_pk"),
+                expires_at,
+            }],
+        }));
     });
 }
 
@@ -333,6 +363,13 @@ fn authentication_expiration_lifecycle() {
             Bioauth::consumed_auth_ticket_nonces().into_inner(),
             vec![nonce]
         );
+
+        System::assert_has_event(RuntimeEvent::Bioauth(Event::AuthenticationsExpired {
+            expired: vec![Authentication {
+                public_key: bounded(b"alice_pk"),
+                expires_at,
+            }],
+        }));
     });
 }
 
@@ -380,8 +417,18 @@ fn authentication_when_previous_one_has_been_expired() {
             mock.expect_hook().never();
         });
 
+        // Set block number to enable events.
+        System::set_block_number(1);
+
         // Run the expiration processing for the previous authentication.
         Bioauth::on_initialize(block_to_process_moment(expires_at));
+
+        System::assert_has_event(RuntimeEvent::Bioauth(Event::AuthenticationsExpired {
+            expired: vec![Authentication {
+                public_key: bounded(b"alice_pk"),
+                expires_at,
+            }],
+        }));
 
         // Set up mock expectations for Bioauth::authenticate.
         with_mock_validator_set_updater(|mock| {
@@ -432,6 +479,13 @@ fn authentication_when_previous_one_has_been_expired() {
                 b"new_alice_auth_ticket_nonce".to_vec()
             ]
         );
+
+        System::assert_has_event(RuntimeEvent::Bioauth(Event::NewAuthentication {
+            authentication: Authentication {
+                public_key: bounded(b"alice_pk"),
+                expires_at: expires_at + AUTHENTICATIONS_EXPIRE_AFTER,
+            },
+        }));
     });
 }
 
