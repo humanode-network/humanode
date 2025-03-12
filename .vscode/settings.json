@@ -28,6 +28,8 @@
   },
   "rust-analyzer.workspace.symbol.search.scope": "workspace_and_dependencies",
   "rust-analyzer.workspace.symbol.search.kind": "all_symbols",
+  // Prefer fully qualified paths.
+  "rust-analyzer.completion.autoimport.enable": false,
   "vitest.commandLine": "yarn utils/e2e-tests/ts test:watch --",
   "vitest.include": [
     "utils/e2e-tests/ts/**/tests/**/*.ts",
