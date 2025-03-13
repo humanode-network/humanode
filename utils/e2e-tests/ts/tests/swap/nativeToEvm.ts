@@ -115,6 +115,19 @@ describe("native to evm tokens swap", () => {
     assert(ethereumExecutedEvent);
     assert(transactionPaymentEvent);
 
+    // Ethereum execution checks.
+    const executedEvmTransaction = await ethPublicClient.getTransaction({
+      hash: ethereumExecutedEvent.data.transactionHash.toPrimitive() as `0x${string}`,
+    });
+    expect(executedEvmTransaction.from).toEqual(bridgePotEvmAddress);
+    expect(executedEvmTransaction.to).toEqual(targetSwapEvmAddress);
+    expect(executedEvmTransaction.value).toEqual(swapBalance);
+    expect(executedEvmTransaction.gasPrice).toEqual(0n);
+    expect(executedEvmTransaction.maxFeePerGas).toEqual(0n);
+    expect(executedEvmTransaction.maxPriorityFeePerGas).toEqual(0n);
+    expect(executedEvmTransaction.gas).toEqual(21000n);
+    expect(executedEvmTransaction.input).toEqual("0x");
+
     // Events related asserts.
     expect(nativeToEvmSwapBalancesSwappedEvent.data.from.toPrimitive()).toEqual(
       alice.address,
