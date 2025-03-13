@@ -158,6 +158,7 @@ describe("native to evm tokens swap", () => {
       succeed: "Stopped",
     });
 
+    // Balances changes related checks.
     const fee = BigInt(
       transactionPaymentEvent.data.actualFee.toPrimitive() as unknown as bigint,
     );
