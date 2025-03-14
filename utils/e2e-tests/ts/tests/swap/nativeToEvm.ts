@@ -78,42 +78,50 @@ describe("native to evm tokens swap", () => {
     expect(dispatchError).toBe(undefined);
     expect(internalError).toBe(undefined);
 
-    let nativeToEvmSwapBalancesSwappedEvent;
-    let ethereumExecutedEvent;
-    let transactionPaymentEvent;
+    const expectedEvents = [
+      // Executed fee withdraw from source swap native account.
+      ["balances", "Withdraw"],
+      // Executed swap balance transfer from source swap to bridge pot native account.
+      ["balances", "Transfer"],
+      // Executed new target swap EVM account creation in accounts records.
+      ["evmSystem", "NewAccount"],
+      // Executed EVM balances explicitly related event that an account is created with some free balance.
+      ["evmBalances", "Endowed"],
+      // Executed swap balance transfer from bridge EVM to target swap address.
+      ["evmBalances", "Transfer"],
+      // Executed ethereum transaction.
+      ["ethereum", "Executed"],
+      // Executed native to EVM swap.
+      ["nativeToEvmSwap", "BalancesSwapped"],
+      // Executed fee deposit to fees pot native account.
+      ["balances", "Deposit"],
+      // Executed pot explicitly related event that some balance is deposited.
+      ["feesPot", "Deposit"],
+      // Executed transaction payment event.
+      ["transactionPayment", "TransactionFeePaid"],
+      // Executed extrinsic success event.
+      ["system", "ExtrinsicSuccess"],
+    ] as const;
 
-    for (const item of events) {
-      if (
-        item.event.section == "nativeToEvmSwap" &&
-        item.event.method == "BalancesSwapped"
-      ) {
-        nativeToEvmSwapBalancesSwappedEvent = item.event as unknown as IEvent<
-          Codec[],
-          EvmSwapBalancesSwappedEvent
-        >;
-      }
+    expectedEvents.forEach((value, idx) => {
+      const [section, method] = value;
+      expect(events[idx]).toBeDefined();
+      expect(events[idx]?.event?.section).toBe(section);
+      expect(events[idx]?.event?.method).toBe(method);
+    });
 
-      if (item.event.section == "ethereum" && item.event.method == "Executed") {
-        ethereumExecutedEvent = item.event as unknown as IEvent<
-          Codec[],
-          EthereumExecutedEvent
-        >;
-      }
+    expect(events).toHaveLength(expectedEvents.length);
 
-      if (
-        item.event.section == "transactionPayment" &&
-        item.event.method == "TransactionFeePaid"
-      ) {
-        transactionPaymentEvent = item.event as unknown as IEvent<
-          Codec[],
-          TransactionPaymentEvent
-        >;
-      }
-    }
-
-    assert(nativeToEvmSwapBalancesSwappedEvent);
-    assert(ethereumExecutedEvent);
-    assert(transactionPaymentEvent);
+    const ethereumExecutedEvent = events[5]?.event as unknown as IEvent<
+      Codec[],
+      EthereumExecutedEvent
+    >;
+    const nativeToEvmSwapBalancesSwappedEvent = events[6]
+      ?.event as unknown as IEvent<Codec[], EvmSwapBalancesSwappedEvent>;
+    const transactionPaymentEvent = events[9]?.event as unknown as IEvent<
+      Codec[],
+      TransactionPaymentEvent
+    >;
 
     // Ethereum execution checks.
     const executedEvmTransaction = await ethPublicClient.getTransaction({
