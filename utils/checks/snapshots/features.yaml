@@ -3596,7 +3596,7 @@
 - name: utf8parse 0.2.1
   features:
     - default
-- name: uuid 1.15.1
+- name: uuid 1.16.0
   features:
     - rng
     - v4
