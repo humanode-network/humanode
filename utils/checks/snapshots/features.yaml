@@ -173,6 +173,10 @@
     - alloc
     - default
     - std
+- name: base64 0.22.1
+  features:
+    - alloc
+    - std
 - name: base64ct 1.6.0
   features:
     - alloc
@@ -1523,7 +1527,7 @@
     - snappy
     - static
     - tikv-jemalloc-sys
-- name: libsecp256k1 0.7.1
+- name: libsecp256k1 0.7.2
   features:
     - default
     - hmac
