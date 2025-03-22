@@ -1,9 +1,9 @@
-//! Tests to verify currency swap related basic operations.
+//! Tests to verify evm swap related basic operations.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::arithmetic_side_effects)]
 
-use frame_support::{assert_ok, once_cell::sync::Lazy, traits::Currency};
+use frame_support::{assert_ok, once_cell::sync::Lazy, traits::fungible::Inspect};
 use precompile_utils::{EvmDataWriter, LogsBuilder};
 use sp_core::H160;
 
@@ -36,20 +36,17 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     .cloned()
                     .chain(pot_accounts)
                     .map(|k| (k, INIT_BALANCE))
-                    .chain(
-                        [(
-                            TreasuryPot::account_id(),
-                            10 * INIT_BALANCE,
-                        ),
+                    .chain([
+                        (TreasuryPot::account_id(), 10 * INIT_BALANCE),
                         (
                             TokenClaimsPot::account_id(),
-                            <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
+                            <Balances as Inspect<AccountId>>::minimum_balance(),
                         ),
                         (
                             NativeToEvmSwapBridgePot::account_id(),
-                            <Balances as frame_support::traits::Currency<AccountId>>::minimum_balance(),
-                        )]
-                    )
+                            <Balances as Inspect<AccountId>>::minimum_balance(),
+                        ),
+                    ])
                     .collect()
             },
         },
@@ -91,10 +88,8 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                     .chain([(
                         EvmToNativeSwapBridgePot::account_id(),
                         fp_evm::GenesisAccount {
-                            balance: <EvmBalances as frame_support::traits::Currency<
-                                EvmAccountId,
-                            >>::minimum_balance()
-                            .into(),
+                            balance: <EvmBalances as Inspect<EvmAccountId>>::minimum_balance()
+                                .into(),
                             code: Default::default(),
                             nonce: Default::default(),
                             storage: Default::default(),
@@ -124,21 +119,21 @@ fn currencies_are_balanced() {
     })
 }
 
-/// This test verifies that swap native call works in the happy path.
+/// This test verifies that native to evm swap call works in the happy path.
 #[test]
-fn currency_swap_native_call_works() {
+fn native_to_evm_swap_call_works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         let alice_balance_before = Balances::total_balance(&account_id("Alice"));
-        let native_to_evm_swap_bridge_pot_before =
+        let bridge_pot_native_account_balance_before =
             Balances::total_balance(&NativeToEvmSwapBridgePot::account_id());
         let alice_evm_balance_before = EvmBalances::total_balance(&evm_account_id("EvmAlice"));
-        let evm_to_native_swap_bridge_pot_before =
+        let bridge_pot_evm_account_balance_before =
             EvmBalances::total_balance(&EvmToNativeSwapBridgePot::account_id());
         let swap_balance: Balance = 1000;
 
         // Make swap.
-        assert_ok!(CurrencySwap::swap(
+        assert_ok!(NativeToEvmSwap::swap(
             Some(account_id("Alice")).into(),
             evm_account_id("EvmAlice"),
             swap_balance
@@ -152,7 +147,7 @@ fn currency_swap_native_call_works() {
         );
         assert_eq!(
             Balances::total_balance(&NativeToEvmSwapBridgePot::account_id()),
-            native_to_evm_swap_bridge_pot_before + swap_balance
+            bridge_pot_native_account_balance_before + swap_balance
         );
         assert_eq!(
             EvmBalances::total_balance(&evm_account_id("EvmAlice")),
@@ -160,7 +155,86 @@ fn currency_swap_native_call_works() {
         );
         assert_eq!(
             EvmBalances::total_balance(&EvmToNativeSwapBridgePot::account_id()),
-            evm_to_native_swap_bridge_pot_before - swap_balance
+            bridge_pot_evm_account_balance_before - swap_balance
+        );
+    })
+}
+
+/// This test verifies that ewm to native swap precompile call works in the happy path.
+#[test]
+fn ewm_to_native_precompile_call_works() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        let alice_balance_before = Balances::total_balance(&account_id("Alice"));
+        let bridge_pot_native_account_balance_before =
+            Balances::total_balance(&NativeToEvmSwapBridgePot::account_id());
+        let alice_evm_balance_before = EvmBalances::total_balance(&evm_account_id("EvmAlice"));
+        let bridge_pot_evm_account_balance_before =
+            EvmBalances::total_balance(&EvmToNativeSwapBridgePot::account_id());
+        let fees_pot_balance_before = Balances::total_balance(&FeesPot::account_id());
+        let swap_balance: Balance = 1000;
+
+        let expected_gas_usage: u64 = 21216 + 560;
+        let expected_fee: Balance =
+            Balance::from(expected_gas_usage) * Balance::try_from(*GAS_PRICE).unwrap();
+
+        // Invoke the function under test.
+        let execinfo = <Runtime as pallet_evm::Config>::Runner::call(
+            evm_account_id("EvmAlice"),
+            *PRECOMPILE_ADDRESS,
+            EvmDataWriter::new_with_selector(precompile_evm_to_native_swap::Action::Swap)
+                .write(H256::from(account_id("Alice").as_ref()))
+                .build(),
+            swap_balance.into(),
+            50_000, // a reasonable upper bound for tests
+            Some(*GAS_PRICE),
+            Some(*GAS_PRICE),
+            None,
+            Vec::new(),
+            true,
+            true,
+            None,
+            None,
+            <Runtime as pallet_evm::Config>::config(),
+        )
+        .unwrap();
+        assert_eq!(
+            execinfo.exit_reason,
+            fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
+        );
+        assert_eq!(execinfo.used_gas.standard, expected_gas_usage.into());
+        assert_eq!(execinfo.value, EvmDataWriter::new().write(true).build());
+        assert_eq!(
+            execinfo.logs,
+            vec![LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
+                precompile_evm_to_native_swap::SELECTOR_LOG_SWAP,
+                evm_account_id("EvmAlice"),
+                H256::from(account_id("Alice").as_ref()),
+                EvmDataWriter::new().write(swap_balance).build(),
+            )]
+        );
+
+        // Assert state changes.
+        assert!(BalancedCurrencySwapBridgesInitializer::is_balanced().unwrap());
+        assert_eq!(
+            Balances::total_balance(&FeesPot::account_id()),
+            fees_pot_balance_before + expected_fee
+        );
+        assert_eq!(
+            Balances::total_balance(&account_id("Alice")),
+            alice_balance_before + swap_balance
+        );
+        assert_eq!(
+            Balances::total_balance(&NativeToEvmSwapBridgePot::account_id()),
+            bridge_pot_native_account_balance_before - swap_balance - expected_fee
+        );
+        assert_eq!(
+            EvmBalances::total_balance(&evm_account_id("EvmAlice")),
+            alice_evm_balance_before - swap_balance - expected_fee
+        );
+        assert_eq!(
+            EvmBalances::total_balance(&EvmToNativeSwapBridgePot::account_id()),
+            bridge_pot_evm_account_balance_before + swap_balance + expected_fee
         );
     })
 }
