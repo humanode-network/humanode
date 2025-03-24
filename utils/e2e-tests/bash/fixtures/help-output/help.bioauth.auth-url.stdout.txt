@@ -519,7 +519,7 @@ Options:
           The URL to use for the web app. Used to print the QR Code to the console, so it doesn't matter much
 
       --rpc-url <RPC_URL>
-          The URL to pass to the web app to connect to the node RPC. If not passed, a URL with `localhost` and the HTTP RPC port will be used
+          The URL to pass to the web app to connect to the node RPC. If not passed, a URL with WebSocket scheme and `localhost` path will be used
 
       --rpc-url-scheme-preference <RPC_URL_SCHEME_PREFERENCE>
           What RPC URL scheme to prefer
