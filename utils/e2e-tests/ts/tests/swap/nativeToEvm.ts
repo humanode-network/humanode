@@ -142,7 +142,7 @@ describe("native to evm tokens swap", () => {
     );
     expect(
       BigInt(
-        nativeToEvmSwapBalancesSwappedEvent.data.withdrawedAmount.toPrimitive() as unknown as bigint,
+        nativeToEvmSwapBalancesSwappedEvent.data.withdrawedAmount.toPrimitive() as number,
       ),
     ).toEqual(swapBalance);
     expect(nativeToEvmSwapBalancesSwappedEvent.data.to.toPrimitive()).toEqual(
@@ -150,7 +150,7 @@ describe("native to evm tokens swap", () => {
     );
     expect(
       BigInt(
-        nativeToEvmSwapBalancesSwappedEvent.data.depositedAmount.toPrimitive() as unknown as bigint,
+        nativeToEvmSwapBalancesSwappedEvent.data.depositedAmount.toPrimitive() as number,
       ),
     ).toEqual(swapBalance);
     expect(nativeToEvmSwapBalancesSwappedEvent.data.evmTransactionHash).toEqual(
@@ -168,7 +168,7 @@ describe("native to evm tokens swap", () => {
 
     // Balances changes related checks.
     const fee = BigInt(
-      transactionPaymentEvent.data.actualFee.toPrimitive() as unknown as bigint,
+      transactionPaymentEvent.data.actualFee.toPrimitive() as number,
     );
     expect(transactionPaymentEvent.data.who.toPrimitive()).toEqual(
       alice.address,
