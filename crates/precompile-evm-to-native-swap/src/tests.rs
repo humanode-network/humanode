@@ -2,7 +2,7 @@
 #![allow(clippy::arithmetic_side_effects)]
 
 use fp_evm::{ExitError, ExitReason};
-use frame_support::traits::fungible::Unbalanced;
+use frame_support::{assert_noop, traits::fungible::Unbalanced};
 use pallet_evm::Runner;
 use precompile_utils::{EvmDataWriter, LogsBuilder};
 use sp_core::H256;
@@ -393,50 +393,32 @@ fn swap_fail_trailing_junk() {
 #[test]
 fn runner_fail_source_balance_no_funds() {
     new_test_ext().execute_with_ext(|_| {
-        let storage_root = frame_support::storage_root(frame_support::sp_runtime::StateVersion::V1);
-
-        // Invoke the function under test.
-        let execerr = <Test as pallet_evm::Config>::Runner::call(
-            source_swap_evm_account(),
-            *PRECOMPILE_ADDRESS,
-            EvmDataWriter::new_with_selector(Action::Swap)
-                .write(H256::from(target_swap_native_account().as_ref()))
-                .build(),
-            U256::from(INIT_BALANCE + 1),
-            50_000, // a reasonable upper bound for tests
-            Some(*GAS_PRICE),
-            Some(*GAS_PRICE),
-            None,
-            Vec::new(),
-            true,
-            true,
-            None,
-            None,
-            <Test as pallet_evm::Config>::config(),
-        )
-        .unwrap_err();
-        assert!(matches!(execerr.error, pallet_evm::Error::BalanceLow));
-        assert_eq!(
-            storage_root,
-            frame_support::storage_root(frame_support::sp_runtime::StateVersion::V1),
-            "storage changed"
+        assert_noop!(
+            Err::<(), DispatchError>(
+                <Test as pallet_evm::Config>::Runner::call(
+                    source_swap_evm_account(),
+                    *PRECOMPILE_ADDRESS,
+                    EvmDataWriter::new_with_selector(Action::Swap)
+                        .write(H256::from(target_swap_native_account().as_ref()))
+                        .build(),
+                    U256::from(INIT_BALANCE + 1),
+                    50_000, // a reasonable upper bound for tests
+                    Some(*GAS_PRICE),
+                    Some(*GAS_PRICE),
+                    None,
+                    Vec::new(),
+                    true,
+                    true,
+                    None,
+                    None,
+                    <Test as pallet_evm::Config>::config(),
+                )
+                .unwrap_err()
+                .error
+                .into()
+            ),
+            pallet_evm::Error::<Test>::BalanceLow
         );
-
-        // Assert that interested balances have not been changed.
-        assert_eq!(
-            <EvmBalances>::total_balance(&source_swap_evm_account()),
-            INIT_BALANCE,
-        );
-        assert_eq!(
-            EvmBalances::total_balance(&BridgePotEvm::get()),
-            BRIDGE_INIT_BALANCE,
-        );
-        assert_eq!(<Balances>::total_balance(&target_swap_native_account()), 0);
-        assert_eq!(
-            Balances::total_balance(&BridgePotNative::get()),
-            BRIDGE_INIT_BALANCE,
-        );
-        assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
     });
 }
 
@@ -449,49 +431,32 @@ fn runner_fail_source_balance_no_funds() {
 #[test]
 fn runner_fail_value_overflow() {
     new_test_ext().execute_with_ext(|_| {
-        let storage_root = frame_support::storage_root(frame_support::sp_runtime::StateVersion::V1);
-
         // Invoke the function under test.
-        let execerr = <Test as pallet_evm::Config>::Runner::call(
-            source_swap_evm_account(),
-            *PRECOMPILE_ADDRESS,
-            EvmDataWriter::new_with_selector(Action::Swap)
-                .write(H256::from(target_swap_native_account().as_ref()))
-                .build(),
-            U256::MAX,
-            50_000, // a reasonable upper bound for tests
-            Some(*GAS_PRICE),
-            Some(*GAS_PRICE),
-            None,
-            Vec::new(),
-            true,
-            true,
-            None,
-            None,
-            <Test as pallet_evm::Config>::config(),
-        )
-        .unwrap_err();
-        assert!(matches!(execerr.error, pallet_evm::Error::BalanceLow));
-        assert_eq!(
-            storage_root,
-            frame_support::storage_root(frame_support::sp_runtime::StateVersion::V1),
-            "storage changed"
+        assert_noop!(
+            Err::<(), DispatchError>(
+                <Test as pallet_evm::Config>::Runner::call(
+                    source_swap_evm_account(),
+                    *PRECOMPILE_ADDRESS,
+                    EvmDataWriter::new_with_selector(Action::Swap)
+                        .write(H256::from(target_swap_native_account().as_ref()))
+                        .build(),
+                    U256::MAX,
+                    50_000, // a reasonable upper bound for tests
+                    Some(*GAS_PRICE),
+                    Some(*GAS_PRICE),
+                    None,
+                    Vec::new(),
+                    true,
+                    true,
+                    None,
+                    None,
+                    <Test as pallet_evm::Config>::config(),
+                )
+                .unwrap_err()
+                .error
+                .into()
+            ),
+            pallet_evm::Error::<Test>::BalanceLow
         );
-
-        // Assert that interested balances have not been changed.
-        assert_eq!(
-            <EvmBalances>::total_balance(&source_swap_evm_account()),
-            INIT_BALANCE,
-        );
-        assert_eq!(
-            EvmBalances::total_balance(&BridgePotEvm::get()),
-            BRIDGE_INIT_BALANCE,
-        );
-        assert_eq!(<Balances>::total_balance(&target_swap_native_account()), 0);
-        assert_eq!(
-            Balances::total_balance(&BridgePotNative::get()),
-            BRIDGE_INIT_BALANCE,
-        );
-        assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
     });
 }
