@@ -1,31 +1,37 @@
-//! The mock for the precompile.
+use std::collections::BTreeMap;
 
-// Allow simple integer arithmetic in tests.
-#![allow(clippy::arithmetic_side_effects)]
-
-use fp_evm::{IsPrecompileResult, PrecompileHandle};
 use frame_support::{
     once_cell::sync::Lazy,
-    sp_io,
+    parameter_types, sp_io,
     sp_runtime::{
-        self,
         testing::Header,
-        traits::{BlakeTwo256, IdentityLookup},
-        BuildStorage, DispatchError,
+        traits::{BlakeTwo256, Identity, IdentityLookup},
+        BuildStorage,
     },
-    traits::{ConstU16, ConstU32, ConstU64},
+    traits::{ConstU128, ConstU32, ConstU64},
     weights::Weight,
 };
-use frame_system as system;
-use mockall::mock;
-use sp_core::{ConstU128, H160, H256, U256};
+use pallet_ethereum::PostLogContent as EthereumPostLogContent;
+use sp_core::{Get, H160, H256, U256};
+
+use crate::{self as pallet_native_to_evm_swap};
+
+pub const INIT_BALANCE: u128 = 10_000_000_000_000_000;
+// Add some tokens to test swap with full balance.
+pub const BRIDGE_INIT_BALANCE: u128 = INIT_BALANCE + 100;
+
+pub fn alice() -> AccountId {
+    AccountId::from(hex_literal::hex!(
+        "1100000000000000000000000000000000000000000000000000000000000011"
+    ))
+}
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 
-pub(crate) type AccountId = sp_runtime::AccountId32;
-pub(crate) type EvmAccountId = H160;
-pub(crate) type Balance = u128;
+pub type AccountId = frame_support::sp_runtime::AccountId32;
+pub type EvmAccountId = H160;
+pub type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -41,10 +47,12 @@ frame_support::construct_runtime!(
         EvmSystem: pallet_evm_system,
         EvmBalances: pallet_evm_balances,
         EVM: pallet_evm,
+        Ethereum: pallet_ethereum,
+        NativeToEvmSwap: pallet_native_to_evm_swap,
     }
 );
 
-impl system::Config for Test {
+impl frame_system::Config for Test {
     type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
     type BlockLength = ();
@@ -56,7 +64,7 @@ impl system::Config for Test {
     type Hash = H256;
     type Hashing = BlakeTwo256;
     type AccountId = AccountId;
-    type Lookup = IdentityLookup<Self::AccountId>;
+    type Lookup = IdentityLookup<AccountId>;
     type Header = Header;
     type RuntimeEvent = RuntimeEvent;
     type BlockHashCount = ConstU64<250>;
@@ -66,19 +74,9 @@ impl system::Config for Test {
     type OnNewAccount = ();
     type OnKilledAccount = ();
     type SystemWeightInfo = ();
-    type SS58Prefix = ConstU16<1>;
+    type SS58Prefix = ();
     type OnSetCode = ();
     type MaxConsumers = ConstU32<16>;
-}
-
-frame_support::parameter_types! {
-    pub const MinimumPeriod: u64 = 1000;
-}
-impl pallet_timestamp::Config for Test {
-    type Moment = u64;
-    type OnTimestampSet = ();
-    type MinimumPeriod = MinimumPeriod;
-    type WeightInfo = ();
 }
 
 impl pallet_balances::Config for Test {
@@ -115,8 +113,18 @@ impl pallet_evm_balances::Config for Test {
     type DustRemoval = ();
 }
 
-pub(crate) static GAS_PRICE: Lazy<U256> = Lazy::new(|| 1_000_000_000u128.into());
+parameter_types! {
+    pub const MinimumPeriod: u64 = 1000;
+}
 
+impl pallet_timestamp::Config for Test {
+    type Moment = u64;
+    type OnTimestampSet = ();
+    type MinimumPeriod = MinimumPeriod;
+    type WeightInfo = ();
+}
+
+pub static GAS_PRICE: Lazy<U256> = Lazy::new(|| 1_000_000_000u128.into());
 pub struct FixedGasPrice;
 impl fp_evm::FeeCalculator for FixedGasPrice {
     fn min_gas_price() -> (U256, Weight) {
@@ -125,11 +133,10 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
     }
 }
 
-frame_support::parameter_types! {
+parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
     pub GasLimitPovSizeRatio: u64 = 0;
     pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
-    pub MockPrecompiles: MockPrecompileSet = MockPrecompileSet;
 }
 
 impl pallet_evm::Config for Test {
@@ -147,8 +154,8 @@ impl pallet_evm::Config for Test {
     type AddressMapping = pallet_evm::IdentityAddressMapping;
     type Currency = EvmBalances;
     type RuntimeEvent = RuntimeEvent;
-    type PrecompilesType = MockPrecompileSet;
-    type PrecompilesValue = MockPrecompiles;
+    type PrecompilesType = ();
+    type PrecompilesValue = ();
     type ChainId = ();
     type BlockGasLimit = BlockGasLimit;
     type Runner = pallet_evm::runner::stack::Runner<Self>;
@@ -160,69 +167,77 @@ impl pallet_evm::Config for Test {
     type WeightInfo = ();
 }
 
-type CurrencySwapPrecompile =
-    crate::CurrencySwap<MockCurrencySwap, EvmAccountId, AccountId, ConstU64<200>>;
+parameter_types! {
+    pub const PostBlockAndTxnHashes: EthereumPostLogContent = EthereumPostLogContent::BlockAndTxnHashes;
+}
 
-/// The precompile set containing the precompile under test.
-pub struct MockPrecompileSet;
+impl pallet_ethereum::Config for Test {
+    type RuntimeEvent = RuntimeEvent;
+    type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
+    type PostLogContent = PostBlockAndTxnHashes;
+    type ExtraDataLength = ConstU32<30>;
+}
 
-pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x900));
+pub struct BridgePotNative;
 
-impl pallet_evm::PrecompileSet for MockPrecompileSet {
-    /// Tries to execute a precompile in the precompile set.
-    /// If the provided address is not a precompile, returns None.
-    fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<pallet_evm::PrecompileResult> {
-        use pallet_evm::Precompile;
-        let address = handle.code_address();
-
-        if address == *PRECOMPILE_ADDRESS {
-            return Some(CurrencySwapPrecompile::execute(handle));
-        }
-
-        None
-    }
-
-    /// Check if the given address is a precompile. Should only be called to
-    /// perform the check while not executing the precompile afterward, since
-    /// `execute` already performs a check internally.
-    fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
-        IsPrecompileResult::Answer {
-            is_precompile: address == *PRECOMPILE_ADDRESS,
-            extra_cost: 0,
-        }
+impl Get<AccountId> for BridgePotNative {
+    fn get() -> AccountId {
+        AccountId::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000000000000000000000000000001"
+        ))
     }
 }
 
-mock! {
-    #[derive(Debug)]
-    pub CurrencySwap {}
-    impl primitives_currency_swap::CurrencySwap<EvmAccountId, AccountId> for CurrencySwap {
-        type From = EvmBalances;
-        type To = Balances;
-        type Error = DispatchError;
+pub struct BridgePotEvm;
 
-        fn swap(
-            imbalance: primitives_currency_swap::FromNegativeImbalanceFor<Self, EvmAccountId, AccountId>,
-        ) -> Result<
-            primitives_currency_swap::ToNegativeImbalanceFor<Self, EvmAccountId, AccountId>,
-            primitives_currency_swap::ErrorFor<Self, EvmAccountId, AccountId>,
-        >;
-
-        fn estimate_swapped_balance(
-            balance: primitives_currency_swap::FromBalanceFor<Self, EvmAccountId, AccountId>,
-        ) -> primitives_currency_swap::ToBalanceFor<Self, EvmAccountId, AccountId>;
+impl Get<EvmAccountId> for BridgePotEvm {
+    fn get() -> EvmAccountId {
+        EvmAccountId::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ))
     }
+}
+
+impl pallet_native_to_evm_swap::Config for Test {
+    type RuntimeEvent = RuntimeEvent;
+    type EvmAccountId = EvmAccountId;
+    type NativeToken = Balances;
+    type EvmToken = EvmBalances;
+    type BalanceConverterNativeToEvm = Identity;
+    type BridgePotNative = BridgePotNative;
+    type BridgePotEvm = BridgePotEvm;
+    type WeightInfo = ();
 }
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
-    let genesis_config = GenesisConfig::default();
-    new_test_ext_with(genesis_config)
-}
+    // Build genesis.
+    let config = GenesisConfig {
+        balances: BalancesConfig {
+            balances: vec![
+                (BridgePotNative::get(), BRIDGE_INIT_BALANCE),
+                (alice(), INIT_BALANCE),
+            ],
+        },
+        evm: EVMConfig {
+            accounts: {
+                let mut map = BTreeMap::new();
+                map.insert(
+                    BridgePotEvm::get(),
+                    fp_evm::GenesisAccount {
+                        balance: BRIDGE_INIT_BALANCE.into(),
+                        code: Default::default(),
+                        nonce: Default::default(),
+                        storage: Default::default(),
+                    },
+                );
+                map
+            },
+        },
+        ..Default::default()
+    };
+    let storage = config.build_storage().unwrap();
 
-// This function basically just builds a genesis storage key/value store according to
-// our desired mockup.
-pub fn new_test_ext_with(genesis_config: GenesisConfig) -> sp_io::TestExternalities {
-    let storage = genesis_config.build_storage().unwrap();
+    // Make test externalities from the storage.
     storage.into()
 }
 

@@ -12,6 +12,18 @@ parameter_types! {
     pub EvmToNativeSwapBridgePotAccountId: EvmAccountId = EvmToNativeSwapBridgePot::account_id();
 }
 
+pub struct EvmToNativeSwapConfig;
+
+impl precompile_evm_to_native_swap::Config for EvmToNativeSwapConfig {
+    type AccountId = AccountId;
+    type EvmAccountId = EvmAccountId;
+    type NativeToken = Balances;
+    type EvmToken = EvmBalances;
+    type BalanceConverterEvmToNative = Identity;
+    type BridgePotNative = NativeToEvmSwapBridgePotAccountId;
+    type BridgePotEvm = EvmToNativeSwapBridgePotAccountId;
+}
+
 pub type NativeToEvmOneToOne =
     bridge_pot_currency_swap::CurrencySwap<NativeToEvmOneToOneConfig, ExistenceRequired>;
 

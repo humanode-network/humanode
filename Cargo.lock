@@ -3817,6 +3817,7 @@ dependencies = [
  "pallet-humanode-session",
  "pallet-im-online",
  "pallet-multisig",
+ "pallet-native-to-evm-swap",
  "pallet-pot",
  "pallet-session",
  "pallet-sudo",
@@ -3829,8 +3830,8 @@ dependencies = [
  "parity-scale-codec",
  "precompile-bioauth",
  "precompile-bls12381",
- "precompile-currency-swap",
  "precompile-evm-accounts-mapping",
+ "precompile-evm-to-native-swap",
  "precompile-native-currency",
  "precompile-utils",
  "primitives-auth-ticket",
@@ -6290,6 +6291,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-native-to-evm-swap"
+version = "0.1.0"
+dependencies = [
+ "assert_matches",
+ "ethereum",
+ "fp-ethereum",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "num_enum 0.7.3",
+ "pallet-balances",
+ "pallet-ethereum",
+ "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+]
+
+[[package]]
 name = "pallet-pot"
 version = "0.1.0"
 dependencies = [
@@ -6816,28 +6840,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "precompile-currency-swap"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex-literal",
- "mockall",
- "num_enum 0.7.3",
- "pallet-balances",
- "pallet-evm",
- "pallet-evm-balances",
- "pallet-evm-system",
- "pallet-timestamp",
- "parity-scale-codec",
- "precompile-utils",
- "primitives-currency-swap",
- "scale-info",
- "sp-core",
-]
-
-[[package]]
 name = "precompile-evm-accounts-mapping"
 version = "0.1.0"
 dependencies = [
@@ -6854,6 +6856,27 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std",
+]
+
+[[package]]
+name = "precompile-evm-to-native-swap"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "mockall",
+ "num_enum 0.7.3",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-evm-balances",
+ "pallet-evm-system",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "precompile-utils",
+ "scale-info",
+ "sp-core",
 ]
 
 [[package]]
