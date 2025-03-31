@@ -1875,7 +1875,7 @@
     - registry
     - x509
     - x962
-- name: once_cell 1.21.2
+- name: once_cell 1.21.3
   features:
     - alloc
     - default
