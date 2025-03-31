@@ -10,6 +10,7 @@ use crate::{mock::*, *};
 
 mod currency;
 mod fungible;
+mod fungible_conformance_tests;
 
 fn assert_total_issuance_invariant() {
     let iterated_total_issuance: u64 = <pallet_evm_system::Account<Test>>::iter_values()
