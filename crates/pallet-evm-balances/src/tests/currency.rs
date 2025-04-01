@@ -1,9 +1,7 @@
 //! Tests regarding the functionality of the `Currency` trait set implementations.
 
 use frame_support::{assert_noop, assert_ok, traits::Currency};
-use sp_core::H160;
 use sp_runtime::TokenError;
-use sp_std::str::FromStr;
 
 use crate::{mock::*, tests::assert_total_issuance_invariant, *};
 
@@ -353,7 +351,7 @@ fn deposit_into_existing_fails_overflow() {
 #[test]
 fn deposit_into_existing_fails_dead_account() {
     new_test_ext().execute_with_ext(|_| {
-        let charlie = H160::from_str("1000000000000000000000000000000000000003").unwrap();
+        let charlie = 3;
 
         // Check test preconditions.
         assert_eq!(EvmBalances::total_balance(&charlie), 0);
@@ -372,7 +370,7 @@ fn deposit_into_existing_fails_dead_account() {
 fn deposit_creating_works() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare test preconditions.
-        let charlie = H160::from_str("1000000000000000000000000000000000000003").unwrap();
+        let charlie = 3;
         let deposited_amount = 10;
         assert!(!EvmSystem::account_exists(&charlie));
 
@@ -517,7 +515,7 @@ fn withdraw_fails_expendability() {
 fn make_free_balance_be_works() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare test preconditions.
-        let charlie = H160::from_str("1000000000000000000000000000000000000003").unwrap();
+        let charlie = 3;
         let made_free_balance = 100;
 
         // Check test preconditions.
@@ -565,8 +563,8 @@ fn evm_system_account_should_be_reaped() {
 fn transferring_too_high_value_should_not_panic() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare test preconditions.
-        let charlie = H160::from_str("1000000000000000000000000000000000000003").unwrap();
-        let eve = H160::from_str("1000000000000000000000000000000000000004").unwrap();
+        let charlie = 3;
+        let eve = 4;
         EvmBalances::make_free_balance_be(&charlie, u64::MAX);
         EvmBalances::make_free_balance_be(&eve, 1);
 
