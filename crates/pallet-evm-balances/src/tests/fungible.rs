@@ -7,9 +7,7 @@ use frame_support::{
         tokens::Precision,
     },
 };
-use sp_core::H160;
 use sp_runtime::TokenError;
-use sp_std::str::FromStr;
 
 use crate::{mock::*, tests::assert_total_issuance_invariant, *};
 
@@ -799,8 +797,8 @@ fn transfer_fails_not_expendable() {
 fn transfer_fails_underflow() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare test preconditions.
-        let charlie = H160::from_str("1000000000000000000000000000000000000003").unwrap();
-        let eve = H160::from_str("1000000000000000000000000000000000000004").unwrap();
+        let charlie = 3;
+        let eve = 4;
         EvmBalances::set_balance(&charlie, u64::MAX);
         EvmBalances::set_balance(&eve, 1);
 
@@ -906,7 +904,7 @@ fn deposit_flow_works() {
 #[test]
 fn deposit_works_new_account() {
     new_test_ext().execute_with_ext(|_| {
-        let charlie = H160::from_str("1000000000000000000000000000000000000003").unwrap();
+        let charlie = 3;
 
         // Check test preconditions.
         assert_eq!(EvmBalances::total_balance(&charlie), 0);
