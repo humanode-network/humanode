@@ -19,24 +19,20 @@ use crate::{self as pallet_evm_balances, *};
 pub(crate) const INIT_BALANCE: u64 = 10_000_000_000_000_000;
 
 /// Alice account.
-pub fn alice() -> u64 {
-    5234
-}
+pub const ALICE: u64 = 0x5234;
 
 /// Alice H160 account.
-pub fn alice_h160() -> H160 {
-    H160::from_low_u64_be(alice())
-}
+pub const ALICE_H160: H160 = H160(hex_literal::hex!(
+    "0000000000000000000000000000000000005234"
+));
 
 /// Bob account.
-pub fn bob() -> u64 {
-    4325
-}
+pub const BOB: u64 = 0x4235;
 
 /// Bob H160 account.
-pub fn bob_h160() -> H160 {
-    H160::from_low_u64_be(bob())
-}
+pub const BOB_H160: H160 = H160(hex_literal::hex!(
+    "0000000000000000000000000000000000004235"
+));
 
 /// H160 into u64 address mapper.
 pub struct H160IntoU64;
@@ -188,8 +184,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
                     nonce: Default::default(),
                     storage: Default::default(),
                 };
-                map.insert(alice_h160(), init_genesis_account.clone());
-                map.insert(bob_h160(), init_genesis_account);
+                map.insert(ALICE_H160, init_genesis_account.clone());
+                map.insert(BOB_H160, init_genesis_account);
                 map
             },
         },

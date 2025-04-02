@@ -39,7 +39,7 @@ fn minimum_balance_works() {
 fn total_balance_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check the total balance value.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
     });
 }
 
@@ -47,7 +47,7 @@ fn total_balance_works() {
 fn balance_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check the balance value.
-        assert_eq!(EvmBalances::balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::balance(&ALICE), INIT_BALANCE);
     });
 }
 
@@ -55,32 +55,32 @@ fn balance_works() {
 fn reducable_balance_works() {
     new_test_ext().execute_with_ext(|_| {
         assert_eq!(
-            EvmBalances::reducible_balance(&alice(), Preservation::Expendable, Fortitude::Polite),
+            EvmBalances::reducible_balance(&ALICE, Preservation::Expendable, Fortitude::Polite),
             INIT_BALANCE
         );
 
         assert_eq!(
-            EvmBalances::reducible_balance(&alice(), Preservation::Expendable, Fortitude::Force),
+            EvmBalances::reducible_balance(&ALICE, Preservation::Expendable, Fortitude::Force),
             INIT_BALANCE
         );
 
         assert_eq!(
-            EvmBalances::reducible_balance(&alice(), Preservation::Preserve, Fortitude::Polite),
+            EvmBalances::reducible_balance(&ALICE, Preservation::Preserve, Fortitude::Polite),
             INIT_BALANCE - 1
         );
 
         assert_eq!(
-            EvmBalances::reducible_balance(&alice(), Preservation::Preserve, Fortitude::Force),
+            EvmBalances::reducible_balance(&ALICE, Preservation::Preserve, Fortitude::Force),
             INIT_BALANCE - 1
         );
 
         assert_eq!(
-            EvmBalances::reducible_balance(&alice(), Preservation::Protect, Fortitude::Polite),
+            EvmBalances::reducible_balance(&ALICE, Preservation::Protect, Fortitude::Polite),
             INIT_BALANCE - 1
         );
 
         assert_eq!(
-            EvmBalances::reducible_balance(&alice(), Preservation::Protect, Fortitude::Force),
+            EvmBalances::reducible_balance(&ALICE, Preservation::Protect, Fortitude::Force),
             INIT_BALANCE - 1
         );
     });
@@ -90,7 +90,7 @@ fn reducable_balance_works() {
 fn can_deposit_works_success() {
     new_test_ext().execute_with_ext(|_| {
         assert_eq!(
-            EvmBalances::can_deposit(&alice(), 10, Provenance::Minted),
+            EvmBalances::can_deposit(&ALICE, 10, Provenance::Minted),
             DepositConsequence::Success
         );
     });
@@ -100,7 +100,7 @@ fn can_deposit_works_success() {
 fn can_deposit_works_overflow() {
     new_test_ext().execute_with_ext(|_| {
         assert_eq!(
-            EvmBalances::can_deposit(&alice(), u64::MAX, Provenance::Minted),
+            EvmBalances::can_deposit(&ALICE, u64::MAX, Provenance::Minted),
             DepositConsequence::Overflow
         );
     });
@@ -110,7 +110,7 @@ fn can_deposit_works_overflow() {
 fn can_withdraw_works_success() {
     new_test_ext().execute_with_ext(|_| {
         assert_eq!(
-            EvmBalances::can_withdraw(&alice(), 10),
+            EvmBalances::can_withdraw(&ALICE, 10),
             WithdrawConsequence::Success
         );
     });
@@ -120,7 +120,7 @@ fn can_withdraw_works_success() {
 fn can_withdraw_works_underflow() {
     new_test_ext().execute_with_ext(|_| {
         assert_eq!(
-            EvmBalances::can_withdraw(&alice(), u64::MAX),
+            EvmBalances::can_withdraw(&ALICE, u64::MAX),
             WithdrawConsequence::Underflow
         );
     });
@@ -130,7 +130,7 @@ fn can_withdraw_works_underflow() {
 fn can_withdraw_works_balance_low() {
     new_test_ext().execute_with_ext(|_| {
         assert_eq!(
-            EvmBalances::can_withdraw(&alice(), INIT_BALANCE + 1),
+            EvmBalances::can_withdraw(&ALICE, INIT_BALANCE + 1),
             WithdrawConsequence::BalanceLow
         );
     });
@@ -140,7 +140,7 @@ fn can_withdraw_works_balance_low() {
 fn can_withdraw_works_reduced_to_zero() {
     new_test_ext().execute_with_ext(|_| {
         assert_eq!(
-            EvmBalances::can_withdraw(&alice(), INIT_BALANCE),
+            EvmBalances::can_withdraw(&ALICE, INIT_BALANCE),
             WithdrawConsequence::ReducedToZero(0)
         );
     });
@@ -150,18 +150,15 @@ fn can_withdraw_works_reduced_to_zero() {
 fn write_balance_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let write_balance = 10;
 
         // Invoke the function under test.
-        assert_eq!(
-            EvmBalances::write_balance(&alice(), write_balance),
-            Ok(None)
-        );
+        assert_eq!(EvmBalances::write_balance(&ALICE, write_balance), Ok(None));
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice()), write_balance);
+        assert_eq!(EvmBalances::total_balance(&ALICE), write_balance);
     });
 }
 
@@ -185,13 +182,13 @@ fn set_total_issuance_works() {
 fn decrease_balance_works_exact_expendable() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let decreased_balance = 100;
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::decrease_balance(
-            &alice(),
+            &ALICE,
             decreased_balance,
             Precision::Exact,
             Preservation::Expendable,
@@ -200,7 +197,7 @@ fn decrease_balance_works_exact_expendable() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE - decreased_balance
         );
     });
@@ -210,13 +207,13 @@ fn decrease_balance_works_exact_expendable() {
 fn decrease_balance_works_best_effort_preserve() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let decreased_balance = INIT_BALANCE + 1;
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::decrease_balance(
-            &alice(),
+            &ALICE,
             decreased_balance,
             Precision::BestEffort,
             Preservation::Preserve,
@@ -224,7 +221,7 @@ fn decrease_balance_works_best_effort_preserve() {
         ));
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice()), 1);
+        assert_eq!(EvmBalances::total_balance(&ALICE), 1);
     });
 }
 
@@ -232,7 +229,7 @@ fn decrease_balance_works_best_effort_preserve() {
 fn decrease_balance_works_full_balance() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         // Set block number to enable events.
         System::set_block_number(1);
@@ -241,7 +238,7 @@ fn decrease_balance_works_full_balance() {
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::decrease_balance(
-            &alice(),
+            &ALICE,
             decreased_balance,
             Precision::Exact,
             Preservation::Expendable,
@@ -249,10 +246,10 @@ fn decrease_balance_works_full_balance() {
         ));
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice()), 0);
-        assert!(!EvmSystem::account_exists(&alice()));
+        assert_eq!(EvmBalances::total_balance(&ALICE), 0);
+        assert!(!EvmSystem::account_exists(&ALICE));
         System::assert_has_event(RuntimeEvent::EvmSystem(
-            pallet_evm_system::Event::KilledAccount { account: alice() },
+            pallet_evm_system::Event::KilledAccount { account: ALICE },
         ));
     });
 }
@@ -261,14 +258,14 @@ fn decrease_balance_works_full_balance() {
 fn decrease_balance_fails_funds_unavailable() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let decreased_balance = INIT_BALANCE + 1;
 
         // Invoke the function under test.
         assert_noop!(
             EvmBalances::decrease_balance(
-                &alice(),
+                &ALICE,
                 decreased_balance,
                 Precision::Exact,
                 Preservation::Preserve,
@@ -283,20 +280,20 @@ fn decrease_balance_fails_funds_unavailable() {
 fn increase_balance_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let increased_balance = 100;
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::increase_balance(
-            &alice(),
+            &ALICE,
             increased_balance,
             Precision::Exact,
         ));
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE + increased_balance
         );
     });
@@ -306,19 +303,19 @@ fn increase_balance_works() {
 fn increase_balance_works_best_effort() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let increased_balance = u64::MAX;
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::increase_balance(
-            &alice(),
+            &ALICE,
             increased_balance,
             Precision::BestEffort,
         ));
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice()), u64::MAX);
+        assert_eq!(EvmBalances::total_balance(&ALICE), u64::MAX);
     });
 }
 
@@ -326,13 +323,13 @@ fn increase_balance_works_best_effort() {
 fn increase_balance_fails_overflow() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let increased_balance = u64::MAX;
 
         // Invoke the function under test.
         assert_noop!(
-            EvmBalances::increase_balance(&alice(), increased_balance, Precision::Exact),
+            EvmBalances::increase_balance(&ALICE, increased_balance, Precision::Exact),
             ArithmeticError::Overflow
         );
     });
@@ -362,7 +359,7 @@ fn deactivate_reactivate_works() {
 fn mint_into_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         // Set block number to enable events.
@@ -371,11 +368,11 @@ fn mint_into_works() {
         let minted_balance = 10;
 
         // Invoke the function under test.
-        assert_ok!(EvmBalances::mint_into(&alice(), minted_balance));
+        assert_ok!(EvmBalances::mint_into(&ALICE, minted_balance));
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE + minted_balance
         );
         assert_eq!(
@@ -383,7 +380,7 @@ fn mint_into_works() {
             2 * INIT_BALANCE + minted_balance
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Minted {
-            who: alice(),
+            who: ALICE,
             amount: minted_balance,
         }));
 
@@ -395,13 +392,13 @@ fn mint_into_works() {
 fn mint_into_fails_overflow() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let minted_balance = u64::MAX;
 
         // Invoke the function under test.
         assert_noop!(
-            EvmBalances::mint_into(&alice(), minted_balance),
+            EvmBalances::mint_into(&ALICE, minted_balance),
             ArithmeticError::Overflow
         );
     });
@@ -411,7 +408,7 @@ fn mint_into_fails_overflow() {
 fn burn_from_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         // Set block number to enable events.
@@ -421,7 +418,7 @@ fn burn_from_works() {
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::burn_from(
-            &alice(),
+            &ALICE,
             burned_balance,
             Precision::Exact,
             Fortitude::Polite
@@ -429,7 +426,7 @@ fn burn_from_works() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE - burned_balance
         );
         assert_eq!(
@@ -437,7 +434,7 @@ fn burn_from_works() {
             2 * INIT_BALANCE - burned_balance
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Burned {
-            who: alice(),
+            who: ALICE,
             amount: burned_balance,
         }));
 
@@ -449,7 +446,7 @@ fn burn_from_works() {
 fn burn_from_works_best_effort() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         // Set block number to enable events.
@@ -459,22 +456,22 @@ fn burn_from_works_best_effort() {
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::burn_from(
-            &alice(),
+            &ALICE,
             burned_balance,
             Precision::BestEffort,
             Fortitude::Polite
         ));
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice()), 0);
+        assert_eq!(EvmBalances::total_balance(&ALICE), 0);
         assert_eq!(EvmBalances::total_issuance(), INIT_BALANCE);
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Burned {
-            who: alice(),
+            who: ALICE,
             amount: INIT_BALANCE,
         }));
-        assert!(!EvmSystem::account_exists(&alice()));
+        assert!(!EvmSystem::account_exists(&ALICE));
         System::assert_has_event(RuntimeEvent::EvmSystem(
-            pallet_evm_system::Event::KilledAccount { account: alice() },
+            pallet_evm_system::Event::KilledAccount { account: ALICE },
         ));
 
         assert_total_issuance_invariant();
@@ -485,7 +482,7 @@ fn burn_from_works_best_effort() {
 fn burn_from_works_exact_full_balance() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         // Set block number to enable events.
@@ -495,22 +492,22 @@ fn burn_from_works_exact_full_balance() {
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::burn_from(
-            &alice(),
+            &ALICE,
             burned_balance,
             Precision::Exact,
             Fortitude::Polite
         ));
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice()), 0);
+        assert_eq!(EvmBalances::total_balance(&ALICE), 0);
         assert_eq!(EvmBalances::total_issuance(), INIT_BALANCE);
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Burned {
-            who: alice(),
+            who: ALICE,
             amount: INIT_BALANCE,
         }));
-        assert!(!EvmSystem::account_exists(&alice()));
+        assert!(!EvmSystem::account_exists(&ALICE));
         System::assert_has_event(RuntimeEvent::EvmSystem(
-            pallet_evm_system::Event::KilledAccount { account: alice() },
+            pallet_evm_system::Event::KilledAccount { account: ALICE },
         ));
 
         assert_total_issuance_invariant();
@@ -521,7 +518,7 @@ fn burn_from_works_exact_full_balance() {
 fn burn_from_fails_funds_unavailable() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         // Set block number to enable events.
@@ -531,12 +528,7 @@ fn burn_from_fails_funds_unavailable() {
 
         // Invoke the function under test.
         assert_noop!(
-            EvmBalances::burn_from(
-                &alice(),
-                burned_balance,
-                Precision::Exact,
-                Fortitude::Polite
-            ),
+            EvmBalances::burn_from(&ALICE, burned_balance, Precision::Exact, Fortitude::Polite),
             TokenError::FundsUnavailable
         );
     });
@@ -546,7 +538,7 @@ fn burn_from_fails_funds_unavailable() {
 fn shelve_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         // Set block number to enable events.
@@ -555,11 +547,11 @@ fn shelve_works() {
         let shelved_balance = 10;
 
         // Invoke the function under test.
-        assert_ok!(EvmBalances::shelve(&alice(), shelved_balance));
+        assert_ok!(EvmBalances::shelve(&ALICE, shelved_balance));
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE - shelved_balance
         );
         assert_eq!(
@@ -567,7 +559,7 @@ fn shelve_works() {
             2 * INIT_BALANCE - shelved_balance
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Suspended {
-            who: alice(),
+            who: ALICE,
             amount: shelved_balance,
         }));
 
@@ -579,7 +571,7 @@ fn shelve_works() {
 fn shelve_works_exact_full_balance() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         // Set block number to enable events.
@@ -588,18 +580,18 @@ fn shelve_works_exact_full_balance() {
         let shelved_balance = INIT_BALANCE;
 
         // Invoke the function under test.
-        assert_ok!(EvmBalances::shelve(&alice(), shelved_balance));
+        assert_ok!(EvmBalances::shelve(&ALICE, shelved_balance));
 
         // Assert state changes.
-        assert_eq!(EvmBalances::total_balance(&alice()), 0);
+        assert_eq!(EvmBalances::total_balance(&ALICE), 0);
         assert_eq!(EvmBalances::total_issuance(), INIT_BALANCE);
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Suspended {
-            who: alice(),
+            who: ALICE,
             amount: INIT_BALANCE,
         }));
-        assert!(!EvmSystem::account_exists(&alice()));
+        assert!(!EvmSystem::account_exists(&ALICE));
         System::assert_has_event(RuntimeEvent::EvmSystem(
-            pallet_evm_system::Event::KilledAccount { account: alice() },
+            pallet_evm_system::Event::KilledAccount { account: ALICE },
         ));
 
         assert_total_issuance_invariant();
@@ -610,7 +602,7 @@ fn shelve_works_exact_full_balance() {
 fn shelve_fails_funds_unavailable() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         // Set block number to enable events.
@@ -620,7 +612,7 @@ fn shelve_fails_funds_unavailable() {
 
         // Invoke the function under test.
         assert_noop!(
-            EvmBalances::shelve(&alice(), shelved_balance),
+            EvmBalances::shelve(&ALICE, shelved_balance),
             TokenError::FundsUnavailable
         );
     });
@@ -630,7 +622,7 @@ fn shelve_fails_funds_unavailable() {
 fn restore_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         // Set block number to enable events.
@@ -639,11 +631,11 @@ fn restore_works() {
         let restored_balance = 10;
 
         // Invoke the function under test.
-        assert_ok!(EvmBalances::restore(&alice(), restored_balance));
+        assert_ok!(EvmBalances::restore(&ALICE, restored_balance));
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE + restored_balance
         );
         assert_eq!(
@@ -651,7 +643,7 @@ fn restore_works() {
             2 * INIT_BALANCE + restored_balance
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Restored {
-            who: alice(),
+            who: ALICE,
             amount: restored_balance,
         }));
 
@@ -663,13 +655,13 @@ fn restore_works() {
 fn restore_fails_overflow() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let restored_balance = u64::MAX;
 
         // Invoke the function under test.
         assert_noop!(
-            EvmBalances::restore(&alice(), restored_balance),
+            EvmBalances::restore(&ALICE, restored_balance),
             ArithmeticError::Overflow
         );
     });
@@ -679,7 +671,7 @@ fn restore_fails_overflow() {
 fn transfer_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let transferred_amount = 100;
 
@@ -688,24 +680,24 @@ fn transfer_works() {
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::transfer(
-            &alice(),
-            &bob(),
+            &ALICE,
+            &BOB,
             transferred_amount,
             Preservation::Preserve
         ));
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE - transferred_amount
         );
         assert_eq!(
-            EvmBalances::total_balance(&bob()),
+            EvmBalances::total_balance(&BOB),
             INIT_BALANCE + transferred_amount
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Transfer {
-            from: alice(),
-            to: bob(),
+            from: ALICE,
+            to: BOB,
             amount: transferred_amount,
         }));
 
@@ -717,7 +709,7 @@ fn transfer_works() {
 fn transfer_works_full_balance() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let transferred_amount = INIT_BALANCE;
 
@@ -726,29 +718,29 @@ fn transfer_works_full_balance() {
 
         // Invoke the function under test.
         assert_ok!(EvmBalances::transfer(
-            &alice(),
-            &bob(),
+            &ALICE,
+            &BOB,
             transferred_amount,
             Preservation::Expendable
         ));
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE - transferred_amount
         );
         assert_eq!(
-            EvmBalances::total_balance(&bob()),
+            EvmBalances::total_balance(&BOB),
             INIT_BALANCE + transferred_amount
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Transfer {
-            from: alice(),
-            to: bob(),
+            from: ALICE,
+            to: BOB,
             amount: transferred_amount,
         }));
-        assert!(!EvmSystem::account_exists(&alice()));
+        assert!(!EvmSystem::account_exists(&ALICE));
         System::assert_has_event(RuntimeEvent::EvmSystem(
-            pallet_evm_system::Event::KilledAccount { account: alice() },
+            pallet_evm_system::Event::KilledAccount { account: ALICE },
         ));
 
         assert_total_issuance_invariant();
@@ -759,7 +751,7 @@ fn transfer_works_full_balance() {
 fn transfer_fails_funds_unavailable() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let transferred_amount = INIT_BALANCE + 1;
 
@@ -768,7 +760,7 @@ fn transfer_fails_funds_unavailable() {
 
         // Invoke the function under test.
         assert_noop!(
-            EvmBalances::transfer(&alice(), &bob(), transferred_amount, Preservation::Preserve),
+            EvmBalances::transfer(&ALICE, &BOB, transferred_amount, Preservation::Preserve),
             TokenError::FundsUnavailable
         );
     });
@@ -778,7 +770,7 @@ fn transfer_fails_funds_unavailable() {
 fn transfer_fails_not_expendable() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let transferred_amount = INIT_BALANCE;
 
@@ -787,7 +779,7 @@ fn transfer_fails_not_expendable() {
 
         // Invoke the function under test.
         assert_noop!(
-            EvmBalances::transfer(&alice(), &bob(), transferred_amount, Preservation::Preserve),
+            EvmBalances::transfer(&ALICE, &BOB, transferred_amount, Preservation::Preserve),
             TokenError::NotExpendable
         );
     });
@@ -873,7 +865,7 @@ fn issue_works() {
 fn deposit_flow_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let deposited_amount = 10;
 
@@ -881,20 +873,20 @@ fn deposit_flow_works() {
         System::set_block_number(1);
 
         // Invoke the function under test.
-        let debt = EvmBalances::deposit(&alice(), deposited_amount, Precision::Exact).unwrap();
+        let debt = EvmBalances::deposit(&ALICE, deposited_amount, Precision::Exact).unwrap();
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE + deposited_amount
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Deposit {
-            who: alice(),
+            who: ALICE,
             amount: deposited_amount,
         }));
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
-        let _ = EvmBalances::settle(&bob(), debt, Preservation::Expendable);
+        let _ = EvmBalances::settle(&BOB, debt, Preservation::Expendable);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         assert_total_issuance_invariant();
@@ -924,7 +916,7 @@ fn deposit_works_new_account() {
             amount: deposited_amount,
         }));
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
-        let _ = EvmBalances::settle(&bob(), debt, Preservation::Expendable);
+        let _ = EvmBalances::settle(&BOB, debt, Preservation::Expendable);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
         assert!(EvmSystem::account_exists(&charlie));
         System::assert_has_event(RuntimeEvent::EvmSystem(
@@ -939,7 +931,7 @@ fn deposit_works_new_account() {
 fn withdraw_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let withdrawed_amount = 1000;
 
@@ -948,7 +940,7 @@ fn withdraw_works() {
 
         // Invoke the function under test.
         let credit = EvmBalances::withdraw(
-            &alice(),
+            &ALICE,
             withdrawed_amount,
             Precision::Exact,
             Preservation::Preserve,
@@ -958,15 +950,15 @@ fn withdraw_works() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE - withdrawed_amount
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(Event::Withdraw {
-            who: alice(),
+            who: ALICE,
             amount: withdrawed_amount,
         }));
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
-        let _ = EvmBalances::resolve(&bob(), credit);
+        let _ = EvmBalances::resolve(&BOB, credit);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         assert_total_issuance_invariant();
@@ -977,7 +969,7 @@ fn withdraw_works() {
 fn withdraw_works_full_balance() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
-        assert_eq!(EvmBalances::total_balance(&alice()), INIT_BALANCE);
+        assert_eq!(EvmBalances::total_balance(&ALICE), INIT_BALANCE);
 
         let withdrawed_amount = INIT_BALANCE;
 
@@ -986,7 +978,7 @@ fn withdraw_works_full_balance() {
 
         // Invoke the function under test.
         let credit = EvmBalances::withdraw(
-            &alice(),
+            &ALICE,
             withdrawed_amount,
             Precision::Exact,
             Preservation::Expendable,
@@ -996,19 +988,19 @@ fn withdraw_works_full_balance() {
 
         // Assert state changes.
         assert_eq!(
-            EvmBalances::total_balance(&alice()),
+            EvmBalances::total_balance(&ALICE),
             INIT_BALANCE - withdrawed_amount
         );
         System::assert_has_event(RuntimeEvent::EvmBalances(crate::Event::Withdraw {
-            who: alice(),
+            who: ALICE,
             amount: withdrawed_amount,
         }));
-        assert!(!EvmSystem::account_exists(&alice()));
+        assert!(!EvmSystem::account_exists(&ALICE));
         System::assert_has_event(RuntimeEvent::EvmSystem(
-            pallet_evm_system::Event::KilledAccount { account: alice() },
+            pallet_evm_system::Event::KilledAccount { account: ALICE },
         ));
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
-        let _ = EvmBalances::resolve(&bob(), credit);
+        let _ = EvmBalances::resolve(&BOB, credit);
         assert_eq!(EvmBalances::total_issuance(), 2 * INIT_BALANCE);
 
         assert_total_issuance_invariant();

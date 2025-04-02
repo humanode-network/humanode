@@ -26,11 +26,11 @@ fn basic_setup_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check the accounts.
         assert_eq!(
-            <EvmBalances>::account(&alice()),
+            <EvmBalances>::account(&ALICE),
             account_data::AccountData { free: INIT_BALANCE }
         );
         assert_eq!(
-            <EvmBalances>::account(&bob()),
+            <EvmBalances>::account(&BOB),
             account_data::AccountData { free: INIT_BALANCE }
         );
 
@@ -48,7 +48,7 @@ fn evm_system_removing_account_non_zero_balance() {
 
         // Transfer some balance to contract address.
         assert_ok!(EvmBalances::transfer(
-            &alice(),
+            &ALICE,
             &contract,
             1000,
             ExistenceRequirement::KeepAlive
@@ -103,8 +103,8 @@ fn evm_issuance_after_tip() {
         let weight_limit = FixedGasWeightMapping::<Test>::gas_to_weight(gas_limit, true);
 
         assert_ok!(<Test as pallet_evm::Config>::Runner::call(
-            alice_h160(),
-            bob_h160(),
+            ALICE_H160,
+            BOB_H160,
             Vec::new(),
             U256::from(1),
             gas_limit,
@@ -135,7 +135,7 @@ fn evm_issuance_after_tip() {
 #[test]
 fn evm_refunds_should_work() {
     new_test_ext().execute_with_ext(|_| {
-        let before_call = EVM::account_basic(&alice_h160()).0.balance;
+        let before_call = EVM::account_basic(&ALICE_H160).0.balance;
         // Gas price is not part of the actual fee calculations anymore, only the base fee.
         //
         // Because we first deduct max_fee_per_gas * gas_limit (2_000_000_000 * 1000000) we need
@@ -145,8 +145,8 @@ fn evm_refunds_should_work() {
         let weight_limit = FixedGasWeightMapping::<Test>::gas_to_weight(gas_limit, true);
 
         let _ = <Test as pallet_evm::Config>::Runner::call(
-            alice_h160(),
-            bob_h160(),
+            ALICE_H160,
+            BOB_H160,
             Vec::new(),
             U256::from(1),
             gas_limit,
@@ -163,7 +163,7 @@ fn evm_refunds_should_work() {
 
         let (base_fee, _) = <Test as pallet_evm::Config>::FeeCalculator::min_gas_price();
         let total_cost = (U256::from(21_000) * base_fee) + U256::from(1);
-        let after_call = EVM::account_basic(&alice_h160()).0.balance;
+        let after_call = EVM::account_basic(&ALICE_H160).0.balance;
         assert_eq!(after_call, before_call - total_cost);
 
         assert_total_issuance_invariant();
@@ -173,7 +173,7 @@ fn evm_refunds_should_work() {
 #[test]
 fn evm_refunds_and_priority_should_work() {
     new_test_ext().execute_with_ext(|_| {
-        let before_call = EVM::account_basic(&alice_h160()).0.balance;
+        let before_call = EVM::account_basic(&ALICE_H160).0.balance;
         // We deliberately set a base fee + max tip > max fee.
         // The effective priority tip will be 1GWEI instead 1.5GWEI:
         // 		(max_fee_per_gas - base_fee).min(max_priority_fee)
@@ -186,8 +186,8 @@ fn evm_refunds_and_priority_should_work() {
         let weight_limit = FixedGasWeightMapping::<Test>::gas_to_weight(gas_limit, true);
 
         let _ = <Test as pallet_evm::Config>::Runner::call(
-            alice_h160(),
-            bob_h160(),
+            ALICE_H160,
+            BOB_H160,
             Vec::new(),
             U256::from(1),
             gas_limit,
@@ -205,7 +205,7 @@ fn evm_refunds_and_priority_should_work() {
         let (base_fee, _) = <Test as pallet_evm::Config>::FeeCalculator::min_gas_price();
         let actual_tip = (max_fee_per_gas - base_fee).min(tip) * used_gas;
         let total_cost = (used_gas * base_fee) + actual_tip + U256::from(1);
-        let after_call = EVM::account_basic(&alice_h160()).0.balance;
+        let after_call = EVM::account_basic(&ALICE_H160).0.balance;
         // The tip is deducted but never refunded to the caller.
         assert_eq!(after_call, before_call - total_cost);
 
@@ -223,8 +223,8 @@ fn evm_call_should_fail_with_priority_greater_than_max_fee() {
         let weight_limit = FixedGasWeightMapping::<Test>::gas_to_weight(gas_limit, true);
 
         let result = <Test as pallet_evm::Config>::Runner::call(
-            alice_h160(),
-            bob_h160(),
+            ALICE_H160,
+            BOB_H160,
             Vec::new(),
             U256::from(1),
             gas_limit,
@@ -257,8 +257,8 @@ fn evm_call_should_succeed_with_priority_equal_to_max_fee() {
         // Mimics the input for pre-eip-1559 transaction types where `gas_price`
         // is used for both `max_fee_per_gas` and `max_priority_fee_per_gas`.
         let result = <Test as pallet_evm::Config>::Runner::call(
-            alice_h160(),
-            bob_h160(),
+            ALICE_H160,
+            BOB_H160,
             Vec::new(),
             U256::from(1),
             gas_limit,

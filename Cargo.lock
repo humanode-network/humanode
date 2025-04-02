@@ -6108,6 +6108,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
+ "hex-literal",
  "pallet-evm",
  "pallet-evm-system",
  "pallet-timestamp",
