@@ -40,14 +40,14 @@ benchmarks! {
 
     swap {
         let (origin, swap_data) = prepare_swap_data::<T>();
-    }: _(origin, swap_data.to_evm_account.clone(), swap_data.swap_balance)
+    }: _(origin, swap_data.to_evm_account_id.clone(), swap_data.swap_balance)
     verify {
         verify_swap_data::<T>(swap_data);
     }
 
     swap_keep_alive {
         let (origin, swap_data) = prepare_swap_data::<T>();
-    }: _(origin, swap_data.to_evm_account.clone(), swap_data.swap_balance)
+    }: _(origin, swap_data.to_evm_account_id.clone(), swap_data.swap_balance)
     verify {
         verify_swap_data::<T>(swap_data);
     }
@@ -62,12 +62,12 @@ benchmarks! {
 /// A helper struct used for preparing and verifying swap calls.
 struct SwapData<T: Interface> {
     /// The native Account ID the balance is swapped from.
-    from_native_account: <T as frame_system::Config>::AccountId,
-    /// The native Account ID balance before executing the call.
+    from_native_account_id: <T as frame_system::Config>::AccountId,
+    /// The native Account balance before executing the call.
     from_native_balance_before: NativeBalanceOf<T>,
     /// The EVM Account ID the balance is swapped to.
-    to_evm_account: <T as Config>::EvmAccountId,
-    /// The EVM Account ID balance before executing the call.
+    to_evm_account_id: <T as Config>::EvmAccountId,
+    /// The EVM Account balance before executing the call.
     to_evm_balance_before: EvmBalanceOf<T>,
     /// The amount of balance to be swapped.
     swap_balance: NativeBalanceOf<T>,
@@ -80,26 +80,26 @@ fn prepare_swap_data<T: Interface>() -> (
     RawOrigin<<T as frame_system::Config>::AccountId>,
     SwapData<T>,
 ) {
-    let from_native_account = <T as Interface>::from_native_account_id();
-    let to_evm_account = <T as Interface>::to_evm_account_id();
+    let from_native_account_id = <T as Interface>::from_native_account_id();
+    let to_evm_account_id = <T as Interface>::to_evm_account_id();
     let swap_balance = <T as Interface>::swap_balance();
     let init_balance: u32 = 1000;
 
-    let _ = T::NativeToken::write_balance(&from_native_account, init_balance.into()).unwrap();
+    let _ = T::NativeToken::write_balance(&from_native_account_id, init_balance.into()).unwrap();
 
-    let from_native_balance_before = T::NativeToken::total_balance(&from_native_account);
-    let to_evm_balance_before = T::EvmToken::total_balance(&to_evm_account);
+    let from_native_balance_before = T::NativeToken::total_balance(&from_native_account_id);
+    let to_evm_balance_before = T::EvmToken::total_balance(&to_evm_account_id);
 
     let env_data = <T as Interface>::prepare();
 
-    let origin = RawOrigin::Signed(from_native_account.clone());
+    let origin = RawOrigin::Signed(from_native_account_id.clone());
 
     (
         origin,
         SwapData {
-            from_native_account,
+            from_native_account_id,
             from_native_balance_before,
-            to_evm_account,
+            to_evm_account_id,
             to_evm_balance_before,
             swap_balance,
             env_data,
@@ -110,17 +110,17 @@ fn prepare_swap_data<T: Interface>() -> (
 /// Verify swap data after executing the corresponding call.
 fn verify_swap_data<T: Interface>(swap_data: SwapData<T>) {
     let SwapData {
-        from_native_account,
+        from_native_account_id,
         from_native_balance_before,
-        to_evm_account,
+        to_evm_account_id,
         to_evm_balance_before,
         swap_balance,
         env_data,
     } = swap_data;
 
     let estimated_swapped_balance = T::BalanceConverterNativeToEvm::convert(swap_balance);
-    let from_native_balance_after = T::NativeToken::total_balance(&from_native_account);
-    let to_evm_balance_after = T::EvmToken::total_balance(&to_evm_account);
+    let from_native_balance_after = T::NativeToken::total_balance(&from_native_account_id);
+    let to_evm_balance_after = T::EvmToken::total_balance(&to_evm_account_id);
 
     assert_eq!(
         from_native_balance_before - from_native_balance_after,
