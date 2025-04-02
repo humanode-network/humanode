@@ -45,6 +45,13 @@ benchmarks! {
         verify_swap_data::<T>(swap_data);
     }
 
+    swap_keep_alive {
+        let (origin, swap_data) = prepare_swap_data::<T>();
+    }: _(origin, swap_data.to_evm_account.clone(), swap_data.swap_balance)
+    verify {
+        verify_swap_data::<T>(swap_data);
+    }
+
     impl_benchmark_test_suite!(
         Pallet,
         crate::mock::new_test_ext(),
