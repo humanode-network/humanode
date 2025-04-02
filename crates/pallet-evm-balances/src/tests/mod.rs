@@ -26,11 +26,11 @@ fn basic_setup_works() {
     new_test_ext().execute_with_ext(|_| {
         // Check the accounts.
         assert_eq!(
-            <EvmBalances>::account(&alice()),
+            <EvmBalances>::account(&ALICE),
             account_data::AccountData { free: INIT_BALANCE }
         );
         assert_eq!(
-            <EvmBalances>::account(&bob()),
+            <EvmBalances>::account(&BOB),
             account_data::AccountData { free: INIT_BALANCE }
         );
 
@@ -48,7 +48,7 @@ fn evm_system_removing_account_non_zero_balance() {
 
         // Transfer some balance to contract address.
         assert_ok!(EvmBalances::transfer(
-            &alice(),
+            &ALICE,
             &contract,
             1000,
             ExistenceRequirement::KeepAlive

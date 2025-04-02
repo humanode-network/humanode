@@ -19,23 +19,19 @@ use crate::{self as pallet_evm_balances, *};
 pub(crate) const INIT_BALANCE: u64 = 10_000_000_000_000_000;
 
 /// Alice account.
-pub fn alice() -> u64 {
-    5234
-}
+pub const ALICE: u64 = 5234;
 
 /// Alice H160 account.
 pub fn alice_h160() -> H160 {
-    H160::from_low_u64_be(alice())
+    H160::from_low_u64_be(ALICE)
 }
 
 /// Bob account.
-pub fn bob() -> u64 {
-    4325
-}
+pub const BOB: u64 = 4325;
 
 /// Bob H160 account.
 pub fn bob_h160() -> H160 {
-    H160::from_low_u64_be(bob())
+    H160::from_low_u64_be(BOB)
 }
 
 /// H160 into u64 address mapper.
