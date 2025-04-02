@@ -6300,6 +6300,7 @@ dependencies = [
  "ethereum",
  "fp-ethereum",
  "fp-evm",
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex-literal",
