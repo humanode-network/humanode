@@ -1039,6 +1039,7 @@ mod benches {
         [pallet_utility, Utility]
         [pallet_vesting, Vesting]
         [pallet_humanode_session, HumanodeSession]
+        [pallet_native_to_evm_swap, NativeToEvmSwap]
     );
 }
 
