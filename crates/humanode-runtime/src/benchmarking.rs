@@ -18,6 +18,8 @@ const VESTING_BALANCE: u128 = 1000;
 const CLIFF: UnixMilliseconds = 1000;
 const VESTING_DURATION: UnixMilliseconds = 3000;
 
+const SWAP_BALANCE: u128 = 1000;
+
 /// Emulate the `account_id` fn from `dev_utils` but with hardcoded values to avoid linking crypto
 /// primitives.
 fn account_id(seed: &str) -> AccountId {
@@ -207,5 +209,27 @@ impl pallet_humanode_session::benchmarking::Interface for Runtime {
     fn provide_account_id(account_index: u32) -> <Self as frame_system::Config>::AccountId {
         let account_index_bytes = account_index.to_le_bytes();
         AccountId::new(keccak_256(&account_index_bytes))
+    }
+}
+
+impl pallet_native_to_evm_swap::benchmarking::Interface for Runtime {
+    type Data = ();
+
+    fn prepare() -> Self::Data {}
+
+    fn verify(_data: Self::Data) -> DispatchResult {
+        Ok(())
+    }
+
+    fn from_native_account_id() -> AccountId {
+        account_id("Alice")
+    }
+
+    fn to_evm_account_id() -> H160 {
+        H160(ethereum_address_from_secret(&eth_ecdsa_secret(b"Alice")).0)
+    }
+
+    fn swap_balance() -> u128 {
+        SWAP_BALANCE
     }
 }
