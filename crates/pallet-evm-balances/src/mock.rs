@@ -5,7 +5,7 @@ use frame_support::{
     traits::{ConstU32, ConstU64, FindAuthor},
     weights::Weight,
 };
-use pallet_evm::{EnsureAddressNever, FixedGasWeightMapping, IdentityAddressMapping};
+use pallet_evm::{AddressMapping, EnsureAddressNever, FixedGasWeightMapping};
 use sp_core::{H160, H256, U256};
 use sp_runtime::{
     generic,
@@ -18,12 +18,29 @@ use crate::{self as pallet_evm_balances, *};
 
 pub(crate) const INIT_BALANCE: u64 = 10_000_000_000_000_000;
 
-pub(crate) fn alice() -> H160 {
-    H160::from_str("1000000000000000000000000000000000000000").unwrap()
-}
+/// Alice account.
+pub const ALICE: u64 = 0x5234;
 
-pub(crate) fn bob() -> H160 {
-    H160::from_str("2000000000000000000000000000000000000000").unwrap()
+/// Alice H160 account.
+pub const ALICE_H160: H160 = H160(hex_literal::hex!(
+    "0000000000000000000000000000000000005234"
+));
+
+/// Bob account.
+pub const BOB: u64 = 0x4235;
+
+/// Bob H160 account.
+pub const BOB_H160: H160 = H160(hex_literal::hex!(
+    "0000000000000000000000000000000000004235"
+));
+
+/// H160 into u64 address mapper.
+pub struct H160IntoU64;
+
+impl AddressMapping<u64> for H160IntoU64 {
+    fn into_account_id(address: H160) -> u64 {
+        address.to_low_u64_be()
+    }
 }
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -72,7 +89,7 @@ impl frame_system::Config for Test {
 
 impl pallet_evm_system::Config for Test {
     type RuntimeEvent = RuntimeEvent;
-    type AccountId = H160;
+    type AccountId = u64;
     type Index = u64;
     type AccountData = AccountData<u64>;
     type OnNewAccount = ();
@@ -81,7 +98,7 @@ impl pallet_evm_system::Config for Test {
 
 impl pallet_evm_balances::Config for Test {
     type RuntimeEvent = RuntimeEvent;
-    type AccountId = H160;
+    type AccountId = u64;
     type Balance = u64;
     type ExistentialDeposit = ConstU64<1>;
     type AccountStore = EvmSystem;
@@ -137,7 +154,7 @@ impl pallet_evm::Config for Test {
         EnsureAddressNever<<Self::AccountProvider as pallet_evm::AccountProvider>::AccountId>;
     type WithdrawOrigin =
         EnsureAddressNever<<Self::AccountProvider as pallet_evm::AccountProvider>::AccountId>;
-    type AddressMapping = IdentityAddressMapping;
+    type AddressMapping = H160IntoU64;
     type Currency = EvmBalances;
     type RuntimeEvent = RuntimeEvent;
     type PrecompilesType = ();
@@ -167,8 +184,8 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
                     nonce: Default::default(),
                     storage: Default::default(),
                 };
-                map.insert(alice(), init_genesis_account.clone());
-                map.insert(bob(), init_genesis_account);
+                map.insert(ALICE_H160, init_genesis_account.clone());
+                map.insert(BOB_H160, init_genesis_account);
                 map
             },
         },

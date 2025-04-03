@@ -16,8 +16,10 @@ sp-std = { workspace = true }
 pallet-evm-system = { path = "../pallet-evm-system", features = ["default"] }
 
 fp-evm = { workspace = true }
+hex-literal = { workspace = true }
 pallet-evm = { workspace = true }
 pallet-timestamp = { workspace = true }
+paste = { workspace = true }
 sp-core = { workspace = true }
 sp-io = { workspace = true }
 
