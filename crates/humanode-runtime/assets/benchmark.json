@@ -3184,5 +3184,63 @@
         "proof_size": 98480
       }
     ]
+  },
+  {
+    "pallet": "pallet_native_to_evm_swap",
+    "instance": "NativeToEvmSwap",
+    "benchmark": "swap",
+    "time_results": [
+      {
+        "components": [],
+        "extrinsic_time": 72000,
+        "storage_root_time": 1000,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      }
+    ],
+    "db_results": [
+      {
+        "components": [],
+        "extrinsic_time": 94000,
+        "storage_root_time": 1000,
+        "reads": 10,
+        "repeat_reads": 28,
+        "writes": 5,
+        "repeat_writes": 0,
+        "proof_size": 995
+      }
+    ]
+  },
+  {
+    "pallet": "pallet_native_to_evm_swap",
+    "instance": "NativeToEvmSwap",
+    "benchmark": "swap_keep_alive",
+    "time_results": [
+      {
+        "components": [],
+        "extrinsic_time": 70000,
+        "storage_root_time": 0,
+        "reads": 0,
+        "repeat_reads": 0,
+        "writes": 0,
+        "repeat_writes": 0,
+        "proof_size": 0
+      }
+    ],
+    "db_results": [
+      {
+        "components": [],
+        "extrinsic_time": 93000,
+        "storage_root_time": 1000,
+        "reads": 10,
+        "repeat_reads": 27,
+        "writes": 5,
+        "repeat_writes": 0,
+        "proof_size": 995
+      }
+    ]
   }
 ]

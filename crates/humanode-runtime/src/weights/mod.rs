@@ -9,6 +9,7 @@ pub mod pallet_evm_accounts_mapping;
 pub mod pallet_humanode_session;
 pub mod pallet_im_online;
 pub mod pallet_multisig;
+pub mod pallet_native_to_evm_swap;
 pub mod pallet_sudo;
 pub mod pallet_timestamp;
 pub mod pallet_token_claims;
