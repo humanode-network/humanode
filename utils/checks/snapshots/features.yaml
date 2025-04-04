@@ -2090,7 +2090,7 @@
   features: []
 - name: partial_sort 0.2.0
   features: []
-- name: paste 1.0.14
+- name: paste 1.0.15
   features: []
 - name: pbkdf2 0.12.2
   features:
