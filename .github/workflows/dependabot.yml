@@ -41,7 +41,7 @@ jobs:
         timeout-minutes: 10
         if: ${{ env.IS_DEPENDABOT == 'true' }}
 
-      - uses: actions/create-github-app-token@v1
+      - uses: actions/create-github-app-token@v2
         id: app-token
         with:
           app-id: ${{ vars.DEPENDABOT_COMMIT_APP_ID }}
