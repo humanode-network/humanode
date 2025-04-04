@@ -4,9 +4,7 @@
 #![allow(clippy::arithmetic_side_effects, clippy::float_arithmetic)]
 
 use frame_benchmarking::benchmarks;
-use frame_support::{
-    assert_ok, dispatch::DispatchResult, sp_runtime::traits::Convert, traits::fungible::Unbalanced,
-};
+use frame_support::{assert_ok, dispatch::DispatchResult, sp_runtime::traits::Convert};
 use frame_system::RawOrigin;
 
 use crate::*;
@@ -83,9 +81,6 @@ fn prepare_swap_data<T: Interface>() -> (
     let from_native_account_id = <T as Interface>::from_native_account_id();
     let to_evm_account_id = <T as Interface>::to_evm_account_id();
     let swap_balance = <T as Interface>::swap_balance();
-    let init_balance: u32 = 1000;
-
-    let _ = T::NativeToken::write_balance(&from_native_account_id, init_balance.into()).unwrap();
 
     let from_native_balance_before = T::NativeToken::total_balance(&from_native_account_id);
     let to_evm_balance_before = T::EvmToken::total_balance(&to_evm_account_id);
@@ -149,9 +144,7 @@ impl Interface for crate::mock::Test {
     }
 
     fn from_native_account_id() -> <Self as frame_system::Config>::AccountId {
-        mock::AccountId::from(hex_literal::hex!(
-            "7000000000000000000000000000000000000000000000000000000000000007"
-        ))
+        mock::alice()
     }
 
     fn to_evm_account_id() -> <Self as Config>::EvmAccountId {
