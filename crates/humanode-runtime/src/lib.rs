@@ -643,7 +643,7 @@ impl pallet_native_to_evm_swap::Config for Runtime {
     type BalanceConverterNativeToEvm = Identity;
     type BridgePotNative = NativeToEvmSwapBridgePotAccountId;
     type BridgePotEvm = EvmToNativeSwapBridgePotAccountId;
-    type WeightInfo = ();
+    type WeightInfo = weights::pallet_native_to_evm_swap::WeightInfo<Runtime>;
 }
 
 /// A simple fixed fee per gas calculator.
