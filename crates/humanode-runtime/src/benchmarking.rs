@@ -213,14 +213,6 @@ impl pallet_humanode_session::benchmarking::Interface for Runtime {
 }
 
 impl pallet_native_to_evm_swap::benchmarking::Interface for Runtime {
-    type Data = ();
-
-    fn prepare() -> Self::Data {}
-
-    fn verify(_data: Self::Data) -> DispatchResult {
-        Ok(())
-    }
-
     fn from_native_account_id() -> AccountId {
         account_id("Alice")
     }

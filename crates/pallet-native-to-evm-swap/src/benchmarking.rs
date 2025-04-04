@@ -4,22 +4,13 @@
 #![allow(clippy::arithmetic_side_effects, clippy::float_arithmetic)]
 
 use frame_benchmarking::benchmarks;
-use frame_support::{assert_ok, dispatch::DispatchResult, sp_runtime::traits::Convert};
+use frame_support::sp_runtime::traits::Convert;
 use frame_system::RawOrigin;
 
 use crate::*;
 
 /// The benchmark interface into the environment.
 pub trait Interface: super::Config {
-    /// The data to be passed from `prepare` to `verify`.
-    type Data;
-
-    /// Prepare environment.
-    fn prepare() -> Self::Data;
-
-    /// Verify environment,
-    fn verify(data: Self::Data) -> DispatchResult;
-
     /// Obtain the native Account ID the balance is swapped from.
     fn from_native_account_id() -> <Self as frame_system::Config>::AccountId;
 
@@ -69,8 +60,6 @@ struct SwapData<T: Interface> {
     to_evm_balance_before: EvmBalanceOf<T>,
     /// The amount of balance to be swapped.
     swap_balance: NativeBalanceOf<T>,
-    /// Environment data.
-    env_data: T::Data,
 }
 
 /// Prepare swap data before executing the corresponding call.
@@ -85,8 +74,6 @@ fn prepare_swap_data<T: Interface>() -> (
     let from_native_balance_before = T::NativeToken::total_balance(&from_native_account_id);
     let to_evm_balance_before = T::EvmToken::total_balance(&to_evm_account_id);
 
-    let env_data = <T as Interface>::prepare();
-
     let origin = RawOrigin::Signed(from_native_account_id.clone());
 
     (
@@ -97,7 +84,6 @@ fn prepare_swap_data<T: Interface>() -> (
             to_evm_account_id,
             to_evm_balance_before,
             swap_balance,
-            env_data,
         },
     )
 }
@@ -110,7 +96,6 @@ fn verify_swap_data<T: Interface>(swap_data: SwapData<T>) {
         to_evm_account_id,
         to_evm_balance_before,
         swap_balance,
-        env_data,
     } = swap_data;
 
     let estimated_swapped_balance = T::BalanceConverterNativeToEvm::convert(swap_balance);
@@ -125,24 +110,10 @@ fn verify_swap_data<T: Interface>(swap_data: SwapData<T>) {
         to_evm_balance_after - to_evm_balance_before,
         estimated_swapped_balance
     );
-
-    assert_ok!(<T as Interface>::verify(env_data));
 }
 
 #[cfg(test)]
 impl Interface for crate::mock::Test {
-    type Data = std::sync::MutexGuard<'static, ()>;
-
-    fn prepare() -> Self::Data {
-        mock::runtime_lock()
-    }
-
-    fn verify(data: Self::Data) -> DispatchResult {
-        let mock_runtime_guard = data;
-        drop(mock_runtime_guard);
-        Ok(())
-    }
-
     fn from_native_account_id() -> <Self as frame_system::Config>::AccountId {
         mock::alice()
     }
