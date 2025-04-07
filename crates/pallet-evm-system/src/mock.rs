@@ -1,4 +1,7 @@
-use frame_support::traits::{ConstU32, ConstU64};
+use frame_support::{
+    parameter_types,
+    traits::{ConstU32, ConstU64},
+};
 use mockall::mock;
 use sp_core::{H160, H256};
 use sp_runtime::{
@@ -6,7 +9,7 @@ use sp_runtime::{
     traits::{BlakeTwo256, IdentityLookup},
     BuildStorage,
 };
-use sp_std::{boxed::Box, prelude::*};
+use sp_std::{boxed::Box, collections::btree_set::BTreeSet, prelude::*};
 
 use crate::{self as pallet_evm_system, *};
 
@@ -69,11 +72,20 @@ impl frame_system::Config for Test {
     type MaxConsumers = ConstU32<16>;
 }
 
+pub const PRECOMPILE: H160 = H160(hex_literal::hex!(
+    "7000000000000000000000000000000000000007"
+));
+
+parameter_types! {
+    pub PrecompilesSet: BTreeSet<H160> = BTreeSet::from([PRECOMPILE]);
+}
+
 impl pallet_evm_system::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = H160;
     type Index = u64;
     type AccountData = u64;
+    type PrecompilesSet = PrecompilesSet;
     type OnNewAccount = MockDummyOnNewAccount;
     type OnKilledAccount = MockDummyOnKilledAccount;
 }
