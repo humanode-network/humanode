@@ -67,6 +67,27 @@ fn create_account_already_exists() {
     });
 }
 
+/// This test verifies that trying creating an precompiled account works as expected.
+#[test]
+fn create_precompiled_account_already_exists() {
+    new_test_ext().execute_with_ext(|_| {
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        assert_storage_noop!(assert_eq!(
+            EvmSystem::create_account(&PRECOMPILE),
+            AccountCreationOutcome::AlreadyExists
+        ));
+
+        // Assert that there is no a corresponding `NewAccount` event.
+        assert!(System::events().iter().all(|record| record.event
+            != RuntimeEvent::EvmSystem(Event::NewAccount {
+                account: PRECOMPILE,
+            })));
+    });
+}
+
 /// This test verifies that incrementing account nonce works in the happy path
 /// in case a new account should be created.
 #[test]
@@ -293,6 +314,43 @@ fn try_mutate_exists_account_retained() {
                 ..Default::default()
             }
         );
+    });
+}
+
+/// This test verifies that `try_mutate_exists` works as expected in case data was providing
+/// and returned data is `None`, account is precompiled. As a result, the account has been retained.
+#[test]
+fn try_mutate_exists_precompiled_account_retained() {
+    new_test_ext().execute_with_ext(|_| {
+        // Prepare test data.
+        let nonce = 0;
+        let data = 100;
+
+        let account_info = AccountInfo { nonce, data };
+        <Account<Test>>::insert(PRECOMPILE, account_info);
+
+        // Check test preconditions.
+        assert!(EvmSystem::account_exists(&PRECOMPILE));
+
+        // Set block number to enable events.
+        System::set_block_number(1);
+
+        // Invoke the function under test.
+        EvmSystem::try_mutate_exists(&PRECOMPILE, |maybe_data| -> Result<(), DispatchError> {
+            *maybe_data = None;
+            Ok(())
+        })
+        .unwrap();
+
+        // Assert state changes.
+        assert!(EvmSystem::account_exists(&PRECOMPILE));
+        assert_eq!(<Account<Test>>::get(PRECOMPILE), AccountInfo::default());
+
+        // Assert that there is no a corresponding `KilledAccount` event.
+        assert!(System::events().iter().all(|record| record.event
+            != RuntimeEvent::EvmSystem(Event::KilledAccount {
+                account: PRECOMPILE,
+            })));
     });
 }
 
