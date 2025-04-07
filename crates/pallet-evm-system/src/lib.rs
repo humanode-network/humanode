@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, FullCodec, MaxEncodedLen};
-use frame_support::traits::StoredMap;
+use frame_support::traits::{StoredMap, TypedGet};
 use scale_info::TypeInfo;
 use sp_runtime::{
     traits::{One, Zero},
@@ -34,7 +34,7 @@ pub struct AccountInfo<Index, AccountData> {
 pub mod pallet {
     use frame_support::pallet_prelude::*;
     use sp_runtime::traits::{AtLeast32Bit, MaybeDisplay};
-    use sp_std::fmt::Debug;
+    use sp_std::{collections::btree_set::BTreeSet, fmt::Debug};
 
     use super::*;
 
@@ -71,6 +71,9 @@ pub mod pallet {
         /// Data to be associated with an account (other than nonce/transaction counter, which this
         /// pallet does regardless).
         type AccountData: Member + FullCodec + Clone + Default + TypeInfo + MaxEncodedLen;
+
+        /// A set of precompiles.
+        type PrecompilesSet: TypedGet<Type = BTreeSet<<Self as Config>::AccountId>>;
 
         /// Handler for when a new account has just been created.
         type OnNewAccount: OnNewAccount<<Self as Config>::AccountId>;
@@ -159,7 +162,7 @@ impl<T: Config> Pallet<T> {
 
     /// Create an account.
     pub fn create_account(who: &<T as Config>::AccountId) -> AccountCreationOutcome {
-        if Self::account_exists(who) {
+        if Self::account_exists(who) || T::PrecompilesSet::get().contains(who) {
             return AccountCreationOutcome::AlreadyExists;
         }
 
@@ -196,7 +199,7 @@ impl<T: Config> StoredMap<<T as Config>::AccountId, <T as Config>::AccountData> 
                 Account::<T>::mutate(k, |a| a.data = data);
             }
             (None, true) => {
-                if nonce != <T as Config>::Index::zero() {
+                if nonce != <T as Config>::Index::zero() || T::PrecompilesSet::get().contains(k) {
                     Account::<T>::mutate(k, |a| a.data = Default::default());
                 } else {
                     Account::<T>::remove(k);
