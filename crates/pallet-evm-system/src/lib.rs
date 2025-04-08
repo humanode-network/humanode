@@ -3,7 +3,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use codec::{Decode, Encode, FullCodec, MaxEncodedLen};
-use frame_support::traits::{StoredMap, TypedGet};
+use frame_support::traits::StoredMap;
 use scale_info::TypeInfo;
 use sp_runtime::{
     traits::{One, Zero},
@@ -27,6 +27,14 @@ pub struct AccountInfo<Index, AccountData> {
     pub data: AccountData,
 }
 
+/// A set of precompiles.
+///
+/// Checks if the provided account is in the precompile set.
+pub trait PrecompilesSet<AccountId> {
+    /// Check if the given account is a precompile.
+    fn is_precompile(account_id: &AccountId) -> bool;
+}
+
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -34,7 +42,7 @@ pub struct AccountInfo<Index, AccountData> {
 pub mod pallet {
     use frame_support::pallet_prelude::*;
     use sp_runtime::traits::{AtLeast32Bit, MaybeDisplay};
-    use sp_std::{collections::btree_set::BTreeSet, fmt::Debug};
+    use sp_std::fmt::Debug;
 
     use super::*;
 
@@ -73,7 +81,7 @@ pub mod pallet {
         type AccountData: Member + FullCodec + Clone + Default + TypeInfo + MaxEncodedLen;
 
         /// A set of precompiles.
-        type PrecompilesSet: TypedGet<Type = BTreeSet<<Self as Config>::AccountId>>;
+        type PrecompilesSet: PrecompilesSet<<Self as Config>::AccountId>;
 
         /// Handler for when a new account has just been created.
         type OnNewAccount: OnNewAccount<<Self as Config>::AccountId>;
@@ -162,7 +170,7 @@ impl<T: Config> Pallet<T> {
 
     /// Create an account.
     pub fn create_account(who: &<T as Config>::AccountId) -> AccountCreationOutcome {
-        if Self::account_exists(who) || T::PrecompilesSet::get().contains(who) {
+        if Self::account_exists(who) || T::PrecompilesSet::is_precompile(who) {
             return AccountCreationOutcome::AlreadyExists;
         }
 
@@ -199,7 +207,7 @@ impl<T: Config> StoredMap<<T as Config>::AccountId, <T as Config>::AccountData> 
                 Account::<T>::mutate(k, |a| a.data = data);
             }
             (None, true) => {
-                if nonce != <T as Config>::Index::zero() || T::PrecompilesSet::get().contains(k) {
+                if nonce != <T as Config>::Index::zero() || T::PrecompilesSet::is_precompile(k) {
                     Account::<T>::mutate(k, |a| a.data = Default::default());
                 } else {
                     Account::<T>::remove(k);
