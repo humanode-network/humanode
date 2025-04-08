@@ -71,9 +71,9 @@ impl frame_system::Config for Test {
 
 mock! {
     #[derive(Debug)]
-    pub PrecompilesSet {}
+    pub IsPrecompile {}
 
-    impl PrecompilesSet<H160> for PrecompilesSet {
+    impl IsPrecompile<H160> for IsPrecompile {
         pub fn is_precompile(who: &H160) -> bool;
     }
 }
@@ -83,7 +83,7 @@ impl pallet_evm_system::Config for Test {
     type AccountId = H160;
     type Index = u64;
     type AccountData = u64;
-    type PrecompilesSet = MockPrecompilesSet;
+    type IsPrecompile = MockIsPrecompile;
     type OnNewAccount = MockDummyOnNewAccount;
     type OnKilledAccount = MockDummyOnKilledAccount;
 }

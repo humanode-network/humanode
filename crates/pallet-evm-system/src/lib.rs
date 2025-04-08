@@ -27,10 +27,8 @@ pub struct AccountInfo<Index, AccountData> {
     pub data: AccountData,
 }
 
-/// A set of precompiles.
-///
-/// Checks if the provided account is in the precompile set.
-pub trait PrecompilesSet<AccountId> {
+/// A trait that allows checking whether a given account is a precompile or not.
+pub trait IsPrecompile<AccountId> {
     /// Check if the given account is a precompile.
     fn is_precompile(account_id: &AccountId) -> bool;
 }
@@ -80,8 +78,8 @@ pub mod pallet {
         /// pallet does regardless).
         type AccountData: Member + FullCodec + Clone + Default + TypeInfo + MaxEncodedLen;
 
-        /// A set of precompiles.
-        type PrecompilesSet: PrecompilesSet<<Self as Config>::AccountId>;
+        /// Checks whether a given account is a precompile or not.
+        type IsPrecompile: IsPrecompile<<Self as Config>::AccountId>;
 
         /// Handler for when a new account has just been created.
         type OnNewAccount: OnNewAccount<<Self as Config>::AccountId>;
@@ -170,7 +168,7 @@ impl<T: Config> Pallet<T> {
 
     /// Create an account.
     pub fn create_account(who: &<T as Config>::AccountId) -> AccountCreationOutcome {
-        if Self::account_exists(who) || T::PrecompilesSet::is_precompile(who) {
+        if Self::account_exists(who) || T::IsPrecompile::is_precompile(who) {
             return AccountCreationOutcome::AlreadyExists;
         }
 
@@ -207,7 +205,7 @@ impl<T: Config> StoredMap<<T as Config>::AccountId, <T as Config>::AccountData> 
                 Account::<T>::mutate(k, |a| a.data = data);
             }
             (None, true) => {
-                if nonce != <T as Config>::Index::zero() || T::PrecompilesSet::is_precompile(k) {
+                if nonce != <T as Config>::Index::zero() || T::IsPrecompile::is_precompile(k) {
                     Account::<T>::mutate(k, |a| a.data = Default::default());
                 } else {
                     Account::<T>::remove(k);

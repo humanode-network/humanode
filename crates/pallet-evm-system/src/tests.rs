@@ -22,7 +22,7 @@ fn create_account_created() {
         System::set_block_number(1);
 
         // Set mock expectations.
-        let is_precompile_ctx = MockPrecompilesSet::is_precompile_context();
+        let is_precompile_ctx = MockIsPrecompile::is_precompile_context();
         is_precompile_ctx
             .expect()
             .once()
@@ -82,7 +82,7 @@ fn create_precompiled_account_already_exists() {
         let precompile = H160::from_str("1000000000000000000000000000000000000001").unwrap();
 
         // Set mock expectations.
-        let is_precompile_ctx = MockPrecompilesSet::is_precompile_context();
+        let is_precompile_ctx = MockIsPrecompile::is_precompile_context();
         is_precompile_ctx
             .expect()
             .once()
@@ -275,7 +275,7 @@ fn try_mutate_exists_account_removed() {
         assert!(EvmSystem::account_exists(&account_id));
 
         // Set mock expectations.
-        let is_precompile_ctx = MockPrecompilesSet::is_precompile_context();
+        let is_precompile_ctx = MockIsPrecompile::is_precompile_context();
         is_precompile_ctx
             .expect()
             .once()
@@ -363,7 +363,7 @@ fn try_mutate_exists_precompiled_account_retained() {
         assert!(EvmSystem::account_exists(&precompile));
 
         // Set mock expectations.
-        let is_precompile_ctx = MockPrecompilesSet::is_precompile_context();
+        let is_precompile_ctx = MockIsPrecompile::is_precompile_context();
         is_precompile_ctx
             .expect()
             .once()
