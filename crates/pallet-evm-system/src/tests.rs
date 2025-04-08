@@ -22,6 +22,13 @@ fn create_account_created() {
         System::set_block_number(1);
 
         // Set mock expectations.
+        let is_precompile_ctx = MockPrecompilesSet::is_precompile_context();
+        is_precompile_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(account_id))
+            .return_const(false);
+
         let on_new_account_ctx = MockDummyOnNewAccount::on_new_account_context();
         on_new_account_ctx
             .expect()
@@ -46,6 +53,7 @@ fn create_account_created() {
         }));
 
         // Assert mock invocations.
+        is_precompile_ctx.checkpoint();
         on_new_account_ctx.checkpoint();
     });
 }
@@ -71,20 +79,33 @@ fn create_account_already_exists() {
 #[test]
 fn create_precompiled_account_already_exists() {
     new_test_ext().execute_with_ext(|_| {
+        let precompile = H160::from_str("1000000000000000000000000000000000000001").unwrap();
+
+        // Set mock expectations.
+        let is_precompile_ctx = MockPrecompilesSet::is_precompile_context();
+        is_precompile_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(precompile))
+            .return_const(true);
+
         // Set block number to enable events.
         System::set_block_number(1);
 
         // Invoke the function under test.
         assert_storage_noop!(assert_eq!(
-            EvmSystem::create_account(&PRECOMPILE),
+            EvmSystem::create_account(&precompile),
             AccountCreationOutcome::AlreadyExists
         ));
 
         // Assert that there is no a corresponding `NewAccount` event.
         assert!(System::events().iter().all(|record| record.event
             != RuntimeEvent::EvmSystem(Event::NewAccount {
-                account: PRECOMPILE,
+                account: precompile,
             })));
+
+        // Assert mock invocations.
+        is_precompile_ctx.checkpoint();
     });
 }
 
@@ -254,6 +275,13 @@ fn try_mutate_exists_account_removed() {
         assert!(EvmSystem::account_exists(&account_id));
 
         // Set mock expectations.
+        let is_precompile_ctx = MockPrecompilesSet::is_precompile_context();
+        is_precompile_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(account_id))
+            .return_const(false);
+
         let on_killed_account_ctx = MockDummyOnKilledAccount::on_killed_account_context();
         on_killed_account_ctx
             .expect()
@@ -278,6 +306,7 @@ fn try_mutate_exists_account_removed() {
         }));
 
         // Assert mock invocations.
+        is_precompile_ctx.checkpoint();
         on_killed_account_ctx.checkpoint();
     });
 }
@@ -323,34 +352,46 @@ fn try_mutate_exists_account_retained() {
 fn try_mutate_exists_precompiled_account_retained() {
     new_test_ext().execute_with_ext(|_| {
         // Prepare test data.
+        let precompile = H160::from_str("1000000000000000000000000000000000000001").unwrap();
         let nonce = 0;
         let data = 100;
 
         let account_info = AccountInfo { nonce, data };
-        <Account<Test>>::insert(PRECOMPILE, account_info);
+        <Account<Test>>::insert(precompile, account_info);
 
         // Check test preconditions.
-        assert!(EvmSystem::account_exists(&PRECOMPILE));
+        assert!(EvmSystem::account_exists(&precompile));
+
+        // Set mock expectations.
+        let is_precompile_ctx = MockPrecompilesSet::is_precompile_context();
+        is_precompile_ctx
+            .expect()
+            .once()
+            .with(predicate::eq(precompile))
+            .return_const(true);
 
         // Set block number to enable events.
         System::set_block_number(1);
 
         // Invoke the function under test.
-        EvmSystem::try_mutate_exists(&PRECOMPILE, |maybe_data| -> Result<(), DispatchError> {
+        EvmSystem::try_mutate_exists(&precompile, |maybe_data| -> Result<(), DispatchError> {
             *maybe_data = None;
             Ok(())
         })
         .unwrap();
 
         // Assert state changes.
-        assert!(EvmSystem::account_exists(&PRECOMPILE));
-        assert_eq!(<Account<Test>>::get(PRECOMPILE), AccountInfo::default());
+        assert!(EvmSystem::account_exists(&precompile));
+        assert_eq!(<Account<Test>>::get(precompile), AccountInfo::default());
 
         // Assert that there is no a corresponding `KilledAccount` event.
         assert!(System::events().iter().all(|record| record.event
             != RuntimeEvent::EvmSystem(Event::KilledAccount {
-                account: PRECOMPILE,
+                account: precompile,
             })));
+
+        // Assert mock invocations.
+        is_precompile_ctx.checkpoint();
     });
 }
 
