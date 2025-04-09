@@ -19,7 +19,7 @@ use precompile_utils::EvmData;
 use sp_core::{H160, U256};
 use sp_std::marker::PhantomData;
 
-use crate::{evm_swap, ConstU64};
+use crate::{evm_swap, ConstU64, EvmAccountId};
 
 /// A set of constant values used to indicate precompiles.
 pub mod precompiles_constants {
@@ -184,6 +184,12 @@ where
             is_precompile: Self::used_addresses().contains(&address),
             extra_cost: 0,
         }
+    }
+}
+
+impl<R> pallet_evm_system::IsPrecompile<EvmAccountId> for FrontierPrecompiles<R> {
+    fn is_precompile(account_id: &EvmAccountId) -> bool {
+        Self::used_addresses().contains(account_id)
     }
 }
 
