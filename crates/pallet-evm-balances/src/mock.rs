@@ -92,6 +92,7 @@ impl pallet_evm_system::Config for Test {
     type AccountId = u64;
     type Index = u64;
     type AccountData = AccountData<u64>;
+    type IsPrecompile = ();
     type OnNewAccount = ();
     type OnKilledAccount = ();
 }
