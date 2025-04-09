@@ -27,12 +27,6 @@ pub struct AccountInfo<Index, AccountData> {
     pub data: AccountData,
 }
 
-/// A trait that allows checking whether a given account is a precompile or not.
-pub trait IsPrecompile<AccountId> {
-    /// Check if the given account is a precompile.
-    fn is_precompile(account_id: &AccountId) -> bool;
-}
-
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
 #[allow(clippy::missing_docs_in_private_items)]
@@ -239,6 +233,18 @@ impl<T: Config> fp_evm::AccountProvider for Pallet<T> {
 
     fn inc_account_nonce(who: &Self::AccountId) {
         Self::inc_account_nonce(who);
+    }
+}
+
+/// A trait that allows checking whether a given account is a precompile or not.
+pub trait IsPrecompile<AccountId> {
+    /// Check if the given account is a precompile.
+    fn is_precompile(account_id: &AccountId) -> bool;
+}
+
+impl<AccountId> IsPrecompile<AccountId> for () {
+    fn is_precompile(_account_id: &AccountId) -> bool {
+        false
     }
 }
 
