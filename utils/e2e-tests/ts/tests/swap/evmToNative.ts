@@ -137,9 +137,12 @@ describe("evm to native tokens swap", () => {
     });
     expect(evmSwapPrecompileBalance).toEqual(0n);
 
-    const events = await getEvents(substrateApi, swapTxReceipt.blockNumber);
+    const substrateEvents = await getEvents(
+      substrateApi,
+      swapTxReceipt.blockNumber,
+    );
 
-    events.forEach((item) => {
+    substrateEvents.forEach((item) => {
       const section = item.event.section;
       const method = item.event.method;
       const data = JSON.stringify(item.event.data);
