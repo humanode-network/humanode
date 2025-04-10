@@ -88,10 +88,7 @@ impl<R> Default for FrontierPrecompiles<R> {
     }
 }
 
-impl<R> FrontierPrecompiles<R>
-where
-    R: pallet_evm::Config,
-{
+impl<R> FrontierPrecompiles<R> {
     pub fn used_addresses() -> sp_std::vec::Vec<H160> {
         sp_std::vec![
             EC_RECOVERY,
