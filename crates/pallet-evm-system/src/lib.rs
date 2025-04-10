@@ -162,7 +162,7 @@ impl<T: Config> Pallet<T> {
 
     /// Create an account.
     pub fn create_account(who: &<T as Config>::AccountId) -> AccountCreationOutcome {
-        if Self::account_exists(who) || T::IsPrecompile::is_precompile(who) {
+        if Self::account_exists(who) {
             return AccountCreationOutcome::AlreadyExists;
         }
 

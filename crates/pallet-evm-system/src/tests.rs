@@ -22,13 +22,6 @@ fn create_account_created() {
         System::set_block_number(1);
 
         // Set mock expectations.
-        let is_precompile_ctx = MockIsPrecompile::is_precompile_context();
-        is_precompile_ctx
-            .expect()
-            .once()
-            .with(predicate::eq(account_id))
-            .return_const(false);
-
         let on_new_account_ctx = MockDummyOnNewAccount::on_new_account_context();
         on_new_account_ctx
             .expect()
@@ -53,7 +46,6 @@ fn create_account_created() {
         }));
 
         // Assert mock invocations.
-        is_precompile_ctx.checkpoint();
         on_new_account_ctx.checkpoint();
     });
 }
@@ -72,40 +64,6 @@ fn create_account_already_exists() {
             EvmSystem::create_account(&account_id),
             AccountCreationOutcome::AlreadyExists
         ));
-    });
-}
-
-/// This test verifies that trying creating an precompiled account works as expected.
-#[test]
-fn create_precompiled_account_already_exists() {
-    new_test_ext().execute_with_ext(|_| {
-        let precompile = H160::from_str("1000000000000000000000000000000000000001").unwrap();
-
-        // Set mock expectations.
-        let is_precompile_ctx = MockIsPrecompile::is_precompile_context();
-        is_precompile_ctx
-            .expect()
-            .once()
-            .with(predicate::eq(precompile))
-            .return_const(true);
-
-        // Set block number to enable events.
-        System::set_block_number(1);
-
-        // Invoke the function under test.
-        assert_storage_noop!(assert_eq!(
-            EvmSystem::create_account(&precompile),
-            AccountCreationOutcome::AlreadyExists
-        ));
-
-        // Assert that there is no a corresponding `NewAccount` event.
-        assert!(System::events().iter().all(|record| record.event
-            != RuntimeEvent::EvmSystem(Event::NewAccount {
-                account: precompile,
-            })));
-
-        // Assert mock invocations.
-        is_precompile_ctx.checkpoint();
     });
 }
 
