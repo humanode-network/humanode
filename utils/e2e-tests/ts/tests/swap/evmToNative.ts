@@ -7,6 +7,7 @@ import evmSwap from "../../lib/abis/evmSwap";
 import { decodeEventLog } from "viem";
 import * as substrate from "../../lib/substrate";
 import { getNativeBalance } from "../../lib/substrateUtils";
+import { AnyJson } from "@polkadot/types-codec/types";
 
 const evmToNativeSwapPrecompileAddress =
   "0x0000000000000000000000000000000000000900";
@@ -15,6 +16,14 @@ const bridgePotNativeAccount =
   "hmpwhPbL5XJM1pYFVL6wRPkUP5gHQyvC6R5jMkziwnGTQ6hFr";
 const feesPotNativeAccount =
   "hmpwhPbL5XJTYPWXPMkacfqGhJ3eoQRPLKphajpvcot5Q5zkk";
+
+type Event = {
+  event: {
+    method: string;
+    section: string;
+    data: AnyJson;
+  };
+};
 
 describe("evm to native tokens swap", () => {
   let node: RunNodeState;
@@ -136,5 +145,32 @@ describe("evm to native tokens swap", () => {
       address: evmToNativeSwapPrecompileAddress,
     });
     expect(evmSwapPrecompileBalance).toEqual(0n);
+
+    const blockNumber = swapTxReceipt.blockNumber;
+    const blockHash = await substrateApi.rpc.chain.getBlockHash(blockNumber);
+    const substrateApiAt = await substrateApi.at(blockHash);
+    const events = (await substrateApiAt.query["system"]?.[
+      "events"
+    ]?.()) as unknown as Event[];
+
+    events.forEach((item) => {
+      const section = item.event.section;
+      const method = item.event.method;
+      const data = JSON.stringify(item.event.data);
+
+      console.log(section);
+      console.log(method);
+      console.log(data);
+      expect([section, method, data]).not.toEqual([
+        "evmSystem",
+        "NewAccount",
+        JSON.stringify([evmToNativeSwapPrecompileAddress]),
+      ]);
+      expect([section, method, data]).not.toEqual([
+        "evmSystem",
+        "KilledAccount",
+        JSON.stringify([evmToNativeSwapPrecompileAddress]),
+      ]);
+    });
   });
 });
