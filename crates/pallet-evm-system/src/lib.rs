@@ -72,6 +72,9 @@ pub mod pallet {
         /// pallet does regardless).
         type AccountData: Member + FullCodec + Clone + Default + TypeInfo + MaxEncodedLen;
 
+        /// Checks whether a given account is a precompile or not.
+        type IsPrecompile: IsPrecompile<<Self as Config>::AccountId>;
+
         /// Handler for when a new account has just been created.
         type OnNewAccount: OnNewAccount<<Self as Config>::AccountId>;
 
@@ -196,7 +199,7 @@ impl<T: Config> StoredMap<<T as Config>::AccountId, <T as Config>::AccountData> 
                 Account::<T>::mutate(k, |a| a.data = data);
             }
             (None, true) => {
-                if nonce != <T as Config>::Index::zero() {
+                if nonce != <T as Config>::Index::zero() || T::IsPrecompile::is_precompile(k) {
                     Account::<T>::mutate(k, |a| a.data = Default::default());
                 } else {
                     Account::<T>::remove(k);
@@ -230,6 +233,18 @@ impl<T: Config> fp_evm::AccountProvider for Pallet<T> {
 
     fn inc_account_nonce(who: &Self::AccountId) {
         Self::inc_account_nonce(who);
+    }
+}
+
+/// A trait that allows checking whether a given account is a precompile or not.
+pub trait IsPrecompile<AccountId> {
+    /// Check if the given account is a precompile.
+    fn is_precompile(account_id: &AccountId) -> bool;
+}
+
+impl<AccountId> IsPrecompile<AccountId> for () {
+    fn is_precompile(_account_id: &AccountId) -> bool {
+        false
     }
 }
 

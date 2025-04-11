@@ -6,7 +6,7 @@ import { beforeEachWithCleanup } from "../../lib/lifecycle";
 import evmSwap from "../../lib/abis/evmSwap";
 import { decodeEventLog } from "viem";
 import * as substrate from "../../lib/substrate";
-import { getNativeBalance } from "../../lib/substrateUtils";
+import { getEvents, getNativeBalance } from "../../lib/substrateUtils";
 
 const evmToNativeSwapPrecompileAddress =
   "0x0000000000000000000000000000000000000900";
@@ -136,5 +136,27 @@ describe("evm to native tokens swap", () => {
       address: evmToNativeSwapPrecompileAddress,
     });
     expect(evmSwapPrecompileBalance).toEqual(0n);
+
+    const substrateEvents = await getEvents(
+      substrateApi,
+      swapTxReceipt.blockNumber,
+    );
+
+    substrateEvents.forEach((item) => {
+      const section = item.event.section;
+      const method = item.event.method;
+      const data = JSON.stringify(item.event.data);
+
+      expect([section, method, data]).not.toEqual([
+        "evmSystem",
+        "NewAccount",
+        JSON.stringify([evmToNativeSwapPrecompileAddress]),
+      ]);
+      expect([section, method, data]).not.toEqual([
+        "evmSystem",
+        "KilledAccount",
+        JSON.stringify([evmToNativeSwapPrecompileAddress]),
+      ]);
+    });
   });
 });

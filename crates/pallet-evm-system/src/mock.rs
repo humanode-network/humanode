@@ -69,11 +69,21 @@ impl frame_system::Config for Test {
     type MaxConsumers = ConstU32<16>;
 }
 
+mock! {
+    #[derive(Debug)]
+    pub IsPrecompile {}
+
+    impl IsPrecompile<H160> for IsPrecompile {
+        pub fn is_precompile(who: &H160) -> bool;
+    }
+}
+
 impl pallet_evm_system::Config for Test {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = H160;
     type Index = u64;
     type AccountData = u64;
+    type IsPrecompile = MockIsPrecompile;
     type OnNewAccount = MockDummyOnNewAccount;
     type OnKilledAccount = MockDummyOnKilledAccount;
 }

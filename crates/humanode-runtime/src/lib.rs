@@ -615,6 +615,7 @@ impl pallet_evm_system::Config for Runtime {
     type AccountId = EvmAccountId;
     type Index = Index;
     type AccountData = pallet_evm_balances::AccountData<Balance>;
+    type IsPrecompile = FrontierPrecompiles<Self>;
     type OnNewAccount = ();
     type OnKilledAccount = ();
 }
