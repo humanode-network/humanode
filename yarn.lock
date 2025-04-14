@@ -1087,12 +1087,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:22.14.0":
-  version: 22.14.0
-  resolution: "@types/node@npm:22.14.0"
+"@types/node@npm:22.14.1":
+  version: 22.14.1
+  resolution: "@types/node@npm:22.14.1"
   dependencies:
     undici-types: ~6.21.0
-  checksum: 8bfae1d3c428b122d23750690bdc5b8295a53949823563ec60654a24ece98bde4fc0d2b5f06ddc6def6f01a08dfe62cece7c93e60964b74f736145dad5ee1302
+  checksum: e22363f40ac8290da2bb5261c2b348241fd93b000908cefd3c56575df9d4f6b8d102fc8631275eac7ec4a9e0ac4f38f01c9d8104ebbda76c936aef96fd1e55f3
   languageName: node
   linkType: hard
 
@@ -1971,12 +1971,12 @@ __metadata:
   resolution: "humanode-e2e-tests-ts@workspace:utils/e2e-tests/ts"
   dependencies:
     "@polkadot/api": ^15.9.1
-    "@types/node": 22.14.0
+    "@types/node": 22.14.1
     "@vitest/expect": ^3.1.1
     axios: ^1.8.4
     ethers: ^6.13.5
     typescript: ^5.8.3
-    viem: ^2.26.0
+    viem: ^2.26.5
     vitest: ^3.1.1
   languageName: unknown
   linkType: soft
@@ -2969,9 +2969,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"viem@npm:^2.26.0":
-  version: 2.26.0
-  resolution: "viem@npm:2.26.0"
+"viem@npm:^2.26.5":
+  version: 2.26.5
+  resolution: "viem@npm:2.26.5"
   dependencies:
     "@noble/curves": 1.8.1
     "@noble/hashes": 1.7.1
@@ -2986,7 +2986,7 @@ __metadata:
   peerDependenciesMeta:
     typescript:
       optional: true
-  checksum: 00f94a09c2f0020f73a3364c9e34cb34629b6fe698c4df915bf30f6c77f4414b61e1edfaf69203aad6215d00b2520f1d5510fb6c1f4d8f9eb81abca04803936d
+  checksum: 32d779469103d52156fb25a60c79fd53e3447f4d76ad4e1cec6f89156593c6a488bc9489856c7c503f4e508382620181df1a2161f554ebeafa0718238425cfa9
   languageName: node
   linkType: hard
 
