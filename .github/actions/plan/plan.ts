@@ -18,7 +18,7 @@ export const buildMatrix = <M extends modes.Modes>(
     (mode) => !isPlatformIndependentMode(mode),
   );
 
-  // Compute the effective list of modes that are platform indepedent and only
+  // Compute the effective list of modes that are platform independent and only
   // have to be run once.
   const activePlatformIndependentModes = matrixItemsFiltered(
     modes,
