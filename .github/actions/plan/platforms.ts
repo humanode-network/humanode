@@ -3,6 +3,7 @@ export const selfHostedRunners = {
 } as const;
 
 export type StandardRunnerOS =
+  | "ubuntu-24.04"
   | "ubuntu-22.04"
   | "ubuntu-20.04"
   | "macos-13"
@@ -36,12 +37,23 @@ const buildEnvScriptPath = (script: string) =>
 
 // All the platforms that we support, and their respective settings.
 export const all = {
+  ubuntu2404: {
+    name: "Ubuntu 24.04",
+    os: "ubuntu-24.04",
+    buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
+    isOnSelfHostedRunner: false,
+    essential: true,
+    env: {},
+    cacheKey: "ubuntu2404-amd64",
+    artifactMarker: "ubuntu2404",
+    isBroken: false,
+  },
   ubuntu2204: {
     name: "Ubuntu 22.04",
     os: "ubuntu-22.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     isOnSelfHostedRunner: false,
-    essential: true,
+    essential: false,
     env: {},
     cacheKey: "ubuntu2204-amd64",
     artifactMarker: "ubuntu2204",
@@ -96,4 +108,4 @@ export const all = {
 } satisfies Platforms;
 
 // A platform for running things that are platform-independent.
-export const core = all.ubuntu2204 satisfies Platform;
+export const core = all.ubuntu2404 satisfies Platform;

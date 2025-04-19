@@ -21,7 +21,7 @@ env:
 jobs:
   update-features-snapshot:
     name: Update features snapshot
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -37,7 +37,7 @@ jobs:
 
       - uses: ./.github/actions/common-setup
         with:
-          platformCacheKey: ubuntu2204-amd64
+          platformCacheKey: ubuntu2404-amd64
         timeout-minutes: 10
         if: ${{ env.IS_DEPENDABOT == 'true' }}
 
