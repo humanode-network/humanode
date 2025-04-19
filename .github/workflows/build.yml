@@ -55,10 +55,6 @@ jobs:
         id: set-matrix
         with:
           plan-name: build
-      - name: Dump matrix context
-        env:
-          MATRIX_CONTEXT: ${{ toJson(steps.set-matrix.outputs.matrix) }}
-        run: echo "$MATRIX_CONTEXT"
 
   build:
     needs:
