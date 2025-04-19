@@ -24,7 +24,7 @@ env:
 jobs:
   plan:
     name: Plan the execution
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     permissions:
@@ -81,7 +81,7 @@ jobs:
             build-args: "--features try-runtime"
       fail-fast: false
     name: End-to-end tests / ${{ matrix.test.suite }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 50
     permissions:
       contents: read
@@ -94,7 +94,7 @@ jobs:
 
       - uses: ./.github/actions/common-setup
         with:
-          platformCacheKey: ubuntu2204-amd64
+          platformCacheKey: ubuntu2404-amd64
           buildEnvScript: .github/scripts/build_env/ubuntu.sh
         timeout-minutes: 10
 
@@ -128,7 +128,7 @@ jobs:
             run: utils/checks/features-snapshot
       fail-fast: false
     name: ${{ matrix.util.name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -139,7 +139,7 @@ jobs:
 
       - uses: ./.github/actions/common-setup
         with:
-          platformCacheKey: ubuntu2204-amd64
+          platformCacheKey: ubuntu2404-amd64
         timeout-minutes: 10
 
       - run: ${{ matrix.util.run }}
@@ -182,7 +182,7 @@ jobs:
 
       fail-fast: false
     name: ${{ matrix.util.name }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -205,7 +205,7 @@ jobs:
 
   prettier:
     name: prettier:check
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 50
     permissions:
       contents: read
