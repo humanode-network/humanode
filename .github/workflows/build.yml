@@ -8,16 +8,16 @@ on:
     - cron: "0 20 * * 0"
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/master' && github.event_name != 'merge_group' }}
+
 defaults:
   run:
     shell: bash
 
 env:
   CARGO_INCREMENTAL: "0"
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref || github.run_id }}
-  cancel-in-progress: ${{ github.ref != 'refs/heads/master' && github.event_name != 'merge_group' }}
 
 jobs:
   draft-release:
