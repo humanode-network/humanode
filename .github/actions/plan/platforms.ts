@@ -5,7 +5,6 @@ export const selfHostedRunners = {
 export type StandardRunnerOS =
   | "ubuntu-24.04"
   | "ubuntu-22.04"
-  | "ubuntu-20.04"
   | "macos-13"
   | "macos-14"
   | "windows-latest";
@@ -57,17 +56,6 @@ export const all = {
     env: {},
     cacheKey: "ubuntu2204-amd64",
     artifactMarker: "ubuntu2204",
-    isBroken: false,
-  },
-  ubuntu2004: {
-    name: "Ubuntu 20.04",
-    os: "ubuntu-20.04",
-    buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
-    isOnSelfHostedRunner: false,
-    essential: false,
-    env: {},
-    cacheKey: "ubuntu2004-amd64",
-    artifactMarker: "ubuntu2004",
     isBroken: false,
   },
   windows: {
