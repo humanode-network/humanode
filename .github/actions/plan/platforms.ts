@@ -5,8 +5,9 @@ export const selfHostedRunners = {
 export type StandardRunnerOS =
   | "ubuntu-24.04"
   | "ubuntu-22.04"
-  | "macos-13"
-  | "macos-14"
+  | "macos-13" // intel
+  | "macos-14" // arm
+  | "macos-15" // arm
   | "windows-latest";
 
 export type CustomRunnerOS = never;
