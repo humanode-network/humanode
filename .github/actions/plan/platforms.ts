@@ -4,7 +4,9 @@ export const selfHostedRunners = {
 
 export type StandardRunnerOS =
   | "ubuntu-24.04"
+  | "ubuntu-24.04-arm"
   | "ubuntu-22.04"
+  | "ubuntu-22.04-arm"
   | "macos-13" // intel
   | "macos-14" // arm
   | "macos-15" // arm
@@ -37,8 +39,8 @@ const buildEnvScriptPath = (script: string) =>
 
 // All the platforms that we support, and their respective settings.
 export const all = {
-  ubuntu2404: {
-    name: "Ubuntu 24.04",
+  ubuntu2404_amd64: {
+    name: "Ubuntu 24.04 (amd64)",
     os: "ubuntu-24.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     isOnSelfHostedRunner: false,
@@ -48,8 +50,19 @@ export const all = {
     artifactMarker: "ubuntu2404",
     isBroken: false,
   },
-  ubuntu2204: {
-    name: "Ubuntu 22.04",
+  ubuntu2404_aarch64: {
+    name: "Ubuntu 24.04 (aarch64)",
+    os: "ubuntu-24.04-arm",
+    buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
+    isOnSelfHostedRunner: false,
+    essential: false,
+    env: {},
+    cacheKey: "ubuntu2404-aarch64",
+    artifactMarker: "ubuntu2404",
+    isBroken: false,
+  },
+  ubuntu2204_amd64: {
+    name: "Ubuntu 22.04 (amd64)",
     os: "ubuntu-22.04",
     buildEnvScript: buildEnvScriptPath("ubuntu.sh"),
     isOnSelfHostedRunner: false,
@@ -59,8 +72,8 @@ export const all = {
     artifactMarker: "ubuntu2204",
     isBroken: false,
   },
-  windows: {
-    name: "Windows",
+  windows_amd64: {
+    name: "Windows (amd64)",
     os: "windows-latest",
     buildEnvScript: buildEnvScriptPath("windows.sh"),
     isOnSelfHostedRunner: false,
@@ -72,7 +85,7 @@ export const all = {
     artifactMarker: null,
     isBroken: true,
   },
-  macos: {
+  macos_amd64: {
     name: "macOS (amd64)",
     os: "macos-13",
     buildEnvScript: buildEnvScriptPath("macos.sh"),
@@ -97,4 +110,4 @@ export const all = {
 } satisfies Platforms;
 
 // A platform for running things that are platform-independent.
-export const core = all.ubuntu2404 satisfies Platform;
+export const core = all.ubuntu2404_amd64 satisfies Platform;
