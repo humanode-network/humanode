@@ -80,7 +80,7 @@ impl GasometerListener for EvmTracer {
     fn event(&mut self, event: evm_gasometer::tracing::Event) {
         let event: GasometerEvent = event.into();
         let message = event.encode();
-        primitives_evm_tracing_ext::evm_tracing_ext::evm_event(message);
+        primitives_evm_tracing_ext::evm_tracing_ext::gasometer_event(message);
     }
 }
 
@@ -88,6 +88,6 @@ impl RuntimeListener for EvmTracer {
     fn event(&mut self, event: evm_runtime::tracing::Event) {
         let event = RuntimeEvent::from_evm_event(event, self.step_event_filter);
         let message = event.encode();
-        primitives_evm_tracing_ext::evm_tracing_ext::evm_event(message);
+        primitives_evm_tracing_ext::evm_tracing_ext::runtime_event(message);
     }
 }
