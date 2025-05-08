@@ -1,0 +1,18 @@
+[package]
+name = "evm-debug-api"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+sp-api = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+  "sp-api/std",
+  "sp-core/std",
+  "sp-runtime/std",
+]
