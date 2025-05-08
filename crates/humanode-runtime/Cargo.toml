@@ -118,7 +118,12 @@ sp-keystore = { workspace = true }
 
 [features]
 default = ["std"]
-evm-tracing = []
+evm-tracing = [
+  "evm-gasometer/tracing",
+  "evm-runtime/tracing",
+  "evm/tracing",
+  "primitives-evm-tracing-events/evm-tracing",
+]
 runtime-benchmarks = [
   "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
@@ -288,10 +293,4 @@ try-runtime = [
   "pallet-vesting/try-runtime",
   "primitives-currency-swap-proxy/try-runtime",
   "sp-runtime/try-runtime",
-]
-evm-tracing = [
-  "evm-gasometer/tracing",
-  "evm-runtime/tracing",
-  "evm/tracing",
-  "primitives-evm-tracing-events/evm-tracing",
 ]
