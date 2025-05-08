@@ -1,8 +1,5 @@
 //! EVM gasometer events definitions.
 
-// TODO: fix clippy.
-#![allow(clippy::arithmetic_side_effects)]
-
 use codec::{Decode, Encode};
 
 /// Snapshot.
@@ -16,13 +13,6 @@ pub struct Snapshot {
     pub used_gas: u64,
     /// Refunded gas.
     pub refunded_gas: i64,
-}
-
-impl Snapshot {
-    /// Returns snapshot gas value.
-    pub fn gas(&self) -> u64 {
-        self.gas_limit - self.used_gas - self.memory_gas
-    }
 }
 
 #[cfg(feature = "evm-tracing")]
