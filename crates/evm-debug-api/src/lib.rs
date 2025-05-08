@@ -6,7 +6,7 @@ use sp_core::{sp_std::vec::Vec, H160, H256, U256};
 
 sp_api::decl_runtime_apis! {
     /// Runtime API for the EVM debug logic.
-    pub trait DebugRuntimeApi {
+    pub trait EvmDebugApi {
         // Allow too many arguments to pass them in the way used at EVM runner call.
         #[allow(clippy::too_many_arguments)]
         /// Trace EVM call execution.

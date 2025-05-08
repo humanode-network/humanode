@@ -1505,7 +1505,7 @@ impl_runtime_apis! {
     }
 
     #[cfg(feature = "evm-tracing")]
-    impl evm_debug_api::DebugRuntimeApi<Block> for Runtime {
+    impl evm_debug_api::EvmDebugApi<Block> for Runtime {
         fn trace_call(
             header: &<Block as BlockT>::Header,
             from: H160,
