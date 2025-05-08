@@ -7,7 +7,7 @@ publish = false
 [dependencies]
 codec = { workspace = true }
 environmental = { workspace = true }
-evm = { workspace = true, features = [ "with-codec" ] }
+evm = { workspace = true, features = ["with-codec"] }
 evm-gasometer = { workspace = true }
 evm-runtime = { workspace = true }
 sp-core = { workspace = true }
@@ -15,6 +15,11 @@ sp-runtime-interface = { workspace = true }
 
 [features]
 default = ["std"]
+evm-tracing = [
+  "evm-gasometer/tracing",
+  "evm-runtime/tracing",
+  "evm/tracing",
+]
 std = [
   "codec/std",
   "environmental/std",
@@ -23,9 +28,4 @@ std = [
   "evm/std",
   "sp-core/std",
   "sp-runtime-interface/std",
-]
-evm-tracing = [
-  "evm-gasometer/tracing",
-  "evm-runtime/tracing",
-  "evm/tracing",
 ]
