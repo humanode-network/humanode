@@ -3,6 +3,8 @@
 // TODO: fix clippy.
 #![allow(missing_docs)]
 
+extern crate alloc;
+
 use codec::{Decode, Encode};
 use evm::ExitReason;
 #[cfg(feature = "evm-tracing")]
@@ -310,7 +312,7 @@ pub fn opcodes_string(opcode: Opcode) -> Vec<u8> {
         Opcode(254) => "Invalid",
         Opcode(255) => "SelfDestruct",
         Opcode(n) => {
-            tmp = format!("Unknown({})", n);
+            tmp = alloc::format!("Unknown({})", n);
             &tmp
         }
     };
