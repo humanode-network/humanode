@@ -7,9 +7,16 @@ use sp_core::{sp_std::vec::Vec, H160, H256, U256};
 sp_api::decl_runtime_apis! {
     /// Runtime API for the EVM debug logic.
     pub trait EvmDebugApi {
+        /// Trace block.
+        fn trace_block(
+            extrinsics: Vec<Block::Extrinsic>,
+            known_transactions: Vec<H256>,
+            header: &Block::Header,
+        ) -> Result<(), sp_runtime::DispatchError>;
+
         // Allow too many arguments to pass them in the way used at EVM runner call.
         #[allow(clippy::too_many_arguments)]
-        /// Trace EVM call execution.
+        /// Trace call execution.
         fn trace_call(
             header: &Block::Header,
             from: H160,
