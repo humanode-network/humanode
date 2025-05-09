@@ -17,7 +17,7 @@ pub use self::evm::EvmEvent;
 
 environmental::environmental!(listener: dyn Listener + 'static);
 
-/// Sets up `listener` environment.
+/// Run closure with provided listener.
 pub fn using<R, F: FnOnce() -> R>(l: &mut (dyn Listener + 'static), f: F) -> R {
     listener::using(l, f)
 }
