@@ -815,6 +815,10 @@
     - std
     - with-codec
     - with-serde
+- name: evm-debug-api 0.1.0
+  features:
+    - default
+    - std
 - name: evm-gasometer 0.39.0
   features:
     - environmental
@@ -2226,6 +2230,14 @@
   features:
     - default
     - serde
+    - std
+- name: primitives-evm-tracing-events 0.1.0
+  features:
+    - default
+    - std
+- name: primitives-evm-tracing-ext 0.1.0
+  features:
+    - default
     - std
 - name: primitives-liveness-data 0.1.0
   features: []
