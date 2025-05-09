@@ -1,8 +1,5 @@
 //! EVM runtime events definitions.
 
-// TODO: fix clippy.
-#![allow(missing_docs)]
-
 extern crate alloc;
 
 use codec::{Decode, Encode};
@@ -12,10 +9,15 @@ use evm::Opcode;
 use sp_core::{sp_std::vec::Vec, H160, H256, U256};
 
 use crate::Context;
+#[cfg(feature = "evm-tracing")]
+use crate::StepEventFilter;
 
+/// EVM stack.
 #[derive(Clone, Debug, Encode, Decode, PartialEq, Eq)]
 pub struct Stack {
+    /// Data.
     pub data: Vec<H256>,
+    /// Limit.
     pub limit: u64,
 }
 
@@ -28,10 +30,14 @@ impl From<&evm::Stack> for Stack {
     }
 }
 
+/// EVM memory.
 #[derive(Clone, Debug, Encode, Decode, PartialEq, Eq)]
 pub struct Memory {
+    /// Data.
     pub data: Vec<u8>,
+    /// Effective length.
     pub effective_len: U256,
+    /// Limit.
     pub limit: u64,
 }
 
@@ -45,6 +51,7 @@ impl From<&evm::Memory> for Memory {
     }
 }
 
+/// Capture represents the result of execution.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Encode, Decode)]
 pub enum Capture<E, T> {
     /// The machine has exited. It cannot be executed again.
@@ -54,41 +61,57 @@ pub enum Capture<E, T> {
     Trap(T),
 }
 
-pub type Trap = Vec<u8>; // Should hold the marshalled Opcode.
+/// A type alias representing trap data. Should hold the marshalled `Opcode`.
+pub type Trap = Vec<u8>;
 
+/// EVM runtime event.
 #[derive(Debug, Clone, Encode, Decode, PartialEq, Eq)]
 pub enum RuntimeEvent {
+    /// Step.
     Step {
+        /// Context.
         context: Context,
-        // This needs to be marshalled in the runtime no matter what.
+        /// Opcode.
         opcode: Vec<u8>,
-        // We can use ExitReason with `with-codec` feature,
+        /// Position.
         position: Result<u64, ExitReason>,
+        /// Stack.
         stack: Option<Stack>,
+        /// Memory.
         memory: Option<Memory>,
     },
+    /// Step result.
     StepResult {
+        /// Result.
         result: Result<(), Capture<ExitReason, Trap>>,
+        /// Return value.
         return_value: Vec<u8>,
     },
+    /// Storage load.
     SLoad {
+        /// Address.
         address: H160,
+        /// Index.
         index: H256,
+        /// Value.
         value: H256,
     },
+    /// Storage store.
     SStore {
+        /// Address.
         address: H160,
+        /// Index.
         index: H256,
+        /// Value.
         value: H256,
     },
 }
 
 #[cfg(feature = "evm-tracing")]
 impl RuntimeEvent {
-    pub fn from_evm_event(
-        event: evm_runtime::tracing::Event<'_>,
-        filter: crate::StepEventFilter,
-    ) -> Self {
+    /// Obtain `RuntimeEvent` from [`evm_runtime::tracing::Event`] based on provided
+    /// step event filter.
+    pub fn from_evm_event(event: evm_runtime::tracing::Event<'_>, filter: StepEventFilter) -> Self {
         match event {
             evm_runtime::tracing::Event::Step {
                 context,
@@ -149,7 +172,7 @@ impl RuntimeEvent {
     }
 }
 
-/// Converts an Opcode into its name, stored in a `Vec<u8>`.
+/// Converts an `Opcode` into its name, stored in a `Vec<u8>`.
 #[cfg(feature = "evm-tracing")]
 pub fn opcodes_string(opcode: Opcode) -> Vec<u8> {
     let tmp;
