@@ -91,6 +91,8 @@ mod dev_utils;
 mod display_moment;
 pub mod eth_sig;
 mod evm_swap;
+#[cfg(feature = "evm-tracing")]
+mod evm_tracer;
 mod find_author;
 mod fixed_supply;
 pub mod robonode;
@@ -1499,6 +1501,77 @@ impl_runtime_apis! {
     impl pallet_vesting::api::VestingEvaluationApi<Block, AccountId, Balance> for Runtime {
         fn evaluate_lock(account: &AccountId) -> Result<Balance, pallet_vesting::api::EvaluationError> {
             Vesting::evaluate_lock(account)
+        }
+    }
+
+    #[cfg(feature = "evm-tracing")]
+    impl evm_debug_api::EvmDebugApi<Block> for Runtime {
+        fn trace_block(
+            extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+            known_transactions: Vec<H256>,
+            header: &<Block as BlockT>::Header,
+        ) -> Result<(), sp_runtime::DispatchError> {
+            Executive::initialize_block(header);
+
+            let mut config = <Runtime as pallet_evm::Config>::config().clone();
+            config.estimate = true;
+
+            // Apply all extrinsics. Ethereum extrinsics are traced.
+            for ext in extrinsics.into_iter() {
+                match &ext.0.function {
+                    RuntimeCall::Ethereum(transact { transaction }) => {},
+                    _ => {
+                        if let Err(err) = Executive::apply_extrinsic(ext) {
+                            frame_support::log::debug!(
+                                target: "tracing",
+                                "Failed to apply non-eth extrinsic: {:?}",
+                                err
+                            );
+                        }
+                    }
+                }
+            }
+
+            Ok(())
+        }
+
+        fn trace_call(
+            header: &<Block as BlockT>::Header,
+            from: H160,
+            to: H160,
+            data: Vec<u8>,
+            value: U256,
+            gas_limit: U256,
+            max_fee_per_gas: Option<U256>,
+            max_priority_fee_per_gas: Option<U256>,
+            nonce: Option<U256>,
+            access_list: Option<Vec<(H160, Vec<H256>)>>,
+        ) -> Result<(), sp_runtime::DispatchError> {
+            Executive::initialize_block(header);
+
+            evm_tracer::EvmTracer::new().trace(|| {
+                let is_transactional = false;
+                let validate = true;
+
+                let _ = <Runtime as pallet_evm::Config>::Runner::call(
+                    from,
+                    to,
+                    data,
+                    value,
+                    gas_limit.low_u64(),
+                    max_fee_per_gas,
+                    max_priority_fee_per_gas,
+                    nonce,
+                    access_list.unwrap_or_default(),
+                    is_transactional,
+                    validate,
+                    None,
+                    None,
+                    <Runtime as pallet_evm::Config>::config(),
+                );
+            });
+
+            Ok(())
         }
     }
 
