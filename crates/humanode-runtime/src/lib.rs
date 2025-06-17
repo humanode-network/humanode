@@ -1506,6 +1506,58 @@ impl_runtime_apis! {
 
     #[cfg(feature = "evm-tracing")]
     impl evm_debug_api::EvmDebugApi<Block> for Runtime {
+        fn trace_block(
+            extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+            known_transactions: Vec<H256>,
+            header: &<Block as BlockT>::Header,
+        ) -> Result<(), sp_runtime::DispatchError> {
+            Executive::initialize_block(header);
+
+            let mut config = <Runtime as pallet_evm::Config>::config().clone();
+            config.estimate = true;
+
+            // Apply all extrinsics. Ethereum extrinsics are traced.
+            for ext in extrinsics {
+                match &ext.0.function {
+                    RuntimeCall::Ethereum(transact { transaction }) => {
+                        let tx_hash = &transaction.hash();
+                        if known_transactions.contains(tx_hash) {
+                            // Each known extrinsic is a new call stack.
+                            evm_tracer::EvmTracer::emit_new();
+                            evm_tracer::EvmTracer::new().trace(|| {
+                                if let Err(err) = Executive::apply_extrinsic(ext) {
+                                    frame_support::log::debug!(
+                                        target: "tracing",
+                                        "Could not trace eth transaction (hash: {}): {:?}",
+                                        &tx_hash,
+                                        err
+                                    );
+                                }
+                            });
+                        } else if let Err(err) = Executive::apply_extrinsic(ext) {
+                            frame_support::log::debug!(
+                                target: "tracing",
+                                "Failed to apply eth extrinsic (hash: {}): {:?}",
+                                &tx_hash,
+                                err
+                            );
+                        }
+                    },
+                    _ => {
+                        if let Err(err) = Executive::apply_extrinsic(ext) {
+                            frame_support::log::debug!(
+                                target: "tracing",
+                                "Failed to apply non-eth extrinsic: {:?}",
+                                err
+                            );
+                        }
+                    }
+                }
+            }
+
+            Ok(())
+        }
+
         fn trace_call(
             header: &<Block as BlockT>::Header,
             from: H160,
