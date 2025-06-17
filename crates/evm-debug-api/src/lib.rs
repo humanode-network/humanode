@@ -2,11 +2,19 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use ethereum::TransactionV2 as Transaction;
 use sp_core::{sp_std::vec::Vec, H160, H256, U256};
 
 sp_api::decl_runtime_apis! {
     /// Runtime API for the EVM debug logic.
     pub trait EvmDebugApi {
+        /// Trace transaction.
+        fn trace_transaction(
+            extrinsics: Vec<Block::Extrinsic>,
+            transaction: &Transaction,
+            header: &Block::Header,
+        ) -> Result<(), sp_runtime::DispatchError>;
+
         /// Trace block.
         fn trace_block(
             extrinsics: Vec<Block::Extrinsic>,

@@ -2275,6 +2275,7 @@ dependencies = [
 name = "evm-debug-api"
 version = "0.1.0"
 dependencies = [
+ "ethereum",
  "sp-api",
  "sp-core",
  "sp-runtime",
