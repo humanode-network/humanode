@@ -2,9 +2,6 @@
 //!
 //! Enables tracing the EVM opcode execution and proxies EVM messages to the host functions.
 
-// TODO: fix clippy.
-#![allow(dead_code)]
-
 use codec::Encode;
 use evm::tracing::{using as evm_using, EventListener as EvmListener};
 use evm_gasometer::tracing::{using as gasometer_using, EventListener as GasometerListener};
