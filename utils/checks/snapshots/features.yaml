@@ -2227,6 +2227,14 @@
     - default
     - serde
     - std
+- name: primitives-evm-tracing-events 0.1.0
+  features:
+    - default
+    - std
+- name: primitives-evm-tracing-ext 0.1.0
+  features:
+    - default
+    - std
 - name: primitives-liveness-data 0.1.0
   features: []
 - name: proc-macro-crate 1.1.3
