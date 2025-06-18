@@ -7038,6 +7038,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "primitives-evm-tracing-events"
+version = "0.1.0"
+dependencies = [
+ "environmental",
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-runtime-interface",
+]
+
+[[package]]
+name = "primitives-evm-tracing-ext"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "primitives-evm-tracing-events",
+ "sp-runtime-interface",
+ "sp-std",
+]
+
+[[package]]
 name = "primitives-liveness-data"
 version = "0.1.0"
 dependencies = [
