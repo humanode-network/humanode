@@ -1557,10 +1557,10 @@ impl_runtime_apis! {
             known_transactions: Vec<H256>,
             header: &<Block as BlockT>::Header,
         ) -> Result<(), sp_runtime::DispatchError> {
-            Executive::initialize_block(header);
-
             let mut config = <Runtime as pallet_evm::Config>::config().clone();
             config.estimate = true;
+
+            Executive::initialize_block(header);
 
             // Apply all extrinsics. Ethereum extrinsics are traced.
             for ext in extrinsics {
