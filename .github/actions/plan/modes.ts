@@ -4,6 +4,7 @@ export type Mode = {
   cargoArgs: string;
   cargoCacheKey: string;
   platformIndependent?: true;
+  artifactSelector?: "peer" | "runtime" | "runtime-evm-tracing";
 };
 
 export type Modes = Record<string, Mode>;
@@ -63,10 +64,28 @@ export const code = {
 } satisfies Modes;
 
 export const build = {
-  build: {
-    name: "build",
+  buildPeer: {
+    name: "build peer",
     cargoCommand: "build",
     cargoArgs: "--locked --workspace --release",
     cargoCacheKey: "release-build",
+    artifactSelector: "peer",
+  },
+  // buildRuntime: {
+  //   name: "build runtime",
+  //   cargoCommand: "build",
+  //   cargoArgs: "--locked --workspace --release --package humanode-runtime",
+  //   cargoCacheKey: "runtime",
+  //   platformIndependent: true,
+  //   artifactSelector: "runtime",
+  // },
+  buildRuntimeEvmTracing: {
+    name: "build runtime with EVM tracing",
+    cargoCommand: "build",
+    cargoArgs:
+      "--locked --workspace --release --package humanode-runtime --features evm-tracing",
+    cargoCacheKey: "runtime-evm-tracing",
+    platformIndependent: true,
+    artifactSelector: "runtime-evm-tracing",
   },
 } satisfies Modes;

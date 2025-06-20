@@ -97,39 +97,22 @@ jobs:
         id: set-upload-params
         env:
           PLATFORM_ARTIFACT_MARKER: ${{ matrix.plan.platform.artifactMarker }}
-        run: |
-          EXECUTABLE_PATH="target/release/humanode-peer"
-          ARTIFACT_NAME="humanode-peer-$(rustc -vV | sed -n 's|host: ||p')"
+          ARTIFACT_SELECTOR: ${{ matrix.plan.mode.artifactSelector }}
+        run: .github/scripts/artifact-upload-params.sh
 
-          if [[ "$PLATFORM_ARTIFACT_MARKER" != "" ]]; then
-            ARTIFACT_NAME="${ARTIFACT_NAME}-${PLATFORM_ARTIFACT_MARKER}"
-          fi
-
-          if [[ "${PATHEXT:-""}" != "" ]]; then
-            EXECUTABLE_PATH="${EXECUTABLE_PATH}.exe"
-          fi
-
-          printf 'executable-path=%s\n' "$EXECUTABLE_PATH" >> "$GITHUB_OUTPUT"
-          printf 'artifact-name=%s\n' "$ARTIFACT_NAME" >> "$GITHUB_OUTPUT"
-
-          printf 'Packaged `%s` into `%s`.\n' \
-            "$EXECUTABLE_PATH" \
-            "$ARTIFACT_NAME" \
-            >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Upload artifact
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.set-upload-params.outputs.artifact-name }}
-          path: ${{ steps.set-upload-params.outputs.executable-path }}
+          path: ${{ steps.set-upload-params.outputs.artifact-path }}
           if-no-files-found: error
           retention-days: 5
 
       - name: Archive the binary for release
         if: startsWith(github.ref, 'refs/tags/')
         env:
-          EXECUTABLE_NAME: ${{ steps.set-upload-params.outputs.executable-path }}
-        run: utils/make-release-archive "$EXECUTABLE_NAME" archive.tar.gz
+          ARTIFACT_PATH: ${{ steps.set-upload-params.outputs.artifact-path }}
+        run: utils/make-release-archive "$ARTIFACT_PATH" archive.tar.gz
 
       - name: Upload release archive
         uses: shogo82148/actions-upload-release-asset@v1
