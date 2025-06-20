@@ -16,6 +16,7 @@ eip191-token-claim = { path = "../eip191-token-claim", default-features = false 
 eip712-account-claim = { path = "../eip712-account-claim", default-features = false }
 eip712-common = { path = "../eip712-common", default-features = false }
 eip712-token-claim = { path = "../eip712-token-claim", default-features = false }
+evm-debug-api = { path = "../evm-debug-api", default-features = false }
 evm-nonces-recovery = { path = "../evm-nonces-recovery", default-features = false }
 keystore-bioauth-account-id = { path = "../keystore-bioauth-account-id", default-features = false }
 pallet-balanced-currency-swap-bridges-initializer = { path = "../pallet-balanced-currency-swap-bridges-initializer", default-features = false }
@@ -45,12 +46,17 @@ precompile-utils = { path = "../precompile-utils", default-features = false }
 primitives-auth-ticket = { path = "../primitives-auth-ticket", default-features = false }
 primitives-currency-swap-proxy = { path = "../primitives-currency-swap-proxy", default-features = false }
 primitives-ethereum = { path = "../primitives-ethereum", default-features = false }
+primitives-evm-tracing-events = { path = "../primitives-evm-tracing-events", default-features = false }
+primitives-evm-tracing-ext = { path = "../primitives-evm-tracing-ext", default-features = false }
 robonode-crypto = { path = "../robonode-crypto", default-features = false }
 vesting-schedule-linear = { path = "../vesting-schedule-linear", default-features = false }
 vesting-scheduling-timestamp = { path = "../vesting-scheduling-timestamp", default-features = false }
 
 chrono = { workspace = true }
 codec = { workspace = true, features = ["derive"] }
+evm = { workspace = true }
+evm-gasometer = { workspace = true }
+evm-runtime = { workspace = true }
 fp-evm = { workspace = true }
 fp-rpc = { workspace = true }
 fp-self-contained = { workspace = true }
@@ -112,7 +118,12 @@ sp-keystore = { workspace = true }
 
 [features]
 default = ["std"]
-evm-tracing = []
+evm-tracing = [
+  "evm-gasometer/tracing",
+  "evm-runtime/tracing",
+  "evm/tracing",
+  "primitives-evm-tracing-events/evm-tracing",
+]
 runtime-benchmarks = [
   "frame-benchmarking/runtime-benchmarks",
   "frame-support/runtime-benchmarks",
@@ -154,7 +165,11 @@ std = [
   "eip712-common/std",
   "eip712-token-claim/std",
   "ethereum/std",
+  "evm-debug-api/std",
+  "evm-gasometer/std",
   "evm-nonces-recovery/std",
+  "evm-runtime/std",
+  "evm/std",
   "fp-evm/std",
   "fp-rpc/std",
   "fp-self-contained/std",
@@ -212,6 +227,8 @@ std = [
   "primitives-auth-ticket/std",
   "primitives-currency-swap-proxy/std",
   "primitives-ethereum/std",
+  "primitives-evm-tracing-events/std",
+  "primitives-evm-tracing-ext/std",
   "robonode-crypto/std",
   "scale-info/std",
   "serde/std",
