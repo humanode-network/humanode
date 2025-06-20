@@ -60,6 +60,12 @@ export const code = {
     cargoArgs: "--locked --workspace --features try-runtime",
     cargoCacheKey: "try-runtime",
   },
+  buildEvmTracing: {
+    name: "build with evm-tracing",
+    cargoCommand: "build",
+    cargoArgs: "--locked --workspace --features evm-tracing",
+    cargoCacheKey: "evm-tracing",
+  },
 } satisfies Modes;
 
 export const build = {
