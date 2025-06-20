@@ -69,4 +69,11 @@ export const build = {
     cargoArgs: "--locked --workspace --release",
     cargoCacheKey: "release-build",
   },
+  // runtime: {
+  //   name: "build runtime",
+  //   cargoCommand: "build",
+  //   cargoArgs: "--locked --workspace --release --package humanode-runtime",
+  //   cargoCacheKey: "release-build",
+  //   platformIndependent: true,
+  // },
 } satisfies Modes;
