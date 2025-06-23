@@ -8,13 +8,13 @@
     "test:ui": "vitest --ui"
   },
   "dependencies": {
-    "@polkadot/api": "^16.2.1",
+    "@polkadot/api": "^16.2.2",
     "@types/node": "24.0.3",
-    "@vitest/expect": "^3.2.3",
+    "@vitest/expect": "^3.2.4",
     "axios": "^1.10.0",
     "ethers": "^6.14.4",
     "typescript": "^5.8.3",
-    "viem": "^2.31.3",
-    "vitest": "^3.2.3"
+    "viem": "^2.31.4",
+    "vitest": "^3.2.4"
   }
 }
