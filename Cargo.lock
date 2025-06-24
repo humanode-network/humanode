@@ -2200,7 +2200,7 @@ dependencies = [
  "ethabi",
  "generic-array 0.14.7",
  "k256",
- "num_enum 0.7.3",
+ "num_enum 0.7.4",
  "open-fastrlp",
  "rand 0.8.5",
  "rlp",
@@ -5667,11 +5667,12 @@ dependencies = [
 
 [[package]]
 name = "num_enum"
-version = "0.7.3"
+version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4e613fc340b2220f734a8595782c551f1250e969d87d3be1ae0579e8d4065179"
+checksum = "a973b4e44ce6cad84ce69d797acf9a044532e4184c4f267913d1b546a0727b7a"
 dependencies = [
- "num_enum_derive 0.7.3",
+ "num_enum_derive 0.7.4",
+ "rustversion",
 ]
 
 [[package]]
@@ -5699,11 +5700,11 @@ dependencies = [
 
 [[package]]
 name = "num_enum_derive"
-version = "0.7.3"
+version = "0.7.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af1844ef2428cc3e1cb900be36181049ef3d3193c63e43026cfe202983b27a56"
+checksum = "77e878c846a8abae00dd069496dbe8751b16ac1c3d6bd2a7283a938e8228f90d"
 dependencies = [
- "proc-macro-crate 3.1.0",
+ "proc-macro-crate 1.1.3",
  "proc-macro2",
  "quote",
  "syn 2.0.104",
@@ -6304,7 +6305,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
- "num_enum 0.7.3",
+ "num_enum 0.7.4",
  "pallet-balances",
  "pallet-ethereum",
  "pallet-evm",
@@ -6817,7 +6818,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "mockall",
- "num_enum 0.7.3",
+ "num_enum 0.7.4",
  "pallet-bioauth",
  "pallet-evm",
  "parity-scale-codec",
@@ -6870,7 +6871,7 @@ dependencies = [
  "frame-system",
  "hex-literal",
  "mockall",
- "num_enum 0.7.3",
+ "num_enum 0.7.4",
  "pallet-balances",
  "pallet-evm",
  "pallet-evm-balances",
@@ -6890,7 +6891,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
- "num_enum 0.7.3",
+ "num_enum 0.7.4",
  "pallet-balances",
  "pallet-erc20-support",
  "pallet-evm",
@@ -6914,7 +6915,7 @@ dependencies = [
  "hex-literal",
  "impl-trait-for-tuples",
  "log",
- "num_enum 0.7.3",
+ "num_enum 0.7.4",
  "pallet-evm",
  "parity-scale-codec",
  "precompile-utils-macro",
