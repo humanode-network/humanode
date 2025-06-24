@@ -16,8 +16,8 @@ eip191-token-claim = { path = "../eip191-token-claim", default-features = false 
 eip712-account-claim = { path = "../eip712-account-claim", default-features = false }
 eip712-common = { path = "../eip712-common", default-features = false }
 eip712-token-claim = { path = "../eip712-token-claim", default-features = false }
-evm-debug-api = { path = "../evm-debug-api", default-features = false }
 evm-nonces-recovery = { path = "../evm-nonces-recovery", default-features = false }
+evm-tracing-api = { path = "../evm-tracing-api", default-features = false }
 keystore-bioauth-account-id = { path = "../keystore-bioauth-account-id", default-features = false }
 pallet-balanced-currency-swap-bridges-initializer = { path = "../pallet-balanced-currency-swap-bridges-initializer", default-features = false }
 pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
@@ -165,10 +165,10 @@ std = [
   "eip712-common/std",
   "eip712-token-claim/std",
   "ethereum/std",
-  "evm-debug-api/std",
   "evm-gasometer/std",
   "evm-nonces-recovery/std",
   "evm-runtime/std",
+  "evm-tracing-api/std",
   "evm/std",
   "fp-evm/std",
   "fp-rpc/std",

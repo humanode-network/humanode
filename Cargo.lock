@@ -2272,16 +2272,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "evm-debug-api"
-version = "0.1.0"
-dependencies = [
- "ethereum",
- "sp-api",
- "sp-core",
- "sp-runtime",
-]
-
-[[package]]
 name = "evm-gasometer"
 version = "0.39.0"
 source = "git+https://github.com/rust-blockchain/evm?rev=b7b82c7e1fc57b7449d6dfa6826600de37cc1e65#b7b82c7e1fc57b7449d6dfa6826600de37cc1e65"
@@ -2318,6 +2308,16 @@ dependencies = [
  "evm-core",
  "primitive-types",
  "sha3 0.10.8",
+]
+
+[[package]]
+name = "evm-tracing-api"
+version = "0.1.0"
+dependencies = [
+ "ethereum",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]
@@ -3786,10 +3786,10 @@ dependencies = [
  "eip712-token-claim",
  "ethereum",
  "evm",
- "evm-debug-api",
  "evm-gasometer",
  "evm-nonces-recovery",
  "evm-runtime",
+ "evm-tracing-api",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",

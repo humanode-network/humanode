@@ -1,4 +1,4 @@
-//! The runtime API for the EVM debug logic.
+//! The runtime API for the EVM tracing logic.
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
@@ -6,8 +6,8 @@ use ethereum::TransactionV2 as Transaction;
 use sp_core::{sp_std::vec::Vec, H160, H256, U256};
 
 sp_api::decl_runtime_apis! {
-    /// Runtime API for the EVM debug logic.
-    pub trait EvmDebugApi {
+    /// Runtime API for the EVM tracing logic.
+    pub trait EvmTracingApi {
         /// Trace transaction.
         fn trace_transaction(
             extrinsics: Vec<Block::Extrinsic>,

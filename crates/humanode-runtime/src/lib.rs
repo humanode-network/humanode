@@ -1505,7 +1505,7 @@ impl_runtime_apis! {
     }
 
     #[cfg(feature = "evm-tracing")]
-    impl evm_debug_api::EvmDebugApi<Block> for Runtime {
+    impl evm_tracing_api::EvmTracingApi<Block> for Runtime {
         fn trace_transaction(
             extrinsics: Vec<<Block as BlockT>::Extrinsic>,
             traced_transaction: &EthereumTransaction,

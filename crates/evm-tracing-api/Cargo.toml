@@ -1,5 +1,5 @@
 [package]
-name = "evm-debug-api"
+name = "evm-tracing-api"
 version = "0.1.0"
 edition = "2021"
 publish = false

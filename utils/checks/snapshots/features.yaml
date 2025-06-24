@@ -815,10 +815,6 @@
     - std
     - with-codec
     - with-serde
-- name: evm-debug-api 0.1.0
-  features:
-    - default
-    - std
 - name: evm-gasometer 0.39.0
   features:
     - environmental
@@ -830,6 +826,10 @@
 - name: evm-runtime 0.39.0
   features:
     - environmental
+    - std
+- name: evm-tracing-api 0.1.0
+  features:
+    - default
     - std
 - name: exit-future 0.2.0
   features: []
