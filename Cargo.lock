@@ -2326,6 +2326,7 @@ version = "0.1.0"
 dependencies = [
  "hex",
  "parity-scale-codec",
+ "primitives-evm-tracing-events",
  "serde",
  "sp-core",
  "sp-runtime",
