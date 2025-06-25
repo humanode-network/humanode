@@ -9,4 +9,4 @@ codec = { workspace = true }
 hex = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
 sp-core = { workspace = true }
-sp-runtime = { workspace = true }
+sp-runtime = { workspace = true, features = ["std"] }
