@@ -7,7 +7,7 @@ publish = false
 [dependencies]
 codec = { workspace = true }
 environmental = { workspace = true }
-evm = { workspace = true }
+evm = { workspace = true, features = ["with-codec"] }
 evm-gasometer = { workspace = true }
 evm-runtime = { workspace = true }
 sp-core = { workspace = true }

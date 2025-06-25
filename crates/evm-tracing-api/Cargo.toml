@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-ethereum = { workspace = true }
+ethereum = { workspace = true, features = ["with-codec"] }
 sp-api = { workspace = true }
 sp-core = { workspace = true }
 sp-runtime = { workspace = true }
