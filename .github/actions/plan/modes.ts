@@ -76,7 +76,7 @@ export const build = {
     name: "build runtime with EVM tracing",
     cargoCommand: "build",
     cargoArgs:
-      "--locked --workspace --release --package humanode-runtime --features evm-tracing",
+      "--locked --workspace --release --package humanode-runtime --lib --features evm-tracing",
     cargoCacheKey: "runtime-evm-tracing",
     platformIndependent: true,
     artifactSelector: "runtime",
