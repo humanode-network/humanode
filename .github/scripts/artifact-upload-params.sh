@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-RUNTIME_PATH='target/release/wbuild/humanode-runtime/humanode_runtime.compact.compressed.wasm'
-
 case "$ARTIFACT_SELECTOR" in
   peer)
     ARTIFACT_PATH='target/release/humanode-peer'
@@ -18,13 +16,13 @@ case "$ARTIFACT_SELECTOR" in
     ;;
 
   runtime)
-    ARTIFACT_PATH="$RUNTIME_PATH"
-    ARTIFACT_NAME='humanode-runtime.wasm'
-    ;;
+    if [[ -z "${FEATURES_MARKER}" ]]; then
+      printf 'FEATURES_MARKER must not be empty\n' >&2
+      exit 1
+    fi
 
-  runtime-evm-tracing)
-    ARTIFACT_PATH="$RUNTIME_PATH"
-    ARTIFACT_NAME='humanode-runtime-evm-tracing.wasm'
+    ARTIFACT_PATH='target/release/wbuild/humanode-runtime/humanode_runtime.compact.compressed.wasm'
+    ARTIFACT_NAME="humanode-runtime-${FEATURES_MARKER}.wasm"
     ;;
 
   *)
