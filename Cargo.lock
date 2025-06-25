@@ -2311,6 +2311,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "evm-tracing-api"
+version = "0.1.0"
+dependencies = [
+ "ethereum",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
 name = "exit-future"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3775,7 +3785,11 @@ dependencies = [
  "eip712-common-test-utils",
  "eip712-token-claim",
  "ethereum",
+ "evm",
+ "evm-gasometer",
  "evm-nonces-recovery",
+ "evm-runtime",
+ "evm-tracing-api",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
@@ -3837,6 +3851,8 @@ dependencies = [
  "primitives-auth-ticket",
  "primitives-currency-swap-proxy",
  "primitives-ethereum",
+ "primitives-evm-tracing-events",
+ "primitives-evm-tracing-ext",
  "robonode-crypto",
  "scale-info",
  "serde",
@@ -7035,6 +7051,29 @@ dependencies = [
  "scale-info",
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "primitives-evm-tracing-events"
+version = "0.1.0"
+dependencies = [
+ "environmental",
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-runtime-interface",
+]
+
+[[package]]
+name = "primitives-evm-tracing-ext"
+version = "0.1.0"
+dependencies = [
+ "parity-scale-codec",
+ "primitives-evm-tracing-events",
+ "sp-runtime-interface",
+ "sp-std",
 ]
 
 [[package]]
