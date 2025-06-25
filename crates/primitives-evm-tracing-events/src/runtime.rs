@@ -3,9 +3,9 @@
 extern crate alloc;
 
 use codec::{Decode, Encode};
-use evm::ExitReason;
 #[cfg(feature = "evm-tracing")]
 use evm::Opcode;
+pub use evm::{ExitError, ExitReason, ExitSucceed};
 use sp_core::{sp_std::vec::Vec, H160, H256, U256};
 
 use crate::Context;
