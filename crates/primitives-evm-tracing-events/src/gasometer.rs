@@ -15,6 +15,15 @@ pub struct Snapshot {
     pub refunded_gas: i64,
 }
 
+impl Snapshot {
+    /// Calculate gas.
+    pub fn gas(&self) -> u64 {
+        // TODO(dl): fix clippy.
+        #![allow(clippy::arithmetic_side_effects)]
+        self.gas_limit - self.used_gas - self.memory_gas
+    }
+}
+
 #[cfg(feature = "evm-tracing")]
 impl From<Option<evm_gasometer::Snapshot>> for Snapshot {
     fn from(snapshot: Option<evm_gasometer::Snapshot>) -> Self {
