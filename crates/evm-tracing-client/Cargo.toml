@@ -5,6 +5,8 @@ edition = "2021"
 publish = false
 
 [dependencies]
+primitives-evm-tracing-events = { path = "../primitives-evm-tracing-events" }
+
 codec = { workspace = true }
 hex = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
