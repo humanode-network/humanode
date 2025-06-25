@@ -64,8 +64,8 @@ export const code = {
 } satisfies Modes;
 
 export const build = {
-  buildPeer: {
-    name: "build peer",
+  build: {
+    name: "build",
     cargoCommand: "build",
     cargoArgs: "--locked --workspace --release",
     cargoCacheKey: "release-build",
