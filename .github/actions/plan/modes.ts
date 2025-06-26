@@ -4,7 +4,7 @@ export type Mode = {
   cargoArgs: string;
   cargoCacheKey: string;
   platformIndependent?: true;
-  artifactSelector?: "peer" | "runtime";
+  artifactSelector?: "runtime";
   artifactMarker?: "evm-tracing";
 };
 
@@ -70,7 +70,6 @@ export const build = {
     cargoCommand: "build",
     cargoArgs: "--locked --workspace --release",
     cargoCacheKey: "release-build",
-    artifactSelector: "peer",
   },
   buildRuntimeEvmTracing: {
     name: "build runtime with EVM tracing",
