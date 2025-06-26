@@ -3,6 +3,8 @@
 use primitives_evm_tracing_events::Listener;
 use serde::Serialize;
 
+pub mod blockscout;
+
 /// Response formatter.
 pub trait ResponseFormatter {
     /// Listener type.
