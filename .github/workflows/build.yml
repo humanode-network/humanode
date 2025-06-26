@@ -94,13 +94,13 @@ jobs:
       - name: Set the upload params
         id: set-upload-params
         env:
-          PLATFORM_ARTIFACT_MARKER: ${{ matrix.plan.platform.artifactMarker }}
+          ARTIFACT_PLATFORM_MARKER: ${{ matrix.plan.platform.artifactMarker }}
         run: |
           EXECUTABLE_PATH="target/release/humanode-peer"
           ARTIFACT_NAME="humanode-peer-$(rustc -vV | sed -n 's|host: ||p')"
 
-          if [[ "$PLATFORM_ARTIFACT_MARKER" != "" ]]; then
-            ARTIFACT_NAME="${ARTIFACT_NAME}-${PLATFORM_ARTIFACT_MARKER}"
+          if [[ "$ARTIFACT_PLATFORM_MARKER" != "" ]]; then
+            ARTIFACT_NAME="${ARTIFACT_NAME}-${ARTIFACT_PLATFORM_MARKER}"
           fi
 
           if [[ "${PATHEXT:-""}" != "" ]]; then
