@@ -5,7 +5,7 @@ export type Mode = {
   cargoCacheKey: string;
   platformIndependent?: true;
   artifactSelector?: "peer" | "runtime";
-  artifactFeaturesMarker?: "evm-tracing";
+  artifactMarker?: "evm-tracing";
 };
 
 export type Modes = Record<string, Mode>;
@@ -80,6 +80,6 @@ export const build = {
     cargoCacheKey: "runtime-evm-tracing",
     platformIndependent: true,
     artifactSelector: "runtime",
-    artifactFeaturesMarker: "evm-tracing",
+    artifactMarker: "evm-tracing",
   },
 } satisfies Modes;
