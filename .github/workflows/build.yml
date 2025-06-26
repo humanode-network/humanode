@@ -96,9 +96,9 @@ jobs:
       - name: Set the upload params
         id: set-upload-params
         env:
-          PLATFORM_ARTIFACT_MARKER: ${{ matrix.plan.platform.artifactMarker }}
           ARTIFACT_SELECTOR: ${{ matrix.plan.mode.artifactSelector }}
-          FEATURES_MARKER: ${{ matrix.plan.mode.artifactFeaturesMarker }}
+          PLATFORM_ARTIFACT_MARKER: ${{ matrix.plan.platform.artifactMarker }}
+          MODE_ARTIFACT_MARKER: ${{ matrix.plan.mode.artifactMarker }}
         run: .github/scripts/artifact-upload-params.sh
 
       - name: Upload

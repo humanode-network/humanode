@@ -16,13 +16,13 @@ case "$ARTIFACT_SELECTOR" in
     ;;
 
   runtime)
-    if [[ -z "${FEATURES_MARKER}" ]]; then
-      printf 'FEATURES_MARKER must not be empty\n' >&2
+    if [[ -z "${MODE_ARTIFACT_MARKER}" ]]; then
+      printf 'MODE_ARTIFACT_MARKER must not be empty\n' >&2
       exit 1
     fi
 
     ARTIFACT_PATH='target/release/wbuild/humanode-runtime/humanode_runtime.compact.compressed.wasm'
-    ARTIFACT_NAME="humanode-runtime-${FEATURES_MARKER}.wasm"
+    ARTIFACT_NAME="humanode-runtime-${MODE_ARTIFACT_MARKER}.wasm"
     ;;
 
   *)
