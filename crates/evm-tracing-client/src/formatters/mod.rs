@@ -4,6 +4,7 @@ use primitives_evm_tracing_events::Listener;
 use serde::Serialize;
 
 pub mod blockscout;
+pub mod call_tracer;
 pub mod raw;
 pub mod trace_filter;
 
