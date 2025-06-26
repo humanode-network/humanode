@@ -5,6 +5,7 @@ use serde::Serialize;
 
 pub mod blockscout;
 pub mod raw;
+pub mod trace_filter;
 
 /// Response formatter.
 pub trait ResponseFormatter {

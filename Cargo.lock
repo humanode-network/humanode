@@ -2324,6 +2324,7 @@ dependencies = [
 name = "evm-tracing-client"
 version = "0.1.0"
 dependencies = [
+ "frame-support",
  "hex",
  "parity-scale-codec",
  "primitives-evm-tracing-events",
