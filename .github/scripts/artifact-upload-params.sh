@@ -2,13 +2,14 @@
 set -euo pipefail
 
 if [[ "$ARTIFACT_SELECTOR" == 'runtime' ]]; then
-  if [[ -z "$MODE_ARTIFACT_MARKER" ]]; then
-    printf 'MODE_ARTIFACT_MARKER must not be empty\n' >&2
-    exit 1
+  ARTIFACT_PATH='target/release/wbuild/humanode-runtime/humanode_runtime.compact.compressed.wasm'
+  ARTIFACT_NAME='humanode-runtime'
+
+  if [[ -n "$MODE_ARTIFACT_MARKER" ]]; then
+    ARTIFACT_NAME+="-$MODE_ARTIFACT_MARKER"
   fi
 
-  ARTIFACT_PATH='target/release/wbuild/humanode-runtime/humanode_runtime.compact.compressed.wasm'
-  ARTIFACT_NAME="humanode-runtime-${MODE_ARTIFACT_MARKER}.wasm"
+  ARTIFACT_NAME+='.wasm'
 else
   ARTIFACT_PATH='target/release/humanode-peer'
   ARTIFACT_NAME="humanode-peer-$(rustc -vV | sed -n 's|host: ||p')"
