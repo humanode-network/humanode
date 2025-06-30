@@ -5,7 +5,7 @@ export type Mode = {
   cargoCacheKey: string;
   platformIndependent?: true;
   artifactSelector?: "runtime";
-  artifactMarker?: "evm-tracing";
+  artifactMarker?: string;
 };
 
 export type Modes = Record<string, Mode>;
