@@ -2339,10 +2339,13 @@ version = "0.1.0"
 dependencies = [
  "ethereum",
  "evm-tracing-client",
+ "fc-rpc",
  "fc-rpc-core",
  "jsonrpsee",
+ "sc-utils",
  "serde",
  "sp-core",
+ "tokio",
 ]
 
 [[package]]
