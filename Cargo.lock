@@ -2336,6 +2336,10 @@ dependencies = [
 [[package]]
 name = "evm-tracing-rpc"
 version = "0.1.0"
+dependencies = [
+ "serde",
+ "sp-core",
+]
 
 [[package]]
 name = "exit-future"
