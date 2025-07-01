@@ -2337,6 +2337,10 @@ dependencies = [
 name = "evm-tracing-rpc"
 version = "0.1.0"
 dependencies = [
+ "ethereum",
+ "evm-tracing-client",
+ "fc-rpc-core",
+ "jsonrpsee",
  "serde",
  "sp-core",
 ]
