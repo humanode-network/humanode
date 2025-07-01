@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 publish = false
 
+[[bin]]
+name = "humanode-runtime-build-selector"
+path = "src/bin/build_selector.rs"
+
 [build-dependencies]
 substrate-wasm-builder = { workspace = true, optional = true }
 
