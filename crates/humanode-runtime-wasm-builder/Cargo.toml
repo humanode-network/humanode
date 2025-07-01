@@ -1,0 +1,12 @@
+[package]
+name = "humanode-runtime-wasm-builder"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[build-dependencies]
+substrate-wasm-builder = { workspace = true, optional = true }
+
+[features]
+default = ["std"]
+std = ["substrate-wasm-builder"]
