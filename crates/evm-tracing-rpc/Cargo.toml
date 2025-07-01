@@ -8,7 +8,10 @@ publish = false
 evm-tracing-client = { path = "../evm-tracing-client" }
 
 ethereum = { workspace = true }
+fc-rpc = { workspace = true }
 fc-rpc-core = { workspace = true }
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
+sc-utils = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 sp-core = { workspace = true, features = ["std"] }
+tokio = { workspace = true }
