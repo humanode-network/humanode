@@ -13,6 +13,9 @@ use sp_core::H256;
 use tokio::sync::oneshot;
 
 pub mod core;
+mod handler;
+
+pub use handler::DebugHandler;
 
 use crate::types::RequestBlockId;
 
