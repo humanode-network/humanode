@@ -28,3 +28,4 @@ sp-core = { workspace = true, features = ["std"] }
 sp-io = { workspace = true }
 sp-runtime = { workspace = true }
 tokio = { workspace = true }
+tracing = { workspace = true }
