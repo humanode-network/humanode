@@ -11,7 +11,6 @@
 
 use std::{collections::BTreeMap, future::Future, marker::PhantomData, sync::Arc};
 
-use codec::{Decode, Encode};
 use evm_tracing_api::EvmTracingApi;
 use evm_tracing_client::{
     formatters::ResponseFormatter,
@@ -42,30 +41,10 @@ use super::{
     core::{TraceCallParams, TraceParams},
     DebugRequester, RequesterInput, Response,
 };
-use crate::types::{RequestBlockId, RequestBlockTag};
+use crate::types::{RequestBlockId, RequestBlockTag, TracingInput, TracingResponse};
 
 /// Debug handler.
 pub struct DebugHandler<B: BlockT, C, BE>(PhantomData<(B, C, BE)>);
-
-/// Tracer input.
-#[derive(Clone, Copy, Eq, PartialEq, Debug, Encode, Decode)]
-pub enum TracerInput {
-    /// None.
-    None,
-    /// Blockscout.
-    Blockscout,
-    /// Call tracer.
-    CallTracer,
-}
-
-/// Tracer response.
-#[derive(Debug)]
-pub enum TracerResponse {
-    /// Single.
-    Single,
-    /// Block.
-    Block,
-}
 
 impl<B, C, BE> DebugHandler<B, C, BE>
 where
@@ -210,7 +189,7 @@ where
     }
 
     /// Handle params.
-    fn handle_params(params: Option<TraceParams>) -> RpcResult<(TracerInput, single::TraceType)> {
+    fn handle_params(params: Option<TraceParams>) -> RpcResult<(TracingInput, single::TraceType)> {
         // Set trace input and type
         match params {
             Some(TraceParams {
@@ -224,9 +203,9 @@ where
                 let hash = sp_io::hashing::twox_128(tracer.as_bytes());
                 let tracer =
                     if hash == BLOCKSCOUT_JS_CODE_HASH || hash == BLOCKSCOUT_JS_CODE_HASH_V2 {
-                        Some(TracerInput::Blockscout)
+                        Some(TracingInput::Blockscout)
                     } else if tracer == "callTracer" {
-                        Some(TracerInput::CallTracer)
+                        Some(TracingInput::CallTracer)
                     } else {
                         None
                     };
@@ -240,7 +219,7 @@ where
                 }
             }
             Some(params) => Ok((
-                TracerInput::None,
+                TracingInput::None,
                 single::TraceType::Raw {
                     disable_storage: params.disable_storage.unwrap_or(false),
                     disable_memory: params.disable_memory.unwrap_or(false),
@@ -248,7 +227,7 @@ where
                 },
             )),
             _ => Ok((
-                TracerInput::None,
+                TracingInput::None,
                 single::TraceType::Raw {
                     disable_storage: false,
                     disable_memory: false,
@@ -370,7 +349,7 @@ where
                     ))
                 })?;
 
-            Ok(TracerResponse::Block)
+            Ok(TracingResponse::Block)
         };
 
         // Offset to account for old buggy transactions that are in trace not in the ethereum block
@@ -382,7 +361,7 @@ where
                 proxy.using(f)?;
                 proxy.finish_transaction();
                 let response = match tracer_input {
-                    TracerInput::CallTracer => {
+                    TracingInput::CallTracer => {
                         let result =
                             evm_tracing_client::formatters::call_tracer::Formatter::format(proxy)
                                 .ok_or("Trace result is empty.")
@@ -545,7 +524,7 @@ where
                         .map_err(|e| internal_err(format!("Runtime api access error: {:?}", e)))?
                         .map_err(|e| internal_err(format!("DispatchError: {:?}", e)))?;
 
-                    Ok(TracerResponse::Single)
+                    Ok(TracingResponse::Single)
                 };
 
                 return match trace_type {
@@ -576,12 +555,12 @@ where
                         proxy.using(f)?;
                         proxy.finish_transaction();
                         let response = match tracer_input {
-                            TracerInput::Blockscout => {
+                            TracingInput::Blockscout => {
                                 evm_tracing_client::formatters::blockscout::Formatter::format(proxy)
                                     .ok_or("Trace result is empty.")
                                     .map_err(|e| internal_err(format!("{:?}", e)))
                             }
-                            TracerInput::CallTracer => {
+                            TracingInput::CallTracer => {
                                 let mut res =
                                     evm_tracing_client::formatters::call_tracer::Formatter::format(
                                         proxy,
@@ -743,7 +722,7 @@ where
                 .map_err(|e| internal_err(format!("Runtime api access error: {:?}", e)))?
                 .map_err(|e| internal_err(format!("DispatchError: {:?}", e)))?;
 
-            Ok(TracerResponse::Single)
+            Ok(TracingResponse::Single)
         };
 
         return match trace_type {
@@ -773,12 +752,12 @@ where
                 proxy.using(f)?;
                 proxy.finish_transaction();
                 let response = match tracer_input {
-                    TracerInput::Blockscout => {
+                    TracingInput::Blockscout => {
                         evm_tracing_client::formatters::blockscout::Formatter::format(proxy)
                             .ok_or("Trace result is empty.")
                             .map_err(|e| internal_err(format!("{:?}", e)))
                     }
-                    TracerInput::CallTracer => {
+                    TracingInput::CallTracer => {
                         let mut res =
                             evm_tracing_client::formatters::call_tracer::Formatter::format(proxy)
                                 .ok_or("Trace result is empty.")

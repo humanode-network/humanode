@@ -1,7 +1,28 @@
 //! Types definitions.
 
+use codec::{Decode, Encode};
 use serde::{de::Error, Deserialize, Deserializer};
 use sp_core::H256;
+
+/// Tracing input.
+#[derive(Clone, Copy, Eq, PartialEq, Debug, Encode, Decode)]
+pub enum TracingInput {
+    /// None.
+    None,
+    /// Blockscout.
+    Blockscout,
+    /// Call tracer.
+    CallTracer,
+}
+
+/// Tracing response.
+#[derive(Debug)]
+pub enum TracingResponse {
+    /// Single.
+    Single,
+    /// Block.
+    Block,
+}
 
 /// Request block by identifier.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Deserialize)]
