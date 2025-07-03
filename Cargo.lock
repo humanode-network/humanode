@@ -2358,6 +2358,7 @@ dependencies = [
  "sp-core",
  "sp-io",
  "sp-runtime",
+ "substrate-prometheus-endpoint",
  "tokio",
  "tracing",
 ]
