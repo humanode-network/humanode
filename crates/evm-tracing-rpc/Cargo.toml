@@ -27,5 +27,6 @@ sp-blockchain = { workspace = true }
 sp-core = { workspace = true, features = ["std"] }
 sp-io = { workspace = true }
 sp-runtime = { workspace = true }
+substrate-prometheus-endpoint = { workspace = true }
 tokio = { workspace = true }
 tracing = { workspace = true }
