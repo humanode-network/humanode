@@ -13,6 +13,7 @@ ethereum = { workspace = true }
 fc-db = { workspace = true }
 fc-rpc = { workspace = true }
 fc-rpc-core = { workspace = true }
+fc-storage = { workspace = true }
 fp-rpc = { workspace = true }
 frame-support = { workspace = true }
 futures = { workspace = true }

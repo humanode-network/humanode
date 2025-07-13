@@ -20,7 +20,7 @@ use evm_tracing_client::{
         single::{self, TransactionTrace},
     },
 };
-use fc_rpc::{frontier_backend_client, internal_err, StorageOverride};
+use fc_rpc::{frontier_backend_client, internal_err, OverrideHandle};
 use fp_rpc::EthereumRuntimeRPCApi;
 use futures::StreamExt;
 use jsonrpsee::core::RpcResult;
@@ -67,7 +67,7 @@ where
         backend: Arc<BE>,
         frontier_backend: Arc<dyn fc_db::BackendReader<B> + Send + Sync>,
         permit_pool: Arc<Semaphore>,
-        overrides: Arc<dyn StorageOverride<B>>,
+        overrides: Arc<OverrideHandle<B>>,
         raw_max_memory_usage: usize,
     ) -> (impl Future<Output = ()>, DebugRequester) {
         let (tx, mut rx): (DebugRequester, _) =
@@ -244,7 +244,7 @@ where
         frontier_backend: Arc<dyn fc_db::BackendReader<B> + Send + Sync>,
         request_block_id: RequestBlockId,
         params: Option<TraceParams>,
-        overrides: Arc<dyn StorageOverride<B>>,
+        overrides: Arc<OverrideHandle<B>>,
     ) -> RpcResult<Response> {
         let (tracer_input, trace_type) = Self::handle_params(params)?;
 
@@ -290,6 +290,7 @@ where
         let parent_block_hash = *header.parent_hash();
 
         let statuses = overrides
+            .fallback
             .current_transaction_statuses(hash)
             .unwrap_or_default();
 
@@ -461,7 +462,7 @@ where
         frontier_backend: Arc<dyn fc_db::BackendReader<B> + Send + Sync>,
         transaction_hash: H256,
         params: Option<TraceParams>,
-        overrides: Arc<dyn StorageOverride<B>>,
+        overrides: Arc<OverrideHandle<B>>,
         raw_max_memory_usage: usize,
     ) -> RpcResult<Response> {
         let (tracer_input, trace_type) = Self::handle_params(params)?;
@@ -510,7 +511,14 @@ where
             .map_err(|e| internal_err(format!("Fail to read blockchain db: {:?}", e)))?
             .unwrap_or_default();
 
-        let reference_block = overrides.current_block(reference_hash);
+        let reference_block = overrides
+            .schemas
+            .get(&fc_storage::onchain_storage_schema(
+                client.as_ref(),
+                reference_hash,
+            ))
+            .unwrap_or(&overrides.fallback)
+            .current_block(reference_hash);
 
         // Get the actual ethereum transaction.
         if let Some(block) = reference_block {

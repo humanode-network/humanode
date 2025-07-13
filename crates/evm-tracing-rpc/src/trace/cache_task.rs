@@ -8,7 +8,7 @@ use evm_tracing_client::{
     formatters::ResponseFormatter,
     types::block::{self, TransactionTrace},
 };
-use fc_rpc::StorageOverride;
+use fc_rpc::OverrideHandle;
 use fp_rpc::EthereumRuntimeRPCApi;
 use futures::stream::FuturesUnordered;
 use futures::{select, FutureExt, StreamExt};
@@ -138,7 +138,7 @@ where
         backend: Arc<BE>,
         cache_duration: Duration,
         blocking_permits: Arc<Semaphore>,
-        overrides: Arc<dyn StorageOverride<B>>,
+        overrides: Arc<OverrideHandle<B>>,
         prometheus: Option<PrometheusRegistry>,
     ) -> (impl Future<Output = ()>, CacheRequester) {
         // Communication with the outside world :
@@ -231,7 +231,7 @@ where
         blocking_tx: &mpsc::Sender<BlockingTaskMessage>,
         sender: oneshot::Sender<CacheBatchId>,
         blocks: Vec<H256>,
-        overrides: Arc<dyn StorageOverride<B>>,
+        overrides: Arc<OverrideHandle<B>>,
     ) {
         tracing::trace!("Starting batch {}", self.next_batch_id);
         self.batches.insert(self.next_batch_id, blocks.clone());
@@ -488,7 +488,7 @@ where
         client: Arc<C>,
         backend: Arc<BE>,
         substrate_hash: H256,
-        overrides: Arc<dyn StorageOverride<B>>,
+        overrides: Arc<OverrideHandle<B>>,
     ) -> TxsTraceRes {
         let api = client.runtime_api();
         let block_header = client
@@ -506,8 +506,17 @@ where
 
         // Get Ethereum block data.
         let (eth_block, eth_transactions) = match (
-            overrides.current_block(substrate_hash),
-            overrides.current_transaction_statuses(substrate_hash),
+            overrides
+                .schemas
+                .get(&fc_storage::onchain_storage_schema(
+                    client.as_ref(),
+                    substrate_hash,
+                ))
+                .unwrap_or(&overrides.fallback)
+                .current_block(substrate_hash),
+            overrides
+                .fallback
+                .current_transaction_statuses(substrate_hash),
         ) {
             (Some(a), Some(b)) => (a, b),
             _ => {
