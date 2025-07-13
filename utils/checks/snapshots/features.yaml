@@ -831,6 +831,8 @@
   features:
     - default
     - std
+- name: evm-tracing-client 0.1.0
+  features: []
 - name: exit-future 0.2.0
   features: []
 - name: expander 1.0.0
@@ -1222,6 +1224,7 @@
   features:
     - alloc
     - default
+    - serde
     - std
 - name: hex-literal 0.4.1
   features: []
