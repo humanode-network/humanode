@@ -3687,6 +3687,7 @@ dependencies = [
  "pallet-balances",
  "pallet-im-online",
  "parity-scale-codec",
+ "primitives-evm-tracing-ext",
  "qr2term",
  "reqwest",
  "robonode-client",
