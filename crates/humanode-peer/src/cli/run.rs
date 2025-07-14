@@ -23,7 +23,6 @@ use crate::{configuration, service};
 /// Parse command line arguments and run the requested operation.
 pub async fn run() -> sc_cli::Result<()> {
     let root: Root = sc_cli::SubstrateCli::from_args();
-    validate_trace_environment(&root)?;
 
     match &root.subcommand {
         Some(Subcommand::Key(cmd)) => cmd.run(&root),
@@ -345,20 +344,6 @@ fn remove_frontier_offchain_db(
             };
         }
     };
-
-    Ok(())
-}
-
-/// A helper function to validate trace environment.
-fn validate_trace_environment(root: &Root) -> sc_cli::Result<()> {
-    if !root.run.ethereum_rpc_params.tracing_mode.is_empty()
-        && root.run.base.import_params.wasm_runtime_overrides.is_none()
-    {
-        return Err(
-            "`debug` or `trace` namespaces requires `--wasm-runtime-overrides /path/to/overrides`."
-                .into(),
-        );
-    }
 
     Ok(())
 }
