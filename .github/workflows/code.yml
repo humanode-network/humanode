@@ -80,6 +80,8 @@ jobs:
           - suite: "try-runtime"
             build-args: "--features try-runtime"
             skip-ts-tests: true
+          - suite: "evm-tracing"
+            build-args: "--features evm-tracing"
       fail-fast: false
     name: End-to-end tests / ${{ matrix.test.suite }}
     runs-on: ubuntu-24.04
