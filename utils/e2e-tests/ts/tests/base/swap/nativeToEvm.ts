@@ -1,12 +1,12 @@
 import { expect, it, describe, assert } from "vitest";
-import { RunNodeState, runNode } from "../../lib/node";
-import * as substrate from "../../lib/substrate";
-import { beforeEachWithCleanup } from "../../lib/lifecycle";
+import { RunNodeState, runNode } from "../../../lib/node";
+import * as substrate from "../../../lib/substrate";
+import { beforeEachWithCleanup } from "../../../lib/lifecycle";
 import { Keyring } from "@polkadot/api";
 import { Codec, IEvent } from "@polkadot/types/types";
-import sendAndWait from "../../lib/substrateSendAndAwait";
-import * as eth from "../../lib/ethViem";
-import { getNativeBalance } from "../../lib/substrateUtils";
+import sendAndWait from "../../../lib/substrateSendAndAwait";
+import * as eth from "../../../lib/ethViem";
+import { getNativeBalance } from "../../../lib/substrateUtils";
 
 type EvmSwapBalancesSwappedEvent = Record<
   "from" | "withdrawedAmount" | "to" | "depositedAmount" | "evmTransactionHash",

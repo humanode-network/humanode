@@ -1,9 +1,9 @@
 import { expect, describe, it } from "vitest";
-import { RunNodeState, runNode } from "../../lib/node";
-import * as eth from "../../lib/ethViem";
-import selfdestruct from "../../lib/abis/selfdestruct";
-import "../../lib/expect";
-import { beforeEachWithCleanup } from "../../lib/lifecycle";
+import { RunNodeState, runNode } from "../../../lib/node";
+import * as eth from "../../../lib/ethViem";
+import selfdestruct from "../../../lib/abis/selfdestruct";
+import "../../../lib/expect";
+import { beforeEachWithCleanup } from "../../../lib/lifecycle";
 import * as ethers from "ethers";
 
 describe("selfdestruct", () => {

@@ -1,9 +1,9 @@
 import { describe, it, expect, assert } from "vitest";
-import { RunNodeState, runNode } from "../../lib/node";
-import * as eth from "../../lib/ethViem";
-import deposit from "../../lib/abis/deposit";
-import "../../lib/expect";
-import { beforeEachWithCleanup } from "../../lib/lifecycle";
+import { RunNodeState, runNode } from "../../../lib/node";
+import * as eth from "../../../lib/ethViem";
+import deposit from "../../../lib/abis/deposit";
+import "../../../lib/expect";
+import { beforeEachWithCleanup } from "../../../lib/lifecycle";
 
 describe("contract account's nonce", () => {
   let node: RunNodeState;
