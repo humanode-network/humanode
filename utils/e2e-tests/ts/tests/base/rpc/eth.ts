@@ -1,9 +1,9 @@
 import { expect, describe, it } from "vitest";
-import { RunNodeState, runNode } from "../../lib/node";
-import * as eth from "../../lib/ethEthers";
+import { RunNodeState, runNode } from "../../../lib/node";
+import * as eth from "../../../lib/ethEthers";
 import * as ethers from "ethers";
-import "../../lib/expect";
-import { beforeEachWithCleanup } from "../../lib/lifecycle";
+import "../../../lib/expect";
+import { beforeEachWithCleanup } from "../../../lib/lifecycle";
 
 describe("eth rpc", () => {
   let node: RunNodeState;
