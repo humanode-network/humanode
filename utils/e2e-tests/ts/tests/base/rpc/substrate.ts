@@ -1,7 +1,7 @@
 import { expect, it, describe } from "vitest";
-import { RunNodeState, runNode } from "../../lib/node";
-import * as substrate from "../../lib/substrate";
-import { beforeEachWithCleanup } from "../../lib/lifecycle";
+import { RunNodeState, runNode } from "../../../lib/node";
+import * as substrate from "../../../lib/substrate";
+import { beforeEachWithCleanup } from "../../../lib/lifecycle";
 
 describe("substrate rpc", () => {
   let node: RunNodeState;
