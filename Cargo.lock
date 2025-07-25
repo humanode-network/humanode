@@ -3863,6 +3863,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "humanode-runtime-wasm-builder"
+version = "0.1.0"
+dependencies = [
+ "humanode-runtime",
+]
+
+[[package]]
 name = "humantime"
 version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

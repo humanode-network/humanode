@@ -4,6 +4,8 @@ export type Mode = {
   cargoArgs: string;
   cargoCacheKey: string;
   platformIndependent?: true;
+  artifactSelector?: "runtime";
+  artifactMarker?: string;
 };
 
 export type Modes = Record<string, Mode>;
@@ -68,5 +70,15 @@ export const build = {
     cargoCommand: "build",
     cargoArgs: "--locked --workspace --release",
     cargoCacheKey: "release-build",
+  },
+  buildRuntimeEvmTracing: {
+    name: "build runtime with EVM tracing",
+    cargoCommand: "build",
+    cargoArgs:
+      "--locked --release --bin humanode-runtime-wasm-builder --features evm-tracing",
+    cargoCacheKey: "release-build-runtime-evm-tracing",
+    platformIndependent: true,
+    artifactSelector: "runtime",
+    artifactMarker: "evm-tracing",
   },
 } satisfies Modes;
