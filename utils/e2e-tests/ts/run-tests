@@ -10,4 +10,4 @@ shift
 HUMANODE_PEER_PATH="$(realpath -s "$HUMANODE_PEER_PATH")"
 export HUMANODE_PEER_PATH
 
-exec yarn utils/e2e-tests/ts test "./${TEST_SUITE}/"
+exec yarn utils/e2e-tests/ts test "./tests/${TEST_SUITE}/"
