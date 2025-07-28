@@ -1,12 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { RunNodeState, runNode } from "../../lib/node";
-import * as eth from "../../lib/ethViem";
-import "../../lib/expect";
-import { beforeEachWithCleanup } from "../../lib/lifecycle";
-import evmSwap from "../../lib/abis/evmSwap";
+import { RunNodeState, runNode } from "../../../lib/node";
+import * as eth from "../../../lib/ethViem";
+import "../../../lib/expect";
+import { beforeEachWithCleanup } from "../../../lib/lifecycle";
+import evmSwap from "../../../lib/abis/evmSwap";
 import { decodeEventLog } from "viem";
-import * as substrate from "../../lib/substrate";
-import { getEvents, getNativeBalance } from "../../lib/substrateUtils";
+import * as substrate from "../../../lib/substrate";
+import { getEvents, getNativeBalance } from "../../../lib/substrateUtils";
 
 const evmToNativeSwapPrecompileAddress =
   "0x0000000000000000000000000000000000000900";

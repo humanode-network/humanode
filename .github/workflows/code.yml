@@ -79,6 +79,7 @@ jobs:
             build-args: ""
           - suite: "try-runtime"
             build-args: "--features try-runtime"
+            skip-ts-tests: true
       fail-fast: false
     name: End-to-end tests / ${{ matrix.test.suite }}
     runs-on: ubuntu-24.04
@@ -104,6 +105,7 @@ jobs:
           BUILD_ARGS: ${{ matrix.test.build-args }}
 
       - name: Run bash e2e tests
+        if: matrix.test.skip-bash-tests != true
         run: utils/e2e-tests/bash/run-tests "$TEST_SUITE"
         env:
           TEST_SUITE: ${{ matrix.test.suite }}
@@ -111,6 +113,7 @@ jobs:
           RUNTIME_WASM_PATH: "target/release/wbuild/humanode-runtime/humanode_runtime.wasm"
 
       - name: Run ts e2e tests
+        if: matrix.test.skip-ts-tests != true
         run: utils/e2e-tests/ts/run-tests "$TEST_SUITE"
         env:
           TEST_SUITE: ${{ matrix.test.suite }}

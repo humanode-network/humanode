@@ -1,10 +1,10 @@
 import { expect, describe, beforeEach, it } from "vitest";
-import { RunNodeState, runNode } from "../../lib/node";
-import * as eth from "../../lib/ethViem";
+import { RunNodeState, runNode } from "../../../lib/node";
+import * as eth from "../../../lib/ethViem";
 import { decodeEventLog, parseEther } from "viem";
-import erc20abi from "../../lib/abis/erc20";
-import "../../lib/expect";
-import { beforeEachWithCleanup } from "../../lib/lifecycle";
+import erc20abi from "../../../lib/abis/erc20";
+import "../../../lib/expect";
+import { beforeEachWithCleanup } from "../../../lib/lifecycle";
 
 describe("WeHMND", () => {
   let node: RunNodeState;
