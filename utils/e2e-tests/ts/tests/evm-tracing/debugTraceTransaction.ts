@@ -7,7 +7,7 @@ import caller from "../../lib/abis/debugTrace/caller";
 import { encodeFunctionData } from "viem";
 import { customRpcRequest } from "../../lib/rpcUtils";
 
-describe("test debug trace call", () => {
+describe("test debug trace transaction", () => {
   let node: RunNodeState;
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;
@@ -66,19 +66,10 @@ describe("test debug trace call", () => {
     });
     await publicClient.waitForTransactionReceipt({ hash });
 
-    const callParams = {
-      to: callerContract,
-      data: encodeFunctionData({
-        abi: caller.abi,
-        functionName: "someAction",
-        args: [calleeContract, 7n],
-      }),
-    };
-
     const response = await customRpcRequest(
       node.meta.rpcUrlHttp,
-      "debug_traceCall",
-      [callParams, "latest"],
+      "debug_traceTransaction",
+      [hash],
     );
 
     const logs: any[] = [];
