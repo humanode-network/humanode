@@ -128,4 +128,42 @@ describe("test debug trace logic", () => {
       expect(logs[1].depth).to.be.equal(1);
     });
   });
+
+  describe("debug_traceBlockByNumber and debug_traceBlockByHash tests", () => {
+    it("should trace block by number and hash", async () => {
+      const [alice, _] = devClients;
+
+      const txHash = await alice.sendTransaction({
+        to: callerAddress,
+        data: encodeFunctionData({
+          abi: caller.abi,
+          functionName: "someAction",
+          args: [calleeAddress, 7n],
+        }),
+      });
+      const txReceipt = await publicClient.waitForTransactionReceipt({
+        hash: txHash,
+      });
+      const blockNumberHex = txReceipt.blockNumber.toString(16);
+      const blockHash = txReceipt.blockHash;
+
+      const responseByNumber = await customRpcRequest(
+        node.meta.rpcUrlHttp,
+        "debug_traceBlockByNumber",
+        [blockNumberHex, { tracer: "callTracer" }],
+      );
+
+      expect(responseByNumber.length).to.equal(1);
+      expect(txHash).to.equal(responseByNumber[0].txHash);
+
+      const responseByHash = await customRpcRequest(
+        node.meta.rpcUrlHttp,
+        "debug_traceBlockByHash",
+        [blockHash, { tracer: "callTracer" }],
+      );
+
+      expect(responseByHash.length).to.equal(1);
+      expect(txHash).to.equal(responseByHash[0].txHash);
+    });
+  });
 });
