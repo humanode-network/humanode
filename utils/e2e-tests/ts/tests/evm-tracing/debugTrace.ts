@@ -98,7 +98,7 @@ describe("test debug trace logic", () => {
     it("should trace nested contract calls", async () => {
       const [alice, _] = devClients;
 
-      const hash = await alice.sendTransaction({
+      const txHash = await alice.sendTransaction({
         to: callerAddress,
         data: encodeFunctionData({
           abi: caller.abi,
@@ -106,12 +106,12 @@ describe("test debug trace logic", () => {
           args: [calleeAddress, 7n],
         }),
       });
-      await publicClient.waitForTransactionReceipt({ hash });
+      await publicClient.waitForTransactionReceipt({ hash: txHash });
 
       const response = await customRpcRequest(
         node.meta.rpcUrlHttp,
         "debug_traceTransaction",
-        [hash],
+        [txHash],
       );
 
       const logs: any[] = [];
