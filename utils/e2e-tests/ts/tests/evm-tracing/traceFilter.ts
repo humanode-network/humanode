@@ -11,13 +11,7 @@ describe("test trace filter logic", () => {
   beforeEachWithCleanup(async (cleanup) => {
     node = runNode(
       {
-        args: [
-          "--ethapi=trace",
-          "--dev",
-          "--tmp",
-          "--wasm-runtime-overrides",
-          "/home/dl/moonbeam/build/wasm",
-        ],
+        args: ["--ethapi=trace", "--dev", "--tmp"],
       },
       cleanup.push,
     );

@@ -14,13 +14,7 @@ describe("test debug trace logic", () => {
   beforeEachWithCleanup(async (cleanup) => {
     node = runNode(
       {
-        args: [
-          "--ethapi=debug",
-          "--dev",
-          "--tmp",
-          "--wasm-runtime-overrides",
-          "/home/dl/moonbeam/build/wasm",
-        ],
+        args: ["--ethapi=debug", "--dev", "--tmp"],
       },
       cleanup.push,
     );
