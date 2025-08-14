@@ -3252,7 +3252,7 @@
     - proc-macro
     - quote
     - visit
-- name: syn 2.0.104
+- name: syn 2.0.105
   features:
     - clone-impls
     - default
