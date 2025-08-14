@@ -20,6 +20,7 @@ humanode-rpc = { path = "../humanode-rpc" }
 humanode-runtime = { path = "../humanode-runtime" }
 keystore-bioauth-account-id = { path = "../keystore-bioauth-account-id" }
 ngrok-api = { path = "../ngrok-api" }
+primitives-evm-tracing-ext = { path = "../primitives-evm-tracing-ext" }
 robonode-client = { path = "../robonode-client" }
 
 async-trait = { workspace = true }
