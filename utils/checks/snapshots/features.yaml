@@ -129,7 +129,7 @@
   features:
     - default
     - std
-- name: async-trait 0.1.88
+- name: async-trait 0.1.89
   features: []
 - name: asynchronous-codec 0.6.2
   features:
