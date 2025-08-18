@@ -39,6 +39,10 @@ export const runNode = (
 ): RunNodeState => {
   const { args, env, stdio = "inherit" } = params;
   const childProcess = spawn(PEER_PATH, args, { env, stdio });
+  if (childProcess.pid === undefined) {
+    throw new Error(`Filed to start the node: ${JSON.stringify(args)}`);
+  }
+
   console.log(`Spawned peer as pid ${childProcess.pid}`);
 
   const sendSig = (sig: number) => {
