@@ -54,11 +54,11 @@ Options:
 
       --tracing-receiver <RECEIVER>
           Receiver to process tracing messages
-          
-          [default: log]
 
           Possible values:
           - log: Output the tracing records using the log
+          
+          [default: log]
 
       --database <DB>
           Select database backend to use

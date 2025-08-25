@@ -80,13 +80,13 @@ Options:
 
       --default-pov-mode <DEFAULT_POV_MODE>
           The PoV estimation mode of a benchmark if no `pov_mode` attribute is present
-          
-          [default: max-encoded-len]
 
           Possible values:
           - max-encoded-len: Use the maximal encoded length as provided by [`codec::MaxEncodedLen`]
           - measured:        Measure the accessed value size in the pallet benchmarking and add some trie overhead
           - ignored:         Do not estimate the PoV size for this storage item or benchmark
+          
+          [default: max-encoded-len]
 
       --heap-pages <HEAP_PAGES>
           Set the heap pages while running benchmarks. If not set, the default value from the client is used
@@ -145,11 +145,11 @@ Options:
 
       --tracing-receiver <RECEIVER>
           Receiver to process tracing messages
-          
-          [default: log]
 
           Possible values:
           - log: Output the tracing records using the log
+          
+          [default: log]
 
       --execution <STRATEGY>
           The execution strategy that should be used for benchmarks
@@ -162,19 +162,17 @@ Options:
 
       --wasm-execution <METHOD>
           Method for executing Wasm runtime code
-          
-          [default: compiled]
 
           Possible values:
           - interpreted-i-know-what-i-do: Uses an interpreter which now is deprecated
           - compiled:                     Uses a compiled runtime
+          
+          [default: compiled]
 
       --wasm-instantiation-strategy <STRATEGY>
           The WASM instantiation method to use.
           
           Only has an effect when `wasm-execution` is set to `compiled`.
-          
-          [default: pooling-copy-on-write]
 
           Possible values:
           - pooling-copy-on-write:           Pool the instances to avoid initializing everything from scratch on each instantiation. Use copy-on-write memory when possible
@@ -182,6 +180,8 @@ Options:
           - pooling:                         Pool the instances to avoid initializing everything from scratch on each instantiation
           - recreate-instance:               Recreate the instance from scratch on every instantiation. Very slow
           - legacy-instance-reuse:           Legacy instance reuse mechanism. DEPRECATED. Will be removed in the future
+          
+          [default: pooling-copy-on-write]
 
       --db-cache <MiB>
           Limit the memory the database cache can use

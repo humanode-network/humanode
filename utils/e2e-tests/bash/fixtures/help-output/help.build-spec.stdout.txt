@@ -57,11 +57,11 @@ Options:
 
       --tracing-receiver <RECEIVER>
           Receiver to process tracing messages
-          
-          [default: log]
 
           Possible values:
           - log: Output the tracing records using the log
+          
+          [default: log]
 
       --node-key <KEY>
           Secret key to use for p2p networking.
@@ -86,11 +86,11 @@ Options:
           - Otherwise, the secret key is read from a file with a predetermined, type-specific name from the chain-specific network config directory inside the base directory specified by `--base-dir`. If this file does not exist, it is created with a newly generated secret key of the chosen type.
           
           The node's secret key determines the corresponding public key and hence the node's peer ID in the context of libp2p.
-          
-          [default: ed25519]
 
           Possible values:
           - ed25519: Use ed25519
+          
+          [default: ed25519]
 
       --node-key-file <FILE>
           File from which to read the node's secret key to use for p2p networking.

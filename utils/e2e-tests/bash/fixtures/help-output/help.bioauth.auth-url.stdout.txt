@@ -29,13 +29,13 @@ Options:
 
       --rpc-methods <METHOD SET>
           RPC methods to expose.
-          
-          [default: auto]
 
           Possible values:
           - auto:   Expose every RPC method only when RPC is listening on `localhost`, otherwise serve only safe RPC methods
           - safe:   Allow only a safe subset of RPC methods
           - unsafe: Expose every RPC method (even potentially unsafe ones)
+          
+          [default: auto]
 
       --rpc-max-request-size <RPC_MAX_REQUEST_SIZE>
           Set the maximum RPC request payload size for both HTTP and WS in megabytes
@@ -109,13 +109,13 @@ Options:
 
       --offchain-worker <ENABLED>
           Execute offchain workers on every block
-          
-          [default: when-authority]
 
           Possible values:
           - always:         Always have offchain worker enabled
           - never:          Never enable the offchain worker
           - when-authority: Only enable the offchain worker when running as a validator (or collator, if this is a parachain node)
+          
+          [default: when-authority]
 
       --enable-offchain-indexing <ENABLE_OFFCHAIN_INDEXING>
           Enable offchain indexing API.
@@ -173,11 +173,11 @@ Options:
 
       --tracing-receiver <RECEIVER>
           Receiver to process tracing messages
-          
-          [default: log]
 
           Possible values:
           - log: Output the tracing records using the log
+          
+          [default: log]
 
       --state-pruning <PRUNING_MODE>
           Specify the state pruning mode.
@@ -205,19 +205,17 @@ Options:
 
       --wasm-execution <METHOD>
           Method for executing Wasm runtime code
-          
-          [default: compiled]
 
           Possible values:
           - interpreted-i-know-what-i-do: Uses an interpreter which now is deprecated
           - compiled:                     Uses a compiled runtime
+          
+          [default: compiled]
 
       --wasmtime-instantiation-strategy <STRATEGY>
           The WASM instantiation method to use.
           
           Only has an effect when `wasm-execution` is set to `compiled`. The copy-on-write strategies are only supported on Linux. If the copy-on-write variant of a strategy is unsupported the executor will fall back to the non-CoW equivalent. The fastest (and the default) strategy available is `pooling-copy-on-write`. The `legacy-instance-reuse` strategy is deprecated and will be removed in the future. It should only be used in case of issues with the default instantiation strategy.
-          
-          [default: pooling-copy-on-write]
 
           Possible values:
           - pooling-copy-on-write:           Pool the instances to avoid initializing everything from scratch on each instantiation. Use copy-on-write memory when possible
@@ -225,6 +223,8 @@ Options:
           - pooling:                         Pool the instances to avoid initializing everything from scratch on each instantiation
           - recreate-instance:               Recreate the instance from scratch on every instantiation. Very slow
           - legacy-instance-reuse:           Legacy instance reuse mechanism. DEPRECATED. Will be removed in the future
+          
+          [default: pooling-copy-on-write]
 
       --wasm-runtime-overrides <PATH>
           Specify the path where local WASM runtimes are stored.
@@ -383,11 +383,11 @@ Options:
           - Otherwise, the secret key is read from a file with a predetermined, type-specific name from the chain-specific network config directory inside the base directory specified by `--base-dir`. If this file does not exist, it is created with a newly generated secret key of the chosen type.
           
           The node's secret key determines the corresponding public key and hence the node's peer ID in the context of libp2p.
-          
-          [default: ed25519]
 
           Possible values:
           - ed25519: Use ed25519
+          
+          [default: ed25519]
 
       --node-key-file <FILE>
           File from which to read the node's secret key to use for p2p networking.
@@ -415,14 +415,14 @@ Options:
 
       --sync <SYNC_MODE>
           Blockchain syncing mode.
-          
-          [default: full]
 
           Possible values:
           - full:        Full sync. Download end verify all blocks
           - fast:        Download blocks without executing them. Download latest state with proofs
           - fast-unsafe: Download blocks without executing them. Download latest state without proofs
           - warp:        Prove finality and download the latest state
+          
+          [default: full]
 
       --max-blocks-per-request <COUNT>
           Maximum number of blocks per request.
@@ -523,13 +523,13 @@ Options:
 
       --rpc-url-scheme-preference <RPC_URL_SCHEME_PREFERENCE>
           What RPC URL scheme to prefer
-          
-          [default: no-preference]
 
           Possible values:
           - http:          Prefer HTTP (http or https)
           - ws:            Prefer WebSocket (ws or wss)
           - no-preference: No preference, use opinionated defaults
+          
+          [default: no-preference]
 
       --rpc-url-ngrok-detect
           Detect RPC URL from ngrok
