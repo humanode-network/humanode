@@ -67,11 +67,11 @@ Options:
 
       --tracing-receiver <RECEIVER>
           Receiver to process tracing messages
-          
-          [default: log]
 
           Possible values:
           - log: Output the tracing records using the log
+          
+          [default: log]
 
       --state-pruning <PRUNING_MODE>
           Specify the state pruning mode.
@@ -99,19 +99,17 @@ Options:
 
       --wasm-execution <METHOD>
           Method for executing Wasm runtime code
-          
-          [default: compiled]
 
           Possible values:
           - interpreted-i-know-what-i-do: Uses an interpreter which now is deprecated
           - compiled:                     Uses a compiled runtime
+          
+          [default: compiled]
 
       --wasmtime-instantiation-strategy <STRATEGY>
           The WASM instantiation method to use.
           
           Only has an effect when `wasm-execution` is set to `compiled`. The copy-on-write strategies are only supported on Linux. If the copy-on-write variant of a strategy is unsupported the executor will fall back to the non-CoW equivalent. The fastest (and the default) strategy available is `pooling-copy-on-write`. The `legacy-instance-reuse` strategy is deprecated and will be removed in the future. It should only be used in case of issues with the default instantiation strategy.
-          
-          [default: pooling-copy-on-write]
 
           Possible values:
           - pooling-copy-on-write:           Pool the instances to avoid initializing everything from scratch on each instantiation. Use copy-on-write memory when possible
@@ -119,6 +117,8 @@ Options:
           - pooling:                         Pool the instances to avoid initializing everything from scratch on each instantiation
           - recreate-instance:               Recreate the instance from scratch on every instantiation. Very slow
           - legacy-instance-reuse:           Legacy instance reuse mechanism. DEPRECATED. Will be removed in the future
+          
+          [default: pooling-copy-on-write]
 
       --wasm-runtime-overrides <PATH>
           Specify the path where local WASM runtimes are stored.

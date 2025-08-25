@@ -64,11 +64,11 @@ Options:
 
       --tracing-receiver <RECEIVER>
           Receiver to process tracing messages
-          
-          [default: log]
 
           Possible values:
           - log: Output the tracing records using the log
+          
+          [default: log]
 
       --state-pruning <PRUNING_MODE>
           Specify the state pruning mode.
