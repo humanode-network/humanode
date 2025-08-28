@@ -51,6 +51,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                 max_stored_filters: params.max_stored_filters,
                 fee_history_limit: params.fee_history_limit,
                 execute_gas_limit_multiplier: params.execute_gas_limit_multiplier,
+                tracing_mode: params.tracing_mode.clone(),
+                tracing_max_permits: params.tracing_max_permits,
+                tracing_debug_raw_max_memory_usage: params.tracing_debug_raw_max_memory_usage,
+                tracing_trace_max_count: params.tracing_trace_max_count,
+                tracing_trace_cache_duration: params.tracing_trace_cache_duration,
             });
 
         let fb_params = self.frontier_backend();
