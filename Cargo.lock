@@ -2331,6 +2331,52 @@ dependencies = [
 ]
 
 [[package]]
+name = "evm-tracer"
+version = "0.1.0"
+dependencies = [
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
+ "evm-tracing-events",
+ "evm-tracing-host-api",
+ "parity-scale-codec",
+ "sp-std",
+]
+
+[[package]]
+name = "evm-tracing-api"
+version = "0.1.0"
+dependencies = [
+ "ethereum",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
+name = "evm-tracing-events"
+version = "0.1.0"
+dependencies = [
+ "environmental",
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-runtime-interface",
+]
+
+[[package]]
+name = "evm-tracing-host-api"
+version = "0.1.0"
+dependencies = [
+ "evm-tracing-events",
+ "parity-scale-codec",
+ "sp-runtime-interface",
+ "sp-std",
+]
+
+[[package]]
 name = "exit-future"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3691,6 +3737,7 @@ dependencies = [
  "clap",
  "crypto-utils",
  "crypto-utils-evm",
+ "evm-tracing-host-api",
  "fc-cli",
  "fc-consensus",
  "fc-db",
@@ -3815,6 +3862,8 @@ dependencies = [
  "eip712-token-claim",
  "ethereum",
  "evm-nonces-recovery",
+ "evm-tracer",
+ "evm-tracing-api",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",

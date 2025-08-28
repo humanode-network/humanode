@@ -818,6 +818,7 @@
     - scale-info
     - serde
     - std
+    - tracing
     - with-codec
     - with-serde
 - name: evm-core 0.39.0
@@ -832,6 +833,7 @@
   features:
     - environmental
     - std
+    - tracing
 - name: evm-nonces-recovery 0.1.0
   features:
     - default
@@ -839,6 +841,24 @@
 - name: evm-runtime 0.39.0
   features:
     - environmental
+    - std
+    - tracing
+- name: evm-tracer 0.1.0
+  features:
+    - default
+    - std
+- name: evm-tracing-api 0.1.0
+  features:
+    - default
+    - std
+- name: evm-tracing-events 0.1.0
+  features:
+    - default
+    - evm-tracing
+    - std
+- name: evm-tracing-host-api 0.1.0
+  features:
+    - default
     - std
 - name: exit-future 0.2.0
   features: []
@@ -1283,6 +1303,7 @@
 - name: humanode-runtime 0.1.0
   features:
     - default
+    - evm-tracer
     - frame-try-runtime
     - serde
     - std

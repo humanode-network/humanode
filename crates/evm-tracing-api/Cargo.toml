@@ -1,0 +1,20 @@
+[package]
+name = "evm-tracing-api"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+ethereum = { workspace = true, features = ["with-codec"] }
+sp-api = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+  "ethereum/std",
+  "sp-api/std",
+  "sp-core/std",
+  "sp-runtime/std",
+]
