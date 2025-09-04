@@ -1586,7 +1586,7 @@
   features:
     - atomic_usize
     - default
-- name: log 0.4.27
+- name: log 0.4.28
   features:
     - std
 - name: lru 0.10.1
