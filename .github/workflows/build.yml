@@ -149,7 +149,7 @@ jobs:
       contents: write
     steps:
       - name: Publish release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           RELEASE_ID: ${{ needs.draft-release.outputs.release-id }}
         with:
