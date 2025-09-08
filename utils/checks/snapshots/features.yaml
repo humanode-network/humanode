@@ -40,8 +40,6 @@
 - name: allocator-api2 0.2.16
   features:
     - alloc
-- name: android-tzdata 0.1.1
-  features: []
 - name: android_system_properties 0.1.5
   features: []
 - name: ansi_term 0.12.1
@@ -329,10 +327,9 @@
     - rand_core
 - name: checked_int_cast 1.0.0
   features: []
-- name: chrono 0.4.41
+- name: chrono 0.4.42
   features:
     - alloc
-    - android-tzdata
     - clock
     - default
     - iana-time-zone
@@ -3825,7 +3822,7 @@
 - name: windows-core 0.51.1
   features:
     - default
-- name: windows-link 0.1.0
+- name: windows-link 0.2.0
   features: []
 - name: windows-sys 0.45.0
   features:
