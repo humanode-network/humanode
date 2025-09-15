@@ -34,6 +34,8 @@ ignore = [
   "RUSTSEC-2023-0091",
   # TODO(#1542): update the wasmtime internal dependency to 24.0.2+
   "RUSTSEC-2024-0438",
+  # TODO(#1612): update the tracing-subscriber internal dependency to 0.3.20+
+  "RUSTSEC-2025-0055",
 ]
 
 [licenses]
