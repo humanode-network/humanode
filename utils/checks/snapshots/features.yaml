@@ -1612,7 +1612,7 @@
     - use_core
 - name: matchers 0.0.1
   features: []
-- name: matchers 0.1.0
+- name: matchers 0.2.0
   features: []
 - name: matches 0.1.10
   features: []
@@ -1773,7 +1773,7 @@
     - std
 - name: normalize-line-endings 0.3.0
   features: []
-- name: nu-ansi-term 0.46.0
+- name: nu-ansi-term 0.50.1
   features: []
 - name: num 0.4.2
   features:
@@ -1902,8 +1902,6 @@
 - name: openssl-probe 0.1.5
   features: []
 - name: openssl-sys 0.9.107
-  features: []
-- name: overload 0.1.1
   features: []
 - name: pallet-authorship 4.0.0-dev
   features:
@@ -2398,7 +2396,9 @@
 - name: regex-automata 0.4.5
   features:
     - alloc
+    - dfa-build
     - dfa-onepass
+    - dfa-search
     - hybrid
     - meta
     - nfa
@@ -3484,7 +3484,7 @@
     - tracing
     - tracing-log
     - tracing-serde
-- name: tracing-subscriber 0.3.18
+- name: tracing-subscriber 0.3.20
   features:
     - alloc
     - ansi
@@ -3494,7 +3494,6 @@
     - matchers
     - nu-ansi-term
     - once_cell
-    - regex
     - registry
     - sharded-slab
     - smallvec
