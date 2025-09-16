@@ -16,6 +16,7 @@ bioauth-flow-rpc = { path = "../bioauth-flow-rpc" }
 bioauth-keys = { path = "../bioauth-keys" }
 crypto-utils = { path = "../crypto-utils" }
 crypto-utils-evm = { path = "../crypto-utils-evm" }
+evm-tracing-host-api = { path = "../evm-tracing-host-api" }
 humanode-rpc = { path = "../humanode-rpc" }
 humanode-runtime = { path = "../humanode-runtime" }
 keystore-bioauth-account-id = { path = "../keystore-bioauth-account-id" }

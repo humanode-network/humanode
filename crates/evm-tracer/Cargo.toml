@@ -1,0 +1,27 @@
+[package]
+name = "evm-tracer"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+evm-tracing-events = { path = "../evm-tracing-events", default-features = false, features = ["evm-tracing"] }
+evm-tracing-host-api = { path = "../evm-tracing-host-api", default-features = false }
+
+codec = { workspace = true, features = ["derive"] }
+evm = { workspace = true, features = ["tracing"] }
+evm-gasometer = { workspace = true, features = ["tracing"] }
+evm-runtime = { workspace = true, features = ["tracing"] }
+sp-std = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+  "codec/std",
+  "evm-gasometer/std",
+  "evm-runtime/std",
+  "evm-tracing-events/std",
+  "evm-tracing-host-api/std",
+  "evm/std",
+  "sp-std/std",
+]
