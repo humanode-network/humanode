@@ -1,0 +1,15 @@
+[package]
+name = "evm-tracing-client"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+evm-tracing-events = { path = "../evm-tracing-events" }
+
+codec = { workspace = true }
+frame-support = { workspace = true, features = ["std"] }
+hex = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive"] }
+sp-core = { workspace = true }
+sp-runtime = { workspace = true, features = ["std"] }
