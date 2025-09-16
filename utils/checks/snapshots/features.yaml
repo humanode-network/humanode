@@ -835,6 +835,8 @@
   features:
     - default
     - std
+- name: evm-tracing-client 0.1.0
+  features: []
 - name: evm-tracing-events 0.1.0
   features:
     - default
@@ -1235,6 +1237,7 @@
   features:
     - alloc
     - default
+    - serde
     - std
 - name: hex-literal 0.4.1
   features: []
