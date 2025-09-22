@@ -1,6 +1,6 @@
 //! Shared CLI parameters.
 
-use crate::configuration::FrontierBackendType;
+use crate::configuration::{EthTracingMode, FrontierBackendType};
 
 /// Possible RPC URL scheme preference options.
 #[derive(Debug, clap::ValueEnum, Clone)]
@@ -75,6 +75,30 @@ pub struct EthereumRpcParams {
     /// `block.gas_limit` * `execute_gas_limit_multiplier`.
     #[arg(long, default_value = "10")]
     pub execute_gas_limit_multiplier: u64,
+
+    /// Enable EVM tracing mode on a non-authority node.
+    #[arg(long, value_delimiter = ',')]
+    pub tracing_mode: Vec<EthTracingMode>,
+
+    /// Number of concurrent tracing tasks. Meant to be shared by both "debug" and "trace" modules.
+    #[arg(long, default_value = "10")]
+    pub tracing_max_permits: u32,
+
+    /// Size in bytes of data a raw tracing request is allowed to use.
+    /// Bound the size of memory, stack and storage data.
+    #[arg(long, default_value = "20000000")]
+    pub tracing_debug_raw_max_memory_usage: usize,
+
+    /// Maximum number of trace entries a single request of `trace_filter` is allowed to return.
+    /// A request asking for more or an unbounded one going over this limit will both return an
+    /// error.
+    #[arg(long, default_value = "500")]
+    pub tracing_trace_max_count: u32,
+
+    /// Duration (in seconds) after which the cache of `trace_filter` for a given block will be
+    /// discarded.
+    #[arg(long, default_value = "300")]
+    pub tracing_trace_cache_duration: u64,
 }
 
 /// Shared CLI parameters used to configure Frontier backend.
