@@ -1,0 +1,33 @@
+[package]
+name = "evm-tracing-rpc"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+evm-tracing-api = { path = "../evm-tracing-api" }
+evm-tracing-client = { path = "../evm-tracing-client" }
+
+codec = { workspace = true }
+ethereum = { workspace = true }
+fc-db = { workspace = true }
+fc-rpc = { workspace = true }
+fc-rpc-core = { workspace = true }
+fc-storage = { workspace = true }
+fp-rpc = { workspace = true }
+frame-support = { workspace = true }
+futures = { workspace = true }
+hex-literal = { workspace = true }
+jsonrpsee = { workspace = true, features = ["server", "macros"] }
+sc-client-api = { workspace = true }
+sc-utils = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+sp-api = { workspace = true }
+sp-block-builder = { workspace = true }
+sp-blockchain = { workspace = true }
+sp-core = { workspace = true, features = ["std"] }
+sp-io = { workspace = true }
+sp-runtime = { workspace = true }
+substrate-prometheus-endpoint = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }

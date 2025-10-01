@@ -2390,6 +2390,37 @@ dependencies = [
 ]
 
 [[package]]
+name = "evm-tracing-rpc"
+version = "0.1.0"
+dependencies = [
+ "ethereum",
+ "evm-tracing-api",
+ "evm-tracing-client",
+ "fc-db",
+ "fc-rpc",
+ "fc-rpc-core",
+ "fc-storage",
+ "fp-rpc",
+ "frame-support",
+ "futures",
+ "hex-literal",
+ "jsonrpsee",
+ "parity-scale-codec",
+ "sc-client-api",
+ "sc-utils",
+ "serde",
+ "sp-api",
+ "sp-block-builder",
+ "sp-blockchain",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "substrate-prometheus-endpoint",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "exit-future"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
