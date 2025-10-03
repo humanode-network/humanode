@@ -11,7 +11,7 @@ describe("test trace filter logic", () => {
   beforeEachWithCleanup(async (cleanup) => {
     node = runNode(
       {
-        args: ["--ethapi=trace", "--dev", "--tmp"],
+        args: ["--tracing-mode=trace", "--dev", "--tmp"],
       },
       cleanup.push,
     );
