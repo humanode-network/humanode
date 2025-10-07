@@ -2,6 +2,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_runtime::TryRuntimeError;
 use frame_support::traits::{Get, StorageVersion};
@@ -21,6 +23,7 @@ pub mod benchmarking;
 mod mock;
 #[cfg(test)]
 mod tests;
+mod utils;
 
 /// The type representing the session index in our chain.
 type SessionIndex = u32;
