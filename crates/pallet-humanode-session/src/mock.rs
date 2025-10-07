@@ -231,11 +231,14 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
     let genesis_config = GenesisConfig {
         session: pallet_session::GenesisConfig {
             keys: vec![
+                // Bootnodes.
                 (42, 42, sp_runtime::testing::UintAuthorityId(42)),
                 (43, 43, sp_runtime::testing::UintAuthorityId(43)),
                 (44, 44, sp_runtime::testing::UintAuthorityId(44)),
-                // Not bootnode.
+                // Bioauth.
                 (1, 1, sp_runtime::testing::UintAuthorityId(1)),
+                // Fixed Validators Set.
+                (10_001, 10_001, sp_runtime::testing::UintAuthorityId(10_001)),
             ],
         },
         bootnodes: pallet_bootnodes::GenesisConfig {
@@ -248,6 +251,9 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
             }])
             .unwrap(),
             ..Default::default()
+        },
+        fixed_validators_set: pallet_fixed_validators_set::GenesisConfig {
+            validators: BoundedVec::try_from(vec![10_001]).unwrap(),
         },
         ..Default::default()
     };
