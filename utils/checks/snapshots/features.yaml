@@ -1985,6 +1985,10 @@
     - std
 - name: pallet-evm-test-vector-support 1.0.0-dev
   features: []
+- name: pallet-fixed-validators-set 0.1.0
+  features:
+    - default
+    - std
 - name: pallet-grandpa 4.0.0-dev
   features:
     - std
