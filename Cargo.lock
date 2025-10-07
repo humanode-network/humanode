@@ -3949,6 +3949,7 @@ dependencies = [
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
  "pallet-evm-system",
+ "pallet-fixed-validators-set",
  "pallet-grandpa",
  "pallet-humanode-offences",
  "pallet-humanode-session",
