@@ -1502,6 +1502,194 @@ impl_runtime_apis! {
         }
     }
 
+    impl evm_tracing_api::EvmTracingApi<Block> for Runtime {
+        fn trace_transaction(
+            extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+            traced_transaction: &EthereumTransaction,
+            header: &<Block as BlockT>::Header,
+        ) -> Result<(), sp_runtime::DispatchError> {
+            #[cfg(feature = "evm-tracing")]
+            {
+                Executive::initialize_block(header);
+
+                for ext in extrinsics {
+                    match &ext.0.function {
+                        RuntimeCall::Ethereum(transact { transaction }) => {
+                            let tx_hash = &transaction.hash();
+                            if transaction == traced_transaction {
+                                evm_tracer::EvmTracer::default().trace(|| {
+                                    if let Err(err) = Executive::apply_extrinsic(ext) {
+                                        frame_support::log::debug!(
+                                            target: "tracing",
+                                            "Could not trace eth transaction (hash: {}): {:?}",
+                                            &tx_hash,
+                                            err
+                                        );
+                                    }
+                                });
+                            } else if let Err(err) = Executive::apply_extrinsic(ext) {
+                                frame_support::log::debug!(
+                                    target: "tracing",
+                                    "Failed to apply eth extrinsic (hash: {}): {:?}",
+                                    &tx_hash,
+                                    err
+                                );
+                            }
+                        }
+                        _ => {
+                            if let Err(err) = Executive::apply_extrinsic(ext) {
+                                frame_support::log::debug!(
+                                    target: "tracing",
+                                    "Failed to apply non-eth extrinsic: {:?}",
+                                    err
+                                );
+                            }
+                        }
+                    };
+                }
+
+                Ok(())
+            }
+
+            #[cfg(not(feature = "evm-tracing"))]
+            {
+                let _ = extrinsics;
+                let _ = traced_transaction;
+                let _ = header;
+
+                Err(sp_runtime::DispatchError::Other(
+                    "Missing `evm-tracing` compile time feature flag.",
+                ))
+            }
+        }
+
+        fn trace_block(
+            extrinsics: Vec<<Block as BlockT>::Extrinsic>,
+            known_transactions: Vec<H256>,
+            header: &<Block as BlockT>::Header,
+        ) -> Result<(), sp_runtime::DispatchError> {
+            #[cfg(feature = "evm-tracing")]
+            {
+                let mut config = <Runtime as pallet_evm::Config>::config().clone();
+                config.estimate = true;
+
+                Executive::initialize_block(header);
+
+                // Apply all extrinsics. Ethereum extrinsics are traced.
+                for ext in extrinsics {
+                    match &ext.0.function {
+                        RuntimeCall::Ethereum(transact { transaction }) => {
+                            let tx_hash = &transaction.hash();
+                            if known_transactions.contains(tx_hash) {
+                                // Each known extrinsic is a new call stack.
+                                evm_tracer::EvmTracer::emit_new();
+                                evm_tracer::EvmTracer::default().trace(|| {
+                                    if let Err(err) = Executive::apply_extrinsic(ext) {
+                                        frame_support::log::debug!(
+                                            target: "tracing",
+                                            "Could not trace eth transaction (hash: {}): {:?}",
+                                            &tx_hash,
+                                            err
+                                        );
+                                    }
+                                });
+                            } else if let Err(err) = Executive::apply_extrinsic(ext) {
+                                frame_support::log::debug!(
+                                    target: "tracing",
+                                    "Failed to apply eth extrinsic (hash: {}): {:?}",
+                                    &tx_hash,
+                                    err
+                                );
+                            }
+                        },
+                        _ => {
+                            if let Err(err) = Executive::apply_extrinsic(ext) {
+                                frame_support::log::debug!(
+                                    target: "tracing",
+                                    "Failed to apply non-eth extrinsic: {:?}",
+                                    err
+                                );
+                            }
+                        }
+                    }
+                }
+
+                Ok(())
+            }
+
+            #[cfg(not(feature = "evm-tracing"))]
+            {
+                let _ = extrinsics;
+                let _ = known_transactions;
+                let _ = header;
+
+                Err(sp_runtime::DispatchError::Other(
+                    "Missing `evm-tracing` compile time feature flag.",
+                ))
+            }
+        }
+
+        fn trace_call(
+            header: &<Block as BlockT>::Header,
+            from: H160,
+            to: H160,
+            data: Vec<u8>,
+            value: U256,
+            gas_limit: U256,
+            max_fee_per_gas: Option<U256>,
+            max_priority_fee_per_gas: Option<U256>,
+            nonce: Option<U256>,
+            access_list: Option<Vec<(H160, Vec<H256>)>>,
+        ) -> Result<(), sp_runtime::DispatchError> {
+            #[cfg(feature = "evm-tracing")]
+            {
+                Executive::initialize_block(header);
+
+                evm_tracer::EvmTracer::default().trace(|| {
+                    let is_transactional = false;
+                    let validate = true;
+
+                    let _ = <Runtime as pallet_evm::Config>::Runner::call(
+                        from,
+                        to,
+                        data,
+                        value,
+                        gas_limit.low_u64(),
+                        max_fee_per_gas,
+                        max_priority_fee_per_gas,
+                        nonce,
+                        access_list.unwrap_or_default(),
+                        is_transactional,
+                        validate,
+                        None,
+                        None,
+                        <Runtime as pallet_evm::Config>::config(),
+                    );
+                });
+
+                Ok(())
+            }
+
+            #[cfg(not(feature = "evm-tracing"))]
+            {
+                let _ = header;
+                let _ = from;
+                let _ = to;
+                let _ = data;
+                let _ = value;
+                let _ = gas_limit;
+                let _ = max_fee_per_gas;
+                let _ = max_priority_fee_per_gas;
+                let _ = nonce;
+                let _ = access_list;
+
+                Err(sp_runtime::DispatchError::Other(
+                    "Missing `evm-tracing` compile time feature flag.",
+                ))
+            }
+        }
+    }
+
     #[cfg(feature = "runtime-benchmarks")]
     impl frame_benchmarking::Benchmark<Block> for Runtime {
         fn benchmark_metadata(extra: bool) -> (

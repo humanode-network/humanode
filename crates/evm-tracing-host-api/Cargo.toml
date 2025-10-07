@@ -1,0 +1,21 @@
+[package]
+name = "evm-tracing-host-api"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+evm-tracing-events = { path = "../evm-tracing-events", default-features = false }
+
+codec = { workspace = true }
+sp-runtime-interface = { workspace = true }
+sp-std = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+  "codec/std",
+  "evm-tracing-events/std",
+  "sp-runtime-interface/std",
+  "sp-std/std",
+]
