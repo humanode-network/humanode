@@ -15,8 +15,8 @@ impl<T: frame_system::Config> pallet_evm_accounts_mapping::WeightInfo for Weight
     // Proof Size summary in bytes:
     //  Measured:  `132`
     //  Estimated: `0`
-    // Minimum execution time: 52_000_000 picoseconds.
-    Weight::from_parts(52_000_000, 0)
+    // Minimum execution time: 54_000_000 picoseconds.
+    Weight::from_parts(54_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(4))
       .saturating_add(T::DbWeight::get().writes(2))
   }

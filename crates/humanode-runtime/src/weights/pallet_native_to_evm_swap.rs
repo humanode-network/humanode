@@ -24,8 +24,8 @@ impl<T: frame_system::Config> pallet_native_to_evm_swap::WeightInfo for WeightIn
     // Proof Size summary in bytes:
     //  Measured:  `995`
     //  Estimated: `0`
-    // Minimum execution time: 70_000_000 picoseconds.
-    Weight::from_parts(70_000_000, 0)
+    // Minimum execution time: 71_000_000 picoseconds.
+    Weight::from_parts(71_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(10))
       .saturating_add(T::DbWeight::get().writes(5))
   }
