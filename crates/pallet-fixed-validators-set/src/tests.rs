@@ -38,7 +38,7 @@ fn updating_set_works() {
     });
 }
 
-/// This test verifies that updating the set works fail with a non-root origin.
+/// This test verifies that updating the set fails with a non-root origin.
 #[test]
 fn updating_set_requires_root() {
     new_test_ext().execute_with(|| {
