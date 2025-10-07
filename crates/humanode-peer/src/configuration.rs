@@ -75,6 +75,25 @@ pub struct EthereumRpc {
     /// When using `eth_call/eth_estimateGas`, the maximum allowed gas limit will be
     /// `block.gas_limit` * `execute_gas_limit_multiplier`.
     pub execute_gas_limit_multiplier: u64,
+
+    /// Enable EVM tracing mode on a non-authority node.
+    pub tracing_mode: Vec<EthTracingMode>,
+
+    /// Number of concurrent tracing tasks. Meant to be shared by both "debug" and "trace" modules.
+    pub tracing_max_permits: u32,
+
+    /// Size in bytes of data a raw tracing request is allowed to use.
+    /// Bound the size of memory, stack and storage data.
+    pub tracing_debug_raw_max_memory_usage: usize,
+
+    /// Maximum number of trace entries a single request of `trace_filter` is allowed to return.
+    /// A request asking for more or an unbounded one going over this limit will both return an
+    /// error.
+    pub tracing_trace_max_count: u32,
+
+    /// Duration (in seconds) after which the cache of `trace_filter` for a given block will be
+    /// discarded.
+    pub tracing_trace_cache_duration: u64,
 }
 
 /// Frontier backend configuration parameters.
@@ -104,4 +123,13 @@ pub enum FrontierBackendType {
     KeyValue,
     /// Sql database with custom log indexing.
     Sql,
+}
+
+/// Possible EVM tracing modes.
+#[derive(Debug, clap::ValueEnum, Clone, PartialEq)]
+pub enum EthTracingMode {
+    /// Debug mode.
+    Debug,
+    /// Trace mode.
+    Trace,
 }

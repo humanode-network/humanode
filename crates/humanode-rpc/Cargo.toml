@@ -10,6 +10,7 @@ author-ext-rpc = { path = "../author-ext-rpc" }
 bioauth-flow-api = { path = "../bioauth-flow-api" }
 bioauth-flow-rpc = { path = "../bioauth-flow-rpc" }
 bioauth-keys = { path = "../bioauth-keys" }
+evm-tracing-rpc = { path = "../evm-tracing-rpc" }
 humanode-runtime = { path = "../humanode-runtime" }
 robonode-client = { path = "../robonode-client" }
 
