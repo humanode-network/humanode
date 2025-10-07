@@ -585,6 +585,33 @@ Options:
           
           [default: 10]
 
+      --tracing-mode <TRACING_MODE>
+          Enable EVM tracing mode on a non-authority node
+
+          Possible values:
+          - debug: Debug mode
+          - trace: Trace mode
+
+      --tracing-max-permits <TRACING_MAX_PERMITS>
+          Number of concurrent tracing tasks. Meant to be shared by both "debug" and "trace" modules
+          
+          [default: 10]
+
+      --tracing-debug-raw-max-memory-usage <TRACING_DEBUG_RAW_MAX_MEMORY_USAGE>
+          Size in bytes of data a raw tracing request is allowed to use. Bound the size of memory, stack and storage data
+          
+          [default: 20000000]
+
+      --tracing-trace-max-count <TRACING_TRACE_MAX_COUNT>
+          Maximum number of trace entries a single request of `trace_filter` is allowed to return. A request asking for more or an unbounded one going over this limit will both return an error
+          
+          [default: 500]
+
+      --tracing-trace-cache-duration <TRACING_TRACE_CACHE_DURATION>
+          Duration (in seconds) after which the cache of `trace_filter` for a given block will be discarded
+          
+          [default: 300]
+
       --time-warp-revive-timestamp <TIME_WARP_REVIVE_TIMESTAMP>
           The time in the future when the warp is going to be started
 
