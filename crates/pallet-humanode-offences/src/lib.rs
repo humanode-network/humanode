@@ -80,8 +80,9 @@ where
                 pallet_humanode_session::Identification::Bioauth(authentication) => {
                     should_be_deauthenticated.push(authentication.clone());
                 }
-                pallet_humanode_session::Identification::Bootnode(..) => {
-                    // Never slash the bootnodes.
+                pallet_humanode_session::Identification::Bootnode(..)
+                | pallet_humanode_session::Identification::FixedValidatorsSet(..) => {
+                    // Never slash the bootnodes or the fixed set validators.
                 }
             }
         }
