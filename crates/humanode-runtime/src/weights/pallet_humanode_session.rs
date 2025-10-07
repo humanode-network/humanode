@@ -14,20 +14,20 @@ impl<T: frame_system::Config> pallet_humanode_session::WeightInfo for WeightInfo
   /// The range of component `b` is `[0, 3071]`.
   fn ban(_b: u32, ) -> Weight {
     // Proof Size summary in bytes:
-    //  Measured:  `233 + b * (32 ±0)`
+    //  Measured:  `266 + b * (32 ±0)`
     //  Estimated: `0`
     // Minimum execution time: 10_000_000 picoseconds.
-    Weight::from_parts(95_000_000, 0)
+    Weight::from_parts(116_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(2))
       .saturating_add(T::DbWeight::get().writes(1))
   }
   /// The range of component `b` is `[1, 3072]`.
   fn unban(_b: u32, ) -> Weight {
     // Proof Size summary in bytes:
-    //  Measured:  `171 + b * (32 ±0)`
+    //  Measured:  `204 + b * (32 ±0)`
     //  Estimated: `0`
-    // Minimum execution time: 7_000_000 picoseconds.
-    Weight::from_parts(92_000_000, 0)
+    // Minimum execution time: 8_000_000 picoseconds.
+    Weight::from_parts(90_000_000, 0)
       .saturating_add(T::DbWeight::get().reads(1))
       .saturating_add(T::DbWeight::get().writes(1))
   }
