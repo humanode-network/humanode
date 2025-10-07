@@ -1,7 +1,7 @@
 //! The benchmarks for the pallet.
 
 // Allow integer and float arithmetic in tests.
-#![allow(clippy::arithmetic_side_effects, clippy::float_arithmetic)]
+#![allow(clippy::float_arithmetic)]
 
 use frame_benchmarking::benchmarks;
 use frame_support::pallet_prelude::*;

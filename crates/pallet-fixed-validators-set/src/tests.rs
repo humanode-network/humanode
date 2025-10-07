@@ -1,8 +1,5 @@
 //! The tests for the pallet.
 
-// Allow simple integer arithmetic in tests.
-#![allow(clippy::arithmetic_side_effects)]
-
 use frame_support::{assert_noop, assert_ok, BoundedVec};
 
 use crate::{
