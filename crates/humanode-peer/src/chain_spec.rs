@@ -6,9 +6,9 @@ use hex_literal::hex;
 use humanode_runtime::{
     opaque::SessionKeys, robonode, token_claims::types::ClaimInfo, AccountId, BabeConfig, Balance,
     BalancesConfig, BioauthConfig, BootnodesConfig, ChainPropertiesConfig, EVMConfig,
-    EthereumAddress, EthereumChainIdConfig, EthereumConfig, EvmAccountId, GenesisConfig,
-    GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig, SystemConfig,
-    TokenClaimsConfig, WASM_BINARY,
+    EthereumAddress, EthereumChainIdConfig, EthereumConfig, EvmAccountId, FixedValidatorsSetConfig,
+    GenesisConfig, GrandpaConfig, ImOnlineConfig, SessionConfig, Signature, SudoConfig,
+    SystemConfig, TokenClaimsConfig, WASM_BINARY,
 };
 use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 use sc_chain_spec_derive::{ChainSpecExtension, ChainSpecGroup};
@@ -342,6 +342,9 @@ fn testnet_genesis(
             robonode_public_key,
             consumed_auth_ticket_nonces: BoundedVec::default(),
             active_authentications: BoundedVec::default(),
+        },
+        fixed_validators_set: FixedValidatorsSetConfig {
+            validators: BoundedVec::default(),
         },
         chain_properties: ChainPropertiesConfig {
             ss58_prefix: SS58_PREFIX,
