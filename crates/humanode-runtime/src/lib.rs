@@ -567,7 +567,7 @@ impl pallet_fixed_validators_set::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type ValidatorId = AccountId;
     type MaxValidators = ConstU32<MAX_AUTHENTICATIONS>; /* same amount in theory */
-    type WeightInfo = (); // TODO: bench
+    type WeightInfo = weights::pallet_fixed_validators_set::WeightInfo<Runtime>;
 }
 
 impl pallet_humanode_session::Config for Runtime {
