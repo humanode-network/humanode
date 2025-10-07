@@ -25,6 +25,8 @@ mod mock;
 mod tests;
 mod utils;
 
+use self::utils::DedupeIteratorExt as _;
+
 /// The type representing the session index in our chain.
 type SessionIndex = u32;
 
@@ -278,6 +280,7 @@ impl<T: Config> Pallet<T> {
         bootnodes
             .chain(bioauth_active_authentications)
             .chain(fixed_validators)
+            .dedupe(AccountIdDedupeKey::<T>::default())
     }
 
     /// Clears and re-populates the [`SessionIdentities`] for a given session with the entries.
@@ -353,5 +356,22 @@ impl<T: Config> sp_runtime::traits::Convert<T::AccountId, Option<IdentificationF
     fn convert(account_id: T::AccountId) -> Option<IdentificationFor<T>> {
         let session_index = <CurrentSessionIndex<T>>::get()?;
         <SessionIdentities<T>>::get(session_index, account_id)
+    }
+}
+
+/// The dedupe key extractor that provides Account Ids from Identification Tuples.
+struct AccountIdDedupeKey<T>(core::marker::PhantomData<T>);
+
+impl<T: Config> utils::DedupeKeyExtractor<IdentificationTupleFor<T>> for AccountIdDedupeKey<T> {
+    type Output = <T as frame_system::Config>::AccountId;
+
+    fn extract_key(&self, value: &IdentificationTupleFor<T>) -> Self::Output {
+        value.0.clone()
+    }
+}
+
+impl<T> Default for AccountIdDedupeKey<T> {
+    fn default() -> Self {
+        Self(core::marker::PhantomData)
     }
 }
