@@ -6184,6 +6184,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-fixed-validators-set"
+version = "0.1.0"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+]
+
+[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/humanode-network/substrate?tag=locked/polkadot-v0.9.43-2025-03-22#8afcafd721d31939e4dee7b779f152ab9eb1c8be"

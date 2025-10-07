@@ -1,0 +1,27 @@
+[package]
+name = "pallet-fixed-validators-set"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+codec = { workspace = true, features = ["derive"] }
+frame-benchmarking = { workspace = true, optional = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+scale-info = { workspace = true, features = ["derive"] }
+
+[features]
+default = ["std"]
+runtime-benchmarks = [
+  "frame-benchmarking/runtime-benchmarks",
+  "frame-support/runtime-benchmarks",
+  "frame-system/runtime-benchmarks",
+]
+std = [
+  "codec/std",
+  "frame-support/std",
+  "frame-system/std",
+  "scale-info/std",
+]
+try-runtime = ["frame-support/try-runtime", "frame-system/try-runtime"]
