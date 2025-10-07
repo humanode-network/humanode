@@ -48,9 +48,9 @@ fn basic_setup_works() {
     });
 }
 
-/// This test verifies that ban works in the happy path.
+/// This test verifies that ban works for the bioauth validators.
 #[test]
-fn ban_works() {
+fn ban_works_on_bioauth() {
     new_test_ext().execute_with_ext(|_| {
         // Check test preconditions.
         assert!(<BannedAccounts<Test>>::get().is_empty());
@@ -62,6 +62,24 @@ fn ban_works() {
         assert_eq!(
             <BannedAccounts<Test>>::get().into_inner(),
             vec![1].into_iter().collect::<_>()
+        );
+    });
+}
+
+/// This test verifies that ban works for the fixed validators set validators.
+#[test]
+fn ban_works_on_fixed_validators_set() {
+    new_test_ext().execute_with_ext(|_| {
+        // Check test preconditions.
+        assert!(<BannedAccounts<Test>>::get().is_empty());
+
+        // Invoke the function under test.
+        assert_ok!(HumanodeSession::ban(RuntimeOrigin::root(), 10_001));
+
+        // Assert state changes.
+        assert_eq!(
+            <BannedAccounts<Test>>::get().into_inner(),
+            vec![10_001].into_iter().collect::<_>()
         );
     });
 }
@@ -157,7 +175,7 @@ fn full_ban_unban_lifecycle() {
                 expires_at: 1000,
             }]
         );
-        assert_eq!(Session::validators(), vec![42, 43, 44, 1]);
+        assert_eq!(Session::validators(), vec![42, 43, 44, 1, 10_001]);
         assert_eq!(
             Session::queued_keys(),
             vec![
@@ -165,6 +183,7 @@ fn full_ban_unban_lifecycle() {
                 (43, sp_runtime::testing::UintAuthorityId(43)),
                 (44, sp_runtime::testing::UintAuthorityId(44)),
                 (1, sp_runtime::testing::UintAuthorityId(1)),
+                (10_001, sp_runtime::testing::UintAuthorityId(10_001)),
             ]
         );
 
@@ -183,7 +202,7 @@ fn full_ban_unban_lifecycle() {
                 expires_at: 1000,
             }]
         );
-        assert_eq!(Session::validators(), vec![42, 43, 44, 1]);
+        assert_eq!(Session::validators(), vec![42, 43, 44, 1, 10_001]);
         assert_eq!(
             Session::queued_keys(),
             vec![
@@ -191,6 +210,7 @@ fn full_ban_unban_lifecycle() {
                 (43, sp_runtime::testing::UintAuthorityId(43)),
                 (44, sp_runtime::testing::UintAuthorityId(44)),
                 (1, sp_runtime::testing::UintAuthorityId(1)),
+                (10_001, sp_runtime::testing::UintAuthorityId(10_001)),
             ]
         );
 
@@ -211,13 +231,14 @@ fn full_ban_unban_lifecycle() {
                 expires_at: 1000,
             }]
         );
-        assert_eq!(Session::validators(), vec![42, 43, 44, 1]);
+        assert_eq!(Session::validators(), vec![42, 43, 44, 1, 10_001]);
         assert_eq!(
             Session::queued_keys(),
             vec![
                 (42, sp_runtime::testing::UintAuthorityId(42)),
                 (43, sp_runtime::testing::UintAuthorityId(43)),
                 (44, sp_runtime::testing::UintAuthorityId(44)),
+                (10_001, sp_runtime::testing::UintAuthorityId(10_001)),
             ]
         );
 
@@ -239,13 +260,14 @@ fn full_ban_unban_lifecycle() {
                 expires_at: 1000,
             }]
         );
-        assert_eq!(Session::validators(), vec![42, 43, 44]);
+        assert_eq!(Session::validators(), vec![42, 43, 44, 10_001]);
         assert_eq!(
             Session::queued_keys(),
             vec![
                 (42, sp_runtime::testing::UintAuthorityId(42)),
                 (43, sp_runtime::testing::UintAuthorityId(43)),
                 (44, sp_runtime::testing::UintAuthorityId(44)),
+                (10_001, sp_runtime::testing::UintAuthorityId(10_001)),
             ]
         );
 
@@ -266,7 +288,7 @@ fn full_ban_unban_lifecycle() {
                 expires_at: 1000,
             }]
         );
-        assert_eq!(Session::validators(), vec![42, 43, 44]);
+        assert_eq!(Session::validators(), vec![42, 43, 44, 10_001]);
         assert_eq!(
             Session::queued_keys(),
             vec![
@@ -274,6 +296,7 @@ fn full_ban_unban_lifecycle() {
                 (43, sp_runtime::testing::UintAuthorityId(43)),
                 (44, sp_runtime::testing::UintAuthorityId(44)),
                 (1, sp_runtime::testing::UintAuthorityId(1)),
+                (10_001, sp_runtime::testing::UintAuthorityId(10_001)),
             ]
         );
 
@@ -292,7 +315,7 @@ fn full_ban_unban_lifecycle() {
                 expires_at: 1000,
             }]
         );
-        assert_eq!(Session::validators(), vec![42, 43, 44, 1]);
+        assert_eq!(Session::validators(), vec![42, 43, 44, 1, 10_001]);
         assert_eq!(
             Session::queued_keys(),
             vec![
@@ -300,6 +323,7 @@ fn full_ban_unban_lifecycle() {
                 (43, sp_runtime::testing::UintAuthorityId(43)),
                 (44, sp_runtime::testing::UintAuthorityId(44)),
                 (1, sp_runtime::testing::UintAuthorityId(1)),
+                (10_001, sp_runtime::testing::UintAuthorityId(10_001)),
             ]
         );
     });
