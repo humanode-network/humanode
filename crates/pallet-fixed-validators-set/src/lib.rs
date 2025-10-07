@@ -78,7 +78,8 @@ pub mod pallet {
 
     #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
-        /// Unlock the vested balance according to the schedule.
+        /// Update the fixed validators set.
+        /// New set extirely replaces the previous state.
         #[pallet::call_index(0)]
         pub fn update_set(
             origin: OriginFor<T>,
