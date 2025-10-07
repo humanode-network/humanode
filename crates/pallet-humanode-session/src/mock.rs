@@ -258,9 +258,11 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
         ..Default::default()
     };
 
-    let storage = genesis_config.build_storage().unwrap();
+    new_test_ext_with(genesis_config)
+}
 
-    // Make test externalities from the storage.
+pub fn new_test_ext_with(genesis_config: GenesisConfig) -> sp_io::TestExternalities {
+    let storage = genesis_config.build_storage().unwrap();
     storage.into()
 }
 

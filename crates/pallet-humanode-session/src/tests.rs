@@ -11,8 +11,8 @@ use sp_runtime::{traits::BlockNumberProvider, BoundedBTreeSet};
 
 use crate::{
     mock::{
-        new_test_ext, Bioauth, HumanodeSession, MockShouldEndSession, RuntimeOrigin, Session,
-        System, Test, TestExternalitiesExt,
+        new_test_ext, new_test_ext_with, Bioauth, HumanodeSession, MockShouldEndSession,
+        RuntimeOrigin, Session, System, Test, TestExternalitiesExt,
     },
     *,
 };
@@ -325,6 +325,108 @@ fn full_ban_unban_lifecycle() {
                 (1, sp_runtime::testing::UintAuthorityId(1)),
                 (10_001, sp_runtime::testing::UintAuthorityId(10_001)),
             ]
+        );
+    });
+}
+
+/// This test verifies that pallet session properly handles duplicates.
+#[test]
+fn duplicates() {
+    let genesis_config = mock::GenesisConfig {
+        session: pallet_session::GenesisConfig {
+            keys: vec![(1, 1, sp_runtime::testing::UintAuthorityId(1))],
+        },
+        bootnodes: pallet_bootnodes::GenesisConfig {
+            bootnodes: BoundedVec::truncate_from(vec![1]),
+        },
+        bioauth: pallet_bioauth::GenesisConfig {
+            active_authentications: BoundedVec::try_from(vec![pallet_bioauth::Authentication {
+                public_key: 1,
+                expires_at: 1000,
+            }])
+            .unwrap(),
+            ..Default::default()
+        },
+        fixed_validators_set: pallet_fixed_validators_set::GenesisConfig {
+            validators: BoundedVec::try_from(vec![1]).unwrap(),
+        },
+        ..Default::default()
+    };
+    new_test_ext_with(genesis_config).execute_with_ext(|_| {
+        // Check initial state.
+        assert_eq!(pallet_bootnodes::Bootnodes::<Test>::get(), vec![1]);
+        assert_eq!(
+            Bioauth::active_authentications(),
+            vec![pallet_bioauth::Authentication {
+                public_key: 1,
+                expires_at: 1000,
+            }]
+        );
+        assert_eq!(
+            pallet_fixed_validators_set::Validators::<Test>::get(),
+            vec![1]
+        );
+        assert_eq!(Session::validators(), vec![1]);
+        assert_eq!(
+            Session::queued_keys(),
+            vec![(1, sp_runtime::testing::UintAuthorityId(1)),]
+        );
+
+        // Rotate session.
+        rotate_session();
+
+        // Assert state changes.
+        //
+        // Expect that the state remains the same - just one key, no duplicates.
+        assert_eq!(
+            Bioauth::active_authentications(),
+            vec![pallet_bioauth::Authentication {
+                public_key: 1,
+                expires_at: 1000,
+            }]
+        );
+        assert_eq!(Session::validators(), vec![1]);
+        assert_eq!(
+            Session::queued_keys(),
+            vec![(1, sp_runtime::testing::UintAuthorityId(1)),]
+        );
+
+        // Rotate session.
+        rotate_session();
+
+        // Assert state changes.
+        //
+        // Expect that the state remains the same again - just one key, no duplicates.
+        assert_eq!(
+            Bioauth::active_authentications(),
+            vec![pallet_bioauth::Authentication {
+                public_key: 1,
+                expires_at: 1000,
+            }]
+        );
+        assert_eq!(Session::validators(), vec![1]);
+        assert_eq!(
+            Session::queued_keys(),
+            vec![(1, sp_runtime::testing::UintAuthorityId(1)),]
+        );
+
+        // Rotate session.
+        rotate_session();
+
+        // Assert state changes.
+        //
+        // Expect that the state remains the same for the third time - just one key, no duplicates.
+        assert_eq!(
+            Bioauth::active_authentications(),
+            vec![pallet_bioauth::Authentication {
+                public_key: 1,
+                expires_at: 1000,
+            }]
+        );
+        assert_eq!(Session::validators(), vec![1]);
+        assert_eq!(
+            Session::queued_keys(),
+            vec![(1, sp_runtime::testing::UintAuthorityId(1)),]
         );
     });
 }
