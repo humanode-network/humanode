@@ -14,6 +14,9 @@ fn works() {
         "bootnodes": {
             "bootnodes": ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]
         },
+        "fixedValidatorsSet": {
+            "validators": []
+        },
         "bioauth": {
             "robonodePublicKey": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "consumedAuthTicketNonces": [],
@@ -132,7 +135,7 @@ fn unknown_field() {
         `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, \
         `imOnline`, `evmAccountsMapping`, `tokenClaims`, `nativeToEvmSwapBridgePot`, \
         `evmToNativeSwapBridgePot`, `balancedCurrencySwapBridgesInitializer`, \
-        `dummyPrecompilesCode` at line 1 column 6"
+        `dummyPrecompilesCode`, `fixedValidatorsSet` at line 1 column 6"
     );
 }
 
