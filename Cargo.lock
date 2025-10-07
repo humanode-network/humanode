@@ -6245,6 +6245,7 @@ dependencies = [
  "mockall",
  "pallet-bioauth",
  "pallet-bootnodes",
+ "pallet-fixed-validators-set",
  "pallet-session",
  "parity-scale-codec",
  "scale-info",
