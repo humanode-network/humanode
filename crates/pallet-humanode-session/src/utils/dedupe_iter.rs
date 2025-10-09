@@ -104,3 +104,27 @@ where
         (self)(value)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    struct IdentityCopy;
+
+    impl<T: Copy> DedupeKeyExtractor<T> for IdentityCopy {
+        type Output = T;
+
+        fn extract_key(&self, value: &T) -> Self::Output {
+            *value
+        }
+    }
+
+    #[test]
+    fn dedupe() {
+        let iter = vec![1usize, 2, 1].into_iter();
+
+        let deduped_iter = iter.dedupe(IdentityCopy);
+
+        assert_eq!(deduped_iter.collect::<Vec<_>>(), vec![1, 2]);
+    }
+}
