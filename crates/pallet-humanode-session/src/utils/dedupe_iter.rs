@@ -6,7 +6,7 @@ use alloc::collections::BTreeSet;
 ///
 /// Provides a dedupe key for type `T`.
 pub trait DedupeKeyExtractor<T> {
-    /// The type this extracts extracts; the dedupe key.
+    /// The type this extractor extracts; the dedupe key.
     type Output;
 
     /// Perform the dedupe key extraction from the given value.
