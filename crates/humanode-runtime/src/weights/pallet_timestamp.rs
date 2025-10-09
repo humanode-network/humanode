@@ -13,7 +13,7 @@ pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_timestamp::WeightInfo for WeightInfo<T> {
   fn set() -> Weight {
     // Proof Size summary in bytes:
-    //  Measured:  `278`
+    //  Measured:  `311`
     //  Estimated: `0`
     // Minimum execution time: 9_000_000 picoseconds.
     Weight::from_parts(9_000_000, 0)

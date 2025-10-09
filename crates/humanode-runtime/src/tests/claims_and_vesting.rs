@@ -249,6 +249,9 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
         "bootnodes": {{
             "bootnodes": ["5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY"]
         }},
+        "fixedValidatorsSet": {{
+            "validators": []
+        }},
         "bioauth": {{
             "robonodePublicKey": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
             "consumedAuthTicketNonces": [],
