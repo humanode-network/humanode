@@ -68,7 +68,7 @@ where
     fn size_hint(&self) -> (usize, Option<usize>) {
         let (_source_lower, source_higher) = self.source.size_hint();
 
-        // Lower bound in always unpredictably `0`.
+        // Lower bound is always unpredictably `0`.
         (0, source_higher)
     }
 }
