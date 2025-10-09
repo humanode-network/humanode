@@ -94,17 +94,6 @@ where
     }
 }
 
-impl<T, R> DedupeKeyExtractor<T> for fn(&T) -> R
-where
-    R: Eq + core::hash::Hash,
-{
-    type Output = R;
-
-    fn extract_key(&self, value: &T) -> Self::Output {
-        (self)(value)
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
