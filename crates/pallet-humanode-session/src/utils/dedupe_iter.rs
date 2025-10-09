@@ -22,7 +22,7 @@ where
     /// The source iterator.
     pub source: Source,
 
-    /// The the dedupe key extractor.
+    /// The dedupe key extractor.
     pub dedupe_key_extractor: DedupeKeyExtractor,
 
     /// The state for tracking the duplicates.
