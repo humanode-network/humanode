@@ -8,7 +8,7 @@ import looper from "../../lib/abis/debugTrace/looper";
 import { customRpcRequest } from "../../lib/rpcUtils";
 import { encodeFunctionData } from "viem";
 
-describe("test trace filter logic", () => {
+describe("test trace filter for gas used in loops logic", () => {
   let node: RunNodeState;
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;

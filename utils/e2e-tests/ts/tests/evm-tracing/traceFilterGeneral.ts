@@ -4,7 +4,7 @@ import * as eth from "../../lib/ethViem";
 import { beforeEachWithCleanup } from "../../lib/lifecycle";
 import { customRpcRequest } from "../../lib/rpcUtils";
 
-describe("test trace filter logic", () => {
+describe("test trace filter for general logic", () => {
   let node: RunNodeState;
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;
