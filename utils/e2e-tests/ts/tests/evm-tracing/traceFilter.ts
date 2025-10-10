@@ -22,6 +22,50 @@ describe("test trace filter logic", () => {
     devClients = eth.devClientsFromNodeWebSocket(node, cleanup.push);
   }, 60 * 1000);
 
+  it("should support tracing range of blocks", async () => {
+    const [alice, bob] = devClients;
+
+    const firstTxHash = await alice.sendTransaction({
+      to: bob.account.address,
+      value: 1_000_000n,
+    });
+    const firstTxReceipt = await publicClient.waitForTransactionReceipt({
+      hash: firstTxHash,
+    });
+
+    const firstBlockNumber = firstTxReceipt.blockNumber;
+    const firstBlockNumberHex = firstTxReceipt.blockNumber.toString(16);
+
+    const secondTxHash = await alice.sendTransaction({
+      to: bob.account.address,
+      value: 1_000_000n,
+    });
+    const secondTxReceipt = await publicClient.waitForTransactionReceipt({
+      hash: secondTxHash,
+    });
+
+    const secondBlockNumber = secondTxReceipt.blockNumber;
+    const secondBlockNumberHex = secondTxReceipt.blockNumber.toString(16);
+
+    const response = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "trace_filter",
+      [
+        {
+          fromBlock: firstBlockNumberHex,
+          toBlock: secondBlockNumberHex,
+        },
+      ],
+    );
+
+    expect(BigInt(response.length)).to.equal(secondBlockNumber);
+
+    for (const index in response.length) {
+      expect(response[index].blockNumber).to.equal(firstBlockNumber + index);
+      expect(response[index].transactionPosition).to.equal(0);
+    }
+  });
+
   it("should support filtering trace per fromAddress/toAddress", async () => {
     const [alice, bob] = devClients;
 
