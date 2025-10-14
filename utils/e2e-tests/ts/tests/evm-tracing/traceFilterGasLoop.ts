@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
 import { beforeEachWithCleanup } from "../../lib/lifecycle";
-import looper from "../../lib/abis/debugTrace/looper";
+import looper from "../../lib/abis/evmTracing/looper";
 import { customRpcRequest } from "../../lib/rpcUtils";
 import { encodeFunctionData } from "viem";
 

@@ -2,8 +2,8 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
 import * as eth from "../../lib/ethViem";
 import { beforeEachWithCleanup } from "../../lib/lifecycle";
-import callee from "../../lib/abis/debugTrace/callee";
-import caller from "../../lib/abis/debugTrace/caller";
+import callee from "../../lib/abis/evmTracing/callee";
+import caller from "../../lib/abis/evmTracing/caller";
 import { encodeFunctionData } from "viem";
 import { customRpcRequest } from "../../lib/rpcUtils";
 
