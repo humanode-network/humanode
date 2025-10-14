@@ -108,4 +108,49 @@ describe("test trace filter for general logic", () => {
     expect(responsePerTo.length).to.equal(1);
     expect(txHash).to.equal(responsePerTo[0].transactionHash);
   });
+
+  it("should check default max 500 traces request", async () => {
+    const [alice, bob] = devClients;
+
+    const txHash = await alice.sendTransaction({
+      to: bob.account.address,
+      value: 1_000_000n,
+    });
+    const txReceipt = await publicClient.waitForTransactionReceipt({
+      hash: txHash,
+    });
+    const blockNumberHex = txReceipt.blockNumber.toString(16);
+
+    const responseSuccess = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "trace_filter",
+      [
+        {
+          fromBlock: blockNumberHex,
+          toBlock: blockNumberHex,
+          count: 500,
+        },
+      ],
+    );
+
+    expect(responseSuccess.length).to.equal(1);
+    expect(txHash).to.equal(responseSuccess[0].transactionHash);
+
+    await customRpcRequest(node.meta.rpcUrlHttp, "trace_filter", [
+      {
+        fromBlock: blockNumberHex,
+        toBlock: blockNumberHex,
+        count: 501,
+      },
+    ]).then(
+      () => {
+        expect.fail("should not succeed");
+      },
+      (error) => {
+        expect(error.message).to.eq(
+          "count (501) can't be greater than maximum (500)",
+        );
+      },
+    );
+  });
 });
