@@ -85,6 +85,48 @@ describe("test debug trace transaction logic", () => {
     expect(logs[1].depth).to.be.equal(1);
   });
 
+  it("should prevent wasm memory overflow", async () => {
+    const [alice, _] = devClients;
+
+    const deployHeavyContractTxHash = await alice.deployContract({
+      abi: heavy.abi,
+      bytecode: heavy.bytecode,
+      args: [false],
+    });
+
+    const deployHeavyContractTxReceipt =
+      await publicClient.waitForTransactionReceipt({
+        hash: deployHeavyContractTxHash,
+        timeout: 18_000,
+      });
+
+    const heavyAddress = deployHeavyContractTxReceipt.contractAddress!;
+
+    const txHash = await alice.sendTransaction({
+      to: heavyAddress,
+      gas: 1_000_000n,
+      data: encodeFunctionData({
+        abi: heavy.abi,
+        functionName: "set_and_loop",
+        args: [10n],
+      }),
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    await customRpcRequest(node.meta.rpcUrlHttp, "debug_traceTransaction", [
+      txHash,
+    ]).then(
+      () => {
+        expect.fail("trace should be reverted but it worked instead");
+      },
+      (error) => {
+        expect(error.message).to.eq(
+          "replayed transaction generated too much data. try disabling memory or storage?",
+        );
+      },
+    );
+  });
+
   it("should not trace call that would produce too big responses", async () => {
     const [alice, _] = devClients;
 

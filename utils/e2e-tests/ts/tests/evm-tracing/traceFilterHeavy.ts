@@ -138,7 +138,7 @@ describe("test trace filter for heavy contract logic", () => {
         functionName: "subcalls",
         args: [heavyContracts[1]!.address, heavyContracts[2]!.address],
       }),
-      gas: 1000_000n,
+      gas: 1_000_000n,
     });
     const txReceipt = await publicClient.waitForTransactionReceipt({
       hash: txHash,
