@@ -5,6 +5,7 @@ import { beforeEachWithCleanup } from "../../lib/lifecycle";
 import callee from "../../lib/abis/evmTracing/callee";
 import caller from "../../lib/abis/evmTracing/caller";
 import heavy from "../../lib/abis/evmTracing/heavy";
+import BS_TRACER from "../../lib/helpers/blockscout_tracer.min.json";
 import { encodeFunctionData } from "viem";
 import { customRpcRequest } from "../../lib/rpcUtils";
 
@@ -198,5 +199,62 @@ describe("test debug trace transaction logic", () => {
         );
       },
     );
+  });
+
+  it("should format as request (Blockscout)", async () => {
+    const [alice, _] = devClients;
+
+    const deployCalleeContractTxHash = await alice.deployContract({
+      abi: callee.abi,
+      bytecode: callee.bytecode,
+    });
+
+    const deployCalleeContractTxReceipt =
+      await publicClient.waitForTransactionReceipt({
+        hash: deployCalleeContractTxHash,
+        timeout: 18_000,
+      });
+
+    const calleeAddress = deployCalleeContractTxReceipt.contractAddress!;
+
+    const deployCallerContractTxHash = await alice.deployContract({
+      abi: caller.abi,
+      bytecode: caller.bytecode,
+    });
+
+    const deployCallerContractTxReceipt =
+      await publicClient.waitForTransactionReceipt({
+        hash: deployCallerContractTxHash,
+        timeout: 18_000,
+      });
+
+    const callerAddress = deployCallerContractTxReceipt.contractAddress!;
+
+    const txHash = await alice.sendTransaction({
+      to: callerAddress,
+      data: encodeFunctionData({
+        abi: caller.abi,
+        functionName: "someAction",
+        args: [calleeAddress, 7n],
+      }),
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    const response = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "debug_traceTransaction",
+      [txHash, { tracer: BS_TRACER.body }],
+    );
+
+    const entries = response;
+    expect(entries).to.be.lengthOf(2);
+    const resCaller = entries[0];
+    const resCallee = entries[1];
+    expect(resCaller.callType).to.be.equal("call");
+    expect(resCallee.type).to.be.equal("call");
+    expect(resCallee.from).to.be.equal(resCaller.to);
+    expect(resCaller.traceAddress).to.be.empty;
+    expect(resCallee.traceAddress.length).to.be.eq(1);
+    expect(resCallee.traceAddress[0]).to.be.eq(0);
   });
 });
