@@ -149,11 +149,20 @@ describe("test debug trace transaction logic", () => {
     const response = await customRpcRequest(
       node.meta.rpcUrlHttp,
       "debug_traceTransaction",
-      [txHash, { tracer: BS_TRACER_V2.body }],
+      [txHash, { tracer: BS_TRACER.body }],
     );
 
     expect(response.length).to.be.eq(1);
     expect(response[0].error).to.be.equal("out of gas");
+
+    const responseV2 = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "debug_traceTransaction",
+      [txHash, { tracer: BS_TRACER_V2.body }],
+    );
+
+    expect(responseV2.length).to.be.eq(1);
+    expect(responseV2[0].error).to.be.equal("out of gas");
   });
 
   it("should trace correctly precompiles", async () => {
@@ -173,10 +182,18 @@ describe("test debug trace transaction logic", () => {
     const response = await customRpcRequest(
       node.meta.rpcUrlHttp,
       "debug_traceTransaction",
-      [txHash, { tracer: BS_TRACER_V2.body }],
+      [txHash, { tracer: BS_TRACER.body }],
     );
 
     expect(response.length).to.be.eq(1);
+
+    const responseV2 = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "debug_traceTransaction",
+      [txHash, { tracer: BS_TRACER_V2.body }],
+    );
+
+    expect(responseV2.length).to.be.eq(1);
   });
 
   it("should prevent wasm memory overflow", async () => {
