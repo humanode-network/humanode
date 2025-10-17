@@ -85,6 +85,36 @@ describe("test debug trace transaction logic", () => {
     expect(logs[1].depth).to.be.equal(1);
   });
 
+  it("should use optional disable parameters", async () => {
+    const [alice, bob] = devClients;
+
+    const txHash = await alice.sendTransaction({
+      to: bob.account.address,
+      value: 1_000_000n,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    const response = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "debug_traceTransaction",
+      [
+        txHash,
+        { disableMemory: true, disableStack: true, disableStorage: true },
+      ],
+    );
+
+    const logs: any[] = [];
+    for (const log of response.structLogs) {
+      const hasStorage = Object.hasOwn(log, "storage");
+      const hasMemory = Object.hasOwn(log, "memory");
+      const hasStack = Object.hasOwn(log, "stack");
+      if (hasStorage || hasMemory || hasStack) {
+        logs.push(log);
+      }
+    }
+    expect(logs.length).to.be.equal(0);
+  });
+
   it("should prevent wasm memory overflow", async () => {
     const [alice, _] = devClients;
 
