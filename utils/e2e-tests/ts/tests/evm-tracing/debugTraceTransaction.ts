@@ -6,6 +6,7 @@ import callee from "../../lib/abis/evmTracing/callee";
 import caller from "../../lib/abis/evmTracing/caller";
 import heavy from "../../lib/abis/evmTracing/heavy";
 import BS_TRACER from "../../lib/helpers/blockscout_tracer.min.json";
+import BS_TRACER_V2 from "../../lib/helpers/blockscout_tracer_v2.min.json";
 import { encodeFunctionData } from "viem";
 import { customRpcRequest } from "../../lib/rpcUtils";
 
@@ -201,7 +202,7 @@ describe("test debug trace transaction logic", () => {
     );
   });
 
-  it("should format as request (Blockscout)", async () => {
+  it("should format as request (Blockscout, BlockscoutV2)", async () => {
     const [alice, _] = devClients;
 
     const deployCalleeContractTxHash = await alice.deployContract({
@@ -256,5 +257,22 @@ describe("test debug trace transaction logic", () => {
     expect(resCaller.traceAddress).to.be.empty;
     expect(resCallee.traceAddress.length).to.be.eq(1);
     expect(resCallee.traceAddress[0]).to.be.eq(0);
+
+    const responseV2 = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "debug_traceTransaction",
+      [txHash, { tracer: BS_TRACER_V2.body }],
+    );
+
+    const entriesV2 = responseV2;
+    expect(entriesV2).to.be.lengthOf(2);
+    const resCallerV2 = entriesV2[0];
+    const resCalleeV2 = entriesV2[1];
+    expect(resCallerV2.callType).to.be.equal("call");
+    expect(resCalleeV2.type).to.be.equal("call");
+    expect(resCalleeV2.from).to.be.equal(resCallerV2.to);
+    expect(resCallerV2.traceAddress).to.be.empty;
+    expect(resCalleeV2.traceAddress.length).to.be.eq(1);
+    expect(resCalleeV2.traceAddress[0]).to.be.eq(0);
   });
 });
