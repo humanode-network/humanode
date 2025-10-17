@@ -93,6 +93,24 @@ describe("test debug trace transaction logic", () => {
     expect(logs[1].depth).to.be.equal(1);
   });
 
+  it("should trace correctly transfers", async () => {
+    const [alice, bob] = devClients;
+
+    const txHash = await alice.sendTransaction({
+      to: bob.account.address,
+      value: 1_000_000n,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    const response = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "debug_traceTransaction",
+      [txHash],
+    );
+
+    expect(response.gas).to.be.eq("0x5208"); // 21_000 gas for a transfer.
+  });
+
   it("should use optional disable parameters", async () => {
     const [alice, bob] = devClients;
 
