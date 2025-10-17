@@ -5,9 +5,10 @@ import { beforeEachWithCleanup } from "../../lib/lifecycle";
 import callee from "../../lib/abis/evmTracing/callee";
 import caller from "../../lib/abis/evmTracing/caller";
 import heavy from "../../lib/abis/evmTracing/heavy";
+import incrementor from "../../lib/abis/evmTracing/incrementor";
 import BS_TRACER from "../../lib/helpers/blockscout_tracer.min.json";
 import BS_TRACER_V2 from "../../lib/helpers/blockscout_tracer_v2.min.json";
-import { encodeFunctionData } from "viem";
+import { encodeFunctionData, hexToNumber } from "viem";
 import { customRpcRequest } from "../../lib/rpcUtils";
 
 describe("test debug trace transaction logic", () => {
@@ -274,5 +275,79 @@ describe("test debug trace transaction logic", () => {
     expect(resCallerV2.traceAddress).to.be.empty;
     expect(resCalleeV2.traceAddress.length).to.be.eq(1);
     expect(resCalleeV2.traceAddress[0]).to.be.eq(0);
+  });
+
+  it("should replay over an intermediate state", async () => {
+    const [alice, _] = devClients;
+
+    const deployIncrementorContractTxHash = await alice.deployContract({
+      abi: incrementor.abi,
+      bytecode: incrementor.bytecode,
+    });
+
+    const deployIncrementorContractTxReceipt =
+      await publicClient.waitForTransactionReceipt({
+        hash: deployIncrementorContractTxHash,
+        timeout: 18_000,
+      });
+
+    const incrementorAddress =
+      deployIncrementorContractTxReceipt.contractAddress!;
+
+    // In our case, the total number of transactions === the max value of the incrementer.
+    // If we trace the last transaction of the block, should return the total number of
+    // transactions we executed (10).
+    // If we trace the 5th transaction, should return 5 and so on.
+    //
+    // So we set 5 different target txs for a single block: the 1st, 3 intermediate, and
+    // the last.
+    const totalTxs = 10;
+    const targets = [1, 2, 5, 8, 10];
+    const txsPromises: any[] = [];
+
+    const nonce = await publicClient.getTransactionCount({
+      address: alice.account.address,
+    });
+
+    // Create 10 transactions in a block.
+    for (let numTxs = 0; numTxs < totalTxs; numTxs++) {
+      const txsPromise = alice
+        .sendTransaction({
+          to: incrementorAddress,
+          data: encodeFunctionData({
+            abi: incrementor.abi,
+            functionName: "incr",
+            args: [1n],
+          }),
+          gas: 100_000n,
+          nonce: nonce + numTxs,
+        })
+        .then((txHash) =>
+          publicClient.waitForTransactionReceipt({
+            hash: txHash,
+            timeout: 18_000,
+          }),
+        );
+
+      txsPromises.push(txsPromise);
+    }
+
+    const txsReceipts = await Promise.all(txsPromises);
+
+    // Trace 5 target transactions on it.
+    for (const target of targets) {
+      const index = target - 1;
+
+      const intermediateTx = await customRpcRequest(
+        node.meta.rpcUrlHttp,
+        "debug_traceTransaction",
+        [txsReceipts[index].transactionHash],
+      );
+
+      const evmResult = hexToNumber(
+        ("0x" + intermediateTx.returnValue) as `0x${string}`,
+      );
+      expect(evmResult).to.equal(target);
+    }
   });
 });
