@@ -6,11 +6,15 @@ import callee from "../../lib/abis/evmTracing/callee";
 import caller from "../../lib/abis/evmTracing/caller";
 import looper from "../../lib/abis/evmTracing/looper";
 import heavy from "../../lib/abis/evmTracing/heavy";
+import evmSwap from "../../lib/abis/evmSwap";
 import incrementor from "../../lib/abis/evmTracing/incrementor";
 import BS_TRACER from "../../lib/helpers/blockscout_tracer.min.json";
 import BS_TRACER_V2 from "../../lib/helpers/blockscout_tracer_v2.min.json";
 import { encodeFunctionData, hexToNumber } from "viem";
 import { customRpcRequest } from "../../lib/rpcUtils";
+
+const evmToNativeSwapPrecompileAddress =
+  "0x0000000000000000000000000000000000000900";
 
 describe("test debug trace transaction logic", () => {
   let node: RunNodeState;
@@ -150,6 +154,29 @@ describe("test debug trace transaction logic", () => {
 
     expect(response.length).to.be.eq(1);
     expect(response[0].error).to.be.equal("out of gas");
+  });
+
+  it("should trace correctly precompiles", async () => {
+    const [alice, _] = devClients;
+
+    const txHash = await alice.writeContract({
+      abi: evmSwap.abi,
+      address: evmToNativeSwapPrecompileAddress,
+      functionName: "swap",
+      args: [
+        "0x7700000000000000000000000000000000000000000000000000000000000077",
+      ],
+      value: 1_000_000n,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    const response = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "debug_traceTransaction",
+      [txHash, { tracer: BS_TRACER_V2.body }],
+    );
+
+    expect(response.length).to.be.eq(1);
   });
 
   it("should prevent wasm memory overflow", async () => {
