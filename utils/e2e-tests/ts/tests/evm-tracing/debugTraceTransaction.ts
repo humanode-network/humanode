@@ -4,6 +4,7 @@ import * as eth from "../../lib/ethViem";
 import { beforeEachWithCleanup } from "../../lib/lifecycle";
 import callee from "../../lib/abis/evmTracing/callee";
 import caller from "../../lib/abis/evmTracing/caller";
+import looper from "../../lib/abis/evmTracing/looper";
 import heavy from "../../lib/abis/evmTracing/heavy";
 import incrementor from "../../lib/abis/evmTracing/incrementor";
 import BS_TRACER from "../../lib/helpers/blockscout_tracer.min.json";
@@ -116,6 +117,39 @@ describe("test debug trace transaction logic", () => {
       }
     }
     expect(logs.length).to.be.equal(0);
+  });
+
+  it("should trace correctly out of gas transaction execution", async () => {
+    const [alice, _] = devClients;
+
+    const deployLooperContractTxHash = await alice.deployContract({
+      abi: looper.abi,
+      bytecode: looper.bytecode,
+    });
+    const deployLooperContractTxReceipt =
+      await publicClient.waitForTransactionReceipt({
+        hash: deployLooperContractTxHash,
+        timeout: 18_000,
+      });
+    const looperAddress = deployLooperContractTxReceipt.contractAddress!;
+
+    const txHash = await alice.sendTransaction({
+      to: looperAddress,
+      gas: 1_000_000n,
+      data: "0x5bec9e67",
+      gasLimit: "0x100000",
+      value: 0n,
+    });
+    await publicClient.waitForTransactionReceipt({ hash: txHash });
+
+    const response = await customRpcRequest(
+      node.meta.rpcUrlHttp,
+      "debug_traceTransaction",
+      [txHash, { tracer: BS_TRACER_V2.body }],
+    );
+
+    expect(response.length).to.be.eq(1);
+    expect(response[0].error).to.be.equal("out of gas");
   });
 
   it("should prevent wasm memory overflow", async () => {
