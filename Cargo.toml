@@ -20,7 +20,7 @@ bytes = { version = "1", default-features = false }
 chrono = { version = "0.4", default-features = false }
 clap = { version = "4", default-features = false }
 ed25519-dalek = { version = "2", default-features = false }
-ethereum = { version = "0.14", default-features = false }
+ethereum = { version = "0.18", default-features = false }
 ethers-core = { version = "2.0.14", default-features = false }
 evm = { git = "https://github.com/rust-blockchain/evm", rev = "b7b82c7e1fc57b7449d6dfa6826600de37cc1e65", default-features = false }
 fdlimit = { version = "0.2", default-features = false }
