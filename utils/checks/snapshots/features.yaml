@@ -272,7 +272,7 @@
 - name: bumpalo 3.14.0
   features:
     - default
-- name: byte-slice-cast 1.2.2
+- name: byte-slice-cast 1.2.3
   features:
     - std
 - name: byte-tools 0.3.1
@@ -411,6 +411,12 @@
     - std
 - name: const-oid 0.9.6
   features: []
+- name: const_format 0.2.35
+  features:
+    - default
+- name: const_format_proc_macros 0.2.34
+  features:
+    - default
 - name: constant_time_eq 0.3.0
   features: []
 - name: core-foundation 0.9.4
@@ -762,15 +768,26 @@
     - scale-info
     - serialize
     - std
+- name: ethbloom 0.14.1
+  features:
+    - codec
+    - impl-codec
+    - impl-rlp
+    - rlp
+    - scale-info
+    - std
 - name: ethereum 0.14.0
   features:
     - codec
-    - default
     - scale-info
     - serde
     - std
     - with-codec
     - with-serde
+- name: ethereum 0.18.2
+  features:
+    - default
+    - std
 - name: ethereum-types 0.14.1
   features:
     - codec
@@ -782,6 +799,15 @@
     - rlp
     - scale-info
     - serialize
+    - std
+- name: ethereum-types 0.15.1
+  features:
+    - codec
+    - ethbloom
+    - impl-codec
+    - impl-rlp
+    - rlp
+    - scale-info
     - std
 - name: ethers-core 2.0.14
   features:
@@ -1313,7 +1339,12 @@
 - name: impl-codec 0.6.0
   features:
     - std
+- name: impl-codec 0.7.1
+  features:
+    - std
 - name: impl-rlp 0.3.0
+  features: []
+- name: impl-rlp 0.4.0
   features: []
 - name: impl-serde 0.4.0
   features:
@@ -2055,7 +2086,7 @@
     - std
 - name: parity-db 0.4.13
   features: []
-- name: parity-scale-codec 3.6.9
+- name: parity-scale-codec 3.7.5
   features:
     - bytes
     - chain-error
@@ -2066,7 +2097,7 @@
     - parity-scale-codec-derive
     - serde
     - std
-- name: parity-scale-codec-derive 3.6.9
+- name: parity-scale-codec-derive 3.7.5
   features:
     - max-encoded-len
 - name: parity-send-wrapper 0.1.0
@@ -2208,6 +2239,17 @@
     - serde
     - serde_no_std
     - std
+- name: primitive-types 0.13.1
+  features:
+    - byteorder
+    - codec
+    - impl-codec
+    - impl-rlp
+    - rlp
+    - rustc-hex
+    - scale-info
+    - scale-info-crate
+    - std
 - name: primitives-auth-ticket 0.1.0
   features:
     - default
@@ -2229,8 +2271,6 @@
 - name: primitives-liveness-data 0.1.0
   features: []
 - name: proc-macro-crate 1.1.3
-  features: []
-- name: proc-macro-crate 2.0.0
   features: []
 - name: proc-macro-crate 3.1.0
   features: []
@@ -2484,7 +2524,14 @@
     - derive
     - rlp-derive
     - std
+- name: rlp 0.6.1
+  features:
+    - derive
+    - rlp-derive
+    - std
 - name: rlp-derive 0.1.0
+  features: []
+- name: rlp-derive 0.2.0
   features: []
 - name: robonode-client 0.1.0
   features: []
@@ -3410,9 +3457,6 @@
   features:
     - default
     - serde
-- name: toml_edit 0.20.2
-  features:
-    - default
 - name: toml_edit 0.21.1
   features:
     - default
@@ -3549,6 +3593,9 @@
 - name: typenum 1.17.0
   features: []
 - name: ucd-trie 0.1.6
+  features:
+    - std
+- name: uint 0.10.0
   features:
     - std
 - name: uint 0.9.5
