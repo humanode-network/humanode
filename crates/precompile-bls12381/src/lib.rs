@@ -140,14 +140,14 @@ fn read_fq2(input: &[u8], offset: usize) -> Result<Fq2, PrecompileFailure> {
 
 /// A helper function to map `Fq` to `G1Affine`.
 fn map_to_curve_g1(fq: Fq) -> Result<G1Affine, HashToCurveError> {
-    let m2c = WBMap::<G1Config>::new()?;
-    m2c.map_to_curve(fq)
+    WBMap::<G1Config>::check_parameters()?;
+    WBMap::<G1Config>::map_to_curve(fq)
 }
 
 /// A helper function to map `Fq` to `G2Affine`.
 fn map_to_curve_g2(fq2: Fq2) -> Result<G2Affine, HashToCurveError> {
-    let m2c = WBMap::<G2Config>::new()?;
-    m2c.map_to_curve(fq2)
+    WBMap::<G2Config>::check_parameters()?;
+    WBMap::<G2Config>::map_to_curve(fq2)
 }
 
 /// Decode G1 given encoded (x, y) coordinates in 128 bytes returns a valid G1 Point.
