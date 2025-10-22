@@ -72,47 +72,25 @@
     - curve
     - scalar_field
     - std
-- name: ark-ec 0.4.2
-  features:
-    - std
 - name: ark-ec 0.5.0
-  features:
-    - std
-- name: ark-ff 0.4.2
   features:
     - std
 - name: ark-ff 0.5.0
   features:
     - std
-- name: ark-ff-asm 0.4.2
-  features: []
 - name: ark-ff-asm 0.5.0
-  features: []
-- name: ark-ff-macros 0.4.2
   features: []
 - name: ark-ff-macros 0.5.0
   features: []
-- name: ark-poly 0.4.2
-  features: []
 - name: ark-poly 0.5.0
   features: []
-- name: ark-serialize 0.4.2
-  features:
-    - ark-serialize-derive
-    - derive
-    - std
 - name: ark-serialize 0.5.0
   features:
     - ark-serialize-derive
     - derive
     - std
-- name: ark-serialize-derive 0.4.2
-  features: []
 - name: ark-serialize-derive 0.5.0
   features: []
-- name: ark-std 0.4.0
-  features:
-    - std
 - name: ark-std 0.5.0
   features:
     - std
@@ -605,9 +583,6 @@
     - alloc
     - powerfmt
     - std
-- name: derivative 2.2.0
-  features:
-    - use_core
 - name: derive-syn-parse 0.1.5
   features: []
 - name: derive_more 1.0.0
