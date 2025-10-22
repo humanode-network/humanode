@@ -7,7 +7,7 @@ import multiplyBy7 from "../../lib/abis/evmTracing/multiplyBy7";
 import { encodeFunctionData } from "viem";
 import { customRpcRequest } from "../../lib/rpcUtils";
 
-describe("test debug trace transaction logic related to call tracer", () => {
+describe("`debug_traceTransaction` tests to verify subcalls logic", () => {
   let node: RunNodeState;
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;

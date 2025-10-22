@@ -7,7 +7,7 @@ import caller from "../../lib/abis/evmTracing/caller";
 import { encodeFunctionData } from "viem";
 import { customRpcRequest } from "../../lib/rpcUtils";
 
-describe("test debug trace block by number or hash logic", () => {
+describe("`debug_traceBlockByNumber` and `debug_traceBlockByHash` tests to verify general logic", () => {
   let node: RunNodeState;
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;

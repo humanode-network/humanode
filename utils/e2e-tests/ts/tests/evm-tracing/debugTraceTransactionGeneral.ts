@@ -16,7 +16,7 @@ import { customRpcRequest } from "../../lib/rpcUtils";
 const evmToNativeSwapPrecompileAddress =
   "0x0000000000000000000000000000000000000900";
 
-describe("test debug trace transaction logic", () => {
+describe("`debug_traceTransaction` tests to verify general logic", () => {
   let node: RunNodeState;
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;
