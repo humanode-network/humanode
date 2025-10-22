@@ -4,7 +4,7 @@ import * as eth from "../../lib/ethViem";
 import { beforeEachWithCleanup } from "../../lib/lifecycle";
 import heavy from "../../lib/abis/evmTracing/heavy";
 import { customRpcRequest } from "../../lib/rpcUtils";
-import { encodeFunctionData } from "viem";
+import { encodeFunctionData, hexToNumber } from "viem";
 
 describe("`trace_filter` tests to verify some heavy logic in contracts", () => {
   let node: RunNodeState;
@@ -26,7 +26,7 @@ describe("`trace_filter` tests to verify some heavy logic in contracts", () => {
 
   let heavyContracts: {
     address: `0x${string}`;
-    blockNumberHex: string;
+    blockNumberHex: `0x${string}`;
     txHash: `0x${string}`;
   }[] = [];
 
@@ -57,7 +57,9 @@ describe("`trace_filter` tests to verify some heavy logic in contracts", () => {
 
       heavyContracts.push({
         address: deployHeavyContractTxReceipt.contractAddress!,
-        blockNumberHex: deployHeavyContractTxReceipt.blockNumber.toString(16),
+        blockNumberHex: deployHeavyContractTxReceipt.blockNumber.toString(
+          16,
+        ) as `0x${string}`,
         txHash: deployHeavyContractTxReceipt.transactionHash,
       });
     }
@@ -87,7 +89,7 @@ describe("`trace_filter` tests to verify some heavy logic in contracts", () => {
     });
 
     expect(response[0]).to.include({
-      blockNumber: 1,
+      blockNumber: hexToNumber(heavyContracts[0]!.blockNumberHex),
       subtraces: 0,
       transactionHash: heavyContracts[0]!.txHash,
       transactionPosition: 0,
@@ -118,7 +120,9 @@ describe("`trace_filter` tests to verify some heavy logic in contracts", () => {
     expect(response[0].action.init).to.be.a("string");
     expect(response[0].action.value).to.equal("0x0");
     expect(response[0].blockHash).to.be.a("string");
-    expect(response[0].blockNumber).to.equal(4);
+    expect(response[0].blockNumber).to.equal(
+      hexToNumber(heavyContracts[3]!.blockNumberHex),
+    );
     expect(response[0].result).to.equal(undefined);
     expect(response[0].error).to.equal("Reverted");
     expect(response[0].subtraces).to.equal(0);
