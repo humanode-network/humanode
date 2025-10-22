@@ -6,7 +6,7 @@ import heavy from "../../lib/abis/evmTracing/heavy";
 import { customRpcRequest } from "../../lib/rpcUtils";
 import { encodeFunctionData } from "viem";
 
-describe("test trace filter for heavy contract logic", () => {
+describe("`trace_filter` tests to verify some heavy logic in contracts", () => {
   let node: RunNodeState;
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;

@@ -1,4 +1,4 @@
-// Constants related to used gas in loops can be different on various EVM versions.
+// Constants related to used gas can be different on various EVM versions.
 
 import { beforeEach, describe, expect, it } from "vitest";
 import { RunNodeState, runNode } from "../../lib/node";
@@ -8,7 +8,7 @@ import looper from "../../lib/abis/evmTracing/looper";
 import { customRpcRequest } from "../../lib/rpcUtils";
 import { encodeFunctionData } from "viem";
 
-describe("test trace filter for gas used in loops logic", () => {
+describe("`trace_filter` tests to verify used gas logic", () => {
   let node: RunNodeState;
   let publicClient: eth.PublicClientWebSocket;
   let devClients: eth.DevClientsWebSocket;
@@ -43,7 +43,7 @@ describe("test trace filter for gas used in loops logic", () => {
     looperAddress = deployLooperContractTxReceipt.contractAddress!;
   });
 
-  it("should return 21653 gasUsed for 0 loop", async () => {
+  it("should return 21653 `gasUsed` for 0 loop", async () => {
     const [alice, _] = devClients;
 
     const txHash = await alice.sendTransaction({
@@ -75,7 +75,7 @@ describe("test trace filter for gas used in loops logic", () => {
     expect(response[0].result.gasUsed).to.equal("0x5495");
   });
 
-  it("should return 106265 gasUsed for 100 loops", async () => {
+  it("should return 106265 `gasUsed` for 100 loops", async () => {
     const [alice, _] = devClients;
 
     const txHash = await alice.sendTransaction({
@@ -107,7 +107,7 @@ describe("test trace filter for gas used in loops logic", () => {
     expect(response[0].result.gasUsed).to.equal("0x19f19");
   });
 
-  it("should return 670577 gasUsed for 1000 loops", async () => {
+  it("should return 670577 `gasUsed` for 1000 loops", async () => {
     const [alice, _] = devClients;
 
     const txHash = await alice.sendTransaction({
