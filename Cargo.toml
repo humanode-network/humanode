@@ -9,10 +9,10 @@ ignored = ["codec", "scale-info", "num_enum"]
 # Crates.io deps.
 
 anyhow = { version = "1", default-features = false }
-ark-bls12-381 = { version = "0.4", default-features = false, features = ["curve"] }
-ark-ec = { version = "0.4", default-features = false }
-ark-ff = { version = "0.4", default-features = false }
-ark-std = { version = "0.4", default-features = false }
+ark-bls12-381 = { version = "0.5", default-features = false, features = ["curve"] }
+ark-ec = { version = "0.5", default-features = false }
+ark-ff = { version = "0.5", default-features = false }
+ark-std = { version = "0.5", default-features = false }
 assert_matches = { version = "1.5", default-features = false }
 async-trait = { version = "0.1", default-features = false }
 bip32 = { version = "0.5.3", default-features = false }
