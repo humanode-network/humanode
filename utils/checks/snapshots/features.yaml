@@ -3313,7 +3313,11 @@
   features: []
 - name: thiserror 1.0.69
   features: []
+- name: thiserror 2.0.17
+  features: []
 - name: thiserror-impl 1.0.69
+  features: []
+- name: thiserror-impl 2.0.17
   features: []
 - name: thousands 0.2.0
   features: []
