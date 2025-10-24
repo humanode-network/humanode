@@ -362,7 +362,7 @@
     - clang_6_0
     - libloading
     - runtime
-- name: clap 4.5.47
+- name: clap 4.5.50
   features:
     - color
     - default
@@ -374,7 +374,7 @@
     - string
     - suggestions
     - usage
-- name: clap_builder 4.5.47
+- name: clap_builder 4.5.50
   features:
     - color
     - deprecated
@@ -384,7 +384,7 @@
     - string
     - suggestions
     - usage
-- name: clap_derive 4.5.47
+- name: clap_derive 4.5.49
   features:
     - default
     - deprecated
