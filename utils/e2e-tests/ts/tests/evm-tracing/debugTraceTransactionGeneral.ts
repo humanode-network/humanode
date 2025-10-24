@@ -80,14 +80,13 @@ describe("`debug_traceTransaction` tests to verify general logic", () => {
     );
 
     const logs: any[] = [];
-    for (const log of response.structLogs) {
-      if (logs.length === 1) {
-        logs.push(log);
+    response.structLogs.forEach((item: any, index: number) => {
+      if (item.op === "RETURN") {
+        logs.push(item);
+        logs.push(response.structLogs[index + 1]);
       }
-      if (log.op === "RETURN") {
-        logs.push(log);
-      }
-    }
+    });
+
     expect(logs).to.be.lengthOf(2);
     expect(logs[0].depth).to.be.equal(2);
     expect(logs[1].depth).to.be.equal(1);
