@@ -1148,7 +1148,7 @@
 - name: getrandom 0.2.15
   features:
     - std
-- name: getrandom 0.3.3
+- name: getrandom 0.3.4
   features: []
 - name: ghash 0.5.0
   features: []
@@ -3685,12 +3685,12 @@
   features:
     - default
     - std
-- name: wasi 0.14.2+wasi-0.2.4
-  features: []
 - name: wasi 0.9.0+wasi-snapshot-preview1
   features:
     - default
     - std
+- name: wasip2 1.0.1+wasi-0.2.4
+  features: []
 - name: wasm-bindgen 0.2.91
   features:
     - default
@@ -3996,9 +3996,8 @@
   features: []
 - name: wiremock 0.5.22
   features: []
-- name: wit-bindgen-rt 0.39.0
-  features:
-    - bitflags
+- name: wit-bindgen 0.46.0
+  features: []
 - name: wyz 0.5.1
   features: []
 - name: x25519-dalek 1.1.1
