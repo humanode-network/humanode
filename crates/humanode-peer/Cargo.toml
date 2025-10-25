@@ -74,7 +74,7 @@ sp-panic-handler = { workspace = true }
 sp-runtime = { workspace = true }
 sp-timestamp = { workspace = true }
 thiserror = { workspace = true }
-tiny-bip39 = { workspace = true }
+tiny-bip39 = { workspace = true, features = ["rand"] }
 tokio = { workspace = true, features = ["full"] }
 tracing = { workspace = true }
 try-runtime-cli = { workspace = true, optional = true }

@@ -42,7 +42,7 @@ pub enum FromMnemonicBip44Error {
 pub enum FromPhraseBip44 {
     /// Mnemonic parsing failed.
     #[error("mnemonic: {0}")]
-    Mnemonic(anyhow::Error),
+    Mnemonic(bip39::ErrorKind),
     /// Inner [`KeyData::from_mnemonic_bip44`] call failed.
     #[error(transparent)]
     FromMnemonicBip44(FromMnemonicBip44Error),
