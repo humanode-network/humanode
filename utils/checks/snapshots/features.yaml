@@ -3357,6 +3357,8 @@
     - korean
     - rand
     - spanish
+- name: tiny-bip39 2.0.0
+  features: []
 - name: tiny-keccak 2.0.2
   features:
     - default
