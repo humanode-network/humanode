@@ -1507,7 +1507,6 @@ dependencies = [
 name = "crypto-utils-evm"
 version = "0.1.0"
 dependencies = [
- "anyhow",
  "bip32",
  "hex-literal",
  "libsecp256k1",

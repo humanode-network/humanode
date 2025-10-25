@@ -8,7 +8,6 @@ publish = false
 ignored = ["tiny-bip39"]
 
 [dependencies]
-anyhow = { workspace = true }
 bip32 = { workspace = true, features = ["default"] }
 libsecp256k1 = { workspace = true }
 sha3 = { workspace = true, features = ["default"] }
