@@ -10791,6 +10791,7 @@ checksum = "a30fd743a02bf35236f6faf99adb03089bb77e91c998dac2c2ad76bb424f668c"
 dependencies = [
  "once_cell",
  "pbkdf2 0.12.2",
+ "rand 0.8.5",
  "rustc-hash",
  "sha2 0.10.8",
  "thiserror 1.0.69",
