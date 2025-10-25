@@ -1514,7 +1514,7 @@ dependencies = [
  "sha3 0.10.8",
  "sp-core",
  "thiserror 2.0.17",
- "tiny-bip39",
+ "tiny-bip39 2.0.0",
 ]
 
 [[package]]
@@ -3738,7 +3738,7 @@ dependencies = [
  "sp-runtime",
  "sp-timestamp",
  "thiserror 2.0.17",
- "tiny-bip39",
+ "tiny-bip39 2.0.0",
  "tokio",
  "tracing",
  "try-runtime-cli",
@@ -8134,7 +8134,7 @@ dependencies = [
  "sp-runtime",
  "sp-version",
  "thiserror 1.0.69",
- "tiny-bip39",
+ "tiny-bip39 1.0.1",
  "tokio",
 ]
 
@@ -9759,7 +9759,7 @@ dependencies = [
  "ss58-registry",
  "substrate-bip39",
  "thiserror 1.0.69",
- "tiny-bip39",
+ "tiny-bip39 1.0.1",
  "zeroize",
 ]
 
@@ -10776,6 +10776,22 @@ dependencies = [
  "once_cell",
  "pbkdf2 0.12.2",
  "rand 0.8.5",
+ "rustc-hash",
+ "sha2 0.10.8",
+ "thiserror 1.0.69",
+ "unicode-normalization",
+ "wasm-bindgen",
+ "zeroize",
+]
+
+[[package]]
+name = "tiny-bip39"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a30fd743a02bf35236f6faf99adb03089bb77e91c998dac2c2ad76bb424f668c"
+dependencies = [
+ "once_cell",
+ "pbkdf2 0.12.2",
  "rustc-hash",
  "sha2 0.10.8",
  "thiserror 1.0.69",
