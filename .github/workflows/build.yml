@@ -116,7 +116,7 @@ jobs:
             >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.set-upload-params.outputs.artifact-name }}
           path: ${{ steps.set-upload-params.outputs.executable-path }}
