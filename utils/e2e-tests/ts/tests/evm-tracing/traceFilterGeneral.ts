@@ -58,7 +58,9 @@ describe("`trace_filter` tests to verify general logic", () => {
       ],
     );
 
-    expect(BigInt(response.length)).to.equal(secondBlockNumber);
+    expect(BigInt(response.length)).to.equal(
+      secondBlockNumber - firstBlockNumber + 1n,
+    );
 
     for (const index in response.length) {
       expect(response[index].blockNumber).to.equal(firstBlockNumber + index);
