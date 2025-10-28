@@ -8,8 +8,8 @@ import looper from "../../lib/abis/evmTracing/looper";
 import heavy from "../../lib/abis/evmTracing/heavy";
 import evmSwap from "../../lib/abis/evmSwap";
 import incrementor from "../../lib/abis/evmTracing/incrementor";
-import BS_TRACER from "../../lib/helpers/blockscout_tracer.min.json";
-import BS_TRACER_V2 from "../../lib/helpers/blockscout_tracer_v2.min.json";
+import BS_TRACER from "../../lib/helpers/blockscout/tracer.min.json";
+import BS_TRACER_V2 from "../../lib/helpers/blockscout/tracer_v2.min.json";
 import { encodeFunctionData, hexToNumber } from "viem";
 import { customRpcRequest } from "../../lib/rpcUtils";
 
