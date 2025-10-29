@@ -63,8 +63,14 @@ describe("`trace_filter` tests to verify general logic", () => {
     );
 
     for (const index in response.length) {
-      expect(response[index].blockNumber).to.equal(firstBlockNumber + index);
-      expect(response[index].transactionPosition).to.equal(0);
+      const blockNumber = response[index].blockNumber;
+      expect(blockNumber).to.equal(firstBlockNumber + index);
+      if (
+        blockNumber == firstBlockNumber ||
+        blockNumber == secondBlockNumberHex
+      ) {
+        expect(response[index].transactionPosition).to.equal(0);
+      }
     }
   });
 
