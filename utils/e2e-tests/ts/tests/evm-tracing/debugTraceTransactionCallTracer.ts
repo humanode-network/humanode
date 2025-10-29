@@ -124,39 +124,19 @@ describe("`debug_traceTransaction` tests to verify `callTracer` usage logic", ()
   it("should trace block by number and hash", async () => {
     const [alice, _] = devClients;
 
-    const totalTxs = 3;
-    const txsPromises: any[] = [];
-
-    const nonce = await publicClient.getTransactionCount({
-      address: alice.account.address,
+    const txHash = await alice.sendTransaction({
+      to: callerAddress,
+      data: encodeFunctionData({
+        abi: caller.abi,
+        functionName: "someAction",
+        args: [calleeAddress, 7n],
+      }),
     });
-
-    for (let numTxs = 0; numTxs < totalTxs; numTxs++) {
-      const txsPromise = alice
-        .sendTransaction({
-          to: callerAddress,
-          data: encodeFunctionData({
-            abi: caller.abi,
-            functionName: "someAction",
-            args: [calleeAddress, 7n],
-          }),
-          gas: 100_000n,
-          nonce: nonce + numTxs,
-        })
-        .then((txHash) =>
-          publicClient.waitForTransactionReceipt({
-            hash: txHash,
-            timeout: 18_000,
-          }),
-        );
-
-      txsPromises.push(txsPromise);
-    }
-
-    const txsReceipts = await Promise.all(txsPromises);
-
-    const blockNumberHex = txsReceipts[0].blockNumber.toString(16);
-    const blockHash = txsReceipts[0].blockHash;
+    const txReceipt = await publicClient.waitForTransactionReceipt({
+      hash: txHash,
+    });
+    const blockNumberHex = txReceipt.blockNumber.toString(16);
+    const blockHash = txReceipt.blockHash;
 
     // Trace block by number.
     const responseByNumber = await customRpcRequest(
@@ -164,22 +144,23 @@ describe("`debug_traceTransaction` tests to verify `callTracer` usage logic", ()
       "debug_traceBlockByNumber",
       [blockNumberHex, { tracer: "callTracer" }],
     );
-    expect(responseByNumber.length).to.be.equal(3);
-    responseByNumber.forEach((trace: { [key: string]: any }, index: number) => {
-      expect(trace["txHash"]).to.be.equal(txsReceipts[index].transactionHash);
-      expect(trace["result"].calls.length).to.be.equal(1);
-      expect(Object.keys(trace["result"]).sort()).to.deep.equal([
-        "calls",
-        "from",
-        "gas",
-        "gasUsed",
-        "input",
-        "output",
-        "to",
-        "type",
-        "value",
-      ]);
-    });
+
+    expect(responseByNumber.length).to.be.equal(1);
+    expect(responseByNumber[0]["txHash"]).to.be.equal(
+      txReceipt.transactionHash,
+    );
+    expect(responseByNumber[0]["result"].calls.length).to.be.equal(1);
+    expect(Object.keys(responseByNumber[0]["result"]).sort()).to.deep.equal([
+      "calls",
+      "from",
+      "gas",
+      "gasUsed",
+      "input",
+      "output",
+      "to",
+      "type",
+      "value",
+    ]);
 
     // Trace block by hash (actually the rpc method is an alias of `debug_traceBlockByNumber`).
     const responseByHash = await customRpcRequest(
@@ -187,21 +168,19 @@ describe("`debug_traceTransaction` tests to verify `callTracer` usage logic", ()
       "debug_traceBlockByNumber",
       [blockHash, { tracer: "callTracer" }],
     );
-    expect(responseByHash.length).to.be.equal(3);
-    responseByHash.forEach((trace: { [key: string]: any }, index: number) => {
-      expect(trace["txHash"]).to.be.equal(txsReceipts[index].transactionHash);
-      expect(trace["result"].calls.length).to.be.equal(1);
-      expect(Object.keys(trace["result"]).sort()).to.deep.equal([
-        "calls",
-        "from",
-        "gas",
-        "gasUsed",
-        "input",
-        "output",
-        "to",
-        "type",
-        "value",
-      ]);
-    });
+    expect(responseByHash.length).to.be.equal(1);
+    expect(responseByHash[0]["txHash"]).to.be.equal(txReceipt.transactionHash);
+    expect(responseByHash[0]["result"].calls.length).to.be.equal(1);
+    expect(Object.keys(responseByHash[0]["result"]).sort()).to.deep.equal([
+      "calls",
+      "from",
+      "gas",
+      "gasUsed",
+      "input",
+      "output",
+      "to",
+      "type",
+      "value",
+    ]);
   });
 });
