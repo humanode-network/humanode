@@ -6,6 +6,7 @@ use author_ext_api::AuthorExtApi;
 use author_ext_rpc::{AuthorExt, AuthorExtServer};
 use bioauth_flow_rpc::{signer, Bioauth, BioauthServer, Signer};
 use bioauth_keys::traits::KeyExtractor as KeyExtractorT;
+use evm_tracing_rpc::{debug::core::DebugServer, trace::core::TraceServer};
 use fc_rpc::{
     Eth, EthApiServer, EthBlockDataCacheTask, EthConfig, EthFilter, EthFilterApiServer, EthPubSub,
     EthPubSubApiServer, Net, NetApiServer, TxPoolApiServer, Web3, Web3ApiServer,
@@ -112,6 +113,12 @@ pub struct EvmDeps {
             fc_mapping_sync::EthereumBlockNotification<Block>,
         >,
     >,
+
+    /// Ethereum debug requester.
+    pub eth_debuq_requester: Option<evm_tracing_rpc::debug::DebugRequester>,
+
+    /// Ethereum trace requester.
+    pub eth_trace_requester: Option<(evm_tracing_rpc::trace::cache_requester::CacheRequester, u32)>,
 }
 
 /// RPC subsystem dependencies.
@@ -237,6 +244,8 @@ where
         eth_execute_gas_limit_multiplier,
         eth_forced_parent_hashes,
         eth_pubsub_notification_sinks,
+        eth_debuq_requester,
+        eth_trace_requester,
     } = evm;
 
     let chain_name = chain_spec.name().to_string();
@@ -346,7 +355,7 @@ where
     if let Some(eth_filter_pool) = eth_filter_pool {
         io.merge(
             EthFilter::new(
-                client,
+                Arc::clone(&client),
                 eth_backend,
                 eth_tx_pool.clone(),
                 eth_filter_pool,
@@ -359,6 +368,26 @@ where
     }
 
     io.merge(eth_tx_pool.into_rpc())?;
+
+    if let Some(eth_debug_requester) = eth_debuq_requester {
+        io.merge(
+            evm_tracing_rpc::debug::Debug {
+                requester: eth_debug_requester,
+            }
+            .into_rpc(),
+        )?;
+    }
+
+    if let Some((eth_trace_requester, eth_trace_filter_max_count)) = eth_trace_requester {
+        io.merge(
+            evm_tracing_rpc::trace::Trace::new(
+                client,
+                eth_trace_requester,
+                eth_trace_filter_max_count,
+            )
+            .into_rpc(),
+        )?;
+    }
 
     Ok(io)
 }

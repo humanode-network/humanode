@@ -1,0 +1,31 @@
+[package]
+name = "evm-tracing-events"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+codec = { workspace = true }
+environmental = { workspace = true }
+evm = { workspace = true, features = ["with-codec"] }
+evm-gasometer = { workspace = true }
+evm-runtime = { workspace = true }
+sp-core = { workspace = true }
+sp-runtime-interface = { workspace = true }
+
+[features]
+default = ["std"]
+evm-tracing = [
+  "evm-gasometer/tracing",
+  "evm-runtime/tracing",
+  "evm/tracing",
+]
+std = [
+  "codec/std",
+  "environmental/std",
+  "evm-gasometer/std",
+  "evm-runtime/std",
+  "evm/std",
+  "sp-core/std",
+  "sp-runtime-interface/std",
+]
