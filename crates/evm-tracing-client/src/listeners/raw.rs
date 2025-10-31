@@ -48,7 +48,7 @@ struct Context {
 #[derive(Debug)]
 struct Step {
     /// Current opcode.
-    opcode: Vec<u8>,
+    opcode: evm::Opcode,
     /// Depth of the context.
     depth: usize,
     /// Remaining gas.
@@ -289,7 +289,7 @@ impl Listener {
                             }
                         }
                     }
-                    Err(Capture::Trap(opcode)) if ContextType::from(opcode.clone()).is_some() => {
+                    Err(Capture::Trap(opcode)) if ContextType::from(opcode).is_some() => {
                         self.new_context = true;
                     }
                     _ => (),

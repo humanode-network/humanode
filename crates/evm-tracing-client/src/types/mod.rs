@@ -77,17 +77,13 @@ pub enum ContextType {
 
 impl ContextType {
     /// Obtain context type from opcode.
-    pub fn from(opcode: Vec<u8>) -> Option<Self> {
-        let opcode = match alloc::str::from_utf8(&opcode[..]) {
-            Ok(op) => op.to_uppercase(),
-            _ => return None,
-        };
-        match &opcode[..] {
-            "CREATE" | "CREATE2" => Some(ContextType::Create),
-            "CALL" => Some(ContextType::Call(CallType::Call)),
-            "CALLCODE" => Some(ContextType::Call(CallType::CallCode)),
-            "DELEGATECALL" => Some(ContextType::Call(CallType::DelegateCall)),
-            "STATICCALL" => Some(ContextType::Call(CallType::StaticCall)),
+    pub fn from(opcode: evm::Opcode) -> Option<Self> {
+        match opcode {
+            evm::Opcode::CREATE | evm::Opcode::CREATE2 => Some(ContextType::Create),
+            evm::Opcode::CALL => Some(ContextType::Call(CallType::Call)),
+            evm::Opcode::CALLCODE => Some(ContextType::Call(CallType::CallCode)),
+            evm::Opcode::DELEGATECALL => Some(ContextType::Call(CallType::DelegateCall)),
+            evm::Opcode::STATICCALL => Some(ContextType::Call(CallType::StaticCall)),
             _ => None,
         }
     }
