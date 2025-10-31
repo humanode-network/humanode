@@ -76,6 +76,7 @@ pub struct RawStepLog {
     )]
     pub memory: Option<Vec<H256>>,
     /// Op.
+    #[serde(serialize_with = "opcode_serialize")]
     pub op: evm::Opcode,
     /// Pc.
     #[serde(serialize_with = "u256_serialize")]

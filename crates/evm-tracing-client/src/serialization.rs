@@ -50,13 +50,14 @@ where
 }
 
 /// Serializes opcode.
-pub fn opcode_serialize<S>(opcode: &[u8], serializer: S) -> Result<S::Ok, S::Error>
+pub fn opcode_serialize<S>(opcode: &evm::Opcode, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-    let d = std::str::from_utf8(opcode)
-        .map_err(|_| S::Error::custom("Opcode serialize error."))?
-        .to_uppercase();
+    let d = match crate::utils::is_known_opcode(opcode) {
+        Some(s) => s.to_uppercase(),
+        None => format!("UNKNOWN({})", opcode.0),
+    };
 
     serializer.serialize_str(&d)
 }

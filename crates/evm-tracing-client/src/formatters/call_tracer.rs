@@ -54,10 +54,10 @@ impl super::ResponseFormatter for Formatter {
                                 call_type,
                             } => CallTracerInner::Call {
                                 call_type: match call_type {
-                                    CallType::Call => "CALL".as_bytes().to_vec(),
-                                    CallType::CallCode => "CALLCODE".as_bytes().to_vec(),
-                                    CallType::DelegateCall => "DELEGATECALL".as_bytes().to_vec(),
-                                    CallType::StaticCall => "STATICCALL".as_bytes().to_vec(),
+                                    CallType::Call => evm::Opcode::CALL,
+                                    CallType::CallCode => evm::Opcode::CALLCODE,
+                                    CallType::DelegateCall => evm::Opcode::DELEGATECALL,
+                                    CallType::StaticCall => evm::Opcode::STATICCALL,
                                 },
                                 to,
                                 input,
@@ -85,13 +85,13 @@ impl super::ResponseFormatter for Formatter {
                                     CreateResult::Error { .. } => None,
                                 },
                                 value,
-                                call_type: "CREATE".as_bytes().to_vec(),
+                                call_type: evm::Opcode::CREATE,
                             },
                             BlockscoutCallInner::SelfDestruct { balance, to } => {
                                 CallTracerInner::SelfDestruct {
                                     value: balance,
                                     to,
-                                    call_type: "SELFDESTRUCT".as_bytes().to_vec(),
+                                    call_type: evm::Opcode::SUICIDE,
                                 }
                             }
                         },

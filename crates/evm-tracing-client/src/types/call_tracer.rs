@@ -36,7 +36,7 @@ pub enum CallTracerInner {
     Call {
         /// Call type.
         #[serde(rename = "type", serialize_with = "opcode_serialize")]
-        call_type: Vec<u8>,
+        call_type: evm::Opcode,
         /// To.
         to: H160,
         /// Input.
@@ -53,7 +53,7 @@ pub enum CallTracerInner {
     Create {
         /// Call type.
         #[serde(rename = "type", serialize_with = "opcode_serialize")]
-        call_type: Vec<u8>,
+        call_type: evm::Opcode,
         /// Input.
         #[serde(serialize_with = "bytes_0x_serialize")]
         input: Vec<u8>,
@@ -79,7 +79,7 @@ pub enum CallTracerInner {
     SelfDestruct {
         /// Call type.
         #[serde(rename = "type", serialize_with = "opcode_serialize")]
-        call_type: Vec<u8>,
+        call_type: evm::Opcode,
         /// To.
         to: H160,
         /// Value.
