@@ -8,7 +8,7 @@ publish = false
 evm-tracing-events = { path = "../evm-tracing-events" }
 
 codec = { workspace = true }
-evm = { workspace = true, features = ["with-codec", "with-serde"] }
+evm = { workspace = true }
 frame-support = { workspace = true, features = ["std"] }
 hex = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
