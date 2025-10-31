@@ -757,7 +757,7 @@ mod tests {
         match event_type {
             TestRuntimeEvent::Step => RuntimeEvent::Step {
                 context: test_context(),
-                opcode: Vec::new(),
+                opcode: evm::Opcode::STOP,
                 position: Ok(0u64),
                 stack: test_stack(),
                 memory: test_memory(),
