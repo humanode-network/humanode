@@ -1,0 +1,49 @@
+// pragma solidity >=0.8.3;
+//
+// contract TraceCaller {
+//     TraceCallee internal callee;
+//     uint256 public store;
+//
+//     function someAction(address addr, uint256 number) public {
+//         callee = TraceCallee(addr);
+//         store = callee.addSeven(number);
+//     }
+// }
+
+export default {
+  abi: [
+    {
+      inputs: [
+        {
+          internalType: "address",
+          name: "addr",
+          type: "address",
+        },
+        {
+          internalType: "uint256",
+          name: "number",
+          type: "uint256",
+        },
+      ],
+      name: "someAction",
+      outputs: [],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "store",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+  ],
+  bytecode:
+    "0x6080604052348015600e575f5ffd5b506102c68061001c5f395ff3fe608060405234801561000f575f5ffd5b5060043610610034575f3560e01c8063398f722314610038578063975057e714610054575b5f5ffd5b610052600480360381019061004d91906101eb565b610072565b005b61005c610154565b6040516100699190610238565b60405180910390f35b815f5f6101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505f5f9054906101000a900473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff16631ba64846826040518263ffffffff1660e01b815260040161010a9190610238565b6020604051808303815f875af1158015610126573d5f5f3e3d5ffd5b505050506040513d601f19601f8201168201806040525081019061014a9190610265565b6001819055505050565b60015481565b5f5ffd5b5f73ffffffffffffffffffffffffffffffffffffffff82169050919050565b5f6101878261015e565b9050919050565b6101978161017d565b81146101a1575f5ffd5b50565b5f813590506101b28161018e565b92915050565b5f819050919050565b6101ca816101b8565b81146101d4575f5ffd5b50565b5f813590506101e5816101c1565b92915050565b5f5f604083850312156102015761020061015a565b5b5f61020e858286016101a4565b925050602061021f858286016101d7565b9150509250929050565b610232816101b8565b82525050565b5f60208201905061024b5f830184610229565b92915050565b5f8151905061025f816101c1565b92915050565b5f6020828403121561027a5761027961015a565b5b5f61028784828501610251565b9150509291505056fea264697066735822122063e98df9ee71802baca2f482bdaadad21254526b1716f2dea23f395c7d9c055e64736f6c634300081e0033",
+} as const;
