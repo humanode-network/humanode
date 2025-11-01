@@ -35,6 +35,7 @@ frame_support::construct_runtime!(
         System: frame_system,
         Bootnodes: pallet_bootnodes,
         Bioauth: pallet_bioauth,
+        FixedValidatorsSet: pallet_fixed_validators_set,
         Session: pallet_session,
         Historical: pallet_session_historical,
         HumanodeSession: pallet_humanode_session,
@@ -72,6 +73,13 @@ impl system::Config for Test {
 impl pallet_bootnodes::Config for Test {
     type BootnodeId = AccountId;
     type MaxBootnodes = ConstU32<3>;
+}
+
+impl pallet_fixed_validators_set::Config for Test {
+    type RuntimeEvent = RuntimeEvent;
+    type ValidatorId = AccountId;
+    type MaxValidators = <Self as pallet_bioauth::Config>::MaxAuthentications;
+    type WeightInfo = ();
 }
 
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
@@ -208,8 +216,11 @@ impl pallet_session::historical::Config for Test {
 impl pallet_humanode_session::Config for Test {
     type ValidatorPublicKeyOf = ();
     type BootnodeIdOf = sp_runtime::traits::Identity;
+    type FixedValidatorsSetIdOf = sp_runtime::traits::Identity;
     type MaxBootnodeValidators = <Test as pallet_bootnodes::Config>::MaxBootnodes;
     type MaxBioauthValidators = <Test as pallet_bioauth::Config>::MaxAuthentications;
+    type MaxFixedValidatorsSetValidators =
+        <Test as pallet_fixed_validators_set::Config>::MaxValidators;
     type MaxBannedAccounts = <Test as pallet_bioauth::Config>::MaxAuthentications;
     type WeightInfo = ();
 }
