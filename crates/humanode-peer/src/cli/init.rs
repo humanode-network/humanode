@@ -38,12 +38,12 @@ const RECOMMENDED_OPEN_FILE_DESCRIPTOR_LIMIT: u64 = 10_000;
 /// We require a substantial amount of fds for the networking, so raise it, and report if the raised
 /// limit is still way too low.
 pub fn raise_fd_limit() {
-    if let Some(new_limit) = fdlimit::raise_fd_limit() {
-        if new_limit < RECOMMENDED_OPEN_FILE_DESCRIPTOR_LIMIT {
+    if let Ok(fdlimit::Outcome::LimitRaised { from: _, to }) = fdlimit::raise_fd_limit() {
+        if to < RECOMMENDED_OPEN_FILE_DESCRIPTOR_LIMIT {
             tracing::warn!(
                 "Low open file descriptor limit configured for the process. \
                 Current value: {:?}, recommended value: {:?}.",
-                new_limit,
+                to,
                 RECOMMENDED_OPEN_FILE_DESCRIPTOR_LIMIT,
             );
         }
