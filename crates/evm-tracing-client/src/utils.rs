@@ -2,7 +2,7 @@
 
 /// Check whether it's a known opcode or not. In case it's a known one,
 /// return the name of the opcode then.
-pub fn is_known_opcode(opcode: &evm::Opcode) -> Option<&'static str> {
+pub fn opcode_known_name(opcode: &evm::Opcode) -> Option<&'static str> {
     Some(match opcode.0 {
         0 => "Stop",
         1 => "Add",

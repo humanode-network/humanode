@@ -54,7 +54,7 @@ pub fn opcode_serialize<S>(opcode: &evm::Opcode, serializer: S) -> Result<S::Ok,
 where
     S: Serializer,
 {
-    let d = match crate::utils::is_known_opcode(opcode) {
+    let d = match crate::utils::opcode_known_name(opcode) {
         Some(s) => s.to_uppercase(),
         None => format!("UNKNOWN({})", opcode.0),
     };
