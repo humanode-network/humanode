@@ -3,7 +3,7 @@
 /// Check whether it's a known opcode or not. In case it's a known one,
 /// return the name of the opcode then.
 pub fn opcode_known_name(opcode: &evm::Opcode) -> Option<&'static str> {
-    Some(match opcode.0 {
+    Some(match opcode.as_u8() {
         0 => "Stop",
         1 => "Add",
         2 => "Mul",
