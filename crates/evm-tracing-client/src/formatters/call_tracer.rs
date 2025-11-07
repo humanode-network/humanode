@@ -1,5 +1,6 @@
 //! Call tracer formatter implementation.
 
+use evm_tracing_events::MarshalledOpcode;
 use sp_core::sp_std::cmp::Ordering;
 
 use crate::{
@@ -54,10 +55,12 @@ impl super::ResponseFormatter for Formatter {
                                 call_type,
                             } => CallTracerInner::Call {
                                 call_type: match call_type {
-                                    CallType::Call => evm::Opcode::CALL,
-                                    CallType::CallCode => evm::Opcode::CALLCODE,
-                                    CallType::DelegateCall => evm::Opcode::DELEGATECALL,
-                                    CallType::StaticCall => evm::Opcode::STATICCALL,
+                                    CallType::Call => MarshalledOpcode::call_opcode(),
+                                    CallType::CallCode => MarshalledOpcode::callcode_opcode(),
+                                    CallType::DelegateCall => {
+                                        MarshalledOpcode::delegatecall_opcode()
+                                    }
+                                    CallType::StaticCall => MarshalledOpcode::staticcall_opcode(),
                                 },
                                 to,
                                 input,
@@ -85,13 +88,13 @@ impl super::ResponseFormatter for Formatter {
                                     CreateResult::Error { .. } => None,
                                 },
                                 value,
-                                call_type: evm::Opcode::CREATE,
+                                call_type: MarshalledOpcode::create_opcode(),
                             },
                             BlockscoutCallInner::SelfDestruct { balance, to } => {
                                 CallTracerInner::SelfDestruct {
                                     value: balance,
                                     to,
-                                    call_type: evm::Opcode::SUICIDE,
+                                    call_type: MarshalledOpcode::selfdestruct_opcode(),
                                 }
                             }
                         },

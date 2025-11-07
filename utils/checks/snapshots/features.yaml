@@ -2883,7 +2883,7 @@
   features:
     - default
     - std
-- name: smallvec 1.13.1
+- name: smallvec 1.15.1
   features:
     - const_generics
     - const_new

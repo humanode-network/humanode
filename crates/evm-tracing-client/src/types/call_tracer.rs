@@ -1,6 +1,7 @@
 //! Call tracer explicitly types.
 
 use codec::{Decode, Encode};
+use evm_tracing_events::MarshalledOpcode;
 use serde::Serialize;
 use sp_core::{H160, U256};
 
@@ -36,7 +37,7 @@ pub enum CallTracerInner {
     Call {
         /// Call type.
         #[serde(rename = "type", serialize_with = "opcode_serialize")]
-        call_type: evm::Opcode,
+        call_type: MarshalledOpcode,
         /// To.
         to: H160,
         /// Input.
@@ -53,7 +54,7 @@ pub enum CallTracerInner {
     Create {
         /// Call type.
         #[serde(rename = "type", serialize_with = "opcode_serialize")]
-        call_type: evm::Opcode,
+        call_type: MarshalledOpcode,
         /// Input.
         #[serde(serialize_with = "bytes_0x_serialize")]
         input: Vec<u8>,
@@ -79,7 +80,7 @@ pub enum CallTracerInner {
     SelfDestruct {
         /// Call type.
         #[serde(rename = "type", serialize_with = "opcode_serialize")]
-        call_type: evm::Opcode,
+        call_type: MarshalledOpcode,
         /// To.
         to: H160,
         /// Value.

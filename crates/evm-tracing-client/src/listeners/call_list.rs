@@ -634,7 +634,7 @@ mod tests {
         evm::CreateScheme,
         gasometer::Snapshot,
         runtime::{Memory, Stack},
-        Context as EvmContext,
+        Context as EvmContext, MarshalledOpcode,
     };
     use sp_core::H256;
 
@@ -757,7 +757,7 @@ mod tests {
         match event_type {
             TestRuntimeEvent::Step => RuntimeEvent::Step {
                 context: test_context(),
-                opcode: evm::Opcode::STOP,
+                opcode: MarshalledOpcode::default(),
                 position: Ok(0u64),
                 stack: test_stack(),
                 memory: test_memory(),

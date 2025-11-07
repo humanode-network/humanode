@@ -1,5 +1,6 @@
 //! Serialization functions for various types and formats.
 
+use evm_tracing_events::MarshalledOpcode;
 use serde::{
     ser::{Error, SerializeSeq},
     Serializer,
@@ -50,16 +51,11 @@ where
 }
 
 /// Serializes opcode.
-pub fn opcode_serialize<S>(opcode: &evm::Opcode, serializer: S) -> Result<S::Ok, S::Error>
+pub fn opcode_serialize<S>(opcode: &MarshalledOpcode, serializer: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
-    let d = match crate::utils::opcode_known_name(opcode) {
-        Some(s) => s.to_uppercase(),
-        None => format!("UNKNOWN({})", opcode.0),
-    };
-
-    serializer.serialize_str(&d)
+    serializer.serialize_str(&opcode.to_string())
 }
 
 /// Serializes string.

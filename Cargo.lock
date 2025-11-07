@@ -2330,7 +2330,6 @@ dependencies = [
 name = "evm-tracing-client"
 version = "0.1.0"
 dependencies = [
- "evm",
  "evm-tracing-events",
  "frame-support",
  "hex",
@@ -2349,6 +2348,7 @@ dependencies = [
  "evm-gasometer",
  "evm-runtime",
  "parity-scale-codec",
+ "smallvec",
  "sp-core",
  "sp-runtime-interface",
 ]
@@ -9522,9 +9522,9 @@ checksum = "826167069c09b99d56f31e9ae5c99049e932a98c9dc2dac47645b08dbbf76ba7"
 
 [[package]]
 name = "smallvec"
-version = "1.13.1"
+version = "1.15.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e6ecd384b10a64542d77071bd64bd7b231f4ed5940fba55e98c3de13824cf3d7"
+checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 
 [[package]]
 name = "snap"

@@ -1,6 +1,7 @@
 //! Single transaction related types.
 
 use codec::{Decode, Encode};
+use evm_tracing_events::MarshalledOpcode;
 use serde::Serialize;
 use sp_core::{sp_std::collections::btree_map::BTreeMap, H256, U256};
 
@@ -77,7 +78,7 @@ pub struct RawStepLog {
     pub memory: Option<Vec<H256>>,
     /// Op.
     #[serde(serialize_with = "opcode_serialize")]
-    pub op: evm::Opcode,
+    pub op: MarshalledOpcode,
     /// Pc.
     #[serde(serialize_with = "u256_serialize")]
     pub pc: U256,

@@ -6,9 +6,9 @@ use codec::{Decode, Encode};
 pub use evm::{ExitError, ExitReason, ExitSucceed};
 use sp_core::{sp_std::vec::Vec, H160, H256, U256};
 
-use crate::Context;
 #[cfg(feature = "evm-tracing")]
 use crate::StepEventFilter;
+use crate::{Context, MarshalledOpcode};
 
 /// EVM stack.
 #[derive(Clone, Debug, Encode, Decode, PartialEq, Eq)]
@@ -60,7 +60,7 @@ pub enum Capture<E, T> {
 }
 
 /// A type alias representing trap data. Should hold the marshalled `Opcode`.
-pub type Trap = evm::Opcode;
+pub type Trap = MarshalledOpcode;
 
 /// EVM runtime event.
 #[derive(Debug, Clone, Encode, Decode, PartialEq, Eq)]
@@ -69,8 +69,8 @@ pub enum RuntimeEvent {
     Step {
         /// Context.
         context: Context,
-        /// Opcode.
-        opcode: evm::Opcode,
+        /// Opcode. Needs to be marshalled in the runtime no matter what.
+        opcode: MarshalledOpcode,
         /// Position.
         position: Result<u64, ExitReason>,
         /// Stack.
@@ -119,7 +119,7 @@ impl RuntimeEvent {
                 memory,
             } => Self::Step {
                 context: context.clone().into(),
-                opcode,
+                opcode: opcode.into(),
                 position: match position {
                     Ok(position) => Ok(*position as u64),
                     Err(e) => Err(e.clone()),
@@ -143,7 +143,7 @@ impl RuntimeEvent {
                     Ok(_) => Ok(()),
                     Err(capture) => match capture {
                         evm::Capture::Exit(e) => Err(Capture::Exit(e.clone())),
-                        evm::Capture::Trap(t) => Err(Capture::Trap(*t)),
+                        evm::Capture::Trap(t) => Err(Capture::Trap((*t).into())),
                     },
                 },
                 return_value: return_value.to_vec(),
