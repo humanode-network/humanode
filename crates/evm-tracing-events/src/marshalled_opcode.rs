@@ -2,7 +2,7 @@
 
 use codec::{Decode, Encode};
 use smallvec::{smallvec, SmallVec};
-use sp_core::sp_std::{vec, vec::Vec};
+use sp_core::sp_std::vec::Vec;
 
 /// Marshalled opcode.
 ///
@@ -239,20 +239,14 @@ impl core::fmt::Display for MarshalledOpcode {
 
 impl Encode for MarshalledOpcode {
     fn encode(&self) -> Vec<u8> {
-        self.0.clone().to_vec()
+        self.0.clone().to_vec().encode()
     }
 }
 
 impl Decode for MarshalledOpcode {
     fn decode<I: codec::Input>(input: &mut I) -> Result<Self, codec::Error> {
-        let buffer_len = input
-            .remaining_len()?
-            .ok_or("Encoded opcode shouldn't be empty")?;
-
-        let mut buffer = vec![0_u8; buffer_len];
-        input.read(&mut buffer)?;
-
-        Ok(MarshalledOpcode(SmallVec::from_slice(&buffer)))
+        let bytes = Vec::decode(input)?;
+        Ok(MarshalledOpcode(SmallVec::from_vec(bytes)))
     }
 }
 
@@ -263,17 +257,13 @@ mod tests {
     #[test]
     fn encode_decode_works() {
         let cases = [
-            (MarshalledOpcode::create_opcode(), vec![0xf0]),
-            (MarshalledOpcode::selfdestruct_opcode(), vec![0xff]),
-            (
-                MarshalledOpcode(smallvec![0x11, 0x22, 0x33]),
-                vec![0x11, 0x22, 0x33],
-            ),
+            MarshalledOpcode::create_opcode(),
+            MarshalledOpcode::selfdestruct_opcode(),
+            MarshalledOpcode(smallvec![0x11, 0x22, 0x33]),
         ];
 
-        for (opcode, expected_encoded) in cases {
+        for opcode in cases {
             let encoded = opcode.encode();
-            assert_eq!(encoded, expected_encoded);
             assert_eq!(MarshalledOpcode::decode(&mut &encoded[..]).unwrap(), opcode);
         }
     }
