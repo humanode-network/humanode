@@ -79,18 +79,14 @@ pub enum ContextType {
 impl ContextType {
     /// Obtain context type from opcode.
     pub fn from(opcode: MarshalledOpcode) -> Option<Self> {
-        if let Some(opcode_known_name) = opcode.known_name() {
-            return match &opcode_known_name.to_uppercase()[..] {
-                "CREATE" | "CREATE2" => Some(ContextType::Create),
-                "CALL" => Some(ContextType::Call(CallType::Call)),
-                "CALLCODE" => Some(ContextType::Call(CallType::CallCode)),
-                "DELEGATECALL" => Some(ContextType::Call(CallType::DelegateCall)),
-                "STATICCALL" => Some(ContextType::Call(CallType::StaticCall)),
-                _ => None,
-            };
+        match &opcode.to_string()[..] {
+            "CREATE" | "CREATE2" => Some(ContextType::Create),
+            "CALL" => Some(ContextType::Call(CallType::Call)),
+            "CALLCODE" => Some(ContextType::Call(CallType::CallCode)),
+            "DELEGATECALL" => Some(ContextType::Call(CallType::DelegateCall)),
+            "STATICCALL" => Some(ContextType::Call(CallType::StaticCall)),
+            _ => None,
         }
-
-        None
     }
 }
 

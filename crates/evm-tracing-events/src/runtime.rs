@@ -1,7 +1,5 @@
 //! EVM runtime events definitions.
 
-extern crate alloc;
-
 use codec::{Decode, Encode};
 pub use evm::{ExitError, ExitReason, ExitSucceed};
 use sp_core::{sp_std::vec::Vec, H160, H256, U256};
@@ -119,7 +117,7 @@ impl RuntimeEvent {
                 memory,
             } => Self::Step {
                 context: context.clone().into(),
-                opcode: opcode.into(),
+                opcode: (&opcode).into(),
                 position: match position {
                     Ok(position) => Ok(*position as u64),
                     Err(e) => Err(e.clone()),
@@ -143,7 +141,7 @@ impl RuntimeEvent {
                     Ok(_) => Ok(()),
                     Err(capture) => match capture {
                         evm::Capture::Exit(e) => Err(Capture::Exit(e.clone())),
-                        evm::Capture::Trap(t) => Err(Capture::Trap((*t).into())),
+                        evm::Capture::Trap(t) => Err(Capture::Trap(t.into())),
                     },
                 },
                 return_value: return_value.to_vec(),

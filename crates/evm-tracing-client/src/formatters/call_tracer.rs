@@ -55,12 +55,12 @@ impl super::ResponseFormatter for Formatter {
                                 call_type,
                             } => CallTracerInner::Call {
                                 call_type: match call_type {
-                                    CallType::Call => MarshalledOpcode::call_opcode(),
-                                    CallType::CallCode => MarshalledOpcode::callcode_opcode(),
+                                    CallType::Call => MarshalledOpcode::from("CALL"),
+                                    CallType::CallCode => MarshalledOpcode::from("CALLCODE"),
                                     CallType::DelegateCall => {
-                                        MarshalledOpcode::delegatecall_opcode()
+                                        MarshalledOpcode::from("DELEGATECALL")
                                     }
-                                    CallType::StaticCall => MarshalledOpcode::staticcall_opcode(),
+                                    CallType::StaticCall => MarshalledOpcode::from("STATICCALL"),
                                 },
                                 to,
                                 input,
@@ -88,13 +88,13 @@ impl super::ResponseFormatter for Formatter {
                                     CreateResult::Error { .. } => None,
                                 },
                                 value,
-                                call_type: MarshalledOpcode::create_opcode(),
+                                call_type: MarshalledOpcode::from("CREATE"),
                             },
                             BlockscoutCallInner::SelfDestruct { balance, to } => {
                                 CallTracerInner::SelfDestruct {
                                     value: balance,
                                     to,
-                                    call_type: MarshalledOpcode::selfdestruct_opcode(),
+                                    call_type: MarshalledOpcode::from("SELFDESTRUCT"),
                                 }
                             }
                         },
