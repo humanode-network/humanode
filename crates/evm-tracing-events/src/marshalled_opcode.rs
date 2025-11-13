@@ -43,7 +43,7 @@ impl core::fmt::Display for MarshalledOpcode {
         write!(
             f,
             "{}",
-            sp_core::sp_std::str::from_utf8(self.0.as_slice()).expect("valid operation; qed")
+            sp_core::sp_std::str::from_utf8(self.0.as_slice()).map_err(|_| core::fmt::Error)?
         )
     }
 }
