@@ -1,5 +1,6 @@
 //! Call tracer formatter implementation.
 
+use evm_tracing_events::MarshalledOpcode;
 use sp_core::sp_std::cmp::Ordering;
 
 use crate::{
@@ -54,10 +55,12 @@ impl super::ResponseFormatter for Formatter {
                                 call_type,
                             } => CallTracerInner::Call {
                                 call_type: match call_type {
-                                    CallType::Call => "CALL".as_bytes().to_vec(),
-                                    CallType::CallCode => "CALLCODE".as_bytes().to_vec(),
-                                    CallType::DelegateCall => "DELEGATECALL".as_bytes().to_vec(),
-                                    CallType::StaticCall => "STATICCALL".as_bytes().to_vec(),
+                                    CallType::Call => MarshalledOpcode::from("CALL"),
+                                    CallType::CallCode => MarshalledOpcode::from("CALLCODE"),
+                                    CallType::DelegateCall => {
+                                        MarshalledOpcode::from("DELEGATECALL")
+                                    }
+                                    CallType::StaticCall => MarshalledOpcode::from("STATICCALL"),
                                 },
                                 to,
                                 input,
@@ -85,13 +88,13 @@ impl super::ResponseFormatter for Formatter {
                                     CreateResult::Error { .. } => None,
                                 },
                                 value,
-                                call_type: "CREATE".as_bytes().to_vec(),
+                                call_type: MarshalledOpcode::from("CREATE"),
                             },
                             BlockscoutCallInner::SelfDestruct { balance, to } => {
                                 CallTracerInner::SelfDestruct {
                                     value: balance,
                                     to,
-                                    call_type: "SELFDESTRUCT".as_bytes().to_vec(),
+                                    call_type: MarshalledOpcode::from("SELFDESTRUCT"),
                                 }
                             }
                         },

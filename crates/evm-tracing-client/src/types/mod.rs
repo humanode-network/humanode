@@ -3,6 +3,7 @@
 extern crate alloc;
 
 use codec::{Decode, Encode};
+use evm_tracing_events::MarshalledOpcode;
 use serde::Serialize;
 use sp_core::{H160, H256};
 
@@ -77,12 +78,8 @@ pub enum ContextType {
 
 impl ContextType {
     /// Obtain context type from opcode.
-    pub fn from(opcode: Vec<u8>) -> Option<Self> {
-        let opcode = match alloc::str::from_utf8(&opcode[..]) {
-            Ok(op) => op.to_uppercase(),
-            _ => return None,
-        };
-        match &opcode[..] {
+    pub fn from(opcode: MarshalledOpcode) -> Option<Self> {
+        match &opcode.to_string()[..] {
             "CREATE" | "CREATE2" => Some(ContextType::Create),
             "CALL" => Some(ContextType::Call(CallType::Call)),
             "CALLCODE" => Some(ContextType::Call(CallType::CallCode)),

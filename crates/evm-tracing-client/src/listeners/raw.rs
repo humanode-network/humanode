@@ -2,7 +2,7 @@
 
 use evm_tracing_events::{
     runtime::Capture, runtime::ExitReason, Event, GasometerEvent, Listener as ListenerT,
-    RuntimeEvent, StepEventFilter,
+    MarshalledOpcode, RuntimeEvent, StepEventFilter,
 };
 use sp_core::{sp_std::collections::btree_map::BTreeMap, H160, H256};
 
@@ -48,7 +48,7 @@ struct Context {
 #[derive(Debug)]
 struct Step {
     /// Current opcode.
-    opcode: Vec<u8>,
+    opcode: MarshalledOpcode,
     /// Depth of the context.
     depth: usize,
     /// Remaining gas.

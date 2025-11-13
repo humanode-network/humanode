@@ -1,16 +1,12 @@
 //! EVM runtime events definitions.
 
-extern crate alloc;
-
 use codec::{Decode, Encode};
-#[cfg(feature = "evm-tracing")]
-use evm::Opcode;
 pub use evm::{ExitError, ExitReason, ExitSucceed};
 use sp_core::{sp_std::vec::Vec, H160, H256, U256};
 
-use crate::Context;
 #[cfg(feature = "evm-tracing")]
 use crate::StepEventFilter;
+use crate::{Context, MarshalledOpcode};
 
 /// EVM stack.
 #[derive(Clone, Debug, Encode, Decode, PartialEq, Eq)]
@@ -62,7 +58,7 @@ pub enum Capture<E, T> {
 }
 
 /// A type alias representing trap data. Should hold the marshalled `Opcode`.
-pub type Trap = Vec<u8>;
+pub type Trap = MarshalledOpcode;
 
 /// EVM runtime event.
 #[derive(Debug, Clone, Encode, Decode, PartialEq, Eq)]
@@ -71,8 +67,8 @@ pub enum RuntimeEvent {
     Step {
         /// Context.
         context: Context,
-        /// Opcode.
-        opcode: Vec<u8>,
+        /// Opcode. Needs to be marshalled in the runtime no matter what.
+        opcode: MarshalledOpcode,
         /// Position.
         position: Result<u64, ExitReason>,
         /// Stack.
@@ -121,7 +117,7 @@ impl RuntimeEvent {
                 memory,
             } => Self::Step {
                 context: context.clone().into(),
-                opcode: opcodes_string(opcode),
+                opcode: (&opcode).into(),
                 position: match position {
                     Ok(position) => Ok(*position as u64),
                     Err(e) => Err(e.clone()),
@@ -145,7 +141,7 @@ impl RuntimeEvent {
                     Ok(_) => Ok(()),
                     Err(capture) => match capture {
                         evm::Capture::Exit(e) => Err(Capture::Exit(e.clone())),
-                        evm::Capture::Trap(t) => Err(Capture::Trap(opcodes_string(*t))),
+                        evm::Capture::Trap(t) => Err(Capture::Trap(t.into())),
                     },
                 },
                 return_value: return_value.to_vec(),
@@ -172,19 +168,10 @@ impl RuntimeEvent {
     }
 }
 
-/// Converts an `Opcode` into its name, stored in a `Vec<u8>`.
-#[cfg(feature = "evm-tracing")]
-pub fn opcodes_string(opcode: Opcode) -> Vec<u8> {
-    match opcode_str(opcode) {
-        Some(s) => s.into(),
-        None => alloc::format!("Unknown({})", opcode.0).into(),
-    }
-}
-
-/// Converts an `Opcode` into its name.
-#[cfg(feature = "evm-tracing")]
-pub fn opcode_str(opcode: Opcode) -> Option<&'static str> {
-    Some(match opcode.0 {
+/// Check whether it's a known opcode or not. In case it's a known one,
+/// return the name of the opcode then.
+pub fn opcode_known_name(opcode: &evm::Opcode) -> Option<&'static str> {
+    Some(match opcode.as_u8() {
         0 => "Stop",
         1 => "Add",
         2 => "Mul",

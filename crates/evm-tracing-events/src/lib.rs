@@ -8,9 +8,11 @@ use sp_runtime_interface::pass_by::PassByCodec;
 
 pub mod evm;
 pub mod gasometer;
+mod marshalled_opcode;
 pub mod runtime;
 
 pub use gasometer::GasometerEvent;
+pub use marshalled_opcode::MarshalledOpcode;
 pub use runtime::RuntimeEvent;
 
 pub use self::evm::EvmEvent;
