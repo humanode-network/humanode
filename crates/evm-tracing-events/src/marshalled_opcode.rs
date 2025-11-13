@@ -4,7 +4,7 @@ extern crate alloc;
 
 use codec::{Decode, Encode};
 use smallvec::SmallVec;
-use sp_core::sp_std::vec::Vec;
+use sp_core::sp_std::{borrow::Cow, vec::Vec};
 
 use crate::runtime::opcode_known_name;
 
@@ -34,14 +34,14 @@ impl From<&'static str> for MarshalledOpcode {
 
 impl Encode for MarshalledOpcode {
     fn encode(&self) -> Vec<u8> {
-        self.0.clone().to_vec().encode()
+        Cow::Borrowed(&self.0.as_slice()).encode()
     }
 }
 
 impl Decode for MarshalledOpcode {
     fn decode<I: codec::Input>(input: &mut I) -> Result<Self, codec::Error> {
-        let bytes = Vec::decode(input)?;
-        Ok(MarshalledOpcode(SmallVec::from_vec(bytes)))
+        let bytes = Cow::decode(input)?;
+        Ok(MarshalledOpcode(SmallVec::from_slice(&bytes)))
     }
 }
 
