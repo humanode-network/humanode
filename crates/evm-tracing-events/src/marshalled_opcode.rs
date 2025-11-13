@@ -15,7 +15,12 @@ pub struct MarshalledOpcode(SmallVec<[u8; 8]>);
 
 impl From<&evm::Opcode> for MarshalledOpcode {
     fn from(opcode: &evm::Opcode) -> Self {
-        MarshalledOpcode(SmallVec::from_vec(opcode_to_string(opcode)))
+        let opcode = match opcode_known_name(opcode) {
+            Some(known) => known.to_uppercase(),
+            None => alloc::format!("UNKNOWN({})", opcode.as_u8()),
+        };
+
+        MarshalledOpcode(SmallVec::from_slice(opcode.as_bytes()))
     }
 }
 
@@ -45,14 +50,6 @@ impl core::fmt::Display for MarshalledOpcode {
             "{}",
             sp_core::sp_std::str::from_utf8(self.0.as_slice()).map_err(|_| core::fmt::Error)?
         )
-    }
-}
-
-/// Convert an opcode into a corresponding string representation as a `Vec<u8>`.
-fn opcode_to_string(opcode: &evm::Opcode) -> Vec<u8> {
-    match opcode_known_name(opcode) {
-        Some(known) => known.to_uppercase().into(),
-        None => alloc::format!("UNKNOWN({})", opcode.as_u8()).into(),
     }
 }
 
