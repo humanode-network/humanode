@@ -16,6 +16,7 @@ sp-staking = { workspace = true }
 
 [dev-dependencies]
 pallet-bootnodes = { path = "../pallet-bootnodes" }
+pallet-fixed-validators-set = { path = "../pallet-fixed-validators-set" }
 
 mockall = { workspace = true }
 pallet-session = { workspace = true, features = ["historical"] }
@@ -29,6 +30,7 @@ std = [
   "frame-support/std",
   "frame-system/std",
   "pallet-bioauth/std",
+  "pallet-fixed-validators-set/std",
   "pallet-humanode-session/std",
   "pallet-session/std",
   "scale-info/std",
@@ -41,6 +43,7 @@ try-runtime = [
   "frame-system/try-runtime",
   "pallet-bioauth/try-runtime",
   "pallet-bootnodes/try-runtime",
+  "pallet-fixed-validators-set/try-runtime",
   "pallet-humanode-session/try-runtime",
   "pallet-session/try-runtime",
 ]

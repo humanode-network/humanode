@@ -2,6 +2,8 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 
+extern crate alloc;
+
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_runtime::TryRuntimeError;
 use frame_support::traits::{Get, StorageVersion};
@@ -21,6 +23,9 @@ pub mod benchmarking;
 mod mock;
 #[cfg(test)]
 mod tests;
+mod utils;
+
+use self::utils::DedupeIteratorExt as _;
 
 /// The type representing the session index in our chain.
 type SessionIndex = u32;
@@ -47,6 +52,7 @@ pub mod pallet {
         + pallet_session::Config
         + pallet_bioauth::Config
         + pallet_bootnodes::Config
+        + pallet_fixed_validators_set::Config
     {
         /// The type for converting the key that `pallet_bioauth` uses into the key that session
         /// requires.
@@ -59,11 +65,18 @@ pub mod pallet {
         /// The type for converting the key that bootnodes use into the key that session requires.
         type BootnodeIdOf: Convert<<Self as pallet_bootnodes::Config>::BootnodeId, Self::AccountId>;
 
+        /// The type for converting the key that fixed validators set use into the key that session
+        /// requires.
+        type FixedValidatorsSetIdOf: Convert<<Self as pallet_fixed_validators_set::Config>::ValidatorId, Self::AccountId>;
+
         /// The max amount of bootnodes contributing to the session validators.
         type MaxBootnodeValidators: Get<u32>;
 
         /// The max amount of bioauth-powered session validators.
         type MaxBioauthValidators: Get<u32>;
+
+        /// The max amount of fix validator set validators.
+        type MaxFixedValidatorsSetValidators: Get<u32>;
 
         /// The maximum number of banned accounts.
         type MaxBannedAccounts: Get<u32>;
@@ -194,11 +207,15 @@ pub mod pallet {
     codec::Encode,
     codec::Decode,
 )]
-pub enum Identification<Bootnode, Bioauth> {
+pub enum Identification<Bootnode, Bioauth, FixedValidatorsSet> {
     /// The validator is a bootnode.
     Bootnode(Bootnode),
+
     /// The validator is bioauthenticated.
     Bioauth(Bioauth),
+
+    /// The validator is from a fixed set.
+    FixedValidatorsSet(FixedValidatorsSet),
 }
 
 /// The bioauth authentication type for a given config.
@@ -210,8 +227,12 @@ pub type BioauthAuthenticationFor<T> = pallet_bioauth::Authentication<
 /// The bootnode id type for a given config.
 pub type BootnodeIdFor<T> = <T as pallet_bootnodes::Config>::BootnodeId;
 
+/// The fixed validator set validator id type for a given config.
+pub type FixedValidatorsSetIdFor<T> = <T as pallet_fixed_validators_set::Config>::ValidatorId;
+
 /// The identification type for a given config.
-pub type IdentificationFor<T> = Identification<BootnodeIdFor<T>, BioauthAuthenticationFor<T>>;
+pub type IdentificationFor<T> =
+    Identification<BootnodeIdFor<T>, BioauthAuthenticationFor<T>, FixedValidatorsSetIdFor<T>>;
 
 /// The identification tuple type for a given config.
 pub type IdentificationTupleFor<T> = (<T as frame_system::Config>::AccountId, IdentificationFor<T>);
@@ -241,7 +262,25 @@ impl<T: Config> Pallet<T> {
                     .map(|account_id| (account_id, Identification::Bioauth(authentication)))
             });
 
-        bootnodes.chain(bioauth_active_authentications)
+        let fixed_validators = <pallet_fixed_validators_set::Pallet<T>>::validators()
+            .into_inner()
+            .into_iter()
+            .take(
+                T::MaxFixedValidatorsSetValidators::get()
+                    .try_into()
+                    .unwrap(),
+            )
+            .map(move |id| {
+                (
+                    T::FixedValidatorsSetIdOf::convert(id.clone()),
+                    Identification::FixedValidatorsSet(id),
+                )
+            });
+
+        bootnodes
+            .chain(bioauth_active_authentications)
+            .chain(fixed_validators)
+            .dedupe(AccountIdDedupeKey::<T>::default())
     }
 
     /// Clears and re-populates the [`SessionIdentities`] for a given session with the entries.
@@ -317,5 +356,22 @@ impl<T: Config> sp_runtime::traits::Convert<T::AccountId, Option<IdentificationF
     fn convert(account_id: T::AccountId) -> Option<IdentificationFor<T>> {
         let session_index = <CurrentSessionIndex<T>>::get()?;
         <SessionIdentities<T>>::get(session_index, account_id)
+    }
+}
+
+/// The dedupe key extractor that provides Account Ids from Identification Tuples.
+struct AccountIdDedupeKey<T>(core::marker::PhantomData<T>);
+
+impl<T: Config> utils::DedupeKeyExtractor<IdentificationTupleFor<T>> for AccountIdDedupeKey<T> {
+    type Output = <T as frame_system::Config>::AccountId;
+
+    fn extract_key(&self, value: &IdentificationTupleFor<T>) -> Self::Output {
+        value.0.clone()
+    }
+}
+
+impl<T> Default for AccountIdDedupeKey<T> {
+    fn default() -> Self {
+        Self(core::marker::PhantomData)
     }
 }

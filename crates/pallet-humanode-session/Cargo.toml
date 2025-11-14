@@ -7,6 +7,7 @@ publish = false
 [dependencies]
 pallet-bioauth = { path = "../pallet-bioauth", default-features = false }
 pallet-bootnodes = { path = "../pallet-bootnodes", default-features = false }
+pallet-fixed-validators-set = { path = "../pallet-fixed-validators-set", default-features = false }
 
 codec = { workspace = true, features = ["derive"] }
 frame-benchmarking = { workspace = true, optional = true }
@@ -30,11 +31,13 @@ runtime-benchmarks = [
   "frame-system/runtime-benchmarks",
   "pallet-bioauth/runtime-benchmarks",
   "pallet-bootnodes/runtime-benchmarks",
+  "pallet-fixed-validators-set/runtime-benchmarks",
   "sp-runtime/runtime-benchmarks",
 ]
 std = [
   "pallet-bioauth/std",
   "pallet-bootnodes/std",
+  "pallet-fixed-validators-set/std",
   "codec/std",
   "frame-support/std",
   "frame-system/std",
@@ -50,6 +53,7 @@ try-runtime = [
   "frame-system/try-runtime",
   "pallet-bioauth/try-runtime",
   "pallet-bootnodes/try-runtime",
+  "pallet-fixed-validators-set/try-runtime",
   "pallet-session/try-runtime",
   "sp-runtime/try-runtime",
 ]
