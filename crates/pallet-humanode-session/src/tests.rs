@@ -385,6 +385,10 @@ fn duplicates() {
                 expires_at: 1000,
             }]
         );
+        assert_eq!(
+            pallet_fixed_validators_set::Validators::<Test>::get(),
+            vec![1]
+        );
         assert_eq!(Session::validators(), vec![1]);
         assert_eq!(
             Session::queued_keys(),
@@ -422,6 +426,10 @@ fn duplicates() {
                 public_key: 1,
                 expires_at: 1000,
             }]
+        );
+        assert_eq!(
+            pallet_fixed_validators_set::Validators::<Test>::get(),
+            vec![1]
         );
         assert_eq!(Session::validators(), vec![1]);
         assert_eq!(
