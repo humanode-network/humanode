@@ -15,7 +15,7 @@ mock! {
     pub DummyOnNewAccount {}
 
     impl OnNewAccount<H160> for DummyOnNewAccount {
-        pub fn on_new_account(who: &H160);
+        fn on_new_account(who: &H160);
     }
 }
 
@@ -24,7 +24,7 @@ mock! {
     pub DummyOnKilledAccount {}
 
     impl OnKilledAccount<H160> for DummyOnKilledAccount {
-        pub fn on_killed_account(who: &H160);
+        fn on_killed_account(who: &H160);
     }
 }
 
@@ -74,7 +74,7 @@ mock! {
     pub IsPrecompile {}
 
     impl IsPrecompile<H160> for IsPrecompile {
-        pub fn is_precompile(who: &H160) -> bool;
+        fn is_precompile(who: &H160) -> bool;
     }
 }
 
