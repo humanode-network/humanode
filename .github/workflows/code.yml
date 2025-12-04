@@ -31,7 +31,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Compute matrix
         uses: ./.github/actions/plan
         id: set-matrix
@@ -57,7 +57,7 @@ jobs:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
 
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         timeout-minutes: 5
 
       - uses: ./.github/actions/common-setup
@@ -88,7 +88,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         timeout-minutes: 5
 
       - run: yarn install --immutable
@@ -137,7 +137,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         timeout-minutes: 5
 
       - uses: ./.github/actions/common-setup
@@ -191,7 +191,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         timeout-minutes: 5
 
       - uses: ./.github/actions/common-setup
@@ -214,7 +214,7 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         timeout-minutes: 5
 
       - uses: actions/setup-node@v6
