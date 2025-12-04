@@ -131,7 +131,7 @@ impl Interface for crate::mock::Test {
 impl SchedulingDriver for <crate::mock::Test as super::Config>::SchedulingDriver {
     type Data = (
         std::sync::MutexGuard<'static, ()>,
-        mock::__mock_MockSchedulingDriver_SchedulingDriver::__compute_balance_under_lock::Context,
+        mock::__mock_MockSchedulingDriver_traits__SchedulingDriver::__compute_balance_under_lock::Context,
     );
 
     fn prepare_init() -> Self::Data {
