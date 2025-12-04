@@ -6,6 +6,7 @@ pub mod frame_system;
 pub mod pallet_balances;
 pub mod pallet_bioauth;
 pub mod pallet_evm_accounts_mapping;
+pub mod pallet_fixed_validators_set;
 pub mod pallet_humanode_session;
 pub mod pallet_im_online;
 pub mod pallet_multisig;

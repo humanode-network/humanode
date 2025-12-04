@@ -205,6 +205,15 @@ impl pallet_vesting::benchmarking::SchedulingDriver for vesting::SchedulingDrive
     }
 }
 
+impl pallet_fixed_validators_set::benchmarking::Interface for Runtime {
+    fn provide_validator_id(
+        account_index: u32,
+    ) -> <Self as pallet_fixed_validators_set::Config>::ValidatorId {
+        let account_index_bytes = account_index.to_le_bytes();
+        AccountId::new(keccak_256(&account_index_bytes))
+    }
+}
+
 impl pallet_humanode_session::benchmarking::Interface for Runtime {
     fn provide_account_id(account_index: u32) -> <Self as frame_system::Config>::AccountId {
         let account_index_bytes = account_index.to_le_bytes();

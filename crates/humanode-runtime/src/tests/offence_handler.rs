@@ -15,8 +15,13 @@ const INIT_BALANCE: u128 = 10u128.pow(18 + 6);
 /// Build test externalities from the custom genesis.
 /// Using this call requires manual assertions on the genesis init logic.
 fn new_test_ext_with() -> sp_io::TestExternalities {
-    let authorities = [authority_keys("Alice"), authority_keys("Bioauth-1")];
+    let authorities = [
+        authority_keys("Alice"),
+        authority_keys("Bioauth-1"),
+        authority_keys("FixedValidatorsSet-1"),
+    ];
     let bootnodes = vec![account_id("Alice")];
+    let fixed_validators_set = vec![account_id("FixedValidatorsSet-1")];
 
     let endowed_accounts = [account_id("Alice"), account_id("Bob")];
     let pot_accounts = vec![FeesPot::account_id()];
@@ -78,6 +83,9 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
             .unwrap(),
             ..Default::default()
         },
+        fixed_validators_set: FixedValidatorsSetConfig {
+            validators: fixed_validators_set.try_into().unwrap(),
+        },
         evm: EVMConfig {
             accounts: {
                 let init_genesis_account = fp_evm::GenesisAccount {
@@ -118,12 +126,17 @@ fn works() {
     // Build the state from the config.
     new_test_ext_with().execute_with(move || {
         // Check test preconditions.
+        assert_eq!(Bootnodes::bootnodes(), vec![account_id("Alice")]);
         assert_eq!(
             Bioauth::active_authentications(),
             vec![pallet_bioauth::Authentication {
                 public_key: account_id("Bioauth-1"),
                 expires_at: 1000,
             }]
+        );
+        assert_eq!(
+            FixedValidatorsSet::validators(),
+            vec![account_id("FixedValidatorsSet-1")]
         );
 
         // Report unresponsiveness offence.
@@ -146,6 +159,11 @@ fn works() {
         .unwrap();
 
         // Assert state changes.
+        assert_eq!(Bootnodes::bootnodes(), vec![account_id("Alice")]);
         assert!(Bioauth::active_authentications().is_empty());
+        assert_eq!(
+            FixedValidatorsSet::validators(),
+            vec![account_id("FixedValidatorsSet-1")]
+        );
     })
 }
