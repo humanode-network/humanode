@@ -19,6 +19,7 @@ export default defineConfig({
       },
     },
     testTimeout: 30_000,
+    hookTimeout: 30_000,
   },
   // Path relative to this config file or absolute path.
   // Default value: "./node_modules/.vite/"

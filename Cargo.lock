@@ -2331,6 +2331,96 @@ dependencies = [
 ]
 
 [[package]]
+name = "evm-tracer"
+version = "0.1.0"
+dependencies = [
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
+ "evm-tracing-events",
+ "evm-tracing-host-api",
+ "parity-scale-codec",
+ "sp-std",
+]
+
+[[package]]
+name = "evm-tracing-api"
+version = "0.1.0"
+dependencies = [
+ "ethereum",
+ "sp-api",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
+name = "evm-tracing-client"
+version = "0.1.0"
+dependencies = [
+ "evm-tracing-events",
+ "frame-support",
+ "hex",
+ "parity-scale-codec",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
+name = "evm-tracing-events"
+version = "0.1.0"
+dependencies = [
+ "environmental",
+ "evm",
+ "evm-gasometer",
+ "evm-runtime",
+ "parity-scale-codec",
+ "sp-core",
+ "sp-runtime-interface",
+]
+
+[[package]]
+name = "evm-tracing-host-api"
+version = "0.1.0"
+dependencies = [
+ "evm-tracing-events",
+ "parity-scale-codec",
+ "sp-runtime-interface",
+ "sp-std",
+]
+
+[[package]]
+name = "evm-tracing-rpc"
+version = "0.1.0"
+dependencies = [
+ "ethereum",
+ "evm-tracing-api",
+ "evm-tracing-client",
+ "fc-db",
+ "fc-rpc",
+ "fc-rpc-core",
+ "fc-storage",
+ "fp-rpc",
+ "frame-support",
+ "futures",
+ "hex-literal",
+ "jsonrpsee",
+ "parity-scale-codec",
+ "sc-client-api",
+ "sc-utils",
+ "serde",
+ "sp-api",
+ "sp-block-builder",
+ "sp-blockchain",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "substrate-prometheus-endpoint",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
 name = "exit-future"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3542,6 +3632,9 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "hex-literal"
@@ -3691,6 +3784,8 @@ dependencies = [
  "clap",
  "crypto-utils",
  "crypto-utils-evm",
+ "evm-tracing-host-api",
+ "evm-tracing-rpc",
  "fc-cli",
  "fc-consensus",
  "fc-db",
@@ -3764,6 +3859,7 @@ dependencies = [
  "bioauth-flow-api",
  "bioauth-flow-rpc",
  "bioauth-keys",
+ "evm-tracing-rpc",
  "fc-db",
  "fc-mapping-sync",
  "fc-rpc",
@@ -3815,6 +3911,8 @@ dependencies = [
  "eip712-token-claim",
  "ethereum",
  "evm-nonces-recovery",
+ "evm-tracer",
+ "evm-tracing-api",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",

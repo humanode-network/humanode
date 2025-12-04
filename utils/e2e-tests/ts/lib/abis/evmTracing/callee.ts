@@ -1,0 +1,50 @@
+// pragma solidity >=0.8.3;
+//
+// contract TraceCallee {
+//     uint256 public store;
+//
+//     function addSeven(uint256 value) external returns (uint256 result) {
+//         uint256 x = 7;
+//         store = value;
+//         return value + x;
+//     }
+// }
+
+export default {
+  abi: [
+    {
+      inputs: [
+        {
+          internalType: "uint256",
+          name: "value",
+          type: "uint256",
+        },
+      ],
+      name: "addSeven",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "result",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "nonpayable",
+      type: "function",
+    },
+    {
+      inputs: [],
+      name: "store",
+      outputs: [
+        {
+          internalType: "uint256",
+          name: "",
+          type: "uint256",
+        },
+      ],
+      stateMutability: "view",
+      type: "function",
+    },
+  ],
+  bytecode:
+    "0x6080604052348015600e575f5ffd5b506101cb8061001c5f395ff3fe608060405234801561000f575f5ffd5b5060043610610034575f3560e01c80631ba6484614610038578063975057e714610068575b5f5ffd5b610052600480360381019061004d91906100e2565b610086565b60405161005f919061011c565b60405180910390f35b6100706100a6565b60405161007d919061011c565b60405180910390f35b5f5f60079050825f81905550808361009e9190610162565b915050919050565b5f5481565b5f5ffd5b5f819050919050565b6100c1816100af565b81146100cb575f5ffd5b50565b5f813590506100dc816100b8565b92915050565b5f602082840312156100f7576100f66100ab565b5b5f610104848285016100ce565b91505092915050565b610116816100af565b82525050565b5f60208201905061012f5f83018461010d565b92915050565b7f4e487b71000000000000000000000000000000000000000000000000000000005f52601160045260245ffd5b5f61016c826100af565b9150610177836100af565b925082820190508082111561018f5761018e610135565b5b9291505056fea26469706673582212209aa1341b3eba47419a335ba344ab0e24f3ae67f3e68677260ec0784c164cd05d64736f6c634300081e0033",
+} as const;

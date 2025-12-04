@@ -21,7 +21,7 @@ use sc_service::{
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use tracing::*;
 
-use crate::configuration::Configuration;
+use crate::configuration::{Configuration, EthTracingMode};
 
 pub mod frontier;
 pub mod inherents;
@@ -33,10 +33,13 @@ pub struct ExecutorDispatch;
 impl sc_executor::NativeExecutionDispatch for ExecutorDispatch {
     /// Only enable the benchmarking host functions when we actually want to benchmark.
     #[cfg(feature = "runtime-benchmarks")]
-    type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
+    type ExtendHostFunctions = (
+        frame_benchmarking::benchmarking::HostFunctions,
+        evm_tracing_host_api::externalities::HostFunctions,
+    );
     /// Otherwise we only use the default Substrate host functions.
     #[cfg(not(feature = "runtime-benchmarks"))]
-    type ExtendHostFunctions = ();
+    type ExtendHostFunctions = (evm_tracing_host_api::externalities::HostFunctions,);
 
     fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
         humanode_runtime::api::dispatch(method, data)
@@ -277,6 +280,56 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         Arc::new(fc_mapping_sync::EthereumBlockNotificationSinks::<
             fc_mapping_sync::EthereumBlockNotification<Block>,
         >::default());
+    let eth_permit_pool = Arc::new(tokio::sync::Semaphore::new(
+        ethereum_rpc_config.tracing_max_permits as usize,
+    ));
+
+    let eth_debug_requester = if ethereum_rpc_config
+        .tracing_mode
+        .contains(&EthTracingMode::Debug)
+    {
+        let (debug_task, debug_requester) = evm_tracing_rpc::debug::DebugHandler::task(
+            Arc::clone(&client),
+            Arc::clone(&backend),
+            match frontier_backend.clone() {
+                fc_db::Backend::KeyValue(b) => Arc::new(b),
+                fc_db::Backend::Sql(b) => Arc::new(b),
+            },
+            Arc::clone(&eth_permit_pool),
+            Arc::clone(&eth_overrides),
+            ethereum_rpc_config.tracing_debug_raw_max_memory_usage,
+        );
+
+        task_manager
+            .spawn_essential_handle()
+            .spawn("debug", Some("eth-tracing"), debug_task);
+
+        Some(debug_requester)
+    } else {
+        None
+    };
+
+    let eth_trace_requester = if ethereum_rpc_config
+        .tracing_mode
+        .contains(&EthTracingMode::Trace)
+    {
+        let (trace_task, trace_requester) = evm_tracing_rpc::trace::cache_task::CacheTask::create(
+            Arc::clone(&client),
+            Arc::clone(&backend),
+            Duration::from_secs(ethereum_rpc_config.tracing_trace_cache_duration),
+            Arc::clone(&eth_permit_pool),
+            Arc::clone(&eth_overrides),
+            prometheus_registry.clone(),
+        );
+
+        task_manager
+            .spawn_essential_handle()
+            .spawn("trace", Some("eth-tracing"), trace_task);
+
+        Some(trace_requester)
+    } else {
+        None
+    };
 
     let proposer_factory = sc_basic_authorship::ProposerFactory::new(
         task_manager.spawn_handle(),
@@ -363,6 +416,8 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         ));
         let eth_fee_history_cache = Arc::clone(&eth_fee_history_cache);
         let eth_pubsub_notification_sinks = Arc::clone(&eth_pubsub_notification_sinks);
+        let eth_debug_requester = eth_debug_requester.clone();
+        let eth_trace_requester = eth_trace_requester.clone();
 
         let rpc_extensions_builder = Box::new(move |deny_unsafe, subscription_task_executor| {
             Ok(humanode_rpc::create::<
@@ -418,6 +473,13 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                         .execute_gas_limit_multiplier,
                     eth_forced_parent_hashes: None,
                     eth_pubsub_notification_sinks: Arc::clone(&eth_pubsub_notification_sinks),
+                    eth_debuq_requester: eth_debug_requester.clone(),
+                    eth_trace_requester: eth_trace_requester.clone().map(|eth_trace_requester| {
+                        (
+                            eth_trace_requester,
+                            ethereum_rpc_config.tracing_trace_max_count,
+                        )
+                    }),
                 },
                 subscription_task_executor,
             })?)
