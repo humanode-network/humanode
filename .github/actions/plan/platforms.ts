@@ -7,8 +7,7 @@ export type StandardRunnerOS =
   | "ubuntu-24.04-arm"
   | "ubuntu-22.04"
   | "ubuntu-22.04-arm"
-  | "macos-13" // intel
-  | "macos-14" // arm
+  | "macos-15-intel" //intel
   | "macos-15" // arm
   | "windows-latest";
 
@@ -87,7 +86,7 @@ export const all = {
   },
   macos_amd64: {
     name: "macOS (amd64)",
-    os: "macos-13",
+    os: "macos-15-intel",
     buildEnvScript: buildEnvScriptPath("macos.sh"),
     isOnSelfHostedRunner: false,
     essential: false,
