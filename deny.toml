@@ -38,6 +38,11 @@ ignore = [
   "RUSTSEC-2025-0055",
   # TODO(#1648): update the wasmtime internal dependency to 24.0.5+
   "RUSTSEC-2025-0118",
+  # TODO(#1648): update the wasmtime-debug internal dependency to 24.0.0
+  "RUSTSEC-2024-0442",
+  # TODO(#1657): atty in unmaintained, it is used by sc-tracing so wait for
+  # an update from upstream.
+  "RUSTSEC-2021-0145",
 ]
 
 [licenses]
