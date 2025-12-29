@@ -51,10 +51,10 @@ allow = [
   "0BSD",
   "CC0-1.0",
   "Unlicense",
+  "GPL-3.0-or-later WITH Classpath-exception-2.0",
 
   # To review:
   "MPL-2.0",
-  "GPL-3.0 WITH Classpath-exception-2.0",
   "OpenSSL",
 ]
 confidence-threshold = 0.8
