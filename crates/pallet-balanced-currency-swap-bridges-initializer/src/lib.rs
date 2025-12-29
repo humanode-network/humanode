@@ -178,7 +178,7 @@ impl<T: Config> Pallet<T> {
 
         with_storage_layer(move || {
             let (native_evm_bridge_minimum_balance, evm_native_bridge_minimum_balance) =
-                Self::bridges_miminum_balances();
+                Self::bridges_minimum_balances();
 
             let evm_total_issuance = T::EvmCurrency::total_issuance();
             let evm_bridge_balance = T::EvmCurrency::total_balance(&T::EvmNativeBridgePot::get());
@@ -229,7 +229,7 @@ impl<T: Config> Pallet<T> {
     }
 
     /// A helper function to calculate bridges minimum balances be proportionally equal.
-    fn bridges_miminum_balances() -> (NativeBalanceOf<T>, EvmBalanceOf<T>) {
+    fn bridges_minimum_balances() -> (NativeBalanceOf<T>, EvmBalanceOf<T>) {
         let native_ed = T::NativeCurrency::minimum_balance();
         let evm_ed = T::EvmCurrency::minimum_balance();
 
@@ -389,7 +389,7 @@ impl<T: Config> Pallet<T> {
     /// Verify currencies balanced requirements.
     pub fn is_balanced() -> Result<bool, ArithmeticError> {
         let (native_evm_bridge_minimum_balance, evm_native_bridge_minimum_balance) =
-            Self::bridges_miminum_balances();
+            Self::bridges_minimum_balances();
 
         let is_balanced_native_evm =
             swap_reserved_balance::<T::AccountId, T::NativeCurrency, T::NativeEvmBridgePot>(
