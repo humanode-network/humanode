@@ -2143,6 +2143,8 @@
   features: []
 - name: paste 1.0.15
   features: []
+- name: pastey 0.2.1
+  features: []
 - name: pbkdf2 0.12.2
   features:
     - hmac

@@ -1,3 +1,4 @@
+[graph]
 targets = [
   # Host.
   { triple = "x86_64-unknown-linux-gnu", features = ["std"] },
@@ -9,14 +10,13 @@ targets = [
 ]
 all-features = false
 no-default-features = true
+
+[output]
 feature-depth = 1
 
 [advisories]
-db-urls = ["https://github.com/rustsec/advisory-db"]
-vulnerability = "deny"
-unmaintained = "allow"
+unmaintained = "workspace"
 yanked = "allow"
-notice = "deny"
 ignore = [
   # TODO(#1118): update the curve25519-dalek internal dependency to 4.1.3+
   "RUSTSEC-2024-0344",
@@ -38,10 +38,14 @@ ignore = [
   "RUSTSEC-2025-0055",
   # TODO(#1648): update the wasmtime internal dependency to 24.0.5+
   "RUSTSEC-2025-0118",
+  # TODO(#1648): update the wasmtime-debug internal dependency to 24.0.0
+  "RUSTSEC-2024-0442",
+  # TODO(#1657): atty in unmaintained, it is used by sc-tracing so wait for
+  # an update from upstream.
+  "RUSTSEC-2021-0145",
 ]
 
 [licenses]
-unlicensed = "deny"
 allow = [
   "MIT",
   "Apache-2.0",
@@ -52,18 +56,18 @@ allow = [
   "0BSD",
   "CC0-1.0",
   "Unlicense",
+  "GPL-3.0-or-later WITH Classpath-exception-2.0",
 
   # To review:
   "MPL-2.0",
-  "GPL-3.0 WITH Classpath-exception-2.0",
   "OpenSSL",
 ]
-deny = []
-copyleft = "allow"
-allow-osi-fsf-free = "neither"
-default = "deny"
 confidence-threshold = 0.8
-exceptions = [{ allow = ["Unicode-DFS-2016"], name = "unicode-ident", version = "*" }]
+
+[[licenses.exceptions]]
+allow = ["Unicode-DFS-2016"]
+name = "unicode-ident"
+version = "*"
 
 [[licenses.clarify]]
 name = "ring"
@@ -81,13 +85,15 @@ highlight = "all"
 workspace-default-features = "allow"
 external-default-features = "allow"
 allow = []
-deny = [
-  # Avoid using precompiled serde_derive.
-  { name = "serde_derive", version = "> 1.0.171, < 1.0.184" },
-]
+
 features = []
 skip = []
 skip-tree = []
+
+[[bans.deny]]
+name = "serde_derive"
+version = "> 1.0.171, < 1.0.184"
+reason = "Avoid using precompiled serde_derive."
 
 [sources]
 unknown-registry = "deny"
