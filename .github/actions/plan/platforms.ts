@@ -1,6 +1,4 @@
-export const selfHostedRunners = {
-  macosAarch64: ["self-hosted", "macOS", "aarch64"],
-} as const;
+export const selfHostedRunners = {} as const;
 
 export type StandardRunnerOS =
   | "ubuntu-24.04"
@@ -97,7 +95,7 @@ export const all = {
   },
   macos_aarch64: {
     name: "macOS (aarch64)",
-    os: selfHostedRunners.macosAarch64,
+    os: "macos-15",
     buildEnvScript: buildEnvScriptPath("macos.sh"),
     isOnSelfHostedRunner: true,
     essential: false,
