@@ -85,7 +85,7 @@ impl KeyData {
         })
     }
 
-    /// Construct the key info from the BIP39 mnemonic using BIP44 convensions.
+    /// Construct the key info from the BIP39 mnemonic using BIP44 conventions.
     pub fn from_mnemonic_bip44(
         mnemonic: &bip39::Mnemonic,
         password: &str,
@@ -99,7 +99,7 @@ impl KeyData {
             .map_err(FromMnemonicBip44Error::FromMnemonicBip39)
     }
 
-    /// Construct the key info from the BIP39 mnemonic phrase (in English) using BIP44 convensions.
+    /// Construct the key info from the BIP39 mnemonic phrase (in English) using BIP44 conventions.
     /// If you need other language - use [`Self::from_mnemonic_bip44`].
     pub fn from_phrase_bip44(
         phrase: &str,

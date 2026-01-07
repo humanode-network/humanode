@@ -115,7 +115,7 @@ pub struct FrontierBackend {
     pub frontier_sql_backend_cache_size: u64,
 }
 
-/// Avalailable frontier backend types.
+/// Available frontier backend types.
 #[derive(Default, Debug, Copy, Clone, clap::ValueEnum)]
 pub enum FrontierBackendType {
     /// Either `RocksDb` or `ParityDb` as per inherited from the global backend settings.

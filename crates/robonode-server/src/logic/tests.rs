@@ -139,8 +139,8 @@ async fn setup() -> (
 
     trace!(message = "facetec server reset", ?res);
 
-    for public_key_to_clenaup in public_keys_to_cleanup() {
-        let public_key_hex = hex::encode(public_key_to_clenaup);
+    for public_key_to_cleanup in public_keys_to_cleanup() {
+        let public_key_hex = hex::encode(public_key_to_cleanup);
         let res = facetec
             .db_delete(ft::db_delete::Request {
                 group_name: DB_GROUP_NAME,

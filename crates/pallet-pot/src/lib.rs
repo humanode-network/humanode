@@ -40,7 +40,7 @@ pub enum InitialState<Balance> {
     Unchecked,
     /// The account will be guaranteed to exist at genesis.
     Initialized,
-    /// The account will be guaranteed to be initilaize with the given balance at genesis.
+    /// The account will be guaranteed to be initialize with the given balance at genesis.
     Balance {
         /// The balance to set for the account.
         balance: Balance,
