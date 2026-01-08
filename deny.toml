@@ -43,6 +43,8 @@ ignore = [
   # TODO(#1657): atty in unmaintained, it is used by sc-tracing so wait for
   # an update from upstream.
   "RUSTSEC-2021-0145",
+  # TODO(#1659): update the lru internal dependency to 0.16.3+
+  "RUSTSEC-2026-0002",
 ]
 
 [licenses]
