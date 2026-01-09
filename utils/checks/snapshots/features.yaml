@@ -1886,7 +1886,7 @@
     - std
 - name: num_threads 0.1.6
   features: []
-- name: numtoa 0.2.4
+- name: numtoa 0.3.1
   features: []
 - name: object 0.30.4
   features:
