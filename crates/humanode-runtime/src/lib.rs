@@ -563,11 +563,21 @@ impl pallet_bootnodes::Config for Runtime {
     type MaxBootnodes = ConstU32<16>;
 }
 
+impl pallet_fixed_validators_set::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type ValidatorId = AccountId;
+    type MaxValidators = ConstU32<MAX_AUTHENTICATIONS>; /* same amount in theory */
+    type WeightInfo = weights::pallet_fixed_validators_set::WeightInfo<Runtime>;
+}
+
 impl pallet_humanode_session::Config for Runtime {
     type ValidatorPublicKeyOf = IdentityValidatorIdOf;
     type BootnodeIdOf = sp_runtime::traits::Identity;
+    type FixedValidatorsSetIdOf = sp_runtime::traits::Identity;
     type MaxBootnodeValidators = <Runtime as pallet_bootnodes::Config>::MaxBootnodes;
     type MaxBioauthValidators = <Runtime as pallet_bioauth::Config>::MaxAuthentications;
+    type MaxFixedValidatorsSetValidators =
+        <Runtime as pallet_fixed_validators_set::Config>::MaxValidators;
     type MaxBannedAccounts = <Runtime as pallet_bioauth::Config>::MaxAuthentications;
     type WeightInfo = weights::pallet_humanode_session::WeightInfo<Runtime>;
 }
@@ -855,6 +865,7 @@ construct_runtime!(
         DummyPrecompilesCode: pallet_dummy_precompiles_code = 38,
         HumanodeOffences: pallet_humanode_offences = 39,
         NativeToEvmSwap: pallet_native_to_evm_swap = 40,
+        FixedValidatorsSet: pallet_fixed_validators_set = 41,
     }
 );
 
@@ -1041,6 +1052,7 @@ mod benches {
         [pallet_vesting, Vesting]
         [pallet_humanode_session, HumanodeSession]
         [pallet_native_to_evm_swap, NativeToEvmSwap]
+        [pallet_fixed_validators_set, FixedValidatorsSet]
     );
 }
 

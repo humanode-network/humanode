@@ -34,6 +34,7 @@ frame_support::construct_runtime!(
         System: frame_system,
         Bootnodes: pallet_bootnodes,
         Bioauth: pallet_bioauth,
+        FixedValidatorsSet: pallet_fixed_validators_set,
         Session: pallet_session,
         Historical: pallet_session_historical,
         HumanodeSession: pallet_humanode_session,
@@ -70,6 +71,13 @@ impl system::Config for Test {
 impl pallet_bootnodes::Config for Test {
     type BootnodeId = AccountId;
     type MaxBootnodes = ConstU32<3>;
+}
+
+impl pallet_fixed_validators_set::Config for Test {
+    type RuntimeEvent = RuntimeEvent;
+    type ValidatorId = AccountId;
+    type MaxValidators = <Self as pallet_bioauth::Config>::MaxAuthentications;
+    type WeightInfo = ();
 }
 
 #[derive(PartialEq, Eq, Default, Clone, Encode, Decode, Hash, Debug, TypeInfo)]
@@ -210,8 +218,11 @@ impl pallet_session::historical::Config for Test {
 impl pallet_humanode_session::Config for Test {
     type ValidatorPublicKeyOf = IdentityValidatorIdOf;
     type BootnodeIdOf = sp_runtime::traits::Identity;
+    type FixedValidatorsSetIdOf = sp_runtime::traits::Identity;
     type MaxBootnodeValidators = <Test as pallet_bootnodes::Config>::MaxBootnodes;
     type MaxBioauthValidators = <Test as pallet_bioauth::Config>::MaxAuthentications;
+    type MaxFixedValidatorsSetValidators =
+        <Test as pallet_fixed_validators_set::Config>::MaxValidators;
     type MaxBannedAccounts = <Test as pallet_bioauth::Config>::MaxAuthentications;
     type WeightInfo = ();
 }
@@ -220,11 +231,14 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
     let genesis_config = GenesisConfig {
         session: pallet_session::GenesisConfig {
             keys: vec![
+                // Bootnodes.
                 (42, 42, sp_runtime::testing::UintAuthorityId(42)),
                 (43, 43, sp_runtime::testing::UintAuthorityId(43)),
                 (44, 44, sp_runtime::testing::UintAuthorityId(44)),
-                // Not bootnode.
+                // Bioauth.
                 (1, 1, sp_runtime::testing::UintAuthorityId(1)),
+                // Fixed Validators Set.
+                (10_001, 10_001, sp_runtime::testing::UintAuthorityId(10_001)),
             ],
         },
         bootnodes: pallet_bootnodes::GenesisConfig {
@@ -238,12 +252,17 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
             .unwrap(),
             ..Default::default()
         },
+        fixed_validators_set: pallet_fixed_validators_set::GenesisConfig {
+            validators: BoundedVec::try_from(vec![10_001]).unwrap(),
+        },
         ..Default::default()
     };
 
-    let storage = genesis_config.build_storage().unwrap();
+    new_test_ext_with(genesis_config)
+}
 
-    // Make test externalities from the storage.
+pub fn new_test_ext_with(genesis_config: GenesisConfig) -> sp_io::TestExternalities {
+    let storage = genesis_config.build_storage().unwrap();
     storage.into()
 }
 
