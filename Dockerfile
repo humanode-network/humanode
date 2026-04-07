@@ -58,7 +58,7 @@ RUN \
 # Copy artifacts.
 RUN \
   --mount=type=cache,target=target \
-  cp target/artifacts /artifacts \
+  cp -r target/artifacts /artifacts \
   && ls -la /artifacts
 
 FROM runtime AS runtime-release-artifact
