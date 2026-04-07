@@ -61,21 +61,18 @@ RUN \
   cp -r target/artifacts /artifacts \
   && ls -la /artifacts
 
-FROM runtime AS runtime-release-artifact
-
-ONBUILD ARG ARTIFACT
-ONBUILD COPY --from=build "/artifacts/release/${ARTIFACT}" /usr/local/bin
-ONBUILD RUN ldd "/usr/local/bin/${ARTIFACT}"
-
-ARG ARTIFACT=robonode-server
-FROM runtime-release-artifact AS robonode-server
+FROM runtime AS robonode-server
+COPY --from=build /artifacts/release/robonode-server /usr/local/bin
+RUN ldd /usr/local/bin/robonode-server
 CMD ["robonode-server"]
 
-ARG ARTIFACT=robonode-keygen
-FROM runtime-release-artifact AS robonode-keygen
+FROM runtime AS robonode-keygen
+COPY --from=build /artifacts/release/robonode-keygen /usr/local/bin
+RUN ldd /usr/local/bin/robonode-keygen
 CMD ["robonode-keygen"]
 
 # Keep the peer last as the default target.
-ARG ARTIFACT=humanode-peer
-FROM runtime-release-artifact AS humanode-peer
+FROM runtime AS humanode-peer
+COPY --from=build /artifacts/release/humanode-peer /usr/local/bin
+RUN ldd /usr/local/bin/humanode-peer
 CMD ["humanode-peer"]
