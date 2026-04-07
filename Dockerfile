@@ -49,12 +49,17 @@ RUN \
   --mount=type=bind,target=.,readwrite \
   --mount=type=cache,target=/usr/local/rustup \
   --mount=type=cache,target=/usr/local/cargo/registry \
-  --mount=type=cache,target=/build \
+  --mount=type=cache,target=target \
   --mount=type=ssh \
   RUST_BACKTRACE=1 \
-  CARGO_BUILD_BUILD_DIR=/build \
-  CARGO_TARGET_DIR=/artifacts \
+  CARGO_TARGET_DIR=target/artifacts \
   cargo build --release --locked --workspace
+
+# Copy artifacts.
+RUN \
+  --mount=type=cache,target=target \
+  cp target/artifacts /artifacts \
+  && ls -la /artifacts
 
 FROM runtime AS runtime-release-artifact
 
