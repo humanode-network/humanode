@@ -56,11 +56,6 @@ pub struct Response {
 pub struct FaceScanResponse {
     /// The the information about the security checks over the FaceScan data.
     pub face_scan_security_checks: FaceScanSecurityChecks,
-    /// Something to do with the retry screen of the FaceTec Device SDK.
-    /// TODO(#307): find more info on this parameter.
-    pub retry_screen_enum_int: i64,
-    /// The age group enum id that the input FaceScan was classified to.
-    pub age_estimate_group_enum_int: i64,
 }
 
 /// The report on the security checks.
@@ -166,7 +161,6 @@ mod tests {
                 scan_result_blob,
                 success: true,
                 face_scan: FaceScanResponse {
-                    age_estimate_group_enum_int: -1,
                     ..
                 },
             } if external_database_ref_id == "test_external_dbref_id" && scan_result_blob == "BLOOOB"
@@ -219,8 +213,6 @@ mod tests {
                         replay_check_succeeded: false,
                         session_token_check_succeeded: true,
                     },
-                    retry_screen_enum_int: 0,
-                    age_estimate_group_enum_int: 2,
                 },
             } if external_database_ref_id == "qwe" && scan_result_blob == "BLOOOB"
         )
