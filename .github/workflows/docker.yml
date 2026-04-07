@@ -68,7 +68,7 @@ jobs:
         with:
           bake-target: docker-metadata-action-robonode-keygen
           images: |
-            ghcr.io/${{ github.repository }}
+            ghcr.io/${{ github.repository }}/robonode-keygen
           labels: |
             org.opencontainers.image.title=${{ github.repository }}-robonode-keygen
           tags: |
