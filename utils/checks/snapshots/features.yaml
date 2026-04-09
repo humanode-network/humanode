@@ -1468,7 +1468,7 @@
     - sha2
     - sha256
     - std
-- name: keccak 0.1.5
+- name: keccak 0.1.6
   features: []
 - name: keystore-bioauth-account-id 0.1.0
   features:
