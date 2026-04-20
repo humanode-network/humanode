@@ -2538,6 +2538,9 @@
     - derive
     - rlp-derive
     - std
+- name: rlp 0.6.1
+  features:
+    - std
 - name: rlp-derive 0.1.0
   features: []
 - name: robonode-client 0.1.0
