@@ -2368,7 +2368,7 @@
     - getrandom_package
     - libc
     - std
-- name: rand 0.8.5
+- name: rand 0.8.6
   features:
     - alloc
     - default
