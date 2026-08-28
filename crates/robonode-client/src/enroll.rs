@@ -253,7 +253,8 @@ mod tests {
                 public_key: b"123",
             };
 
-            let response = ResponseTemplate::new(http_code).set_body_json(mkerr(error_code, None));
+            let response =
+                ResponseTemplate::new(http_code.as_u16()).set_body_json(mkerr(error_code, None));
 
             Mock::given(matchers::method("POST"))
                 .and(matchers::path("/enroll"))
@@ -351,7 +352,7 @@ mod tests {
                 ResponseIncludesBlob::No => None,
             };
 
-            let response = ResponseTemplate::new(http_code)
+            let response = ResponseTemplate::new(http_code.as_u16())
                 .set_body_json(mkerr(error_code, response_scan_result_blob));
 
             Mock::given(matchers::method("POST"))
