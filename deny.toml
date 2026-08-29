@@ -72,6 +72,19 @@ ignore = [
   "RUSTSEC-2026-0095",
   "RUSTSEC-2026-0096",
   "RUSTSEC-2026-0222",
+  # TODO(#XXXX): update the cxx internal dependency to 1.0.195+; blocked by the
+  # rust-toolchain.toml pin, as cxx 1.0.195 requires rustc 1.85. It is a build
+  # dependency, reached via wasm-opt from substrate-wasm-builder.
+  "RUSTSEC-2026-0202",
+  # TODO(#1659): update the lru internal dependency to 0.18.2+
+  "RUSTSEC-2026-0253",
+  # TODO(#XXXX): update the memmap2 internal dependency to 0.9.11+, it is used
+  # by sc-client-db and sp-runtime-interface so wait for an update from
+  # upstream.
+  "RUSTSEC-2026-0186",
+  # TODO(#XXXX): rand 0.7.3 is still pulled in by the internal substrate deps;
+  # the patched versions start at 0.8.6, so wait for an update from upstream.
+  "RUSTSEC-2026-0097",
 ]
 
 [licenses]
