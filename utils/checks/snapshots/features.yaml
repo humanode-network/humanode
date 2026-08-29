@@ -61,7 +61,7 @@
   features: []
 - name: anstyle-wincon 3.0.2
   features: []
-- name: anyhow 1.0.100
+- name: anyhow 1.0.103
   features:
     - default
     - std
@@ -135,6 +135,8 @@
   features:
     - default
     - std
+- name: atomic-waker 1.1.2
+  features: []
 - name: atomic-write-file 0.1.2
   features:
     - default
@@ -173,6 +175,7 @@
 - name: base64 0.22.1
   features:
     - alloc
+    - default
     - std
 - name: base64ct 1.6.0
   features:
@@ -283,7 +286,7 @@
     - default
     - i128
     - std
-- name: bytes 1.10.1
+- name: bytes 1.11.1
   features:
     - default
     - serde
@@ -473,7 +476,7 @@
   features:
     - default
     - std
-- name: crossbeam-epoch 0.9.18
+- name: crossbeam-epoch 0.9.20
   features:
     - alloc
     - std
@@ -558,7 +561,7 @@
   features: []
 - name: data-encoding-macro-internal 0.1.12
   features: []
-- name: deadpool 0.9.5
+- name: deadpool 0.10.0
   features:
     - async-trait
     - default
@@ -878,8 +881,6 @@
 - name: fallible-iterator 0.2.0
   features:
     - std
-- name: fastrand 1.9.0
-  features: []
 - name: fastrand 2.0.1
   features:
     - alloc
@@ -1112,16 +1113,6 @@
     - default
     - std
     - unstable
-- name: futures-lite 1.13.0
-  features:
-    - alloc
-    - default
-    - fastrand
-    - futures-io
-    - memchr
-    - parking
-    - std
-    - waker-fn
 - name: futures-lite 2.2.0
   features: []
 - name: futures-macro 0.3.30
@@ -1201,6 +1192,8 @@
   features:
     - alloc
 - name: h2 0.3.26
+  features: []
+- name: h2 0.4.19
   features: []
 - name: handlebars 4.5.0
   features:
@@ -1287,12 +1280,13 @@
     - std
 - name: http-body 0.4.6
   features: []
+- name: http-body 1.1.0
+  features: []
+- name: http-body-util 0.1.5
+  features:
+    - default
 - name: http-range-header 0.3.1
   features: []
-- name: http-types 2.12.0
-  features:
-    - http
-    - hyperium_http
 - name: httparse 1.8.0
   features:
     - default
@@ -1319,7 +1313,6 @@
   features:
     - client
     - default
-    - full
     - h2
     - http1
     - http2
@@ -1328,6 +1321,14 @@
     - socket2
     - stream
     - tcp
+- name: hyper 1.5.2
+  features:
+    - client
+    - default
+    - full
+    - http1
+    - http2
+    - server
 - name: hyper-rustls 0.23.2
   features:
     - default
@@ -1341,6 +1342,13 @@
     - tokio-runtime
 - name: hyper-tls 0.5.0
   features: []
+- name: hyper-util 0.1.10
+  features:
+    - default
+    - http1
+    - http2
+    - server
+    - tokio
 - name: iana-time-zone 0.1.60
   features:
     - fallback
@@ -1378,8 +1386,6 @@
     - default
     - std
 - name: indoc 2.0.6
-  features: []
-- name: infer 0.2.3
   features: []
 - name: inout 0.1.3
   features: []
@@ -1468,7 +1474,7 @@
     - sha2
     - sha256
     - std
-- name: keccak 0.1.5
+- name: keccak 0.1.6
   features: []
 - name: keystore-bioauth-account-id 0.1.0
   features:
@@ -2363,12 +2369,11 @@
 - name: rand 0.7.3
   features:
     - alloc
-    - default
     - getrandom
     - getrandom_package
     - libc
     - std
-- name: rand 0.8.5
+- name: rand 0.8.6
   features:
     - alloc
     - default
@@ -2513,8 +2518,6 @@
   features:
     - hostname
     - system
-- name: retain_mut 0.1.9
-  features: []
 - name: rfc6979 0.4.0
   features: []
 - name: ring 0.16.20
@@ -2830,9 +2833,6 @@
     - raw_value
     - std
     - unbounded_depth
-- name: serde_qs 0.8.5
-  features:
-    - default
 - name: serde_spanned 0.6.7
   features:
     - serde
@@ -3659,7 +3659,6 @@
 - name: url 2.5.2
   features:
     - default
-    - serde
 - name: urlencoding 2.1.3
   features: []
 - name: utf-8 0.7.6
@@ -3701,8 +3700,6 @@
   features:
     - default
     - std
-- name: waker-fn 1.1.1
-  features: []
 - name: walkdir 2.4.0
   features: []
 - name: want 0.3.1
@@ -4027,7 +4024,7 @@
     - std
 - name: winreg 0.50.0
   features: []
-- name: wiremock 0.5.22
+- name: wiremock 0.6.4
   features: []
 - name: wit-bindgen 0.46.0
   features: []
