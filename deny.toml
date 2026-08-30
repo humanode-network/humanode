@@ -45,6 +45,46 @@ ignore = [
   "RUSTSEC-2021-0145",
   # TODO(#1659): update the lru internal dependency to 0.16.3+
   "RUSTSEC-2026-0002",
+  # TODO(#XXXX): libsecp256k1 is unmaintained, the maintainers recommend k256;
+  # it is a direct workspace dependency, and is also pulled in by sp-core,
+  # sp-io, fc-rpc and fp-account.
+  "RUSTSEC-2025-0161",
+  # TODO(#XXXX): update the time internal dependency to 0.3.47+; blocked by the
+  # rust-toolchain.toml pin, as time-core 0.1.8 requires edition 2024.
+  "RUSTSEC-2026-0009",
+  # TODO(#XXXX): update the h2 internal dependency to 0.4.16+; there is no
+  # 0.3.x backport, so this requires a hyper 1.x / reqwest 0.12 migration.
+  "RUSTSEC-2026-0258",
+  # TODO(#XXXX): update the wasmtime internal dependency to 36.0.13+, it is
+  # used by sc-executor-wasmtime and sp-wasm-interface so wait for an update
+  # from upstream.
+  "RUSTSEC-2026-0020",
+  "RUSTSEC-2026-0021",
+  "RUSTSEC-2026-0085",
+  "RUSTSEC-2026-0086",
+  "RUSTSEC-2026-0087",
+  "RUSTSEC-2026-0088",
+  "RUSTSEC-2026-0089",
+  "RUSTSEC-2026-0091",
+  "RUSTSEC-2026-0092",
+  "RUSTSEC-2026-0093",
+  "RUSTSEC-2026-0094",
+  "RUSTSEC-2026-0095",
+  "RUSTSEC-2026-0096",
+  "RUSTSEC-2026-0222",
+  # TODO(#XXXX): update the cxx internal dependency to 1.0.195+; blocked by the
+  # rust-toolchain.toml pin, as cxx 1.0.195 requires rustc 1.85. It is a build
+  # dependency, reached via wasm-opt from substrate-wasm-builder.
+  "RUSTSEC-2026-0202",
+  # TODO(#1659): update the lru internal dependency to 0.18.2+
+  "RUSTSEC-2026-0253",
+  # TODO(#XXXX): update the memmap2 internal dependency to 0.9.11+, it is used
+  # by sc-client-db and sp-runtime-interface so wait for an update from
+  # upstream.
+  "RUSTSEC-2026-0186",
+  # TODO(#XXXX): rand 0.7.3 is still pulled in by the internal substrate deps;
+  # the patched versions start at 0.8.6, so wait for an update from upstream.
+  "RUSTSEC-2026-0097",
 ]
 
 [licenses]

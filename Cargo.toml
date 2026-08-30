@@ -69,7 +69,7 @@ url = { version = "2", default-features = false }
 uuid = { version = "1", default-features = false }
 vergen = { version = "8", default-features = false }
 warp = { version = "0.3", default-features = false }
-wiremock = { version = "0.5", default-features = false }
+wiremock = { version = "0.6", default-features = false }
 
 # Special case for codec.
 codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false }
