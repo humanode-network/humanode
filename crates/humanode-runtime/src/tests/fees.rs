@@ -223,8 +223,13 @@ fn simple_balances_transfer_keep_alive() {
     })
 }
 
-/// A test that validates that a simple EVM balance transfer with a keep alive costs 134 HMND.
+/// A test that validates the substrate-side fee estimate of a simple EVM balance transfer.
 /// Computes the fee via [`TransactionPayment::query_call_info`].
+///
+/// This estimate is weight-based and is intentionally decoupled from the actual gas-based
+/// charge (~90 HMND, see [`constants::evm_fees::FEE_PER_GAS`]): Ethereum transactions do not pay
+/// their fees through the transaction payment, so this value is what substrate-side tooling
+/// would display, not what is charged.
 #[test]
 fn simple_evm_transaction_via_query_call_info() {
     // Build the state from the config.
@@ -258,8 +263,9 @@ fn simple_evm_transaction_via_query_call_info() {
             }),
         });
 
-        // The expected fee that we aim to target: 134 HMND.
-        let expected_fee = 134 * ONE_BALANCE_UNIT;
+        // The weight-derived fee estimate: ~135 HMND (21000 gas mapped to weight and priced
+        // via `WEIGHT_TO_FEE`). This is not what an EVM transaction actually pays.
+        let expected_fee = 135 * ONE_BALANCE_UNIT;
 
         // The tolerance within which the actual fee is allowed to be around the expected fee.
         let epsilon = expected_fee / 10;
@@ -268,7 +274,7 @@ fn simple_evm_transaction_via_query_call_info() {
     })
 }
 
-/// A test that validates that a simple EVM balance transfer with a keep alive costs 134 HMND.
+/// A test that validates that a simple EVM balance transfer with a keep alive costs 90 HMND.
 /// Computes the fee via an estimate EVM runner invocation.
 #[test]
 fn simple_evm_transaction_via_runner_estimate() {
@@ -334,8 +340,8 @@ fn simple_evm_transaction_via_runner_estimate() {
             }
         );
 
-        // The expected fee that we aim to target: 134 HMND.
-        let expected_fee = 134 * ONE_BALANCE_UNIT;
+        // The expected fee that we aim to target: 90 HMND.
+        let expected_fee = 90 * ONE_BALANCE_UNIT;
 
         // The tolerance within which the actual fee is allowed to be around the expected fee.
         let epsilon = expected_fee / 10;

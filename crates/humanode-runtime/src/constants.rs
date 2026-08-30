@@ -110,11 +110,16 @@ pub mod evm_fees {
     /// The amount of fee per gas unit.
     /// Comes from the following rationale:
     /// - a simple transfer costs 21000 gas
-    /// - we want the cost of this transfer to be around ~134 HMND
-    /// - so we must charge about 134 * 10^18 / 21000 fee per a unit of gas
-    /// The value below is a nice round number that fits the requirements outlined above:
-    /// the base value of `100_000_000_000_000` prices a single transfer at ~2 HMND.
-    pub const FEE_PER_GAS: u128 = 67 * 100_000_000_000_000;
+    /// - we want the cost of this transfer to be around ~90 HMND
+    /// - so we must charge about 90 * 10^18 / 21000 fee per a unit of gas
+    /// The value below is a nice round number that fits the requirements outlined above.
+    ///
+    /// Note: this value is intentionally decoupled from the weight-based fee
+    /// (see [`crate::constants::fees::WEIGHT_TO_FEE`]): pricing the gas-to-weight mapping of the
+    /// same transfer through the weight-based fee would give ~135 HMND, but Ethereum transactions
+    /// pay their fees through the EVM gas accounting and not through the transaction payment,
+    /// so we set the gas price to target the fee we actually want.
+    pub const FEE_PER_GAS: u128 = 4_300_000_000_000_000;
 
     /// The max proof size ratio per block.
     /// Set to the zero as humanode is solo chain. Otherwise, additional used gas has
