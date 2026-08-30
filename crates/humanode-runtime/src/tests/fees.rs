@@ -178,7 +178,7 @@ fn switch_block() {
     AllPalletsWithSystem::on_initialize(System::block_number());
 }
 
-/// A test that validates that a simple balance transfer with a keep alive costs 0.1 HMND.
+/// A test that validates that a simple balance transfer with a keep alive costs 67 HMND.
 #[test]
 fn simple_balances_transfer_keep_alive() {
     // Build the state from the config.
@@ -213,8 +213,8 @@ fn simple_balances_transfer_keep_alive() {
             (call, len)
         };
 
-        // The expected fee that we aim to target: 0.1 HMND.
-        let expected_fee = ONE_BALANCE_UNIT / 10;
+        // The expected fee that we aim to target: 67 HMND.
+        let expected_fee = 67 * ONE_BALANCE_UNIT;
 
         // The tolerance within which the actual fee is allowed to be around the expected fee.
         let epsilon = expected_fee / 200;
@@ -223,7 +223,7 @@ fn simple_balances_transfer_keep_alive() {
     })
 }
 
-/// A test that validates that a simple EVM balance transfer with a keep alive costs 0.2 HMND.
+/// A test that validates that a simple EVM balance transfer with a keep alive costs 134 HMND.
 /// Computes the fee via [`TransactionPayment::query_call_info`].
 #[test]
 fn simple_evm_transaction_via_query_call_info() {
@@ -258,8 +258,8 @@ fn simple_evm_transaction_via_query_call_info() {
             }),
         });
 
-        // The expected fee that we aim to target: 0.2 HMND.
-        let expected_fee = ONE_BALANCE_UNIT / 5;
+        // The expected fee that we aim to target: 134 HMND.
+        let expected_fee = 134 * ONE_BALANCE_UNIT;
 
         // The tolerance within which the actual fee is allowed to be around the expected fee.
         let epsilon = expected_fee / 10;
@@ -268,7 +268,7 @@ fn simple_evm_transaction_via_query_call_info() {
     })
 }
 
-/// A test that validates that a simple EVM balance transfer with a keep alive costs 0.2 HMND.
+/// A test that validates that a simple EVM balance transfer with a keep alive costs 134 HMND.
 /// Computes the fee via an estimate EVM runner invocation.
 #[test]
 fn simple_evm_transaction_via_runner_estimate() {
@@ -334,8 +334,8 @@ fn simple_evm_transaction_via_runner_estimate() {
             }
         );
 
-        // The expected fee that we aim to target: 0.2 HMND.
-        let expected_fee = ONE_BALANCE_UNIT / 5;
+        // The expected fee that we aim to target: 134 HMND.
+        let expected_fee = 134 * ONE_BALANCE_UNIT;
 
         // The tolerance within which the actual fee is allowed to be around the expected fee.
         let epsilon = expected_fee / 10;

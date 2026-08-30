@@ -92,8 +92,9 @@ pub mod fees {
     /// The multiplier to get the fee from weight.
     ///
     /// We compute the fee to weight multiplier based on the weight of the `balances.transfer` call,
-    /// and try to fit the fee such that a single transfer call costs ~0.1 HMND.
-    pub const WEIGHT_TO_FEE: Balance = 385_000_000;
+    /// and try to fit the fee such that a single transfer call costs ~67 HMND:
+    /// the base value of `3_850_000_000` prices a single transfer at ~1 HMND.
+    pub const WEIGHT_TO_FEE: Balance = 67 * 3_850_000_000;
 
     /// The multiplier to get the fee from length.
     pub const LENGTH_TO_FEE: Balance = 1;
@@ -109,10 +110,11 @@ pub mod evm_fees {
     /// The amount of fee per gas unit.
     /// Comes from the following rationale:
     /// - a simple transfer costs 21000 gas
-    /// - we want the cost of this transfer to be around ~0.2 HMND
-    /// - so we must charge about 0.2 * 10^18 / 21000 fee per a unit of gas
-    /// The value below is a nice round number that fits the requirements outlined above.
-    pub const FEE_PER_GAS: u128 = 10_000_000_000_000;
+    /// - we want the cost of this transfer to be around ~134 HMND
+    /// - so we must charge about 134 * 10^18 / 21000 fee per a unit of gas
+    /// The value below is a nice round number that fits the requirements outlined above:
+    /// the base value of `100_000_000_000_000` prices a single transfer at ~2 HMND.
+    pub const FEE_PER_GAS: u128 = 67 * 100_000_000_000_000;
 
     /// The max proof size ratio per block.
     /// Set to the zero as humanode is solo chain. Otherwise, additional used gas has
