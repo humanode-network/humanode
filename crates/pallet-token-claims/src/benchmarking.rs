@@ -250,7 +250,8 @@ impl Interface for crate::mock::Test {
 
 #[cfg(test)]
 impl VestingInterface for <crate::mock::Test as super::Config>::VestingInterface {
-    type Data = mock::__mock_MockVestingInterface_VestingInterface::__lock_under_vesting::Context;
+    type Data =
+        mock::__mock_MockVestingInterface_traits__VestingInterface::__lock_under_vesting::Context;
 
     fn prepare() -> Self::Data {
         let lock_under_vesting_ctx = mock::MockVestingInterface::lock_under_vesting_context();
