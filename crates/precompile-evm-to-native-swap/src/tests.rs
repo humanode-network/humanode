@@ -4,7 +4,7 @@
 use fp_evm::{ExitError, ExitReason};
 use frame_support::{assert_noop, traits::fungible::Unbalanced};
 use pallet_evm::Runner;
-use precompile_utils::{EvmDataWriter, LogsBuilder};
+use precompile_utils::{testing::*, EvmDataWriter, LogsBuilder};
 use sp_core::H256;
 
 use crate::{mock::*, *};
@@ -458,5 +458,25 @@ fn runner_fail_value_overflow() {
             ),
             pallet_evm::Error::<Test>::BalanceLow
         );
+    });
+}
+
+/// This test verifies that the swap reverts in the static context (i.e. under `STATICCALL`),
+/// as the EVM itself does not prevent the precompile from writing to the Substrate storage.
+#[test]
+fn swap_fail_static_context() {
+    new_test_ext().execute_with_ext(|_| {
+        let swap_action = EvmDataWriter::new_with_selector(Action::Swap)
+            .write(H256::from(target_swap_native_account().as_ref()))
+            .build();
+
+        PrecompilesValue::get()
+            .prepare_test(source_swap_evm_account(), *PRECOMPILE_ADDRESS, swap_action)
+            .with_static_call(true)
+            .expect_cost(200)
+            .expect_no_logs()
+            .execute_reverts(|output| {
+                output == b"can't call non-static function in static context"
+            });
     });
 }

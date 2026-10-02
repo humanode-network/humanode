@@ -231,6 +231,11 @@ impl<'p, P: PrecompileSet> PrecompilesTester<'p, P> {
         self
     }
 
+    pub fn with_static_call(mut self, is_static: bool) -> Self {
+        self.handle.is_static = is_static;
+        self
+    }
+
     pub fn with_subcall_handle(mut self, subcall_handle: impl SubcallTrait) -> Self {
         self.subcall_handle = Some(Box::new(subcall_handle));
         self
