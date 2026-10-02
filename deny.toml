@@ -55,7 +55,7 @@ ignore = [
   # TODO(#XXXX): update the h2 internal dependency to 0.4.16+; there is no
   # 0.3.x backport, so this requires a hyper 1.x / reqwest 0.12 migration.
   "RUSTSEC-2026-0258",
-  # TODO(#XXXX): update the wasmtime internal dependency to 36.0.13+, it is
+  # TODO(#XXXX): update the wasmtime internal dependency to 36.0.16+, it is
   # used by sc-executor-wasmtime and sp-wasm-interface so wait for an update
   # from upstream.
   "RUSTSEC-2026-0020",
@@ -72,6 +72,8 @@ ignore = [
   "RUSTSEC-2026-0095",
   "RUSTSEC-2026-0096",
   "RUSTSEC-2026-0222",
+  "RUSTSEC-2026-0269",
+  "RUSTSEC-2026-0316",
   # TODO(#XXXX): update the cxx internal dependency to 1.0.195+; blocked by the
   # rust-toolchain.toml pin, as cxx 1.0.195 requires rustc 1.85. It is a build
   # dependency, reached via wasm-opt from substrate-wasm-builder.
