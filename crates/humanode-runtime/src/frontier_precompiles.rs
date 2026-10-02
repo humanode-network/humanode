@@ -1,6 +1,7 @@
 use frame_support::traits::Currency;
 use pallet_evm::{
-    IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet,
+    ExitRevert, IsPrecompileResult, Precompile, PrecompileFailure, PrecompileHandle,
+    PrecompileResult, PrecompileSet,
 };
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
@@ -79,6 +80,28 @@ pub mod precompiles_constants {
 }
 
 use precompiles_constants::*;
+
+/// Execute a custom Humanode precompile, rejecting `DELEGATECALL` and `CALLCODE` invocations.
+///
+/// The custom precompiles are stateful and act on behalf of `handle.context().caller`, so running
+/// them in the context of another frame would attribute their effects to the wrong accounts.
+/// Under `DELEGATECALL`/`CALLCODE` the context address belongs to the calling frame and differs
+/// from the precompile code address, which is what we check here.
+///
+/// The stateless precompiles (the standard Ethereum and BLS ones) must not go through this guard,
+/// as they are legitimately invoked via `DELEGATECALL`.
+fn execute_forbidding_delegate_call<H: PrecompileHandle>(
+    handle: &mut H,
+    execute: impl FnOnce(&mut H) -> PrecompileResult,
+) -> PrecompileResult {
+    if handle.code_address() != handle.context().address {
+        return Err(PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+        });
+    }
+    execute(handle)
+}
 
 pub struct FrontierPrecompiles<R>(PhantomData<R>);
 
@@ -163,17 +186,27 @@ where
             // Non-Frontier specific nor Ethereum precompiles :
             a if a == hash(SHA_3_FIPS256) => Some(Sha3FIPS256::execute(handle)),
             a if a == hash(EC_RECOVER_PUBLIC_KEY) => Some(ECRecoverPublicKey::execute(handle)),
-            // Humanode precompiles:
-            a if a == hash(BIOAUTH) => Some(Bioauth::<R>::execute(handle)),
-            a if a == hash(EVM_ACCOUNTS_MAPPING) => Some(EvmAccountsMapping::<R>::execute(handle)),
-            a if a == hash(NATIVE_CURRENCY) => {
-                Some(NativeCurrency::<R, ConstU64<200>>::execute(handle))
-            }
-            a if a == hash(EVM_TO_NATIVE_SWAP) => Some(EvmToNativeSwap::<
-                evm_swap::EvmToNativeSwapConfig,
-                // TODO(#697): implement proper dynamic gas cost estimation.
-                ConstU64<200>,
-            >::execute(handle)),
+            // Humanode precompiles (stateful, must not be reached via DELEGATECALL/CALLCODE):
+            a if a == hash(BIOAUTH) => Some(execute_forbidding_delegate_call(
+                handle,
+                Bioauth::<R>::execute,
+            )),
+            a if a == hash(EVM_ACCOUNTS_MAPPING) => Some(execute_forbidding_delegate_call(
+                handle,
+                EvmAccountsMapping::<R>::execute,
+            )),
+            a if a == hash(NATIVE_CURRENCY) => Some(execute_forbidding_delegate_call(
+                handle,
+                NativeCurrency::<R, ConstU64<200>>::execute,
+            )),
+            a if a == hash(EVM_TO_NATIVE_SWAP) => Some(execute_forbidding_delegate_call(
+                handle,
+                EvmToNativeSwap::<
+                    evm_swap::EvmToNativeSwapConfig,
+                    // TODO(#697): implement proper dynamic gas cost estimation.
+                    ConstU64<200>,
+                >::execute,
+            )),
             // Fallback
             _ => None,
         }
