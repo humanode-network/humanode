@@ -18,6 +18,7 @@ sp-core = { workspace = true }
 [dev-dependencies]
 pallet-evm-balances = { path = "../pallet-evm-balances", features = ["default"] }
 pallet-evm-system = { path = "../pallet-evm-system", features = ["default"] }
+precompile-utils = { path = "../precompile-utils", features = ["testing"] }
 
 frame-system = { workspace = true }
 hex-literal = { workspace = true }

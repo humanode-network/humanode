@@ -15,7 +15,8 @@ use pallet_evm::{
     ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
 };
 use precompile_utils::{
-    keccak256, succeed, EvmDataWriter, EvmResult, LogExt, LogsBuilder, PrecompileHandleExt,
+    keccak256, succeed, EvmDataWriter, EvmResult, FunctionModifier, LogExt, LogsBuilder,
+    PrecompileHandleExt,
 };
 use sp_core::{Get, H160, H256, U256};
 
@@ -114,6 +115,8 @@ where
 {
     /// Swap EVM tokens to native chain tokens.
     fn swap(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::Payable)?;
+
         let mut input = handle.read_input()?;
 
         let fp_evm::Context {

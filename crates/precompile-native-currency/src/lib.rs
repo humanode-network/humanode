@@ -13,8 +13,8 @@ use pallet_evm::{
     PrecompileResult,
 };
 use precompile_utils::{
-    keccak256, succeed, Address, Bytes, EvmData, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
-    LogsBuilder, PrecompileHandleExt,
+    keccak256, succeed, Address, Bytes, EvmData, EvmDataReader, EvmDataWriter, EvmResult,
+    FunctionModifier, LogExt, LogsBuilder, PrecompileHandleExt,
 };
 use sp_core::{Get, H160, U256};
 
@@ -123,28 +123,32 @@ where
     GasCost: Get<u64>,
 {
     /// Returns the name of the token.
-    fn name(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+    fn name(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::View)?;
         let name: Bytes = Erc20SupportT::Metadata::name().into();
 
         Ok(succeed(EvmDataWriter::new().write(name).build()))
     }
 
     /// Returns the symbol of the token.
-    fn symbol(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+    fn symbol(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::View)?;
         let symbol: Bytes = Erc20SupportT::Metadata::symbol().into();
 
         Ok(succeed(EvmDataWriter::new().write(symbol).build()))
     }
 
     /// Returns the decimals places of the token.
-    fn decimals(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+    fn decimals(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::View)?;
         let decimals: u8 = Erc20SupportT::Metadata::decimals();
 
         Ok(succeed(EvmDataWriter::new().write(decimals).build()))
     }
 
     /// Returns the amount of tokens in existence.
-    fn total_supply(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+    fn total_supply(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::View)?;
         let total_supply: U256 =
             pallet_erc20_support::Pallet::<Erc20SupportT>::total_supply().into();
 
@@ -153,6 +157,7 @@ where
 
     /// Returns the amount of tokens owned by provided account.
     fn balance_of(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::View)?;
         let mut input = handle.read_input()?;
         check_input(&mut input, 1)?;
 
@@ -170,6 +175,7 @@ where
     /// Returns the remaining number of tokens that spender will be allowed to spend on behalf of
     /// owner through transferFrom. This is zero by default.
     fn allowance(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::View)?;
         let mut input = handle.read_input()?;
 
         check_input(&mut input, 2)?;
@@ -194,6 +200,7 @@ where
 
     /// Sets amount as the allowance of spender over the caller’s tokens.
     fn approve(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::NonPayable)?;
         handle.record_cost(GasCost::get())?;
 
         let mut input = handle.read_input()?;
@@ -233,6 +240,7 @@ where
 
     /// Moves amount tokens from the caller’s account to recipient.
     fn transfer(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::NonPayable)?;
         handle.record_cost(GasCost::get())?;
 
         let mut input = handle.read_input()?;
@@ -274,6 +282,7 @@ where
     /// Moves amount tokens from sender to recipient using the allowance mechanism,
     /// amount is then deducted from the caller’s allowance.
     fn transfer_from(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::NonPayable)?;
         handle.record_cost(GasCost::get())?;
 
         let mut input = handle.read_input()?;
@@ -319,6 +328,7 @@ where
     /// Simulate deposit logic as IWETH-like contract.
     /// Returns funds to sender as this precompile tokens and the native tokens are the same.
     fn deposit(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::Payable)?;
         handle.record_cost(GasCost::get())?;
 
         let mut input = handle.read_input()?;
@@ -365,6 +375,7 @@ where
     /// Simulate withdraw logic as IWETH-like contract.
     /// Do nothing.
     fn withdraw(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+        handle.check_function_modifier(FunctionModifier::NonPayable)?;
         handle.record_cost(GasCost::get())?;
 
         let mut input = handle.read_input()?;
