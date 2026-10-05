@@ -33,6 +33,10 @@ pub trait Bioauth<Timestamp, TxHash> {
     #[method(name = "bioauth_getFacetecDeviceSdkParams")]
     async fn get_facetec_device_sdk_params(&self) -> RpcResult<data::FacetecDeviceSdkParams>;
 
+    /// Get the configuration required for the Device SDK V2.
+    #[method(name = "bioauth_getFacetecDeviceSdkParamsV2")]
+    async fn get_facetec_device_sdk_params_v2(&self) -> RpcResult<data::FacetecDeviceSdkParams>;
+
     /// Get a FaceTec Session Token.
     #[method(name = "bioauth_getFacetecSessionToken")]
     async fn get_facetec_session_token(&self) -> RpcResult<String>;
@@ -59,6 +63,20 @@ pub trait Bioauth<Timestamp, TxHash> {
         &self,
         liveness_data: LivenessData,
     ) -> RpcResult<data::AuthenticateV2Result>;
+
+    /// Make a step of the enroll flow with a FaceTec SDK request blob.
+    #[method(name = "bioauth_enrollStepV1")]
+    async fn enroll_step_v1(
+        &self,
+        request: data::EnrollStepV1Request,
+    ) -> RpcResult<data::EnrollStepV1Response>;
+
+    /// Make a step of the authenticate flow with a FaceTec SDK request blob.
+    #[method(name = "bioauth_authenticateStepV1")]
+    async fn authenticate_step_v1(
+        &self,
+        request: data::AuthenticateStepV1Request,
+    ) -> RpcResult<data::AuthenticateStepV1Response>;
 }
 
 /// The RPC implementation.
@@ -289,6 +307,12 @@ where
         Ok(res)
     }
 
+    async fn get_facetec_device_sdk_params_v2(
+        &self,
+    ) -> RpcResult<data::FacetecDeviceSdkParams> {
+        unimplemented!()
+    }
+
     async fn get_facetec_session_token(&self) -> RpcResult<String> {
         let res = self
             .robonode_client
@@ -459,5 +483,19 @@ where
         info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
 
         Ok(data::AuthenticateV2Result { auth_ticket, auth_ticket_signature, scan_result_blob })
+    }
+
+    async fn enroll_step_v1(
+        &self,
+        _request: data::EnrollStepV1Request,
+    ) -> RpcResult<data::EnrollStepV1Response> {
+        unimplemented!()
+    }
+
+    async fn authenticate_step_v1(
+        &self,
+        _request: data::AuthenticateStepV1Request,
+    ) -> RpcResult<data::AuthenticateStepV1Response> {
+        unimplemented!()
     }
 }

@@ -22,6 +22,7 @@ serde = { workspace = true, features = ["default"] }
 serde_json = { workspace = true }
 sp-api = { workspace = true }
 sp-blockchain = { workspace = true }
+sp-core = { workspace = true }
 sp-runtime = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }

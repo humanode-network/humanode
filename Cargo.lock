@@ -683,6 +683,7 @@ dependencies = [
  "serde_json",
  "sp-api",
  "sp-blockchain",
+ "sp-core",
  "sp-runtime",
  "thiserror 2.0.17",
  "tokio",
