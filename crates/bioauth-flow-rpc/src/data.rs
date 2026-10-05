@@ -46,3 +46,60 @@ pub struct AuthenticateV2Result {
     /// Scan result blob.
     pub scan_result_blob: Option<String>,
 }
+
+/// The flow step request.
+#[derive(Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StepV1Request {
+    /// The FaceTec SDK request blob.
+    pub request_blob: String,
+
+    /// The opaque context from the previous step, absent for the first step.
+    pub context: Option<String>,
+}
+
+/// The flow step response.
+#[derive(Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StepV1Response<Data> {
+    /// The response blob to pass to the FaceTec SDK.
+    pub response_blob: String,
+
+    /// Whether the flow continues or is done.
+    pub status: StepV1Status<Data>,
+}
+
+/// The flow status after a step.
+#[derive(Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub enum StepV1Status<Data> {
+    /// More steps are needed.
+    Continue {
+        /// The opaque context to pass to the next step.
+        context: String,
+    },
+
+    /// The flow is complete.
+    Done(Data),
+}
+
+/// `authenticate_step_v1` done data.
+#[derive(Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct AuthenticateStepV1Done {
+    /// An opaque auth ticket generated for this authentication attempt.
+    pub auth_ticket: Box<[u8]>,
+
+    /// The robonode signature for this opaque auth ticket.
+    pub auth_ticket_signature: Box<[u8]>,
+}
+
+/// `enroll_step_v1` request.
+pub type EnrollStepV1Request = StepV1Request;
+/// `enroll_step_v1` response.
+pub type EnrollStepV1Response = StepV1Response<()>;
+
+/// `authenticate_step_v1` request.
+pub type AuthenticateStepV1Request = StepV1Request;
+/// `authenticate_step_v1` response.
+pub type AuthenticateStepV1Response = StepV1Response<AuthenticateStepV1Done>;
