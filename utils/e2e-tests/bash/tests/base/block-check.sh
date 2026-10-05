@@ -41,11 +41,8 @@ printf "RPC endpoint is up after %d seconds\n" "$(("$SECONDS" - "$RPC_WAIT_ANCHO
 #
 # The client output is streamed to stderr as it arrives (in addition to being
 # captured), so that it is visible in the logs even if the command times out.
-# DEBUG=api-ws makes the polkadot-js WebSocket provider log every request,
-# response and connection event to stderr; DEBUG_MAX truncates each logged
-# value (the metadata response alone is hundreds of KB otherwise).
 POLKA_JSON="$(
-  DEBUG=api-ws DEBUG_MAX=1000 timeout 30 \
+  timeout 30 \
     yarn workspace humanode-e2e-tests-bash polkadot-js-api \
     --ws "$RPC_URL_WS" \
     --seed "//Alice" \
