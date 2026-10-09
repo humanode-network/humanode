@@ -700,6 +700,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "biometrics-api-client"
+version = "0.1.0"
+dependencies = [
+ "assert_matches",
+ "parity-scale-codec",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "tokio",
+ "wiremock",
+]
+
+[[package]]
 name = "bip32"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
