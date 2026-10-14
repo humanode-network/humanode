@@ -23,6 +23,7 @@ pub mod data;
 pub mod error;
 pub mod method;
 pub mod signer;
+pub mod step_context;
 
 pub use self::signer::Signer;
 
