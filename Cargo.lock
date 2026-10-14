@@ -3915,6 +3915,7 @@ dependencies = [
  "evm-nonces-recovery",
  "evm-tracer",
  "evm-tracing-api",
+ "fp-ethereum",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",

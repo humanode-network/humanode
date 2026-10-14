@@ -89,6 +89,7 @@ mod deauthentication_reason;
 #[cfg(test)]
 mod dev_utils;
 mod display_moment;
+mod eth_low_s;
 pub mod eth_sig;
 mod evm_swap;
 mod find_author;
@@ -963,7 +964,29 @@ impl fp_self_contained::SelfContainedCall for RuntimeCall {
 
     fn check_self_contained(&self) -> Option<Result<Self::SignedInfo, TransactionValidityError>> {
         match self {
-            RuntimeCall::Ethereum(call) => call.check_self_contained(),
+            RuntimeCall::Ethereum(call) => {
+                // Rejects Ethereum transactions with malleable high-`s` signatures (EIP-2)
+                // before Frontier recovers the signer. Frontier accepts any `s` below the curve
+                // order, so `(r, n - s)` with the flipped recovery id would otherwise pass as a
+                // second valid signature of the same transaction with a different hash.
+                // This check runs as part of extrinsic checking, so it applies both in the
+                // transaction pool and during block execution.
+                //
+                // TODO: move this check into `recover_signer` in our Frontier fork, so that it
+                // also covers the pre-log transaction path in `pallet_ethereum::on_initialize`,
+                // which recovers signers without going through `check_self_contained`.
+                if let pallet_ethereum::Call::transact { transaction } = call {
+                    if !eth_low_s::is_low_s(transaction) {
+                        return Some(Err(
+                            sp_runtime::transaction_validity::InvalidTransaction::Custom(
+                                fp_ethereum::TransactionValidationError::InvalidSignature as u8,
+                            )
+                            .into(),
+                        ));
+                    }
+                }
+                call.check_self_contained()
+            }
             _ => None,
         }
     }
