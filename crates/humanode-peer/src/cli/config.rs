@@ -39,6 +39,11 @@ pub trait CliConfigurationExt: SubstrateCliConfigurationProvider {
                     .clone()
                     .or(extensions.robonode_url)
                     .unwrap_or_else(|| "http://127.0.0.1:3033".into()),
+                biometrics_api_url: params
+                    .biometrics_api_url
+                    .clone()
+                    .or(extensions.biometrics_api_url)
+                    .unwrap_or_else(|| "http://127.0.0.1:3034".into()),
                 webapp_url: params.webapp_url.clone().or(extensions.webapp_url),
                 rpc_url,
             }

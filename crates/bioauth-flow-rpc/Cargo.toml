@@ -7,6 +7,7 @@ publish = false
 [dependencies]
 bioauth-flow-api = { path = "../bioauth-flow-api" }
 bioauth-keys = { path = "../bioauth-keys" }
+biometrics-api-client = { path = "../biometrics-api-client" }
 pallet-bioauth = { path = "../pallet-bioauth" }
 primitives-liveness-data = { path = "../primitives-liveness-data" }
 robonode-client = { path = "../robonode-client" }

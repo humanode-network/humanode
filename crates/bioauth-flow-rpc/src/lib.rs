@@ -82,6 +82,7 @@ pub trait Bioauth<Timestamp, TxHash> {
 /// The RPC implementation.
 pub struct Bioauth<
     RobonodeClient,
+    BiometricsApiClient,
     ValidatorKeyExtractor,
     ValidatorSignerFactory,
     Client,
@@ -91,6 +92,10 @@ pub struct Bioauth<
 > {
     /// The robonode client, used for fetching the FaceTec Session Token.
     robonode_client: RobonodeClient,
+    /// The biometrics API client, used for the step flows.
+    // The step flow methods are not implemented yet, so the field is not read anywhere.
+    #[allow(dead_code)]
+    biometrics_api_client: BiometricsApiClient,
     /// Provider of the local validator key.
     validator_key_extractor: ValidatorKeyExtractor,
     /// The type that provides signing with the validator private key.
@@ -107,6 +112,7 @@ pub struct Bioauth<
 
 impl<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -116,6 +122,7 @@ impl<
     >
     Bioauth<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -127,6 +134,7 @@ impl<
     /// Create a new [`Bioauth`] API implementation.
     pub fn new(
         robonode_client: RobonodeClient,
+        biometrics_api_client: BiometricsApiClient,
         validator_key_extractor: ValidatorKeyExtractor,
         validator_signer_factory: ValidatorSignerFactory,
         client: Arc<Client>,
@@ -135,6 +143,7 @@ impl<
     ) -> Self {
         Self {
             robonode_client,
+            biometrics_api_client,
             validator_key_extractor,
             validator_signer_factory,
             client,
@@ -147,6 +156,7 @@ impl<
 
 impl<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -156,6 +166,7 @@ impl<
     >
     Bioauth<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -165,6 +176,7 @@ impl<
     >
 where
     RobonodeClient: AsRef<robonode_client::Client>,
+    BiometricsApiClient: AsRef<biometrics_api_client::Client>,
     ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
@@ -254,6 +266,7 @@ where
 #[jsonrpsee::core::async_trait]
 impl<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -263,6 +276,7 @@ impl<
     > BioauthServer<Timestamp, TxHash<TransactionPool>>
     for Bioauth<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -272,6 +286,7 @@ impl<
     >
 where
     RobonodeClient: Send + Sync + 'static,
+    BiometricsApiClient: Send + Sync + 'static,
     ValidatorKeyExtractor: Send + Sync + 'static,
     ValidatorKeyExtractor::PublicKeyType: Send + Sync + 'static,
     ValidatorSignerFactory: Send + Sync + 'static,
@@ -282,6 +297,7 @@ where
     TransactionPool: Send + Sync + 'static,
 
     RobonodeClient: AsRef<robonode_client::Client>,
+    BiometricsApiClient: AsRef<biometrics_api_client::Client>,
     ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
