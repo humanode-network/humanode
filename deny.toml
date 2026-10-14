@@ -24,6 +24,7 @@ ignore = [
   "RUSTSEC-2022-0093",
   # TODO(#1013): vulnerable rustls.
   "RUSTSEC-2024-0336",
+  "RUSTSEC-2026-0349",
   # TODO(#1197): update the sqlx internal dependency to 0.8.1+
   "RUSTSEC-2024-0363",
   # TODO(#1361): update the idna internal dependency to 1.0.0+
@@ -74,6 +75,7 @@ ignore = [
   "RUSTSEC-2026-0222",
   "RUSTSEC-2026-0269",
   "RUSTSEC-2026-0316",
+  "RUSTSEC-2026-0363",
   # TODO(#XXXX): update the cxx internal dependency to 1.0.195+; blocked by the
   # rust-toolchain.toml pin, as cxx 1.0.195 requires rustc 1.85. It is a build
   # dependency, reached via wasm-opt from substrate-wasm-builder.
