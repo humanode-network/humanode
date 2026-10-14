@@ -371,10 +371,16 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
         reqwest: reqwest::Client::new(),
     });
 
+    let biometrics_api_client = Arc::new(biometrics_api_client::Client {
+        base_url: bioauth_flow_config.biometrics_api_url.clone(),
+        reqwest: reqwest::Client::new(),
+    });
+
     let (rpc_extensions_builder, grandpa_shared_voter_state_cloned) = {
         let client = Arc::clone(&client);
         let pool = Arc::clone(&transaction_pool);
         let robonode_client = Arc::clone(&robonode_client);
+        let biometrics_api_client = Arc::clone(&biometrics_api_client);
         let is_authority = role.is_authority();
         let bioauth_validator_key_extractor = Arc::clone(&account_validator_key_extractor);
         let bioauth_validator_signer_factory = {
@@ -443,6 +449,7 @@ pub async fn new_full(config: Configuration) -> Result<TaskManager, ServiceError
                 is_authority,
                 bioauth: humanode_rpc::BioauthDeps {
                     robonode_client: Arc::clone(&robonode_client),
+                    biometrics_api_client: Arc::clone(&biometrics_api_client),
                     bioauth_validator_signer_factory: Arc::clone(&bioauth_validator_signer_factory),
                     bioauth_validator_key_extractor: Arc::clone(&bioauth_validator_key_extractor),
                 },

@@ -14,6 +14,7 @@ ignored = ["tiny-bip39"]
 [dependencies]
 bioauth-flow-rpc = { path = "../bioauth-flow-rpc" }
 bioauth-keys = { path = "../bioauth-keys" }
+biometrics-api-client = { path = "../biometrics-api-client" }
 crypto-utils = { path = "../crypto-utils" }
 crypto-utils-evm = { path = "../crypto-utils-evm" }
 evm-tracing-host-api = { path = "../evm-tracing-host-api" }

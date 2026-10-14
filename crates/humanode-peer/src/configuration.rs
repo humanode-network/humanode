@@ -47,6 +47,9 @@ pub struct BioauthFlow {
 
     /// The URL of robonode to authenticate with.
     pub robonode_url: String,
+
+    /// The URL of the biometrics server to authenticate with.
+    pub biometrics_api_url: String,
 }
 
 impl BioauthFlow {

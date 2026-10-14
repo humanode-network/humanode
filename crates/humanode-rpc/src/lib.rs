@@ -52,6 +52,8 @@ pub struct AuthorExtDeps<VKE> {
 pub struct BioauthDeps<VKE, VSF> {
     /// An ready robonode API client to tunnel the calls to.
     pub robonode_client: Arc<robonode_client::Client>,
+    /// A ready biometrics API client to tunnel the calls to.
+    pub biometrics_api_client: Arc<biometrics_api_client::Client>,
     /// Extracts the currently used bioauth validator key.
     pub bioauth_validator_key_extractor: VKE,
     /// A factory for making signers by the bioauth validator public keys.
@@ -216,6 +218,7 @@ where
 
     let BioauthDeps {
         robonode_client,
+        biometrics_api_client,
         bioauth_validator_key_extractor,
         bioauth_validator_signer_factory,
     } = bioauth;
@@ -296,6 +299,7 @@ where
     io.merge(
         Bioauth::new(
             robonode_client,
+            biometrics_api_client,
             bioauth_validator_key_extractor,
             bioauth_validator_signer_factory,
             Arc::clone(&client),
