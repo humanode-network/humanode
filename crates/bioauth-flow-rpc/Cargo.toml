@@ -16,6 +16,7 @@ rpc-error-response = { path = "../rpc-error-response" }
 rpc-validator-key-logic = { path = "../rpc-validator-key-logic" }
 
 async-trait = { workspace = true }
+codec = { workspace = true, features = ["derive"] }
 futures = { workspace = true }
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
 sc-transaction-pool-api = { workspace = true }

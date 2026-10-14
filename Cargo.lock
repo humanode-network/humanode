@@ -674,6 +674,7 @@ dependencies = [
  "futures",
  "jsonrpsee",
  "pallet-bioauth",
+ "parity-scale-codec",
  "primitives-liveness-data",
  "robonode-client",
  "rpc-deny-unsafe",
