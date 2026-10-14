@@ -6,6 +6,9 @@ pub const SIGN: i32 = 100;
 /// Request to robonode has failed.
 pub const ROBONODE: i32 = 200;
 
+/// Request to the biometrics API has failed.
+pub const BIOMETRICS_API: i32 = 700;
+
 /// Call to runtime api has failed.
 pub const RUNTIME_API: i32 = 300;
 

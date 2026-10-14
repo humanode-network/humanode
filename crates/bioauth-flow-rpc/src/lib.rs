@@ -93,8 +93,6 @@ pub struct Bioauth<
     /// The robonode client, used for fetching the FaceTec Session Token.
     robonode_client: RobonodeClient,
     /// The biometrics API client, used for the step flows.
-    // The step flow methods are not implemented yet, so the field is not read anywhere.
-    #[allow(dead_code)]
     biometrics_api_client: BiometricsApiClient,
     /// Provider of the local validator key.
     validator_key_extractor: ValidatorKeyExtractor,
@@ -326,7 +324,13 @@ where
     async fn get_facetec_device_sdk_params_v2(
         &self,
     ) -> RpcResult<data::FacetecDeviceSdkParams> {
-        unimplemented!()
+        let res = self
+            .biometrics_api_client
+            .as_ref()
+            .get_facetec_device_sdk_params()
+            .await
+            .map_err(method::get_facetec_device_sdk_params_v2::Error::BiometricsApi)?;
+        Ok(res)
     }
 
     async fn get_facetec_session_token(&self) -> RpcResult<String> {
