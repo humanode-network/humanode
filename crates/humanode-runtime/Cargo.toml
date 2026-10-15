@@ -54,6 +54,7 @@ vesting-scheduling-timestamp = { path = "../vesting-scheduling-timestamp", defau
 
 chrono = { workspace = true }
 codec = { workspace = true, features = ["derive"] }
+fp-ethereum = { workspace = true }
 fp-evm = { workspace = true }
 fp-rpc = { workspace = true }
 fp-self-contained = { workspace = true }
@@ -161,6 +162,7 @@ std = [
   "evm-nonces-recovery/std",
   "evm-tracer/std",
   "evm-tracing-api/std",
+  "fp-ethereum/std",
   "fp-evm/std",
   "fp-rpc/std",
   "fp-self-contained/std",
