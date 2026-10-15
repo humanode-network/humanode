@@ -27,6 +27,25 @@ impl StepContext {
     pub fn from_bytes(bytes: &sp_core::Bytes) -> Result<Self, codec::Error> {
         Self::decode_all(&mut &bytes[..])
     }
+
+    /// Advances the context to the next step: the nonce is incremented, the ciphertext is kept.
+    ///
+    /// `None` when the nonce would overflow.
+    pub fn next(self) -> Option<Self> {
+        Some(Self {
+            nonce: self.nonce.checked_add(1)?,
+            ciphertext: self.ciphertext,
+        })
+    }
+}
+
+impl From<&biometrics_api_client::StepChainLink> for StepContext {
+    fn from(link: &biometrics_api_client::StepChainLink) -> Self {
+        Self {
+            nonce: link.nonce,
+            ciphertext: link.ciphertext.to_vec(),
+        }
+    }
 }
 
 #[cfg(test)]
