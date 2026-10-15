@@ -43,7 +43,7 @@ describe("eth rpc", () => {
   describe("fee", () => {
     describe("when transferring 1 eHMND", () => {
       const transferValue = ethers.parseEther("1");
-      const expectedFee = ethers.parseEther("90");
+      const expectedFee = ethers.parseEther("15");
       const tolerance = expectedFee / 10n;
 
       it("is within the tolerance around the expected cost", async () => {
