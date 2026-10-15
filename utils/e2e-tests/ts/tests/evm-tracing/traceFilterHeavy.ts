@@ -31,6 +31,8 @@ describe("`trace_filter` tests to verify some heavy logic in contracts", () => {
   }[] = [];
 
   beforeEach(async () => {
+    heavyContracts = [];
+
     const [alice, _] = devClients;
 
     for (let index = 0; index < 4; index++) {
