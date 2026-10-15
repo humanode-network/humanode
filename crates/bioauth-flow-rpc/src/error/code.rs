@@ -9,6 +9,9 @@ pub const ROBONODE: i32 = 200;
 /// Request to the biometrics API has failed.
 pub const BIOMETRICS_API: i32 = 700;
 
+/// The step context is invalid.
+pub const STEP_CONTEXT: i32 = 800;
+
 /// Call to runtime api has failed.
 pub const RUNTIME_API: i32 = 300;
 

@@ -45,3 +45,32 @@ fn serializes_as_hex() {
     let json = serde_json::to_value(sample().to_bytes()).unwrap();
     assert_eq!(json, serde_json::json!("0x07000000000000000c010203"));
 }
+
+#[test]
+fn next_increments_nonce() {
+    assert_eq!(
+        sample().next().unwrap(),
+        StepContext {
+            nonce: 8,
+            ciphertext: vec![1, 2, 3],
+        }
+    );
+}
+
+#[test]
+fn next_rejects_nonce_overflow() {
+    let context = StepContext {
+        nonce: u64::MAX,
+        ciphertext: vec![],
+    };
+    assert_eq!(context.next(), None);
+}
+
+#[test]
+fn from_chain_link() {
+    let link = biometrics_api_client::StepChainLink {
+        nonce: 7,
+        ciphertext: Box::new([1, 2, 3]),
+    };
+    assert_eq!(StepContext::from(&link), sample());
+}
