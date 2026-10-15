@@ -30,6 +30,8 @@ pub type ChainSpec = sc_service::GenericChainSpec<humanode_runtime::GenesisConfi
 pub struct Extensions {
     /// The URL of robonode to authenticate with.
     pub robonode_url: Option<String>,
+    /// The URL of the biometrics server to authenticate with.
+    pub biometrics_api_url: Option<String>,
     /// The Web App URL, necessary for printing the Web App QR Code.
     pub webapp_url: Option<String>,
 }
@@ -443,10 +445,12 @@ mod tests {
     fn deserialize_bioauth_flow_params_extensions() {
         let expected = Extensions {
             robonode_url: Some("dummy_robonode_url".into()),
+            biometrics_api_url: Some("dummy_biometrics_api_url".into()),
             webapp_url: Some("dummy_webapp_url".into()),
         };
         let value = serde_json::json!({
             "robonodeUrl": "dummy_robonode_url",
+            "biometricsApiUrl": "dummy_biometrics_api_url",
             "webappUrl": "dummy_webapp_url"
         });
 
@@ -467,6 +471,7 @@ mod tests {
             "protocolId": null,
             "properties": null,
             "robonodeUrl": "dummy_robonode_url",
+            "biometricsApiUrl": "dummy_biometrics_api_url",
             "webappUrl": "dummy_webapp_url",
             "consensusEngine": null,
             "codeSubstitutes": {},
@@ -478,6 +483,7 @@ mod tests {
 
         let expected = Extensions {
             robonode_url: Some("dummy_robonode_url".into()),
+            biometrics_api_url: Some("dummy_biometrics_api_url".into()),
             webapp_url: Some("dummy_webapp_url".into()),
         };
 

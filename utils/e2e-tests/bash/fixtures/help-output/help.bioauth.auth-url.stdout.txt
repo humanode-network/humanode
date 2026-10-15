@@ -545,6 +545,9 @@ Options:
       --robonode-url <ROBONODE_URL>
           The URL of robonode to authenticate with
 
+      --biometrics-api-url <BIOMETRICS_API_URL>
+          The URL of the biometrics server to authenticate with
+
   -h, --help
           Print help (see a summary with '-h')
 

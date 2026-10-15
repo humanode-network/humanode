@@ -7,6 +7,7 @@ publish = false
 [dependencies]
 bioauth-flow-api = { path = "../bioauth-flow-api" }
 bioauth-keys = { path = "../bioauth-keys" }
+biometrics-api-client = { path = "../biometrics-api-client" }
 pallet-bioauth = { path = "../pallet-bioauth" }
 primitives-liveness-data = { path = "../primitives-liveness-data" }
 robonode-client = { path = "../robonode-client" }
@@ -15,6 +16,7 @@ rpc-error-response = { path = "../rpc-error-response" }
 rpc-validator-key-logic = { path = "../rpc-validator-key-logic" }
 
 async-trait = { workspace = true }
+codec = { workspace = true, features = ["derive"] }
 futures = { workspace = true }
 jsonrpsee = { workspace = true, features = ["server", "macros"] }
 sc-transaction-pool-api = { workspace = true }
@@ -22,6 +24,7 @@ serde = { workspace = true, features = ["default"] }
 serde_json = { workspace = true }
 sp-api = { workspace = true }
 sp-blockchain = { workspace = true }
+sp-core = { workspace = true }
 sp-runtime = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }

@@ -2,6 +2,8 @@
 
 use serde::Serialize;
 
+use crate::step_context::StepContext;
+
 /// The RPC error context we provide to trigger the face capture logic again,
 /// effectively requesting a retry of the same request with a new liveness data.
 #[derive(Debug)]
@@ -79,4 +81,32 @@ pub enum BioauthTxErrorKind {
     NonceAlreadyUsed,
     /// The aactive authentication issued by this ticket is still on.
     AlreadyAuthenticated,
+}
+
+/// The RPC error context for a step that failed with the chain still open: the web app passes
+/// the scan result blob to the FaceTec SDK and retries the step with the new context.
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StepRetry {
+    /// The response blob to pass to the FaceTec SDK.
+    pub scan_result_blob: String,
+
+    /// The opaque context to pass to the next step.
+    pub context: sp_core::Bytes,
+}
+
+impl StepRetry {
+    /// Builds the retry data from the error chain, if the chain is still open.
+    pub fn from_error_chain(chain: &biometrics_api_client::ErrorChain) -> Option<Self> {
+        match chain {
+            biometrics_api_client::ErrorChain::Closed => None,
+            biometrics_api_client::ErrorChain::Open {
+                response_blob,
+                chain,
+            } => Some(Self {
+                scan_result_blob: response_blob.clone(),
+                context: StepContext::from(chain).to_bytes(),
+            }),
+        }
+    }
 }

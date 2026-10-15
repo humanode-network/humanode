@@ -22,9 +22,15 @@ use tracing::*;
 pub mod data;
 pub mod error;
 pub mod method;
+mod signed_step;
 pub mod signer;
+pub mod step_context;
+#[cfg(test)]
+mod test_utils;
 
+use self::signed_step::{step_chain, SignedStep};
 pub use self::signer::Signer;
+use self::step_context::StepContext;
 
 /// The API exposed via JSON-RPC.
 #[rpc(server)]
@@ -32,6 +38,10 @@ pub trait Bioauth<Timestamp, TxHash> {
     /// Get the configuration required for the Device SDK.
     #[method(name = "bioauth_getFacetecDeviceSdkParams")]
     async fn get_facetec_device_sdk_params(&self) -> RpcResult<data::FacetecDeviceSdkParams>;
+
+    /// Get the configuration required for the Device SDK V2.
+    #[method(name = "bioauth_getFacetecDeviceSdkParamsV2")]
+    async fn get_facetec_device_sdk_params_v2(&self) -> RpcResult<data::FacetecDeviceSdkParams>;
 
     /// Get a FaceTec Session Token.
     #[method(name = "bioauth_getFacetecSessionToken")]
@@ -59,11 +69,47 @@ pub trait Bioauth<Timestamp, TxHash> {
         &self,
         liveness_data: LivenessData,
     ) -> RpcResult<data::AuthenticateV2Result>;
+
+    /// Make a step of the enroll flow with a FaceTec SDK request blob.
+    #[method(name = "bioauth_enrollStepV1")]
+    async fn enroll_step_v1(
+        &self,
+        request: data::EnrollStepV1Request,
+    ) -> RpcResult<data::EnrollStepV1Response>;
+
+    /// Make a step of the authenticate flow with a FaceTec SDK request blob.
+    #[method(name = "bioauth_authenticateStepV1")]
+    async fn authenticate_step_v1(
+        &self,
+        request: data::AuthenticateStepV1Request,
+    ) -> RpcResult<data::AuthenticateStepV1Response>;
+}
+
+/// Converts the biometrics API step response into the RPC response.
+fn step_v1_response<Done, Data>(
+    response: biometrics_api_client::StepResponse<Done>,
+    done: impl FnOnce(Done) -> Data,
+) -> data::StepV1Response<Data> {
+    let biometrics_api_client::StepResponse {
+        response_blob,
+        status,
+    } = response;
+    let status = match status {
+        biometrics_api_client::StepStatus::Continue { chain } => data::StepV1Status::Continue {
+            context: StepContext::from(&chain).to_bytes(),
+        },
+        biometrics_api_client::StepStatus::Done(data) => data::StepV1Status::Done(done(data)),
+    };
+    data::StepV1Response {
+        response_blob,
+        status,
+    }
 }
 
 /// The RPC implementation.
 pub struct Bioauth<
     RobonodeClient,
+    BiometricsApiClient,
     ValidatorKeyExtractor,
     ValidatorSignerFactory,
     Client,
@@ -73,6 +119,8 @@ pub struct Bioauth<
 > {
     /// The robonode client, used for fetching the FaceTec Session Token.
     robonode_client: RobonodeClient,
+    /// The biometrics API client, used for the step flows.
+    biometrics_api_client: BiometricsApiClient,
     /// Provider of the local validator key.
     validator_key_extractor: ValidatorKeyExtractor,
     /// The type that provides signing with the validator private key.
@@ -89,6 +137,7 @@ pub struct Bioauth<
 
 impl<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -98,6 +147,7 @@ impl<
     >
     Bioauth<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -109,6 +159,7 @@ impl<
     /// Create a new [`Bioauth`] API implementation.
     pub fn new(
         robonode_client: RobonodeClient,
+        biometrics_api_client: BiometricsApiClient,
         validator_key_extractor: ValidatorKeyExtractor,
         validator_signer_factory: ValidatorSignerFactory,
         client: Arc<Client>,
@@ -117,6 +168,7 @@ impl<
     ) -> Self {
         Self {
             robonode_client,
+            biometrics_api_client,
             validator_key_extractor,
             validator_signer_factory,
             client,
@@ -129,6 +181,7 @@ impl<
 
 impl<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -138,6 +191,7 @@ impl<
     >
     Bioauth<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -147,6 +201,7 @@ impl<
     >
 where
     RobonodeClient: AsRef<robonode_client::Client>,
+    BiometricsApiClient: AsRef<biometrics_api_client::Client>,
     ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
@@ -167,6 +222,45 @@ where
         })?;
 
         Ok((opaque_liveness_data, signature))
+    }
+
+    /// Prepares the signed step request data from the RPC request: extracts the validator key,
+    /// advances the context, and signs the step signing payload.
+    async fn sign_step<E: std::error::Error + 'static>(
+        &self,
+        request: &data::StepV1Request,
+    ) -> Result<SignedStep<ValidatorKeyExtractor::PublicKeyType>, error::shared::StepFlowError<E>> {
+        let public_key =
+            rpc_validator_key_logic::validator_public_key(&self.validator_key_extractor)
+            .map_err(error::shared::StepFlowError::KeyExtraction)?;
+
+        let context = match &request.context {
+            None => None,
+            Some(bytes) => {
+                let context = StepContext::from_bytes(bytes)
+                    .map_err(error::StepContext::Decode)
+                    .map_err(error::shared::StepFlowError::Context)?;
+                let context = context
+                    .next()
+                    .ok_or(error::StepContext::NonceOverflow)
+                    .map_err(error::shared::StepFlowError::Context)?;
+                Some(context)
+            }
+        };
+
+        let payload = biometrics_api_client::StepSigningPayload {
+            request_blob: &request.request_blob,
+            chain: &step_chain(public_key.as_ref(), context.as_ref()),
+        }
+        .encode();
+
+        let signer = self.validator_signer_factory.new_signer(public_key.clone());
+        let signature = signer.sign(payload).await.map_err(|error| {
+            tracing::error!(message = "Signing failed", ?error);
+            error::shared::StepFlowError::Sign(error::Sign::SigningFailed)
+        })?;
+
+        Ok(SignedStep { public_key, context, signature })
     }
 
     /// Do enroll with provided liveness data.
@@ -236,6 +330,7 @@ where
 #[jsonrpsee::core::async_trait]
 impl<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -245,6 +340,7 @@ impl<
     > BioauthServer<Timestamp, TxHash<TransactionPool>>
     for Bioauth<
         RobonodeClient,
+        BiometricsApiClient,
         ValidatorKeyExtractor,
         ValidatorSignerFactory,
         Client,
@@ -254,6 +350,7 @@ impl<
     >
 where
     RobonodeClient: Send + Sync + 'static,
+    BiometricsApiClient: Send + Sync + 'static,
     ValidatorKeyExtractor: Send + Sync + 'static,
     ValidatorKeyExtractor::PublicKeyType: Send + Sync + 'static,
     ValidatorSignerFactory: Send + Sync + 'static,
@@ -264,6 +361,7 @@ where
     TransactionPool: Send + Sync + 'static,
 
     RobonodeClient: AsRef<robonode_client::Client>,
+    BiometricsApiClient: AsRef<biometrics_api_client::Client>,
     ValidatorKeyExtractor: KeyExtractorT,
     ValidatorKeyExtractor::PublicKeyType: Encode + AsRef<[u8]> + Clone,
     ValidatorKeyExtractor::Error: std::fmt::Debug,
@@ -286,6 +384,18 @@ where
             .get_facetec_device_sdk_params()
             .await
             .map_err(method::get_facetec_device_sdk_params::Error::Robonode)?;
+        Ok(res)
+    }
+
+    async fn get_facetec_device_sdk_params_v2(
+        &self,
+    ) -> RpcResult<data::FacetecDeviceSdkParams> {
+        let res = self
+            .biometrics_api_client
+            .as_ref()
+            .get_facetec_device_sdk_params()
+            .await
+            .map_err(method::get_facetec_device_sdk_params_v2::Error::BiometricsApi)?;
         Ok(res)
     }
 
@@ -459,5 +569,69 @@ where
         info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
 
         Ok(data::AuthenticateV2Result { auth_ticket, auth_ticket_signature, scan_result_blob })
+    }
+
+    async fn enroll_step_v1(
+        &self,
+        request: data::EnrollStepV1Request,
+    ) -> RpcResult<data::EnrollStepV1Response> {
+        self.deny_unsafe.check_if_safe()?;
+
+        debug!("Bioauth flow - enroll step in progress");
+
+        let signed_step = self
+            .sign_step(&request)
+            .await
+            .map_err(method::enroll_step_v1::Error)?;
+
+        let response = self
+            .biometrics_api_client
+            .as_ref()
+            .enroll_step(signed_step.request(&request.request_blob))
+            .await
+            .map_err(error::shared::StepFlowError::BiometricsApi)
+            .map_err(method::enroll_step_v1::Error)?;
+
+        debug!("Bioauth flow - enroll step complete");
+
+        Ok(step_v1_response(response, |biometrics_api_client::EnrollDone {}| ()))
+    }
+
+    async fn authenticate_step_v1(
+        &self,
+        request: data::AuthenticateStepV1Request,
+    ) -> RpcResult<data::AuthenticateStepV1Response> {
+        self.deny_unsafe.check_if_safe()?;
+
+        debug!("Bioauth flow - authenticate step in progress");
+
+        let signed_step = self
+            .sign_step(&request)
+            .await
+            .map_err(method::authenticate_step_v1::Error)?;
+
+        let response = self
+            .biometrics_api_client
+            .as_ref()
+            .authenticate_step(signed_step.request(&request.request_blob))
+            .await
+            .map_err(error::shared::StepFlowError::BiometricsApi)
+            .map_err(method::authenticate_step_v1::Error)?;
+
+        debug!("Bioauth flow - authenticate step complete");
+
+        Ok(step_v1_response(response, |done| {
+            let biometrics_api_client::AuthenticateDone {
+                auth_ticket,
+                auth_ticket_signature,
+            } = done;
+
+            info!(message = "We've obtained an auth ticket", auth_ticket = ?auth_ticket);
+
+            data::AuthenticateStepV1Done {
+                auth_ticket: auth_ticket.into_vec().into(),
+                auth_ticket_signature: auth_ticket_signature.into_vec().into(),
+            }
+        }))
     }
 }

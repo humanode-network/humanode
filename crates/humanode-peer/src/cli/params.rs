@@ -51,6 +51,10 @@ pub struct BioauthFlowParams {
     /// The URL of robonode to authenticate with.
     #[arg(long, value_name = "ROBONODE_URL")]
     pub robonode_url: Option<String>,
+
+    /// The URL of the biometrics server to authenticate with.
+    #[arg(long, value_name = "BIOMETRICS_API_URL")]
+    pub biometrics_api_url: Option<String>,
 }
 
 /// Shared CLI parameters used to configure Ethereum RPC.
