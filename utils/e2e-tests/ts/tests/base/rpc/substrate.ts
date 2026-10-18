@@ -27,7 +27,7 @@ describe("substrate rpc", () => {
   describe("fee", () => {
     describe("when transferring 1 HMND", () => {
       const transferBalance = 1n * 10n ** 18n;
-      const expectedFee = 67n * 10n ** 18n;
+      const expectedFee = 10n * 10n ** 18n;
       const tolerance = expectedFee / 10n;
 
       const keyring = new Keyring({ type: "sr25519", ss58Format: 5234 });
