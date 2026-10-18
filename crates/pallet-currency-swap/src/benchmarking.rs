@@ -77,8 +77,8 @@ benchmarks! {
 impl Interface for crate::mock::Test {
     type Data = (
         std::sync::MutexGuard<'static, ()>,
-        mock::__mock_MockCurrencySwap_CurrencySwap_9230394375286242749::__estimate_swapped_balance::Context,
-        mock::__mock_MockCurrencySwap_CurrencySwap_9230394375286242749::__swap::Context,
+        mock::__mock_MockCurrencySwap_primitives_currency_swap__CurrencySwap_9230394375286242749::__estimate_swapped_balance::Context,
+        mock::__mock_MockCurrencySwap_primitives_currency_swap__CurrencySwap_9230394375286242749::__swap::Context,
     );
 
     fn prepare() -> Self::Data {
