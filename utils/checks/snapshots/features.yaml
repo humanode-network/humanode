@@ -199,6 +199,8 @@
 - name: bioauth-keys 0.1.0
   features:
     - default
+- name: biometrics-api-client 0.1.0
+  features: []
 - name: bip32 0.5.3
   features:
     - alloc
