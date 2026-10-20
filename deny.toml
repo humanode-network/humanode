@@ -76,6 +76,8 @@ ignore = [
   "RUSTSEC-2026-0269",
   "RUSTSEC-2026-0316",
   "RUSTSEC-2026-0363",
+  "RUSTSEC-2026-0379",
+  "RUSTSEC-2026-0380",
   # TODO(#XXXX): update the cxx internal dependency to 1.0.195+; blocked by the
   # rust-toolchain.toml pin, as cxx 1.0.195 requires rustc 1.85. It is a build
   # dependency, reached via wasm-opt from substrate-wasm-builder.
