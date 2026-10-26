@@ -2052,6 +2052,11 @@
 - name: pallet-grandpa 4.0.0-dev
   features:
     - std
+- name: pallet-humanode-fee-params 0.1.0
+  features:
+    - default
+    - frame-benchmarking
+    - std
 - name: pallet-humanode-offences 0.1.0
   features:
     - default

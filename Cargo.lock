@@ -6425,6 +6425,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-humanode-fee-params"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+]
+
+[[package]]
 name = "pallet-humanode-offences"
 version = "0.1.0"
 dependencies = [
