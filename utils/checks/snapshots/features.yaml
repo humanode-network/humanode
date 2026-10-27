@@ -1495,7 +1495,7 @@
     - spin_no_std
 - name: lazycell 1.3.0
   features: []
-- name: libc 0.2.159
+- name: libc 0.2.191
   features:
     - default
     - extra_traits
@@ -1716,7 +1716,7 @@
     - net
     - os-ext
     - os-poll
-- name: mio 1.0.3
+- name: mio 1.2.4
   features:
     - net
     - os-ext
@@ -2939,6 +2939,8 @@
   features:
     - all
 - name: socket2 0.5.5
+  features: []
+- name: socket2 0.6.5
   features:
     - all
 - name: soketto 0.7.1
@@ -3322,6 +3324,15 @@
     - proc-macro
     - visit
     - visit-mut
+- name: syn 3.0.9
+  features:
+    - clone-impls
+    - default
+    - derive
+    - full
+    - parsing
+    - printing
+    - proc-macro
 - name: sync_wrapper 0.1.2
   features: []
 - name: synstructure 0.12.6
@@ -3406,7 +3417,7 @@
     - tinyvec_macros
 - name: tinyvec_macros 0.1.1
   features: []
-- name: tokio 1.42.1
+- name: tokio 1.53.3
   features:
     - bytes
     - default
@@ -3429,7 +3440,7 @@
     - time
     - tokio-macros
     - windows-sys
-- name: tokio-macros 2.4.0
+- name: tokio-macros 2.7.2
   features: []
 - name: tokio-native-tls 0.3.1
   features: []
@@ -3939,8 +3950,6 @@
     - Wdk_Foundation
     - Wdk_Storage
     - Wdk_Storage_FileSystem
-    - Wdk_System
-    - Wdk_System_IO
     - Win32
     - Win32_Foundation
     - Win32_NetworkManagement
@@ -3962,14 +3971,35 @@
     - Win32_System_IO
     - Win32_System_LibraryLoader
     - Win32_System_Memory
-    - Win32_System_Pipes
-    - Win32_System_SystemServices
     - Win32_System_Threading
     - Win32_System_WindowsProgramming
     - Win32_UI
     - Win32_UI_Input
     - Win32_UI_Input_KeyboardAndMouse
     - Win32_UI_Shell
+    - default
+- name: windows-sys 0.61.1
+  features:
+    - Wdk
+    - Wdk_Foundation
+    - Wdk_Storage
+    - Wdk_Storage_FileSystem
+    - Wdk_System
+    - Wdk_System_IO
+    - Win32
+    - Win32_Foundation
+    - Win32_Networking
+    - Win32_Networking_WinSock
+    - Win32_Security
+    - Win32_Storage
+    - Win32_Storage_FileSystem
+    - Win32_System
+    - Win32_System_Console
+    - Win32_System_IO
+    - Win32_System_Pipes
+    - Win32_System_SystemServices
+    - Win32_System_Threading
+    - Win32_System_WindowsProgramming
     - default
 - name: windows-targets 0.42.2
   features: []
@@ -4069,6 +4099,6 @@
 - name: zstd-safe 6.0.6
   features:
     - std
-- name: zstd-sys 2.0.9+zstd.1.5.5
+- name: zstd-sys 2.1.2+zstd.1.5.7
   features:
     - std
