@@ -27,7 +27,7 @@ describe("substrate rpc", () => {
   describe("fee", () => {
     describe("when transferring 1 HMND", () => {
       const transferBalance = 1n * 10n ** 18n;
-      const expectedFee = 10n * 10n ** 18n;
+      const expectedFee = 1n * 10n ** 18n;
       const tolerance = expectedFee / 10n;
 
       const keyring = new Keyring({ type: "sr25519", ss58Format: 5234 });
@@ -89,6 +89,75 @@ describe("substrate rpc", () => {
         );
 
         expect(partialFee).toBeWithin(expectedFee, { tolerance });
+      });
+    });
+
+    describe("when the native fee multiplier is set to 3", () => {
+      const transferBalance = 1n * 10n ** 18n;
+      // The multiplier is a fixed point number with 18 decimals.
+      const nativeFeeMultiplier = 3n * 10n ** 18n;
+      const expectedFee = 3n * 10n ** 18n;
+      const tolerance = expectedFee / 10n;
+
+      const keyring = new Keyring({ type: "sr25519", ss58Format: 5234 });
+
+      it("is within the tolerance around the expected cost", async () => {
+        const alice = keyring.addFromUri("//Alice");
+        const bob = keyring.addFromUri("//Bob");
+
+        const sudo = api.tx["sudo"]?.["sudo"];
+        assert(sudo);
+        const setNativeFeeMultiplier =
+          api.tx["humanodeFeeParams"]?.["setNativeFeeMultiplier"];
+        assert(setNativeFeeMultiplier);
+
+        const sudoResult = await sendAndWait(
+          sudo(setNativeFeeMultiplier(nativeFeeMultiplier)),
+          { signWith: alice },
+        );
+
+        const multiplierUpdatedEventRecord = sudoResult.events.find(
+          ({ event }) =>
+            event.section === "humanodeFeeParams" &&
+            event.method === "NativeFeeMultiplierUpdated",
+        );
+        assert(multiplierUpdatedEventRecord);
+
+        const transferKeepAlive = api.tx["balances"]?.["transferKeepAlive"];
+        assert(transferKeepAlive);
+
+        const { isCompleted, internalError, events, status, dispatchError } =
+          await sendAndWait(transferKeepAlive(bob.address, transferBalance), {
+            signWith: alice,
+          });
+
+        expect(isCompleted).toBe(true);
+        expect(status.isInBlock).toBe(true);
+        expect(dispatchError).toBe(undefined);
+        expect(internalError).toBe(undefined);
+
+        const transactionPaymentEventRecord = events.find(
+          ({ event }) =>
+            event.section === "transactionPayment" &&
+            event.method === "TransactionFeePaid",
+        );
+        assert(transactionPaymentEventRecord);
+        const transactionPaymentEvent =
+          transactionPaymentEventRecord.event as unknown as IEvent<
+            Codec[],
+            TransactionPaymentEvent
+          >;
+
+        expect(transactionPaymentEvent.data.who.toPrimitive()).toEqual(
+          alice.address,
+        );
+        const fee = BigInt(
+          transactionPaymentEvent.data.actualFee.toPrimitive() as
+            | string
+            | number,
+        );
+
+        expect(fee).toBeWithin(expectedFee, { tolerance });
       });
     });
   });
