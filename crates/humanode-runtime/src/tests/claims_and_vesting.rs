@@ -346,7 +346,11 @@ fn prepare_genesis_json(token_claims: &str, token_claim_pot_balance: u128) -> St
             "initialState": "Initialized"
         }},
         "balancedCurrencySwapBridgesInitializer": null,
-        "dummyPrecompilesCode": {{}}
+        "dummyPrecompilesCode": {{}},
+        "humanodeFeeParams": {{
+            "nativeFeeMultiplier": "1000000000000000000",
+            "evmFeeMultiplier": "2000000000000000000"
+        }}
     }}"#
     )
 }

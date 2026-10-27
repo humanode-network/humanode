@@ -3974,6 +3974,7 @@ dependencies = [
  "pallet-evm-system",
  "pallet-fixed-validators-set",
  "pallet-grandpa",
+ "pallet-humanode-fee-params",
  "pallet-humanode-offences",
  "pallet-humanode-session",
  "pallet-im-online",
