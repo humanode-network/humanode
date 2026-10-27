@@ -26,6 +26,13 @@ pub trait RobonodePublicKeyBuilder: pallet::Config {
     fn build(value: RobonodePublicKeyBuilderValue) -> <Self as pallet::Config>::RobonodePublicKey;
 }
 
+/// The upper bound for the amount of consumed nonces the `authenticate` benchmark populates.
+///
+/// The `authenticate` cost is linear in the amount of consumed nonces, so the weight is extrapolated
+/// past this bound. Benchmarking up to the runtime's `MaxNonces` is impractical, as it is set in
+/// the tens of millions.
+const MAX_BENCHMARKED_NONCES: u32 = 100_000;
+
 /// Generate 32 bytes pubkey with prefix of our choice.
 /// NOTE: `prefix` and `idx` must be strictly under 32 bytes
 fn make_pubkey(prefix: &str, idx: u32) -> Vec<u8> {
@@ -125,8 +132,9 @@ benchmarks! {
     authenticate {
         // Vary the amount of pre-populated active authentications and consumed nonces.
         // Leave one space spare for the payload to be inserted in this call.
+        // The amount of consumed nonces is capped at [`MAX_BENCHMARKED_NONCES`].
         let a in 0 .. (T::MaxAuthentications::get() - 1) =>  populate_active_authentications::<T>(a);
-        let n in 0 .. (T::MaxNonces::get() - 1) => populate_consumed_auth_ticket_nonces::<T>(n);
+        let n in 0 .. (T::MaxNonces::get() - 1).min(MAX_BENCHMARKED_NONCES) => populate_consumed_auth_ticket_nonces::<T>(n);
 
         // Create `authenticate` extrinsic payload.
         let public_key = make_pubkey("new", T::MaxAuthentications::get());
