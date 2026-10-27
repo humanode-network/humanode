@@ -91,6 +91,25 @@ ignore = [
   # TODO(#XXXX): rand 0.7.3 is still pulled in by the internal substrate deps;
   # the patched versions start at 0.8.6, so wait for an update from upstream.
   "RUSTSEC-2026-0097",
+  # TODO(#XXXX): update the crypto-bigint internal dependency to 0.7.6+; it is
+  # pinned by elliptic-curve 0.13, which k256 pulls in for frame-support, bip32
+  # and ethers-core, so wait for an update from upstream.
+  "RUSTSEC-2026-0387",
+  # TODO(#XXXX): update the webpki-roots internal dependency to 1.0.10+, it is
+  # used by libp2p-websocket so wait for an update from upstream.
+  "RUSTSEC-2026-0381",
+  # TODO(#XXXX): update the zstd-safe internal dependency to 8.2.0+, it is used
+  # by wasmtime-cache and sp-maybe-compressed-blob so wait for an update from
+  # upstream.
+  "RUSTSEC-2026-0395",
+  "RUSTSEC-2026-0397",
+  "RUSTSEC-2026-0399",
+  "RUSTSEC-2026-0400",
+  "RUSTSEC-2026-0401",
+  "RUSTSEC-2026-0402",
+  "RUSTSEC-2026-0403",
+  "RUSTSEC-2026-0404",
+  "RUSTSEC-2026-0406",
 ]
 
 [licenses]
