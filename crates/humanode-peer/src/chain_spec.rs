@@ -354,6 +354,7 @@ fn testnet_genesis(
         ethereum_chain_id: EthereumChainIdConfig {
             chain_id: ETH_CHAIN_ID,
         },
+        humanode_fee_params: Default::default(),
         evm: EVMConfig {
             accounts: {
                 let evm_pot_accounts = vec![(
