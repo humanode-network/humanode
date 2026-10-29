@@ -12,7 +12,8 @@ use frame_support::{
     },
 };
 use pallet_evm::{
-    ExitError, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput, PrecompileResult,
+    ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
+    PrecompileResult,
 };
 use precompile_utils::{
     keccak256, succeed, EvmDataWriter, EvmResult, LogExt, LogsBuilder, PrecompileHandleExt,
@@ -90,6 +91,8 @@ where
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
+        ensure_not_delegate_call(handle)?;
+
         handle.record_cost(GasCost::get())?;
 
         let selector = handle
@@ -99,7 +102,10 @@ where
             })?;
 
         match selector {
-            Action::Swap => Self::swap(handle),
+            Action::Swap => {
+                ensure_not_static(handle)?;
+                Self::swap(handle)
+            }
         }
     }
 }
@@ -184,6 +190,35 @@ where
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
+}
+
+/// Rejects the call when it is made via `DELEGATECALL` or `CALLCODE`.
+///
+/// Under those the context address belongs to the calling frame and differs from the precompile
+/// code address. The runtime precompile set guards against this too; this check keeps
+/// the precompile safe on its own, regardless of how it is wired.
+fn ensure_not_delegate_call(handle: &impl PrecompileHandle) -> EvmResult {
+    if handle.code_address() != handle.context().address {
+        return Err(PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+        });
+    }
+    Ok(())
+}
+
+/// Rejects the call when it is made in a static context (i.e. via `STATICCALL`).
+///
+/// The swap changes state, so it must not be reachable from a context the EVM promises is
+/// read-only.
+fn ensure_not_static(handle: &impl PrecompileHandle) -> EvmResult {
+    if handle.is_static() {
+        return Err(PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: b"cannot be called with STATICCALL".to_vec(),
+        });
+    }
+    Ok(())
 }
 
 /// A helper function to process dispatch related errors.

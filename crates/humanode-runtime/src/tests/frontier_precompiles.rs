@@ -1,4 +1,5 @@
-//! Tests to verify the custom Humanode precompiles are guarded against `DELEGATECALL`.
+//! Tests to verify the custom Humanode precompiles are guarded against `DELEGATECALL` and
+//! `STATICCALL`.
 
 // Allow simple integer arithmetic in tests.
 #![allow(clippy::arithmetic_side_effects)]
@@ -17,49 +18,72 @@ static GAS_PRICE: Lazy<U256> =
 
 const INIT_BALANCE: Balance = 10u128.pow(18 + 6);
 
-/// The address at which the forwarder contract is deployed at genesis.
-static FORWARDER_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0xf0f0f0));
+/// The address at which the `DELEGATECALL` forwarder contract is deployed at genesis.
+static DELEGATECALL_FORWARDER_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0xf0f0f0));
 
-/// A minimal contract that `DELEGATECALL`s the target with the provided input and bubbles up
+/// The address at which the `STATICCALL` forwarder contract is deployed at genesis.
+static STATICCALL_FORWARDER_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0xf0f0f1));
+
+/// The `DELEGATECALL` opcode.
+const OPCODE_DELEGATECALL: u8 = 0xf4;
+
+/// The `STATICCALL` opcode.
+const OPCODE_STATICCALL: u8 = 0xfa;
+
+/// A minimal contract that forwards the provided input to the target via the given call opcode
+/// (`DELEGATECALL` or `STATICCALL`, both take the same six stack arguments) and bubbles up
 /// the result (return data on success, revert data on failure).
 ///
 /// Calldata layout: `abi.encode(target)` (32 bytes, address right-aligned) followed by the raw
 /// input to forward.
-const DELEGATECALL_FORWARDER_CODE: &[u8] = &[
-    // size = CALLDATASIZE - 32
-    0x60, 0x20, // PUSH1 0x20
-    0x36, // CALLDATASIZE
-    0x03, // SUB
-    // CALLDATACOPY(dest = 0, offset = 32, size)
-    0x80, // DUP1
-    0x60, 0x20, // PUSH1 0x20
-    0x60, 0x00, // PUSH1 0x00
-    0x37, // CALLDATACOPY
-    // DELEGATECALL(gas, target, args_offset = 0, args_size = size, ret_offset = 0, ret_size = 0)
-    0x60, 0x00, // PUSH1 0x00
-    0x60, 0x00, // PUSH1 0x00
-    0x82, // DUP3
-    0x60, 0x00, // PUSH1 0x00
-    0x60, 0x00, // PUSH1 0x00
-    0x35, // CALLDATALOAD
-    0x5a, // GAS
-    0xf4, // DELEGATECALL
-    // RETURNDATACOPY(dest = 0, offset = 0, size = RETURNDATASIZE)
-    0x3d, // RETURNDATASIZE
-    0x60, 0x00, // PUSH1 0x00
-    0x60, 0x00, // PUSH1 0x00
-    0x3e, // RETURNDATACOPY
-    // if !success { REVERT(0, RETURNDATASIZE) } else { RETURN(0, RETURNDATASIZE) }
-    0x3d, // RETURNDATASIZE
-    0x60, 0x00, // PUSH1 0x00
-    0x82, // DUP3
-    0x15, // ISZERO
-    0x60, 0x25, // PUSH1 0x25
-    0x57, // JUMPI
-    0xf3, // RETURN
-    0x5b, // JUMPDEST (0x25)
-    0xfd, // REVERT
-];
+fn forwarder_code(call_opcode: u8) -> Vec<u8> {
+    vec![
+        // size = CALLDATASIZE - 32
+        0x60,
+        0x20, // PUSH1 0x20
+        0x36, // CALLDATASIZE
+        0x03, // SUB
+        // CALLDATACOPY(dest = 0, offset = 32, size)
+        0x80, // DUP1
+        0x60,
+        0x20, // PUSH1 0x20
+        0x60,
+        0x00, // PUSH1 0x00
+        0x37, // CALLDATACOPY
+        // <call>(gas, target, args_offset = 0, args_size = size, ret_offset = 0, ret_size = 0)
+        0x60,
+        0x00, // PUSH1 0x00
+        0x60,
+        0x00, // PUSH1 0x00
+        0x82, // DUP3
+        0x60,
+        0x00, // PUSH1 0x00
+        0x60,
+        0x00,        // PUSH1 0x00
+        0x35,        // CALLDATALOAD
+        0x5a,        // GAS
+        call_opcode, // DELEGATECALL or STATICCALL
+        // RETURNDATACOPY(dest = 0, offset = 0, size = RETURNDATASIZE)
+        0x3d, // RETURNDATASIZE
+        0x60,
+        0x00, // PUSH1 0x00
+        0x60,
+        0x00, // PUSH1 0x00
+        0x3e, // RETURNDATACOPY
+        // if !success { REVERT(0, RETURNDATASIZE) } else { RETURN(0, RETURNDATASIZE) }
+        0x3d, // RETURNDATASIZE
+        0x60,
+        0x00, // PUSH1 0x00
+        0x82, // DUP3
+        0x15, // ISZERO
+        0x60,
+        0x25, // PUSH1 0x25
+        0x57, // JUMPI
+        0xf3, // RETURN
+        0x5b, // JUMPDEST (0x25)
+        0xfd, // REVERT
+    ]
+}
 
 /// The addresses of the custom Humanode precompiles.
 const HUMANODE_PRECOMPILES: [u64; 4] = [
@@ -149,10 +173,19 @@ fn new_test_ext_with() -> sp_io::TestExternalities {
                             },
                         ),
                         (
-                            *FORWARDER_ADDRESS,
+                            *DELEGATECALL_FORWARDER_ADDRESS,
                             fp_evm::GenesisAccount {
                                 balance: INIT_BALANCE.into(),
-                                code: DELEGATECALL_FORWARDER_CODE.to_vec(),
+                                code: forwarder_code(OPCODE_DELEGATECALL),
+                                nonce: Default::default(),
+                                storage: Default::default(),
+                            },
+                        ),
+                        (
+                            *STATICCALL_FORWARDER_ADDRESS,
+                            fp_evm::GenesisAccount {
+                                balance: INIT_BALANCE.into(),
+                                code: forwarder_code(OPCODE_STATICCALL),
                                 nonce: Default::default(),
                                 storage: Default::default(),
                             },
@@ -194,7 +227,14 @@ fn evm_call(to: H160, data: Vec<u8>, value: U256) -> fp_evm::CallInfo {
 fn delegate_call(target: H160, input: &[u8]) -> fp_evm::CallInfo {
     let mut data = EvmDataWriter::new().write(Address(target)).build();
     data.extend_from_slice(input);
-    evm_call(*FORWARDER_ADDRESS, data, U256::zero())
+    evm_call(*DELEGATECALL_FORWARDER_ADDRESS, data, U256::zero())
+}
+
+/// Run `input` against `target` via a `STATICCALL` issued by the forwarder contract.
+fn static_call(target: H160, input: &[u8]) -> fp_evm::CallInfo {
+    let mut data = EvmDataWriter::new().write(Address(target)).build();
+    data.extend_from_slice(input);
+    evm_call(*STATICCALL_FORWARDER_ADDRESS, data, U256::zero())
 }
 
 /// A sample valid input for each of the custom Humanode precompiles.
@@ -299,5 +339,85 @@ fn standard_precompiles_accept_delegate_call() {
             fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned)
         );
         assert_eq!(execinfo.value, vec![0u8; 128]);
+    })
+}
+
+/// This test verifies that a `STATICCALL` to the state-changing functions of the custom Humanode
+/// precompiles reverts without touching the state.
+///
+/// The forwarder contract is the `msg.sender` of the forwarded call, so without the guard
+/// the transfer below would move the forwarder's own funds from a read-only context.
+#[test]
+fn humanode_precompiles_reject_static_call_for_state_changing_functions() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        let forwarder_balance_before = EvmBalances::free_balance(*STATICCALL_FORWARDER_ADDRESS);
+        let bob_balance_before = EvmBalances::free_balance(evm_account_id("EvmBob"));
+        let alice_native_balance_before = Balances::free_balance(account_id("Alice"));
+
+        let inputs = [
+            (
+                NATIVE_CURRENCY,
+                EvmDataWriter::new_with_selector(precompile_native_currency::Action::Transfer)
+                    .write(Address(evm_account_id("EvmBob")))
+                    .write(U256::from(1000))
+                    .build(),
+            ),
+            (
+                EVM_TO_NATIVE_SWAP,
+                EvmDataWriter::new_with_selector(precompile_evm_to_native_swap::Action::Swap)
+                    .write(H256::from(account_id("Alice").as_ref()))
+                    .build(),
+            ),
+        ];
+
+        for (precompile, input) in inputs {
+            let execinfo = static_call(hash(precompile), &input);
+            assert_eq!(
+                execinfo.exit_reason,
+                fp_evm::ExitReason::Revert(fp_evm::ExitRevert::Reverted),
+                "precompile {precompile:#x} did not revert on STATICCALL"
+            );
+            assert_eq!(
+                execinfo.value,
+                b"cannot be called with STATICCALL".to_vec(),
+                "precompile {precompile:#x} reverted with an unexpected message"
+            );
+            assert!(
+                execinfo.logs.is_empty(),
+                "precompile {precompile:#x} emitted logs on STATICCALL"
+            );
+        }
+
+        assert_eq!(
+            EvmBalances::free_balance(*STATICCALL_FORWARDER_ADDRESS),
+            forwarder_balance_before
+        );
+        assert_eq!(
+            EvmBalances::free_balance(evm_account_id("EvmBob")),
+            bob_balance_before
+        );
+        assert_eq!(
+            Balances::free_balance(account_id("Alice")),
+            alice_native_balance_before
+        );
+    })
+}
+
+/// This test verifies that a `STATICCALL` to the view functions of the custom Humanode
+/// precompiles still works.
+#[test]
+fn humanode_precompiles_accept_static_call_for_view_functions() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        for precompile in [BIOAUTH, EVM_ACCOUNTS_MAPPING, NATIVE_CURRENCY] {
+            let execinfo = static_call(hash(precompile), &humanode_precompile_input(precompile));
+            assert_eq!(
+                execinfo.exit_reason,
+                fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Returned),
+                "precompile {precompile:#x} failed on STATICCALL: {:?}",
+                String::from_utf8_lossy(&execinfo.value)
+            );
+        }
     })
 }

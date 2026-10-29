@@ -1,6 +1,6 @@
 #![allow(clippy::arithmetic_side_effects)] // not a problem in tests
 
-use pallet_evm::Runner;
+use pallet_evm::{PrecompileSet, Runner};
 use precompile_utils::{testing::*, EvmDataWriter};
 
 use crate::{mock::*, *};
@@ -585,5 +585,245 @@ fn withdraw_fails_more_than_allowed() {
             EvmBalances::total_balance(&alice_evm),
             alice_evm_balance - expected_fee
         );
+    });
+}
+
+/// The state-changing actions, each with a well-formed input.
+fn state_changing_actions(alice_evm: H160, bob_evm: H160) -> Vec<(Action, Vec<u8>)> {
+    let amount = U256::from(10 * 10u128.pow(18));
+    vec![
+        (
+            Action::Approve,
+            EvmDataWriter::new_with_selector(Action::Approve)
+                .write(Address::from(bob_evm))
+                .write(amount)
+                .build(),
+        ),
+        (
+            Action::Transfer,
+            EvmDataWriter::new_with_selector(Action::Transfer)
+                .write(Address::from(bob_evm))
+                .write(amount)
+                .build(),
+        ),
+        (
+            Action::TransferFrom,
+            EvmDataWriter::new_with_selector(Action::TransferFrom)
+                .write(Address::from(alice_evm))
+                .write(Address::from(bob_evm))
+                .write(amount)
+                .build(),
+        ),
+        (
+            Action::Deposit,
+            EvmDataWriter::new_with_selector(Action::Deposit).build(),
+        ),
+        (
+            Action::Withdraw,
+            EvmDataWriter::new_with_selector(Action::Withdraw)
+                .write(amount)
+                .build(),
+        ),
+    ]
+}
+
+/// The view actions, each with a well-formed input.
+fn view_actions(alice_evm: H160, bob_evm: H160) -> Vec<(Action, Vec<u8>)> {
+    vec![
+        (
+            Action::Name,
+            EvmDataWriter::new_with_selector(Action::Name).build(),
+        ),
+        (
+            Action::Symbol,
+            EvmDataWriter::new_with_selector(Action::Symbol).build(),
+        ),
+        (
+            Action::Decimals,
+            EvmDataWriter::new_with_selector(Action::Decimals).build(),
+        ),
+        (
+            Action::TotalSupply,
+            EvmDataWriter::new_with_selector(Action::TotalSupply).build(),
+        ),
+        (
+            Action::BalanceOf,
+            EvmDataWriter::new_with_selector(Action::BalanceOf)
+                .write(Address::from(alice_evm))
+                .build(),
+        ),
+        (
+            Action::Allowance,
+            EvmDataWriter::new_with_selector(Action::Allowance)
+                .write(Address::from(alice_evm))
+                .write(Address::from(bob_evm))
+                .build(),
+        ),
+    ]
+}
+
+/// Build a mock handle for a call from `caller` with the given `input`.
+fn mock_handle(caller: H160, input: Vec<u8>) -> MockHandle {
+    let mut handle = MockHandle::new(
+        *PRECOMPILE_ADDRESS,
+        fp_evm::Context {
+            address: *PRECOMPILE_ADDRESS,
+            caller,
+            apparent_value: U256::zero(),
+        },
+    );
+    handle.input = input;
+    handle
+}
+
+/// Run the precompile with the given handle and assert it reverts with `reason` without
+/// consuming gas or emitting logs.
+fn assert_reverts(handle: &mut MockHandle, reason: &[u8], action: Action) {
+    assert_eq!(
+        precompiles().execute(handle),
+        Some(Err(PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: reason.to_vec(),
+        })),
+        "unexpected result for {action:?}"
+    );
+    assert_eq!(handle.gas_used, 0, "gas consumed for {action:?}");
+    assert!(handle.logs.is_empty(), "logs emitted for {action:?}");
+}
+
+/// This test verifies that the view functions are callable in a static context.
+#[test]
+fn view_functions_work_in_static_context() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let bob_evm = H160::from(hex_literal::hex!(
+            "7000000000000000000000000000000000000007"
+        ));
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        let balance_of_action = EvmDataWriter::new_with_selector(Action::BalanceOf)
+            .write(Address::from(alice_evm))
+            .build();
+
+        let mut handle = mock_handle(bob_evm, balance_of_action);
+        handle.is_static = true;
+
+        assert_eq!(
+            precompiles().execute(&mut handle),
+            Some(Ok(succeed(
+                EvmDataWriter::new()
+                    .write(U256::from(alice_evm_balance))
+                    .build()
+            )))
+        );
+    });
+}
+
+/// This test verifies that the state-changing functions revert in a static context (i.e. when
+/// reached via `STATICCALL`) without touching the state.
+#[test]
+fn state_changing_functions_fail_in_static_context() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let bob_evm = H160::from(hex_literal::hex!(
+            "7000000000000000000000000000000000000007"
+        ));
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+        Erc20::approve(alice_evm, bob_evm, U256::MAX);
+
+        for (action, input) in state_changing_actions(alice_evm, bob_evm) {
+            let mut handle = mock_handle(alice_evm, input);
+            handle.is_static = true;
+            assert_reverts(&mut handle, b"cannot be called with STATICCALL", action);
+        }
+
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
+        assert_eq!(EvmBalances::total_balance(&bob_evm), 0);
+        assert_eq!(Erc20::allowance(&alice_evm, &bob_evm), U256::MAX);
+    });
+}
+
+/// This test verifies that the functions that are not payable revert when value is sent along
+/// with the call, so the value does not end up stuck at the precompile address.
+#[test]
+fn non_payable_functions_fail_with_value() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let bob_evm = H160::from(hex_literal::hex!(
+            "7000000000000000000000000000000000000007"
+        ));
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+
+        let balance_of_action = EvmDataWriter::new_with_selector(Action::BalanceOf)
+            .write(Address::from(alice_evm))
+            .build();
+
+        let non_payable_actions = state_changing_actions(alice_evm, bob_evm)
+            .into_iter()
+            .filter(|(action, _)| *action != Action::Deposit)
+            .chain([(Action::BalanceOf, balance_of_action)]);
+
+        for (action, input) in non_payable_actions {
+            let mut handle = mock_handle(alice_evm, input);
+            handle.context.apparent_value = U256::from(1);
+            assert_reverts(&mut handle, b"function is not payable", action);
+        }
+    });
+}
+
+/// This test verifies that all the functions revert when reached via `DELEGATECALL` or
+/// `CALLCODE` (i.e. when the context address differs from the precompile code address) without
+/// touching the state.
+#[test]
+fn all_functions_fail_in_delegate_call() {
+    new_test_ext().execute_with_ext(|_| {
+        let alice_evm = H160::from(hex_literal::hex!(
+            "1000000000000000000000000000000000000001"
+        ));
+        let alice_evm_balance = 100 * 10u128.pow(18);
+        let bob_evm = H160::from(hex_literal::hex!(
+            "7000000000000000000000000000000000000007"
+        ));
+        let delegating_contract_evm = H160::from(hex_literal::hex!(
+            "f0f0f00000000000000000000000000000f0f0f0"
+        ));
+
+        // Prepare the test state.
+        EvmBalances::make_free_balance_be(&alice_evm, alice_evm_balance);
+        Erc20::approve(alice_evm, bob_evm, U256::MAX);
+
+        let actions = view_actions(alice_evm, bob_evm)
+            .into_iter()
+            .chain(state_changing_actions(alice_evm, bob_evm));
+
+        for (action, input) in actions {
+            let mut handle = mock_handle(alice_evm, input);
+            // Under `DELEGATECALL` the context address is the delegating contract.
+            handle.context.address = delegating_contract_evm;
+            assert_reverts(
+                &mut handle,
+                b"cannot be called with DELEGATECALL or CALLCODE",
+                action,
+            );
+        }
+
+        assert_eq!(EvmBalances::total_balance(&alice_evm), alice_evm_balance);
+        assert_eq!(EvmBalances::total_balance(&bob_evm), 0);
+        assert_eq!(Erc20::allowance(&alice_evm, &bob_evm), U256::MAX);
     });
 }

@@ -92,11 +92,29 @@ where
     GasCost: Get<u64>,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
+        ensure_not_delegate_call(handle)?;
+
         let selector = handle
             .read_selector()
             .map_err(|_| PrecompileFailure::Error {
                 exit_status: ExitError::Other("invalid function selector".into()),
             })?;
+
+        // Enforces the Solidity-level semantics of each function: the view functions are the only
+        // ones callable via `STATICCALL`, and only `deposit` accepts value.
+        match selector {
+            Action::Name
+            | Action::Symbol
+            | Action::Decimals
+            | Action::TotalSupply
+            | Action::BalanceOf
+            | Action::Allowance => ensure_no_value(handle)?,
+            Action::Approve | Action::Transfer | Action::TransferFrom | Action::Withdraw => {
+                ensure_not_static(handle)?;
+                ensure_no_value(handle)?;
+            }
+            Action::Deposit => ensure_not_static(handle)?,
+        }
 
         match selector {
             Action::Name => Self::name(handle),
@@ -399,6 +417,49 @@ where
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
+}
+
+/// Rejects the call when it is made via `DELEGATECALL` or `CALLCODE`.
+///
+/// Under those the context address belongs to the calling frame and differs from the precompile
+/// code address. The runtime precompile set guards against this too; this check keeps
+/// the precompile safe on its own, regardless of how it is wired.
+fn ensure_not_delegate_call(handle: &impl PrecompileHandle) -> EvmResult {
+    if handle.code_address() != handle.context().address {
+        return Err(PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+        });
+    }
+    Ok(())
+}
+
+/// Rejects the call when it is made in a static context (i.e. via `STATICCALL`).
+///
+/// The state-changing functions act on behalf of `handle.context().caller`, so reaching them via
+/// `STATICCALL` would move the caller's funds from a context the EVM promises is read-only.
+fn ensure_not_static(handle: &impl PrecompileHandle) -> EvmResult {
+    if handle.is_static() {
+        return Err(PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: b"cannot be called with STATICCALL".to_vec(),
+        });
+    }
+    Ok(())
+}
+
+/// Rejects the call when value is sent along with it.
+///
+/// Only `deposit` makes use of the value; for the other functions the value would end up stuck
+/// at the precompile address, as nothing can ever move it out from there.
+fn ensure_no_value(handle: &impl PrecompileHandle) -> EvmResult {
+    if !handle.context().apparent_value.is_zero() {
+        return Err(PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: b"function is not payable".to_vec(),
+        });
+    }
+    Ok(())
 }
 
 /// A helper function to process dispatch related errors.
