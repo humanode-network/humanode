@@ -4,8 +4,8 @@
 
 use codec::Encode;
 use fp_evm::{
-    ExitError, ExitSucceed, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
-    PrecompileResult,
+    ExitError, ExitRevert, ExitSucceed, Precompile, PrecompileFailure, PrecompileHandle,
+    PrecompileOutput, PrecompileResult,
 };
 use primitives_ethereum::EthereumAddress;
 use sp_std::marker::PhantomData;
@@ -28,6 +28,9 @@ where
     T: pallet_evm_accounts_mapping::Config,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
+        ensure_not_delegate_call(handle)?;
+        ensure_no_value(handle)?;
+
         handle.record_cost(GAS_COST)?;
 
         let ethereum_address_bytes: [u8; 20] =
@@ -51,4 +54,33 @@ where
             output: precompile_output,
         })
     }
+}
+
+/// Rejects the call when it is made via `DELEGATECALL` or `CALLCODE`.
+///
+/// Under those the context address belongs to the calling frame and differs from the precompile
+/// code address. The runtime precompile set guards against this too; this check keeps
+/// the precompile safe on its own, regardless of how it is wired.
+fn ensure_not_delegate_call(handle: &impl PrecompileHandle) -> Result<(), PrecompileFailure> {
+    if handle.code_address() != handle.context().address {
+        return Err(PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+        });
+    }
+    Ok(())
+}
+
+/// Rejects the call when value is sent along with it.
+///
+/// The precompile is read-only and makes no use of the value, which would otherwise end up stuck
+/// at the precompile address, as nothing can ever move it out from there.
+fn ensure_no_value(handle: &impl PrecompileHandle) -> Result<(), PrecompileFailure> {
+    if !handle.context().apparent_value.is_zero() {
+        return Err(PrecompileFailure::Revert {
+            exit_status: ExitRevert::Reverted,
+            output: b"function is not payable".to_vec(),
+        });
+    }
+    Ok(())
 }

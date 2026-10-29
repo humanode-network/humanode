@@ -18,12 +18,91 @@ fn make_bounded_authentications(
     BoundedVec::<_, ConstU32<MAX_AUTHENTICATIONS>>::try_from(authentications).unwrap()
 }
 
+/// The address the precompile is reached at in the tests.
+fn precompile_address() -> sp_core::H160 {
+    sp_core::H160::from_low_u64_be(2048)
+}
+
+/// The context of a regular `CALL` to the precompile without value.
+fn regular_context() -> fp_evm::Context {
+    fp_evm::Context {
+        address: precompile_address(),
+        caller: sp_core::H160::from_low_u64_be(0xa11ce),
+        apparent_value: 0.into(),
+    }
+}
+
+/// Build a mock handle for a call to the precompile with the given `input` and `context`.
+fn mock_handle(input: Vec<u8>, context: fp_evm::Context) -> MockPrecompileHandle {
+    let mut mock_handle = MockPrecompileHandle::new();
+    mock_handle.expect_record_cost().returning(|_| Ok(()));
+    mock_handle.expect_input().return_const(input);
+    mock_handle
+        .expect_code_address()
+        .return_const(precompile_address());
+    mock_handle.expect_context().return_const(context);
+    mock_handle
+}
+
+#[test]
+fn test_delegate_call() {
+    new_test_ext().execute_with(|| {
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
+            .write(sp_core::H256::from([0; 32]))
+            .build();
+
+        // Under `DELEGATECALL` the context address is the delegating contract.
+        let mut mock_handle = mock_handle(
+            input,
+            fp_evm::Context {
+                address: sp_core::H160::from_low_u64_be(0xf0f0f0),
+                ..regular_context()
+            },
+        );
+        let handle = &mut mock_handle as _;
+
+        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
+        assert_eq!(
+            err,
+            PrecompileFailure::Revert {
+                exit_status: ExitRevert::Reverted,
+                output: b"cannot be called with DELEGATECALL or CALLCODE".to_vec(),
+            }
+        );
+    })
+}
+
+#[test]
+fn test_value() {
+    new_test_ext().execute_with(|| {
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
+            .write(sp_core::H256::from([0; 32]))
+            .build();
+
+        let mut mock_handle = mock_handle(
+            input,
+            fp_evm::Context {
+                apparent_value: 1.into(),
+                ..regular_context()
+            },
+        );
+        let handle = &mut mock_handle as _;
+
+        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
+        assert_eq!(
+            err,
+            PrecompileFailure::Revert {
+                exit_status: ExitRevert::Reverted,
+                output: b"function is not payable".to_vec(),
+            }
+        );
+    })
+}
+
 #[test]
 fn test_empty_selector() {
     new_test_ext().execute_with(|| {
-        let mut mock_handle = MockPrecompileHandle::new();
-        mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(vec![]);
+        let mut mock_handle = mock_handle(vec![], regular_context());
         let handle = &mut mock_handle as _;
 
         let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
@@ -41,9 +120,7 @@ fn test_is_authenticated_empty_input() {
     new_test_ext().execute_with(|| {
         let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated).build();
 
-        let mut mock_handle = MockPrecompileHandle::new();
-        mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(input);
+        let mut mock_handle = mock_handle(input, regular_context());
         let handle = &mut mock_handle as _;
 
         let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
@@ -63,9 +140,7 @@ fn test_is_authenticated_invalid_input() {
             .write(Bytes::from("invalid input"))
             .build();
 
-        let mut mock_handle = MockPrecompileHandle::new();
-        mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(input);
+        let mut mock_handle = mock_handle(input, regular_context());
         let handle = &mut mock_handle as _;
 
         let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
@@ -93,9 +168,7 @@ fn test_is_authenticated_true() {
             },
         ]));
 
-        let mut mock_handle = MockPrecompileHandle::new();
-        mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(input);
+        let mut mock_handle = mock_handle(input, regular_context());
         let handle = &mut mock_handle as _;
 
         let val = crate::Bioauth::<Test>::execute(handle).unwrap();
@@ -118,9 +191,7 @@ fn test_is_authenticated_false() {
 
         pallet_bioauth::ActiveAuthentications::<Test>::put(make_bounded_authentications(vec![]));
 
-        let mut mock_handle = MockPrecompileHandle::new();
-        mock_handle.expect_record_cost().returning(|_| Ok(()));
-        mock_handle.expect_input().return_const(input);
+        let mut mock_handle = mock_handle(input, regular_context());
         let handle = &mut mock_handle as _;
 
         let val = crate::Bioauth::<Test>::execute(handle).unwrap();
