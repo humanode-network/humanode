@@ -10,10 +10,11 @@ use frame_support::{
         fungible::{Inspect, Mutate},
         tokens::{Preservation, Provenance},
     },
+    weights::RuntimeDbWeight,
 };
 use pallet_evm::{
-    ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
-    PrecompileResult,
+    ExitError, ExitRevert, GasWeightMapping, Log, Precompile, PrecompileFailure, PrecompileHandle,
+    PrecompileOutput, PrecompileResult,
 };
 use precompile_utils::{
     keccak256, succeed, EvmDataWriter, EvmResult, LogExt, LogsBuilder, PrecompileHandleExt,
@@ -60,6 +61,9 @@ pub trait Config {
 
     /// The bridge pot EVM account.
     type BridgePotEvm: Get<Self::EvmAccountId>;
+
+    /// The weight of the runtime database operations, used to price the swap.
+    type DbWeight: Get<RuntimeDbWeight>;
 }
 
 /// Solidity selector of the Swap log, which is the Keccak of the Log signature.
@@ -74,26 +78,27 @@ pub enum Action {
 }
 
 /// Exposes the swap interface.
-pub struct EvmToNativeSwap<C, GasCost>(PhantomData<(C, GasCost)>)
+///
+/// The calls are priced through the `GasWeightMapping`, see [`EvmToNativeSwap::gas_cost`].
+pub struct EvmToNativeSwap<C, GasWeightMapping>(PhantomData<(C, GasWeightMapping)>)
 where
     C: Config,
     EvmBalanceOf<C>: TryFrom<U256>,
     C::EvmAccountId: From<H160>,
-    C::AccountId: From<[u8; 32]>,
-    GasCost: Get<u64>;
+    C::AccountId: From<[u8; 32]>;
 
-impl<C, GasCost> Precompile for EvmToNativeSwap<C, GasCost>
+impl<C, G> Precompile for EvmToNativeSwap<C, G>
 where
     C: Config,
     EvmBalanceOf<C>: TryFrom<U256>,
     C::EvmAccountId: From<H160>,
     C::AccountId: From<[u8; 32]>,
-    GasCost: Get<u64>,
+    G: GasWeightMapping,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
         ensure_not_delegate_call(handle)?;
 
-        handle.record_cost(GasCost::get())?;
+        handle.record_cost(Self::gas_cost())?;
 
         let selector = handle
             .read_selector()
@@ -110,14 +115,23 @@ where
     }
 }
 
-impl<C, GasCost> EvmToNativeSwap<C, GasCost>
+impl<C, G> EvmToNativeSwap<C, G>
 where
     C: Config,
     EvmBalanceOf<C>: TryFrom<U256>,
     C::EvmAccountId: From<H160>,
     C::AccountId: From<[u8; 32]>,
-    GasCost: Get<u64>,
+    G: GasWeightMapping,
 {
+    /// The gas cost of a call to the precompile.
+    ///
+    /// The swap reads and writes the balances of the two accounts on the EVM side and of the two
+    /// accounts on the native side, priced from the runtime DB weights through the gas-to-weight
+    /// mapping, the same way the EVM opcodes are priced.
+    pub fn gas_cost() -> u64 {
+        G::weight_to_gas(C::DbWeight::get().reads_writes(4, 4))
+    }
+
     /// Swap EVM tokens to native chain tokens.
     fn swap(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let mut input = handle.read_input()?;
@@ -177,19 +191,41 @@ where
         )
         .map_err(process_dispatch_error)?;
 
-        let logs_builder = LogsBuilder::new(handle.context().address);
-
-        logs_builder
-            .log3(
-                SELECTOR_LOG_SWAP,
-                handle.context().caller,
-                to_h256,
-                EvmDataWriter::new().write(value_u256).build(),
-            )
-            .record(handle)?;
+        let log = LogsBuilder::new(handle.context().address).log3(
+            SELECTOR_LOG_SWAP,
+            handle.context().caller,
+            to_h256,
+            EvmDataWriter::new().write(value_u256).build(),
+        );
+        record_log_cost(handle, &log)?;
+        log.record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
+}
+
+/// The gas costs of a log, as the EVM charges for the `LOG` opcodes.
+///
+/// Ref: <https://github.com/rust-blockchain/evm/blob/master/gasometer/src/consts.rs>.
+mod log_gas {
+    /// The base cost of a log.
+    pub const G_LOG: u64 = 375;
+    /// The cost of a log data byte.
+    pub const G_LOGDATA: u64 = 8;
+    /// The cost of a log topic.
+    pub const G_LOGTOPIC: u64 = 375;
+}
+
+/// Records the gas cost of the `log` the same way the EVM charges for the `LOG` opcodes.
+///
+/// The precompile handle records the logs without charging for them, so the cost has to be
+/// recorded explicitly.
+fn record_log_cost(handle: &mut impl PrecompileHandle, log: &Log) -> EvmResult {
+    let cost = log_gas::G_LOG
+        .saturating_add(log_gas::G_LOGTOPIC.saturating_mul(log.topics.len() as u64))
+        .saturating_add(log_gas::G_LOGDATA.saturating_mul(log.data.len() as u64));
+    handle.record_cost(cost)?;
+    Ok(())
 }
 
 /// Rejects the call when it is made via `DELEGATECALL` or `CALLCODE`.

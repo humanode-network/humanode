@@ -9,8 +9,8 @@ use frame_support::{
 };
 use pallet_erc20_support::Metadata;
 use pallet_evm::{
-    ExitError, ExitRevert, Precompile, PrecompileFailure, PrecompileHandle, PrecompileOutput,
-    PrecompileResult,
+    ExitError, ExitRevert, GasWeightMapping, Log, Precompile, PrecompileFailure, PrecompileHandle,
+    PrecompileOutput, PrecompileResult,
 };
 use precompile_utils::{
     keccak256, succeed, Address, Bytes, EvmData, EvmDataReader, EvmDataWriter, EvmResult, LogExt,
@@ -48,7 +48,7 @@ type AllowanceOf<T> = <T as pallet_erc20_support::Config>::Allowance;
 
 /// Possible actions for this interface.
 #[precompile_utils::generate_function_selector]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Action {
     /// Returns the name of the token.
     Name = "name()",
@@ -79,17 +79,19 @@ pub enum Action {
 }
 
 /// Precompile exposing currency instance as ERC20.
-pub struct NativeCurrency<Erc20SupportT, GasCost>(PhantomData<(Erc20SupportT, GasCost)>)
-where
-    GasCost: Get<u64>;
+///
+/// The calls are priced through the `GasWeightMapping`, see [`NativeCurrency::gas_cost`].
+pub struct NativeCurrency<Erc20SupportT, GasWeightMapping>(
+    PhantomData<(Erc20SupportT, GasWeightMapping)>,
+);
 
-impl<Erc20SupportT, GasCost> Precompile for NativeCurrency<Erc20SupportT, GasCost>
+impl<Erc20SupportT, G> Precompile for NativeCurrency<Erc20SupportT, G>
 where
     Erc20SupportT: pallet_erc20_support::Config,
     AccountIdOf<Erc20SupportT>: From<H160>,
     BalanceOf<Erc20SupportT>: Into<U256> + TryFrom<U256>,
     AllowanceOf<Erc20SupportT>: TryFrom<U256> + EvmData,
-    GasCost: Get<u64>,
+    G: GasWeightMapping,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
         ensure_not_delegate_call(handle)?;
@@ -116,6 +118,8 @@ where
             Action::Deposit => ensure_not_static(handle)?,
         }
 
+        handle.record_cost(Self::gas_cost(selector))?;
+
         match selector {
             Action::Name => Self::name(handle),
             Action::Symbol => Self::symbol(handle),
@@ -132,14 +136,46 @@ where
     }
 }
 
-impl<Erc20SupportT, GasCost> NativeCurrency<Erc20SupportT, GasCost>
+impl<Erc20SupportT, G> NativeCurrency<Erc20SupportT, G>
 where
     Erc20SupportT: pallet_erc20_support::Config,
     AccountIdOf<Erc20SupportT>: From<H160>,
     BalanceOf<Erc20SupportT>: Into<U256> + TryFrom<U256>,
     AllowanceOf<Erc20SupportT>: TryFrom<U256> + EvmData,
-    GasCost: Get<u64>,
+    G: GasWeightMapping,
 {
+    /// The gas cost of a call to the given function.
+    ///
+    /// Each function is priced from the runtime DB weights of the storage reads and writes it
+    /// performs, through the gas-to-weight mapping, the same way the EVM opcodes are priced.
+    pub fn gas_cost(action: Action) -> u64 {
+        let (reads, writes) = Self::db_ops(action);
+        G::weight_to_gas(
+            <Erc20SupportT as frame_system::Config>::DbWeight::get().reads_writes(reads, writes),
+        )
+    }
+
+    /// The number of storage reads and writes the given function performs.
+    fn db_ops(action: Action) -> (u64, u64) {
+        match action {
+            // The metadata is static.
+            Action::Name | Action::Symbol | Action::Decimals => (0, 0),
+            // A single read: the total issuance, the owner account, the allowance, and the caller
+            // account respectively.
+            Action::TotalSupply | Action::BalanceOf | Action::Allowance | Action::Withdraw => {
+                (1, 0)
+            }
+            // The allowance write.
+            Action::Approve => (0, 1),
+            // The reads and writes of two accounts: the caller and the recipient, and
+            // the precompile and the caller respectively.
+            Action::Transfer | Action::Deposit => (2, 2),
+            // The allowance read and write, plus the reads and writes of the sender and
+            // recipient accounts.
+            Action::TransferFrom => (3, 3),
+        }
+    }
+
     /// Returns the name of the token.
     fn name(_handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
         let name: Bytes = Erc20SupportT::Metadata::name().into();
@@ -212,8 +248,6 @@ where
 
     /// Sets amount as the allowance of spender over the caller’s tokens.
     fn approve(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        handle.record_cost(GasCost::get())?;
-
         let mut input = handle.read_input()?;
 
         let owner = handle.context().caller;
@@ -235,24 +269,20 @@ where
             })?,
         );
 
-        let logs_builder = LogsBuilder::new(handle.context().address);
-
-        logs_builder
-            .log3(
-                SELECTOR_LOG_APPROVAL,
-                handle.context().caller,
-                spender,
-                EvmDataWriter::new().write(amount).build(),
-            )
-            .record(handle)?;
+        let log = LogsBuilder::new(handle.context().address).log3(
+            SELECTOR_LOG_APPROVAL,
+            handle.context().caller,
+            spender,
+            EvmDataWriter::new().write(amount).build(),
+        );
+        record_log_cost(handle, &log)?;
+        log.record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
 
     /// Moves amount tokens from the caller’s account to recipient.
     fn transfer(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        handle.record_cost(GasCost::get())?;
-
         let mut input = handle.read_input()?;
 
         let caller = handle.context().caller;
@@ -275,16 +305,14 @@ where
         )
         .map_err(process_dispatch_error::<Erc20SupportT>)?;
 
-        let logs_builder = LogsBuilder::new(handle.context().address);
-
-        logs_builder
-            .log3(
-                SELECTOR_LOG_TRANSFER,
-                caller,
-                recipient,
-                EvmDataWriter::new().write(amount).build(),
-            )
-            .record(handle)?;
+        let log = LogsBuilder::new(handle.context().address).log3(
+            SELECTOR_LOG_TRANSFER,
+            caller,
+            recipient,
+            EvmDataWriter::new().write(amount).build(),
+        );
+        record_log_cost(handle, &log)?;
+        log.record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
@@ -292,8 +320,6 @@ where
     /// Moves amount tokens from sender to recipient using the allowance mechanism,
     /// amount is then deducted from the caller’s allowance.
     fn transfer_from(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        handle.record_cost(GasCost::get())?;
-
         let mut input = handle.read_input()?;
 
         let caller = handle.context().caller;
@@ -320,16 +346,14 @@ where
         )
         .map_err(process_dispatch_error::<Erc20SupportT>)?;
 
-        let logs_builder = LogsBuilder::new(handle.context().address);
-
-        logs_builder
-            .log3(
-                SELECTOR_LOG_TRANSFER,
-                sender,
-                recipient,
-                EvmDataWriter::new().write(amount).build(),
-            )
-            .record(handle)?;
+        let log = LogsBuilder::new(handle.context().address).log3(
+            SELECTOR_LOG_TRANSFER,
+            sender,
+            recipient,
+            EvmDataWriter::new().write(amount).build(),
+        );
+        record_log_cost(handle, &log)?;
+        log.record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
@@ -337,8 +361,6 @@ where
     /// Simulate deposit logic as IWETH-like contract.
     /// Returns funds to sender as this precompile tokens and the native tokens are the same.
     fn deposit(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        handle.record_cost(GasCost::get())?;
-
         let mut input = handle.read_input()?;
 
         let fp_evm::Context {
@@ -367,15 +389,13 @@ where
         )
         .map_err(process_dispatch_error::<Erc20SupportT>)?;
 
-        let logs_builder = LogsBuilder::new(*address);
-
-        logs_builder
-            .log2(
-                SELECTOR_LOG_DEPOSIT,
-                *caller,
-                EvmDataWriter::new().write(*value).build(),
-            )
-            .record(handle)?;
+        let log = LogsBuilder::new(*address).log2(
+            SELECTOR_LOG_DEPOSIT,
+            *caller,
+            EvmDataWriter::new().write(*value).build(),
+        );
+        record_log_cost(handle, &log)?;
+        log.record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
@@ -383,8 +403,6 @@ where
     /// Simulate withdraw logic as IWETH-like contract.
     /// Do nothing.
     fn withdraw(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
-        handle.record_cost(GasCost::get())?;
-
         let mut input = handle.read_input()?;
 
         let caller = handle.context().caller;
@@ -405,18 +423,40 @@ where
             });
         }
 
-        let logs_builder = LogsBuilder::new(handle.context().address);
-
-        logs_builder
-            .log2(
-                SELECTOR_LOG_WITHDRAWAL,
-                caller,
-                EvmDataWriter::new().write(amount).build(),
-            )
-            .record(handle)?;
+        let log = LogsBuilder::new(handle.context().address).log2(
+            SELECTOR_LOG_WITHDRAWAL,
+            caller,
+            EvmDataWriter::new().write(amount).build(),
+        );
+        record_log_cost(handle, &log)?;
+        log.record(handle)?;
 
         Ok(succeed(EvmDataWriter::new().write(true).build()))
     }
+}
+
+/// The gas costs of a log, as the EVM charges for the `LOG` opcodes.
+///
+/// Ref: <https://github.com/rust-blockchain/evm/blob/master/gasometer/src/consts.rs>.
+mod log_gas {
+    /// The base cost of a log.
+    pub const G_LOG: u64 = 375;
+    /// The cost of a log data byte.
+    pub const G_LOGDATA: u64 = 8;
+    /// The cost of a log topic.
+    pub const G_LOGTOPIC: u64 = 375;
+}
+
+/// Records the gas cost of the `log` the same way the EVM charges for the `LOG` opcodes.
+///
+/// The precompile handle records the logs without charging for them, so the cost has to be
+/// recorded explicitly.
+fn record_log_cost(handle: &mut impl PrecompileHandle, log: &Log) -> EvmResult {
+    let cost = log_gas::G_LOG
+        .saturating_add(log_gas::G_LOGTOPIC.saturating_mul(log.topics.len() as u64))
+        .saturating_add(log_gas::G_LOGDATA.saturating_mul(log.data.len() as u64));
+    handle.record_cost(cost)?;
+    Ok(())
 }
 
 /// Rejects the call when it is made via `DELEGATECALL` or `CALLCODE`.

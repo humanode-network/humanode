@@ -3,7 +3,10 @@
 
 use codec::{Decode, Encode, MaxEncodedLen};
 use fp_evm::{Context, ExitError, ExitReason, PrecompileHandle, Transfer};
-use frame_support::traits::{ConstU16, ConstU32, ConstU64};
+use frame_support::{
+    traits::{ConstU16, ConstU32, ConstU64},
+    weights::{constants::RocksDbWeight, Weight},
+};
 use frame_system as system;
 use mockall::predicate::*;
 use mockall::*;
@@ -121,7 +124,7 @@ impl system::Config for Test {
     type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
     type BlockLength = ();
-    type DbWeight = ();
+    type DbWeight = RocksDbWeight;
     type RuntimeOrigin = RuntimeOrigin;
     type RuntimeCall = RuntimeCall;
     type Index = u64;
@@ -184,6 +187,31 @@ impl pallet_bioauth::Config for Test {
     type AfterAuthHook = ();
     type DeauthenticationReason = ();
 }
+
+/// The weight of a unit of gas in the mock.
+pub const WEIGHT_PER_GAS: u64 = 25_000;
+
+/// The gas cost of a storage read in the mock: the `RocksDB` read weight over the weight per gas.
+pub const READ_GAS_COST: u64 = 25_000_000 / WEIGHT_PER_GAS;
+
+/// The gas cost of scanning through one authentication: copying its 40 encoded bytes (two
+/// words) and comparing it.
+pub const SCAN_GAS_COST_PER_AUTHENTICATION: u64 = 2 * 3 + 3;
+
+/// A fixed gas-to-weight mapping.
+pub struct MockGasWeightMapping;
+
+impl pallet_evm::GasWeightMapping for MockGasWeightMapping {
+    fn gas_to_weight(gas: u64, _without_base_weight: bool) -> Weight {
+        Weight::from_parts(gas.saturating_mul(WEIGHT_PER_GAS), 0)
+    }
+
+    fn weight_to_gas(weight: Weight) -> u64 {
+        weight.ref_time() / WEIGHT_PER_GAS
+    }
+}
+
+pub type BioauthPrecompile = crate::Bioauth<Test, MockGasWeightMapping>;
 
 mock! {
     pub PrecompileHandle {}

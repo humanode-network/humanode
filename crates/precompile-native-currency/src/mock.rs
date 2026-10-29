@@ -10,7 +10,7 @@ use frame_support::{
         BuildStorage,
     },
     traits::{ConstU16, ConstU32, ConstU64},
-    weights::Weight,
+    weights::{constants::RocksDbWeight, Weight},
 };
 use frame_system as system;
 use precompile_utils::precompile_set::{PrecompileAt, PrecompileSetBuilder};
@@ -26,7 +26,13 @@ pub(crate) type Balance = u128;
 pub(crate) const NAME: &str = "Wrapped eHMND";
 pub(crate) const SYMBOL: &str = "WeHMND";
 pub(crate) const DECIMALS: u8 = 18;
-pub(crate) const GAS_COST: u64 = 200;
+
+/// The weight of a unit of gas in the mock.
+pub(crate) const WEIGHT_PER_GAS: u64 = 20_000;
+/// The gas cost of a storage read in the mock: the `RocksDB` read weight over the weight per gas.
+pub(crate) const READ_GAS_COST: u64 = 25_000_000 / WEIGHT_PER_GAS;
+/// The gas cost of a storage write in the mock: the `RocksDB` write weight over the weight per gas.
+pub(crate) const WRITE_GAS_COST: u64 = 100_000_000 / WEIGHT_PER_GAS;
 
 // Configure a mock runtime to test the pallet.
 frame_support::construct_runtime!(
@@ -50,7 +56,7 @@ impl system::Config for Test {
     type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
     type BlockLength = ();
-    type DbWeight = ();
+    type DbWeight = RocksDbWeight;
     type RuntimeOrigin = RuntimeOrigin;
     type RuntimeCall = RuntimeCall;
     type Index = u64;
@@ -153,7 +159,8 @@ impl fp_evm::FeeCalculator for FixedGasPrice {
 
 pub(crate) static PRECOMPILE_ADDRESS: Lazy<H160> = Lazy::new(|| H160::from_low_u64_be(0x802));
 
-pub(crate) type EvmBalancesErc20Precompile = crate::NativeCurrency<Test, ConstU64<GAS_COST>>;
+pub(crate) type EvmBalancesErc20Precompile =
+    crate::NativeCurrency<Test, pallet_evm::FixedGasWeightMapping<Test>>;
 
 pub type Precompiles<R> =
     PrecompileSetBuilder<R, (PrecompileAt<PrecompileAddress, EvmBalancesErc20Precompile>,)>;
@@ -161,7 +168,7 @@ pub type Precompiles<R> =
 frame_support::parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
     pub GasLimitPovSizeRatio: u64 = 0;
-    pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
+    pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
     pub PrecompileAddress: H160 = *PRECOMPILE_ADDRESS;
     pub PrecompilesValue: Precompiles<Test> = Precompiles::new();
 }

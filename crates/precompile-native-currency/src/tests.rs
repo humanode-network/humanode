@@ -9,6 +9,28 @@ fn precompiles() -> Precompiles<Test> {
     PrecompilesValue::get()
 }
 
+/// The gas cost of a log with 3 topics and 32 bytes of data (`Transfer` and `Approval`).
+const LOG3_GAS_COST: u64 = 375 + 3 * 375 + 8 * 32;
+
+/// The gas cost of a log with 2 topics and 32 bytes of data (`Deposit` and `Withdrawal`).
+const LOG2_GAS_COST: u64 = 375 + 2 * 375 + 8 * 32;
+
+/// The gas cost of the `approve` call: the allowance write.
+const APPROVE_GAS_COST: u64 = WRITE_GAS_COST;
+
+/// The gas cost of the `transfer` call: the reads and writes of the two accounts.
+const TRANSFER_GAS_COST: u64 = 2 * READ_GAS_COST + 2 * WRITE_GAS_COST;
+
+/// The gas cost of the `transferFrom` call: the allowance read and write, plus the reads and
+/// writes of the two accounts.
+const TRANSFER_FROM_GAS_COST: u64 = 3 * READ_GAS_COST + 3 * WRITE_GAS_COST;
+
+/// The gas cost of the `deposit` call: the reads and writes of the precompile and caller accounts.
+const DEPOSIT_GAS_COST: u64 = 2 * READ_GAS_COST + 2 * WRITE_GAS_COST;
+
+/// The gas cost of the `withdraw` call: the caller account read.
+const WITHDRAW_GAS_COST: u64 = READ_GAS_COST;
+
 /// A utility that performs gas to fee computation.
 /// Might not be explicitly correct, but does the job.
 fn gas_to_fee(gas: u64) -> Balance {
@@ -86,7 +108,7 @@ fn total_supply_works() {
 
         precompiles()
             .prepare_test(bob_evm, *PRECOMPILE_ADDRESS, total_supply_action)
-            .expect_cost(0)
+            .expect_cost(READ_GAS_COST)
             .expect_no_logs()
             .execute_returns(
                 EvmDataWriter::new()
@@ -116,7 +138,7 @@ fn balance_of_works() {
 
         precompiles()
             .prepare_test(bob_evm, *PRECOMPILE_ADDRESS, balance_of_action)
-            .expect_cost(0)
+            .expect_cost(READ_GAS_COST)
             .expect_no_logs()
             .execute_returns(
                 EvmDataWriter::new()
@@ -151,7 +173,7 @@ fn approve_works() {
 
         precompiles()
             .prepare_test(alice_evm, *PRECOMPILE_ADDRESS, approve_action)
-            .expect_cost(GAS_COST)
+            .expect_cost(APPROVE_GAS_COST + LOG3_GAS_COST)
             .expect_log(
                 LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
                     SELECTOR_LOG_APPROVAL,
@@ -171,7 +193,7 @@ fn approve_works() {
 
         precompiles()
             .prepare_test(charlie_evm, *PRECOMPILE_ADDRESS, allowance_action)
-            .expect_cost(0)
+            .expect_cost(READ_GAS_COST)
             .expect_no_logs()
             .execute_returns(
                 EvmDataWriter::new()
@@ -203,7 +225,7 @@ fn transfer_works() {
 
         precompiles()
             .prepare_test(alice_evm, *PRECOMPILE_ADDRESS, transfer_action)
-            .expect_cost(GAS_COST)
+            .expect_cost(TRANSFER_GAS_COST + LOG3_GAS_COST)
             .expect_log(
                 LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
                     SELECTOR_LOG_TRANSFER,
@@ -253,7 +275,7 @@ fn transfer_from_works() {
 
         precompiles()
             .prepare_test(alice_evm, *PRECOMPILE_ADDRESS, approve_action)
-            .expect_cost(GAS_COST)
+            .expect_cost(APPROVE_GAS_COST + LOG3_GAS_COST)
             .expect_log(
                 LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
                     SELECTOR_LOG_APPROVAL,
@@ -274,7 +296,7 @@ fn transfer_from_works() {
 
         precompiles()
             .prepare_test(bob_evm, *PRECOMPILE_ADDRESS, transfer_from_action)
-            .expect_cost(GAS_COST)
+            .expect_cost(TRANSFER_FROM_GAS_COST + LOG3_GAS_COST)
             .expect_log(
                 LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
                     SELECTOR_LOG_TRANSFER,
@@ -325,7 +347,7 @@ fn transfer_from_fails_spend_more_than_allowed() {
 
         precompiles()
             .prepare_test(alice_evm, *PRECOMPILE_ADDRESS, approve_action)
-            .expect_cost(GAS_COST)
+            .expect_cost(APPROVE_GAS_COST + LOG3_GAS_COST)
             .expect_log(
                 LogsBuilder::new(*PRECOMPILE_ADDRESS).log3(
                     SELECTOR_LOG_APPROVAL,
@@ -346,7 +368,7 @@ fn transfer_from_fails_spend_more_than_allowed() {
 
         precompiles()
             .prepare_test(bob_evm, *PRECOMPILE_ADDRESS, transfer_from_action)
-            .expect_cost(GAS_COST)
+            .expect_cost(TRANSFER_FROM_GAS_COST)
             .expect_no_logs()
             .execute_error(ExitError::Other("spend more than allowed".into()));
 
@@ -365,7 +387,9 @@ fn deposit_works() {
         let alice_evm_balance = 100 * 10u128.pow(18);
         let alice_deposit_balance = 10 * 10u128.pow(18);
 
-        let expected_gas_usage: u64 = 21264;
+        // The base transaction cost plus 4 non-zero calldata bytes, the `deposit` call cost and
+        // the `Deposit` log.
+        let expected_gas_usage: u64 = 21_000 + 4 * 16 + DEPOSIT_GAS_COST + LOG2_GAS_COST;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
@@ -425,7 +449,9 @@ fn deposit_fails_zero_value() {
         let alice_evm_balance = 100 * 10u128.pow(18);
         let alice_deposit_balance = 0;
 
-        let expected_gas_usage: u64 = 21264;
+        // The base transaction cost plus 4 non-zero calldata bytes and the `deposit` call cost,
+        // which is charged before the value check.
+        let expected_gas_usage: u64 = 21_000 + 4 * 16 + DEPOSIT_GAS_COST;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
@@ -481,7 +507,10 @@ fn withdraw_works() {
         let alice_evm_balance = 100 * 10u128.pow(18);
         let alice_withdraw_balance = 10 * 10u128.pow(18);
 
-        let expected_gas_usage: u64 = 21464;
+        // The base transaction cost plus the calldata (4 non-zero selector bytes, and the amount
+        // with 6 non-zero and 26 zero bytes), the `withdraw` call cost and the `Withdrawal` log.
+        let expected_gas_usage: u64 =
+            21_000 + 4 * 16 + 6 * 16 + 26 * 4 + WITHDRAW_GAS_COST + LOG2_GAS_COST;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
@@ -541,7 +570,10 @@ fn withdraw_fails_more_than_allowed() {
         let alice_evm_balance = 2 * 10u128.pow(18);
         let alice_withdraw_balance = 5 * 10u128.pow(18);
 
-        let expected_gas_usage: u64 = 21464;
+        // The base transaction cost plus the calldata (4 non-zero selector bytes, and the amount
+        // with 6 non-zero and 26 zero bytes) and the `withdraw` call cost, which is charged
+        // before the balance check.
+        let expected_gas_usage: u64 = 21_000 + 4 * 16 + 6 * 16 + 26 * 4 + WITHDRAW_GAS_COST;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         // Prepare the test state.
@@ -586,6 +618,25 @@ fn withdraw_fails_more_than_allowed() {
             alice_evm_balance - expected_fee
         );
     });
+}
+
+/// This test verifies the gas cost of each function, as priced from the DB weights of the storage
+/// reads and writes it performs.
+#[test]
+fn gas_costs() {
+    let gas_cost = EvmBalancesErc20Precompile::gas_cost;
+
+    assert_eq!(gas_cost(Action::Name), 0);
+    assert_eq!(gas_cost(Action::Symbol), 0);
+    assert_eq!(gas_cost(Action::Decimals), 0);
+    assert_eq!(gas_cost(Action::TotalSupply), READ_GAS_COST);
+    assert_eq!(gas_cost(Action::BalanceOf), READ_GAS_COST);
+    assert_eq!(gas_cost(Action::Allowance), READ_GAS_COST);
+    assert_eq!(gas_cost(Action::Approve), APPROVE_GAS_COST);
+    assert_eq!(gas_cost(Action::Transfer), TRANSFER_GAS_COST);
+    assert_eq!(gas_cost(Action::TransferFrom), TRANSFER_FROM_GAS_COST);
+    assert_eq!(gas_cost(Action::Deposit), DEPOSIT_GAS_COST);
+    assert_eq!(gas_cost(Action::Withdraw), WITHDRAW_GAS_COST);
 }
 
 /// The state-changing actions, each with a well-formed input.

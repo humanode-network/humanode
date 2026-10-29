@@ -12,6 +12,7 @@ precompile-utils = { path = "../precompile-utils", default-features = false }
 codec = { workspace = true, features = ["derive"] }
 fp-evm = { workspace = true }
 frame-support = { workspace = true }
+frame-system = { workspace = true }
 num_enum = { workspace = true }
 pallet-evm = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
@@ -21,7 +22,6 @@ sp-core = { workspace = true }
 pallet-evm-system = { path = "../pallet-evm-system", features = ["default"] }
 precompile-utils = { path = "../precompile-utils", features = ["testing"] }
 
-frame-system = { workspace = true }
 hex-literal = { workspace = true }
 pallet-balances = { workspace = true, features = ["default"] }
 pallet-evm = { workspace = true }

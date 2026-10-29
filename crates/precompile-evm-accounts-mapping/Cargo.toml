@@ -10,11 +10,12 @@ primitives-ethereum = { path = "../primitives-ethereum", default-features = fals
 
 codec = { workspace = true, features = ["derive"] }
 fp-evm = { workspace = true }
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-evm = { workspace = true }
 sp-std = { workspace = true }
 
 [dev-dependencies]
-frame-support = { workspace = true }
-frame-system = { workspace = true }
 hex-literal = { workspace = true }
 mockall = { workspace = true }
 scale-info = { workspace = true, features = ["derive"] }
@@ -30,6 +31,7 @@ std = [
   "frame-support/std",
   "frame-system/std",
   "pallet-evm-accounts-mapping/std",
+  "pallet-evm/std",
   "primitives-ethereum/std",
   "scale-info/std",
   "sp-core/std",

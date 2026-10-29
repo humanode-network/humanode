@@ -9,7 +9,7 @@ use frame_support::{
         BuildStorage,
     },
     traits::{ConstU128, ConstU32, ConstU64},
-    weights::Weight,
+    weights::{constants::RocksDbWeight, Weight},
 };
 use precompile_utils::precompile_set::{PrecompileAt, PrecompileSetBuilder};
 use sp_core::{Get, H160, H256, U256};
@@ -19,6 +19,13 @@ use crate::{Config, EvmToNativeSwap};
 pub const INIT_BALANCE: u128 = 10_000_000_000_000_000;
 // Add some tokens to test swap with full balance.
 pub const BRIDGE_INIT_BALANCE: u128 = INIT_BALANCE + 100;
+
+/// The weight of a unit of gas in the mock.
+pub const WEIGHT_PER_GAS: u64 = 20_000;
+/// The gas cost of a storage read in the mock: the `RocksDB` read weight over the weight per gas.
+pub const READ_GAS_COST: u64 = 25_000_000 / WEIGHT_PER_GAS;
+/// The gas cost of a storage write in the mock: the `RocksDB` write weight over the weight per gas.
+pub const WRITE_GAS_COST: u64 = 100_000_000 / WEIGHT_PER_GAS;
 
 pub fn alice() -> EvmAccountId {
     EvmAccountId::from(hex_literal::hex!(
@@ -54,7 +61,7 @@ impl frame_system::Config for Test {
     type BaseCallFilter = frame_support::traits::Everything;
     type BlockWeights = ();
     type BlockLength = ();
-    type DbWeight = ();
+    type DbWeight = RocksDbWeight;
     type RuntimeOrigin = RuntimeOrigin;
     type RuntimeCall = RuntimeCall;
     type Index = u64;
@@ -165,9 +172,11 @@ impl Config for PrecompileConfig {
     type BalanceConverterEvmToNative = Identity;
     type BridgePotNative = BridgePotNative;
     type BridgePotEvm = BridgePotEvm;
+    type DbWeight = <Test as frame_system::Config>::DbWeight;
 }
 
-pub type EvmToNativeSwapPrecompile = EvmToNativeSwap<PrecompileConfig, ConstU64<200>>;
+pub type EvmToNativeSwapPrecompile =
+    EvmToNativeSwap<PrecompileConfig, pallet_evm::FixedGasWeightMapping<Test>>;
 
 pub type Precompiles<R> =
     PrecompileSetBuilder<R, PrecompileAt<PrecompileAddress, EvmToNativeSwapPrecompile>>;
@@ -175,7 +184,7 @@ pub type Precompiles<R> =
 parameter_types! {
     pub BlockGasLimit: U256 = U256::max_value();
     pub GasLimitPovSizeRatio: u64 = 0;
-    pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
+    pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
     pub PrecompileAddress: H160 = *PRECOMPILE_ADDRESS;
     pub PrecompilesValue: Precompiles<Test> = Precompiles::new();
 }

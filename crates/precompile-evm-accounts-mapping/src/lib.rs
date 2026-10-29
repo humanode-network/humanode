@@ -7,6 +7,8 @@ use fp_evm::{
     ExitError, ExitRevert, ExitSucceed, Precompile, PrecompileFailure, PrecompileHandle,
     PrecompileOutput, PrecompileResult,
 };
+use frame_support::traits::Get;
+use pallet_evm::GasWeightMapping;
 use primitives_ethereum::EthereumAddress;
 use sp_std::marker::PhantomData;
 
@@ -16,22 +18,21 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-/// The cost of the operation in gas.
-// TODO(#378): implement proper dynamic gas cost estimation.
-const GAS_COST: u64 = 200;
-
 /// Exposes a proper evm accounts mapping to native accounts.
-pub struct EvmAccountsMapping<Runtime>(PhantomData<Runtime>);
+///
+/// The calls are priced through the `GasWeightMapping`, see [`EvmAccountsMapping::gas_cost`].
+pub struct EvmAccountsMapping<Runtime, GasWeightMapping>(PhantomData<(Runtime, GasWeightMapping)>);
 
-impl<T> Precompile for EvmAccountsMapping<T>
+impl<T, G> Precompile for EvmAccountsMapping<T, G>
 where
     T: pallet_evm_accounts_mapping::Config,
+    G: GasWeightMapping,
 {
     fn execute(handle: &mut impl PrecompileHandle) -> PrecompileResult {
         ensure_not_delegate_call(handle)?;
         ensure_no_value(handle)?;
 
-        handle.record_cost(GAS_COST)?;
+        handle.record_cost(Self::gas_cost())?;
 
         let ethereum_address_bytes: [u8; 20] =
             handle
@@ -53,6 +54,20 @@ where
             exit_status: ExitSucceed::Returned,
             output: precompile_output,
         })
+    }
+}
+
+impl<T, G> EvmAccountsMapping<T, G>
+where
+    T: pallet_evm_accounts_mapping::Config,
+    G: GasWeightMapping,
+{
+    /// The gas cost of a call to the precompile.
+    ///
+    /// The call performs a single storage read of the mapping, priced from the runtime DB weights
+    /// through the gas-to-weight mapping, the same way the EVM opcodes are priced.
+    pub fn gas_cost() -> u64 {
+        G::weight_to_gas(<T as frame_system::Config>::DbWeight::get().reads(1))
     }
 }
 

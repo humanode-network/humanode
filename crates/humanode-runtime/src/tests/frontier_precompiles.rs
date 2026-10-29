@@ -10,7 +10,10 @@ use sp_core::H160;
 
 use super::*;
 use crate::dev_utils::*;
-use crate::frontier_precompiles::{hash, precompiles_constants::*};
+use crate::frontier_precompiles::{
+    hash, precompiles_constants::*, BioauthPrecompile, EvmAccountsMappingPrecompile,
+    EvmToNativeSwapPrecompile, NativeCurrencyPrecompile,
+};
 use crate::opaque::SessionKeys;
 
 static GAS_PRICE: Lazy<U256> =
@@ -420,4 +423,43 @@ fn humanode_precompiles_accept_static_call_for_view_functions() {
             );
         }
     })
+}
+
+/// This test verifies the gas costs of the custom Humanode precompiles as priced from the runtime
+/// DB weights: 1000 gas per storage read and 4000 gas per storage write.
+#[test]
+fn humanode_precompiles_gas_costs() {
+    use precompile_native_currency::Action;
+
+    const READ: u64 = 1000;
+    const WRITE: u64 = 4000;
+
+    let native_currency = NativeCurrencyPrecompile::<Runtime>::gas_cost;
+    assert_eq!(native_currency(Action::Name), 0);
+    assert_eq!(native_currency(Action::Symbol), 0);
+    assert_eq!(native_currency(Action::Decimals), 0);
+    assert_eq!(native_currency(Action::TotalSupply), READ);
+    assert_eq!(native_currency(Action::BalanceOf), READ);
+    assert_eq!(native_currency(Action::Allowance), READ);
+    assert_eq!(native_currency(Action::Approve), WRITE);
+    assert_eq!(native_currency(Action::Transfer), 2 * READ + 2 * WRITE);
+    assert_eq!(native_currency(Action::TransferFrom), 3 * READ + 3 * WRITE);
+    assert_eq!(native_currency(Action::Deposit), 2 * READ + 2 * WRITE);
+    assert_eq!(native_currency(Action::Withdraw), READ);
+
+    assert_eq!(
+        EvmToNativeSwapPrecompile::<Runtime>::gas_cost(),
+        4 * READ + 4 * WRITE
+    );
+
+    assert_eq!(EvmAccountsMappingPrecompile::<Runtime>::gas_cost(), READ);
+
+    // The bioauth lookup reads the list, then scans it at 9 gas per authentication: two words
+    // to copy and a comparison.
+    assert_eq!(BioauthPrecompile::<Runtime>::read_gas_cost(), READ);
+    assert_eq!(BioauthPrecompile::<Runtime>::scan_gas_cost(1), 2 * 3 + 3);
+    assert_eq!(
+        BioauthPrecompile::<Runtime>::max_gas_cost(),
+        READ + u64::from(MAX_AUTHENTICATIONS) * 9
+    );
 }

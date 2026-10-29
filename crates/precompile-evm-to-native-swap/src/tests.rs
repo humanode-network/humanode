@@ -23,6 +23,13 @@ fn target_swap_native_account() -> AccountId {
     ))
 }
 
+/// The gas cost of the precompile call: the reads and writes of the two accounts on the EVM side
+/// and of the two accounts on the native side.
+const GAS_COST: u64 = 4 * READ_GAS_COST + 4 * WRITE_GAS_COST;
+
+/// The gas cost of the `Swap` log: 3 topics and 32 bytes of data.
+const SWAP_LOG_GAS_COST: u64 = 375 + 3 * 375 + 8 * 32;
+
 /// A utility that performs gas to fee computation.
 fn gas_to_fee(gas: u64) -> Balance {
     Balance::from(gas) * Balance::try_from(*GAS_PRICE).unwrap()
@@ -103,11 +110,18 @@ fn run_succeeded_test_and_assert(
     assert_eq!(EvmBalances::total_balance(&*PRECOMPILE_ADDRESS), 0);
 }
 
+/// This test verifies the gas cost of the precompile call, as priced from the DB weights of
+/// the storage reads and writes it performs.
+#[test]
+fn gas_cost() {
+    assert_eq!(EvmToNativeSwapPrecompile::gas_cost(), GAS_COST);
+}
+
 /// This test verifies that the swap precompile call works in the happy path.
 #[test]
 fn swap_works() {
     new_test_ext().execute_with_ext(|_| {
-        let expected_gas_usage: u64 = 21216 + 200;
+        let expected_gas_usage: u64 = 21216 + GAS_COST + SWAP_LOG_GAS_COST;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         run_succeeded_test_and_assert(100, expected_gas_usage, expected_fee);
@@ -120,7 +134,7 @@ fn swap_works() {
 #[test]
 fn swap_works_almost_full_balance() {
     new_test_ext().execute_with_ext(|_| {
-        let expected_gas_usage: u64 = 21216 + 200;
+        let expected_gas_usage: u64 = 21216 + GAS_COST + SWAP_LOG_GAS_COST;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         run_succeeded_test_and_assert(
@@ -135,7 +149,7 @@ fn swap_works_almost_full_balance() {
 #[test]
 fn swap_works_full_balance() {
     new_test_ext().execute_with_ext(|_| {
-        let expected_gas_usage: u64 = 21216 + 200;
+        let expected_gas_usage: u64 = 21216 + GAS_COST + SWAP_LOG_GAS_COST;
         let expected_fee: Balance = gas_to_fee(expected_gas_usage);
 
         run_succeeded_test_and_assert(

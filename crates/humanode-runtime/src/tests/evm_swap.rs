@@ -174,7 +174,12 @@ fn ewm_to_native_precompile_call_works() {
         let fees_pot_balance_before = Balances::total_balance(&FeesPot::account_id());
         let swap_balance: Balance = 1000;
 
-        let expected_gas_usage: u64 = 21216 + 560;
+        // The base transaction cost plus 36 non-zero calldata bytes, the precompile call cost
+        // and the `Swap` log with 3 topics and 32 bytes of data.
+        let expected_gas_usage: u64 = 21_000
+            + 36 * 16
+            + crate::frontier_precompiles::EvmToNativeSwapPrecompile::<Runtime>::gas_cost()
+            + (375 + 3 * 375 + 8 * 32);
         let expected_fee: Balance =
             Balance::from(expected_gas_usage) * Balance::try_from(*GAS_PRICE).unwrap();
 

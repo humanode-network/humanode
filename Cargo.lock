@@ -7064,6 +7064,7 @@ dependencies = [
  "frame-system",
  "hex-literal",
  "mockall",
+ "pallet-evm",
  "pallet-evm-accounts-mapping",
  "parity-scale-codec",
  "primitives-ethereum",

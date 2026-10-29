@@ -22,6 +22,7 @@ impl precompile_evm_to_native_swap::Config for EvmToNativeSwapConfig {
     type BalanceConverterEvmToNative = Identity;
     type BridgePotNative = NativeToEvmSwapBridgePotAccountId;
     type BridgePotEvm = EvmToNativeSwapBridgePotAccountId;
+    type DbWeight = <Runtime as frame_system::Config>::DbWeight;
 }
 
 pub type NativeToEvmOneToOne =

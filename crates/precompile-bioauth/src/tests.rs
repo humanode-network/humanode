@@ -1,4 +1,5 @@
 use frame_support::{traits::ConstU32, BoundedVec};
+use mockall::{predicate::eq, Sequence};
 use pallet_evm::ExitSucceed;
 use precompile_utils::{Bytes, EvmDataWriter};
 
@@ -61,7 +62,7 @@ fn test_delegate_call() {
         );
         let handle = &mut mock_handle as _;
 
-        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
+        let err = BioauthPrecompile::execute(handle).unwrap_err();
         assert_eq!(
             err,
             PrecompileFailure::Revert {
@@ -88,7 +89,7 @@ fn test_value() {
         );
         let handle = &mut mock_handle as _;
 
-        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
+        let err = BioauthPrecompile::execute(handle).unwrap_err();
         assert_eq!(
             err,
             PrecompileFailure::Revert {
@@ -105,7 +106,7 @@ fn test_empty_selector() {
         let mut mock_handle = mock_handle(vec![], regular_context());
         let handle = &mut mock_handle as _;
 
-        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
+        let err = BioauthPrecompile::execute(handle).unwrap_err();
         assert_eq!(
             err,
             PrecompileFailure::Error {
@@ -123,7 +124,7 @@ fn test_is_authenticated_empty_input() {
         let mut mock_handle = mock_handle(input, regular_context());
         let handle = &mut mock_handle as _;
 
-        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
+        let err = BioauthPrecompile::execute(handle).unwrap_err();
         assert_eq!(
             err,
             PrecompileFailure::Error {
@@ -143,7 +144,7 @@ fn test_is_authenticated_invalid_input() {
         let mut mock_handle = mock_handle(input, regular_context());
         let handle = &mut mock_handle as _;
 
-        let err = crate::Bioauth::<Test>::execute(handle).unwrap_err();
+        let err = BioauthPrecompile::execute(handle).unwrap_err();
         assert_eq!(
             err,
             PrecompileFailure::Error {
@@ -171,13 +172,73 @@ fn test_is_authenticated_true() {
         let mut mock_handle = mock_handle(input, regular_context());
         let handle = &mut mock_handle as _;
 
-        let val = crate::Bioauth::<Test>::execute(handle).unwrap();
+        let val = BioauthPrecompile::execute(handle).unwrap();
         assert_eq!(
             val,
             PrecompileOutput {
                 exit_status: ExitSucceed::Returned,
                 output: EvmDataWriter::new().write(true).build(),
             }
+        );
+    })
+}
+
+/// This test verifies the gas costs of the call: the list read is charged before the read, and
+/// the scan is charged for the actual list size before the scan.
+#[test]
+fn test_gas_costs() {
+    new_test_ext().execute_with(|| {
+        let input = EvmDataWriter::new_with_selector(Action::IsAuthenticated)
+            .write(sp_core::H256::from([0; 32]))
+            .build();
+
+        pallet_bioauth::ActiveAuthentications::<Test>::put(make_bounded_authentications(
+            (1..=3)
+                .map(|i| TestAuthentication {
+                    public_key: [i; 32],
+                    expires_at: 1,
+                })
+                .collect(),
+        ));
+
+        let mut mock_handle = MockPrecompileHandle::new();
+        let mut seq = Sequence::new();
+        mock_handle
+            .expect_record_cost()
+            .with(eq(READ_GAS_COST))
+            .times(1)
+            .in_sequence(&mut seq)
+            .returning(|_| Ok(()));
+        mock_handle
+            .expect_record_cost()
+            .with(eq(3 * SCAN_GAS_COST_PER_AUTHENTICATION))
+            .times(1)
+            .in_sequence(&mut seq)
+            .returning(|_| Ok(()));
+        mock_handle.expect_input().return_const(input);
+        mock_handle
+            .expect_code_address()
+            .return_const(precompile_address());
+        mock_handle.expect_context().return_const(regular_context());
+        let handle = &mut mock_handle as _;
+
+        let val = BioauthPrecompile::execute(handle).unwrap();
+        assert_eq!(
+            val,
+            PrecompileOutput {
+                exit_status: ExitSucceed::Returned,
+                output: EvmDataWriter::new().write(false).build(),
+            }
+        );
+
+        assert_eq!(BioauthPrecompile::read_gas_cost(), READ_GAS_COST);
+        assert_eq!(
+            BioauthPrecompile::scan_gas_cost(1),
+            SCAN_GAS_COST_PER_AUTHENTICATION
+        );
+        assert_eq!(
+            BioauthPrecompile::max_gas_cost(),
+            READ_GAS_COST + u64::from(MAX_AUTHENTICATIONS) * SCAN_GAS_COST_PER_AUTHENTICATION
         );
     })
 }
@@ -194,7 +255,7 @@ fn test_is_authenticated_false() {
         let mut mock_handle = mock_handle(input, regular_context());
         let handle = &mut mock_handle as _;
 
-        let val = crate::Bioauth::<Test>::execute(handle).unwrap();
+        let val = BioauthPrecompile::execute(handle).unwrap();
         assert_eq!(
             val,
             PrecompileOutput {

@@ -20,7 +20,7 @@ use precompile_utils::EvmData;
 use sp_core::{H160, U256};
 use sp_std::marker::PhantomData;
 
-use crate::{evm_swap, ConstU64, EvmAccountId};
+use crate::{evm_swap, EvmAccountId};
 
 /// A set of constant values used to indicate precompiles.
 pub mod precompiles_constants {
@@ -102,6 +102,22 @@ fn execute_forbidding_delegate_call<H: PrecompileHandle>(
     }
     execute(handle)
 }
+
+/// The gas-to-weight mapping of the runtime, used to price the custom Humanode precompiles.
+type GasWeightMappingOf<R> = <R as pallet_evm::Config>::GasWeightMapping;
+
+/// The `Bioauth` precompile as wired in the runtime.
+pub type BioauthPrecompile<R> = Bioauth<R, GasWeightMappingOf<R>>;
+
+/// The `EvmAccountsMapping` precompile as wired in the runtime.
+pub type EvmAccountsMappingPrecompile<R> = EvmAccountsMapping<R, GasWeightMappingOf<R>>;
+
+/// The `NativeCurrency` precompile as wired in the runtime.
+pub type NativeCurrencyPrecompile<R> = NativeCurrency<R, GasWeightMappingOf<R>>;
+
+/// The `EvmToNativeSwap` precompile as wired in the runtime.
+pub type EvmToNativeSwapPrecompile<R> =
+    EvmToNativeSwap<evm_swap::EvmToNativeSwapConfig, GasWeightMappingOf<R>>;
 
 pub struct FrontierPrecompiles<R>(PhantomData<R>);
 
@@ -189,23 +205,19 @@ where
             // Humanode precompiles (stateful, must not be reached via DELEGATECALL/CALLCODE):
             a if a == hash(BIOAUTH) => Some(execute_forbidding_delegate_call(
                 handle,
-                Bioauth::<R>::execute,
+                BioauthPrecompile::<R>::execute,
             )),
             a if a == hash(EVM_ACCOUNTS_MAPPING) => Some(execute_forbidding_delegate_call(
                 handle,
-                EvmAccountsMapping::<R>::execute,
+                EvmAccountsMappingPrecompile::<R>::execute,
             )),
             a if a == hash(NATIVE_CURRENCY) => Some(execute_forbidding_delegate_call(
                 handle,
-                NativeCurrency::<R, ConstU64<200>>::execute,
+                NativeCurrencyPrecompile::<R>::execute,
             )),
             a if a == hash(EVM_TO_NATIVE_SWAP) => Some(execute_forbidding_delegate_call(
                 handle,
-                EvmToNativeSwap::<
-                    evm_swap::EvmToNativeSwapConfig,
-                    // TODO(#697): implement proper dynamic gas cost estimation.
-                    ConstU64<200>,
-                >::execute,
+                EvmToNativeSwapPrecompile::<R>::execute,
             )),
             // Fallback
             _ => None,

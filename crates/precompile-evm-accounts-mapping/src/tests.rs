@@ -1,4 +1,5 @@
 use hex_literal::hex;
+use mockall::predicate::eq;
 use primitives_ethereum::EthereumAddress;
 
 use crate::{mock::*, *};
@@ -20,7 +21,11 @@ fn regular_context() -> fp_evm::Context {
 /// Build a mock handle for a call to the precompile with the given `input` and `context`.
 fn mock_handle(input: Vec<u8>, context: fp_evm::Context) -> MockPrecompileHandle {
     let mut mock_handle = MockPrecompileHandle::new();
-    mock_handle.expect_record_cost().returning(|_| Ok(()));
+    // The call is a single storage read; the cost is asserted on every call that gets to it.
+    mock_handle
+        .expect_record_cost()
+        .with(eq(READ_GAS_COST))
+        .returning(|_| Ok(()));
     mock_handle.expect_input().return_const(input);
     mock_handle
         .expect_code_address()
@@ -45,7 +50,7 @@ fn test_error_delegate_call() {
         );
         let handle = &mut mock_handle as _;
 
-        let err = crate::EvmAccountsMapping::<Test>::execute(handle).unwrap_err();
+        let err = EvmAccountsMappingPrecompile::execute(handle).unwrap_err();
         assert_eq!(
             err,
             PrecompileFailure::Revert {
@@ -71,7 +76,7 @@ fn test_error_value() {
         );
         let handle = &mut mock_handle as _;
 
-        let err = crate::EvmAccountsMapping::<Test>::execute(handle).unwrap_err();
+        let err = EvmAccountsMappingPrecompile::execute(handle).unwrap_err();
         assert_eq!(
             err,
             PrecompileFailure::Revert {
@@ -89,13 +94,40 @@ fn test_error_invalid_input() {
         let mut mock_handle = mock_handle(vec![], regular_context());
         let handle = &mut mock_handle as _;
 
-        let err = crate::EvmAccountsMapping::<Test>::execute(handle).unwrap_err();
+        let err = EvmAccountsMappingPrecompile::execute(handle).unwrap_err();
         assert_eq!(
             err,
             PrecompileFailure::Error {
                 exit_status: ExitError::Other("input must be a valid ethereum address".into())
             }
         );
+    })
+}
+
+// This test verifies the gas cost of the call: a single storage read of the mapping.
+#[test]
+fn test_gas_cost() {
+    new_test_ext().execute_with(|| {
+        let ethereum_address = EthereumAddress(hex!("6Be02d1d3665660d22FF9624b7BE0551ee1Ac91b"));
+
+        let mut mock_handle = MockPrecompileHandle::new();
+        mock_handle
+            .expect_record_cost()
+            .with(eq(READ_GAS_COST))
+            .times(1)
+            .returning(|_| Ok(()));
+        mock_handle
+            .expect_input()
+            .return_const(ethereum_address.0.to_vec());
+        mock_handle
+            .expect_code_address()
+            .return_const(precompile_address());
+        mock_handle.expect_context().return_const(regular_context());
+        let handle = &mut mock_handle as _;
+
+        EvmAccountsMappingPrecompile::execute(handle).unwrap();
+
+        assert_eq!(EvmAccountsMappingPrecompile::gas_cost(), READ_GAS_COST);
     })
 }
 
@@ -118,7 +150,7 @@ fn test_success_mapped_ethereum_address() {
         let mut mock_handle = mock_handle(ethereum_address.0.to_vec(), regular_context());
         let handle = &mut mock_handle as _;
 
-        let val = crate::EvmAccountsMapping::<Test>::execute(handle).unwrap();
+        let val = EvmAccountsMappingPrecompile::execute(handle).unwrap();
         assert_eq!(
             val,
             PrecompileOutput {
@@ -139,7 +171,7 @@ fn test_success_unmapped_ethereum_address() {
         let mut mock_handle = mock_handle(ethereum_address.0.to_vec(), regular_context());
         let handle = &mut mock_handle as _;
 
-        let val = crate::EvmAccountsMapping::<Test>::execute(handle).unwrap();
+        let val = EvmAccountsMappingPrecompile::execute(handle).unwrap();
         assert_eq!(
             val,
             PrecompileOutput {
