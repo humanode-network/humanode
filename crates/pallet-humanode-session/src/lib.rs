@@ -1,6 +1,7 @@
 //! A substrate pallet containing the humanode session management logic.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 extern crate alloc;
 
@@ -123,6 +124,7 @@ pub mod pallet {
         TooManyBannedAccounts,
     }
 
+    /// Dispatchable calls exposed by the Humanode session pallet.
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Ban account.

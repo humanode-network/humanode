@@ -8,6 +8,7 @@
 //! it at integration!
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::traits::{Currency, StorageVersion};
 pub use weights::*;
@@ -64,6 +65,7 @@ pub mod pallet {
     #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T>(_);
 
+    /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config {
         /// Overarching event type.
@@ -159,6 +161,7 @@ pub mod pallet {
         }
     }
 
+    /// Events emitted by the token claims pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
@@ -198,6 +201,7 @@ pub mod pallet {
         },
     }
 
+    /// Errors returned by the token claims pallet.
     #[pallet::error]
     pub enum Error<T> {
         /// The signature was invalid.
@@ -218,6 +222,7 @@ pub mod pallet {
         FundsConsumerOverflow,
     }
 
+    /// Dispatchable calls exposed by the token claims pallet.
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// Claim the tokens.

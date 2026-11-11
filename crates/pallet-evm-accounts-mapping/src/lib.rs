@@ -1,6 +1,7 @@
 //! A substrate pallet that provides logic to map Substrate and EVM accounts.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::{pallet_prelude::*, sp_std::prelude::*};
 use frame_system::pallet_prelude::*;
@@ -40,6 +41,7 @@ pub mod pallet {
     use super::*;
     use crate::weights::WeightInfo;
 
+    /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config {
         /// Event type.
@@ -52,6 +54,7 @@ pub mod pallet {
         type WeightInfo: WeightInfo;
     }
 
+    /// Events emitted by the EVM accounts mapping pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(crate) fn deposit_event)]
     pub enum Event<T: Config> {
@@ -64,6 +67,7 @@ pub mod pallet {
         },
     }
 
+    /// Errors returned by the EVM accounts mapping pallet.
     #[pallet::error]
     pub enum Error<T> {
         /// The native address has already been mapped.
@@ -108,6 +112,7 @@ pub mod pallet {
         }
     }
 
+    /// Dispatchable calls exposed by the EVM accounts mapping pallet.
     #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Create a permanent two-way binding between an Ethereum address and a native address.

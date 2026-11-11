@@ -1,6 +1,7 @@
 //! A substrate pallet containing the bioauth integration.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 // Fix clippy for sp_api::decl_runtime_apis!
 #![allow(clippy::too_many_arguments, clippy::unnecessary_mut_passed)]
 
@@ -180,11 +181,7 @@ impl<BeforeHookData> AfterAuthHook<BeforeHookData> for () {
 
 // We have to temporarily allow some clippy lints. Later on we'll send patches to substrate to
 // fix them at their end.
-#[allow(
-    missing_docs,
-    clippy::missing_docs_in_private_items,
-    clippy::unused_unit
-)]
+#[allow(clippy::missing_docs_in_private_items, clippy::unused_unit)]
 #[frame_support::pallet]
 pub mod pallet {
     use codec::MaxEncodedLen;
@@ -299,9 +296,13 @@ pub mod pallet {
 
     #[pallet::genesis_config]
     #[derive(frame_support::DefaultNoBound)]
+    /// Genesis configuration for the bioauth pallet.
     pub struct GenesisConfig<T: Config> {
+        /// The initial robonode public key.
         pub robonode_public_key: T::RobonodePublicKey,
+        /// The auth ticket nonces that are already consumed at genesis.
         pub consumed_auth_ticket_nonces: BoundedVec<BoundedAuthTicketNonce, T::MaxNonces>,
+        /// The authentications that are active at genesis.
         pub active_authentications:
             BoundedVec<Authentication<T::ValidatorPublicKey, T::Moment>, T::MaxAuthentications>,
     }
@@ -318,21 +319,25 @@ pub mod pallet {
         }
     }
 
-    // Pallets use events to inform users when important changes are made.
+    /// Events emitted by the bioauth pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
         /// New authentication was added to the state.
         NewAuthentication {
+            /// The authentication that was added.
             authentication: Authentication<T::ValidatorPublicKey, T::Moment>,
         },
         /// The authentications has been expired.
         AuthenticationsExpired {
+            /// The authentications that expired.
             expired: Vec<Authentication<T::ValidatorPublicKey, T::Moment>>,
         },
         /// The authentications has been removed from the state for some reason.
         AuthenticationsRemoved {
+            /// The authentications that were removed.
             removed: Vec<Authentication<T::ValidatorPublicKey, T::Moment>>,
+            /// The reason the authentications were removed.
             reason: T::DeauthenticationReason,
         },
     }
@@ -388,12 +393,14 @@ pub mod pallet {
 
     /// Public API the pallet exposes to the runtime.
     impl<T: Config> Pallet<T> {
+        /// Return whether the validator public key has an active authentication.
         pub fn is_authenticated(public_key: &<T as Config>::ValidatorPublicKey) -> bool {
             ActiveAuthentications::<T>::get()
                 .iter()
                 .any(|authentication| &authentication.public_key == public_key)
         }
 
+        /// Remove the requested active authentications and return those that were removed.
         pub fn deauthenticate(
             authentications: Vec<
                 Authentication<<T as Config>::ValidatorPublicKey, <T as Config>::Moment>,
@@ -421,6 +428,7 @@ pub mod pallet {
         }
     }
 
+    /// Dispatchable calls exposed by the bioauth pallet.
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// ### Complexity
@@ -511,6 +519,7 @@ pub mod pallet {
             Ok(())
         }
 
+        /// Replace the robonode public key and clear all active authentications.
         #[pallet::call_index(1)]
         #[pallet::weight(T::WeightInfo::set_robonode_public_key(
             <ActiveAuthentications<T>>::get().len().try_into()
@@ -603,6 +612,7 @@ pub mod pallet {
             Ok(auth_ticket)
         }
 
+        /// Validate an unsigned authentication transaction before it enters the transaction pool.
         pub fn check_tx(
             transaction: &Authenticate<T::OpaqueAuthTicket, T::RobonodeSignature>,
         ) -> TransactionValidity {

@@ -2,6 +2,7 @@
 
 // Either generate code at standard mode, or `no_std`, based on the `std` feature presence.
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 #[cfg(feature = "try-runtime")]
 use frame_support::{sp_runtime::TryRuntimeError, sp_std::vec::Vec};
@@ -134,6 +135,7 @@ pub mod pallet {
         }
     }
 
+    /// Errors returned by the bridges initializer pallet.
     #[pallet::error]
     pub enum Error<T> {
         /// The currencies are not balanced.
@@ -157,6 +159,7 @@ pub mod pallet {
         }
     }
 
+    /// Dispatchable calls exposed by the bridges initializer pallet.
     #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Verify if currencies are balanced.

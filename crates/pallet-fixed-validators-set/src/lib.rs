@@ -1,6 +1,7 @@
 //! A substrate pallet for providing a fixed validators set.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::traits::StorageVersion;
 
@@ -69,6 +70,7 @@ pub mod pallet {
         }
     }
 
+    /// Events emitted by the fixed validators set pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
@@ -76,6 +78,7 @@ pub mod pallet {
         SetUpdated,
     }
 
+    /// Dispatchable calls exposed by the fixed validators set pallet.
     #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Update the fixed validators set.

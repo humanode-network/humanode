@@ -1,6 +1,7 @@
 //! Vesting.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::traits::{Currency, LockIdentifier, LockableCurrency, StorageVersion};
 pub use weights::*;
@@ -45,6 +46,7 @@ pub mod pallet {
     #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T>(_);
 
+    /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config {
         /// Overarching event type.
@@ -75,6 +77,7 @@ pub mod pallet {
     pub type Schedules<T> =
         StorageMap<_, Twox64Concat, AccountIdOf<T>, <T as Config>::Schedule, OptionQuery>;
 
+    /// Events emitted by the vesting pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
@@ -112,6 +115,7 @@ pub mod pallet {
         },
     }
 
+    /// Errors returned by the vesting pallet.
     #[pallet::error]
     pub enum Error<T> {
         /// Vesting is already engaged for a given account.
@@ -121,6 +125,7 @@ pub mod pallet {
         NoVesting,
     }
 
+    /// Dispatchable calls exposed by the vesting pallet.
     #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Unlock the vested balance according to the schedule.
