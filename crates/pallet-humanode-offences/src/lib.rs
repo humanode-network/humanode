@@ -1,6 +1,7 @@
 //! A substrate pallet containing the humanode offences handler logic.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::{
     sp_std::prelude::*,
@@ -47,6 +48,7 @@ pub mod pallet {
     #[pallet::storage]
     pub type Total<T: Config> = StorageValue<_, u64>;
 
+    /// Events emitted when Humanode offences are reported.
     #[pallet::event]
     #[pallet::generate_deposit(pub(crate) fn deposit_event)]
     pub enum Event<T: Config> {

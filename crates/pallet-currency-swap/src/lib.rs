@@ -1,6 +1,7 @@
 //! A substrate pallet containing the currency swap integration.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::traits::{fungible::Inspect, tokens::Provenance, Currency};
 pub use pallet::*;
@@ -78,6 +79,7 @@ pub mod pallet {
         type WeightInfo: WeightInfo;
     }
 
+    /// Events emitted by the currency swap pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
@@ -94,6 +96,7 @@ pub mod pallet {
         },
     }
 
+    /// Dispatchable calls exposed by the currency swap pallet.
     #[pallet::call(weight(T::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Swap balances.

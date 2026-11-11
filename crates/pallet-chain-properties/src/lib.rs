@@ -1,6 +1,7 @@
 //! A substrate minimal Pallet that stores chain properties in the runtime.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::traits::StorageVersion;
 pub use pallet::*;

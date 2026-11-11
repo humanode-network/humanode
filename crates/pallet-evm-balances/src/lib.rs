@@ -1,6 +1,7 @@
 //! # EVM Balances Pallet.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use codec::{Codec, Decode, Encode, MaxEncodedLen};
 use frame_support::{
@@ -56,6 +57,7 @@ pub mod pallet {
     #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T, I = ()>(PhantomData<(T, I)>);
 
+    /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config<I: 'static = ()>: frame_system::Config {
         /// The overarching event type.
@@ -106,6 +108,7 @@ pub mod pallet {
     pub type InactiveIssuance<T: Config<I>, I: 'static = ()> =
         StorageValue<_, T::Balance, ValueQuery>;
 
+    /// Events emitted by the EVM balances pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config<I>, I: 'static = ()> {
@@ -201,6 +204,7 @@ pub mod pallet {
         },
     }
 
+    /// Errors returned by the EVM balances pallet.
     #[pallet::error]
     pub enum Error<T, I = ()> {
         /// Account liquidity restrictions prevent withdrawal.

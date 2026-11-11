@@ -1,6 +1,7 @@
 //! A substrate pallet.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 #[cfg(feature = "try-runtime")]
 use frame_support::sp_runtime::TryRuntimeError;

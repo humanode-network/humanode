@@ -1,6 +1,7 @@
 //! # EVM System Pallet.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use codec::{Decode, Encode, FullCodec, MaxEncodedLen};
 use frame_support::traits::StoredMap;
@@ -42,6 +43,7 @@ pub mod pallet {
     #[pallet::without_storage_info]
     pub struct Pallet<T>(PhantomData<T>);
 
+    /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config {
         /// The overarching event type.
@@ -94,6 +96,7 @@ pub mod pallet {
         ValueQuery,
     >;
 
+    /// Events emitted by the EVM system pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {

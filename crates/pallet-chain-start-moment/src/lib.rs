@@ -1,6 +1,7 @@
 //! A pallet that captures the moment of the chain start.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::traits::{StorageVersion, Time};
 
@@ -28,6 +29,7 @@ pub mod pallet {
     #[pallet::storage_version(STORAGE_VERSION)]
     pub struct Pallet<T>(_);
 
+    /// Configuration trait of this pallet.
     #[pallet::config]
     pub trait Config: frame_system::Config {
         /// A type representing the time moment and providing the current time.

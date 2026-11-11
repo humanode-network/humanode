@@ -4,6 +4,7 @@
 //! Intended for use as an implementation for the treasury, fee pot, etc.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::{
     pallet_prelude::*,
@@ -101,6 +102,7 @@ pub mod pallet {
     #[pallet::storage]
     pub type Inactive<T: Config<I>, I: 'static = ()> = StorageValue<_, BalanceOf<T, I>, ValueQuery>;
 
+    /// Events emitted by the pot pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config<I>, I: 'static = ()> {

@@ -1,6 +1,7 @@
 //! A substrate pallet containing native to EVM swap tokens integration.
 
 #![cfg_attr(not(feature = "std"), no_std)]
+#![deny(missing_docs)]
 
 use frame_support::traits::{
     fungible::{Inspect, Mutate},
@@ -81,6 +82,7 @@ pub mod pallet {
         type WeightInfo: WeightInfo;
     }
 
+    /// Events emitted by the native-to-EVM swap pallet.
     #[pallet::event]
     #[pallet::generate_deposit(pub(super) fn deposit_event)]
     pub enum Event<T: Config> {
@@ -106,6 +108,7 @@ pub mod pallet {
         EthereumExecutionNotSucceeded,
     }
 
+    /// Dispatchable calls exposed by the native-to-EVM swap pallet.
     #[pallet::call(weight(<T as Config>::WeightInfo))]
     impl<T: Config> Pallet<T> {
         /// Swap balances.
