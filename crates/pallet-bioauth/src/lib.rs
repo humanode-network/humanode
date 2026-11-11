@@ -424,8 +424,10 @@ pub mod pallet {
     #[pallet::call]
     impl<T: Config> Pallet<T> {
         /// ### Complexity
-        /// `O(M + N)` where `M` is the number of authentications and `N` is the number of nonces
-        /// Cost incurred from decoding vec of length M or N. Charged as maximum.
+        ///
+        /// The cost grows linearly with the current number of active authentications and consumed
+        /// nonces. The benchmark varies both lengths independently, and the weight is charged with
+        /// their current values because this call decodes and scans both bounded vectors.
         #[pallet::call_index(0)]
         #[pallet::weight(T::WeightInfo::authenticate(
             <ActiveAuthentications<T>>::get().len().try_into()
