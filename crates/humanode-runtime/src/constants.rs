@@ -12,13 +12,17 @@
 pub mod block_time {
     use crate::BlockNumber;
 
-    // NOTE: Currently it is not possible to change the slot duration after the chain has started.
-    //       Attempting to do so will brick block production.
+    /// Target block time, in milliseconds.
+    ///
+    /// The slot duration is fixed at genesis. Changing it after the chain has started bricks
+    /// block production.
     pub const MILLISECS_PER_BLOCK: u64 = 6000;
+    /// Whole seconds in one block, derived from [`MILLISECS_PER_BLOCK`].
     pub const SECS_PER_BLOCK: u64 = MILLISECS_PER_BLOCK / 1000;
 
-    // These time units are defined in number of blocks.
+    /// One minute, measured in blocks.
     pub const MINUTES: BlockNumber = 60 / (SECS_PER_BLOCK as BlockNumber);
+    /// One hour, measured in blocks.
     pub const HOURS: BlockNumber = MINUTES * 60;
 }
 
@@ -26,9 +30,13 @@ pub mod block_time {
 pub mod timestamp {
     use crate::UnixMilliseconds;
 
+    /// One second, in unix milliseconds.
     pub const TIMESTAMP_SECOND: UnixMilliseconds = 1000;
+    /// One minute, in unix milliseconds.
     pub const TIMESTAMP_MINUTE: UnixMilliseconds = 60 * TIMESTAMP_SECOND;
+    /// One hour, in unix milliseconds.
     pub const TIMESTAMP_HOUR: UnixMilliseconds = 60 * TIMESTAMP_MINUTE;
+    /// One day, in unix milliseconds.
     pub const TIMESTAMP_DAY: UnixMilliseconds = 24 * TIMESTAMP_HOUR;
 }
 
@@ -36,8 +44,11 @@ pub mod timestamp {
 pub mod bioauth {
     use crate::UnixMilliseconds;
 
+    /// Maximum number of active authentications stored at once (3 * 1024 = 3072).
     pub const MAX_AUTHENTICATIONS: u32 = 3 * 1024;
+    /// Consumed-nonce history bound: 10000 nonces retained per authentication slot.
     pub const MAX_NONCES: u32 = 10000 * MAX_AUTHENTICATIONS;
+    /// An authentication stays valid for 7 days. After that the validator must authenticate again.
     pub const AUTHENTICATIONS_EXPIRE_AFTER: UnixMilliseconds = 7 * super::timestamp::TIMESTAMP_DAY;
 }
 
@@ -53,29 +64,41 @@ pub mod babe {
             c: PRIMARY_PROBABILITY,
             allowed_slots: sp_consensus_babe::AllowedSlots::PrimaryAndSecondaryVRFSlots,
         };
+    /// `Babe` slot duration. It matches the block time, so one slot is one block.
     pub const SLOT_DURATION: u64 = super::block_time::MILLISECS_PER_BLOCK;
+    /// Epoch length in blocks. At the current block time an epoch is 4 hours.
     pub const EPOCH_DURATION_IN_BLOCKS: BlockNumber = 4 * super::block_time::HOURS;
-    // NOTE: Currently it is not possible to change the epoch duration after the chain has started.
-    //       Attempting to do so will brick block production.
+    /// Epoch length in slots.
+    ///
+    /// The epoch duration is fixed at genesis. Changing it after the chain has started bricks
+    /// block production.
     pub const EPOCH_DURATION_IN_SLOTS: u64 = {
         const SLOT_FILL_RATE: f64 =
             super::block_time::MILLISECS_PER_BLOCK as f64 / SLOT_DURATION as f64;
 
         (EPOCH_DURATION_IN_BLOCKS as f64 * SLOT_FILL_RATE) as u64
     };
+    /// Authority set size. Capped at [`super::bioauth::MAX_AUTHENTICATIONS`].
     pub const MAX_AUTHORITIES: u32 = super::bioauth::MAX_AUTHENTICATIONS;
 }
 
 /// `ImOnline` constants.
 pub mod im_online {
-    // TODO(#311): set proper values
+    /// Upper bound on `ImOnline` authority keys.
+    ///
+    /// Kept above [`super::bioauth::MAX_AUTHENTICATIONS`]. The stored value is 10 * 1024.
+    ///
+    /// TODO(#311): set proper values
     pub const MAX_KEYS: u32 = 10 * 1024;
+    /// Heartbeat peer cap: three peer entries per authority key.
     pub const MAX_PEER_IN_HEARTBEATS: u32 = 3 * MAX_KEYS;
+    /// Maximum encoded size, in bytes, of the peer data carried in a heartbeat.
     pub const MAX_PEER_DATA_ENCODING_SIZE: u32 = 1_000;
 }
 
 /// Equivocation constants.
 pub mod equivocation {
+    /// How long an equivocation report stays valid, in blocks: three epochs.
     pub const REPORT_LONGEVITY: u64 = 3 * super::babe::EPOCH_DURATION_IN_BLOCKS as u64;
 }
 
@@ -96,7 +119,10 @@ pub mod fees {
     /// the base value of `3_850_000_000` prices a single transfer at ~1 HMND.
     pub const WEIGHT_TO_FEE: Balance = 10 * 3_850_000_000;
 
-    /// The multiplier to get the fee from length.
+    /// Balance units charged per byte of extrinsic length.
+    ///
+    /// `1` is one planck per byte. Length is only a small part of the fee; weight is priced by
+    /// [`WEIGHT_TO_FEE`].
     pub const LENGTH_TO_FEE: Balance = 1;
 }
 

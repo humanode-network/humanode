@@ -141,6 +141,12 @@ pub async fn run() -> sc_cli::Result<()> {
                 .async_run(|config| async move { cmd.run(config.bioauth_flow).await })
                 .await
         }
+        Some(Subcommand::RpcUrl(cmd)) => {
+            let runner = root.create_humanode_runner(cmd)?;
+            runner
+                .async_run(|config| async move { cmd.run(config.bioauth_flow).await })
+                .await
+        }
         Some(Subcommand::Evm(cmd)) => cmd.run().await,
         Some(Subcommand::Benchmark(cmd)) => {
             let cmd = &**cmd;

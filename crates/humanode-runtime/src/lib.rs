@@ -237,7 +237,10 @@ pub fn native_version() -> NativeVersion {
     }
 }
 
+/// Share of a block's weight available to normal extrinsics. The other 25% stays reserved for
+/// operational transactions.
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
+/// Maximum encoded block size, in bytes (5 MiB).
 const MAX_BLOCK_LENGTH: u32 = 5 * 1024 * 1024;
 
 /// We allow for 2 seconds of compute with a 6 second average block time.
@@ -283,6 +286,8 @@ impl frame_system::Config for Runtime {
     /// The ubiquitous origin type.
     type RuntimeOrigin = RuntimeOrigin;
     /// Maximum number of block number to block hash mappings to keep (oldest pruned first).
+    ///
+    /// 2400 blocks is 4 hours at a 6 second block time, which is one epoch.
     type BlockHashCount = ConstU32<2400>;
     /// The weight of database operations that the runtime can invoke.
     type DbWeight = RocksDbWeight;
@@ -307,6 +312,9 @@ impl frame_system::Config for Runtime {
     /// The set code logic, just the default since we're not a parachain.
     type OnSetCode = ();
     /// The maximum number of consumers allowed on a single account.
+    ///
+    /// 16 covers the consumers Humanode pallets place on an account (locks, vesting, multisig)
+    /// with spare slots.
     type MaxConsumers = ConstU32<16>;
 }
 
@@ -377,6 +385,7 @@ pub type UnixMilliseconds = u64;
 impl pallet_timestamp::Config for Runtime {
     type Moment = UnixMilliseconds;
     type OnTimestampSet = Babe;
+    /// `Babe` requires the minimum timestamp period to be half a slot.
     type MinimumPeriod = ConstU64<{ SLOT_DURATION / 2 }>;
     type WeightInfo = weights::pallet_timestamp::WeightInfo<Runtime>;
 }
@@ -391,6 +400,9 @@ impl pallet_authorship::Config for Runtime {
 }
 
 parameter_types! {
+    // 8-byte pallet ids. The account behind each pot is derived from the id, so these bytes are
+    // part of the on-chain address and must not change. `hmnd` marks Humanode pots, `hmcs` marks
+    // currency-swap bridge pots.
     pub const TreasuryPotPalletId: PalletId = PalletId(*b"hmnd/tr1");
     pub const FeesPotPalletId: PalletId = PalletId(*b"hmnd/fe1");
     pub const TokenClaimsPotPalletId: PalletId = PalletId(*b"hmnd/tc1");
@@ -446,14 +458,20 @@ impl pallet_balances::Config for Runtime {
     /// The type for recording an account's balance.
     type Balance = Balance;
     type DustRemoval = pallet_pot::DepositUnbalancedFungible<Self, PotInstanceTreasury>;
+    /// Balances at or below 500 plancks are dust and are swept to the treasury pot.
+    ///
+    /// One `HMND` is 10^18 plancks (`tokenDecimals` is 18), so this only reaps empty accounts.
     type ExistentialDeposit = ConstU128<500>;
     type AccountStore = System;
+    /// An account may hold up to 50 balance locks at once (vesting and similar reservations).
     type MaxLocks = ConstU32<50>;
     // <https://github.com/paritytech/substrate/pull/12951>.
     type HoldIdentifier = ();
     type FreezeIdentifier = ();
     type MaxReserves = ();
+    /// Holds are unused, so the limit is zero and a hold cannot be created.
     type MaxHolds = ConstU32<0>;
+    /// Freezes are unused, so the limit is zero and a freeze cannot be created.
     type MaxFreezes = ConstU32<0>;
     type WeightInfo = weights::pallet_balances::WeightInfo<Runtime>;
 }
@@ -468,6 +486,7 @@ impl pallet_transaction_payment::Config for Runtime {
         Balances,
         pallet_pot::DepositUnbalancedCurrency<Self, PotInstanceFees>,
     >;
+    /// Operational extrinsics pay 5 times the normal weight fee.
     type OperationalFeeMultiplier = ConstU8<5>;
     type WeightToFee = frame_support::weights::ConstantMultiplier<
         Balance,
@@ -561,6 +580,7 @@ impl pallet_bioauth::benchmarking::AuthTicketBuilder for Runtime {
 
 impl pallet_bootnodes::Config for Runtime {
     type BootnodeId = AccountId;
+    /// At most 16 bootnodes are stored.
     type MaxBootnodes = ConstU32<16>;
 }
 
@@ -598,6 +618,8 @@ impl pallet_im_online::Config for Runtime {
     type NextSessionRotation = Babe;
     type ValidatorSet = Historical;
     type ReportUnresponsiveness = HumanodeOffences;
+    /// Heartbeats are unsigned and use the highest priority so they are not dropped behind
+    /// regular transactions.
     type UnsignedPriority = ConstU64<{ TransactionPriority::MAX }>;
     type WeightInfo = weights::pallet_im_online::WeightInfo<Runtime>;
     type MaxKeys = ConstU32<MAX_KEYS>;
@@ -635,6 +657,8 @@ impl pallet_evm_balances::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type AccountId = EvmAccountId;
     type Balance = Balance;
+    /// `eHMND` accounts at or below 1 planck are dust. This is separate from the native
+    /// existential deposit of 500 plancks.
     type ExistentialDeposit = ConstU128<1>;
     type AccountStore = EvmSystem;
     type DustRemoval = evm_swap::TreasuryPotProxy;
@@ -730,6 +754,7 @@ impl pallet_token_claims::Config for Runtime {
 }
 
 parameter_types! {
+    // 8-byte vesting lock id. Existing locks are matched by these exact bytes.
     pub VestingLockId: LockIdentifier = *b"hmnd/vs1";
 }
 
@@ -746,8 +771,12 @@ impl pallet_multisig::Config for Runtime {
     type RuntimeEvent = RuntimeEvent;
     type RuntimeCall = RuntimeCall;
     type Currency = Balances;
+    /// Reserved when a multisig is created. One planck: spam is priced by the transaction fee,
+    /// not by this deposit.
     type DepositBase = ConstU128<1>;
+    /// Extra reserved deposit for each signatory. Same 1-planck nominal amount as the base deposit.
     type DepositFactor = ConstU128<1>;
+    /// A multisig may have at most 128 signatories.
     type MaxSignatories = ConstU32<128>;
     type WeightInfo = weights::pallet_multisig::WeightInfo<Runtime>;
 }
@@ -777,6 +806,8 @@ impl pallet_balanced_currency_swap_bridges_initializer::Config for Runtime {
     type NativeEvmBridgePot = NativeToEvmSwapBridgePotAccountId;
     type NativeTreasuryPot = TreasuryPotAccountId;
     type EvmNativeBridgePot = EvmToNativeSwapBridgePotAccountId;
+    /// Stays at 0 so an upgrade does not force another bridge-pot rebalance. Raising it above the
+    /// counter stored on chain runs the initializer again.
     type ForceRebalanceAskCounter = ConstU16<0>;
     type WeightInfo = ();
 }
@@ -793,6 +824,7 @@ impl pallet_erc20_support::Metadata for EvmBalancesErc20Metadata {
     }
 
     fn decimals() -> u8 {
+        // HMND and eHMND use 18 decimal places, the same value as `tokenDecimals` in the chain spec.
         18
     }
 }
@@ -816,6 +848,8 @@ frame_support::parameter_types! {
 
 impl pallet_dummy_precompiles_code::Config for Runtime {
     type PrecompilesAddresses = PrecompilesAddresses;
+    /// Stays at 0 so an upgrade does not rewrite precompile dummy code. Raising it above the
+    /// counter stored on chain runs that write again.
     type ForceExecuteAskCounter = ConstU16<0>;
 }
 
@@ -911,6 +945,9 @@ pub type Executive = frame_executive::Executive<
         pallet_bioauth::migrations::consumed_auth_ticket_nonces_cleaner::ConsumedAuthTicketNoncesCleaner<Runtime>,
         evm_nonces_recovery::MigrationBrokenNoncesRecovery<
             Runtime,
+            // How many contract-creation nonces the recovery migration will scan per account
+            // before giving up. 1000 covers accounts that created contracts before the nonce fix
+            // without scanning the whole nonce space.
             ConstU32<1000>,
             frontier_precompiles::FrontierPrecompilesAddresses<Runtime>,
         >,
@@ -928,6 +965,7 @@ impl frame_system::offchain::CreateSignedTransaction<RuntimeCall> for Runtime {
         Self::RuntimeCall,
         <Self::Extrinsic as sp_runtime::traits::Extrinsic>::SignaturePayload,
     )> {
+        // Offchain-signed transactions pay no tip. The fee comes from weight and length.
         let tip = 0;
         let era = utils::current_era::<Self>();
         let extra = utils::create_extra::<Self>(nonce, era, tip);
