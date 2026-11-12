@@ -7,6 +7,7 @@ use super::CliConfigurationExt;
 pub mod bioauth;
 pub mod evm;
 pub mod export_embedded_runtime;
+pub mod rpc_url;
 
 /// Humanode peer subcommands.
 #[derive(Debug, clap::Subcommand)]
@@ -39,6 +40,9 @@ pub enum Subcommand {
     /// Biometric authentication related subcommands.
     #[command(subcommand)]
     Bioauth(bioauth::BioauthCmd),
+
+    /// Print the resolved RPC URL.
+    RpcUrl(rpc_url::RpcUrlCmd),
 
     /// EVM related subcommands.
     #[command(subcommand)]

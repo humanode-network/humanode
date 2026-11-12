@@ -46,6 +46,7 @@ impl vesting_scheduling_timestamp::LinearScheduleConfig for Runtime {
         vesting_schedule_linear::traits::SimpleFracScaler<u128, Balance, UnixMilliseconds>;
 }
 impl vesting_scheduling_timestamp::MultiLinearScheduleConfig for Runtime {
+    /// An account may have at most 8 vesting schedules at once.
     type MaxSchedulesPerAccount = ConstU32<8>;
 }
 
