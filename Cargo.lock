@@ -5433,8 +5433,22 @@ dependencies = [
  "downcast",
  "fragile",
  "lazy_static",
- "mockall_derive",
- "predicates",
+ "mockall_derive 0.11.4",
+ "predicates 2.1.5",
+ "predicates-tree",
+]
+
+[[package]]
+name = "mockall"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "39a6bfcc6c8c7eed5ee98b9c3e33adc726054389233e201c95dab2d41a3839d2"
+dependencies = [
+ "cfg-if",
+ "downcast",
+ "fragile",
+ "mockall_derive 0.13.1",
+ "predicates 3.1.3",
  "predicates-tree",
 ]
 
@@ -5448,6 +5462,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 1.0.109",
+]
+
+[[package]]
+name = "mockall_derive"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25ca3004c2efe9011bd4e461bd8256445052b9615405b4f7ea43fc8ca5c20898"
+dependencies = [
+ "cfg-if",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.107",
 ]
 
 [[package]]
@@ -6121,7 +6147,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "parity-scale-codec",
  "scale-info",
  "serde",
@@ -6137,7 +6163,7 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -6176,7 +6202,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "pallet-balances",
  "pallet-evm-balances",
  "pallet-evm-system",
@@ -6287,7 +6313,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "parity-scale-codec",
  "primitives-ethereum",
  "scale-info",
@@ -6368,7 +6394,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "parity-scale-codec",
  "scale-info",
  "sp-core",
@@ -6430,7 +6456,7 @@ version = "0.1.0"
 dependencies = [
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "pallet-bioauth",
  "pallet-bootnodes",
  "pallet-fixed-validators-set",
@@ -6450,7 +6476,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "pallet-bioauth",
  "pallet-bootnodes",
  "pallet-fixed-validators-set",
@@ -6597,7 +6623,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "pallet-balances",
  "pallet-pot",
  "parity-scale-codec",
@@ -6676,7 +6702,7 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "once_cell",
  "pallet-balances",
  "parity-scale-codec",
@@ -7029,7 +7055,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "mockall",
+ "mockall 0.13.1",
  "num_enum 0.7.5",
  "pallet-bioauth",
  "pallet-evm",
@@ -7063,7 +7089,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
- "mockall",
+ "mockall 0.13.1",
  "pallet-evm-accounts-mapping",
  "parity-scale-codec",
  "primitives-ethereum",
@@ -7082,7 +7108,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex-literal",
- "mockall",
+ "mockall 0.13.1",
  "num_enum 0.7.5",
  "pallet-balances",
  "pallet-evm",
@@ -7160,6 +7186,16 @@ dependencies = [
  "normalize-line-endings",
  "predicates-core",
  "regex",
+]
+
+[[package]]
+name = "predicates"
+version = "3.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a5d19ee57562043d37e82899fade9a22ebab7be9cef5026b07fda9cdd4293573"
+dependencies = [
+ "anstyle",
+ "predicates-core",
 ]
 
 [[package]]
@@ -7934,7 +7970,7 @@ dependencies = [
  "async-trait",
  "facetec-api-client",
  "hex",
- "mockall",
+ "mockall 0.13.1",
  "parity-scale-codec",
  "primitives-auth-ticket",
  "primitives-liveness-data",
@@ -8364,7 +8400,7 @@ dependencies = [
  "futures-timer",
  "libp2p-identity",
  "log",
- "mockall",
+ "mockall 0.11.4",
  "parking_lot 0.12.1",
  "sc-client-api",
  "sc-utils",
@@ -8634,7 +8670,7 @@ dependencies = [
  "linked_hash_set",
  "log",
  "lru 0.8.1",
- "mockall",
+ "mockall 0.11.4",
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "pin-project",
@@ -8765,7 +8801,7 @@ dependencies = [
  "libp2p",
  "log",
  "lru 0.8.1",
- "mockall",
+ "mockall 0.11.4",
  "parity-scale-codec",
  "prost",
  "prost-build",
@@ -11713,7 +11749,7 @@ name = "vesting-scheduling-timestamp"
 version = "0.1.0"
 dependencies = [
  "frame-support",
- "mockall",
+ "mockall 0.13.1",
  "num-traits",
  "pallet-vesting",
  "serde_json",
