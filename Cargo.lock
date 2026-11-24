@@ -3974,6 +3974,7 @@ dependencies = [
  "pallet-evm-system",
  "pallet-fixed-validators-set",
  "pallet-grandpa",
+ "pallet-humanode-fee-params",
  "pallet-humanode-offences",
  "pallet-humanode-session",
  "pallet-im-online",
@@ -6422,6 +6423,20 @@ dependencies = [
  "sp-session",
  "sp-staking",
  "sp-std",
+]
+
+[[package]]
+name = "pallet-humanode-fee-params"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
 ]
 
 [[package]]

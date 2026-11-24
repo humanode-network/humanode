@@ -33,6 +33,7 @@ pallet-evm-accounts-mapping = { path = "../pallet-evm-accounts-mapping", default
 pallet-evm-balances = { path = "../pallet-evm-balances", default-features = false }
 pallet-evm-system = { path = "../pallet-evm-system", default-features = false }
 pallet-fixed-validators-set = { path = "../pallet-fixed-validators-set", default-features = false }
+pallet-humanode-fee-params = { path = "../pallet-humanode-fee-params", default-features = false }
 pallet-humanode-offences = { path = "../pallet-humanode-offences", default-features = false }
 pallet-humanode-session = { path = "../pallet-humanode-session", default-features = false }
 pallet-native-to-evm-swap = { path = "../pallet-native-to-evm-swap", default-features = false }
@@ -135,6 +136,7 @@ runtime-benchmarks = [
   "pallet-evm/runtime-benchmarks",
   "pallet-fixed-validators-set/runtime-benchmarks",
   "pallet-grandpa/runtime-benchmarks",
+  "pallet-humanode-fee-params/runtime-benchmarks",
   "pallet-humanode-session/runtime-benchmarks",
   "pallet-im-online/runtime-benchmarks",
   "pallet-multisig/runtime-benchmarks",
@@ -198,6 +200,7 @@ std = [
   "pallet-evm-system/std",
   "pallet-fixed-validators-set/std",
   "pallet-grandpa/std",
+  "pallet-humanode-fee-params/std",
   "pallet-humanode-offences/std",
   "pallet-humanode-session/std",
   "pallet-im-online/std",
@@ -271,6 +274,7 @@ try-runtime = [
   "pallet-evm-system/try-runtime",
   "pallet-fixed-validators-set/try-runtime",
   "pallet-grandpa/try-runtime",
+  "pallet-humanode-fee-params/try-runtime",
   "pallet-humanode-offences/try-runtime",
   "pallet-humanode-session/try-runtime",
   "pallet-im-online/try-runtime",

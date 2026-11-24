@@ -16,15 +16,15 @@ impl<T: frame_system::Config> pallet_utility::WeightInfo for WeightInfo<T> {
     // Proof Size summary in bytes:
     //  Measured:  `0`
     //  Estimated: `0`
-    // Minimum execution time: 4_000_000 picoseconds.
-    Weight::from_parts(1_827_000_000, 0)
+    // Minimum execution time: 2_000_000 picoseconds.
+    Weight::from_parts(1_435_000_000, 0)
   }
   fn as_derivative() -> Weight {
     // Proof Size summary in bytes:
     //  Measured:  `0`
     //  Estimated: `0`
-    // Minimum execution time: 3_000_000 picoseconds.
-    Weight::from_parts(3_000_000, 0)
+    // Minimum execution time: 2_000_000 picoseconds.
+    Weight::from_parts(2_000_000, 0)
   }
   /// The range of component `c` is `[0, 1000]`.
   fn batch_all(_c: u32, ) -> Weight {
@@ -32,21 +32,21 @@ impl<T: frame_system::Config> pallet_utility::WeightInfo for WeightInfo<T> {
     //  Measured:  `0`
     //  Estimated: `0`
     // Minimum execution time: 3_000_000 picoseconds.
-    Weight::from_parts(1_949_000_000, 0)
+    Weight::from_parts(1_496_000_000, 0)
   }
   fn dispatch_as() -> Weight {
     // Proof Size summary in bytes:
     //  Measured:  `0`
     //  Estimated: `0`
-    // Minimum execution time: 5_000_000 picoseconds.
-    Weight::from_parts(5_000_000, 0)
+    // Minimum execution time: 3_000_000 picoseconds.
+    Weight::from_parts(3_000_000, 0)
   }
   /// The range of component `c` is `[0, 1000]`.
   fn force_batch(_c: u32, ) -> Weight {
     // Proof Size summary in bytes:
     //  Measured:  `0`
     //  Estimated: `0`
-    // Minimum execution time: 4_000_000 picoseconds.
-    Weight::from_parts(1_798_000_000, 0)
+    // Minimum execution time: 2_000_000 picoseconds.
+    Weight::from_parts(1_557_000_000, 0)
   }
 }

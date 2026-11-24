@@ -92,12 +92,11 @@ pub mod fees {
     /// The multiplier to get the fee from weight.
     ///
     /// We compute the fee to weight multiplier based on the weight of the `balances.transfer` call,
-    /// and try to fit the fee such that a single transfer call costs ~10 HMND:
-    /// the base value of `3_850_000_000` prices a single transfer at ~1 HMND.
-    pub const WEIGHT_TO_FEE: Balance = 10 * 3_850_000_000;
+    /// and try to fit the fee such that a single transfer call costs ~1 HMND.
+    pub const WEIGHT_TO_FEE_BASELINE: Balance = 3_850_000_000;
 
     /// The multiplier to get the fee from length.
-    pub const LENGTH_TO_FEE: Balance = 1;
+    pub const LENGTH_TO_FEE_BASELINE: Balance = 1;
 }
 
 /// EVM fees related constants.
@@ -110,16 +109,16 @@ pub mod evm_fees {
     /// The amount of fee per gas unit.
     /// Comes from the following rationale:
     /// - a simple transfer costs 21000 gas
-    /// - we want the cost of this transfer to be around ~15 HMND
-    /// - so we must charge about 15 * 10^18 / 21000 fee per a unit of gas
+    /// - we want the cost of this transfer to be around ~1 HMND
+    /// - so we must charge about 10^18 / 21000 fee per a unit of gas
     /// The value below is a nice round number that fits the requirements outlined above.
     ///
     /// Note: this value is intentionally decoupled from the weight-based fee
-    /// (see [`crate::constants::fees::WEIGHT_TO_FEE`]): pricing the gas-to-weight mapping of the
-    /// same transfer through the weight-based fee would give ~20 HMND, but Ethereum transactions
-    /// pay their fees through the EVM gas accounting and not through the transaction payment,
-    /// so we set the gas price to target the fee we actually want.
-    pub const FEE_PER_GAS: u128 = 715_000_000_000_000;
+    /// (see [`crate::constants::fees::WEIGHT_TO_FEE_BASELINE`]): pricing the gas-to-weight mapping
+    /// of the same transfer through the weight-based fee would give ~2 HMND, but Ethereum
+    /// transactions pay their fees through the EVM gas accounting and not through the transaction
+    /// payment, so we set the gas price to target the fee we actually want.
+    pub const FEE_PER_GAS_BASELINE: u128 = 47_620_000_000_000;
 
     /// The max proof size ratio per block.
     /// Set to the zero as humanode is solo chain. Otherwise, additional used gas has

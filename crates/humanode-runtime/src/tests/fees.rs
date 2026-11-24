@@ -4,7 +4,12 @@
 #![allow(clippy::arithmetic_side_effects)]
 
 use ethereum::EIP1559Transaction;
-use frame_support::traits::Currency;
+use fp_rpc::runtime_decl_for_ethereum_runtime_rpc_api::EthereumRuntimeRPCApi as _;
+use frame_support::{
+    assert_ok,
+    traits::{Currency, GetStorageVersion, OnRuntimeUpgrade, StorageVersion},
+};
+use sp_runtime::FixedPointNumber;
 
 use super::*;
 use crate::dev_utils::*;
@@ -12,6 +17,9 @@ use crate::opaque::SessionKeys;
 
 const INIT_BALANCE: Balance = 10u128.pow(18 + 6);
 const ONE_BALANCE_UNIT: Balance = 10u128.pow(18);
+
+/// The fee the baseline fee constants price a simple transfer at: 1 HMND.
+const BASELINE_TRANSFER_FEE: Balance = ONE_BALANCE_UNIT;
 
 const EVM_TEST_ACCOUNT: H160 = H160(hex_literal::hex!(
     "FFFF000000000000000000000000000000000000"
@@ -178,7 +186,8 @@ fn switch_block() {
     AllPalletsWithSystem::on_initialize(System::block_number());
 }
 
-/// A test that validates that a simple balance transfer with a keep alive costs 10 HMND.
+/// A test that validates that a simple balance transfer with a keep alive costs 1 HMND
+/// with the default fee params.
 #[test]
 fn simple_balances_transfer_keep_alive() {
     // Build the state from the config.
@@ -213,8 +222,13 @@ fn simple_balances_transfer_keep_alive() {
             (call, len)
         };
 
-        // The expected fee that we aim to target: 10 HMND.
-        let expected_fee = 10 * ONE_BALANCE_UNIT;
+        // The native fee multiplier in effect: the default one.
+        let native_fee_multiplier = HumanodeFeeParams::native_fee_multiplier();
+        assert_eq!(native_fee_multiplier, FixedU128::from_u32(1));
+
+        // The expected fee that we aim to target: the baseline transfer fee scaled by the native
+        // fee multiplier, 1 HMND.
+        let expected_fee = native_fee_multiplier.saturating_mul_int(BASELINE_TRANSFER_FEE);
 
         // The tolerance within which the actual fee is allowed to be around the expected fee.
         let epsilon = expected_fee / 200;
@@ -223,13 +237,31 @@ fn simple_balances_transfer_keep_alive() {
     })
 }
 
+/// A test that validates that the EVM gas price is the baseline fee per gas scaled by the EVM
+/// fee multiplier.
+#[test]
+fn evm_gas_price() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // The EVM fee multiplier in effect: the default one.
+        let evm_fee_multiplier = HumanodeFeeParams::evm_fee_multiplier();
+        assert_eq!(evm_fee_multiplier, FixedU128::from_u32(2));
+
+        let (gas_price, _weight) = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price();
+
+        let expected_gas_price =
+            evm_fee_multiplier.saturating_mul_int(constants::evm_fees::FEE_PER_GAS_BASELINE);
+        assert_eq!(gas_price, U256::from(expected_gas_price));
+    })
+}
+
 /// A test that validates the substrate-side fee estimate of a simple EVM balance transfer.
 /// Computes the fee via [`TransactionPayment::query_call_info`].
 ///
 /// This estimate is weight-based and is intentionally decoupled from the actual gas-based
-/// charge (~15 HMND, see [`constants::evm_fees::FEE_PER_GAS`]): Ethereum transactions do not pay
-/// their fees through the transaction payment, so this value is what substrate-side tooling
-/// would display, not what is charged.
+/// charge (~2 HMND, [`constants::evm_fees::FEE_PER_GAS_BASELINE`] scaled by the default EVM fee
+/// multiplier): Ethereum transactions do not pay their fees through the transaction payment,
+/// so this value is what substrate-side tooling would display, not what is charged.
 #[test]
 fn simple_evm_transaction_via_query_call_info() {
     // Build the state from the config.
@@ -239,8 +271,11 @@ fn simple_evm_transaction_via_query_call_info() {
         switch_block();
 
         // Prepare a sample call to transfer 1 HMND.
+        // Pay the gas price the runtime charges: the baseline fee per gas scaled by the default EVM
+        // fee multiplier of 2.
+        let expected_max_fee_per_gas = 2 * constants::evm_fees::FEE_PER_GAS_BASELINE;
         let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
-        assert_eq!(max_fee_per_gas, constants::evm_fees::FEE_PER_GAS.into());
+        assert_eq!(max_fee_per_gas, expected_max_fee_per_gas.into());
 
         let to = H160(hex_literal::hex!(
             "0000000000000000000000000000000000000000"
@@ -263,9 +298,9 @@ fn simple_evm_transaction_via_query_call_info() {
             }),
         });
 
-        // The weight-derived fee estimate: ~20 HMND (21000 gas mapped to weight and priced
+        // The weight-derived fee estimate: ~2 HMND (21000 gas mapped to weight and priced
         // via `WEIGHT_TO_FEE`). This is not what an EVM transaction actually pays.
-        let expected_fee = 20 * ONE_BALANCE_UNIT;
+        let expected_fee = 2 * ONE_BALANCE_UNIT;
 
         // The tolerance within which the actual fee is allowed to be around the expected fee.
         let epsilon = expected_fee / 10;
@@ -274,7 +309,8 @@ fn simple_evm_transaction_via_query_call_info() {
     })
 }
 
-/// A test that validates that a simple EVM balance transfer with a keep alive costs 15 HMND.
+/// A test that validates that a simple EVM balance transfer with a keep alive costs 2 HMND
+/// with the default fee params.
 /// Computes the fee via an estimate EVM runner invocation.
 #[test]
 fn simple_evm_transaction_via_runner_estimate() {
@@ -289,8 +325,15 @@ fn simple_evm_transaction_via_runner_estimate() {
         // Prepare a sample call to transfer 1 HMND.
         let raw_value = ONE_BALANCE_UNIT;
 
+        // The EVM fee multiplier in effect: the default one.
+        let evm_fee_multiplier = HumanodeFeeParams::evm_fee_multiplier();
+        assert_eq!(evm_fee_multiplier, FixedU128::from_u32(2));
+
+        // Pay the gas price the runtime charges: the baseline fee per gas scaled by the default EVM
+        // fee multiplier of 2.
+        let expected_max_fee_per_gas = 2 * constants::evm_fees::FEE_PER_GAS_BASELINE;
         let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
-        assert_eq!(max_fee_per_gas, constants::evm_fees::FEE_PER_GAS.into());
+        assert_eq!(max_fee_per_gas, expected_max_fee_per_gas.into());
 
         let before = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
 
@@ -340,8 +383,481 @@ fn simple_evm_transaction_via_runner_estimate() {
             }
         );
 
-        // The expected fee that we aim to target: 15 HMND.
-        let expected_fee = 15 * ONE_BALANCE_UNIT;
+        // The expected fee that we aim to target: the baseline transfer fee scaled by the EVM
+        // fee multiplier, 2 HMND.
+        let expected_fee = evm_fee_multiplier.saturating_mul_int(BASELINE_TRANSFER_FEE);
+
+        // The tolerance within which the actual fee is allowed to be around the expected fee.
+        let epsilon = expected_fee / 10;
+
+        let after = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let effective_fee = before - after - raw_value;
+
+        assert_within(effective_fee, expected_fee, epsilon);
+    })
+}
+
+/// A test that validates that the native fees follow the native fee multiplier, and that the EVM
+/// fees are not affected by it.
+#[test]
+fn native_fee_follows_native_fee_multiplier() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // Prepare a sample call to transfer 1 HMND.
+        let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
+            dest: account_id("Bob").into(),
+            value: ONE_BALANCE_UNIT,
+        });
+
+        // Compute the length of the extrinsic constraining this call.
+        let (call, len) = {
+            let sign_by = account_public("Alice");
+            let signed_by_id = account_id("Alice");
+            let (call, signature) = utils::create_transaction::<Runtime, crypto::TestAuthId>(
+                call,
+                sign_by,
+                signed_by_id,
+                0,
+            )
+            .unwrap();
+
+            let extrinsic = {
+                use sp_runtime::traits::Extrinsic;
+                crate::UncheckedExtrinsic::new(call.clone(), Some(signature)).unwrap()
+            };
+
+            let encoded = extrinsic.encode();
+
+            let len = encoded.len().try_into().unwrap();
+
+            (call, len)
+        };
+
+        switch_block();
+        Timestamp::set(RuntimeOrigin::none(), 1000).unwrap();
+        switch_block();
+
+        let config = <Runtime as pallet_evm::Config>::config();
+
+        // Triple the native fees.
+        let native_fee_multiplier = FixedU128::from_u32(3);
+        assert_ok!(HumanodeFeeParams::set_native_fee_multiplier(
+            RuntimeOrigin::root(),
+            native_fee_multiplier
+        ));
+
+        // The expected fee: the baseline transfer fee scaled by the native fee multiplier, 3 HMND.
+        let expected_fee = native_fee_multiplier.saturating_mul_int(BASELINE_TRANSFER_FEE);
+        assert_fee(call.clone(), len, expected_fee, expected_fee / 200);
+
+        // Halve the native fees.
+        let native_fee_multiplier = FixedU128::from_rational(1, 2);
+        assert_ok!(HumanodeFeeParams::set_native_fee_multiplier(
+            RuntimeOrigin::root(),
+            native_fee_multiplier
+        ));
+
+        // The expected fee: the baseline transfer fee scaled by the native fee multiplier,
+        // 0.5 HMND.
+        let expected_fee = native_fee_multiplier.saturating_mul_int(BASELINE_TRANSFER_FEE);
+        assert_fee(call, len, expected_fee, expected_fee / 200);
+
+        // The EVM fees are still at the default level: the gas price is the baseline fee per gas
+        // scaled by the default EVM fee multiplier of 2.
+        let expected_max_fee_per_gas = 2 * constants::evm_fees::FEE_PER_GAS_BASELINE;
+        let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
+        assert_eq!(max_fee_per_gas, expected_max_fee_per_gas.into());
+
+        // Prepare a sample call to transfer 1 HMND.
+        let raw_value = ONE_BALANCE_UNIT;
+
+        let before = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let from = EVM_TEST_ACCOUNT;
+        let to = H160(hex_literal::hex!(
+            "0000000000000000000000000000000000000000"
+        ));
+        let data = Default::default();
+        let value = raw_value.into();
+        let gas_limit = 21000;
+        let max_fee_per_gas = Some(max_fee_per_gas);
+        let max_priority_fee_per_gas = None;
+        let nonce = None;
+        let access_list = Default::default();
+        let is_transactional = true;
+        let validate = true;
+
+        let call_info =
+            <<Runtime as pallet_evm::Config>::Runner as pallet_evm::Runner<Runtime>>::call(
+                from,
+                to,
+                data,
+                value,
+                gas_limit,
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                access_list,
+                is_transactional,
+                validate,
+                None,
+                None,
+                config,
+            )
+            .unwrap();
+        assert_eq!(
+            call_info,
+            fp_evm::CallInfo {
+                exit_reason: fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Stopped),
+                value: vec![],
+                used_gas: fp_evm::UsedGas {
+                    standard: 21000.into(),
+                    effective: 21000.into(),
+                },
+                weight_info: Default::default(),
+                logs: vec![]
+            }
+        );
+
+        // The expected fee: the baseline transfer fee scaled by the default EVM fee multiplier
+        // of 2, 2 HMND.
+        let expected_fee = 2 * BASELINE_TRANSFER_FEE;
+
+        // The tolerance within which the actual fee is allowed to be around the expected fee.
+        let epsilon = expected_fee / 10;
+
+        let after = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let effective_fee = before - after - raw_value;
+
+        assert_within(effective_fee, expected_fee, epsilon);
+    })
+}
+
+/// A test that validates that the EVM fees follow the EVM fee multiplier, and that the native fees
+/// are not affected by it.
+#[test]
+fn evm_fee_follows_evm_fee_multiplier() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // Prepare a sample call to transfer 1 HMND.
+        let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
+            dest: account_id("Bob").into(),
+            value: ONE_BALANCE_UNIT,
+        });
+
+        // Compute the length of the extrinsic constraining this call.
+        let (call, len) = {
+            let sign_by = account_public("Alice");
+            let signed_by_id = account_id("Alice");
+            let (call, signature) = utils::create_transaction::<Runtime, crypto::TestAuthId>(
+                call,
+                sign_by,
+                signed_by_id,
+                0,
+            )
+            .unwrap();
+
+            let extrinsic = {
+                use sp_runtime::traits::Extrinsic;
+                crate::UncheckedExtrinsic::new(call.clone(), Some(signature)).unwrap()
+            };
+
+            let encoded = extrinsic.encode();
+
+            let len = encoded.len().try_into().unwrap();
+
+            (call, len)
+        };
+
+        switch_block();
+        Timestamp::set(RuntimeOrigin::none(), 1000).unwrap();
+        switch_block();
+
+        let config = <Runtime as pallet_evm::Config>::config();
+
+        // Triple the EVM fees.
+        let evm_fee_multiplier = FixedU128::from_u32(3);
+        assert_ok!(HumanodeFeeParams::set_evm_fee_multiplier(
+            RuntimeOrigin::root(),
+            evm_fee_multiplier
+        ));
+
+        // The gas price: the baseline fee per gas scaled by the EVM fee multiplier.
+        let expected_max_fee_per_gas =
+            evm_fee_multiplier.saturating_mul_int(constants::evm_fees::FEE_PER_GAS_BASELINE);
+        let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
+        assert_eq!(max_fee_per_gas, expected_max_fee_per_gas.into());
+
+        // The gas price exposed via the runtime API follows too.
+        assert_eq!(Runtime::gas_price(), max_fee_per_gas);
+
+        // Prepare a sample call to transfer 1 HMND.
+        let raw_value = ONE_BALANCE_UNIT;
+
+        let before = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let from = EVM_TEST_ACCOUNT;
+        let to = H160(hex_literal::hex!(
+            "0000000000000000000000000000000000000000"
+        ));
+        let data = Default::default();
+        let value = raw_value.into();
+        let gas_limit = 21000;
+        let max_fee_per_gas = Some(max_fee_per_gas);
+        let max_priority_fee_per_gas = None;
+        let nonce = None;
+        let access_list = Default::default();
+        let is_transactional = true;
+        let validate = true;
+
+        let call_info =
+            <<Runtime as pallet_evm::Config>::Runner as pallet_evm::Runner<Runtime>>::call(
+                from,
+                to,
+                data,
+                value,
+                gas_limit,
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                access_list,
+                is_transactional,
+                validate,
+                None,
+                None,
+                config,
+            )
+            .unwrap();
+        assert_eq!(
+            call_info,
+            fp_evm::CallInfo {
+                exit_reason: fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Stopped),
+                value: vec![],
+                used_gas: fp_evm::UsedGas {
+                    standard: 21000.into(),
+                    effective: 21000.into(),
+                },
+                weight_info: Default::default(),
+                logs: vec![]
+            }
+        );
+
+        // The expected fee: the baseline transfer fee scaled by the EVM fee multiplier, 3 HMND.
+        let expected_fee = evm_fee_multiplier.saturating_mul_int(BASELINE_TRANSFER_FEE);
+
+        // The tolerance within which the actual fee is allowed to be around the expected fee.
+        let epsilon = expected_fee / 10;
+
+        let after = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let effective_fee = before - after - raw_value;
+
+        assert_within(effective_fee, expected_fee, epsilon);
+
+        // Halve the EVM fees.
+        let evm_fee_multiplier = FixedU128::from_rational(1, 2);
+        assert_ok!(HumanodeFeeParams::set_evm_fee_multiplier(
+            RuntimeOrigin::root(),
+            evm_fee_multiplier
+        ));
+
+        // The gas price: the baseline fee per gas scaled by the EVM fee multiplier.
+        let expected_max_fee_per_gas =
+            evm_fee_multiplier.saturating_mul_int(constants::evm_fees::FEE_PER_GAS_BASELINE);
+        let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
+        assert_eq!(max_fee_per_gas, expected_max_fee_per_gas.into());
+
+        // The gas price exposed via the runtime API follows too.
+        assert_eq!(Runtime::gas_price(), max_fee_per_gas);
+
+        // Prepare a sample call to transfer 1 HMND.
+        let raw_value = ONE_BALANCE_UNIT;
+
+        let before = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let from = EVM_TEST_ACCOUNT;
+        let to = H160(hex_literal::hex!(
+            "0000000000000000000000000000000000000000"
+        ));
+        let data = Default::default();
+        let value = raw_value.into();
+        let gas_limit = 21000;
+        let max_fee_per_gas = Some(max_fee_per_gas);
+        let max_priority_fee_per_gas = None;
+        let nonce = None;
+        let access_list = Default::default();
+        let is_transactional = true;
+        let validate = true;
+
+        let call_info =
+            <<Runtime as pallet_evm::Config>::Runner as pallet_evm::Runner<Runtime>>::call(
+                from,
+                to,
+                data,
+                value,
+                gas_limit,
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                access_list,
+                is_transactional,
+                validate,
+                None,
+                None,
+                config,
+            )
+            .unwrap();
+        assert_eq!(
+            call_info,
+            fp_evm::CallInfo {
+                exit_reason: fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Stopped),
+                value: vec![],
+                used_gas: fp_evm::UsedGas {
+                    standard: 21000.into(),
+                    effective: 21000.into(),
+                },
+                weight_info: Default::default(),
+                logs: vec![]
+            }
+        );
+
+        // The expected fee: the baseline transfer fee scaled by the EVM fee multiplier, 0.5 HMND.
+        let expected_fee = evm_fee_multiplier.saturating_mul_int(BASELINE_TRANSFER_FEE);
+
+        // The tolerance within which the actual fee is allowed to be around the expected fee.
+        let epsilon = expected_fee / 10;
+
+        let after = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let effective_fee = before - after - raw_value;
+
+        assert_within(effective_fee, expected_fee, epsilon);
+
+        // The native fees are still at the default level: the baseline transfer fee, 1 HMND.
+        let expected_fee = BASELINE_TRANSFER_FEE;
+        assert_fee(call, len, expected_fee, expected_fee / 200);
+    })
+}
+
+/// A test that validates that the migration enacting the fee multipliers of the previous runtime
+/// reproduces the fee levels it charged: 10 HMND for a native transfer and 15 HMND for an EVM one.
+#[test]
+fn fee_params_migration_reproduces_previous_fee_levels() {
+    // Build the state from the config.
+    new_test_ext_with().execute_with(move || {
+        // Prepare a sample call to transfer 1 HMND.
+        let call = RuntimeCall::Balances(pallet_balances::Call::transfer_keep_alive {
+            dest: account_id("Bob").into(),
+            value: ONE_BALANCE_UNIT,
+        });
+
+        // Compute the length of the extrinsic constraining this call.
+        let (call, len) = {
+            let sign_by = account_public("Alice");
+            let signed_by_id = account_id("Alice");
+            let (call, signature) = utils::create_transaction::<Runtime, crypto::TestAuthId>(
+                call,
+                sign_by,
+                signed_by_id,
+                0,
+            )
+            .unwrap();
+
+            let extrinsic = {
+                use sp_runtime::traits::Extrinsic;
+                crate::UncheckedExtrinsic::new(call.clone(), Some(signature)).unwrap()
+            };
+
+            let encoded = extrinsic.encode();
+
+            let len = encoded.len().try_into().unwrap();
+
+            (call, len)
+        };
+
+        switch_block();
+        Timestamp::set(RuntimeOrigin::none(), 1000).unwrap();
+        switch_block();
+
+        let config = <Runtime as pallet_evm::Config>::config();
+
+        // Simulate the state of a chain upgrading from the previous runtime: the pallet storage
+        // is absent.
+        pallet_humanode_fee_params::NativeFeeMultiplier::<Runtime>::kill();
+        pallet_humanode_fee_params::EvmFeeMultiplier::<Runtime>::kill();
+        StorageVersion::new(0).put::<HumanodeFeeParams>();
+
+        // Run the migration as configured in the runtime.
+        type Migration = pallet_humanode_fee_params::migrations::v1::EnactFeeMultipliers<
+            Runtime,
+            NativeFeeMultiplierBeforeFeeParams,
+            EvmFeeMultiplierBeforeFeeParams,
+        >;
+        Migration::on_runtime_upgrade();
+        assert_eq!(HumanodeFeeParams::on_chain_storage_version(), 1);
+
+        // The native transfer costs what it did before: 10 HMND.
+        let expected_fee = 10 * BASELINE_TRANSFER_FEE;
+        assert_fee(call, len, expected_fee, expected_fee / 200);
+
+        // The EVM transfer costs what it did before, so pay the gas price the runtime charges.
+        let max_fee_per_gas = <Runtime as pallet_evm::Config>::FeeCalculator::min_gas_price().0;
+
+        // Prepare a sample call to transfer 1 HMND.
+        let raw_value = ONE_BALANCE_UNIT;
+
+        let before = EvmBalances::total_balance(&EVM_TEST_ACCOUNT);
+
+        let from = EVM_TEST_ACCOUNT;
+        let to = H160(hex_literal::hex!(
+            "0000000000000000000000000000000000000000"
+        ));
+        let data = Default::default();
+        let value = raw_value.into();
+        let gas_limit = 21000;
+        let max_fee_per_gas = Some(max_fee_per_gas);
+        let max_priority_fee_per_gas = None;
+        let nonce = None;
+        let access_list = Default::default();
+        let is_transactional = true;
+        let validate = true;
+
+        let call_info =
+            <<Runtime as pallet_evm::Config>::Runner as pallet_evm::Runner<Runtime>>::call(
+                from,
+                to,
+                data,
+                value,
+                gas_limit,
+                max_fee_per_gas,
+                max_priority_fee_per_gas,
+                nonce,
+                access_list,
+                is_transactional,
+                validate,
+                None,
+                None,
+                config,
+            )
+            .unwrap();
+        assert_eq!(
+            call_info,
+            fp_evm::CallInfo {
+                exit_reason: fp_evm::ExitReason::Succeed(fp_evm::ExitSucceed::Stopped),
+                value: vec![],
+                used_gas: fp_evm::UsedGas {
+                    standard: 21000.into(),
+                    effective: 21000.into(),
+                },
+                weight_info: Default::default(),
+                logs: vec![]
+            }
+        );
+
+        // The expected fee: what the EVM transfer cost before, 15 HMND.
+        let expected_fee = 15 * BASELINE_TRANSFER_FEE;
 
         // The tolerance within which the actual fee is allowed to be around the expected fee.
         let epsilon = expected_fee / 10;

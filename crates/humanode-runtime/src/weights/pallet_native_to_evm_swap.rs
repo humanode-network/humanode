@@ -13,20 +13,20 @@ pub struct WeightInfo<T>(PhantomData<T>);
 impl<T: frame_system::Config> pallet_native_to_evm_swap::WeightInfo for WeightInfo<T> {
   fn swap() -> Weight {
     // Proof Size summary in bytes:
-    //  Measured:  `995`
+    //  Measured:  `1089`
     //  Estimated: `0`
-    // Minimum execution time: 72_000_000 picoseconds.
-    Weight::from_parts(72_000_000, 0)
-      .saturating_add(T::DbWeight::get().reads(10))
+    // Minimum execution time: 61_000_000 picoseconds.
+    Weight::from_parts(61_000_000, 0)
+      .saturating_add(T::DbWeight::get().reads(11))
       .saturating_add(T::DbWeight::get().writes(5))
   }
   fn swap_keep_alive() -> Weight {
     // Proof Size summary in bytes:
-    //  Measured:  `995`
+    //  Measured:  `1089`
     //  Estimated: `0`
-    // Minimum execution time: 71_000_000 picoseconds.
-    Weight::from_parts(71_000_000, 0)
-      .saturating_add(T::DbWeight::get().reads(10))
+    // Minimum execution time: 57_000_000 picoseconds.
+    Weight::from_parts(57_000_000, 0)
+      .saturating_add(T::DbWeight::get().reads(11))
       .saturating_add(T::DbWeight::get().writes(5))
   }
 }

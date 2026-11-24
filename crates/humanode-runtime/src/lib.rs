@@ -70,7 +70,7 @@ use sp_runtime::{
     transaction_validity::{
         TransactionPriority, TransactionSource, TransactionValidity, TransactionValidityError,
     },
-    ApplyExtrinsicResult, MultiSignature,
+    ApplyExtrinsicResult, FixedU128, MultiSignature,
 };
 pub use sp_runtime::{Perbill, Permill};
 use sp_std::prelude::*;
@@ -469,13 +469,19 @@ impl pallet_transaction_payment::Config for Runtime {
         pallet_pot::DepositUnbalancedCurrency<Self, PotInstanceFees>,
     >;
     type OperationalFeeMultiplier = ConstU8<5>;
-    type WeightToFee = frame_support::weights::ConstantMultiplier<
-        Balance,
-        ConstU128<{ constants::fees::WEIGHT_TO_FEE }>,
+    type WeightToFee = pallet_humanode_fee_params::NativeWeightToFee<
+        Runtime,
+        frame_support::weights::ConstantMultiplier<
+            Balance,
+            ConstU128<{ constants::fees::WEIGHT_TO_FEE_BASELINE }>,
+        >,
     >;
-    type LengthToFee = frame_support::weights::ConstantMultiplier<
-        Balance,
-        ConstU128<{ constants::fees::LENGTH_TO_FEE }>,
+    type LengthToFee = pallet_humanode_fee_params::NativeWeightToFee<
+        Runtime,
+        frame_support::weights::ConstantMultiplier<
+            Balance,
+            ConstU128<{ constants::fees::LENGTH_TO_FEE_BASELINE }>,
+        >,
     >;
     type FeeMultiplierUpdate = pallet_transaction_payment::ConstFeeMultiplier<FeeMultiplier>;
 }
@@ -658,18 +664,12 @@ impl pallet_native_to_evm_swap::Config for Runtime {
     type WeightInfo = weights::pallet_native_to_evm_swap::WeightInfo<Runtime>;
 }
 
-/// A simple fixed fee per gas calculator.
-pub struct EvmFeePerGas;
-
-impl fp_evm::FeeCalculator for EvmFeePerGas {
-    fn min_gas_price() -> (U256, Weight) {
-        (constants::evm_fees::FEE_PER_GAS.into(), Weight::zero())
-    }
-}
-
 impl pallet_evm::Config for Runtime {
     type AccountProvider = EvmSystem;
-    type FeeCalculator = EvmFeePerGas;
+    type FeeCalculator = pallet_humanode_fee_params::EvmFeeCalculator<
+        Runtime,
+        ConstU128<{ constants::evm_fees::FEE_PER_GAS_BASELINE }>,
+    >;
     type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
     type WeightPerGas = WeightPerGas;
     type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Self>;
@@ -703,6 +703,11 @@ impl pallet_ethereum::Config for Runtime {
     type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
     type PostLogContent = PostBlockAndTxnHashes;
     type ExtraDataLength = ConstU32<EXTRA_DATA_LENGTH>;
+}
+
+impl pallet_humanode_fee_params::Config for Runtime {
+    type RuntimeEvent = RuntimeEvent;
+    type WeightInfo = weights::pallet_humanode_fee_params::WeightInfo<Runtime>;
 }
 
 impl pallet_chain_properties::Config for Runtime {}
@@ -867,6 +872,7 @@ construct_runtime!(
         HumanodeOffences: pallet_humanode_offences = 39,
         NativeToEvmSwap: pallet_native_to_evm_swap = 40,
         FixedValidatorsSet: pallet_fixed_validators_set = 41,
+        HumanodeFeeParams: pallet_humanode_fee_params = 42,
     }
 );
 
@@ -900,6 +906,16 @@ pub type UncheckedExtrinsic =
 /// The payload being signed in transactions.
 pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 
+parameter_types! {
+    /// The native fee multiplier that reproduces the fee level the runtime charged before
+    /// the fee params were introduced: ten times the unit price.
+    pub const NativeFeeMultiplierBeforeFeeParams: FixedU128 = FixedU128::from_u32(10);
+    /// The EVM fee multiplier that reproduces the fee level the runtime charged before
+    /// the fee params were introduced: fifteen times the unit price.
+    /// The previous gas price was a hand-rounded value, so this reproduces it within 0.1%.
+    pub const EvmFeeMultiplierBeforeFeeParams: FixedU128 = FixedU128::from_u32(15);
+}
+
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
     Runtime,
@@ -915,6 +931,11 @@ pub type Executive = frame_executive::Executive<
             frontier_precompiles::FrontierPrecompilesAddresses<Runtime>,
         >,
         storage_version_initializer::StorageVersionInitializer<Balances, Runtime>,
+        pallet_humanode_fee_params::migrations::v1::EnactFeeMultipliers<
+            Runtime,
+            NativeFeeMultiplierBeforeFeeParams,
+            EvmFeeMultiplierBeforeFeeParams,
+        >,
     ),
 >;
 
@@ -1076,6 +1097,7 @@ mod benches {
         [pallet_humanode_session, HumanodeSession]
         [pallet_native_to_evm_swap, NativeToEvmSwap]
         [pallet_fixed_validators_set, FixedValidatorsSet]
+        [pallet_humanode_fee_params, HumanodeFeeParams]
     );
 }
 

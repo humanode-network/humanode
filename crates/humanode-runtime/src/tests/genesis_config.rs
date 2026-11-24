@@ -114,7 +114,11 @@ fn works() {
             "initialState": "Initialized"
         },
         "balancedCurrencySwapBridgesInitializer": null,
-        "dummyPrecompilesCode": {}
+        "dummyPrecompilesCode": {},
+        "humanodeFeeParams": {
+            "nativeFeeMultiplier": "1000000000000000000",
+            "evmFeeMultiplier": "2000000000000000000"
+        }
     }"#;
     let config: GenesisConfig = serde_json::from_str(json_input).unwrap();
     assert_ok!(config.build_storage());
@@ -135,7 +139,7 @@ fn unknown_field() {
         `ethereumChainId`, `sudo`, `grandpa`, `ethereum`, `evm`, \
         `imOnline`, `evmAccountsMapping`, `tokenClaims`, `nativeToEvmSwapBridgePot`, \
         `evmToNativeSwapBridgePot`, `balancedCurrencySwapBridgesInitializer`, \
-        `dummyPrecompilesCode`, `fixedValidatorsSet` at line 1 column 6"
+        `dummyPrecompilesCode`, `fixedValidatorsSet`, `humanodeFeeParams` at line 1 column 6"
     );
 }
 
